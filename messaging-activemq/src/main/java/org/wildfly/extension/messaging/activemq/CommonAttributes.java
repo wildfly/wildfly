@@ -175,7 +175,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            // do not allow expression as this may reference another resource
+            .setAllowExpression(false)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
                     "local-bind-address", "local-bind-port")
@@ -184,7 +185,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
             .setAllowNull(true)
-            .setAllowExpression(true)
+            // do not allow expression as this may reference another resource
+            .setAllowExpression(false)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
                     "local-bind-address", "local-bind-port")

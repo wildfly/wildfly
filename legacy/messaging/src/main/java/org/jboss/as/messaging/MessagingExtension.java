@@ -119,6 +119,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@SuppressWarnings("deprecation")
 public class MessagingExtension extends AbstractLegacyExtension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
@@ -131,8 +132,8 @@ public class MessagingExtension extends AbstractLegacyExtension {
 
     public static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
     public static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
+    public static final ModelVersion VERSION_1_4_0 = ModelVersion.create(1, 4, 0);
     public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
-    public static final ModelVersion VERSION_1_2_1 = ModelVersion.create(1, 2, 1);
     public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
     public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
     public static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1, 4, 0);
@@ -141,6 +142,7 @@ public class MessagingExtension extends AbstractLegacyExtension {
         return getResourceDescriptionResolver(true, keyPrefix);
     }
 
+    @SuppressWarnings("deprecation")
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes, final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder();
         for (String kp : keyPrefix) {

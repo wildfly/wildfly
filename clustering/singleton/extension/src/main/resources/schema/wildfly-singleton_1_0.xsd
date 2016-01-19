@@ -20,7 +20,7 @@
 
     <xs:complexType name="singleton-policies">
         <xs:sequence>
-            <xs:element name="singleton-policy" type="tns:singleton-policy">
+            <xs:element name="singleton-policy" type="tns:singleton-policy" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>Defines a singleton policy</xs:documentation>
                 </xs:annotation>
@@ -48,7 +48,7 @@
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation>Identifies the cache-container used to back the singleton deployment policy.</xs:documentation>
+                <xs:documentation>The name of this singleton policy.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="cache-container" type="xs:string" use="required">
@@ -63,7 +63,7 @@
         </xs:attribute>
         <xs:attribute name="quorum" type="xs:integer" default="1">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Defines the minimum number of group members required before a singleton election will run.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

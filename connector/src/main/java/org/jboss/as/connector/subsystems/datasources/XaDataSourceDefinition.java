@@ -24,6 +24,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
@@ -51,6 +52,7 @@ import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -84,7 +86,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         super(PATH_XA_DATASOURCE,
                 DataSourcesExtension.getResourceDescriptionResolver(XA_DATASOURCE),
                 deployed ? null : XaDataSourceAdd.INSTANCE,
-                deployed ? null : XaDataSourceRemove.INSTANCE);
+                deployed ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(DataSourcesExtension.SUBSYSTEM_NAME, XA_DATASOURCE);
@@ -100,8 +102,8 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
 
         if (!deployed) {
-            resourceRegistration.registerOperationHandler(DATASOURCE_ENABLE, DataSourceEnable.XA_INSTANCE);
-            resourceRegistration.registerOperationHandler(DATASOURCE_DISABLE, DataSourceDisable.INSTANCE);
+            resourceRegistration.registerOperationHandler(DATASOURCE_ENABLE, DataSourceEnableDisable.ENABLE);
+            resourceRegistration.registerOperationHandler(DATASOURCE_DISABLE, DataSourceEnableDisable.DISABLE);
         }
         if (registerRuntimeOnly) {
             resourceRegistration.registerOperationHandler(FLUSH_IDLE_CONNECTION, PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE);
@@ -247,6 +249,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALLOW_MULTIPLE_USERS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .end();

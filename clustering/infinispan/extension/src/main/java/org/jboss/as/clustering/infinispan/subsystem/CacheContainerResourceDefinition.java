@@ -249,6 +249,9 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addAttributes(ExecutorAttribute.class)
                 .addAttributes(DeprecatedAttribute.class)
+                .addRequiredChildren(ThreadPoolResourceDefinition.class)
+                .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
+                .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new CacheContainerServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);

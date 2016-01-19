@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem.deployment;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -61,7 +62,13 @@ public class MessageDrivenBeanResourceDefinition extends AbstractEJBComponentRes
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
-        registry.registerOperationHandler(new SimpleOperationDefinition(START_DELIVERY, getResourceDescriptionResolver()), MessageDrivenBeanRuntimeHandler.INSTANCE);
-        registry.registerOperationHandler(new SimpleOperationDefinition(STOP_DELIVERY, getResourceDescriptionResolver()), MessageDrivenBeanRuntimeHandler.INSTANCE);
+        final SimpleOperationDefinition startDelivery = new SimpleOperationDefinitionBuilder(START_DELIVERY, getResourceDescriptionResolver())
+                        .setRuntimeOnly()
+                        .build();
+        registry.registerOperationHandler(startDelivery, MessageDrivenBeanRuntimeHandler.INSTANCE);
+        final SimpleOperationDefinition stopDelivery = new SimpleOperationDefinitionBuilder(STOP_DELIVERY, getResourceDescriptionResolver())
+                        .setRuntimeOnly()
+                        .build();
+        registry.registerOperationHandler(stopDelivery, MessageDrivenBeanRuntimeHandler.INSTANCE);
     }
 }

@@ -150,13 +150,13 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                                              maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : Integer.valueOf(maxPoolSize),
                                                              Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
                                                              Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID,
-                                                             Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL, Boolean.FALSE, null, null);
+                                                             Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL, Boolean.FALSE, null, Defaults.FAIR, null);
                 final ModifiableXaDataSource dataSource = new ModifiableXaDataSource(transactionIsolation(),
                         null, dsSecurity, null, null, null,
                         null, null, null, poolName, true,
                         jndiName, false, false, Defaults.CONNECTABLE, Defaults.TRACKING, Defaults.MCP, Defaults.ENLISTMENT_TRACE, properties,
                         className, null, null,
-                        xaPool, null, null);
+                        xaPool, null);
                 final XaDataSourceService xds = new XaDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 xds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(xds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
@@ -164,10 +164,10 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                 final DsPoolImpl commonPool = new DsPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : Integer.valueOf(minPoolSize),
                                                              initialPoolSize < 0 ? Defaults.INITIAL_POOL_SIZE : Integer.valueOf(initialPoolSize),
                                                              maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : Integer.valueOf(maxPoolSize),
-                                                             Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, null);
+                                                             Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, Defaults.FAIR, null);
                 final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), properties,
                         null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM,
-                        transactional, Defaults.CONNECTABLE, Defaults.TRACKING, Defaults.MCP, Defaults.ENLISTMENT_TRACE, commonPool, null);
+                        transactional, Defaults.CONNECTABLE, Defaults.TRACKING, Defaults.MCP, Defaults.ENLISTMENT_TRACE, commonPool);
                 final LocalDataSourceService ds = new LocalDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(ds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
@@ -317,8 +317,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
 
     private void setProperty(final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> dataSourceClass, final Map<String, String> properties, final String name, final Object value) {
         // Ignore defaulted values
-        if (value == null) return;
-        if (value instanceof String && "".equals(value)) return;
+        if (value == null || "".equals(value)) return;
         if (value instanceof Integer && ((Integer) value).intValue() == -1) return;
         StringBuilder builder = new StringBuilder("set").append(name);
         builder.setCharAt(3, Character.toUpperCase(name.charAt(0)));

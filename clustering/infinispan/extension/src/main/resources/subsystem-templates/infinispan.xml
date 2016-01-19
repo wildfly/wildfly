@@ -42,11 +42,6 @@
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
-                <local-cache name="immutable-entity">
-                    <transaction mode="NON_XA"/>
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <expiration max-idle="100000"/>
-                </local-cache>
                 <local-cache name="local-query">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>

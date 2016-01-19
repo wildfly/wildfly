@@ -78,7 +78,7 @@ public class RemoteStatelessFailoverTestCase {
     private static final String ARCHIVE_NAME = "stateless-ejb2-failover-test";
     private static final String ARCHIVE_NAME_DD = "stateless-ejb2-failover-dd-test";
 
-    private static final Integer PORT_2 = 4547;
+    private static final Integer PORT_2 = 8080;
     private static final String HOST_2 = System.getProperty("node1");
     private static final String REMOTE_PORT_PROPERTY_NAME = "remote.connection.default.port";
     private static final String REMOTE_HOST_PROPERTY_NAME = "remote.connection.default.host";

@@ -30,7 +30,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.Evictor;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Session eviction scheduler that eagerly evicts the oldest sessions when
@@ -63,9 +63,9 @@ public class SessionEvictionScheduler implements Scheduler, SessionEvictionConte
     }
 
     @Override
-    public void schedule(ImmutableSession session) {
+    public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
         synchronized (this.evictionQueue) {
-            this.evictionQueue.add(session.getId());
+            this.evictionQueue.add(sessionId);
             // Trigger eviction of oldest session if necessary
             if (this.evictionQueue.size() > this.maxSize) {
                 Iterator<String> sessions = this.evictionQueue.iterator();
@@ -73,7 +73,7 @@ public class SessionEvictionScheduler implements Scheduler, SessionEvictionConte
                     this.dispatcher.submitOnCluster(new SessionEvictionCommand(sessions.next()));
                     sessions.remove();
                 } catch (Exception e) {
-                    InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, session.getId());
+                    InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, sessionId);
                 }
             }
         }

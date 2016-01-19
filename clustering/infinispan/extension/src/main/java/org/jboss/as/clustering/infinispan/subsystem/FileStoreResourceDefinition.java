@@ -28,10 +28,14 @@ import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
@@ -75,6 +79,13 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
+        }
+
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
@@ -93,6 +104,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new FileStoreBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);

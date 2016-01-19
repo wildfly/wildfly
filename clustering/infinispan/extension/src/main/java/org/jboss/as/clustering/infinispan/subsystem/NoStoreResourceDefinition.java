@@ -38,7 +38,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class NoStoreResourceDefinition extends ChildResourceDefinition {
 
-    static PathElement PATH = StoreResourceDefinition.pathElement("none");
+    static final PathElement PATH = StoreResourceDefinition.pathElement("none");
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         // Nothing to do yet

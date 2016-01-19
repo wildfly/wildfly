@@ -23,6 +23,9 @@
   -->
 
 <module xmlns="urn:jboss:module:1.3" name="org.wildfly.extension.undertow">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
     <exports>
         <exclude path="org/wildfly/extension/undertow/logging"/>

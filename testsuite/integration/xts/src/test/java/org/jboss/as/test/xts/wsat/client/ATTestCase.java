@@ -35,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 
 import org.jboss.as.test.xts.base.BaseFunctionalTest;
 import org.jboss.as.test.xts.base.TestApplicationException;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.as.test.xts.util.EventLog;
 import org.jboss.as.test.xts.util.EventLogEvent;
 import org.jboss.as.test.xts.wsat.service.AT;
@@ -45,9 +46,6 @@ import org.jboss.as.test.xts.wsat.service.ATService3;
 import static org.jboss.as.test.xts.util.ServiceCommand.*;
 import static org.jboss.as.test.xts.util.EventLogEvent.*;
 
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -66,23 +64,20 @@ public class ATTestCase extends BaseFunctionalTest {
     private AT client1, client2, client3;
     
     public static final String ARCHIVE_NAME = "wsat-test";
-    
+
     @Inject
     EventLog eventLog;
     
     @Deployment
     public static WebArchive createTestArchive() {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war")
+        final WebArchive archive = DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
                 .addPackage(AT.class.getPackage())
                 .addPackage(ATClient.class.getPackage())
                 .addPackage(EventLog.class.getPackage())
                 .addPackage(BaseFunctionalTest.class.getPackage())
-                
                 // needed to setup the server-side handler chain
                 .addAsResource("context-handlers.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml")); // beans.xml is put under web-inf for war deploy 
- 
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
         return archive;
     }
 

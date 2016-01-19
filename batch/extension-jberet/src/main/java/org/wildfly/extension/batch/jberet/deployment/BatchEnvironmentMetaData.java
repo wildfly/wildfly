@@ -33,11 +33,13 @@ class BatchEnvironmentMetaData {
     private final JobRepository jobRepository;
     private final String jobRepositoryName;
     private final String executorName;
+    private final Boolean restartJobsOnResume;
 
-    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final String jobRepositoryName, final String executorName) {
+    protected BatchEnvironmentMetaData(final JobRepository jobRepository, final String jobRepositoryName, final String executorName, final Boolean restartJobsOnResume) {
         this.jobRepository = jobRepository;
         this.jobRepositoryName = jobRepositoryName;
         this.executorName = executorName;
+        this.restartJobsOnResume = restartJobsOnResume;
     }
 
     public JobRepository getJobRepository() {
@@ -50,5 +52,9 @@ class BatchEnvironmentMetaData {
 
     public String getExecutorName() {
         return executorName;
+    }
+
+    public Boolean getRestartJobsOnResume() {
+        return restartJobsOnResume;
     }
 }

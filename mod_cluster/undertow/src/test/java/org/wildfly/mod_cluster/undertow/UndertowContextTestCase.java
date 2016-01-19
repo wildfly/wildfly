@@ -58,7 +58,7 @@ public class UndertowContextTestCase {
     @Test
     public void getPath() {
         DeploymentInfo info = new DeploymentInfo();
-        String expected = "/";
+        String expected = "";
         info.setContextPath(expected);
         
         when(this.deployment.getDeploymentInfo()).thenReturn(info);

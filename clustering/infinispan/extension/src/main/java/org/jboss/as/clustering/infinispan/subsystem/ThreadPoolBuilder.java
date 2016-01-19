@@ -36,13 +36,13 @@ import org.wildfly.clustering.service.Builder;
  * @author Radoslav Husar
  * @version August 2015
  */
-public class ThreadPoolBuilder extends ComponentConfigurationBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
+public class ThreadPoolBuilder extends CacheContainerComponentBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ThreadPoolDefinition definition;
 
     ThreadPoolBuilder(ThreadPoolDefinition definition, String containerName) {
-        super(new CacheContainerComponentServiceNameProvider(definition, containerName));
+        super(definition, containerName);
         this.definition = definition;
     }
 
@@ -60,9 +60,8 @@ public class ThreadPoolBuilder extends ComponentConfigurationBuilder<ThreadPoolC
     }
 
     @Override
-    public ThreadPoolConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
+    public ThreadPoolConfiguration getValue() {
         return this.builder.create();
     }
-
 }
 

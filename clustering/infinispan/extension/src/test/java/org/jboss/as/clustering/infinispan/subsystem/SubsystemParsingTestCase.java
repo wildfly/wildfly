@@ -56,7 +56,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final int operations;
 
     public SubsystemParsingTestCase(InfinispanSchema schema, int operations) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema.format("subsystem-infinispan-%d_%d.xml"));
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), String.format("subsystem-infinispan-%d_%d.xml", schema.major(), schema.minor()));
         this.schema = schema;
         this.operations = operations;
     }
@@ -64,15 +64,15 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 63 },
-            { InfinispanSchema.VERSION_1_1, 63 },
-            { InfinispanSchema.VERSION_1_2, 63 },
-            { InfinispanSchema.VERSION_1_3, 63 },
-            { InfinispanSchema.VERSION_1_4, 63 },
-            { InfinispanSchema.VERSION_1_5, 63 },
-            { InfinispanSchema.VERSION_2_0, 66 },
-            { InfinispanSchema.VERSION_3_0, 66 },
-            { InfinispanSchema.VERSION_4_0, 66 },
+            { InfinispanSchema.VERSION_1_0, 33 },
+            { InfinispanSchema.VERSION_1_1, 33 },
+            { InfinispanSchema.VERSION_1_2, 37 },
+            { InfinispanSchema.VERSION_1_3, 37 },
+            { InfinispanSchema.VERSION_1_4, 37 },
+            { InfinispanSchema.VERSION_1_5, 37 },
+            { InfinispanSchema.VERSION_2_0, 42 },
+            { InfinispanSchema.VERSION_3_0, 42 },
+            { InfinispanSchema.VERSION_4_0, 51 },
         };
         return Arrays.asList(data);
     }

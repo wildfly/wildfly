@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.CR2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -46,6 +46,11 @@
     <dependencies>
 
         <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
         </dependency>
@@ -55,25 +60,15 @@
             <artifactId>artemis-core-client</artifactId>
         </dependency>
 
+        <!-- required to allow Artemis client to connect to HornetQ servers -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-hqclient-protocol</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-client</artifactId>
-        </dependency>
-
-        <!-- required until HORNETQ-1053 is fixed -->
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-core-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-client</artifactId>
         </dependency>
 
         <dependency>
@@ -94,11 +89,6 @@
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
         </dependency>
 
         <dependency>

@@ -93,8 +93,8 @@ public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<Bea
                 .addDependency(deploymentUnitServiceName.append(this.name, "expiration"), ScheduledExecutorService.class, this.scheduler)
                 .addDependency(deploymentUnitServiceName.append(this.name, "eviction"), Executor.class, this.executor)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(containerName), Registry.class, this.registry)
-                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName), NodeFactory.class, this.nodeFactory)
+                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
+                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.nodeFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }

@@ -379,4 +379,7 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 102, value = "Caught exception destroying Iterator %s")
     INTERNAL exceptionDestroingIterator(String cause);
+
+    @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
+    OperationFailedException sslNotConfigured();
 }

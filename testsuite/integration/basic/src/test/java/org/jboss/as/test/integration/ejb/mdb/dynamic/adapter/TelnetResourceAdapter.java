@@ -52,13 +52,16 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
         this.port = port;
     }
 
+    @Override
     public void start(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
         this.workManager = bootstrapContext.getWorkManager();
     }
 
+    @Override
     public void stop() {
     }
 
+    @Override
     public void endpointActivation(MessageEndpointFactory messageEndpointFactory, ActivationSpec activationSpec) throws ResourceException {
         final TelnetActivationSpec telnetActivationSpec = (TelnetActivationSpec) activationSpec;
 
@@ -90,6 +93,7 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
         }
     }
 
+    @Override
     public void endpointDeactivation(MessageEndpointFactory messageEndpointFactory, ActivationSpec activationSpec) {
         final TelnetActivationSpec telnetActivationSpec = (TelnetActivationSpec) activationSpec;
 
@@ -106,6 +110,7 @@ public class TelnetResourceAdapter implements javax.resource.spi.ResourceAdapter
         endpoint.release();
     }
 
+    @Override
     public XAResource[] getXAResources(ActivationSpec[] activationSpecs) throws ResourceException {
         return new XAResource[0];
     }

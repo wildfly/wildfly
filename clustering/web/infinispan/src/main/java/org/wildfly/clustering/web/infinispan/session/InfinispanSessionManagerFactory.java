@@ -26,6 +26,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.servlet.ServletContext;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.remoting.transport.Address;
@@ -55,12 +57,13 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
-import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionFactory;
-import org.wildfly.clustering.web.infinispan.session.fine.FineSessionFactory;
+import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionAttributesFactory;
+import org.wildfly.clustering.web.infinispan.session.fine.FineSessionAttributesFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionContext;
+import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
 /**
@@ -100,17 +103,22 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
     }
 
     @Override
-    public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory, final Recordable<ImmutableSession> inactiveSessionRecorder) {
+    public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionManagerConfiguration<L> configuration) {
         final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.config.getCache());
         final Cache<Key<String>, ?> cache = this.config.getCache();
-        final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, cache, this.config.getKeyAffinityServiceFactory());
+        final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), cache, this.config.getKeyAffinityServiceFactory());
         final CommandDispatcherFactory dispatcherFactory = this.config.getCommandDispatcherFactory();
         final NodeFactory<Address> nodeFactory = this.config.getNodeFactory();
-        final int maxActiveSessions = this.config.getSessionManagerConfiguration().getMaxActiveSessions();
+        final int maxActiveSessions = this.config.getSessionManagerFactoryConfiguration().getMaxActiveSessions();
         InfinispanSessionManagerConfiguration config = new InfinispanSessionManagerConfiguration() {
             @Override
-            public SessionContext getSessionContext() {
-                return context;
+            public SessionExpirationListener getExpirationListener() {
+                return configuration.getExpirationListener();
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return configuration.getServletContext();
             }
 
             @Override
@@ -145,29 +153,36 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
 
             @Override
             public Recordable<ImmutableSession> getInactiveSessionRecorder() {
-                return inactiveSessionRecorder;
+                return configuration.getInactiveSessionRecorder();
             }
         };
-        return new InfinispanSessionManager<>(this.getSessionFactory(context, localContextFactory), config);
+        return new InfinispanSessionManager<>(this.createSessionFactory(configuration.getLocalContextFactory()), config);
     }
 
-    private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
-        SessionManagerConfiguration config = this.config.getSessionManagerConfiguration();
+    private <L> SessionFactory<?, ?, L> createSessionFactory(LocalContextFactory<L> localContextFactory) {
+        Configuration config = this.config.getCache().getCacheConfiguration();
+        boolean transactional = config.transaction().transactionMode().isTransactional();
+        boolean lockOnWrite = transactional && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC);
+        boolean lockOnRead = lockOnWrite && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
+        boolean requireMarshallable = config.clustering().cacheMode().needsStateTransfer() || config.persistence().usingStores();
+        SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.config.getCache(), transactional, lockOnRead, lockOnWrite);
+        return new InfinispanSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(lockOnRead, requireMarshallable), localContextFactory);
+    }
+
+    private <L> SessionAttributesFactory<?> createSessionAttributesFactory(boolean lockOnRead, boolean requireMarshallable) {
+        SessionManagerFactoryConfiguration config = this.config.getSessionManagerFactoryConfiguration();
         Module module = config.getModule();
         MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
-        Cache<Key<String>, ?> cache = this.config.getCache();
-        Configuration cacheConfig = cache.getCacheConfiguration();
-        boolean lockOnRead = cacheConfig.transaction().transactionMode().isTransactional() && (cacheConfig.transaction().lockingMode() == LockingMode.PESSIMISTIC) && cacheConfig.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
 
-        switch (config.getAttributePersistenceStrategy()) {
+        switch (this.config.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
             case FINE: {
                 Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new FineSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead);
+                return new FineSessionAttributesFactory(this.config.getCache(), marshaller, requireMarshallable);
             }
             case COARSE: {
                 Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionFactory<>(cache, context, marshaller, localContextFactory, lockOnRead);
+                return new CoarseSessionAttributesFactory(this.config.getCache(), marshaller, lockOnRead, requireMarshallable);
             }
             default: {
                 // Impossible

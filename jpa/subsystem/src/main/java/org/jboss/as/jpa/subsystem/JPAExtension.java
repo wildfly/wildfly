@@ -43,12 +43,6 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoadException;
@@ -88,9 +82,7 @@ public class JPAExtension implements Extension {
         nodeRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         registration.registerXMLElementWriter(parser1_1);
 
-        if (context.isRegisterTransformers()) {
-            initializeTransformers_1_1_0(registration);
-        }
+
 
         try {
             PersistenceProviderLoader.loadDefaultProvider();
@@ -107,17 +99,6 @@ public class JPAExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JPA_1_1.getUriString(), parser1_1);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JPA_1_0.getUriString(), parser1_0);
-    }
-
-    private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder()
-            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JPADefinition.DEFAULT_DATASOURCE)
-            .addRejectCheck(RejectAttributeChecker.DEFINED, JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
-            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString())), JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
-            .end();
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
     }
 
     static class JPASubsystemElementParser1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,

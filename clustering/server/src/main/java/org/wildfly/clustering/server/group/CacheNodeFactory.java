@@ -21,9 +21,8 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
@@ -49,11 +48,7 @@ public class CacheNodeFactory implements InfinispanNodeFactory {
     @Override
     public void invalidate(Collection<Address> addresses) {
         if (!addresses.isEmpty()) {
-            List<org.jgroups.Address> jgroupsAddresses = new ArrayList<>(addresses.size());
-            for (Address address: addresses) {
-                jgroupsAddresses.add(toJGroupsAddress(address));
-            }
-            this.factory.invalidate(jgroupsAddresses);
+            this.factory.invalidate(addresses.stream().map((Address address) -> toJGroupsAddress(address)).filter((org.jgroups.Address address) -> address != null).collect(Collectors.toList()));
         }
     }
 

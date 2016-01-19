@@ -281,6 +281,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
 
+        EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.marshallAsAttribute(model, writer);
         // write out any channel creation options
         if (model.hasDefined(CHANNEL_CREATION_OPTIONS)) {
             writeChannelCreationOptions(writer, model.get(CHANNEL_CREATION_OPTIONS));

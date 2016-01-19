@@ -23,7 +23,6 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -57,6 +56,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -97,7 +97,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final BeanKeyFilter<I> filter;
 
-    volatile CommandDispatcher<Scheduler<I>> dispatcher;
+    private volatile CommandDispatcher<Scheduler<I>> dispatcher;
     private volatile Scheduler<I> scheduler;
     private volatile ServiceExecutor executor;
 
@@ -109,35 +109,15 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         this.beanCache = beanConfiguration.getCache();
         this.batcher = new InfinispanBatcher(this.groupCache);
         this.filter = new BeanKeyFilter<>(this.beanName);
-        final Address address = this.groupCache.getCacheManager().getAddress();
-        final KeyGenerator<G> groupKeyGenerator = new KeyGenerator<G>() {
-            @Override
-            public G getKey() {
-                return groupConfiguration.getIdentifierFactory().createIdentifier();
-            }
-        };
+        Address address = this.groupCache.getCacheManager().getAddress();
+        KeyGenerator<G> groupKeyGenerator = () -> groupConfiguration.getIdentifierFactory().createIdentifier();
         KeyAffinityServiceFactory affinityFactory = configuration.getAffinityFactory();
-        final KeyAffinityService<G> groupAffinity = affinityFactory.createService(this.groupCache, groupKeyGenerator);
-        this.groupIdentifierFactory = new IdentifierFactory<G>() {
-            @Override
-            public G createIdentifier() {
-                return groupAffinity.getKeyForAddress(address);
-            }
-        };
+        KeyAffinityService<G> groupAffinity = affinityFactory.createService(this.groupCache, groupKeyGenerator);
+        this.groupIdentifierFactory = () -> groupAffinity.getKeyForAddress(address);
         this.affinityServices.add(groupAffinity);
-        final KeyGenerator<BeanKey<I>> beanKeyGenerator = new KeyGenerator<BeanKey<I>>() {
-            @Override
-            public BeanKey<I> getKey() {
-                return beanConfiguration.getFactory().createKey(beanConfiguration.getIdentifierFactory().createIdentifier());
-            }
-        };
-        final KeyAffinityService<BeanKey<I>> beanAffinity = affinityFactory.createService(this.beanCache, beanKeyGenerator);
-        this.beanIdentifierFactory = new IdentifierFactory<I>() {
-            @Override
-            public I createIdentifier() {
-                return beanAffinity.getKeyForAddress(address).getId();
-            }
-        };
+        KeyGenerator<BeanKey<I>> beanKeyGenerator = () -> beanConfiguration.getFactory().createKey(beanConfiguration.getIdentifierFactory().createIdentifier());
+        KeyAffinityService<BeanKey<I>> beanAffinity = affinityFactory.createService(this.beanCache, beanKeyGenerator);
+        this.beanIdentifierFactory = () -> beanAffinity.getKeyForAddress(address).getId();
         this.affinityServices.add(beanAffinity);
         this.registry = configuration.getRegistry();
         this.nodeFactory = configuration.getNodeFactory();
@@ -149,9 +129,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     @Override
     public void start() {
         this.executor = new StampedLockServiceExecutor();
-        for (KeyAffinityService<?> service: this.affinityServices) {
-            service.start();
-        }
+        this.affinityServices.forEach(service -> service.start());
         final List<Scheduler<I>> schedulers = new ArrayList<>(2);
         Time timeout = this.expiration.getTimeout();
         if ((timeout != null) && (timeout.getValue() >= 0)) {
@@ -163,30 +141,22 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         this.scheduler = new Scheduler<I>() {
             @Override
             public void schedule(I id) {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.schedule(id);
-                }
+                schedulers.forEach(scheduler -> scheduler.schedule(id));
             }
 
             @Override
             public void cancel(I id) {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.cancel(id);
-                }
+                schedulers.forEach(scheduler -> scheduler.cancel(id));
             }
 
             @Override
             public void cancel(Locality locality) {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.cancel(locality);
-                }
+                schedulers.forEach(scheduler -> scheduler.cancel(locality));
             }
 
             @Override
             public void close() {
-                for (Scheduler<I> scheduler: schedulers) {
-                    scheduler.close();
-                }
+                schedulers.forEach(scheduler -> scheduler.close());
             }
         };
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.beanName + ".schedulers", this.scheduler);
@@ -200,15 +170,14 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
             this.beanCache.removeListener(this);
             this.dispatcher.close();
             this.scheduler.close();
-            for (KeyAffinityService<?> service: this.affinityServices) {
-                service.stop();
-            }
+            this.affinityServices.forEach(service -> service.stop());
         });
     }
 
     @Override
     public Affinity getStrictAffinity() {
-        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(this.registry.getGroup().getName()) : new NodeAffinity(this.registry.getLocalEntry().getKey());
+        Group group = this.registry.getGroup();
+        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(this.registry.getEntry(group.getLocalNode()).getKey());
     }
 
     @Override
@@ -233,15 +202,11 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     }
 
     private void executeOnPrimaryOwner(final Bean<G, I, T> bean, final Command<Void, Scheduler<I>> command) throws Exception {
-        Callable<Void> task = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                // This should only go remote following a failover
-                Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
-                return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node).get();
-            }
-        };
-        this.invoker.invoke(task);
+        this.invoker.invoke(() -> {
+            // This should only go remote following a failover
+            Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
+            return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node);
+        }).get();
     }
 
     Node locatePrimaryOwner(I id) {

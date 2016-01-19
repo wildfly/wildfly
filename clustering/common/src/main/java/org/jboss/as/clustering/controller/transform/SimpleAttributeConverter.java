@@ -49,6 +49,6 @@ public class SimpleAttributeConverter implements AttributeConverter {
 
     @Override
     public final void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
-        this.converter.convert(address, name, value, context.readResourceFromRoot(address).getModel(), context);
+        this.converter.convert(address, name, value, context.readResource(PathAddress.EMPTY_ADDRESS).getModel(), context);
     }
 }

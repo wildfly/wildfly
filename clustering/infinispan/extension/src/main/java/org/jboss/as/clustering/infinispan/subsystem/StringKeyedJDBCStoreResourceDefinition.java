@@ -27,12 +27,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -46,13 +47,16 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Resource description for the addressable resource
+ * Resource description for the addressable resource and its legacy alias
  *
+ * /subsystem=infinispan/cache-container=X/cache=Y/store=string-jdbc
  * /subsystem=infinispan/cache-container=X/cache=Y/string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
@@ -93,11 +97,31 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    final ModelNode model = resource.getModel();
+
+                    final ModelNode stringTableModel = Resource.Tools.readModel(resource.removeChild(StringTableResourceDefinition.PATH));
+                    if (stringTableModel != null && stringTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.TABLE.getDefinition().getName()).set(stringTableModel);
+                    }
+
+                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+
+                    LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
+                    context.processChildren(resource);
+                }
+            });
+        }
 
         StringTableResourceDefinition.buildTransformation(version, builder);
+
+        JDBCStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     StringKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
@@ -139,18 +163,14 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredChildren(StringTableResourceDefinition.PATH)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StringKeyedJDBCStoreBuilderFactory());
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 translateAddOperation(context, operation);
-                super.populateModel(context, operation, resource);
-            }
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                super.execute(context, operation);
                 if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
                     // Translate deprecated TABLE attribute into separate add table operation
                     ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(StringTableResourceDefinition.PATH));
@@ -160,6 +180,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                     }
                     context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(StringTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
+                super.populateModel(context, operation, resource);
             }
         }.register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

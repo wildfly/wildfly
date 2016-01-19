@@ -30,20 +30,27 @@ import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
+ * Resource description for the addressable resource and its alias:
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=eviction
+ * /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -85,8 +92,17 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     private final boolean allowRuntimeOnlyRegistration;
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
+
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.addChildRedirection(PATH, LEGACY_PATH);
+            builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                @Override
+                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                    if (attributeValue.isDefined()) {
+                        attributeValue.set(attributeValue.asInt());
+                    }
+                }
+            }, Attribute.MAX_ENTRIES.getDefinition());
         }
     }
 

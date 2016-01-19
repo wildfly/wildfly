@@ -32,10 +32,12 @@ import org.jboss.as.controller.ModelVersion;
 public enum ModClusterModel {
 
     VERSION_1_4_0(1, 4, 0),
+    VERSION_1_5_0(1, 5, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
+    VERSION_4_0_0(4, 0, 0),
     ;
-    public static final ModClusterModel CURRENT = VERSION_3_0_0;
+    public static final ModClusterModel CURRENT = VERSION_4_0_0;
 
     private final ModelVersion version;
 

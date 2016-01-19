@@ -22,22 +22,10 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-
 /**
  * Encapsulates the execution of a runtime operation.
  * @author Paul Ferraro
  * @param <C> the operation execution context.
  */
-public interface OperationExecutor<C> {
-    /**
-     * Executes the specified operation against the specified context.
-     * @param context an operation context
-     * @param operation a runtime operation
-     * @return the result of the operation (possibly null).
-     * @throws OperationFailedException
-     */
-    ModelNode execute(OperationContext context, Operation<C> operation) throws OperationFailedException;
+public interface OperationExecutor<C> extends Executor<C, Operation<C>> {
 }

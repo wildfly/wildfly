@@ -32,6 +32,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -46,8 +47,10 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
@@ -192,10 +195,15 @@ public class RaOperationUtil {
         boolean sharable = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, SHARABLE);
         boolean enlistment = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, ENLISTMENT);
 
+        final String mcp = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, MCP);
+        final Boolean enlistmentTrace = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, ENLISTMENT_TRACE);
+
+
         int maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, MAX_POOL_SIZE);
         int minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, MIN_POOL_SIZE);
         Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, INITIAL_POOL_SIZE);
         boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, POOL_PREFILL);
+        boolean fair = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, POOL_FAIR);
         boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, POOL_USE_STRICT_MIN);
         String flushStrategyString = POOL_FLUSH_STRATEGY.resolveModelAttribute(context, connDefModel).asString();
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString);
@@ -222,9 +230,9 @@ public class RaOperationUtil {
 
         Pool pool;
         if (isXa) {
-            pool = new XaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
+            pool = new XaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity, fair, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
         } else {
-            pool = new PoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity);
+            pool = new PoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity, fair);
         }
         String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, SECURITY_DOMAIN);
         String securityDomainAndApplication = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, SECURITY_DOMAIN_AND_APPLICATION);
@@ -245,6 +253,7 @@ public class RaOperationUtil {
         final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_SECURITY_DOMAIN);
         Boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, NO_RECOVERY);
 
+
         Recovery recovery = null;
         if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
             Credential credential = null;
@@ -260,7 +269,7 @@ public class RaOperationUtil {
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
-                enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery, sharable, enlistment, connectable, tracking);
+                enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery, sharable, enlistment, connectable, tracking, mcp, enlistmentTrace);
 
         return connectionDefinition;
 

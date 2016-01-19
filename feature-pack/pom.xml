@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.CR2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack</artifactId>
@@ -706,6 +706,11 @@
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-boolean</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf.xjcplugins</groupId>
+            <artifactId>cxf-xjc-bug986</artifactId>
         </dependency>
 
         <dependency>
@@ -1579,6 +1584,17 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-hqclient-protocol</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-client</artifactId>
             <exclusions>
                 <exclusion>
@@ -1901,6 +1917,17 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-java8</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2740,7 +2767,7 @@
                                 <goals>
                                     <goal>download-licenses</goal>
                                 </goals>
-                                <phase>package</phase>
+                                <phase>prepare-package</phase>
                                 <configuration>
                                     <licensesOutputDirectory>
                                         ${project.build.directory}/${project.build.finalName}/content/docs/licenses

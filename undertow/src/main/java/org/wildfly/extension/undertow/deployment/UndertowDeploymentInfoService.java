@@ -150,8 +150,8 @@ import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
-import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
-import org.wildfly.extension.undertow.security.jaspi.JASPICInitialHandler;
+import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism;
+import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
@@ -453,7 +453,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     /**
-     * <p>Adds to the deployment the {@link JASPIAuthenticationMechanism}, if necessary. The handler will be added if the security domain
+     * <p>Adds to the deployment the {@link org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechanism}, if necessary. The handler will be added if the security domain
      * is configured with JASPI authentication.</p>
      *
      * @param deploymentInfo
@@ -467,16 +467,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
             String authMethod = null;
             LoginConfig loginConfig = deploymentInfo.getLoginConfig();
-            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0)
+            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0) {
                 authMethod = loginConfig.getAuthMethods().get(0).getName();
-            deploymentInfo.addSecurityWrapper(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new JASPICInitialHandler(securityDomain, handler);
-                }
-            });
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(authMethod, securityDomain));
+            }
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPICAuthenticationMechanism(securityDomain, authMethod));
             deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
+            deploymentInfo.addOuterHandlerChainWrapper(next -> new JASPICSecureResponseHandler(next));
         }
     }
 
@@ -586,7 +582,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     //should be make this configurable or something?
                     List<ResourceManager> delegates = new ArrayList<>();
                     for(File resource : externalResources) {
-                        delegates.add(new FileResourceManager(resource, 1024, true, mergedMetaData.isSymbolicLinkingEnabled(), "/"));
+                        delegates.add(new FileResourceManager(resource.getCanonicalFile(), 1024, true, mergedMetaData.isSymbolicLinkingEnabled(), "/"));
                     }
                     delegates.add(resourceManager);
                     resourceManager = new DelegatingResourceManager(delegates);
@@ -1063,6 +1059,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else if (servletContainer.getDefaultEncoding() != null) {
                 d.setDefaultEncoding(servletContainer.getDefaultEncoding());
             }
+            d.setCrawlerSessionManagerConfig(servletContainer.getCrawlerSessionManagerConfig());
 
             return d;
         } catch (ClassNotFoundException e) {

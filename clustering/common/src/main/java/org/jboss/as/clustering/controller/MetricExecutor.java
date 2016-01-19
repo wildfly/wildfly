@@ -22,22 +22,10 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-
 /**
  * Encapsulates the execution of a runtime metric.
  * @author Paul Ferraro
  * @param <C> the metric execution context.
  */
-public interface MetricExecutor<C> {
-    /**
-     * Executes the specified metric against the specified context.
-     * @param context an operation context
-     * @param metric a runtime metric
-     * @return the result of the metric (possibly null).
-     * @throws OperationFailedException
-     */
-    ModelNode execute(OperationContext context, Metric<C> metric) throws OperationFailedException;
+public interface MetricExecutor<C> extends Executor<C, Metric<C>> {
 }

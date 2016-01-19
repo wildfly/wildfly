@@ -34,6 +34,7 @@ import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -57,6 +58,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch._private.Capabilities;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.jberet.impl.JobExecutorService;
@@ -165,7 +167,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
         private BatchSubsystemAdd() {
-            super(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY);
+            super(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
         }
 
         @Override
@@ -178,7 +180,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
-            final boolean rcPresent = context.getOriginalRootResource().hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
+            final boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
@@ -194,8 +196,8 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
             final ServiceTarget target = context.getServiceTarget();
             final JobExecutorService service = new JobExecutorService();
-            target.addService(context.getCapabilityServiceName(Capabilities.DEFAULT_THREAD_POOL_CAPABILITY.getName(), JobExecutor.class), service)
-                    .addDependency(BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME,
+            target.addService(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, service)
+                    .addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME,
                             ManagedJBossThreadPoolExecutorService.class,
                             service.getThreadPoolInjector()
                     )
@@ -204,6 +206,12 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             // Determine the repository type
             final String repositoryType = JOB_REPOSITORY_TYPE.resolveModelAttribute(context, model).asString();
             JobRepositoryFactory.getInstance().setJobRepositoryType(repositoryType);
+
+            final DefaultConfigurationService configurationService = new DefaultConfigurationService();
+            target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), configurationService)
+                    .addDependency(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, JobExecutor.class, configurationService.getJobExecutorInjector())
+                    .install();
+
         }
     }
 }

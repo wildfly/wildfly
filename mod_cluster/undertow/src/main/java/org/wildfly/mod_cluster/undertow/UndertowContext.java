@@ -59,7 +59,8 @@ public class UndertowContext implements Context {
 
     @Override
     public String getPath() {
-        return this.deployment.getDeploymentInfo().getContextPath();
+        String path = this.deployment.getDeploymentInfo().getContextPath();
+        return "/".equals(path) ? "" : path;
     }
 
     @Override

@@ -22,16 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.List;
+
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -40,15 +45,21 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/store=remote
+ * /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -115,6 +126,32 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                        @Override
+                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                            if (attributeValue.isDefined()) {
+                                List<ModelNode> remoteServers = attributeValue.clone().asList();
+                                ModelNode legacyListObject = new ModelNode();
+                                for (ModelNode server : remoteServers) {
+                                    ModelNode legacyListItem = new ModelNode();
+                                    legacyListItem.get("outbound-socket-binding").set(server);
+                                    legacyListObject.add(legacyListItem);
+                                }
+                                attributeValue.set(legacyListObject);
+                            }
+                        }
+                    }, Attribute.SOCKET_BINDINGS.getDefinition());
+        }
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
+        }
+
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
@@ -131,6 +168,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addAttributes(StoreResourceDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteStoreBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);

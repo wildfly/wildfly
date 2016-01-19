@@ -33,6 +33,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -49,8 +50,10 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
@@ -123,7 +126,7 @@ public class CommonAttributes {
             BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION,
             USE_FAST_FAIL, VALIDATE_ON_MATCH, USE_CCM,
-            SHARABLE, ENLISTMENT,
+            SHARABLE, ENLISTMENT, ENLISTMENT_TRACE, MCP,
             RECOVERLUGIN_CLASSNAME,
             RECOVERLUGIN_PROPERTIES,
             RECOVERY_PASSWORD,
@@ -133,6 +136,7 @@ public class CommonAttributes {
             WRAP_XA_RESOURCE,
             SAME_RM_OVERRIDE,
             PAD_XID,
+            POOL_FAIR,
             POOL_PREFILL,
             INTERLEAVING,
             NOTXSEPARATEPOOL,

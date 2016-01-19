@@ -41,7 +41,7 @@ import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
@@ -90,16 +90,16 @@ public class SessionExpirationScheduler implements Scheduler {
     }
 
     @Override
-    public void schedule(ImmutableSession session) {
-        Duration maxInactiveInterval = session.getMetaData().getMaxInactiveInterval();
+    public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
+        Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
         if (!maxInactiveInterval.isZero()) {
-            Instant lastAccessed = session.getMetaData().getLastAccessedTime();
+            Instant lastAccessed = metaData.getLastAccessedTime();
             Duration delay = Duration.between(Instant.now(), lastAccessed.plus(maxInactiveInterval));
-            String id = session.getId();
-            Runnable task = new ExpirationTask(id);
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", id, maxInactiveInterval.getSeconds());
+            Runnable task = new ExpirationTask(sessionId);
+            long seconds = !delay.isNegative() ? delay.getSeconds() + 1 : 0;
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", sessionId, seconds);
             synchronized (task) {
-                this.expirationFutures.put(id, this.executor.schedule(task, !delay.isNegative() ? delay.getSeconds() : 0, TimeUnit.SECONDS));
+                this.expirationFutures.put(sessionId, this.executor.schedule(task, seconds, TimeUnit.SECONDS));
             }
         }
     }

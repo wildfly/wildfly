@@ -36,13 +36,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
 import org.jgroups.Event;
-import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.annotations.Property;
@@ -58,7 +58,6 @@ import org.jgroups.protocols.relay.config.RelayConfig;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
-import org.jgroups.util.SocketFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
@@ -99,15 +98,10 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         final JChannel channel = WildFlySecurityManager.doChecked(action);
         ProtocolStack stack = channel.getProtocolStack();
 
-        // We need to synchronize on shared transport,
-        // so we don't attempt to init a shared transport multiple times
-        TP transport = stack.getTransport();
-        if (transport.isSingleton()) {
-            synchronized (transport) {
-                this.init(transport);
-            }
-        } else {
-            this.init(transport);
+        TransportConfiguration transportConfig = this.configuration.getTransport();
+        SocketBinding binding = transportConfig.getSocketBinding();
+        if (binding != null) {
+            channel.setSocketFactory(new ManagedSocketFactory(binding.getSocketBindings()));
         }
 
         // Relay protocol is added to stack programmatically, not via ProtocolStackConfigurator
@@ -144,8 +138,9 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                     }
                 }
             }
-            Configurator.resolveAndAssignFields(relay, relayConfig.getProperties());
-            Configurator.resolveAndInvokePropertyMethods(relay, relayConfig.getProperties());
+            Map<String, String> relayProperties = new HashMap<>(relayConfig.getProperties());
+            Configurator.resolveAndAssignFields(relay, relayProperties);
+            Configurator.resolveAndInvokePropertyMethods(relay, relayProperties);
             stack.addProtocol(relay);
             relay.init();
         }
@@ -200,17 +195,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         return UNKNOWN_FORK_RESPONSE.equals(buffer);
     }
 
-    private void init(TP transport) {
-        TransportConfiguration transportConfig = this.configuration.getTransport();
-        SocketBinding binding = transportConfig.getSocketBinding();
-        if (binding != null) {
-            SocketFactory factory = transport.getSocketFactory();
-            if (!(factory instanceof ManagedSocketFactory)) {
-                transport.setSocketFactory(new ManagedSocketFactory(factory, binding.getSocketBindings()));
-            }
-        }
-    }
-
     /**
      * {@inheritDoc}
      * @see org.jgroups.conf.ProtocolStackConfigurator#getProtocolStackString()
@@ -230,10 +214,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         TransportConfiguration transport = this.configuration.getTransport();
         org.jgroups.conf.ProtocolConfiguration protocol = createProtocol(this.configuration, transport);
         Map<String, String> properties = protocol.getProperties();
-
-        if (transport.isShared()) {
-            properties.put(Global.SINGLETON_NAME, this.configuration.getName());
-        }
 
         Introspector introspector = new Introspector(protocol);
 

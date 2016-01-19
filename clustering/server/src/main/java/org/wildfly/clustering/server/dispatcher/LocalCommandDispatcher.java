@@ -25,7 +25,7 @@ import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -85,10 +85,11 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     @Override
     public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, C> command, Node... excludedNodes) {
-        if ((excludedNodes != null) && (excludedNodes.length > 0) && Arrays.asList(excludedNodes).contains(this.node)) {
-            return Collections.emptyMap();
+        Map<Node, CommandResponse<R>> results = new HashMap<>();
+        if ((excludedNodes == null) || (excludedNodes.length == 0) || !Arrays.asList(excludedNodes).contains(this.node)) {
+            results.put(this.node, this.executeOnNode(command, this.node));
         }
-        return Collections.singletonMap(this.node, this.executeOnNode(command, this.node));
+        return results;
     }
 
     @Override
@@ -104,7 +105,11 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     @Override
     public <R> Map<Node, Future<R>> submitOnCluster(Command<R, C> command, Node... excludedNodes) {
-        return Collections.singletonMap(this.node, this.submitOnNode(command, this.node));
+        Map<Node, Future<R>> results = new HashMap<>();
+        if ((excludedNodes == null) || (excludedNodes.length == 0) || !Arrays.asList(excludedNodes).contains(this.node)) {
+            results.put(this.node, this.submitOnNode(command, this.node));
+        }
+        return results;
     }
 
     @Override

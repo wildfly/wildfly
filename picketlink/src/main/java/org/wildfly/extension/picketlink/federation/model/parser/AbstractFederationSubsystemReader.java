@@ -86,6 +86,7 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
             case PICKETLINK_FEDERATION_1_0:
                 this.readElement(reader, subsystemNode, addOperations);
                 break;
+            case PICKETLINK_FEDERATION_1_1:
             case PICKETLINK_FEDERATION_2_0:
                 this.readElement(reader, subsystemNode, addOperations);
                 break;

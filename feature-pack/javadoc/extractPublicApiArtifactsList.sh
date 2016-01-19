@@ -100,7 +100,7 @@ echo '</root>'
 ###  Not used;  this uses Xalan instead of xsltproc which might not be available.
 function doXSLT(){
   AS_DIR=`ls -1d build/target/jboss-as-*`
-  CP=$AS_DIR/modules/org/apache/xalan/main/xalan-2.7.1.jbossorg-1.jar
+  CP=$AS_DIR/modules/org/apache/xalan/main/xalan-2.7.1.jbossorg-2.jar
   echo java -cp $CP org.apache.xalan.xslt.Process -IN $1 -XSL $2 -OUT $3
   java -cp $CP org.apache.xalan.xslt.Process -IN $1 -XSL $2 -OUT $3
 }

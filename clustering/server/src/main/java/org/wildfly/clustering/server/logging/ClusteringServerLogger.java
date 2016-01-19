@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.notifications.cachelistener.event.Event;
@@ -54,11 +55,11 @@ public interface ClusteringServerLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "This node will now operate as the singleton provider of the %s service")
-    void electedMaster(String service);
+    void startSingleton(String service);
 
     @LogMessage(level = INFO)
     @Message(id = 2, value = "This node will no longer operate as the singleton provider of the %s service")
-    void electedSlave(String service);
+    void stopSingleton(String service);
 
     @LogMessage(level = INFO)
     @Message(id = 3, value = "%s elected as the singleton provider of the %s service")
@@ -93,4 +94,8 @@ public interface ClusteringServerLogger {
     @LogMessage(level = WARN)
     @Message(id = 11, value = "Failed to notify %s/%s registry listener of %s(%s) event")
     void registryListenerFailed(@Cause Throwable e, String containerName, String cacheName, Event.Type type, Map<?, ?> entries);
+
+    @LogMessage(level = WARN)
+    @Message(id = 12, value = "Failed to notify %s/%s service provider registration listener of new providers: %s")
+    void serviceProviderRegistrationListenerFailed(@Cause Throwable e, String containerName, String cacheName, Set<Node> providers);
 }

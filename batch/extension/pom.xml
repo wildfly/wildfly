@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-batch-parent</artifactId>
-        <version>10.0.0.CR2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-batch</artifactId>
@@ -72,4 +72,17 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- Skip this module when processing translations. This subsystem is deprecated and replaced by batch-jberet -->
+                <groupId>org.zanata</groupId>
+                <artifactId>zanata-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

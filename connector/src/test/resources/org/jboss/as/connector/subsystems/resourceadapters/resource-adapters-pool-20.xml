@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:3.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:4.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -38,6 +38,8 @@
             <max-pool-size>200</max-pool-size>
             <!--Optional:-->
             <prefill>true</prefill>
+            <!--Optional:-->
+            <fair>true</fair>
             <!--Optional:-->
             <use-strict-min>true</use-strict-min>
             <!--Optional:-->

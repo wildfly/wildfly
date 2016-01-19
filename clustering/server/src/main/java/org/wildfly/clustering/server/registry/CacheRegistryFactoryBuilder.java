@@ -74,11 +74,6 @@ public class CacheRegistryFactoryBuilder<K, V> extends RegistryFactoryServiceNam
     }
 
     @Override
-    public String getContainerName() {
-        return this.containerName;
-    }
-
-    @Override
     public Batcher<? extends Batch> getBatcher() {
         return new InfinispanBatcher(this.getCache());
     }

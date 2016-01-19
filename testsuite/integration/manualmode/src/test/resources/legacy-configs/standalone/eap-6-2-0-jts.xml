@@ -3,12 +3,12 @@
 <server xmlns="urn:jboss:domain:1.5">
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
-        <!--<extension module="org.jboss.as.configadmin"/>-->
+        <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <!--<extension module="org.jboss.as.jacorb"/>-->
+        <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.jmx"/>
@@ -17,13 +17,13 @@
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.mail"/>
         <extension module="org.jboss.as.naming"/>
-        <!--<extension module="org.jboss.as.osgi"/>-->
         <extension module="org.jboss.as.pojo"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
-        <!--<extension module="org.jboss.as.web"/>-->
+        <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
     </extensions>
@@ -121,7 +121,7 @@
                 </handlers>
             </root-logger>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>-->
+        <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -204,11 +204,11 @@
                 </local-cache>
             </cache-container>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:jacorb:1.3">
+        <subsystem xmlns="urn:jboss:domain:jacorb:1.3">
             <orb socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
                 <initializers transactions="spec" security="identity"/>
             </orb>
-        </subsystem>-->
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -247,27 +247,6 @@
         <subsystem xmlns="urn:jboss:domain:naming:1.4">
             <remote-naming/>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
-            <properties>
-                <property name="org.osgi.framework.startlevel.beginning">1</property>
-            </properties>
-            <capabilities>
-                <capability name="javax.jws.api"/>
-                <capability name="javax.persistence.api"/>
-                <capability name="javax.servlet.api"/>
-                <capability name="javax.transaction.api"/>
-                <capability name="javax.ws.rs.api"/>
-                <capability name="javax.xml.bind.api"/>
-                <capability name="javax.xml.ws.api"/>
-                <capability name="org.slf4j"/>
-                <capability name="org.apache.felix.log" startlevel="1"/>
-                <capability name="org.jboss.osgi.logging" startlevel="1"/>
-                <capability name="org.apache.felix.configadmin" startlevel="1"/>
-                <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                <capability name="org.jboss.as.osgi.http" startlevel="1"/>
-                <capability name="org.jboss.as.osgi.jpa" startlevel="1"/>
-            </capabilities>
-        </subsystem>-->
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
         <subsystem xmlns="urn:jboss:domain:remoting:1.1">
             <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -298,6 +277,7 @@
                 </security-domain>
             </security-domains>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.4">
             <core-environment>
                 <process-id>
@@ -308,13 +288,13 @@
             <coordinator-environment default-timeout="300"/>
             <jts/>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:web:1.5" default-virtual-server="default-host" native="false">
+        <subsystem xmlns="urn:jboss:domain:web:1.5" default-virtual-server="default-host" native="false">
             <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
             <virtual-server name="default-host" enable-welcome-root="true">
                 <alias name="localhost"/>
                 <alias name="example.com"/>
             </virtual-server>
-        </subsystem>-->
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.2">
             <modify-wsdl-address>true</modify-wsdl-address>
             <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>

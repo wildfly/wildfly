@@ -41,19 +41,17 @@ import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 public class InfinispanSessionTestCase {
     private final String id = "session";
     private final SessionMetaData metaData = mock(SessionMetaData.class);
     private final SessionAttributes attributes = mock(SessionAttributes.class);
-    private final SessionContext context = mock(SessionContext.class);
     private final Remover<String> remover = mock(Remover.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     private final AtomicReference<Object> localContextRef = new AtomicReference<>();
 
-    private final Session<Object> session = new InfinispanSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.context, this.remover);
+    private final Session<Object> session = new InfinispanSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.remover);
 
     @Test
     public void getId() {
@@ -68,11 +66,6 @@ public class InfinispanSessionTestCase {
     @Test
     public void getMetaData() {
         assertSame(this.metaData, this.session.getMetaData());
-    }
-    
-    @Test
-    public void getContext() {
-        assertSame(this.context, this.session.getContext());
     }
     
     @SuppressWarnings("unchecked")

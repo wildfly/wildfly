@@ -50,6 +50,7 @@
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
         <xs:attribute name="default-servlet-container" type="xs:string" default="default"/>
         <xs:attribute name="instance-id" type="xs:string" use="optional"/>
+        <xs:attribute name="default-security-domain" type="xs:string" use="optional" default="other"/>
         <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
           <xs:annotation>
             <xs:documentation>Whether statistics are to be gathered for undertow subsystem.</xs:documentation>
@@ -71,7 +72,7 @@
     <xs:complexType name="socket-options-type">
         <xs:attribute name="receive-buffer" type="xs:int"/>
         <xs:attribute name="send-buffer" type="xs:int"/>
-        <xs:attribute name="tcp-backlog" type="xs:int"/>
+        <xs:attribute name="tcp-backlog" type="xs:int" default="10000"/>
         <xs:attribute name="tcp-keep-alive" type="xs:boolean"/>
         <xs:attribute name="read-timeout" type="xs:long"/>
         <xs:attribute name="write-timeout" type="xs:long"/>
@@ -103,6 +104,7 @@
                 <xs:attribute name="no-request-timeout" type="xs:int"/>
                 <xs:attribute name="request-parse-timeout" type="xs:int"/>
                 <xs:attribute name="disallowed-methods" type="stringList"/>
+                <xs:attribute name="secure" type="xs:boolean" default="false"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -193,6 +195,7 @@
             <xs:element name="websockets" type="websocketsType" maxOccurs="1" minOccurs="0" />
             <xs:element name="mime-mappings" type="mime-mappingsType" maxOccurs="1" minOccurs="0" />
             <xs:element name="welcome-files" type="welcome-filesType" maxOccurs="1" minOccurs="0" />
+            <xs:element name="crawler-session-management" type="crawler-session-managementType" maxOccurs="1" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
@@ -257,6 +260,11 @@
         <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 
+    <xs:complexType name="crawler-session-managementType">
+        <xs:attribute name="user-agents" use="optional" type="xs:string"/>
+        <xs:attribute name="session-timeout" use="optional" type="xs:integer"/>
+    </xs:complexType>
+
     <xs:complexType name="jsp-configurationType">
         <xs:attribute name="disabled" default="false" type="xs:boolean"/>
         <xs:attribute name="development" default="false" type="xs:boolean"/>
@@ -313,7 +321,7 @@
     <xs:complexType name="filterType">
         <xs:sequence>
             <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="request-limit" type="request-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
@@ -500,7 +508,7 @@
         <xs:attribute name="security-domain" use="required" type="xs:string"/>
 
     </xs:complexType>
-    <xs:complexType name="connection-limitType">
+    <xs:complexType name="request-limitType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>
         <xs:attribute name="queue-size" use="optional" type="xs:integer"/>
@@ -534,5 +542,6 @@
         <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
         <xs:attribute name="use-alias" type="xs:string" use="optional" default="false" />
+        <xs:attribute name="enable-http2" type="xs:string" use="optional" default="false" />
     </xs:complexType>
 </xs:schema>

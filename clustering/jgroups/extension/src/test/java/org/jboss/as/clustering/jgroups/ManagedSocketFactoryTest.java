@@ -33,9 +33,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+import org.jboss.as.network.ManagedServerSocketFactory;
+import org.jboss.as.network.ManagedSocketFactory;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.SocketFactory;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -43,44 +45,38 @@ import org.junit.Test;
  */
 public class ManagedSocketFactoryTest {
 
-    private SocketFactory factory = mock(SocketFactory.class);
     private SocketBindingManager manager = mock(SocketBindingManager.class);
-    private SocketBindingManager.UnnamedBindingRegistry registry = mock(SocketBindingManager.UnnamedBindingRegistry.class);
 
-    private ManagedSocketFactory subject = new ManagedSocketFactory(this.factory, this.manager);
+    private SocketFactory subject = new org.jboss.as.clustering.jgroups.ManagedSocketFactory(this.manager);
 
-    @Before
-    public void setUp() {
-        when(this.manager.getUnnamedRegistry()).thenReturn(registry);
+    @After
+    public void destroy() {
+        reset(this.manager);
     }
 
     @Test
     public void createSocket() throws IOException {
 
-        Socket socket1 = new Socket();
-        Socket socket2 = new Socket();
-        Socket socket3 = new Socket();
-        Socket socket4 = new Socket();
-        Socket socket5 = new Socket();
+        ManagedSocketFactory factory = mock(ManagedSocketFactory.class);
+        Socket socket1 = mock(Socket.class);
+        Socket socket2 = mock(Socket.class);
+        Socket socket3 = mock(Socket.class);
+        Socket socket4 = mock(Socket.class);
+        Socket socket5 = mock(Socket.class);
         InetAddress localhost = InetAddress.getLocalHost();
 
-        when(this.factory.createSocket("test")).thenReturn(socket1);
-        when(this.factory.createSocket("test", localhost, 1)).thenReturn(socket2);
-        when(this.factory.createSocket("test", "host", 1)).thenReturn(socket3);
-        when(this.factory.createSocket("test", localhost, 1, localhost, 2)).thenReturn(socket4);
-        when(this.factory.createSocket("test", "host", 1, localhost, 2)).thenReturn(socket5);
+        when(this.manager.getSocketFactory()).thenReturn(factory);
+        when(factory.createSocket("test")).thenReturn(socket1);
+        when(factory.createSocket("test", localhost, 1)).thenReturn(socket2);
+        when(factory.createSocket("test", "host", 1)).thenReturn(socket3);
+        when(factory.createSocket("test", localhost, 1, localhost, 2)).thenReturn(socket4);
+        when(factory.createSocket("test", "host", 1, localhost, 2)).thenReturn(socket5);
 
         Socket result1 = this.subject.createSocket("test");
         Socket result2 = this.subject.createSocket("test", localhost, 1);
         Socket result3 = this.subject.createSocket("test", "host", 1);
         Socket result4 = this.subject.createSocket("test", localhost, 1, localhost, 2);
         Socket result5 = this.subject.createSocket("test", "host", 1, localhost, 2);
-
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket1);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket2);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket3);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket4);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket5);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -92,26 +88,23 @@ public class ManagedSocketFactoryTest {
     @Test
     public void createServerSocket() throws IOException {
 
-        ServerSocket socket1 = new ServerSocket();
-        ServerSocket socket2 = new ServerSocket();
-        ServerSocket socket3 = new ServerSocket();
-        ServerSocket socket4 = new ServerSocket();
+        ManagedServerSocketFactory factory = mock(ManagedServerSocketFactory.class);
+        ServerSocket socket1 = mock(ServerSocket.class);
+        ServerSocket socket2 = mock(ServerSocket.class);
+        ServerSocket socket3 = mock(ServerSocket.class);
+        ServerSocket socket4 = mock(ServerSocket.class);
         InetAddress localhost = InetAddress.getLocalHost();
 
-        when(this.factory.createServerSocket("test")).thenReturn(socket1);
-        when(this.factory.createServerSocket("test", 1)).thenReturn(socket2);
-        when(this.factory.createServerSocket("test", 1, 0)).thenReturn(socket3);
-        when(this.factory.createServerSocket("test", 1, 0, localhost)).thenReturn(socket4);
+        when(this.manager.getServerSocketFactory()).thenReturn(factory);
+        when(factory.createServerSocket("test")).thenReturn(socket1);
+        when(factory.createServerSocket("test", 1)).thenReturn(socket2);
+        when(factory.createServerSocket("test", 1, 0)).thenReturn(socket3);
+        when(factory.createServerSocket("test", 1, 0, localhost)).thenReturn(socket4);
 
         ServerSocket result1 = this.subject.createServerSocket("test");
         ServerSocket result2 = this.subject.createServerSocket("test", 1);
         ServerSocket result3 = this.subject.createServerSocket("test", 1, 0);
         ServerSocket result4 = this.subject.createServerSocket("test", 1, 0, localhost);
-
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket1);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket2);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket3);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket4);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -120,29 +113,24 @@ public class ManagedSocketFactoryTest {
     }
 
     @Test
-    public void createDatagram() throws IOException {
+    public void createDatagramSocket() throws IOException {
 
-        DatagramSocket socket1 = new DatagramSocket();
-        DatagramSocket socket2 = new DatagramSocket();
-        DatagramSocket socket3 = new DatagramSocket();
-        DatagramSocket socket4 = new DatagramSocket();
+        DatagramSocket socket1 = mock(DatagramSocket.class);
+        DatagramSocket socket2 = mock(DatagramSocket.class);
+        DatagramSocket socket3 = mock(DatagramSocket.class);
+        DatagramSocket socket4 = mock(DatagramSocket.class);
         InetAddress localhost = InetAddress.getLocalHost();
-        SocketAddress socketAddress = new InetSocketAddress(localhost, 1);
+        SocketAddress socketAddress = new InetSocketAddress(localhost, 2);
 
-        when(this.factory.createDatagramSocket("test")).thenReturn(socket1);
-        when(this.factory.createDatagramSocket("test", 1)).thenReturn(socket2);
-        when(this.factory.createDatagramSocket("test", socketAddress)).thenReturn(socket3);
-        when(this.factory.createDatagramSocket("test", 1, localhost)).thenReturn(socket4);
+        when(this.manager.createDatagramSocket("test", new InetSocketAddress(0))).thenReturn(socket1);
+        when(this.manager.createDatagramSocket("test", new InetSocketAddress(1))).thenReturn(socket2);
+        when(this.manager.createDatagramSocket("test", socketAddress)).thenReturn(socket3);
+        when(this.manager.createDatagramSocket("test", new InetSocketAddress(localhost, 1))).thenReturn(socket4);
 
         DatagramSocket result1 = this.subject.createDatagramSocket("test");
         DatagramSocket result2 = this.subject.createDatagramSocket("test", 1);
         DatagramSocket result3 = this.subject.createDatagramSocket("test", socketAddress);
         DatagramSocket result4 = this.subject.createDatagramSocket("test", 1, localhost);
-
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket1);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket2);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket3);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket4);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -153,22 +141,18 @@ public class ManagedSocketFactoryTest {
     @Test
     public void createMulticastSocket() throws IOException {
 
-        MulticastSocket socket1 = new MulticastSocket();
-        MulticastSocket socket2 = new MulticastSocket();
-        MulticastSocket socket3 = new MulticastSocket();
+        MulticastSocket socket1 = mock(MulticastSocket.class);
+        MulticastSocket socket2 = mock(MulticastSocket.class);
+        MulticastSocket socket3 = mock(MulticastSocket.class);
         SocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), 1);
 
-        when(this.factory.createMulticastSocket("test")).thenReturn(socket1);
-        when(this.factory.createMulticastSocket("test", 1)).thenReturn(socket2);
-        when(this.factory.createMulticastSocket("test", address)).thenReturn(socket3);
+        when(this.manager.createMulticastSocket("test", new InetSocketAddress(0))).thenReturn(socket1);
+        when(this.manager.createMulticastSocket("test", new InetSocketAddress(1))).thenReturn(socket2);
+        when(this.manager.createMulticastSocket("test", address)).thenReturn(socket3);
 
         MulticastSocket result1 = this.subject.createMulticastSocket("test");
         MulticastSocket result2 = this.subject.createMulticastSocket("test", 1);
         MulticastSocket result3 = this.subject.createMulticastSocket("test", address);
-
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket1);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket2);
-        verify(this.manager.getUnnamedRegistry()).registerSocket(socket3);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
@@ -178,44 +162,40 @@ public class ManagedSocketFactoryTest {
     @Test
     public void closeSocket() throws IOException {
 
-        Socket socket = new Socket();
+        Socket socket = mock(Socket.class);
 
         this.subject.close(socket);
 
-        verify(this.factory).close(socket);
-        verify(this.manager.getUnnamedRegistry()).unregisterSocket(socket);
+        verify(socket).close();
     }
 
     @Test
     public void closeServerSocket() throws IOException {
 
-        ServerSocket socket = new ServerSocket();
+        ServerSocket socket = mock(ServerSocket.class);
 
         this.subject.close(socket);
 
-        verify(this.factory).close(socket);
-        verify(this.manager.getUnnamedRegistry()).unregisterSocket(socket);
+        verify(socket).close();
     }
 
     @Test
-    public void closeDatagramSocket() throws IOException {
+    public void closeDatagramSocket() {
 
-        DatagramSocket socket = new DatagramSocket();
+        DatagramSocket socket = mock(DatagramSocket.class);
 
         this.subject.close(socket);
 
-        verify(this.factory).close(socket);
-        verify(this.manager.getUnnamedRegistry()).unregisterSocket(socket);
+        verify(socket).close();
     }
 
     @Test
-    public void closeMulticastSocket() throws IOException {
+    public void closeMulticastSocket() {
 
-        MulticastSocket socket = new MulticastSocket();
+        MulticastSocket socket = mock(MulticastSocket.class);
 
         this.subject.close(socket);
 
-        verify(this.factory).close(socket);
-        verify(this.manager.getUnnamedRegistry()).unregisterSocket(socket);
+        verify(socket).close();
     }
 }

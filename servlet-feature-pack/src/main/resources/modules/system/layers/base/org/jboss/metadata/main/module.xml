@@ -23,6 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.3" name="org.jboss.metadata">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <dependencies>
         <module name="org.jboss.metadata.appclient" optional="true" export="true"/>
         <module name="org.jboss.metadata.common" optional="true" export="true"/>

@@ -25,6 +25,7 @@ package org.jboss.as.jpa.processor;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.messages.JpaLogger;
@@ -258,7 +259,29 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             pu.setJarFileUrls(jarfilesUrls);
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
-            pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
+            String scopedPersistenceUnitName;
+
+            /**
+             * WFLY-5478 allow custom scoped persistence unit name hint in persistence unit definition.
+             * Specified scoped persistence unit name needs to be unique across application server deployments.
+             * Application is responsible for picking a unique name.
+             * Currently, a non-unique name will result in a DuplicateServiceException deployment failure:
+             *   org.jboss.msc.service.DuplicateServiceException: Service jboss.persistenceunit.my2lccustom#test_pu.__FIRST_PHASE__ is already registered
+             */
+            scopedPersistenceUnitName = Configuration.getScopedPersistenceUnitName(pu);
+            if (scopedPersistenceUnitName == null) {
+                scopedPersistenceUnitName = createBeanName(deploymentUnit, pu.getPersistenceUnitName());
+            } else {
+                ROOT_LOGGER.tracef("persistence unit '%s' specified a custom scoped persistence unit name hint " +
+                        "(jboss.as.jpa.scopedname=%s).  The specified name *must* be unique across all application server deployments.",
+                        pu.getPersistenceUnitName(),
+                        scopedPersistenceUnitName);
+                if (scopedPersistenceUnitName.indexOf('/') != -1) {
+                    throw JpaLogger.ROOT_LOGGER.invalidScopedName(scopedPersistenceUnitName, '/');
+                }
+            }
+
+            pu.setScopedPersistenceUnitName(scopedPersistenceUnitName);
         }
     }
 

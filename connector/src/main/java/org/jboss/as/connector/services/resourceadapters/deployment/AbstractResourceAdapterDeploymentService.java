@@ -175,7 +175,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             try {
                                 recovery.shutdown();
                             } catch (Exception e) {
-                                DEPLOYMENT_CONNECTOR_LOGGER.error("Error during recovery shutdown", e);
+                                DEPLOYMENT_CONNECTOR_LOGGER.errorDuringRecoveryShutdown(e);
                             } finally {
                                 rr.removeXAResourceRecovery(recovery);
                             }
@@ -196,7 +196,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(value.getDeployment().getResourceAdapter().getClass().getClassLoader());
                     value.getDeployment().getResourceAdapter().stop();
                 } catch (Throwable nfe) {
-                    DEPLOYMENT_CONNECTOR_LOGGER.warn("Exception during stopping resource adapter", nfe);
+                    DEPLOYMENT_CONNECTOR_LOGGER.errorStoppingRA(nfe);
                 } finally {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }

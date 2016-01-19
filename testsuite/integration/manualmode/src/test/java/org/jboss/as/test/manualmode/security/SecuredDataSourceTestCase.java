@@ -65,11 +65,13 @@ public class SecuredDataSourceTestCase extends AbstractCliTestBase {
     private static final String TEST_NAME = SecuredDataSourceTestCase.class.getSimpleName();
 
     private static final String BATCH_CLI_FILENAME = TEST_NAME + ".cli";
-    private static final String REMOVE_BATCH_CLI_FILENAME = TEST_NAME + "-remove.cli";
+    private static final String REMOVE_BATCH_CLI_FILENAME1 = TEST_NAME + "-remove.cli";
+    private static final String REMOVE_BATCH_CLI_FILENAME2 = TEST_NAME + "-remove2.cli";
 
     private static final File WORK_DIR = new File("secured-ds-" + System.currentTimeMillis());
     private static final File BATCH_CLI_FILE = new File(WORK_DIR, BATCH_CLI_FILENAME);
-    private static final File REMOVE_BATCH_CLI_FILE = new File(WORK_DIR, REMOVE_BATCH_CLI_FILENAME);
+    private static final File REMOVE_BATCH_CLI_FILE1 = new File(WORK_DIR, REMOVE_BATCH_CLI_FILENAME1);
+    private static final File REMOVE_BATCH_CLI_FILE2 = new File(WORK_DIR, REMOVE_BATCH_CLI_FILENAME2);
 
     @ArquillianResource
     private static ContainerController container;
@@ -106,7 +108,8 @@ public class SecuredDataSourceTestCase extends AbstractCliTestBase {
         WORK_DIR.mkdirs();
 
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(BATCH_CLI_FILENAME), BATCH_CLI_FILE);
-        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(REMOVE_BATCH_CLI_FILENAME), REMOVE_BATCH_CLI_FILE);
+        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(REMOVE_BATCH_CLI_FILENAME1), REMOVE_BATCH_CLI_FILE1);
+        FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(REMOVE_BATCH_CLI_FILENAME2), REMOVE_BATCH_CLI_FILE2);
 
         initCLI();
         final boolean batchResult = runBatch(BATCH_CLI_FILE);
@@ -136,7 +139,11 @@ public class SecuredDataSourceTestCase extends AbstractCliTestBase {
         deployer.undeploy(DEPLOYMENT);
 
         initCLI();
-        final boolean batchResult = runBatch(REMOVE_BATCH_CLI_FILE);
+        boolean batchResult = runBatch(REMOVE_BATCH_CLI_FILE1);
+        //server reload
+        container.stop(CONTAINER);
+        container.start(CONTAINER);
+        batchResult = batchResult && runBatch(REMOVE_BATCH_CLI_FILE2);
         closeCLI();
         container.stop(CONTAINER);
 

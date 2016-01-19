@@ -61,10 +61,10 @@ import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
  */
 public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration> {
 
-    DEFAULT("default", "thread_pool", 20, 300, 100, 60L),
-    OOB("oob", "oob_thread_pool", 20, 300, 0, 60L),
-    INTERNAL("internal", "internal_thread_pool", 2, 4, 100, 60L),
-    TIMER("timer", "timer", 2, 4, 500, 5L),
+    DEFAULT("default", "thread_pool", 20, 300, 100, 60000L),
+    OOB("oob", "oob_thread_pool", 20, 300, 0, 60000L),
+    INTERNAL("internal", "internal_thread_pool", 2, 4, 100, 60000L),
+    TIMER("timer", "timer", 2, 4, 500, 5000L),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);

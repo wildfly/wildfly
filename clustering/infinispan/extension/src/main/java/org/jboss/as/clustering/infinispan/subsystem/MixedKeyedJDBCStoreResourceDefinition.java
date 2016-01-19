@@ -24,12 +24,17 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -38,16 +43,20 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Resource description for the addressable resource
+ * Resource description for the addressable resource and its alias
  *
- * /subsystem=infinispan/cache-container=X/cache=Y/store=mixed
+ * /subsystem=infinispan/cache-container=X/cache=Y/store=mixed-jdbc
+ * /subsystem=infinispan/cache-container=X/cache=Y/mixed-keyed-jdbc-store=MIXED_KEYED_JDBC_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
@@ -77,10 +86,45 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
-
         BinaryTableResourceDefinition.buildTransformation(version, builder);
         StringTableResourceDefinition.buildTransformation(version, builder);
+
+        JDBCStoreResourceDefinition.buildTransformation(version, builder);
+
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    final ModelNode model = resource.getModel();
+
+                    final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
+                    if (binaryTableModel != null && binaryTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.BINARY_TABLE.getDefinition().getName()).set(binaryTableModel);
+                    }
+
+                    final ModelNode stringTableModel = Resource.Tools.readModel(resource.removeChild(StringTableResourceDefinition.PATH));
+                    if (stringTableModel != null && stringTableModel.isDefined()) {
+                        model.get(DeprecatedAttribute.STRING_TABLE.getDefinition().getName()).set(stringTableModel);
+                    }
+
+                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+
+                    LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
+
+                    context.processChildren(resource);
+                }
+            });
+        }
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
+            }
+        }
     }
 
     MixedKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
@@ -98,22 +142,19 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new MixedKeyedJDBCStoreBuilderFactory());
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 translateAddOperation(context, operation);
-                super.populateModel(context, operation, resource);
-            }
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                super.execute(context, operation);
                 // Translate deprecated BINARY_TABLE attribute into separate add table operation
                 this.addTableStep(context, operation, DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH, new BinaryTableBuilderFactory());
                 // Translate deprecated STRING_TABLE attribute into separate add table operation
                 this.addTableStep(context, operation, DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH, new StringTableBuilderFactory());
+                super.populateModel(context, operation, resource);
             }
 
             private void addTableStep(OperationContext context, ModelNode operation, DeprecatedAttribute attribute, PathElement path, ResourceServiceBuilderFactory<TableManipulationConfiguration> provider) {

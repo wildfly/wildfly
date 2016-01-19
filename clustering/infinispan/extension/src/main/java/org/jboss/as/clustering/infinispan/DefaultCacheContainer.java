@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -84,6 +86,11 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     @Override
+    public void undefineConfiguration(String cacheName) {
+        this.cm.undefineConfiguration(this.getCacheName(cacheName));
+    }
+
+    @Override
     public Configuration getDefaultCacheConfiguration() {
         return this.cm.getCacheConfiguration(this.defaultCacheName);
     }
@@ -102,23 +109,27 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this.getCache(this.defaultCacheName);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.CacheContainer#getCache(java.lang.String)
-     */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        return this.getCache(cacheName, true);
+        return this.getCache(cacheName, cacheName);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#getCache(java.lang.String, boolean)
-     */
+    @Override
+    public <K, V> Cache<K, V> getCache(String cacheName, String configurationName) {
+        PrivilegedAction<Cache<K, V>> action = () -> this.cm.<K, V>getCache(this.getCacheName(cacheName), this.getCacheName(configurationName));
+        Cache<K, V> cache = (System.getSecurityManager() == null) ? action.run() : AccessController.doPrivileged(action);
+        return (cache != null) ? new DefaultCache<>(this, this.batcherFactory, cache.getAdvancedCache()) : null;
+    }
+
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
-        Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), createIfAbsent);
-        return (cache != null) ? new DefaultCache<>(this, this.batcherFactory, cache.getAdvancedCache()) : null;
+        return this.getCache(cacheName, cacheName, createIfAbsent);
+    }
+
+    @Override
+    public <K, V> Cache<K, V> getCache(String cacheName, String configurationTemplate, boolean createIfAbsent) {
+        boolean cacheExists = this.cacheExists(cacheName);
+        return (cacheExists || createIfAbsent) ? this.getCache(cacheName, configurationTemplate) : null;
     }
 
     /**

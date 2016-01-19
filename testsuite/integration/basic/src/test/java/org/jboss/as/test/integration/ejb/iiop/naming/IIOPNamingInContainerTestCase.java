@@ -36,7 +36,8 @@ public class IIOPNamingInContainerTestCase {
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(IIOPNamingInContainerTestCase.class.getPackage())
-                .addAsManifestResource(IIOPNamingInContainerTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+                .addAsManifestResource(IIOPNamingInContainerTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(IIOPNamingInContainerTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
     }
 
     @Test

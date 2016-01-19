@@ -1011,7 +1011,13 @@ public class Utils extends CoreUtils {
      * @return Configuration
      */
     public static Configuration getLoginConfiguration() {
-        return Configuration.getConfiguration();
+        Configuration configuration = null;
+        try {
+            configuration = Configuration.getConfiguration();
+        } catch (SecurityException e) {
+            LOGGER.debug("Unable to load default login configuration", e);
+        }
+        return configuration;
     }
 
     /**

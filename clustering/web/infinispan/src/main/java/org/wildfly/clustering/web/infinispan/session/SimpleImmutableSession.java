@@ -24,7 +24,6 @@ package org.wildfly.clustering.web.infinispan.session;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionContext;
 
 /**
  * An immutable "snapshot" of a session which can be accessed outside the scope of a transaction.
@@ -36,14 +35,12 @@ public class SimpleImmutableSession implements ImmutableSession {
     private final boolean valid;
     private final ImmutableSessionMetaData metaData;
     private final ImmutableSessionAttributes attributes;
-    private final SessionContext context;
 
     public SimpleImmutableSession(ImmutableSession session) {
         this.id = session.getId();
         this.valid = session.isValid();
         this.metaData = new SimpleImmutableSessionMetaData(session.getMetaData());
         this.attributes = new SimpleImmutableSessionAttributes(session.getAttributes());
-        this.context = session.getContext();
     }
 
     @Override
@@ -64,10 +61,5 @@ public class SimpleImmutableSession implements ImmutableSession {
     @Override
     public ImmutableSessionAttributes getAttributes() {
         return this.attributes;
-    }
-
-    @Override
-    public SessionContext getContext() {
-        return this.context;
     }
 }

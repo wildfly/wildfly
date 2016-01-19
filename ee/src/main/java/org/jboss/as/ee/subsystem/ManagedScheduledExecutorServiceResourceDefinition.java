@@ -36,6 +36,8 @@ import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -90,9 +92,9 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .build();
 
     public static final SimpleAttributeDefinition CORE_THREADS_AD =
-            new SimpleAttributeDefinitionBuilder(CORE_THREADS, ModelType.INT, false)
+            new SimpleAttributeDefinitionBuilder(CORE_THREADS, ModelType.INT, true)
                     .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))
+                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
@@ -128,5 +130,13 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
+    }
+
+    void registerTransformers_4_0(final ResourceTransformationDescriptionBuilder builder) {
+        final PathElement pathElement = getPathElement();
+        final ResourceTransformationDescriptionBuilder resourceBuilder = builder.addChildResource(pathElement);
+        resourceBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CORE_THREADS_AD)
+                .end();
     }
 }

@@ -58,6 +58,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MIN_FILES;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_POOL_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_NON_TRANSACTIONAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_TRANSACTIONAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_TYPE;
@@ -277,10 +278,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         final String key = "broadcast" + name;
                         ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
 
-                        if (broadcastGroupModel.hasDefined(JGROUPS_STACK.getName())) {
-                            String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel).asString();
+                        if (broadcastGroupModel.hasDefined(JGROUPS_CHANNEL.getName())) {
+                            ModelNode channelFactory = JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel);
+                            ServiceName channelFactoryServiceName = channelFactory.isDefined() ? ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channelFactory.asString()) : ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName();
                             String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
-                            serviceBuilder.addDependency(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(jgroupsStack), ChannelFactory.class, serverService.getJGroupsInjector(key));
+                            serviceBuilder.addDependency(channelFactoryServiceName, ChannelFactory.class, serverService.getJGroupsInjector(key));
                             serverService.getJGroupsChannels().put(key, channelName);
                         } else {
                             final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
@@ -293,10 +295,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         final String name = config.getName();
                         final String key = "discovery" + name;
                         ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
-                        if (discoveryGroupModel.hasDefined(JGROUPS_STACK.getName())) {
-                            String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel).asString();
+                        if (discoveryGroupModel.hasDefined(JGROUPS_CHANNEL.getName())) {
+                            ModelNode channelFactory = JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel);
+                            ServiceName channelFactoryServiceName = channelFactory.isDefined() ? ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channelFactory.asString()) : ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName();
                             String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
-                            serviceBuilder.addDependency(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(jgroupsStack), ChannelFactory.class, serverService.getJGroupsInjector(key));
+                            serviceBuilder.addDependency(channelFactoryServiceName, ChannelFactory.class, serverService.getJGroupsInjector(key));
                             serverService.getJGroupsChannels().put(key, channelName);
                         } else {
                             final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
@@ -362,6 +365,7 @@ class ServerAdd extends AbstractAddStepHandler {
         configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
         configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());
         configuration.setJournalMinFiles(JOURNAL_MIN_FILES.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalPoolFiles(JOURNAL_POOL_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
         configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
         configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.resolveModelAttribute(context, model).asBoolean());
@@ -480,7 +484,7 @@ class ServerAdd extends AbstractAddStepHandler {
         for (Class clazz : unwrapClasses(interceptors)) {
             try {
                 Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
-                serverService.getIncomingInterceptors().add(interceptor);
+                serverService.getOutgoingInterceptors().add(interceptor);
             } catch (Exception e) {
                 throw new OperationFailedException(e);
             }

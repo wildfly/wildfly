@@ -36,7 +36,7 @@
                 <prefill>${test.expr:true}</prefill>
                 <use-strict-min>${test.expr:true}</use-strict-min>
                 <flush-strategy>${test.expr:EntirePool}</flush-strategy>
-                <allow-multiple-users>true</allow-multiple-users>
+                <allow-multiple-users>${test.expr:true}</allow-multiple-users>
             </pool>
             <security>
                 <user-name>
@@ -139,7 +139,7 @@
                 <flush-strategy>
                     ${test.expr:EntirePool}
                 </flush-strategy>
-                <allow-multiple-users>true</allow-multiple-users>
+                <allow-multiple-users>${test.expr:true}</allow-multiple-users>
                 <is-same-rm-override>
                     ${test.expr:true}
                 </is-same-rm-override>
@@ -232,11 +232,11 @@
         </xa-datasource>
         <drivers>
             <driver major-version="${test.expr:3}" minor-version="${test.expr:3}" module="com.h2database.h2" name="h2">
-                <driver-class>token</driver-class>
+                <driver-class>${test.expr:token}</driver-class>
                 <xa-datasource-class>
-                    org.h2.jdbcx.JdbcDataSource
+                    ${test.expr:org.h2.jdbcx.JdbcDataSource}
                 </xa-datasource-class>
-                <datasource-class>token</datasource-class>
+                <datasource-class>${test.expr:token}</datasource-class>
             </driver>
         </drivers>
     </datasources>

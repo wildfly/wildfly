@@ -108,30 +108,34 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         } else if (authMechs.contains(AuthMechanism.PLAIN)) {
             chosenMech = AuthMechanism.PLAIN;
         } else {
-            throw SecurityLogger.ROOT_LOGGER.noPasswordValidationAvailable(realm);
+            chosenMech = authMechs.iterator().next();
         }
 
-        Map<String, String> mechOpts = securityRealm.getMechanismConfig(chosenMech);
+        if (chosenMech == AuthMechanism.DIGEST || chosenMech == AuthMechanism.PLAIN) {
+            Map<String, String> mechOpts = securityRealm.getMechanismConfig(chosenMech);
 
-        if (mechOpts.containsKey(VERIFY_PASSWORD_CALLBACK_SUPPORTED) && Boolean.parseBoolean(mechOpts.get(VERIFY_PASSWORD_CALLBACK_SUPPORTED))) {
-            // We give this mode priority as even if digest is supported the realm supplied
-            // callback handler can handle the conversion comparison itself.
-            validationMode = ValidationMode.VALIDATION;
-        } else {
-            if (chosenMech == AuthMechanism.DIGEST) {
-                if (mechOpts.containsKey(DIGEST_PLAIN_TEXT) && Boolean.parseBoolean(mechOpts.get(DIGEST_PLAIN_TEXT))) {
-                    validationMode = ValidationMode.PASSWORD;
-                } else {
-                    validationMode = ValidationMode.DIGEST;
-                    try {
-                        hashUtil = new UsernamePasswordHashUtil();
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
+            if (mechOpts.containsKey(VERIFY_PASSWORD_CALLBACK_SUPPORTED) && Boolean.parseBoolean(mechOpts.get(VERIFY_PASSWORD_CALLBACK_SUPPORTED))) {
+                // We give this mode priority as even if digest is supported the realm supplied
+                // callback handler can handle the conversion comparison itself.
+                validationMode = ValidationMode.VALIDATION;
             } else {
-                validationMode = ValidationMode.PASSWORD;
+                if (chosenMech == AuthMechanism.DIGEST) {
+                    if (mechOpts.containsKey(DIGEST_PLAIN_TEXT) && Boolean.parseBoolean(mechOpts.get(DIGEST_PLAIN_TEXT))) {
+                        validationMode = ValidationMode.PASSWORD;
+                    } else {
+                        validationMode = ValidationMode.DIGEST;
+                        try {
+                            hashUtil = new UsernamePasswordHashUtil();
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                } else {
+                    validationMode = ValidationMode.PASSWORD;
+                }
             }
+        } else {
+            validationMode = ValidationMode.NONE;
         }
     }
 
@@ -228,7 +232,6 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
                     return false;
                 }
             default:
-                // Should not be reachable.
                 return false;
         }
     }
@@ -296,7 +299,12 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
          * The realm being delegated to will be passed a ValidatePasswordCallback to allow the realm to validate the password
          * directly.
          */
-        VALIDATION
+        VALIDATION,
+
+        /**
+         * Password validation is not possible, however the realm will still be used for group loading.
+         */
+        NONE
     }
 
     ;

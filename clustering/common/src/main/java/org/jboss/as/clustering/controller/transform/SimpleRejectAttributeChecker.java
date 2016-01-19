@@ -56,7 +56,7 @@ public class SimpleRejectAttributeChecker implements RejectAttributeChecker {
 
     @Override
     public boolean rejectResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
-        return this.rejecter.reject(address, name, value, context.readResourceFromRoot(address).getModel(), context);
+        return this.rejecter.reject(address, name, value, context.readResource(PathAddress.EMPTY_ADDRESS).getModel(), context);
     }
 
     @Override

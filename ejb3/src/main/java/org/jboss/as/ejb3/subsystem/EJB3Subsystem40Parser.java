@@ -89,6 +89,9 @@ public class EJB3Subsystem40Parser extends EJB3Subsystem30Parser {
                 case THREAD_POOL_NAME:
                     EJB3RemoteResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value, operation, reader);
                     break;
+                case EXECUTE_IN_WORKER:
+                    EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.parseAndSetParameter(value, operation, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
