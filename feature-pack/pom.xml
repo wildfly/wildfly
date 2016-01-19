@@ -307,6 +307,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.redhat.gss</groupId>
+            <artifactId>redhat-support-lib-java</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.sun.xml.bind.external</groupId>
             <artifactId>rngom</artifactId>
         </dependency>
@@ -344,6 +349,11 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
         </dependency>
 
         <dependency>
@@ -774,6 +784,8 @@
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-ext-api</artifactId>
         </dependency>
+
+        
 
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -2569,6 +2581,17 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-iiop-openjdk</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-insights</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
