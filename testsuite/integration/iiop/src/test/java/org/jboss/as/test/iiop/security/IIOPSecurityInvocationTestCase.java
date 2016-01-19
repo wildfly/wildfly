@@ -29,9 +29,11 @@ import java.util.Properties;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.auth.AuthPermission;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -86,7 +88,10 @@ public class IIOPSecurityInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
         jar.addClasses(ClientEjb.class, IIOPSecurityStatelessHome.class, IIOPSecurityStatelessRemote.class, IIOPSecurityInvocationTestCase.class, Util.class)
                 .addAsManifestResource(IIOPSecurityInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml");
+                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
+                // the following permission is needed because of usage of LoginContext in the test
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new AuthPermission("modifyPrincipals")), "permissions.xml");
+
         return jar;
     }
 

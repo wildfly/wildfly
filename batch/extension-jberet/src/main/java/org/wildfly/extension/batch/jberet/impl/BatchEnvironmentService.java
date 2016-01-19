@@ -22,7 +22,18 @@
 
 package org.wildfly.extension.batch.jberet.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import javax.batch.operations.JobOperator;
+import javax.batch.runtime.BatchRuntime;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
@@ -32,11 +43,16 @@ import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 import org.wildfly.extension.batch.jberet.impl.ContextHandle.ChainedContextHandle;
 import org.wildfly.extension.batch.jberet.impl.ContextHandle.Handle;
@@ -52,28 +68,41 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     // This can be removed after the getBatchConfigurationProperties() is removed from jBeret
     private static final Properties PROPS = new Properties();
+    private static final Properties RESTART_PROPS = new Properties();
 
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<JobExecutor> jobExecutorInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
     private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
+    private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
+    private final InjectedValue<BatchConfiguration> batchConfigurationInjector = new InjectedValue<>();
 
     private final ClassLoader classLoader;
     private final JobXmlResolver jobXmlResolver;
     private final String deploymentName;
+    private final BatchJobServerActivity serverActivity;
+    private final Boolean restartJobsOnResume;
     private BatchEnvironment batchEnvironment = null;
     private ControlPoint controlPoint;
 
     public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName) {
+        this(classLoader, jobXmlResolver, deploymentName, null);
+    }
+
+    public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName, final Boolean restartJobsOnResume) {
         this.classLoader = classLoader;
         this.jobXmlResolver = jobXmlResolver;
         this.deploymentName = deploymentName;
+        this.serverActivity = new BatchJobServerActivity();
+        this.restartJobsOnResume = restartJobsOnResume;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         BatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
+        suspendControllerInjector.getValue().registerActivity(serverActivity);
         final RequestController requestController = requestControllerInjector.getOptionalValue();
         if (requestController != null) {
             // Create the entry point
@@ -81,9 +110,21 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         } else {
             controlPoint = null;
         }
+        final BatchConfiguration batchConfiguration = batchConfigurationInjector.getValue();
+        // Find the job executor to use
+        JobExecutor jobExecutor = jobExecutorInjector.getOptionalValue();
+        if (jobExecutor == null) {
+            jobExecutor = batchConfiguration.getDefaultJobExecutor();
+        }
+        // Find the job repository to use
+        JobRepository jobRepository = jobRepositoryInjector.getOptionalValue();
+        if (jobRepository == null) {
+            jobRepository = batchConfiguration.getDefaultJobRepository();
+        }
+
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
-                jobExecutorInjector.getValue(), transactionManagerInjector.getValue(),
-                jobRepositoryInjector.getValue(), jobXmlResolver, controlPoint);
+                jobExecutor, transactionManagerInjector.getValue(),
+                jobRepository, jobXmlResolver, controlPoint);
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -92,10 +133,27 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     @Override
     public synchronized void stop(final StopContext context) {
         BatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
-        BatchEnvironmentFactory.getInstance().remove(classLoader);
-        batchEnvironment = null;
-        if (controlPoint != null) {
-            requestControllerInjector.getValue().removeControlPoint(controlPoint);
+        // Remove the server activity
+        suspendControllerInjector.getValue().unRegisterActivity(serverActivity);
+        final ExecutorService service = executorInjector.getValue();
+
+        final Runnable task = () -> {
+            // Should already be stopped, but just to be safe we'll make one more attempt
+            serverActivity.stopRunningJobs(false);
+            // Remove this instance from the factory
+            BatchEnvironmentFactory.getInstance().remove(classLoader);
+            batchEnvironment = null;
+            if (controlPoint != null) {
+                requestControllerInjector.getValue().removeControlPoint(controlPoint);
+            }
+            context.complete();
+        };
+        try {
+            service.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
         }
     }
 
@@ -122,6 +180,18 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     public InjectedValue<JobRepository> getJobRepositoryInjector() {
         return jobRepositoryInjector;
+    }
+
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executorInjector;
+    }
+
+    public InjectedValue<SuspendController> getSuspendControllerInjector() {
+        return suspendControllerInjector;
+    }
+
+    public InjectedValue<BatchConfiguration> getBatchConfigurationInjector() {
+        return batchConfigurationInjector;
     }
 
     private class WildFlyBatchEnvironment implements BatchEnvironment {
@@ -210,6 +280,113 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
             return new ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(), new SecurityContextHandle());
+        }
+    }
+
+    private class BatchJobServerActivity implements ServerActivity {
+        private final AtomicBoolean jobsStopped = new AtomicBoolean(false);
+        private final AtomicBoolean jobsRestarted = new AtomicBoolean(false);
+        private final Collection<Long> stoppedIds = Collections.synchronizedCollection(new ArrayList<>());
+
+        @Override
+        public void preSuspend(final ServerActivityCallback serverActivityCallback) {
+            serverActivityCallback.done();
+        }
+
+        @Override
+        public void suspended(final ServerActivityCallback serverActivityCallback) {
+            try {
+                stopRunningJobs(isRestartOnResume());
+            } finally {
+                serverActivityCallback.done();
+            }
+        }
+
+        @Override
+        public void resume() {
+            restartStoppedJobs();
+        }
+
+        private void stopRunningJobs(final boolean queueForRestart) {
+            if (jobsStopped.compareAndSet(false, true)) {
+                final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                try {
+                    // Use the deployment's class loader to stop jobs
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                    final JobOperator jobOperator = BatchRuntime.getJobOperator();
+                    final Collection<String> jobNames = getJobNames(jobOperator);
+                    // Look for running jobs and attempt to stop each one
+                    for (String jobName : jobNames) {
+                        final List<Long> runningJobs = jobOperator.getRunningExecutions(jobName);
+                        for (Long id : runningJobs) {
+                            try {
+                                BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
+                                jobOperator.stop(id);
+                                // Queue for a restart on resume if required
+                                if (queueForRestart) {
+                                    stoppedIds.add(id);
+                                }
+                            } catch (Exception e) {
+                                BatchLogger.LOGGER.stoppingJobFailed(e, id, jobName, deploymentName);
+                            }
+                        }
+                    }
+                } finally {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+                    // Reset the stopped state
+                    jobsStopped.set(false);
+                }
+            }
+        }
+
+        private void restartStoppedJobs() {
+            if (isRestartOnResume() && jobsRestarted.compareAndSet(false, true)) {
+                final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                try {
+                    // Use the deployment's class loader to stop jobs
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                    final Collection<Long> ids = new ArrayList<>();
+                    synchronized (stoppedIds) {
+                        ids.addAll(stoppedIds);
+                        stoppedIds.clear();
+                    }
+                    final JobOperator jobOperator = BatchRuntime.getJobOperator();
+                    for (Long id : ids) {
+                        String jobName = null;
+                        try {
+                            jobName = jobOperator.getJobInstance(id).getJobName();
+                        } catch (Exception ignore) {
+                        }
+                        try {
+                            final long newId = jobOperator.restart(id, RESTART_PROPS);
+                            BatchLogger.LOGGER.restartingJob(jobName, id, newId);
+                        } catch (Exception e) {
+                            BatchLogger.LOGGER.failedRestartingJob(e, id, jobName, deploymentName);
+                        }
+                    }
+                } finally {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+                    // Reset the restart state
+                    jobsRestarted.set(false);
+                }
+            }
+        }
+
+        private Collection<String> getJobNames(final JobOperator jobOperator) {
+            final Set<String> knownJobNames = jobOperator.getJobNames();
+            return jobXmlResolver.getJobXmlNames(classLoader).stream()
+                    // Get the job name from the XML file
+                    .map(xmlName -> jobXmlResolver.resolveJobName(xmlName, classLoader))
+                    // Remove job names that aren't currently known to the batch runtime
+                    .filter(knownJobNames::contains)
+                    .collect(Collectors.toSet());
+        }
+
+        private boolean isRestartOnResume() {
+            if (restartJobsOnResume == null) {
+                return batchConfigurationInjector.getValue().isRestartOnResume();
+            }
+            return restartJobsOnResume;
         }
     }
 }

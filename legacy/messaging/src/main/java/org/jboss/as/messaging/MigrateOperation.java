@@ -102,6 +102,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -428,7 +429,11 @@ public class MigrateOperation implements OperationStepHandler {
                                 if (name.equals("http-upgrade-endpoint") && address.getParent().getLastElement().getKey().equals("http-connector")) {
                                     parentAddOp.get("endpoint").set(value);
                                 } else {
-                                    parentAddOp.get("params").add(new Property(name, value));
+                                    if (parameterIsAllowed(name, resourceType)) {
+                                        parentAddOp.get("params").add(new Property(name, value));
+                                    } else {
+                                        warnings.add(ROOT_LOGGER.couldNotMigrateUnsupportedAttribute(name, address.getParent()));
+                                    }
                                 }
                                 continue;
                             }
@@ -438,6 +443,28 @@ public class MigrateOperation implements OperationStepHandler {
             }
 
             newAddOperations.put(address, newAddOp);
+        }
+    }
+
+    /**
+     * Check if the name of the parameter is allowed for the given resourceType.
+     */
+    private boolean parameterIsAllowed(String name, String resourceType) {
+        switch (resourceType) {
+            case REMOTE_ACCEPTOR:
+            case HTTP_ACCEPTOR:
+            case REMOTE_CONNECTOR:
+            case HTTP_CONNECTOR:
+                // WFLY-5667 - for now remove only use-nio. Revisit this code when Artemis offers an API
+                // to know which parameters are ignored.
+                if ("use-nio".equals(name)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            default:
+                // accept any parameter for other resources.
+                return true;
         }
     }
 
@@ -629,20 +656,20 @@ public class MigrateOperation implements OperationStepHandler {
             if (backup) {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-slave");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
-                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
+                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-master");
-                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
+                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
             }
         } else {
             if (backup) {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-slave");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
-                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, MAX_SAVED_REPLICATED_JOURNAL_SIZE, "max-saved-replicated-journal-size");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, BACKUP_GROUP_NAME, "group-name");
+                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, CHECK_FOR_LIVE_SERVER, "check-for-live-server");
@@ -672,6 +699,12 @@ public class MigrateOperation implements OperationStepHandler {
             setNode.get(newAttributeName).set(attribute);
             discardNode.remove(legacyAttributeDefinition.getName());
         }
+    }
 
+    private void discardUnsupportedAttribute(ModelNode newAddOp, AttributeDefinition legacyAttributeDefinition, List<String> warnings) {
+        if (newAddOp.hasDefined(legacyAttributeDefinition.getName())) {
+            newAddOp.remove(legacyAttributeDefinition.getName());
+            warnings.add(MessagingLogger.ROOT_LOGGER.couldNotMigrateUnsupportedAttribute(legacyAttributeDefinition.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+        }
     }
 }

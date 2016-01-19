@@ -166,6 +166,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
         children.add(WebsocketsDefinition.INSTANCE);
         children.add(MimeMappingDefinition.INSTANCE);
         children.add(WelcomeFileDefinition.INSTANCE);
+        children.add(CrawlerSessionManagementDefinition.INSTANCE);
         CHILDREN = Collections.unmodifiableList(children);
     }
 

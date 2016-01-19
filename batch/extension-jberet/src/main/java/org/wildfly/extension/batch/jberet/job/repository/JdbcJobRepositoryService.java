@@ -22,9 +22,9 @@
 
 package org.wildfly.extension.batch.jberet.job.repository;
 
-import javax.sql.DataSource;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import javax.sql.DataSource;
 
 import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
@@ -41,14 +41,14 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class JdbcJobRepositoryService implements Service<JobRepository> {
+public class JdbcJobRepositoryService extends JobRepositoryService implements Service<JobRepository> {
 
     private final InjectedValue<DataSource> dataSourceValue = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
     private volatile JdbcRepository jobRepository;
 
     @Override
-    public void start(final StartContext context) throws StartException {
+    public void startJobRepository(final StartContext context) throws StartException {
         final ExecutorService service = executor.getValue();
         final Runnable task = () -> {
             try {
@@ -69,12 +69,12 @@ public class JdbcJobRepositoryService implements Service<JobRepository> {
     }
 
     @Override
-    public void stop(final StopContext context) {
+    public void stopJobRepository(final StopContext context) {
         jobRepository = null;
     }
 
     @Override
-    public JobRepository getValue() throws IllegalStateException, IllegalArgumentException {
+    protected JobRepository getDelegate() {
         return jobRepository;
     }
 

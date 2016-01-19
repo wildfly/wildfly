@@ -44,6 +44,7 @@ public class HibernateSecondLevelCache {
     public static final String COLLECTION = "collection";
     public static final String ENTITY = "entity";
     public static final String NAME = "name";
+    public static final String NATURAL_ID = "natural-id";
     public static final String QUERY = "query";
     public static final String TIMESTAMPS = "timestamps";
 
@@ -76,6 +77,7 @@ public class HibernateSecondLevelCache {
             cacheSettings.put(CONTAINER, container);
             cacheSettings.put(ENTITY, mutableProperties.getProperty(InfinispanRegionFactory.ENTITY_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_ENTITY_RESOURCE));
             cacheSettings.put(COLLECTION, mutableProperties.getProperty(InfinispanRegionFactory.COLLECTION_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_ENTITY_RESOURCE));
+            cacheSettings.put(NATURAL_ID, mutableProperties.getProperty(InfinispanRegionFactory.NATURAL_ID_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_ENTITY_RESOURCE));
             if (Boolean.parseBoolean(mutableProperties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
                 cacheSettings.put(QUERY, mutableProperties.getProperty(InfinispanRegionFactory.QUERY_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_QUERY_RESOURCE));
                 cacheSettings.put(TIMESTAMPS, mutableProperties.getProperty(InfinispanRegionFactory.TIMESTAMPS_CACHE_RESOURCE_PROP, InfinispanRegionFactory.DEF_QUERY_RESOURCE));

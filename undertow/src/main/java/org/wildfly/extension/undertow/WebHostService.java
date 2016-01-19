@@ -21,7 +21,6 @@
  */
 package org.wildfly.extension.undertow;
 
-import java.io.File;
 import java.util.Map;
 import javax.servlet.Servlet;
 
@@ -66,7 +65,7 @@ class WebHostService implements Service<WebHost>, WebHost {
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath()), 1024 * 1024));
+        d.setResourceManager(new FileResourceManager(webDeploymentBuilder.getDocumentRoot().getCanonicalFile(), 1024 * 1024));
         d.setIgnoreFlush(false);
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;

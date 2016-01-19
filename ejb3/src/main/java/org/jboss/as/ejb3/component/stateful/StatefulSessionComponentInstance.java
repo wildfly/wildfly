@@ -45,7 +45,7 @@ import org.jboss.invocation.InterceptorContext;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable<SessionID>, Contextual {
+public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable<SessionID>, Contextual<Object> {
     private static final long serialVersionUID = 3803978357389448971L;
 
     private final SessionID id;

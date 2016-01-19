@@ -39,6 +39,8 @@
             <!--Optional:-->
             <prefill>true</prefill>
             <!--Optional:-->
+            <fair>true</fair>
+            <!--Optional:-->
             <use-strict-min>true</use-strict-min>
             <!--Optional:-->
             <flush-strategy>FailingConnectionOnly</flush-strategy>

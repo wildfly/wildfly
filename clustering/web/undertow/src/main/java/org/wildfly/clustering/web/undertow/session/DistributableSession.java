@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import io.undertow.UndertowLogger;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
@@ -74,6 +75,9 @@ public class DistributableSession implements io.undertow.server.session.Session 
             try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
                 this.entry.getKey().close();
                 this.batch.close();
+            } catch (Throwable e) {
+                // Don't propagate exceptions at the stage, since response was alread committed
+                UndertowLogger.REQUEST_LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
     }

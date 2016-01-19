@@ -34,6 +34,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -861,6 +862,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             POOL_PREFILL.parseAndSetParameter(value, node, reader);
                             break;
                         }
+                        case FAIR: {
+                            String value = rawElementText(reader);
+                            POOL_FAIR.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
                         case USE_STRICT_MIN: {
                             String value = rawElementText(reader);
                             POOL_USE_STRICT_MIN.parseAndSetParameter(value, node, reader);
@@ -953,6 +959,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         case PREFILL: {
                             String value = rawElementText(reader);
                             POOL_PREFILL.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case FAIR: {
+                            String value = rawElementText(reader);
+                            POOL_FAIR.parseAndSetParameter( value, node, reader );
                             break;
                         }
                         case USE_STRICT_MIN: {

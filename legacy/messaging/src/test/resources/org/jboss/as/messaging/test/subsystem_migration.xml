@@ -78,6 +78,7 @@
             <netty-connector name="netty" socket-binding="messaging" />
             <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                 <param key="batch-delay" value="${batch.delay:50}"/>
+                <param key="use-nio" value="true"/>
             </netty-connector>
             <in-vm-connector name="in-vm" server-id="${my.server-id:0}" />
             <connector name="myconnector">

@@ -466,11 +466,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
         Boolean isXA = Boolean.FALSE;
         final Pool pool;
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
-            pool = new XaPoolImpl(minSize, Defaults.INITIAL_POOL_SIZE, maxSize, prefill, useStrictMin, flushStrategy, null,
+            pool = new XaPoolImpl(minSize, Defaults.INITIAL_POOL_SIZE, maxSize, prefill, useStrictMin, flushStrategy, null, Defaults.FAIR,
                     Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
             isXA = Boolean.TRUE;
         } else {
-            pool = new PoolImpl(minSize, Defaults.INITIAL_POOL_SIZE, maxSize, prefill, useStrictMin, flushStrategy, null);
+            pool = new PoolImpl(minSize, Defaults.INITIAL_POOL_SIZE, maxSize, prefill, useStrictMin, flushStrategy, null, Defaults.FAIR);
         }
         TimeOut timeOut = new TimeOutImpl(null, null, null, null, null) {
         };

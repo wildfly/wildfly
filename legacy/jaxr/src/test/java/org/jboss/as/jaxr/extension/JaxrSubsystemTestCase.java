@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -41,7 +40,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
@@ -65,29 +63,25 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("xsd1_0.xml", false);
     }
 
-    /**
-     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformers1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    //commented out as current version of the subsystem model is the same as the EAP 6.2+
+    /*@Test
+    public void testTransformerEAP620() throws Exception {
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_2_0);
     }
 
-    /**
-     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
-     *
-     * @throws Exception
-     */
     @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformers1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testTransformerEAP630() throws Exception {
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_3_0);
     }
 
-    private void testTransformers1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testTransformerEAP640() throws Exception {
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_4_0);
+    }
+
+    private void testTransformers1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = "xsd1_1full.xml";   //This has no expressions not understood by 1.1.0
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource(subsystemXml);
@@ -95,7 +89,6 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
@@ -105,28 +98,33 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testRejectExpressionsEAP620() throws Exception {
+        testRejectExpressions1_2_0(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testRejectExpressionsEAP630() throws Exception {
+        testRejectExpressions1_2_0(ModelTestControllerVersion.EAP_6_4_0);
     }
 
-    private void testRejectExpressions1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testRejectExpressionsEAP640() throws Exception {
+        testRejectExpressions1_2_0(ModelTestControllerVersion.EAP_6_4_0);
+    }
+
+
+    private void testRejectExpressions1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
 
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
@@ -134,19 +132,15 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         List<ModelNode> xmlOps = builder.parseXmlResource("xsd1_1expressions.xml");
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps,
-                new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(JAXRExtension.SUBSYSTEM_PATH),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(JAXRSubsystemRootResource.CONNECTION_FACTORY_ATTRIBUTE))
-        );
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_2_0, xmlOps, new FailedOperationTransformationConfig()); //noting to reject at this point
     }
-
+*/
     @Override
     protected String getSubsystemXml() throws IOException {
         // A minimal config
         return "<subsystem xmlns=\"urn:jboss:domain:jaxr:1.1\">" +
-        "<connection-factory jndi-name=\"java:jboss/jaxr/ConnectionFactory\"/>" +
-        "</subsystem>";
+                "<connection-factory jndi-name=\"java:jboss/jaxr/ConnectionFactory\"/>" +
+                "</subsystem>";
     }
 
     @Override

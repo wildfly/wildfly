@@ -34,22 +34,22 @@ import org.jboss.msc.service.StopContext;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class InMemoryJobRepositoryService implements Service<JobRepository> {
+public class InMemoryJobRepositoryService extends JobRepositoryService implements Service<JobRepository> {
 
     private volatile InMemoryRepository repository;
 
     @Override
-    public void start(final StartContext context) throws StartException {
+    public void startJobRepository(final StartContext context) throws StartException {
         repository = new InMemoryRepository();
     }
 
     @Override
-    public void stop(final StopContext context) {
+    public void stopJobRepository(final StopContext context) {
         repository = null;
     }
 
     @Override
-    public JobRepository getValue() throws IllegalStateException, IllegalArgumentException {
+    protected JobRepository getDelegate() {
         return repository;
     }
 }

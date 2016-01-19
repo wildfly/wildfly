@@ -99,11 +99,14 @@ public interface Registry<K, V> extends AutoCloseable {
     Map.Entry<K, V> getEntry(Node node);
 
     /**
-     * Refreshes and returns the local registry entry from the {@link RegistryEntryProvider}.
+     * Returns the local registry entry from the {@link RegistryEntryProvider}.
      *
      * @return the registry entry of the local node
+     * @deprecated Use {@link #getEntry(Node)} instead.
      */
-    Map.Entry<K, V> getLocalEntry();
+    @Deprecated default Map.Entry<K, V> getLocalEntry() {
+        return this.getEntry(this.getGroup().getLocalNode());
+    }
 
     /**
      * Removes our entry from the registry.

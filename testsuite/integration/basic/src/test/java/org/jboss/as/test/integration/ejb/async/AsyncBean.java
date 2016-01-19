@@ -86,12 +86,17 @@ public class AsyncBean implements AsyncBeanCancelRemoteInterface {
     }
     
     public Future<String> asyncRemoteCancelMethod() throws InterruptedException {
-        String result = "";
+        String result;
         result = ctx.wasCancelCalled() ? "true" : "false";
         
         synchronizeBean.latchCountDown();
-        synchronizeBean.latch2AwaitSeconds(5);
-        
+        long end = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < end) {
+            if(ctx.wasCancelCalled()) {
+                break;
+            }
+            Thread.sleep(50);
+        }
         result += ";";
 
         result += ctx.wasCancelCalled() ? "true" : "false";

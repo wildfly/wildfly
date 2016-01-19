@@ -22,13 +22,11 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import java.util.Properties;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jberet.repository.InMemoryRepository;
-import org.jberet.repository.JdbcRepository;
 import org.jberet.repository.JobRepository;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -50,16 +48,12 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
     public static final String NAMESPACE = "urn:jboss:batch-jberet:1.0";
     public static final QName ROOT_ELEMENT = new QName(NAMESPACE, "batch");
 
-    /**
-     * The key for the JNDI name. Used with JDBC job repositories
-     */
-    private static final String JNDI_NAME = "datasource-jndi";
-
     @Override
     public BatchEnvironmentMetaData parse(final XMLExtendedStreamReader reader, final DeploymentUnit deploymentUnit) throws XMLStreamException {
         JobRepository jobRepository = null;
         String jobRepositoryName = null;
         String jobExecutorName = null;
+        Boolean restartJobsOnResume = null;
         boolean empty = true;
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -78,12 +72,6 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
                         if (jobRepositoryElement == Element.IN_MEMORY) {
                             ParseUtils.requireNoContent(reader);
                             jobRepository = new InMemoryRepository();
-                        } else if (jobRepositoryElement == Element.JDBC) {
-                            final String value = readRequiredAttribute(reader, Attribute.JNDI_NAME);
-                            final Properties configProperties = new Properties();
-                            configProperties.setProperty(JNDI_NAME, value);
-                            ParseUtils.requireNoContent(reader);
-                            jobRepository = JdbcRepository.create(configProperties);
                         } else if (jobRepositoryElement == Element.NAMED) {
                             jobRepositoryName = readRequiredAttribute(reader, Attribute.NAME);
                             ParseUtils.requireNoContent(reader);
@@ -102,6 +90,9 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
                 // Only thread-pool's defined on the subsystem are allowed to be referenced
                 jobExecutorName = readRequiredAttribute(reader, Attribute.NAME);
                 ParseUtils.requireNoContent(reader);
+            } else if (element == Element.RESTART_JOBS_ON_RESUME) {
+                restartJobsOnResume = Boolean.valueOf(readRequiredAttribute(reader, Attribute.VALUE));
+                ParseUtils.requireNoContent(reader);
             } else {
                 throw ParseUtils.unexpectedElement(reader);
             }
@@ -112,7 +103,7 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
             BatchLogger.LOGGER.debugf("An empty batch element in the deployment descriptor was found for %s.", deploymentUnit.getName());
             return null;
         }
-        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, jobExecutorName);
+        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, jobExecutorName, restartJobsOnResume);
     }
 
     private static String readRequiredAttribute(final XMLExtendedStreamReader reader, final Attribute attribute) throws XMLStreamException {

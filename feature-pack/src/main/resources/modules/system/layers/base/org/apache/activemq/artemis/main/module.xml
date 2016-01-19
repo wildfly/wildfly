@@ -39,6 +39,8 @@
     </resources>
 
     <dependencies>
+        <!-- required for ARTEMIS-298 -->
+        <module name="com.google.guava"/>
         <module name="javax.api"/>
         <module name="javax.jms.api" />
         <module name="org.apache.commons.beanutils" />

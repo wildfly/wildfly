@@ -241,7 +241,9 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asString());
         }
         config.setProxyURL(PROXY_URL.resolveModelAttribute(context, model).asString());
-        config.setExcludedContexts(EXCLUDED_CONTEXTS.resolveModelAttribute(context, model).asString().trim());
+        if (model.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS)) {
+            config.setExcludedContexts(EXCLUDED_CONTEXTS.resolveModelAttribute(context, model).asString().trim());
+        }
         config.setAutoEnableContexts(AUTO_ENABLE_CONTEXTS.resolveModelAttribute(context, model).asBoolean());
 
         config.setStopContextTimeout(STOP_CONTEXT_TIMEOUT.resolveModelAttribute(context, model).asInt());

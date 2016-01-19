@@ -55,6 +55,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -108,6 +109,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         final String clientMappingsClusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model).asString();
         final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
+        final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model).asBoolean();
         final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
 
         final ServiceTarget target = context.getServiceTarget();
@@ -140,12 +142,12 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x02, new String[]{"river"}, channelCreationOptions);
-        target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService)
+        ServiceBuilder<EJBRemoteConnectorService> builder = target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
+        builder
                 // add dependency on the Remoting subsystem endpoint
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
                 // add dependency on the remoting server (which allows remoting connector to connect to it)
                 // add rest of the dependencies
-                .addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, ejbRemoteConnectorService.getDeploymentRepositoryInjector())
                 .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, ejbRemoteConnectorService.getEJBRemoteTransactionsRepositoryInjector())
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, ejbRemoteConnectorService.getClusterRegistryCollectorInjector())
@@ -154,8 +156,11 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, RemoteAsyncInvocationCancelStatusService.class, ejbRemoteConnectorService.getAsyncInvocationCancelStatusInjector())
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, ejbRemoteConnectorService.getSuspendControllerInjectedValue())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+        if(!executeInWorker) {
+            builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
+        }
+        builder.install();
     }
 
     @Override
@@ -163,6 +168,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.validateAndSet(operation, model);
         EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
         EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
+        EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.validateAndSet(operation, model);
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {

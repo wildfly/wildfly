@@ -136,4 +136,5 @@ public interface EJB3SubsystemModel {
     PathElement DATABASE_DATA_STORE_PATH = PathElement.pathElement(DATABASE_DATA_STORE);
 
     ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3");
+    String EXECUTE_IN_WORKER = "execute-in-worker";
 }

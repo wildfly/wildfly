@@ -37,12 +37,6 @@
       <xs:complexContent>
          <xs:extension base="javaee:jboss-assembly-descriptor-bean-entryType">
             <xs:choice>
-                <xs:element name="clustered" type="xs:boolean">
-                    <xs:annotation>
-                        <xs:documentation>Deprecated: this element is deprecated and will be ignored
-                        </xs:documentation>
-                    </xs:annotation>
-                </xs:element>
                 <xs:element name="clustered-singleton" type="xs:boolean">
                     <xs:annotation>
                         <xs:documentation>Indicates that the mdb will be active in a single node of the cluster.

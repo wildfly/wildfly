@@ -25,7 +25,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -82,7 +81,7 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
         final boolean passivationEnabled = evictionAllowed && config.persistence().passivation();
         final boolean persistent = config.clustering().cacheMode().isClustered() || (evictionAllowed && !passivationEnabled);
         boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
-        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, lockOnRead ? beanCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : beanCache, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
+        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, lockOnRead, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
         Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory, beanIdentifierFactory);
         final NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
         final Registry<String, ?> registry = this.configuration.getRegistry();

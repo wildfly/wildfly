@@ -22,6 +22,11 @@ public class BatchServiceNames {
     public static final ServiceName BATCH_THREAD_POOL_NAME = BASE_BATCH_THREAD_POOL_NAME.append("batch");
 
     /**
+     * The name for the job executor
+     */
+    public static final ServiceName BATCH_JOB_EXECUTOR_NAME = ServiceName.JBOSS.append("batch", "job", "executor");
+
+    /**
      * Creates a service name for the batch environment service.
      *
      * @param deploymentUnit the deployment unit to create the service name for

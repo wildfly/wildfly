@@ -47,6 +47,7 @@ public class BatchSubsystemWriter implements XMLElementWriter<SubsystemMarshalli
         final ModelNode model = context.getModelNode();
         BatchSubsystemDefinition.DEFAULT_JOB_REPOSITORY.marshallAsElement(model, writer);
         BatchSubsystemDefinition.DEFAULT_THREAD_POOL.marshallAsElement(model, writer);
+        BatchSubsystemDefinition.RESTART_JOBS_ON_RESUME.marshallAsElement(model, writer);
 
         // Write the in-memory job repositories
         if (model.hasDefined(InMemoryJobRepositoryDefinition.NAME)) {

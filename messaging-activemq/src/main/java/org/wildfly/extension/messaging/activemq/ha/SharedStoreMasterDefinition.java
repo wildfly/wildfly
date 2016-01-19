@@ -23,7 +23,6 @@
 package org.wildfly.extension.messaging.activemq.ha;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.FAILBACK_DELAY;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
 
@@ -52,7 +51,6 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 public class SharedStoreMasterDefinition extends PersistentResourceDefinition {
 
     public static Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
-            (AttributeDefinition) FAILBACK_DELAY,
             FAILOVER_ON_SERVER_SHUTDOWN
     ));
 
@@ -82,7 +80,6 @@ public class SharedStoreMasterDefinition extends PersistentResourceDefinition {
 
     static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         return new SharedStoreMasterPolicyConfiguration()
-                .setFailbackDelay(FAILBACK_DELAY.resolveModelAttribute(context, model).asLong())
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean());
     }
 }

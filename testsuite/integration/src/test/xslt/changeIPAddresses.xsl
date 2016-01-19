@@ -60,6 +60,11 @@
         <xsl:copy><xsl:attribute name="value">${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
     </xsl:template>
     <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
+    				 	  /*[local-name()='interface' and @name='private']
+    				 	  /*[local-name()='inet-address']">
+        <xsl:copy><xsl:attribute name="value">${jboss.bind.address.private:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
+    </xsl:template>
+    <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
     				 	  /*[local-name()='interface' and @name='unsecure']
     				 	  /*[local-name()='inet-address']">
         <xsl:copy><xsl:attribute name="value">${jboss.bind.address.unsecure:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>

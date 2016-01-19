@@ -58,6 +58,20 @@ public class LegacyPropertyWriteOperationTransformer implements OperationTransfo
             InitialAttributeValueOperationContextAttachment attachment = context.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
             assert attachment != null;
 
+            // Workaround aliases limitations!
+            // we need to painstakingly undo path alias translations, since we need to know the address of the real resource,
+            // since the readResourceFromRoot() will not work on the aliased address
+            Map<String, String> undoAliases = new HashMap<>();
+            undoAliases.put("BINARY_KEYED_JDBC_STORE", "binary-jdbc");
+            undoAliases.put("STORE", "custom");
+            undoAliases.put("FILE_STORE", "file");
+            undoAliases.put("MIXED_KEYED_JDBC_STORE", "mixed-jdbc");
+            undoAliases.put("REMOTE_STORE", "remote");
+            undoAliases.put("STRING_KEYED_JDBC_STORE", "string-jdbc");
+            if (undoAliases.containsKey(address.getLastElement().getValue())) {
+                address = address.subAddress(0, address.size() - 1).append("store", undoAliases.get(address.getLastElement().getValue()));
+            }
+
             ModelNode initialValue = attachment.getInitialValue(address, Operations.getAttributeName(operation));
             ModelNode newValue = context.readResourceFromRoot(address).getModel().get(PROPERTIES).clone();
 

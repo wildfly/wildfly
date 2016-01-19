@@ -161,9 +161,11 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
 
     private <L> SessionFactory<?, ?, L> createSessionFactory(LocalContextFactory<L> localContextFactory) {
         Configuration config = this.config.getCache().getCacheConfiguration();
-        boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
+        boolean transactional = config.transaction().transactionMode().isTransactional();
+        boolean lockOnWrite = transactional && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC);
+        boolean lockOnRead = lockOnWrite && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
         boolean requireMarshallable = config.clustering().cacheMode().needsStateTransfer() || config.persistence().usingStores();
-        SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.config.getCache(), lockOnRead);
+        SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.config.getCache(), transactional, lockOnRead, lockOnWrite);
         return new InfinispanSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(lockOnRead, requireMarshallable), localContextFactory);
     }
 

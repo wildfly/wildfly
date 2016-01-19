@@ -38,6 +38,9 @@
                         <prefill>
                             true
                         </prefill>
+                        <fair>
+                            true
+                        </fair>
                         <use-strict-min>
                             true
                         </use-strict-min>
@@ -140,6 +143,9 @@
                         <prefill>
                             true
                         </prefill>
+                        <fair>
+                            true
+                        </fair>
                         <use-strict-min>
                             true
                         </use-strict-min>

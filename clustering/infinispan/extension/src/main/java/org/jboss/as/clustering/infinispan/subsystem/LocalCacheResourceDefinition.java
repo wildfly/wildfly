@@ -62,6 +62,8 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(CacheResourceDefinition.Attribute.class)
                 .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
+                .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
+                .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new LocalCacheServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);

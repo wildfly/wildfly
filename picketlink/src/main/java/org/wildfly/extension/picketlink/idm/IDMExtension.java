@@ -23,6 +23,7 @@
 package org.wildfly.extension.picketlink.idm;
 
 import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
+import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_1;
 import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_0;
 
 import org.jboss.as.controller.Extension;
@@ -96,6 +97,7 @@ public class IDMExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUri(), Namespace.CURRENT.getXMLReader());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_1.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_1.getXMLReader());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_0.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_0.getXMLReader());
     }
 }

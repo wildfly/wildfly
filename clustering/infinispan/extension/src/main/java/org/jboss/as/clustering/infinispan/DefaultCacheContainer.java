@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -114,7 +116,8 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, String configurationName) {
-        Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), this.getCacheName(configurationName));
+        PrivilegedAction<Cache<K, V>> action = () -> this.cm.<K, V>getCache(this.getCacheName(cacheName), this.getCacheName(configurationName));
+        Cache<K, V> cache = (System.getSecurityManager() == null) ? action.run() : AccessController.doPrivileged(action);
         return (cache != null) ? new DefaultCache<>(this, this.batcherFactory, cache.getAdvancedCache()) : null;
     }
 

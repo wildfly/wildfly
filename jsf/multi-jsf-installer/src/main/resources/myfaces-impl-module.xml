@@ -48,6 +48,13 @@
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.commons.el"/>
         <module name="org.apache.commons.lang"/> -->
+
+        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
+             Prior to WFLY-5922 they were exported by javax.ejb.api and
+             reexported by javaee.api. -->
+        <module name="javax.xml.rpc.api"/>
+        <module name="javax.rmi.api"/>
+        <module name="org.omg.api"/>
     </dependencies>
 
     <resources>

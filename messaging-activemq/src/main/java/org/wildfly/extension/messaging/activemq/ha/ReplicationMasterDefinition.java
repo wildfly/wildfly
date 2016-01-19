@@ -27,6 +27,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLIC
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CLUSTER_NAME;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.GROUP_NAME;
+import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
 
 import java.util.Arrays;
@@ -55,7 +56,8 @@ public class ReplicationMasterDefinition extends PersistentResourceDefinition {
     public static Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
             (AttributeDefinition) CLUSTER_NAME,
             GROUP_NAME,
-            CHECK_FOR_LIVE_SERVER
+            CHECK_FOR_LIVE_SERVER,
+            INITIAL_REPLICATION_SYNC_TIMEOUT
     ));
 
     public static final ReplicationMasterDefinition INSTANCE = new ReplicationMasterDefinition(MessagingExtension.REPLICATION_MASTER_PATH, false);
@@ -84,7 +86,8 @@ public class ReplicationMasterDefinition extends PersistentResourceDefinition {
     static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ReplicatedPolicyConfiguration haPolicyConfiguration = new ReplicatedPolicyConfiguration();
 
-        haPolicyConfiguration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean());
+        haPolicyConfiguration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean())
+                .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong());
 
         ModelNode clusterName = CLUSTER_NAME.resolveModelAttribute(context, model);
         if (clusterName.isDefined()) {

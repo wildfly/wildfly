@@ -56,6 +56,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -175,7 +176,8 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     @Override
     public Affinity getStrictAffinity() {
-        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(this.registry.getGroup().getName()) : new NodeAffinity(this.registry.getLocalEntry().getKey());
+        Group group = this.registry.getGroup();
+        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(this.registry.getEntry(group.getLocalNode()).getKey());
     }
 
     @Override
