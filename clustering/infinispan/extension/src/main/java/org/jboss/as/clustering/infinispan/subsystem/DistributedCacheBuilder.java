@@ -27,10 +27,12 @@ import static org.jboss.as.clustering.infinispan.subsystem.DistributedCacheResou
 import java.util.ServiceLoader;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.configuration.cache.HashConfiguration;
+import org.infinispan.configuration.cache.L1Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.distribution.group.Grouper;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -53,6 +55,7 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     private final String containerName;
 
     private volatile HashConfiguration hash;
+    private volatile L1Configuration l1;
     private volatile ConsistentHashStrategy consistentHashStrategy;
 
     DistributedCacheBuilder(String containerName, String cacheName) {
@@ -68,20 +71,27 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.getDefinition().resolveModelAttribute(context, model), ConsistentHashStrategy.class);
-        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
-        this.hash = new ConfigurationBuilder().clustering().hash()
+
+        ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering();
+
+        this.hash = builder.hash()
                 .capacityFactor(CAPACITY_FACTOR.getDefinition().resolveModelAttribute(context, model).asInt())
                 .numOwners(OWNERS.getDefinition().resolveModelAttribute(context, model).asInt())
                 .numSegments(SEGMENTS.getDefinition().resolveModelAttribute(context, model).asInt())
-                .l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan)
-                .hash().create();
+                .create();
+
+        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
+        this.l1 = builder.l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan).create();
+
         return super.configure(context, model);
     }
 
     @Override
     public ConfigurationBuilder createConfigurationBuilder() {
         ConfigurationBuilder builder = super.createConfigurationBuilder();
-        GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().read(this.hash)
+        GroupsConfigurationBuilder groupsBuilder = builder.clustering()
+                .l1().read(this.l1)
+                .hash().read(this.hash)
                 .consistentHashFactory(this.consistentHashStrategy.createConsistentHashFactory(this.container.getValue().transport().hasTopologyInfo()))
                 .groups().enabled();
         for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, this.getClassLoader())) {

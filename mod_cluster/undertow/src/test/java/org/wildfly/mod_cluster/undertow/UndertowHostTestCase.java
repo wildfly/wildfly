@@ -68,7 +68,7 @@ public class UndertowHostTestCase {
     public void getContexts() {
         Deployment deployment = mock(Deployment.class);
         DeploymentInfo info = new DeploymentInfo();
-        String expectedPath = "/";
+        String expectedPath = "";
         info.setContextPath(expectedPath);
         HttpHandler handler = mock(HttpHandler.class);
         
@@ -89,7 +89,7 @@ public class UndertowHostTestCase {
     public void findContext() {
         Deployment deployment = mock(Deployment.class);
         DeploymentInfo info = new DeploymentInfo();
-        String expectedPath = "/";
+        String expectedPath = "";
         info.setContextPath(expectedPath);
         HttpHandler handler = mock(HttpHandler.class);
         

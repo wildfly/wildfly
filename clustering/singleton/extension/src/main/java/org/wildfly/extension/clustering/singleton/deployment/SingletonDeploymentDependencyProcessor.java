@@ -23,7 +23,6 @@
 package org.wildfly.extension.clustering.singleton.deployment;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -41,14 +40,11 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
-        // Only support root deployments for now
-        if (unit.getParent() != null) return;
-        SingletonDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
+        DeploymentUnit parent = unit.getParent();
+        // If this is a sub-deployment, any configuration will be attached to the parent deployment unit
+        SingletonDeploymentConfiguration config = ((parent != null) ? parent : unit).getAttachment(CONFIGURATION_KEY);
         if (config != null) {
             context.addDependency(new SingletonPolicyBuilder(config.getPolicy()).getServiceName(), SingletonDeploymentProcessor.POLICY_KEY);
-
-            // We need to allow restarting of subsequent phases
-            unit.putAttachment(Attachments.ALLOW_PHASE_RESTART, Boolean.TRUE);
         }
     }
 

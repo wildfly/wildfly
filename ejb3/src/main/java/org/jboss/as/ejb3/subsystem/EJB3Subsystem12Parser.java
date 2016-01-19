@@ -191,6 +191,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        operation.get(EJB3SubsystemModel.EXECUTE_IN_WORKER).set(new ModelNode(false));
         requireNoContent(reader);
         operations.add(operation);
     }
@@ -248,7 +249,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         operations.add(operation);
     }
 
-    private void parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+    protected void parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -427,7 +428,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String poolName = null;
         final ModelNode operation = Util.createAddOperation();
@@ -755,7 +756,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         return EJB3SubsystemNamespace.EJB3_1_2;
     }
 
-    private PathAddress getEJB3SubsystemAddress() {
+    PathAddress getEJB3SubsystemAddress() {
         return SUBSYSTEM_PATH;
     }
 

@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
@@ -30,44 +30,30 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * An immutable "snapshot" of a session's meta-data which can be accessed outside the scope of a transaction.
  * @author Paul Ferraro
  */
-public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData {
+public class SimpleImmutableSessionMetaData extends AbstractImmutableSessionMetaData {
 
-    private final boolean isNew;
-    private final boolean expired;
-    private final Date creationTime;
-    private final Date lastAccessedTime;
-    private final long maxInactiveInterval;
+    private final Instant creationTime;
+    private final Instant lastAccessedTime;
+    private final Duration maxInactiveInterval;
 
     public SimpleImmutableSessionMetaData(ImmutableSessionMetaData metaData) {
-        this.isNew = metaData.isNew();
-        this.expired = metaData.isExpired();
         this.creationTime = metaData.getCreationTime();
         this.lastAccessedTime = metaData.getLastAccessedTime();
-        this.maxInactiveInterval = metaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS);
+        this.maxInactiveInterval = metaData.getMaxInactiveInterval();
     }
 
     @Override
-    public boolean isNew() {
-        return this.isNew;
-    }
-
-    @Override
-    public boolean isExpired() {
-        return this.expired;
-    }
-
-    @Override
-    public Date getCreationTime() {
+    public Instant getCreationTime() {
         return this.creationTime;
     }
 
     @Override
-    public Date getLastAccessedTime() {
+    public Instant getLastAccessedTime() {
         return this.lastAccessedTime;
     }
 
     @Override
-    public long getMaxInactiveInterval(TimeUnit unit) {
-        return unit.convert(this.maxInactiveInterval, TimeUnit.MILLISECONDS);
+    public Duration getMaxInactiveInterval() {
+        return this.maxInactiveInterval;
     }
 }

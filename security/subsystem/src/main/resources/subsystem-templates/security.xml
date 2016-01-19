@@ -31,6 +31,14 @@
                    <policy-module code="Delegating" flag="required"/>
                </authorization>
            </security-domain>
+           <security-domain name="jaspitest" cache-type="default">
+               <authentication-jaspi>
+                   <login-module-stack name="dummy">
+                       <login-module code="Dummy" flag="optional"/>
+                   </login-module-stack>
+                   <auth-module code="Dummy"/>
+               </authentication-jaspi>
+           </security-domain>
        </replacement>
    </supplement>
    <supplement name="picketlink">
@@ -45,7 +53,7 @@
            </security-domain>
            <security-domain name="sp" cache-type="default">
                <authentication>
-                   <login-module code="org.picketlink.identity.federation.bindings.wildfly.SAML2LoginModule" flag="required"/>
+                   <login-module code="org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule" flag="required"/>
                </authentication>
            </security-domain>
        </replacement>

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
@@ -35,19 +36,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.extension.undertow.filters.CustomFilterDefinition.CLASS_NAME;
+import static org.wildfly.extension.undertow.filters.CustomFilterDefinition.PARAMETERS;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistryType;
@@ -109,7 +116,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertTrue(ioSubsystem.get("buffer-pool", "default").isDefined());
 
         ModelNode newSubsystem = model.get(SUBSYSTEM, UNDERTOW_SUBSYSTEM_NAME);
-        ModelNode newServer = newSubsystem.get("server", "default");
+        ModelNode newServer = newSubsystem.get("server", "default-server");
         assertNotNull(newServer);
         assertTrue(newServer.isDefined());
         assertEquals("default-host", newServer.get(Constants.DEFAULT_HOST).asString());
@@ -150,6 +157,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         String realmName = httpsConnector.get(Constants.SECURITY_REALM).asString();
         assertTrue(realmName, realmName.startsWith("jbossweb-migration-security-realm"));
         assertEquals("${prop.session-cache-size:512}", httpsConnector.get(Constants.SSL_SESSION_CACHE_SIZE).asString());
+        assertEquals("REQUESTED", httpsConnector.get(Constants.VERIFY_CLIENT).asString());
 
         //realm name is dynamic
         ModelNode realm = model.get(CORE_SERVICE, MANAGEMENT).get(SECURITY_REALM, realmName);
@@ -157,6 +165,18 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         //trust store
         ModelNode trustStore = realm.get(AUTHENTICATION, TRUSTSTORE);
         assertEquals("${file-base}/jsse.keystore", trustStore.get(KeystoreAttributes.KEYSTORE_PATH.getName()).asString());
+        //Valves
+        ModelNode filters = newSubsystem.get(Constants.CONFIGURATION, Constants.FILTER);
+        ModelNode dumpFilter = filters.get("custom-filter", "request-dumper");
+        assertEquals("io.undertow.server.handlers.RequestDumpingHandler", dumpFilter.get(CLASS_NAME.getName()).asString());
+        assertEquals("io.undertow.core",  dumpFilter.get(MODULE).asString());
+        ModelNode remoteAddrFilter = filters.get("custom-filter", "remote-addr");
+        assertEquals("io.undertow.server.handlers.IPAddressAccessControlHandler", remoteAddrFilter.get(CLASS_NAME.getName()).asString());
+        assertEquals("io.undertow.core",  remoteAddrFilter.get(MODULE).asString());
+        assertTrue(remoteAddrFilter.hasDefined(PARAMETERS.getName()));
+        assertEquals(1, remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().size());
+        assertEquals("allow", remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().get(0).getName());
+        assertEquals("127.0.0.1,127.0.0.2", remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().get(0).getValue().asString());
 
 
         //virtual host
@@ -165,17 +185,24 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("welcome-content", virtualHost.get("location", "/").get(Constants.HANDLER).asString());
 
         assertEquals("localhost", virtualHost.get("alias").asList().get(0).asString());
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
+        assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
 
         ModelNode accessLog = virtualHost.get(Constants.SETTING, Constants.ACCESS_LOG);
 
         assertEquals("prefix", accessLog.get(Constants.PREFIX).asString());
         assertEquals("true", accessLog.get(Constants.ROTATE).asString());
         assertEquals("extended", accessLog.get(Constants.PATTERN).asString());
+        assertEquals("toto", accessLog.get(Constants.DIRECTORY).asString());
+        assertEquals("jboss.server.base.dir", accessLog.get(Constants.RELATIVE_TO).asString());
 
         //sso
         ModelNode sso = virtualHost.get(Constants.SETTING, Constants.SINGLE_SIGN_ON);
         assertEquals("${prop.domain:myDomain}", sso.get(Constants.DOMAIN).asString());
         assertEquals("${prop.http-only:true}", sso.get(Constants.HTTP_ONLY).asString());
+
+
 
 
     }
@@ -184,11 +211,21 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
 
         UndertowExtension undertow = new UndertowExtension();
         IOExtension io = new IOExtension();
-
         boolean extensionAdded = false;
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+
+            final OperationDefinition removeExtension = new SimpleOperationDefinitionBuilder("remove", new StandardResourceDescriptionResolver("test", "test", getClass().getClassLoader()))
+                    .build();
+
+
+            PathElement webExtension = PathElement.pathElement(EXTENSION, "org.jboss.as.web");
+            rootRegistration.registerSubModel(new SimpleResourceDefinition(webExtension, ControllerResolver.getResolver(EXTENSION)))
+                .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+            rootResource.registerChild(webExtension, Resource.Factory.create());
+
+
             rootRegistration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(EXTENSION),
                     ControllerResolver.getResolver(EXTENSION), new OperationStepHandler() {
                 @Override

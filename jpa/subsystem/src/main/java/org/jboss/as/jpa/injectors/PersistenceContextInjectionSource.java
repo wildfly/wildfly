@@ -31,6 +31,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
 import javax.persistence.SynchronizationType;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
@@ -49,6 +51,8 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.txn.service.TransactionManagerService;
+import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -150,9 +154,12 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             EntityManagerFactory emf = service.getEntityManagerFactory();
             EntityManager entityManager;
             boolean standardEntityManager = ENTITY_MANAGER_CLASS.equals(injectionTypeName);
-
+            //TODO: change all this to use injections
+            //this is currntly safe, as there is a DUP dependency on the TSR
+            TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry) serviceRegistry.getRequiredService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+            TransactionManager transactionManager = (TransactionManager) serviceRegistry.getRequiredService(TransactionManagerService.SERVICE_NAME).getValue();
             if (type.equals(PersistenceContextType.TRANSACTION)) {
-                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType);
+                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType, tsr, transactionManager);
                 if (ROOT_LOGGER.isDebugEnabled())
                     ROOT_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
@@ -173,10 +180,10 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
                 if (entityManager1 == null) {
                     if (SynchronizationType.UNSYNCHRONIZED.equals(synchronizationType)) {
-                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(synchronizationType, properties), synchronizationType);
+                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(synchronizationType, properties), synchronizationType, tsr, transactionManager);
                     }
                     else {
-                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType);
+                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType, tsr, transactionManager);
                     }
                     createdNewExtendedPersistence = true;
                     if (ROOT_LOGGER.isDebugEnabled())

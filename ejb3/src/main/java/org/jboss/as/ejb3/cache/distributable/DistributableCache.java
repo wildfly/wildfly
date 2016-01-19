@@ -60,12 +60,16 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public Affinity getStrictAffinity() {
-        return this.manager.getStrictAffinity();
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
+            return this.manager.getStrictAffinity();
+        }
     }
 
     @Override
     public Affinity getWeakAffinity(K id) {
-        return this.manager.getWeakAffinity(id);
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
+            return this.manager.getWeakAffinity(id);
+        }
     }
 
     @Override
@@ -142,9 +146,11 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void remove(K id) {
-        Bean<UUID, K, V> bean = this.manager.findBean(id);
-        if (bean != null) {
-            bean.remove(this.listener);
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
+            Bean<UUID, K, V> bean = this.manager.findBean(id);
+            if (bean != null) {
+                bean.remove(this.listener);
+            }
         }
     }
 
@@ -162,7 +168,9 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public boolean contains(K id) {
-        return this.manager.containsBean(id);
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
+            return this.manager.containsBean(id);
+        }
     }
 
     @Override

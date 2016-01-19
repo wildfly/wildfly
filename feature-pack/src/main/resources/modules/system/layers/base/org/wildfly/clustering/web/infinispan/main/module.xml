@@ -37,6 +37,7 @@
 
     <dependencies>
         <module name="javax.servlet.api"/>
+        <module name="javax.transaction.api"/>
 
         <module name="net.jcip"/>
         <module name="org.infinispan"/>
@@ -52,8 +53,9 @@
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.infinispan.spi" services="import"/>
-        <module name="org.wildfly.clustering.marshalling"/>
+        <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.marshalling.api"/>
+        <module name="org.wildfly.clustering.marshalling.jboss" services="import"/>
         <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>

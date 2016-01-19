@@ -21,11 +21,12 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Command that schedules a session.
@@ -34,22 +35,39 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 public class ScheduleSchedulerCommand implements Command<Void, Scheduler> {
     private static final long serialVersionUID = -2606847692331278614L;
 
-    private final transient ImmutableSession session;
-    private final String id;
-    private final long maxInactiveInterval;
-    private final long lastAccessedTime;
+    private transient ImmutableSessionMetaData metaData;
+    private final String sessionId;
 
-    public ScheduleSchedulerCommand(ImmutableSession session) {
-        this.session = session;
-        this.id = session.getId();
-        this.maxInactiveInterval = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        this.lastAccessedTime = session.getMetaData().getLastAccessedTime().getTime();
+    public ScheduleSchedulerCommand(String sessionId, ImmutableSessionMetaData metaData) {
+        this.sessionId = sessionId;
+        this.metaData = metaData;
     }
 
     @Override
     public Void execute(Scheduler scheduler) {
-        ImmutableSession session = (this.session != null) ? this.session : new MockImmutableSession(this.id, new SimpleSessionMetaData(null, new Date(this.lastAccessedTime), new Time(this.maxInactiveInterval, TimeUnit.MILLISECONDS)));
-        scheduler.schedule(session);
+        scheduler.schedule(this.sessionId, this.metaData);
         return null;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        Instant creationTime = this.metaData.getCreationTime();
+        Duration maxInactiveInterval = this.metaData.getMaxInactiveInterval();
+        Duration lastAccessedDuration = Duration.between(creationTime, this.metaData.getLastAccessedTime());
+        out.defaultWriteObject();
+        out.writeObject(creationTime);
+        out.writeObject(maxInactiveInterval);
+        out.writeObject(lastAccessedDuration);
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        Instant creationTime = (Instant) in.readObject();
+        Duration maxInactiveInterval = (Duration) in.readObject();
+        Duration lastAccessedDuration = (Duration) in.readObject();
+        SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData(creationTime);
+        creationMetaData.setMaxInactiveInterval(maxInactiveInterval);
+        SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
+        accessMetaData.setLastAccessedDuration(lastAccessedDuration);
+        this.metaData = new SimpleSessionMetaData(creationMetaData, accessMetaData);
     }
 }

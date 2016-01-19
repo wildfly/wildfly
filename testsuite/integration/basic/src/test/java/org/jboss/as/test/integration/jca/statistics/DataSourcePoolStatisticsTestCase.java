@@ -109,10 +109,12 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
     public void closeDataSources() throws Exception {
         while (dsCount > 0) {
             remove(getDsAddress(dsCount, false));
+            reload();
             dsCount--;
         }
         while (xaDsCount > 0) {
             remove(getDsAddress(xaDsCount, true));
+            reload();
             xaDsCount--;
         }
 

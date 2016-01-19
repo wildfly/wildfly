@@ -1,0 +1,4 @@
+<jboss-web>
+    <security-domain>certificate_roles_domain</security-domain>
+    <proactive-authentication>true</proactive-authentication>
+</jboss-web>

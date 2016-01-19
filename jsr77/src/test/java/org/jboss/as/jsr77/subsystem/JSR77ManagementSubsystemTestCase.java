@@ -23,17 +23,10 @@ package org.jboss.as.jsr77.subsystem;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest {
@@ -61,62 +54,9 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/jsr77.xml"
         };
     }
 
-    @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS720() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
-    @Test
-    public void testTransformersEAP600() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
-    }
-
-    @Test
-    public void testTransformersEAP601() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    @Test
-    public void testTransformersEAP610() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_1_0);
-    }
-
-    @Test
-    public void testTransformersEAP611() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_1_1);
-    }
-
-
-    private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
-                .setSubsystemXml(getSubsystemXml());
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jsr77:" + controllerVersion.getMavenGavVersion())
-                .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, null);
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(mainServices);
-        Assert.assertNotNull(legacyServices);
-        checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
 }

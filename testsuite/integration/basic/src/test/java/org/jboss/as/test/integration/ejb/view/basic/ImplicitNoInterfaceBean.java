@@ -28,5 +28,10 @@ import javax.ejb.Stateless;
  * User: jpai
  */
 @Stateless
-public class ImplicitNoInterfaceBean {
+public class ImplicitNoInterfaceBean extends NoInterfaceSuperclass {
+
+    @Override
+    public String sayHello() {
+        return super.sayHello();
+    }
 }

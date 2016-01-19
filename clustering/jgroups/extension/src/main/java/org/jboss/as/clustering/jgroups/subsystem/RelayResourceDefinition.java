@@ -27,7 +27,6 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -51,7 +50,7 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
     static final PathElement LEGACY_PATH = pathElement("RELAY");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String name) {
+    public static PathElement pathElement(String name) {
         return PathElement.pathElement("relay", name);
     }
 
@@ -89,27 +88,20 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(ProtocolResourceDefinition.Attribute.PROPERTIES);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(ProtocolResourceDefinition.Attribute.PROPERTIES)
+                ;
         ResourceServiceHandler handler = new ParentResourceServiceHandler<>(this.builderFactory);
         new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-    }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, ProtocolResourceDefinition.Attribute.PROPERTIES).register(registration);
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        super.registerChildren(registration);
         new RemoteSiteResourceDefinition(this.builderFactory).register(registration);
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
+        super.register(registration);
     }
 }

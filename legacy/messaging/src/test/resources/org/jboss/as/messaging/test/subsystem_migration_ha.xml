@@ -1,0 +1,45 @@
+
+<subsystem xmlns="urn:jboss:domain:messaging:3.0">
+    <hornetq-server name="default"/>
+
+    <hornetq-server name="unmigrated-backup">
+        <backup>${backup:true}</backup>
+        <shared-store>true</shared-store>
+    </hornetq-server>
+
+    <hornetq-server name="unmigrated-shared-store">
+        <backup>true</backup>
+        <shared-store>${shared-store:true}</shared-store>
+    </hornetq-server>
+
+    <hornetq-server name="shared-store-master">
+        <backup>false</backup>
+        <failback-delay>${failback.delay:9876}</failback-delay>
+        <failover-on-shutdown>${failover.on.shutdown:true}</failover-on-shutdown>
+        <shared-store>true</shared-store>
+    </hornetq-server>
+
+    <hornetq-server name="shared-store-slave">
+        <backup>true</backup>
+        <allow-failback>${allow.failback.1:false}</allow-failback>
+        <failback-delay>${failback.delay.1:1234}</failback-delay>
+        <failover-on-shutdown>${failover.on.shutdown.1:true}</failover-on-shutdown>
+        <shared-store>true</shared-store>
+    </hornetq-server>
+
+    <hornetq-server name="replication-master">
+        <backup>false</backup>
+        <check-for-live-server>${check.for.live.server:true}</check-for-live-server>
+        <shared-store>false</shared-store>
+        <backup-group-name>${replication.master.group.name:mygroup}</backup-group-name>
+    </hornetq-server>
+
+    <hornetq-server name="replication-slave">
+        <backup>true</backup>
+        <allow-failback>${allow.failback.2:false}</allow-failback>
+        <failback-delay>${failback.delay.2:1234}</failback-delay>
+        <max-saved-replicated-journal-size>${max.saved.replicated.journal.size:2}</max-saved-replicated-journal-size>
+        <shared-store>false</shared-store>
+        <backup-group-name>${replication.master.group.name:mygroup2}</backup-group-name>
+    </hornetq-server>
+</subsystem>

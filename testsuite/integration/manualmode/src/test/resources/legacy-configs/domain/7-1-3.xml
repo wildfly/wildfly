@@ -5,6 +5,7 @@
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
         <extension module="org.jboss.as.cmp"/>
+        <extension module="org.jboss.as.configadmin"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
@@ -24,6 +25,7 @@
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
@@ -73,6 +75,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -211,6 +214,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.2">
                 <core-environment>
                     <process-id>
@@ -278,6 +282,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -494,6 +499,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.2">
                 <core-environment>
                     <process-id>
@@ -563,6 +569,7 @@
                 </root-logger>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -783,6 +790,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.2">
                 <core-environment>
                     <process-id>
@@ -851,6 +859,7 @@
                 </root-logger>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>
             <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -1172,6 +1181,7 @@
                     </security-domain>
                 </security-domains>
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.2">
                 <core-environment>
                     <process-id>

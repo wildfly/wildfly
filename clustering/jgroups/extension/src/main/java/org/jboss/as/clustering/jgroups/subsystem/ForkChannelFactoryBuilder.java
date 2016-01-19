@@ -73,7 +73,7 @@ public class ForkChannelFactoryBuilder implements ResourceServiceBuilder<Channel
         ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.channelName), Channel.class, this.parentChannel)
                 .addDependency(ChannelServiceName.FACTORY.getServiceName(this.channelName), ChannelFactory.class, this.parentFactory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
         for (Dependency dependency : this.protocols) {
             dependency.register(builder);

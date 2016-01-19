@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
@@ -57,9 +56,9 @@ public class DistributableImmutableSession implements Session {
             this.attributes.put(name, attributes.getAttribute(name));
         }
         ImmutableSessionMetaData metaData = session.getMetaData();
-        this.creationTime = metaData.getCreationTime().getTime();
-        this.lastAccessedTime = metaData.getLastAccessedTime().getTime();
-        this.maxInactiveInterval = (int) metaData.getMaxInactiveInterval(TimeUnit.SECONDS);
+        this.creationTime = metaData.getCreationTime().toEpochMilli();
+        this.lastAccessedTime = metaData.getLastAccessedTime().toEpochMilli();
+        this.maxInactiveInterval = (int) metaData.getMaxInactiveInterval().getSeconds();
     }
 
     @Override
@@ -74,7 +73,7 @@ public class DistributableImmutableSession implements Session {
 
     @Override
     public void requestDone(HttpServerExchange serverExchange) {
-        throw new UnsupportedOperationException();
+        // Do nothing
     }
 
     @Override
@@ -109,21 +108,21 @@ public class DistributableImmutableSession implements Session {
 
     @Override
     public Object setAttribute(String name, Object value) {
-        throw new UnsupportedOperationException();
+        return value;
     }
 
     @Override
     public Object removeAttribute(String name) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public void invalidate(HttpServerExchange exchange) {
-        throw new UnsupportedOperationException();
+        // Do nothing
     }
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

@@ -129,7 +129,7 @@ public class ManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("entity-insert-count");
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        System.out.println("\n\ngetEntityInsertCount result asString = " + result.asString());
+        //System.out.println("\n\ngetEntityInsertCount result asString = " + result.asString());
 
         assertTrue("success".equals(result.get("outcome").asString()));
         result = result.get("result");

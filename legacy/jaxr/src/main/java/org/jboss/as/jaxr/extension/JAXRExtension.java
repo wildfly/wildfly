@@ -70,10 +70,6 @@ public class JAXRExtension extends AbstractLegacyExtension {
 
         ManagementResourceRegistration subsystemRoot = subsystemRegistration.registerSubsystemModel(new JAXRSubsystemRootResource());
 
-        if (context.isRegisterTransformers()) {
-            JAXRSubsystemRootResource.registerTransformerers(subsystemRegistration);
-        }
-
         return Collections.singleton(subsystemRoot);
     }
 

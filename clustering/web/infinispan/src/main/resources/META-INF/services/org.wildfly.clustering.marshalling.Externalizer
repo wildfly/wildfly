@@ -1,0 +1,10 @@
+org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyExternalizer
+org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeKeyExternalizer
+org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataExternalizer
+org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKeyExternalizer
+org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataEntryExternalizer
+org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyExternalizer
+org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyFilterExternalizer
+org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyExternalizer
+org.wildfly.clustering.web.infinispan.sso.AuthenticationEntryExternalizer
+org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyExternalizer

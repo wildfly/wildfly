@@ -41,7 +41,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
-        <module name="org.hornetq.journal"/>
+        <module name="org.apache.activemq.artemis"/>
         <module name="javax.orb.api"/>
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.weld.core"/>

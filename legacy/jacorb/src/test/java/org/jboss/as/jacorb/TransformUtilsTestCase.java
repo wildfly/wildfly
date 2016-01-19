@@ -2,8 +2,11 @@ package org.jboss.as.jacorb;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
@@ -22,7 +25,6 @@ public class TransformUtilsTestCase {
         legacyModel.get("sun").set("on");
         legacyModel.get("comet").set("off");
         ModelNode newModel = TransformUtils.transformModel(legacyModel);
-        System.out.println(newModel);
         Assert.assertTrue(newModel.get("name").equals(new ModelNode("test")));
         Assert.assertTrue(newModel.get("giop-version").equals(new ModelNode("1.2")));
         Assert.assertTrue(newModel.get("security").equals(new ModelNode("none")));
@@ -32,24 +34,37 @@ public class TransformUtilsTestCase {
     }
 
     @Test
+    public void testExpressions() {
+        ModelNode legacyModel = new ModelNode();
+        legacyModel.get("name").set(new ValueExpression("${name}"));
+        legacyModel.get("giop-minor-version").set(new ValueExpression("${giop.minor.version:2}"));
+        ModelNode newModel = TransformUtils.transformModel(legacyModel);
+        Assert.assertTrue(newModel.get("name").equals(new ModelNode(new ValueExpression("${name}"))));
+        Assert.assertTrue(newModel.get("giop-version").equals(new ModelNode(new ValueExpression("${giop.minor.version:1.2}"))));
+    }
+
+    @Test
     public void testRejectedOnOffAttributeTurnedOff() throws Exception {
         ModelNode model = new ModelNode();
         model.get("iona").set("off");
-        TransformUtils.checkLegacyModel(model, true);
+        List<String> result =TransformUtils.checkLegacyModel(model);
+        Assert.assertTrue(result.isEmpty());
     }
 
-    @Test(expected = OperationFailedException.class)
+    @Test
     public void testRejectedOnOffAttribute() throws Exception {
         ModelNode model = new ModelNode();
         model.get("iona").set("on");
-        TransformUtils.checkLegacyModel(model, true);
+        List<String> result = TransformUtils.checkLegacyModel(model);
+        Assert.assertFalse(result.isEmpty());
     }
 
-    @Test(expected = OperationFailedException.class)
+    @Test
     public void testRejectedAttribute() throws Exception {
         ModelNode model = new ModelNode();
         model.get("queue-min").set(5);
-        TransformUtils.checkLegacyModel(model, true);
+        List<String> result = TransformUtils.checkLegacyModel(model);
+        Assert.assertFalse(result.isEmpty());
     }
 
 }

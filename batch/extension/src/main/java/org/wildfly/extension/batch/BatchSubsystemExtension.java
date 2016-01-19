@@ -57,11 +57,12 @@ public class BatchSubsystemExtension implements Extension {
         subsystem.registerXMLElementWriter(BatchSubsystemParser.INSTANCE);
         // Register the deployment resources
         if (context.isRuntimeOnlyRegistrationValid()) {
-            final SimpleResourceDefinition deploymentResource = new SimpleResourceDefinition(
+            final SimpleResourceDefinition deploymentResource = new SimpleResourceDefinition(new SimpleResourceDefinition.Parameters(
                     BatchSubsystemDefinition.SUBSYSTEM_PATH,
-                    BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment"));
+                    BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment")).setRuntime());
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(deploymentResource);
             final ManagementResourceRegistration jobRegistration = deployments.registerSubModel(BatchJobResourceDefinition.INSTANCE);
+            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
             jobRegistration.registerSubModel(new BatchJobExecutionResourceDefinition()).setRuntimeOnly(true);
         }
     }

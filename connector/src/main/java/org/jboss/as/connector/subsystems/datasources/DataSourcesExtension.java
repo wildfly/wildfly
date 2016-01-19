@@ -33,6 +33,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -59,12 +60,14 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MOD
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
@@ -111,9 +114,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -151,7 +155,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -190,6 +194,7 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_2.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_3_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_4_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -208,34 +213,35 @@ public class DataSourcesExtension implements Extension {
             writer.writeStartElement(DATASOURCES);
 
             if (node.hasDefined(DATA_SOURCE) || node.hasDefined(XA_DATASOURCE)) {
-                boolean isXADataSource = false;
 
                 if (node.hasDefined(DATA_SOURCE)) {
-                    writeDS(writer, false, node.get(DATA_SOURCE).asPropertyList());
+                    writeDS(writer, false, node.get(DATA_SOURCE));
                 }
                 if (node.hasDefined(XA_DATASOURCE)) {
-                    writeDS(writer, true, node.get(XA_DATASOURCE).asPropertyList());
+                    writeDS(writer, true, node.get(XA_DATASOURCE));
                 }
 
             }
 
             if (node.hasDefined(JDBC_DRIVER_NAME)) {
                 writer.writeStartElement(DataSources.Tag.DRIVERS.getLocalName());
-                for (Property driverProperty : node.get(JDBC_DRIVER_NAME).asPropertyList()) {
+                ModelNode drivers = node.get(JDBC_DRIVER_NAME);
+                for (String driverName : drivers.keys()) {
+                    ModelNode driver = drivers.get(driverName);
                     writer.writeStartElement(DataSources.Tag.DRIVER.getLocalName());
-                    writer.writeAttribute(Driver.Attribute.NAME.getLocalName(), driverProperty.getValue().require(DRIVER_NAME.getName()).asString());
-                    if (has(driverProperty.getValue(), DRIVER_MODULE_NAME.getName())) {
-                        String moduleName = driverProperty.getValue().get(DRIVER_MODULE_NAME.getName()).asString();
-                        if (has(driverProperty.getValue(), MODULE_SLOT.getName())) {
-                            moduleName = moduleName + ":" + driverProperty.getValue().get(MODULE_SLOT.getName()).asString();
+                    writer.writeAttribute(Driver.Attribute.NAME.getLocalName(), driver.require(DRIVER_NAME.getName()).asString());
+                    if (has(driver, DRIVER_MODULE_NAME.getName())) {
+                        String moduleName = driver.get(DRIVER_MODULE_NAME.getName()).asString();
+                        if (has(driver, MODULE_SLOT.getName())) {
+                            moduleName = moduleName + ":" + driver.get(MODULE_SLOT.getName()).asString();
                         }
                         writer.writeAttribute(Driver.Attribute.MODULE.getLocalName(), moduleName);
                     }
-                    writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MAJOR_VERSION, DRIVER_MAJOR_VERSION.getName());
-                    writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MINOR_VERSION, DRIVER_MINOR_VERSION.getName());
-                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DRIVER_CLASS.getLocalName(), DRIVER_CLASS_NAME.getName());
-                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.XA_DATASOURCE_CLASS.getLocalName(), DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
-                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DATASOURCE_CLASS.getLocalName(), DRIVER_DATASOURCE_CLASS_NAME.getName());
+                    writeAttributeIfHas(writer, driver, Driver.Attribute.MAJOR_VERSION, DRIVER_MAJOR_VERSION.getName());
+                    writeAttributeIfHas(writer, driver, Driver.Attribute.MINOR_VERSION, DRIVER_MINOR_VERSION.getName());
+                    writeElementIfHas(writer, driver, Driver.Tag.DRIVER_CLASS.getLocalName(), DRIVER_CLASS_NAME.getName());
+                    writeElementIfHas(writer, driver, Driver.Tag.XA_DATASOURCE_CLASS.getLocalName(), DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
+                    writeElementIfHas(writer, driver, Driver.Tag.DATASOURCE_CLASS.getLocalName(), DRIVER_DATASOURCE_CLASS_NAME.getName());
 
                     writer.writeEndElement();
                 }
@@ -246,21 +252,23 @@ public class DataSourcesExtension implements Extension {
             writer.writeEndElement();
         }
 
-        private void writeDS(XMLExtendedStreamWriter writer, boolean isXADataSource, List<Property> propertyList) throws XMLStreamException {
-            for (Property property : propertyList) {
-                final ModelNode dataSourceNode = property.getValue();
+        private void writeDS(XMLExtendedStreamWriter writer, boolean isXADataSource, ModelNode datasources) throws XMLStreamException {
+            for (String dsName : datasources.keys()) {
+                final ModelNode dataSourceNode = datasources.get(dsName);
 
                 writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
                         : DataSources.Tag.DATASOURCE.getLocalName());
                 JTA.marshallAsAttribute(dataSourceNode, writer);
                 JNDI_NAME.marshallAsAttribute(dataSourceNode, writer);
-                writer.writeAttribute("pool-name", property.getName());
+                writer.writeAttribute("pool-name", dsName);
                 ENABLED.marshallAsAttribute(dataSourceNode, writer);
                 USE_JAVA_CONTEXT.marshallAsAttribute(dataSourceNode, writer);
                 SPY.marshallAsAttribute(dataSourceNode, writer);
                 USE_CCM.marshallAsAttribute(dataSourceNode, writer);
                 CONNECTABLE.marshallAsAttribute(dataSourceNode, writer);
                 TRACKING.marshallAsAttribute(dataSourceNode, writer);
+                MCP.marshallAsAttribute(dataSourceNode, writer);
+                ENLISTMENT_TRACE.marshallAsAttribute(dataSourceNode, writer);
                 STATISTICS_ENABLED.marshallAsAttribute(dataSourceNode, writer);
 
                 if (!isXADataSource) {
@@ -303,6 +311,7 @@ public class DataSourcesExtension implements Extension {
                         MIN_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         POOL_PREFILL.isMarshallable(dataSourceNode) ||
+                        POOL_FAIR.isMarshallable(dataSourceNode) ||
                         POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode) ||
                         POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode) ||
                         ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode) ||
@@ -328,6 +337,7 @@ public class DataSourcesExtension implements Extension {
                     INITIAL_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
                     MAX_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
                     POOL_PREFILL.marshallAsElement(dataSourceNode, writer);
+                    POOL_FAIR.marshallAsElement(dataSourceNode, writer);
                     POOL_USE_STRICT_MIN.marshallAsElement(dataSourceNode, writer);
                     POOL_FLUSH_STRATEGY.marshallAsElement(dataSourceNode, writer);
                     ALLOW_MULTIPLE_USERS.marshallAsElement(dataSourceNode, writer);

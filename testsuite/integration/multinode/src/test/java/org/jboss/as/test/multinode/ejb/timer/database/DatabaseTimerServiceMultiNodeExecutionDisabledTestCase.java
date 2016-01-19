@@ -90,20 +90,20 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "datasources");
-            address.add("data-source", "MyNewDs");
+            address.add("data-source", "MyNewDs_disabled");
             address.protect();
 
             final ModelNode operation = new ModelNode();
             operation.get(OP).set("add");
             operation.get(OP_ADDR).set(address);
 
-            operation.get("name").set("MyNewDs");
-            operation.get("jndi-name").set("java:jboss/datasources/TimeDs");
+            operation.get("name").set("MyNewDs_disabled");
+            operation.get("jndi-name").set("java:jboss/datasources/TimeDs_disabled");
             operation.get("enabled").set(true);
 
 
             operation.get("driver-name").set("h2");
-            operation.get("pool-name").set("MyNewDs_Pool");
+            operation.get("pool-name").set("MyNewDs_disabled_Pool");
 
             operation.get("connection-url").set("jdbc:h2:" + server.getURL() + "/testdb;DB_CLOSE_DELAY=-1");
             operation.get("user-name").set("sa");
@@ -116,7 +116,7 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
             op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
             op.get(OP_ADDR).add("service", "timer-service");
             op.get(OP_ADDR).add("database-data-store", "dbstore");
-            op.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs");
+            op.get("datasource-jndi-name").set("java:jboss/datasources/TimeDs_disabled");
             op.get("database").set("postgresql");
             if (containerId.equals("multinode-client")) {
                 op.get("allow-execution").set(false);
@@ -141,7 +141,7 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
             op = new ModelNode();
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, "datasources");
-            op.get(OP_ADDR).add("data-source", "MyNewDs");
+            op.get(OP_ADDR).add("data-source", "MyNewDs_disabled");
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);

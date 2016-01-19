@@ -25,8 +25,8 @@ package org.wildfly.extension.messaging.activemq.ha;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.ALLOW_FAILBACK;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CLUSTER_NAME;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.FAILBACK_DELAY;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.GROUP_NAME;
+import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.RESTART_BACKUP;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
@@ -62,7 +62,7 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
         attributes.add(CLUSTER_NAME);
         attributes.add(GROUP_NAME);
         attributes.add(ALLOW_FAILBACK);
-        attributes.add(FAILBACK_DELAY);
+        attributes.add(INITIAL_REPLICATION_SYNC_TIMEOUT);
         attributes.add(MAX_SAVED_REPLICATED_JOURNAL_SIZE);
         attributes.add(RESTART_BACKUP);
 
@@ -97,7 +97,7 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
     static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ReplicaPolicyConfiguration haPolicyConfiguration = new ReplicaPolicyConfiguration()
                 .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
-                .setFailbackDelay(FAILBACK_DELAY.resolveModelAttribute(context, model).asLong())
+                .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong())
                 .setMaxSavedReplicatedJournalsSize(MAX_SAVED_REPLICATED_JOURNAL_SIZE.resolveModelAttribute(context, model).asInt())
                 .setScaleDownConfiguration(addScaleDownConfiguration(context, model))
                 .setRestartBackup(RESTART_BACKUP.resolveModelAttribute(context, model).asBoolean());

@@ -30,6 +30,7 @@ import javax.transaction.TransactionManager;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.JobTask;
 import org.jberet.spi.JobXmlResolver;
 import org.wildfly.jberet._private.WildFlyBatchLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -53,7 +54,7 @@ public class BatchEnvironmentFactory {
         }
 
         @Override
-        public void submitTask(final Runnable runnable) {
+        public void submitTask(final JobTask jobTask) {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
@@ -72,13 +73,7 @@ public class BatchEnvironmentFactory {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
-        /**
-         * {@inheritDoc}
-         * @deprecated this is no longer used in jBeret and will be removed
-         * @return
-         */
         @Override
-        @Deprecated
         public Properties getBatchConfigurationProperties() {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }

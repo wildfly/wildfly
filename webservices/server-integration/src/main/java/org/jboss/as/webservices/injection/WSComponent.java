@@ -46,18 +46,21 @@ public final class WSComponent extends BasicComponent {
     }
 
     public BasicComponentInstance getComponentInstance() {
-       if (wsComponentInstance == null) {
-           synchronized (lock) {
-               if (wsComponentInstance == null && reference == null) {
-                   wsComponentInstance = (BasicComponentInstance) createInstance();
-               }
-               if (wsComponentInstance == null && reference != null) {
-                   wsComponentInstance = (BasicComponentInstance) this.createInstance(reference.getInstance());
-               }
-           }
-       }
-       return wsComponentInstance;
-    }
+        BasicComponentInstance result = wsComponentInstance;
+        if (result == null) {
+            synchronized (lock) {
+                result = wsComponentInstance;
+                if (result == null) {
+                    if (reference == null) {
+                        wsComponentInstance = result = (BasicComponentInstance) createInstance();
+                    } else {
+                        wsComponentInstance = result = (BasicComponentInstance) this.createInstance(reference.getInstance());
+                    }
+                }
+            }
+        }
+        return result;
+     }
 
     public void setReference(ManagedReference reference) {
         this.reference = reference;

@@ -103,7 +103,6 @@ public class EjbDeploymentTestCase {
         war.addAsWebInfResource(EjbDeploymentTestCase.class.getPackage(), "ejb-web.xml", "web.xml");
         //war.addAsManifestResource(new StringAsset("Dependencies: deployment." + rarDeploymentName + "\n"), "MANIFEST.MF");
 
-        log.info(war.toString(true));
         return war;
     }
 

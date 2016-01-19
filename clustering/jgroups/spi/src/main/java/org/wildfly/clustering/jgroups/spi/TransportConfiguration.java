@@ -29,6 +29,7 @@ import org.jboss.as.network.SocketBinding;
  */
 public interface TransportConfiguration extends ProtocolConfiguration {
 
+    @Deprecated
     boolean isShared();
 
     SocketBinding getDiagnosticsSocketBinding();

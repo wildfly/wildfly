@@ -46,11 +46,13 @@ public class TopologyChangeListenerServlet extends HttpServlet {
     private static final String CONTAINER = "container";
     private static final String CACHE = "cache";
     private static final String NODES = "nodes";
+    private static final String TIMEOUT = "timeout";
 
-    public static URI createURI(URL baseURL, String container, String cache, String... nodes) throws URISyntaxException {
+    public static URI createURI(URL baseURL, String container, String cache, long timeout, String... nodes) throws URISyntaxException {
         StringBuilder builder = new StringBuilder(baseURL.toURI().resolve(SERVLET_NAME).toString());
         builder.append('?').append(CONTAINER).append('=').append(container);
         builder.append('&').append(CACHE).append('=').append(cache);
+        builder.append('&').append(TIMEOUT).append('=').append(timeout);
         for (String node: nodes) {
             builder.append('&').append(NODES).append('=').append(node);
         }
@@ -66,8 +68,9 @@ public class TopologyChangeListenerServlet extends HttpServlet {
         String container = getRequiredParameter(request, CONTAINER);
         String cache = getRequiredParameter(request, CACHE);
         String[] nodes = request.getParameterValues(NODES);
+        long timeout = parseLong(getRequiredParameter(request, TIMEOUT));
         try {
-            this.listener.establishTopology(container, cache, nodes);
+            this.listener.establishTopology(container, cache, timeout, nodes);
         } catch (InterruptedException e) {
             throw new ServletException(e);
         }
@@ -79,5 +82,13 @@ public class TopologyChangeListenerServlet extends HttpServlet {
             throw new ServletException(String.format("No '%s' parameter specified", name));
         }
         return value;
+    }
+
+    private static long parseLong(String value) throws ServletException {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            throw new ServletException(String.format("Value '%s' cannot be parsed to long.", value), e);
+        }
     }
 }

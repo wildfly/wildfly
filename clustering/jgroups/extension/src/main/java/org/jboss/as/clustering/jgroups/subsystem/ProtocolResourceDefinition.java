@@ -25,18 +25,15 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.RequiredCapability;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
@@ -47,7 +44,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -71,12 +67,13 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  * Resource description for /subsystem=jgroups/stack=X/protocol=Y
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class ProtocolResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class ProtocolResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String name) {
+    public static PathElement pathElement(String name) {
         return PathElement.pathElement("protocol", name);
     }
 
@@ -122,7 +119,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
                     .setAllowExpression(true)
                     .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
                     .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setDefaultValue(new ModelNode().setEmptyList())
+                    .setDefaultValue(new ModelNode().setEmptyObject())
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
@@ -171,10 +168,16 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
-                    return Util.createOperation("add-protocol", stackAddress);
+                    ModelNode addProtocolOp = operation.clone();
+                    addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
+                    addProtocolOp.get(ModelDescriptionConstants.OP).set("add-protocol");
+
+                    addProtocolOp = new LegacyPropertyAddOperationTransformer().transformOperation(addProtocolOp);
+
+                    return addProtocolOp;
                 }
             };
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(addTransformer).addAttributes(Attribute.class)).inheritResourceAttributeDefinitions();
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(addTransformer)).inheritResourceAttributeDefinitions();
 
             // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
             OperationTransformer removeTransformer = new OperationTransformer() {
@@ -189,15 +192,16 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
                 }
             };
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    /*
+    /**
      * Builds transformations common to both protocols and transport.
      */
-    @SuppressWarnings("deprecation")
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -215,34 +219,13 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
                     .setValueConverter(typeConverter, DeprecatedAttribute.TYPE.getDefinition())
                     .end();
 
-            OperationTransformer putPropertyTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(Attribute.PROPERTIES.getDefinition().getName())) {
-                        String key = operation.get("key").asString();
-                        ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
-                        PathAddress address = Operations.getPathAddress(operation);
-                        ModelNode transformedOperation = Util.createAddOperation(address.append(PropertyResourceDefinition.pathElement(key)));
-                        transformedOperation.get(PropertyResourceDefinition.VALUE.getName()).set(value);
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(putPropertyTransformer));
+            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
 
-            OperationTransformer removePropertyTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.get(ModelDescriptionConstants.NAME).asString().equals(Attribute.PROPERTIES.getDefinition().getName())) {
-                        String key = operation.get("key").asString();
-                        PathAddress address = Operations.getPathAddress(operation);
-                        return Util.createRemoveOperation(address.append(PropertyResourceDefinition.pathElement(key)));
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_PUT_DEFINITION.getName(), new SimpleOperationTransformer(removePropertyTransformer));
+            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
+                builder.addOperationTransformationOverride(opName)
+                        .inheritResourceAttributeDefinitions()
+                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
+            }
         }
     }
 
@@ -257,35 +240,10 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition impleme
         this.parentBuilderFactory = parentBuilderFactory;
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
-                .addCapabilities(Capability.class)
-        ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, Attribute.class).register(registration);
-
-        for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
-            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
-        }
-    }
-
     @SuppressWarnings("deprecation")
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration registration) {
         new PropertyResourceDefinition().register(registration);
     }
 
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
-    }
 }

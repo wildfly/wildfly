@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.xts.wsba.coordinatorcompletion.client;
 
-import java.io.File;
-
 import javax.inject.Inject;
 
 import com.arjuna.mw.wst11.UserBusinessActivity;
@@ -33,18 +31,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.base.BaseFunctionalTest;
 import org.jboss.as.test.xts.base.TestApplicationException;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.as.test.xts.util.EventLog;
 import org.jboss.as.test.xts.util.EventLogEvent;
 import org.jboss.as.test.xts.wsba.coordinatorcompletion.service.BACoordinatorCompletion;
 import org.jboss.as.test.xts.wsba.coordinatorcompletion.service.BACoordinatorCompletionService1;
 import org.jboss.as.test.xts.wsba.coordinatorcompletion.service.BACoordinatorCompletionService2;
 import org.jboss.as.test.xts.wsba.coordinatorcompletion.service.BACoordinatorCompletionService3;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -69,15 +63,13 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
     public static final String ARCHIVE_NAME = "wsba-coordinatorcompletition-test";
 
     @Deployment
-    public static Archive<?> createTestArchive() {
-        Archive<?> war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war")
+    public static WebArchive createTestArchive() {
+        final WebArchive war = DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
                 .addPackage(BACoordinatorCompletion.class.getPackage())
                 .addPackage(BACoordinatorCompletionClient.class.getPackage())
                 .addPackage(EventLog.class.getPackage())
                 .addPackage(BaseFunctionalTest.class.getPackage())
-
                 .addAsResource("context-handlers.xml")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
         return war;
     }

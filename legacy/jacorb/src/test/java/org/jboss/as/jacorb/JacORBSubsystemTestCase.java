@@ -22,25 +22,20 @@
 package org.jboss.as.jacorb;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import javax.xml.stream.XMLStreamException;
-
 import java.io.IOException;
 import java.util.List;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -200,6 +195,19 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testSubsystemWithIORSettings() throws Exception {
         super.standardSubsystemTest("subsystem-ior-settings.xml");
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.ADMIN_ONLY_HC;
+    }
+
+    @Override
+    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
+        final ModelNode operation = createDescribeOperation();
+        final ModelNode result = hc.executeOperation(operation);
+        Assert.assertTrue("The subsystem describe operation must fail",
+                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
     }
 
 }

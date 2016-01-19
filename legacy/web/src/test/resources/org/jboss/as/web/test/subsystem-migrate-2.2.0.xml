@@ -58,7 +58,7 @@
                         password="${prop.password:changeit}"
                         cipher-suite="${prop.cipher-suite:SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
                         protocol="${prop.native:TLSv1.2}"
-                        verify-client="${prop.verify-client:true}"
+                        verify-client="optional"
                         verify-depth="${prop.verify-depth:3}"
                         certificate-file="${prop.certificate-file:certificate-file.ext}"
                         ca-revocation-url="${prop.ca-revocation-url:https://example.org/some/url}"
@@ -70,7 +70,7 @@
                         ssl-protocol="${prop.ssl-protocol:RFC4279}"
                       />
             </connector>
-            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
+            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" secure="true" >
                 <virtual-server name="vs1" />
                 <virtual-server name="vs2" />
             </connector>
@@ -97,5 +97,9 @@
             <valve name="myvalve2" module="org.jboss.some.module2" class-name="org.jboss.some.class" enabled="false">
                <param param-name="param-name1" param-value="${prop.valve-param:some-value}"/>
                <param param-name="param-name2" param-value="${prop.valve-param:some-value}"/>
+            </valve>
+            <valve name="request-dumper" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RequestDumperValve"/>
+            <valve name="remote-addr" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RemoteAddrValve">
+                <param param-name="allow" param-value="127.0.0.1,127.0.0.2" />
             </valve>
         </subsystem>

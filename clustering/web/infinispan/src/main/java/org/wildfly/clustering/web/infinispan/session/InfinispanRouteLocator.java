@@ -28,6 +28,7 @@ import org.infinispan.distribution.DistributionManager;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.web.session.RouteLocator;
 
@@ -56,15 +57,11 @@ public class InfinispanRouteLocator implements RouteLocator {
             Node node = this.factory.createNode(location);
             entry = this.registry.getEntry(node);
         }
-        if (entry == null) {
-            // Accommodate mod_cluster's lazy route auto-generation
-            entry = this.registry.getLocalEntry();
-        }
         return (entry != null) ? entry.getKey() : null;
     }
 
     private Address locatePrimaryOwner(String sessionId) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getPrimaryLocation(sessionId) : this.cache.getCacheManager().getAddress();
+        return (dist != null) ? dist.getPrimaryLocation(new Key<>(sessionId)) : this.cache.getCacheManager().getAddress();
     }
 }

@@ -75,7 +75,7 @@ public class JMSOperationsProvider {
         if(className == null) {
             throw new JMSOperationsException("Please specify a property " + PROPERTY_NAME + " in " + FILE_NAME);
         }
-        System.out.println("Creating instance of class: " + className);
+        //System.out.println("Creating instance of class: " + className);
         Object jmsOperationsInstance;
         try {
             Class clazz = Class.forName(className);
@@ -118,7 +118,7 @@ public class JMSOperationsProvider {
         if(className == null) {
             throw new JMSOperationsException("Please specify a property " + PROPERTY_NAME + " in " + FILE_NAME);
         }
-        System.out.println("Creating instance of class: " + className);
+        //System.out.println("Creating instance of class: " + className);
         Object jmsOperationsInstance;
         try {
             Class clazz = Class.forName(className);
@@ -137,7 +137,6 @@ public class JMSOperationsProvider {
     }
 
     static void execute(ModelControllerClient client, final ModelNode operation) throws IOException, JMSOperationsException {
-        System.out.println("operation = " + operation.toJSONString(true));
         ModelNode result = client.execute(operation);
         if (result.hasDefined(ClientConstants.OUTCOME) && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
             logger.info("Operation successful for update = " + operation.toString());

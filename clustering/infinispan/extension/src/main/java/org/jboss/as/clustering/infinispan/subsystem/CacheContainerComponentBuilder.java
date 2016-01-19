@@ -22,12 +22,22 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.GroupServiceNameFactory;
+
 /**
  * @author Paul Ferraro
  */
-public abstract class CacheContainerComponentBuilder<C> extends ComponentConfigurationBuilder<C> {
+public abstract class CacheContainerComponentBuilder<C> extends ComponentBuilder<C> {
 
-    CacheContainerComponentBuilder(CacheContainerComponent component, String containerName) {
-        super(new CacheContainerComponentServiceNameProvider(component, containerName));
+    CacheContainerComponentBuilder(GroupServiceNameFactory factory, String containerName) {
+        super(new CacheContainerComponentServiceNameProvider(factory, containerName));
+    }
+
+    @Override
+    public ServiceBuilder<C> build(ServiceTarget target) {
+        return super.build(target).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 }

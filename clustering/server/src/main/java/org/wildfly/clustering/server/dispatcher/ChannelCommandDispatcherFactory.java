@@ -23,8 +23,9 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +53,11 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
+import org.wildfly.clustering.service.concurrent.ServiceExecutor;
+import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 
 /**
  * {@link MessageDispatcher} based {@link CommandDispatcherFactory}.
@@ -66,6 +70,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     final Map<Object, AtomicReference<Object>> contexts = new ConcurrentHashMap<>();
     final MarshallingContext marshallingContext;
 
+    private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final AtomicReference<View> view = new AtomicReference<>();
     private final MessageDispatcher dispatcher;
@@ -89,26 +94,29 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.dispatcher.setChannel(channel);
         this.dispatcher.setRequestHandler(this);
         this.dispatcher.setMembershipListener(this);
-        this.dispatcher.start();
+        this.dispatcher.asyncDispatching(true).start();
         this.view.compareAndSet(null, channel.getView());
     }
 
     @Override
     public void close() {
-        this.dispatcher.stop();
+        this.executor.close(() -> {
+            this.dispatcher.stop();
+            this.dispatcher.getChannel().setUpHandler(null);
+        });
     }
 
     @Override
     public Object handle(Message message) throws Exception {
-        try (InputStream input = new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength())) {
-            int version = input.read();
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
+            int version = IndexExternalizer.VARIABLE.readData(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
-                @SuppressWarnings("unchecked")
-                Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 AtomicReference<Object> context = this.contexts.get(clientId);
                 if (context == null) return NoSuchService.INSTANCE;
+                @SuppressWarnings("unchecked")
+                Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 return command.execute(context.get());
             }
         }
@@ -125,15 +133,16 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         CommandMarshaller<C> marshaller = new CommandMarshaller<C>() {
             @Override
             public <R> byte[] marshal(Command<R, C> command) throws IOException {
-                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                    output.write(version);
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                try (DataOutputStream output = new DataOutputStream(bytes)) {
+                    IndexExternalizer.VARIABLE.writeData(output, version);
                     try (Marshaller marshaller = ChannelCommandDispatcherFactory.this.marshallingContext.createMarshaller(version)) {
                         marshaller.start(Marshalling.createByteOutput(output));
                         marshaller.writeObject(id);
                         marshaller.writeObject(command);
                         marshaller.flush();
                     }
-                    return output.toByteArray();
+                    return bytes.toByteArray();
                 }
             }
         };
@@ -212,9 +221,11 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 this.nodeFactory.invalidate(leftMembers);
             }
 
-            for (Listener listener: this.listeners) {
-                listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
-            }
+            this.executor.execute(() -> {
+                for (Listener listener: this.listeners) {
+                    listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+                }
+            });
         }
     }
 

@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ValueExpression;
+import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.jboss.dmr.ModelNode;
@@ -68,9 +69,14 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                         .setAllowExpression(true)
                         .setDefaultValue(new ModelNode(false))
                         .build();
+    protected static final SimpleAttributeDefinition DEFAULT_SECURITY_DOMAIN =
+            new SimpleAttributeDefinitionBuilder("default-security-domain", ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(SecurityConstants.DEFAULT_APPLICATION_POLICY))
+                    .build();
 
 
-    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED};
+    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN};
     static final PersistentResourceDefinition[] CHILDREN = {
             BufferCacheDefinition.INSTANCE,
             ServerDefinition.INSTANCE,

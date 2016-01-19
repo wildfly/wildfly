@@ -37,5 +37,7 @@ public interface ServiceProviderRegistrationFactory<T> extends ServiceProviderRe
      * @param listener a registry listener
      * @return a new service provider registration
      */
-    ServiceProviderRegistration<T> createRegistration(T service, ServiceProviderRegistration.Listener listener);
+    default ServiceProviderRegistration<T> createRegistration(T service, ServiceProviderRegistration.Listener listener) {
+        return this.register(service, listener);
+    }
 }

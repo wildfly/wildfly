@@ -24,7 +24,10 @@ package org.wildfly.clustering.server.singleton;
 import java.util.concurrent.atomic.AtomicReference;
 
 public interface SingletonContext<T> {
-    void stopOldMaster();
+
+    void start();
+
+    void stop();
 
     AtomicReference<T> getValueRef();
 }

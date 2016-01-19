@@ -21,11 +21,13 @@
  */
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.as.clustering.controller.Schema;
+
 /**
  * Enumeration of supported subsystem schemas.
  * @author Paul Ferraro
  */
-public enum SingletonSchema {
+public enum SingletonSchema implements Schema<SingletonSchema> {
 
     VERSION_1_0(1, 0),
     ;
@@ -39,29 +41,18 @@ public enum SingletonSchema {
         this.minor = minor;
     }
 
-    /**
-     * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
-     * @param a schema
-     * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
-     */
-    public boolean since(SingletonSchema schema) {
-        return (this.major > schema.major) || ((this.major == schema.major) && (this.minor >= schema.minor));
+    @Override
+    public int major() {
+        return this.major;
     }
 
-    /**
-     * Get the namespace URI for this schema version.
-     * @return the namespace URI
-     */
+    @Override
+    public int minor() {
+        return this.minor;
+    }
+
+    @Override
     public String getNamespaceUri() {
-        return this.format("urn:jboss:domain:singleton:%d.%d");
-    }
-
-    /**
-     * Formats a string using the specified pattern.
-     * @param pattern a formatter pattern
-     * @return a formatted string
-     */
-    String format(String pattern) {
-        return String.format(pattern, this.major, this.minor);
+        return String.format("urn:jboss:domain:singleton:%d.%d", this.major, this.minor);
     }
 }

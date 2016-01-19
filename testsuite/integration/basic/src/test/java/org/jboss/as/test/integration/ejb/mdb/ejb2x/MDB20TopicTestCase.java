@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,6 +43,9 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests EJB2.0 MDBs listening on a topic.
@@ -81,13 +85,14 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDB20TopicTestCase.jar");
         ejbJar.addClasses(EJB2xMDB.class, AbstractMDB2xTestCase.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20TopicTestCase.class.getPackage(), "ejb-jar-20-topic.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20TopicTestCase.class.getPackage(), "jboss-ejb3-topic.xml", "jboss-ejb3.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         logger.info(ejbJar.toString(true));
         return ejbJar;
     }

@@ -43,5 +43,12 @@
         <module name="javax.servlet.api" />
         <module name="javax.annotation.api" export="true" />
         <module name="javax.interceptor.api"  export="true" />
+
+        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
+             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
+        <module name="javax.api"/>
+        <module name="javax.xml.rpc.api"/>
+        <module name="javax.rmi.api"/>
+        <module name="org.omg.api"/>
     </dependencies>
 </module>

@@ -98,7 +98,7 @@ public class RequestDumpingHandlerTestCase {
             // Retrieve original path to server log files
             ModelNode op = Util.getReadAttributeOperation(aLogAddr, "file");
             originalValue = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-            log.info("Original value: " + originalValue.toString());
+            log.debug("Original value: " + originalValue.toString());
             // Retrieve relative path to log files
             relativeTo = originalValue.get("relative-to").asString();
 
@@ -141,12 +141,13 @@ public class RequestDumpingHandlerTestCase {
             operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+
             operation = createOpNode(HTTPS_LISTENER_PATH, ModelDescriptionConstants.ADD);
             operation.get("socket-binding").set(HTTPS);
             operation.get("security-realm").set(HTTPS_REALM);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
 
         @Override

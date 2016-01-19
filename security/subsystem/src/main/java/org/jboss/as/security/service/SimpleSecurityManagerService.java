@@ -23,14 +23,12 @@ package org.jboss.as.security.service;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.ISecurityManagement;
+import org.picketbox.plugins.SecurityFactorySecurityManagement;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -40,11 +38,10 @@ public class SimpleSecurityManagerService implements Service<ServerSecurityManag
     public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("simple-security-manager");
 
     private final SimpleSecurityManager securityManager = new SimpleSecurityManager();
-    private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
 
     @Override
     public void start(StartContext context) throws StartException {
-        securityManager.setSecurityManagement(securityManagementValue.getValue());
+        securityManager.setSecurityManagement(new SecurityFactorySecurityManagement());
     }
 
     @Override
@@ -56,12 +53,4 @@ public class SimpleSecurityManagerService implements Service<ServerSecurityManag
         return securityManager;
     }
 
-    /**
-     * Target {@code Injector}
-     *
-     * @return target
-     */
-    public Injector<ISecurityManagement> getSecurityManagementInjector() {
-        return securityManagementValue;
-    }
 }

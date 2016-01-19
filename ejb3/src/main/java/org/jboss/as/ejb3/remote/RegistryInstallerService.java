@@ -36,15 +36,20 @@ public class RegistryInstallerService implements Service<Void> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings", "installer");
 
+    private final String clientMappingsClusterName;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<RegistryCollector> collector = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<>();
 
+    public RegistryInstallerService(String clientMappingsClusterName) {
+        this.clientMappingsClusterName = clientMappingsClusterName;
+    }
+
     public ServiceBuilder<Void> build(ServiceTarget target) {
         return target.addService(SERVICE_NAME, this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME), Registry.class, this.registry)
+                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
         ;
     }
 

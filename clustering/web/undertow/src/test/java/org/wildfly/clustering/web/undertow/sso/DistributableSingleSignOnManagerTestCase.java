@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
-import io.undertow.security.impl.SingleSignOnManager;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -38,6 +37,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
+import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 
 /**
  * Unit test for {@link DistributableSingleSignOnManager}
@@ -64,8 +64,11 @@ public class DistributableSingleSignOnManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.createSSO(same(id), authenticationCaptor.capture())).thenReturn(sso);
+        when(batch.isActive()).thenReturn(true);
 
         SingleSignOn result = this.subject.createSingleSignOn(account, mechanism);
+
+        verify(batcher).suspendBatch();
 
         assertNotNull(result);
 
@@ -73,8 +76,6 @@ public class DistributableSingleSignOnManagerTestCase {
         assertNotNull(capturedAuthentication);
         assertSame(capturedAuthentication.getAccount(), account);
         assertSame(capturedAuthentication.getMechanism(), mechanism);
-
-        verifyNoMoreInteractions(batch);
     }
 
     @Test
@@ -86,47 +87,35 @@ public class DistributableSingleSignOnManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.findSSO(id)).thenReturn(null);
+        when(batch.isActive()).thenReturn(false);
 
         SingleSignOn result = this.subject.findSingleSignOn(id);
 
         assertNull(result);
 
         verify(batch).discard();
+        verify(batcher, never()).suspendBatch();
+
         reset(batch);
 
         SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
 
         when(this.manager.findSSO(id)).thenReturn(sso);
+        when(batch.isActive()).thenReturn(true);
 
         result = this.subject.findSingleSignOn(id);
 
         assertNotNull(result);
 
-        verifyNoMoreInteractions(batch);
+        verify(batcher).suspendBatch();
     }
 
     @Test
     public void removeSingleSignOn() {
-        String id = "sso";
-        Batcher<Batch> batcher = mock(Batcher.class);
-        Batch batch = mock(Batch.class);
+        InvalidatableSingleSignOn sso = mock(InvalidatableSingleSignOn.class);
 
-        when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.createBatch()).thenReturn(batch);
-        when(this.manager.findSSO(id)).thenReturn(null);
-
-        this.subject.removeSingleSignOn(id);
-
-        verify(batch).discard();
-        reset(batch);
-
-        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
-
-        when(this.manager.findSSO(id)).thenReturn(sso);
-
-        this.subject.removeSingleSignOn(id);
+        this.subject.removeSingleSignOn(sso);
 
         verify(sso).invalidate();
-        verify(batch).close();
     }
 }

@@ -45,7 +45,7 @@ public class SimpleDistributableSessionManagerConfiguration implements Distribut
         this(config.getMaxActiveSessions(), config.getReplicationConfig(), deploymentName, module);
     }
 
-    private SimpleDistributableSessionManagerConfiguration(Integer maxActiveSessions, ReplicationConfig replicationConfig, String deploymentName, Module module) {
+    public SimpleDistributableSessionManagerConfiguration(Integer maxActiveSessions, ReplicationConfig replicationConfig, String deploymentName, Module module) {
         this.maxActiveSessions = maxActiveSessions;
         this.replicationConfig = replicationConfig;
         this.deploymentName = deploymentName;

@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
+import org.apache.activemq.artemis.core.server.cluster.impl.MessageLoadBalancingType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -46,6 +47,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -116,8 +118,10 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = create("forward-when-no-consumers", BOOLEAN)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultClusterForwardWhenNoConsumers()))
+    // FIXME WFLY-4587 forward-when-no-consumers == true ? STRICT : ON_DEMAND
+    public static final SimpleAttributeDefinition MESSAGE_LOAD_BALANCING_TYPE = create("message-load-balancing-type", STRING)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterMessageLoadBalancingType()))
+            .setValidator(new EnumValidator<>(MessageLoadBalancingType.class, true, true))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -200,7 +204,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL,
             INITIAL_CONNECT_ATTEMPTS,
             RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
-            FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
+            MESSAGE_LOAD_BALANCING_TYPE, MAX_HOPS,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             NOTIFICATION_ATTEMPTS,
             NOTIFICATION_INTERVAL,

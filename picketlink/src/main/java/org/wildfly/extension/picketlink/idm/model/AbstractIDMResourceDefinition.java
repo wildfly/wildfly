@@ -46,11 +46,11 @@ public abstract class AbstractIDMResourceDefinition extends AbstractResourceDefi
     }
 
     protected AbstractIDMResourceDefinition(ModelElement modelElement, String name, OperationStepHandler addHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, name, addHandler, IDMConfigRemoveStepHandler.INSTANCE, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
+        super(modelElement, name, addHandler, DefaultRemoveStepHandler.INSTANCE, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
     }
 
     protected AbstractIDMResourceDefinition(ModelElement modelElement, OperationStepHandler addHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, addHandler, IDMConfigRemoveStepHandler.INSTANCE, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
+        super(modelElement, addHandler, DefaultRemoveStepHandler.INSTANCE, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
     }
 
     @Override

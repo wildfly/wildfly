@@ -2,12 +2,15 @@ package org.jboss.as.jacorb;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 import org.wildfly.iiop.openjdk.Constants;
 
 /**
@@ -18,7 +21,7 @@ public class TransformUtils {
     private TransformUtils() {
     }
 
-    static List<String> checkLegacyModel(final ModelNode model, final boolean failOnErrors) throws OperationFailedException {
+    static List<String> checkLegacyModel(final ModelNode model) throws OperationFailedException {
         final List<String> propertiesToReject = new LinkedList<>();
         for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ON_OFF_ATTRIBUTES_TO_REJECT) {
             if (model.hasDefined(attribute.getName())
@@ -31,13 +34,6 @@ public class TransformUtils {
                 propertiesToReject.add(attribute.getName());
             }
         }
-        if (!propertiesToReject.isEmpty()) {
-            if(failOnErrors) {
-                throw JacORBLogger.ROOT_LOGGER.cannotEmulateProperties(propertiesToReject);
-            } else {
-                JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(propertiesToReject);
-            }
-        }
         return propertiesToReject;
     }
 
@@ -45,13 +41,34 @@ public class TransformUtils {
         final ModelNode model = new ModelNode();
         for (Property property : legacyModel.asPropertyList()) {
             String name = property.getName();
-            final ModelNode legacyValue = property.getValue();
+            ModelNode legacyValue = property.getValue();
             if (legacyValue.isDefined()) {
-                final ModelNode value;
+                if(name.equals(JacORBSubsystemConstants.IOR_SETTINGS)){
+                    transformIorSettings(model, legacyValue);
+                    continue;
+                }
+                final boolean expression;
+                final String expressionVariable;
+                if(legacyValue.getType()==ModelType.EXPRESSION){
+                    expression = true;
+                    final Matcher matcher = Pattern.compile("\\A\\$\\{(.*):(.*)\\}\\Z").matcher(legacyValue.asExpression().getExpressionString());
+                    if(matcher.find()){
+                        expressionVariable = matcher.group(1);
+                        String abc = matcher.group(2);
+                        legacyValue = new ModelNode(abc);
+                    } else {
+                        model.get(name).set(legacyValue);
+                        continue;
+                    }
+                } else {
+                    expression = false;
+                    expressionVariable = null;
+                }
+                ModelNode value;
                 switch (name) {
                     case JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION:
                         name = Constants.ORB_GIOP_VERSION;
-                        value = new ModelNode(new StringBuilder().append("1.").append(legacyValue).toString());
+                        value = new ModelNode(new StringBuilder().append("1.").append(legacyValue.asString()).toString());
                         break;
                     case JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS:
                         if (legacyValue.asString().equals(JacORBSubsystemConstants.ON)) {
@@ -82,10 +99,27 @@ public class TransformUtils {
                         value = legacyValue;
                 }
                 if (!value.asString().equals(JacORBSubsystemConstants.OFF)) {
+                    if (expression) {
+                        String newExpression = "${" + expressionVariable;
+                        if(expressionVariable != null){
+                            newExpression += (":" + value.asString());
+                        }
+                        newExpression += "}";
+                        value = new ModelNode(new ValueExpression(newExpression));
+                    }
                     model.get(name).set(value);
                 }
             }
         }
         return model;
+    }
+
+    private static void transformIorSettings(final ModelNode model, final ModelNode legacyValue) {
+        for (final Property category : legacyValue.get(JacORBSubsystemConstants.DEFAULT).get(JacORBSubsystemConstants.SETTING)
+                .asPropertyList()) {
+            for (final Property property : category.getValue().asPropertyList()) {
+                model.get(property.getName()).set(property.getValue());
+            }
+        }
     }
 }

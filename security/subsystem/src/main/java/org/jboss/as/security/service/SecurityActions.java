@@ -22,22 +22,22 @@
 
 package org.jboss.as.security.service;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.remoting3.Connection;
-
-import static java.security.AccessController.doPrivileged;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 
 /**
  * Privileged blocks for this package
@@ -51,52 +51,93 @@ class SecurityActions {
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
         ModuleLoader loader = Module.getCallerModuleLoader();
         final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
-        return WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
+        GetModuleClassLoaderAction action = new GetModuleClassLoaderAction(module);
+        return WildFlySecurityManager.isChecking() ? doPrivileged(action) : action.run();
     }
 
     static Class<?> loadClass(final String name) throws ClassNotFoundException {
-        if (WildFlySecurityManager.isChecking()) {
-            try {
-                return doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
-                    public Class<?> run() throws ClassNotFoundException {
-                        ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
-                                WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), // User defined classes
-                                ClassLoader.getSystemClassLoader() // System loader, usually has app class path
-                        };
-                        ClassNotFoundException e = null;
-                        for (ClassLoader cl : cls) {
-                            if (cl == null) continue;
+        return classLoaderActions().loadClass(name);
+    }
 
-                            try {
-                                return cl.loadClass(name);
-                            } catch (ClassNotFoundException ce) {
-                                e = ce;
-                            }
-                        }
-                        throw e != null ? e : SecurityLogger.ROOT_LOGGER.cnfe(name);
+    static ClassLoader setThreadContextClassLoader(ClassLoader toSet) {
+        return classLoaderActions().setThreadContextClassLoader(toSet);
+    }
+
+    private static ClassLoaderActions classLoaderActions() {
+        return WildFlySecurityManager.isChecking() ? ClassLoaderActions.PRIVILEGED : ClassLoaderActions.NON_PRIVILEGED;
+    }
+
+    private interface ClassLoaderActions {
+
+        Class<?> loadClass(final String name) throws ClassNotFoundException;
+
+        ClassLoader setThreadContextClassLoader(ClassLoader toSet);
+
+        ClassLoaderActions NON_PRIVILEGED = new ClassLoaderActions() {
+
+            @Override
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
+                ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
+                        WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), // User defined classes
+                        ClassLoader.getSystemClassLoader() // System loader, usually has app class path
+                };
+                ClassNotFoundException e = null;
+                for (ClassLoader cl : cls) {
+                    if (cl == null)
+                        continue;
+
+                    try {
+                        return cl.loadClass(name);
+                    } catch (ClassNotFoundException ce) {
+                        e = ce;
                     }
-                });
-            } catch (PrivilegedActionException pae) {
-                throw SecurityLogger.ROOT_LOGGER.cnfeThrow(name, pae);
+                }
+                throw e != null ? e : SecurityLogger.ROOT_LOGGER.cnfe(name);
             }
-        } else {
-            ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
-                    WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), // User defined classes
-                    ClassLoader.getSystemClassLoader() // System loader, usually has app class path
-            };
-            ClassNotFoundException e = null;
-            for (ClassLoader cl : cls) {
-                if (cl == null)
-                    continue;
 
+            @Override
+            public ClassLoader setThreadContextClassLoader(ClassLoader toSet) {
+                Thread currentThread = Thread.currentThread();
+                ClassLoader previous = currentThread.getContextClassLoader();
+                currentThread.setContextClassLoader(toSet);
+                return previous;
+            }
+        };
+
+        ClassLoaderActions PRIVILEGED = new ClassLoaderActions() {
+
+            @Override
+            public Class<?> loadClass(final String name) throws ClassNotFoundException {
                 try {
-                    return cl.loadClass(name);
-                } catch (ClassNotFoundException ce) {
-                    e = ce;
+                    return doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
+
+                        @Override
+                        public Class<?> run() throws Exception {
+                            return NON_PRIVILEGED.loadClass(name);
+                        }
+                    });
+                } catch (PrivilegedActionException e) {
+                    Exception cause = e.getException();
+                    if (cause instanceof ClassNotFoundException) {
+                        throw (ClassNotFoundException) cause;
+                    } else if (cause instanceof RuntimeException) {
+                        throw (RuntimeException) cause;
+                    }
+                    throw new RuntimeException(cause);
                 }
             }
-            throw e != null ? e : SecurityLogger.ROOT_LOGGER.cnfe(name);
-        }
+
+            @Override
+            public ClassLoader setThreadContextClassLoader(final ClassLoader toSet) {
+                return doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+                    @Override
+                    public ClassLoader run() {
+                        return NON_PRIVILEGED.setThreadContextClassLoader(toSet);
+                    }
+                });
+            }
+        };
     }
 
     static void remotingContextClear() {
@@ -126,6 +167,7 @@ class SecurityActions {
 
         RemotingContextAssociationActions NON_PRIVILEGED = new RemotingContextAssociationActions() {
 
+            @Override
             public boolean isSet() {
                 return RemotingContext.isSet();
             }
@@ -145,6 +187,7 @@ class SecurityActions {
 
             private final PrivilegedAction<Boolean> IS_SET_ACTION = new PrivilegedAction<Boolean>() {
 
+                @Override
                 public Boolean run() {
                     return NON_PRIVILEGED.isSet();
                 }
@@ -152,6 +195,7 @@ class SecurityActions {
 
             private final PrivilegedAction<Connection> GET_CONNECTION_ACTION = new PrivilegedAction<Connection>() {
 
+                @Override
                 public Connection run() {
                     return NON_PRIVILEGED.getConnection();
                 }
@@ -159,20 +203,24 @@ class SecurityActions {
 
             private final PrivilegedAction<Void> CLEAR_ACTION = new PrivilegedAction<Void>() {
 
+                @Override
                 public Void run() {
                     NON_PRIVILEGED.clear();
                     return null;
                 }
             };
 
+            @Override
             public boolean isSet() {
                 return doPrivileged(IS_SET_ACTION);
             }
 
+            @Override
             public Connection getConnection() {
                 return doPrivileged(GET_CONNECTION_ACTION);
             }
 
+            @Override
             public void clear() {
                 doPrivileged(CLEAR_ACTION);
             }

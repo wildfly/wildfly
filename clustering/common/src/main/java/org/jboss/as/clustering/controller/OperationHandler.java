@@ -23,24 +23,18 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime operations.
  * @author Paul Ferraro
  */
-public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements Registration {
+public class OperationHandler<C> extends ExecutionHandler<C, Operation<C>> implements Registration<ManagementResourceRegistration> {
 
-    private final Map<String, Operation<C>> operations = new HashMap<>();
-    private final OperationExecutor<C> executor;
+    private final Collection<? extends Operation<C>> operations;
 
     public <O extends Enum<O> & Operation<C>> OperationHandler(OperationExecutor<C> executor, Class<O> operationClass) {
         this(executor, EnumSet.allOf(operationClass));
@@ -50,32 +44,13 @@ public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements R
         this(executor, Arrays.asList(operations));
     }
 
-    public OperationHandler(OperationExecutor<C> executor, Iterable<? extends Operation<C>> operations) {
-        this.executor = executor;
-        for (Operation<C> operation : operations) {
-            this.operations.put(operation.getDefinition().getName(), operation);
-        }
+    public OperationHandler(OperationExecutor<C> executor, Collection<? extends Operation<C>> operations) {
+        super(executor, operations, operation -> operation.getDefinition().getName());
+        this.operations = operations;
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        for (Operation<C> operation : this.operations.values()) {
-            registration.registerOperationHandler(operation.getDefinition(), this);
-        }
-    }
-
-    @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode op) {
-        String name = Operations.getName(op);
-        Operation<C> operation = this.operations.get(name);
-        try {
-            ModelNode result = this.executor.execute(context, operation);
-            if (result != null) {
-                context.getResult().set(result);
-            }
-        } catch (OperationFailedException e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
-        }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        this.operations.forEach(operation -> registration.registerOperationHandler(operation.getDefinition(), this));
     }
 }

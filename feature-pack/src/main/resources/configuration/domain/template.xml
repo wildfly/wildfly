@@ -48,7 +48,7 @@
     <interfaces>
         <interface name="management"/>
         <interface name="public"/>
-        <interface name="unsecure"/>
+        <?INTERFACES?>
     </interfaces>
 
     <socket-binding-groups>

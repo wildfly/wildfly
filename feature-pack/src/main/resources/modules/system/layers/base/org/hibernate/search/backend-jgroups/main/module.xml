@@ -32,7 +32,5 @@
         <module name="org.hibernate.search.engine"/>
         <module name="org.jboss.logging"/>
         <module name="org.jgroups"/>
-        <module name="org.jboss.as.naming"/>
-        <module name="javax.api"/>
     </dependencies>
 </module>

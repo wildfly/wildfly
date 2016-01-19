@@ -23,7 +23,7 @@ package org.wildfly.clustering.server.dispatcher;
 
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 
 /**

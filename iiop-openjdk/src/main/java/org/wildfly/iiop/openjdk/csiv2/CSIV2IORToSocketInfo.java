@@ -20,6 +20,7 @@
  */
 package org.wildfly.iiop.openjdk.csiv2;
 
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,8 @@ import com.sun.corba.se.spi.ior.iiop.IIOPProfileTemplate;
 import com.sun.corba.se.spi.orb.ORB;
 import com.sun.corba.se.spi.transport.IORToSocketInfo;
 import com.sun.corba.se.spi.transport.SocketInfo;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * <p>
@@ -143,7 +146,12 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
         }
         ORB orb = ior.getORB();
         TaggedComponent compList = ((com.sun.corba.se.spi.ior.TaggedComponent) iter.next()).getIOPComponent(orb);
-        CDRInputStream in = new EncapsInputStream(orb, compList.component_data, compList.component_data.length);
+        CDRInputStream in = doPrivileged(new PrivilegedAction<CDRInputStream>() {
+            @Override
+            public CDRInputStream run() {
+                return new EncapsInputStream(orb, compList.component_data, compList.component_data.length);
+            }
+        });
         in.consumeEndian();
         return CompoundSecMechListHelper.read(in);
     }
@@ -154,7 +162,12 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
             return null;
         }
         ORB orb = ior.getORB();
-        CDRInputStream in = new EncapsInputStream(orb, comp.component_data, comp.component_data.length);
+        CDRInputStream in = doPrivileged(new PrivilegedAction<CDRInputStream>() {
+            @Override
+            public CDRInputStream run() {
+                return new EncapsInputStream(orb, comp.component_data, comp.component_data.length);
+            }
+        });
         in.consumeEndian();
         return TLS_SEC_TRANSHelper.read(in);
     }

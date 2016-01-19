@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.view.basic;
 import java.io.Externalizable;
 import java.io.Serializable;
 
+import javax.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -98,6 +99,27 @@ public class BusinessViewAnnotationProcessorTestCase {
         final ImplicitNoInterfaceBean noInterfaceBean = (ImplicitNoInterfaceBean) ctx.lookup("java:module/" + ImplicitNoInterfaceBean.class.getSimpleName() + "!" + ImplicitNoInterfaceBean.class.getName());
         assertNotNull("View " + MyInterface.class.getName() + " not found", noInterfaceBean);
     }
+
+
+    /**
+     * Tests a bean which has an implicit local business interface
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testInvocationOnNonPublicMethod() throws Exception {
+        final Context ctx = new InitialContext();
+        final ImplicitNoInterfaceBean singleView = (ImplicitNoInterfaceBean) ctx.lookup("java:module/" + ImplicitNoInterfaceBean.class.getSimpleName());
+        assertNotNull("View " + MyInterface.class.getName() + " not found", singleView);
+        Assert.assertEquals("Hello", singleView.sayHello());
+        try {
+            singleView.sayGoodbye();
+            Assert.fail("should have been disallowed");
+        } catch (EJBException expected) {
+
+        }
+    }
+
 
     /**
      * Tests that if a bean has a {@link javax.ejb.Remote} annotation without any specific value and if the bean implements n (valid) interfaces, then all those n (valid) interfaces are considered

@@ -110,7 +110,7 @@ public class ModelControllerMBeanTestCase {
             try {
                 Assert.assertNotNull(connection.getMBeanInfo(name));
             } catch (Exception e) {
-                System.out.println("Error getting info for " + name);
+                //System.out.println("Error getting info for " + name);
                 failedInfos.put(name, e);
             }
         }

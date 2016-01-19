@@ -49,7 +49,8 @@ public class CacheEntryMutator<K, V> implements Mutator {
     public void mutate() {
         // We only ever have to perform a replace once within a batch
         if ((this.mutated == null) || this.mutated.compareAndSet(false, true)) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(this.id, this.value);
+            // Use FAIL_SILENTLY to prevent mutation from failing locally due to remote exceptions
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).put(this.id, this.value);
         }
     }
 }

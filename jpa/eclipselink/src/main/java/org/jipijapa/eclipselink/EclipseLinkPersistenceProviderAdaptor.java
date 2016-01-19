@@ -42,7 +42,7 @@ public class EclipseLinkPersistenceProviderAdaptor implements
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
-        if (!properties.containsKey(ECLIPSELINK_TARGET_SERVER)) {
+        if (!pu.getProperties().containsKey(ECLIPSELINK_TARGET_SERVER)) {
             properties.put(ECLIPSELINK_TARGET_SERVER, WildFlyServerPlatform.class.getName());
             properties.put(ECLIPSELINK_ARCHIVE_FACTORY, JBossArchiveFactoryImpl.class.getName());
             properties.put(ECLIPSELINK_LOGGING_LOGGER, JBossLogger.class.getName());

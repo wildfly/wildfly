@@ -72,7 +72,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                     String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
 
                     ModelNode result = context.getResult();
-                    for (InstalledDriver driver : driverRegistry.getInstalledDrivers(profile)) {
+                    for (InstalledDriver driver : driverRegistry.getInstalledDrivers()) {
                         ModelNode driverNode = new ModelNode();
                         driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
                         if (driver.isFromDeployment()) {
@@ -97,18 +97,15 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                         driverNode.get(DRIVER_MAJOR_VERSION.getName()).set(driver.getMajorVersion());
                         driverNode.get(DRIVER_MINOR_VERSION.getName()).set(driver.getMinorVersion());
                         driverNode.get(JDBC_COMPLIANT.getName()).set(driver.isJdbcCompliant());
-                        if (driver.getProfile() != null) {
-                            driverNode.get(PROFILE.getName()).set(driver.getProfile());
+                        if (profile != null) {
+                            driverNode.get(PROFILE.getName()).set(profile);
                         }
                         result.add(driverNode);
                     }
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set(ConnectorLogger.ROOT_LOGGER.noMetricsAvailable());
         }
-
-        context.stepCompleted();
     }
 }

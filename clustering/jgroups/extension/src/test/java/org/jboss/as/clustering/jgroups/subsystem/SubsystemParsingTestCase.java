@@ -62,7 +62,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final JGroupsSchema schema;
 
     public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema.format("subsystem-jgroups-%d_%d.xml"));
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), String.format("subsystem-jgroups-%d_%d.xml", schema.major(), schema.minor()));
         this.expectedOperationCount = expectedOperationCount;
         this.schema = schema;
     }
@@ -73,6 +73,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_1_1, 20 },
                 { JGroupsSchema.VERSION_2_0, 22 },
                 { JGroupsSchema.VERSION_3_0, 29 },
+                { JGroupsSchema.VERSION_4_0, 29 },
         };
         return Arrays.asList(data);
     }
@@ -94,11 +95,11 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+    protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
     }
 
-    /*
+    /**
      *  Create a collection of resources in the test which are not removed by a "remove" command
      *   (i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*)
      *

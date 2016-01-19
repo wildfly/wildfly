@@ -25,8 +25,8 @@ package org.wildfly.clustering.web.undertow.session;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -34,6 +34,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.undertow.session.RecordableInactiveSessionStatistics;
 
 /**
+ * Unit test for {@link RecordableInactiveSessionStatistics}.
  * @author Paul Ferraro
  */
 public class RecordableInactiveSessionStatisticsTestCase {
@@ -43,8 +44,8 @@ public class RecordableInactiveSessionStatisticsTestCase {
     public void test() {
         ImmutableSession session = mock(ImmutableSession.class);
         ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
-        Date now = new Date();
-        Date created = new Date(now.getTime() - TimeUnit.MINUTES.toMillis(20));
+        Instant now = Instant.now();
+        Instant created = now.minus(Duration.ofMinutes(20L));
 
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.isExpired()).thenReturn(false);
@@ -53,11 +54,11 @@ public class RecordableInactiveSessionStatisticsTestCase {
         this.statistics.record(session);
 
         assertEquals(0L, this.statistics.getExpiredSessionCount());
-        assertEquals(20L, this.statistics.getMaxSessionLifetime(TimeUnit.MINUTES));
-        assertEquals(20L, this.statistics.getMeanSessionLifetime(TimeUnit.MINUTES));
+        assertEquals(20L, this.statistics.getMaxSessionLifetime().toMinutes());
+        assertEquals(20L, this.statistics.getMeanSessionLifetime().toMinutes());
 
-        now = new Date();
-        created = new Date(now.getTime() - TimeUnit.MINUTES.toMillis(10));
+        now = Instant.now();
+        created = now.minus(Duration.ofMinutes(10L));
 
         when(metaData.isExpired()).thenReturn(true);
         when(metaData.getCreationTime()).thenReturn(created);
@@ -65,13 +66,13 @@ public class RecordableInactiveSessionStatisticsTestCase {
         this.statistics.record(session);
 
         assertEquals(1L, this.statistics.getExpiredSessionCount());
-        assertEquals(20L, this.statistics.getMaxSessionLifetime(TimeUnit.MINUTES));
-        assertEquals(15L, this.statistics.getMeanSessionLifetime(TimeUnit.MINUTES));
+        assertEquals(20L, this.statistics.getMaxSessionLifetime().toMinutes());
+        assertEquals(15L, this.statistics.getMeanSessionLifetime().toMinutes());
 
         this.statistics.reset();
 
         assertEquals(0L, this.statistics.getExpiredSessionCount());
-        assertEquals(0L, this.statistics.getMaxSessionLifetime(TimeUnit.MINUTES));
-        assertEquals(0L, this.statistics.getMeanSessionLifetime(TimeUnit.MINUTES));
+        assertEquals(0L, this.statistics.getMaxSessionLifetime().toMinutes());
+        assertEquals(0L, this.statistics.getMeanSessionLifetime().toMinutes());
     }
 }

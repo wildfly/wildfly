@@ -40,7 +40,9 @@ public abstract class WebSecurityPasswordBasedBase {
      * @param war
      */
     public static void printWar(WebArchive war) {
-        LOGGER.info(war.toString(true));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info(war.toString(true));
+        }
     }
 
     /**

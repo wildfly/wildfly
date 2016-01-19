@@ -25,10 +25,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
@@ -82,7 +81,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
                     ModelNode value = new ModelNode();
-                    for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class)) {
+                    for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.ColumnAttribute.class)) {
                         for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
                             String name = attribute.getDefinition().getName();
                             if (operation.hasDefined(name)) {
@@ -111,21 +110,16 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class).addAttributes(TableResourceDefinition.Attribute.class).addAttributes(TableResourceDefinition.ColumnAttribute.class);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(TableResourceDefinition.Attribute.class)
+                .addAttributes(TableResourceDefinition.ColumnAttribute.class)
+                ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StringTableBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        super.registerAttributes(registration);
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
     }
 }

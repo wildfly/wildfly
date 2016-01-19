@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -37,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * Generic remove operation step handler that delegates service removal/recovery to a dedicated {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
-public class RemoveStepHandler extends AbstractRemoveStepHandler implements Registration {
+public class RemoveStepHandler extends AbstractRemoveStepHandler implements Registration<ManagementResourceRegistration> {
 
     private final RemoveStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
@@ -69,10 +70,15 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        for (Capability capability : this.descriptor.getCapabilities()) {
-            context.deregisterCapability(capability.getRuntimeCapability(address).getName());
-        }
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
+        this.descriptor.getCapabilities().forEach(capability -> context.deregisterCapability(capability.getRuntimeCapability(address).getName()));
+
+        ModelNode model = resource.getModel();
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
+                .filter(access -> access != null)
+                .map(access -> access.getAttributeDefinition())
+                    .filter(attribute -> (attribute != null) && (model.hasDefined(attribute.getName()) || attribute.hasCapabilityRequirements()))
+                    .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
     }
 
     @Override

@@ -22,30 +22,14 @@
 
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
+
 /**
  * @author Paul Ferraro
  */
-public class CoarseSessionsKey {
-    private final String id;
+public class CoarseSessionsKey extends Key<String> {
 
     public CoarseSessionsKey(String id) {
-        this.id = id;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof CoarseSessionsKey)) return false;
-        CoarseSessionsKey key = (CoarseSessionsKey) object;
-        return this.id.equals(key.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.id.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return this.id;
+        super(id);
     }
 }

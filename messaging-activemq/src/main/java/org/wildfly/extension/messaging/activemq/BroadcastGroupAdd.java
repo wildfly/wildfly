@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.wildfly.extension.messaging.activemq.BroadcastGroupDefinition.CONNECTOR_REFS;
 import static org.wildfly.extension.messaging.activemq.BroadcastGroupDefinition.validateConnectors;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_STACK;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +60,6 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class BroadcastGroupAdd extends AbstractAddStepHandler {
-
-    private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(BroadcastGroupDefinition.ATTRIBUTES);
 
     public static final BroadcastGroupAdd INSTANCE = new BroadcastGroupAdd();
 
@@ -97,7 +95,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
             final String name = address.getLastElement().getValue();
 
             final ServiceTarget target = context.getServiceTarget();
-            if(model.hasDefined(JGROUPS_STACK.getName())) {
+            if (model.hasDefined(JGROUPS_CHANNEL.getName())) {
                 // nothing to do, in that case, the clustering.jgroups subsystem will have setup the stack
             } else if(model.hasDefined(RemoteTransportDefinition.SOCKET_BINDING.getName())) {
                 final GroupBindingService bindingService = new GroupBindingService();

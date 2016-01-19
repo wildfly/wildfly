@@ -42,6 +42,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
+import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -58,7 +59,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
         final ModelNode subsystemAddOp = Util.createAddOperation(subsystemAddress);
         ops.add(subsystemAddOp);
 
-        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL);
+        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL, Element.DEFAULT_JOB_REPOSITORY, Element.DEFAULT_THREAD_POOL);
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -71,6 +72,10 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
             } else if (element == Element.DEFAULT_JOB_REPOSITORY) {
                 BatchSubsystemDefinition.DEFAULT_JOB_REPOSITORY.parseAndSetParameter(readNameAttribute(reader), subsystemAddOp, reader);
                 ParseUtils.requireNoContent(reader);
+                requiredElements.remove(Element.DEFAULT_JOB_REPOSITORY);
+            } else if (element == Element.RESTART_JOBS_ON_RESUME) {
+                BatchSubsystemDefinition.RESTART_JOBS_ON_RESUME.parseAndSetParameter(readValueAttribute(reader), subsystemAddOp, reader);
+                ParseUtils.requireNoContent(reader);
             } else if (element == Element.JOB_REPOSITORY) {
                 final String name = readNameAttribute(reader);
                 parseJobRepository(reader, subsystemAddress, name, ops);
@@ -78,7 +83,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
             } else if (element == Element.THREAD_POOL) {
                 threadsParser.parseUnboundedQueueThreadPool(reader, namespace.getUriString(),
                         THREADS_1_1, subsystemAddress.toModelNode(), ops,
-                        BatchSubsystemDefinition.THREAD_POOL, null);
+                        BatchThreadPoolResourceDefinition.NAME, null);
                 requiredElements.remove(Element.THREAD_POOL);
             } else if (element == Element.THREAD_FACTORY) {
                 threadsParser.parseThreadFactory(reader, namespace.getUriString(),
@@ -115,6 +120,10 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
 
     static String readNameAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
         return readRequiredAttributes(reader, EnumSet.of(Attribute.NAME)).get(Attribute.NAME);
+    }
+
+    static String readValueAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        return readRequiredAttributes(reader, EnumSet.of(Attribute.VALUE)).get(Attribute.VALUE);
     }
 
     /**

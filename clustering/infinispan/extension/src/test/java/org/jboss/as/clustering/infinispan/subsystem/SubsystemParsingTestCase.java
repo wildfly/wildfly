@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RequiredCapability;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
@@ -57,7 +56,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final int operations;
 
     public SubsystemParsingTestCase(InfinispanSchema schema, int operations) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema.format("subsystem-infinispan-%d_%d.xml"));
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), String.format("subsystem-infinispan-%d_%d.xml", schema.major(), schema.minor()));
         this.schema = schema;
         this.operations = operations;
     }
@@ -65,22 +64,25 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 49 },
-            { InfinispanSchema.VERSION_1_1, 49 },
-            { InfinispanSchema.VERSION_1_2, 49 },
-            { InfinispanSchema.VERSION_1_3, 49 },
-            { InfinispanSchema.VERSION_1_4, 49 },
-            { InfinispanSchema.VERSION_1_5, 49 },
-            { InfinispanSchema.VERSION_2_0, 52 },
-            { InfinispanSchema.VERSION_3_0, 52 },
-            { InfinispanSchema.VERSION_4_0, 52 },
+            { InfinispanSchema.VERSION_1_0, 33 },
+            { InfinispanSchema.VERSION_1_1, 33 },
+            { InfinispanSchema.VERSION_1_2, 37 },
+            { InfinispanSchema.VERSION_1_3, 37 },
+            { InfinispanSchema.VERSION_1_4, 37 },
+            { InfinispanSchema.VERSION_1_5, 37 },
+            { InfinispanSchema.VERSION_2_0, 42 },
+            { InfinispanSchema.VERSION_3_0, 42 },
+            { InfinispanSchema.VERSION_4_0, 51 },
         };
         return Arrays.asList(data);
     }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization().require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2");
+        return new InfinispanSubsystemInitialization()
+                .require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
+                .require(RequiredCapability.DATA_SOURCE, "ExampleDS")
+                ;
     }
 
     @Override
@@ -160,7 +162,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Test
     public void testParseAndMarshalModel() throws Exception {
         // Parse the subsystem xml and install into the first controller
-
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
 
         // Get the model and the persisted xml from the first controller

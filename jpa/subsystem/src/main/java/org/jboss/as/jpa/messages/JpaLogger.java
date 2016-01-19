@@ -506,14 +506,12 @@ public interface JpaLogger extends BasicLogger {
     IllegalArgumentException invalidPersistenceUnitName(String persistenceUnitName, char c);
 
     /**
-     * Creates an exception indicating the scoped persistence name is invalid.
+     * Creates an exception indicating the (custom) scoped persistence unit name is invalid.
      *
-     * @param validName the valid scope name.
-     * @param name      the scope name that was supplied.
      * @return a {@link RuntimeException} for the error.
      */
-    //@Message(id = 44, value = "Scoped persistence name should be \"%s\" but was %s")
-    //RuntimeException invalidScopeName(String validName, String name);
+    @Message(id = 44, value = "jboss.as.jpa.scopedname hint (%s) contains illegal '%s' character")
+    IllegalArgumentException invalidScopedName(String persistenceUnitName, char c);
 
     /**
      * Creates an exception indicating the inability to integrate the module, represented by the {@code integrationName}
@@ -752,5 +750,17 @@ public interface JpaLogger extends BasicLogger {
      */
     @Message(id = 70, value = "A container-managed extended persistence context can only be initiated within the scope of a stateful session bean (persistence unit '%s').")
     IllegalStateException xpcOnlyFromSFSB(String scopedPuName);
+
+    @Message(id = 71, value = "Deployment '%s' specified more than one Hibernate Search module name ('%s','%s')")
+    DeploymentUnitProcessingException differentSearchModuleDependencies(String deployment, String searchModuleName1, String searchModuleName2);
+
+    /**
+     * Likely means that the transaction manager does not implement the org.jboss.tm.listener.TransactionListenerRegistry class.
+     *
+     * @param cause the cause of the error.
+     * @return
+     */
+    @Message(id = 72, value = "Could not obtain TransactionListenerRegistry from transaction manager")
+    IllegalStateException errorGettingTransactionListenerRegistry(@Cause Throwable cause);
 
 }

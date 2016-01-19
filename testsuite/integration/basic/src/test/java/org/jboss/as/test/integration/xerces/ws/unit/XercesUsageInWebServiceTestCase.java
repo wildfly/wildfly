@@ -77,7 +77,6 @@ public class XercesUsageInWebServiceTestCase {
         // add the xerces jar in the .war/WEB-INF/lib
         war.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
 
-        logger.info(war.toString(true));
         return war;
     }
 

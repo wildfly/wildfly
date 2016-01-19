@@ -176,6 +176,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     @Override
+    @Deprecated
     public boolean isCallerInRole(String ejbName, Object mappedRoles, Map<String, Collection<String>> roleLinks, String... roleNames) {
         return isCallerInRole(ejbName, PolicyContext.getContextID(), mappedRoles, roleLinks, roleNames);
     }

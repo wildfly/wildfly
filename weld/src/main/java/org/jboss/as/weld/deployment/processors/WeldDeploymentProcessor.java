@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import javax.enterprise.inject.spi.Extension;
 import javax.transaction.TransactionManager;
@@ -43,9 +44,13 @@ import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
+import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -267,6 +272,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldBootstrapServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
         weldBootstrapServiceBuilder.addDependency(WeldExecutorServices.SERVICE_NAME, ExecutorServices.class, weldBootstrapService.getExecutorServices());
+        weldBootstrapServiceBuilder.addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldBootstrapService.getServerExecutor());
 
         installSecurityService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
         installTransactionService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
@@ -287,6 +293,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         // make sure JNDI bindings are up
         startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+
+        // [WFLY-5232]
+        startService.addDependencies(getJNDISubsytemDependencies());
+
         final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
         if (earConfig == null || !earConfig.getInitializeInOrder())  {
             // in-order install of sub-deployments may result in service dependencies deadlocks if the jndi dependency services of subdeployments are added as dependencies
@@ -297,6 +307,15 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         startService.install();
 
+    }
+
+    private List<ServiceName> getJNDISubsytemDependencies() {
+        List<ServiceName> dependencies = new ArrayList<>();
+        dependencies.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(ServiceName.of("UserTransaction")));
+        dependencies.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(ServiceName.of("TransactionSynchronizationRegistry")));
+        dependencies.add(NamingService.SERVICE_NAME);
+        dependencies.add(DefaultNamespaceContextSelectorService.SERVICE_NAME);
+        return dependencies;
     }
 
     private void getJpaDependencies(final DeploymentUnit deploymentUnit, final Set<ServiceName> jpaServices) {

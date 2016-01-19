@@ -258,13 +258,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="indexing" type="tns:indexing" default="NONE">
-            <xs:annotation>
-                <xs:documentation>
-                    The indexing mode of the cache. Defaults to NONE.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -763,14 +756,14 @@
                 <xs:documentation>If enabled, this will cause the cache to ask neighboring caches for state when it starts up, so the cache starts 'warm', although it will impact startup time.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="timeout" type="xs:long" default="60000">
+        <xs:attribute name="timeout" type="xs:long" default="240000">
             <xs:annotation>
                 <xs:documentation>The maximum amount of time (ms) to wait for state from neighboring caches, before throwing an exception and aborting startup.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="chunk-size" type="xs:integer" default="10000">
+        <xs:attribute name="chunk-size" type="xs:integer" default="512">
             <xs:annotation>
-                <xs:documentation>The size, in bytes, in which to batch the transfer of cache entries.</xs:documentation>
+                <xs:documentation>The number of cache entries to batch in each transfer.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

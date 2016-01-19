@@ -156,9 +156,25 @@ public class Configuration {
     private static final String JPA_DEFER_DETACH = "jboss.as.jpa.deferdetach";
 
     /**
+     * unique name for the persistence unit that is unique across all deployments (
+     * defaults to include the application name prepended to the persistence unit name)
+     */
+    private static final String JPA_SCOPED_PERSISTENCE_UNIT_NAME = "jboss.as.jpa.scopedname";
+
+    /**
      * name of the persistence provider adapter class
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
+
+    /**
+     * name of the Hibernate Search module name configuration setting in persistence unit definition
+     */
+    public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";
+
+    /**
+     * name of the Hibernate Search module name
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH = "org.hibernate.search.orm:main";
 
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name
@@ -277,4 +293,12 @@ public class Configuration {
         return result;
     }
 
+    public static String getScopedPersistenceUnitName(PersistenceUnitMetadata pu) {
+
+        Object name = pu.getProperties().get(JPA_SCOPED_PERSISTENCE_UNIT_NAME);
+        if (name instanceof String) {
+            return (String)name;
+        }
+        return null;
+    }
 }

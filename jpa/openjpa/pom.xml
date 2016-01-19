@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-jpa-parent</artifactId>
-        <version>10.0.0.Beta2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -16,10 +16,6 @@
     
     <name>jipijapa OpenJPA integration</name>
     
-    <properties>
-        <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
-    </properties>    
-
     <dependencies>
 
         <!-- Internal -->

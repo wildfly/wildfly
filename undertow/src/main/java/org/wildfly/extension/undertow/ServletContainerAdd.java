@@ -22,9 +22,12 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,7 +39,9 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.negotiation.NegotiationMechanismFactory;
 import org.wildfly.extension.io.IOServices;
+import org.wildfly.extension.undertow.security.digest.DigestAuthenticationMechanismFactory;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
@@ -44,6 +49,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -64,8 +71,10 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS), 2);
 
         final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        final CrawlerSessionManagerConfig crawlerSessionManagerConfig = CrawlerSessionManagementDefinition.INSTANCE.getConfig(context, fullModel.get(CrawlerSessionManagementDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
+        final boolean proactiveAuth = ServletContainerDefinition.PROACTIVE_AUTHENTICATION.resolveModelAttribute(context, model).asBoolean();
         final String bufferCache = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model).asString();
 
         JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()));
@@ -77,10 +86,15 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean ignoreFlush = ServletContainerDefinition.IGNORE_FLUSH.resolveModelAttribute(context, model).asBoolean();
         final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
         final boolean disableCachingForSecuredPages = ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES.resolveModelAttribute(context, model).asBoolean();
+        final int sessionIdLength = ServletContainerDefinition.SESSION_ID_LENGTH.resolveModelAttribute(context, model).asInt();
 
         Boolean directoryListingEnabled = null;
         if(model.hasDefined(Constants.DIRECTORY_LISTING)) {
             directoryListingEnabled = ServletContainerDefinition.DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
+        }
+        Integer maxSessions = null;
+        if(model.hasDefined(Constants.MAX_SESSIONS)) {
+            maxSessions = ServletContainerDefinition.MAX_SESSIONS.resolveModelAttribute(context, model).asInt();
         }
 
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
@@ -101,6 +115,12 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             }
         }
 
+        // WFLY-2553 Adding default WildFly specific mechanisms here - subsequently we could enhance the servlet-container
+        // config to override / add mechanisms.
+        Map<String, AuthenticationMechanismFactory> authenticationMechanisms = new HashMap<>();
+        authenticationMechanisms.put("SPNEGO", new NegotiationMechanismFactory());
+        authenticationMechanisms.put(HttpServletRequest.DIGEST_AUTH, DigestAuthenticationMechanismFactory.FACTORY);
+
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
                 ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
                 config,
@@ -112,7 +132,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 sessionTimeout,
                 disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig);
+
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {

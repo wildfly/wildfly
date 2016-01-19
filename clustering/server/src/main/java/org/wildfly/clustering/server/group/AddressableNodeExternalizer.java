@@ -28,18 +28,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
-import org.wildfly.clustering.infinispan.spi.io.AbstractSimpleExternalizer;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Infinispan externalizer for an {@link AddressableNode}.
  * @author Paul Ferraro
  */
-public class AddressableNodeExternalizer extends AbstractSimpleExternalizer<AddressableNode> {
-    private static final long serialVersionUID = -7336879071713713182L;
-
-    public AddressableNodeExternalizer() {
-        super(AddressableNode.class);
-    }
+public class AddressableNodeExternalizer implements Externalizer<AddressableNode> {
 
     @Override
     public AddressableNode readObject(ObjectInput input) throws IOException {
@@ -72,5 +67,10 @@ public class AddressableNodeExternalizer extends AbstractSimpleExternalizer<Addr
         } catch (Exception e) {
             throw new IOException(e);
         }
+    }
+
+    @Override
+    public Class<AddressableNode> getTargetClass() {
+        return AddressableNode.class;
     }
 }

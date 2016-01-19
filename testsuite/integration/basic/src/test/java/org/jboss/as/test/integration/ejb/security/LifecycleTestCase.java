@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -71,18 +72,19 @@ public class LifecycleTestCase  {
 
     @Deployment
     public static Archive<?> runAsDeployment() {
+        final Package currentPackage = LifecycleTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(EntryBean.class.getPackage())
                 .addClasses(Util.class) // TODO - Should not need to exclude the interfaces.
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(AnnotationAuthorizationTestCase.class.getPackage(), "roles.properties", "roles.properties")
-                .addAsWebInfResource(AnnotationAuthorizationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-                .addAsWebInfResource(LifecycleTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+                .addAsResource(currentPackage, "users.properties", "users.properties")
+                .addAsResource(currentPackage, "roles.properties", "roles.properties")
+                .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
+                .addAsWebInfResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
+                .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
-        log.info(war.toString(true));
         return war;
     }
 
@@ -165,6 +167,7 @@ public class LifecycleTestCase  {
     }
 
     @Test
+    @Ignore("Not compatible with pooling")
     public void testStatelessBeanLifecyleCallback() throws Exception {
         StringBuilder failureMessages = new StringBuilder();
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");

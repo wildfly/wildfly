@@ -43,8 +43,13 @@ public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResour
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(ElectionPolicyResourceDefinition.Attribute.class).addCapabilities(ElectionPolicyResourceDefinition.Capability.class);
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
+                .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
+                ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RandomElectionPolicyBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

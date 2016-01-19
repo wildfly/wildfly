@@ -85,7 +85,12 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         }
         final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) component;
         // generate the session id and write out the response on a separate thread
-        executorService.submit(new SessionIDGeneratorTask(statefulSessionComponent, channelAssociation, invocationId));
+        SessionIDGeneratorTask task = new SessionIDGeneratorTask(statefulSessionComponent, channelAssociation, invocationId);
+        if(executorService != null) {
+            executorService.submit(task);
+        } else {
+            task.run();
+        }
 
     }
 

@@ -4,7 +4,7 @@
 	version="3.0">
 
 	<login-config>
-		<auth-method>BASIC</auth-method>
+		<auth-method>SPNEGO</auth-method>
 		<realm-name>Test realm</realm-name>
 	</login-config>
 

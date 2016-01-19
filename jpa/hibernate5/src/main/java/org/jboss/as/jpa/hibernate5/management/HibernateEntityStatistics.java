@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -68,6 +67,9 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics();
@@ -76,6 +78,9 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     }
 
     private org.hibernate.stat.EntityStatistics getStatistics(EntityManagerFactory entityManagerFactory, String entityName) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
         if (sessionFactory != null) {
             return sessionFactory.getStatistics().getEntityStatistics(entityName);

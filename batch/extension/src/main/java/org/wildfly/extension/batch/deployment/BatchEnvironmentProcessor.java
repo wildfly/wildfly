@@ -22,18 +22,20 @@
 
 package org.wildfly.extension.batch.deployment;
 
-import java.util.concurrent.ExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
 import org.jberet.spi.BatchEnvironment;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,10 +43,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.batch.BatchServiceNames;
 import org.wildfly.extension.batch._private.BatchLogger;
+import org.wildfly.extension.batch._private.Capabilities;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.deployment.WildFlyJobXmlResolver;
+import org.wildfly.extension.batch.jberet.impl.BatchEnvironmentService;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
  * Deployment unit processor for javax.batch integration.
@@ -70,14 +74,17 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
             // Create the batch environment
             final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, WildFlyJobXmlResolver.of(moduleClassLoader, deploymentUnit), deploymentUnit.getName());
             // Set the value for the job-repository, this can't be a capability as the JDBC job repository cannot be constructed
             // until deployment time because the default JNDI data-source name is only known during DUP processing
             service.getJobRepositoryInjector().setValue(new ImmediateValue<>(JobRepositoryFactory.getInstance().getJobRepository(moduleDescription)));
+
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
             // Register the required services
-            serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
+            serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, service.getBatchConfigurationInjector());
             serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, service.getTransactionManagerInjector());
 
             // Register the bean manager if this is a CDI deployment
@@ -90,7 +97,11 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestControllerInjector());
             }
 
-            serviceBuilder.install();
+            // Add the executor service for async context processing and install the service
+            Services.addServerExecutorDependency(
+                    serviceBuilder.addDependency(SuspendController.SERVICE_NAME, SuspendController.class, service.getSuspendControllerInjector()),
+                    service.getExecutorServiceInjector(), false)
+                    .install();
         }
     }
 

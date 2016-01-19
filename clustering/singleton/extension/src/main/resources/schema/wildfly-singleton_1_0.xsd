@@ -20,7 +20,7 @@
 
     <xs:complexType name="singleton-policies">
         <xs:sequence>
-            <xs:element name="singleton-policy" type="tns:singleton-policy">
+            <xs:element name="singleton-policy" type="tns:singleton-policy" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>Defines a singleton policy</xs:documentation>
                 </xs:annotation>
@@ -48,7 +48,7 @@
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation>Identifies the cache-container used to back the singleton deployment policy.</xs:documentation>
+                <xs:documentation>The name of this singleton policy.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="cache-container" type="xs:string" use="required">
@@ -63,7 +63,7 @@
         </xs:attribute>
         <xs:attribute name="quorum" type="xs:integer" default="1">
             <xs:annotation>
-                <xs:documentation></xs:documentation>
+                <xs:documentation>Defines the minimum number of group members required before a singleton election will run.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -73,7 +73,11 @@
             <xs:extension base="tns:election-policy">
                 <xs:attribute name="position" type="xs:integer" default="0">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>
+                            Indicates the index of the node to be elected from a list of candidates sorted by descending age.
+                            0 would indicate the oldest node, 1 the second oldest, etc.  Whereas -1 indicates the youngest node, -2 the second youngest, etc.
+                            If the specified position exceeds the number of candidates, a modulus operation is applied.
+                        </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

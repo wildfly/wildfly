@@ -26,6 +26,9 @@ import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 /**
  * @author Stuart Douglas
  * @author thomas.diesler@jboss.com
@@ -37,6 +40,9 @@ public final class JpaAttachments {
     public static final AttachmentKey<JPADeploymentSettings> DEPLOYMENT_SETTINGS_KEY = AttachmentKey.create(JPADeploymentSettings.class);
 
     public static final AttachmentKey<ServiceName> PERSISTENCE_UNIT_SERVICE_KEY = AttachmentKey.create(ServiceName.class);
+
+    public static final AttachmentKey<TransactionManager> TRANSACTION_MANAGER = AttachmentKey.create(TransactionManager.class);
+    public static final AttachmentKey<TransactionSynchronizationRegistry> TRANSACTION_SYNCHRONIZATION_REGISTRY= AttachmentKey.create(TransactionSynchronizationRegistry.class);
 
     /**
      * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units

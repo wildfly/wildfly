@@ -44,18 +44,10 @@ public class GenericTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING, CommonAttributes.PARAMS };
 
-    static final GenericTransportDefinition CONNECTOR_INSTANCE = createConnectorDefinition(false);
-    static final GenericTransportDefinition ACCEPTOR_INSTANCE = createAcceptorDefinition(false);
+    static final GenericTransportDefinition CONNECTOR_INSTANCE = new GenericTransportDefinition(false, CommonAttributes.CONNECTOR);
+    static final GenericTransportDefinition ACCEPTOR_INSTANCE = new GenericTransportDefinition(true, CommonAttributes.ACCEPTOR);
 
-    public static GenericTransportDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
-        return new GenericTransportDefinition(registerRuntimeOnly, true, CommonAttributes.ACCEPTOR);
-    }
-
-    public static GenericTransportDefinition createConnectorDefinition(final boolean registerRuntimeOnly) {
-        return new GenericTransportDefinition(registerRuntimeOnly, false, CommonAttributes.CONNECTOR);
-    }
-
-    private GenericTransportDefinition(final boolean registerRuntimeOnly, boolean isAcceptor, String specificType) {
+    private GenericTransportDefinition(boolean isAcceptor, String specificType) {
         super(isAcceptor, specificType, ATTRIBUTES);
     }
 }

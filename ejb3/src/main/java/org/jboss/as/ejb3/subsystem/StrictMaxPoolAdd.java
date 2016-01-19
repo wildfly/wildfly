@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService.Derive;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -30,8 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
-import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -42,13 +43,16 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Adds a strict-max-pool to the EJB3 subsystem's bean-instance-pools. The {#performRuntime runtime action}
- * will create and install a {@link PoolConfigService}
+ * will create and install a {@link org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService}
  * <p/>
  * User: Jaikiran Pai
  */
 public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
     public static final StrictMaxPoolAdd INSTANCE = new StrictMaxPoolAdd();
+
+    static final String IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME = "org.wildfly.io.max-threads";
+
 
     /**
      * Populate the <code>strictMaxPoolModel</code> from the <code>operation</code>
@@ -78,17 +82,24 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, strictMaxPoolModel).asInt();
+        final Derive derive = StrictMaxPoolResourceDefinition.parseDeriveSize(context, strictMaxPoolModel);
         final long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.resolveModelAttribute(context, strictMaxPoolModel).asLong();
         final String unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.resolveModelAttribute(context, strictMaxPoolModel).asString();
-        // create the pool config
-        final PoolConfig strictMaxPoolConfig = new StrictMaxPoolConfig(poolName, maxPoolSize, timeout, TimeUnit.valueOf(unit));
         // create and install the service
-        final PoolConfigService poolConfigService = new PoolConfigService(strictMaxPoolConfig);
-        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+        final StrictMaxPoolConfigService poolConfigService = new StrictMaxPoolConfigService(poolName, maxPoolSize, derive, timeout, TimeUnit.valueOf(unit));
+
+
+        final ServiceName serviceName = StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
         ServiceBuilder<PoolConfig> svcBuilder = context.getServiceTarget().addService(serviceName, poolConfigService);
         if (verificationHandler != null) {
             svcBuilder.addListener(verificationHandler);
         }
+
+        if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, null, null)) {
+            ServiceName name = context.getCapabilityServiceName(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, Integer.class);
+            svcBuilder.addDependency(name, Integer.class, poolConfigService.getMaxThreadsInjector());
+        }
+
         return svcBuilder.install();
     }
 

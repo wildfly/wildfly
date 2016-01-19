@@ -46,5 +46,12 @@
         <module name="org.jboss.ejb3" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.logging"/>
+
+        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
+             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
+        <module name="javax.transaction.api" optional="true"/>
+        <module name="javax.xml.rpc.api" optional="true"/>
+        <module name="javax.rmi.api" optional="true"/>
+        <module name="org.omg.api" optional="true"/>
     </dependencies>
 </module>

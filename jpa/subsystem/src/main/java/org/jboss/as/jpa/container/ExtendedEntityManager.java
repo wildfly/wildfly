@@ -24,13 +24,22 @@ package org.jboss.as.jpa.container;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.persistence.EntityManager;
 import javax.persistence.SynchronizationType;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.TransactionUtil;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.txn.service.TransactionManagerService;
+import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
@@ -92,11 +101,15 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     private final transient boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
 
     private final SynchronizationType synchronizationType;
+    private transient TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private transient TransactionManager transactionManager;
 
-    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager, final SynchronizationType synchronizationType) {
+    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager, final SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.puScopedName = puScopedName;
         this.synchronizationType = synchronizationType;
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+        this.transactionManager = transactionManager;
     }
 
     /**
@@ -123,14 +136,14 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      * this method is private to the JPA subsystem
      */
     public void internalAssociateWithJtaTx() {
-        isInTx = TransactionUtil.isInTx();
+        isInTx = TransactionUtil.isInTx(transactionManager);
 
         // ensure that a different XPC (with same name) is not already present in the TX
         if (isInTx) {
 
             // 7.6.3.1 throw EJBException if a different persistence context is already joined to the
             // transaction (with the same puScopedName).
-            EntityManager existing = TransactionUtil.getTransactionScopedEntityManager(puScopedName);
+            EntityManager existing = TransactionUtil.getTransactionScopedEntityManager(puScopedName, transactionSynchronizationRegistry);
             if (existing != null && existing != this) {
                 // should be enough to test if not the same object
                 throw JpaLogger.ROOT_LOGGER.cannotUseExtendedPersistenceTransaction(puScopedName, existing, this);
@@ -141,7 +154,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
                     underlyingEntityManager.joinTransaction();
                 }
                 // associate the entity manager with the current transaction
-                TransactionUtil.putEntityManagerInTransactionRegistry(puScopedName, this);
+                TransactionUtil.putEntityManagerInTransactionRegistry(puScopedName, this, transactionSynchronizationRegistry);
             }
         }
     }
@@ -255,5 +268,22 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     @Override
     protected boolean deferEntityDetachUntilClose() {
         return false;
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if(WildFlySecurityManager.isChecking()) {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    transactionManager = (TransactionManager) CurrentServiceContainer.getServiceContainer().getService(TransactionManagerService.SERVICE_NAME).getValue();
+                    transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+                    return null;
+                }
+            });
+        } else {
+            transactionManager = (TransactionManager) CurrentServiceContainer.getServiceContainer().getService(TransactionManagerService.SERVICE_NAME).getValue();
+            transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+        }
     }
 }

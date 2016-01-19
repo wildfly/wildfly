@@ -97,11 +97,13 @@ public class DataSourceJdbcStatisticsTestCase {
         public void removeDss() {
             try {
                 remove(dsAddress);
+                reload();
             } catch (Throwable e) {
 
             }
             try {
                 remove(dsXaAddress);
+                reload();
             } catch (Throwable e) {
 
             }

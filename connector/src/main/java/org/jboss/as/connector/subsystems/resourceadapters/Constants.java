@@ -107,6 +107,10 @@ public class Constants {
 
     private static final String ENLISTMENT_NAME = "enlistment";
 
+    private static final String ENLISTMENT_TRACE_NAME = "enlistment-trace";
+
+    private static final String MCP_NAME = "mcp";
+
     private static final String CONFIG_PROPERTIES_NAME = "config-properties";
 
     private static final String CONFIG_PROPERTY_VALUE_NAME = "value";
@@ -431,6 +435,19 @@ public class Constants {
             .build();
 
 
+    static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT_TRACE.getLocalName())
+            .build();
+
+    static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setXmlName(ConnectionDefinition.Attribute.MCP.getLocalName())
+            .build();
+
+
     static SimpleAttributeDefinition INTERLEAVING = new SimpleAttributeDefinitionBuilder(INTERLEAVING_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.INTERLEAVING.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.INTERLEAVING))
@@ -533,34 +550,47 @@ public class Constants {
 
     static SimpleAttributeDefinition WORK_ACTIVE = new SimpleAttributeDefinitionBuilder(WORK_ACTIVE_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition WORK_SUCCESSFUL = new SimpleAttributeDefinitionBuilder(WORK_SUCEESSFUL_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition WORK_FAILED = new SimpleAttributeDefinitionBuilder(WORK_FAILED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition DO_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(DO_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition DO_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(DO_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition SCHEDULED_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(SCHEDULED_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition SCHEDULED_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(SCHEDULED_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
     static SimpleAttributeDefinition START_WORK_ACCEPTED = new SimpleAttributeDefinitionBuilder(START_WORK_ACCEPTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
+
     static SimpleAttributeDefinition START_WORK_REJECTED = new SimpleAttributeDefinitionBuilder(START_WORK_REJECTED_NAME, ModelType.INT)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
 

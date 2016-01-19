@@ -27,9 +27,6 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
@@ -37,7 +34,6 @@ import static org.jboss.dmr.ModelType.LONG;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
@@ -47,12 +43,9 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -195,6 +188,15 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("min-files")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalMinFiles()))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .setValidator(new IntRangeValidator(2, true, true))
+            .build();
+    public static final SimpleAttributeDefinition JOURNAL_POOL_FILES = create("journal-pool-files", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("pool-files")
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPoolFiles()))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -439,11 +441,11 @@ public class ServerDefinition extends PersistentResourceDefinition {
             JMX_DOMAIN, STATISTICS_ENABLED, MESSAGE_COUNTER_SAMPLE_PERIOD, MESSAGE_COUNTER_MAX_DAY_HISTORY,
             CONNECTION_TTL_OVERRIDE, ASYNC_CONNECTION_EXECUTION_ENABLED, TRANSACTION_TIMEOUT, TRANSACTION_TIMEOUT_SCAN_PERIOD,
             MESSAGE_EXPIRY_SCAN_PERIOD, MESSAGE_EXPIRY_THREAD_PRIORITY, ID_CACHE_SIZE, PERSIST_ID_CACHE,
-            CommonAttributes.REMOTING_INCOMING_INTERCEPTORS, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS,
+            CommonAttributes.INCOMING_INTERCEPTORS, CommonAttributes.OUTGOING_INTERCEPTORS,
             PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE, JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
-            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
+            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
     };
 
@@ -543,32 +545,11 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
+        // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
         ManagementResourceRegistration runtimeQueue = resourceRegistration.registerSubModel(QueueDefinition.RUNTIME_INSTANCE);
         runtimeQueue.setRuntimeOnly(true);
         ManagementResourceRegistration coreAddress = resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
         coreAddress.setRuntimeOnly(true);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * The resource description has a small tweak from the standard
-     */
-    @Override
-    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-        if (registerRuntimeOnly) {
-            return super.getDescriptionProvider(resourceRegistration);
-        } else {
-            return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode result = super.getModelDescription(locale);
-                    result.get(ModelDescriptionConstants.CHILDREN, PATH, MIN_OCCURS).set(4);
-                    result.get(ModelDescriptionConstants.CHILDREN, PATH, MAX_OCCURS).set(4);
-                    return result;
-                }
-            };
-        }
     }
 
 

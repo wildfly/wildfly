@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.persistence.Cache;
 import javax.persistence.EntityManagerFactory;
 
@@ -217,6 +216,9 @@ public class HibernateStatistics extends HibernateAbstractStatistics {
     }
 
     static final org.hibernate.stat.Statistics getStatistics(final EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
         if (sessionFactory != null) {

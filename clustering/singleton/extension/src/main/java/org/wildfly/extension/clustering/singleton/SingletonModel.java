@@ -22,13 +22,14 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
 
 /**
  * Enumeration of supported versions of management model.
  * @author Paul Ferraro
  */
-public enum SingletonModel {
+public enum SingletonModel implements Model {
 
     VERSION_1_0_0(1, 0, 0),
     ;
@@ -40,16 +41,8 @@ public enum SingletonModel {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
+    @Override
     public ModelVersion getVersion() {
         return this.version;
-    }
-
-    /**
-     * Indicates whether this model is more recent than the specified version and thus requires transformation
-     * @param version a model version
-     * @return true this this model is more recent than the specified version, false otherwise
-     */
-    public boolean requiresTransformation(ModelVersion version) {
-        return ModelVersion.compare(this.version, version) < 0;
     }
 }

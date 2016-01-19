@@ -392,7 +392,7 @@ public abstract class MixedDomainDeploymentTest {
         StringWriter writer = new StringWriter();
         try {
             URL url = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(host) + ":" + port + "/" + path);
-            System.out.println("Reading response from " + url + ":");
+            //System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
             in = new BufferedInputStream(conn.getInputStream());
@@ -402,7 +402,7 @@ public abstract class MixedDomainDeploymentTest {
                 i = in.read();
             }
             assertTrue((writer.toString().indexOf(expected) > -1));
-            System.out.println("OK");
+            //System.out.println("OK");
         } finally {
             safeClose(in);
             safeClose(writer);

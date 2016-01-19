@@ -32,13 +32,13 @@ import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
+import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
@@ -64,7 +64,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/transaction=TRANSACTION
+ * Resource description for the addressable resource and its alias
+ *
+ * /subsystem=infinispan/cache-container=X/cache=Y/component=transaction
+ * /subsystem=infinispan/cache-container=X/cache=Y/transaction=TRANSACTION
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -76,7 +79,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name()), new EnumValidatorBuilder<>(LockingMode.class)),
         MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name()), new EnumValidatorBuilder<>(TransactionMode.class)),
-        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000)),
+        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L)),
         ;
         private final SimpleAttributeDefinition definition;
 
@@ -109,7 +112,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
 
     @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
 
         List<org.jboss.as.controller.transform.OperationTransformer> addOperationTransformers = new LinkedList<>();
         List<org.jboss.as.controller.transform.OperationTransformer> removeOperationTransformers = new LinkedList<>();
@@ -236,24 +239,17 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransactionBuilderFactory());
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new TransactionMetricExecutor(), TransactionMetric.class).register(registration);
         }
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration.registerSubModel(this)));
     }
 }

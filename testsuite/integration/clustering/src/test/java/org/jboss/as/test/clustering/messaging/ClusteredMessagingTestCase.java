@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.messaging;
 
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -50,6 +51,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -81,6 +83,11 @@ public class ClusteredMessagingTestCase {
         return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
                 TestSuiteEnvironment.getServerPort() + 100,
                 Authentication.getCallbackHandler());
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        thisTestIsFailingIntermittently("WFLY-5390");
     }
 
     @Before

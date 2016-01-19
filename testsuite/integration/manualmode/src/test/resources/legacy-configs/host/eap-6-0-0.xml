@@ -50,25 +50,25 @@
         </interface>
     </interfaces>
 
- 	<jvms>
- 	   <jvm name="default">
-          <heap size="64m" max-size="256m"/>
-          <permgen size="256m" max-size="256m"/>
+    <jvms>
+        <jvm name="default">
+            <heap size="64m" max-size="256m"/>
+            <permgen size="256m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
             </jvm-options>
-       </jvm>
- 	</jvms>
+        </jvm>
+    </jvms>
 
     <servers>
         <server name="server-one" group="main-server-group">
             <!-- Remote JPDA debugging for a specific server
-            <jvm name="default">
-              <jvm-options>
-                <option value="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"/>
-              </jvm-options>
-           </jvm>
-           -->
+             <jvm name="default">
+               <jvm-options>
+                 <option value="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"/>
+               </jvm-options>
+            </jvm>
+            -->
         </server>
         <server name="server-two" group="main-server-group" auto-start="true">
             <!-- server-two avoids port conflicts by incrementing the ports in

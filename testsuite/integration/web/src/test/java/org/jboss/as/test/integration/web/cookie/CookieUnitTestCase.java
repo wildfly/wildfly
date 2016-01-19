@@ -75,19 +75,19 @@ public class CookieUnitTestCase {
         war.addClass(CookieReadServlet.class);
         war.addClass(CookieServlet.class);
 
-        System.out.println(war.toString(true));
+        //System.out.println(war.toString(true));
         return war;
     }
 
     @Test
     public void testCookieSetCorrectly() throws Exception {
-        log.info("testCookieSetCorrectly()");
+        log.debug("testCookieSetCorrectly()");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(cookieReadURL.toURI() + "CookieReadServlet"));
         if (response.getEntity() != null)
             response.getEntity().getContent().close();
 
-        log.info("Sending request with cookie");
+        log.debug("Sending request with cookie");
         response = httpclient.execute(new HttpPost(cookieReadURL.toURI() + "CookieReadServlet"));
     }
 

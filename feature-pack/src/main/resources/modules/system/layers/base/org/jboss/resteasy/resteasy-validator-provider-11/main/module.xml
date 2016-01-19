@@ -37,5 +37,6 @@
         <module name="javax.persistence.api"/>
         <module name="org.jboss.resteasy.resteasy-cdi"/>
         <module name="javax.enterprise.api"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

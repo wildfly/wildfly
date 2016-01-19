@@ -22,8 +22,7 @@
                 />
         <ts.config-as.add-port-offset name="wildfly-${cacheMode}-${stack}-0"/>
         <ts.config-as.change-transport-stack name="wildfly-${cacheMode}-${stack}-0"
-                                             defaultStack="${stack}"
-                />
+                                             stack="${stack}"/>
         <ts.config-as.change-cache-mode name="wildfly-${cacheMode}-${stack}-0"
                                         cacheMode="${cacheMode}"
                 />
@@ -44,8 +43,7 @@
                 />
         <ts.config-as.add-port-offset name="wildfly-${cacheMode}-${stack}-1" offset="100" nativePort="9999" httpPort="9990"/>
         <ts.config-as.change-transport-stack name="wildfly-${cacheMode}-${stack}-1"
-                                             defaultStack="${stack}"
-                />
+                                             stack="${stack}"/>
         <ts.config-as.change-cache-mode name="wildfly-${cacheMode}-${stack}-1"
                                         cacheMode="${cacheMode}"
                 />
@@ -61,12 +59,12 @@
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
         <ts.config-as.change-transport-stack name="wildfly-clustered-messaging-0"
-                                             defaultStack="${stack}"/>
+                                             stack="${stack}"/>
         <copy todir="target/wildfly-clustered-messaging-1" overwrite="true">
             <fileset dir="${basedir}/target/jbossas"/>
         </copy>
         <ts.config-as.change-transport-stack name="wildfly-clustered-messaging-1"
-                                             defaultStack="${stack}"/>
+                                             stack="${stack}"/>
     </target>
 
     <!-- Build SYNC-tcp stack configs -->
@@ -95,6 +93,7 @@
             <param name="cacheMode" value="ASYNC"/>
             <param name="stack" value="udp"/>
         </antcall>
+        <antcall target="build-clustering-tunnel"/>
     </target>
 
     <!-- Single node tests -->
@@ -145,7 +144,7 @@
                                                  udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-LON-0"/>
         <ts.config-as.change-transport-stack name="wildfly-xsite-LON-0"
-                                             defaultStack="tcp"/>
+                                             stack="tcp"/>
         <ts.config-as.copy-stack name="wildfly-xsite-LON-0"
                                  stack.base="tcp"
                                  stack.name="tcp-bridge"/>
@@ -175,7 +174,7 @@
                                                  udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-LON-1" offset="100" nativePort="9999" httpPort="9990"/>
         <ts.config-as.change-transport-stack name="wildfly-xsite-LON-1"
-                                             defaultStack="tcp"/>
+                                             stack="tcp"/>
         <ts.config-as.copy-stack name="wildfly-xsite-LON-1"
                                  stack.base="tcp"
                                  stack.name="tcp-bridge"/>
@@ -205,7 +204,7 @@
                                                  udpMcastAddress="${mcast-nyc}" diagnosticsMcastAddress="${mcast-nyc}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-nyc}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-NYC-0" offset="200" nativePort="9999" httpPort="9990"/>
         <ts.config-as.change-transport-stack name="wildfly-xsite-NYC-0"
-                                             defaultStack="tcp"/>
+                                             stack="tcp"/>
         <ts.config-as.copy-stack name="wildfly-xsite-NYC-0"
                                  stack.base="tcp"
                                  stack.name="tcp-bridge"/>
@@ -230,7 +229,7 @@
                                                  udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-SFO-0" offset="300" nativePort="9999" httpPort="9990"/>
         <ts.config-as.change-transport-stack name="wildfly-xsite-SFO-0"
-                                             defaultStack="tcp"/>
+                                             stack="tcp"/>
         <ts.config-as.copy-stack name="wildfly-xsite-SFO-0"
                                  stack.base="tcp"
                                  stack.name="tcp-bridge"/>
@@ -255,7 +254,7 @@
                                                  udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-SFO-0-backupFor" offset="300" nativePort="9999" httpPort="9990"/>
         <ts.config-as.change-transport-stack name="wildfly-xsite-SFO-0-backupFor"
-                                             defaultStack="tcp"/>
+                                             stack="tcp"/>
         <ts.config-as.copy-stack name="wildfly-xsite-SFO-0-backupFor"
                                  stack.base="tcp"
                                  stack.name="tcp-bridge"/>
@@ -278,5 +277,17 @@
 
     </target>
 
+    <target name="build-clustering-tunnel" description="Builds server configuration with JGroups tunnel transport">
+        <antcall target="abstract-build-clustering">
+            <param name="cacheMode" value="ASYNC"/>
+            <param name="stack" value="tunnel"/>
+        </antcall>
+        <ts.config-as.add-tunnel-transport-stack name="wildfly-ASYNC-tunnel-0"
+                                                 stack="tunnel"
+                                                 router-inet-address="${node0}"/>
+        <ts.config-as.add-tunnel-transport-stack name="wildfly-ASYNC-tunnel-1"
+                                                 stack="tunnel"
+                                                 router-inet-address="${node0}"/>
+    </target>
 
 </project>

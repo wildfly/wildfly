@@ -22,24 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class TableResourceDefinition extends SimpleResourceDefinition implements Registration {
+public abstract class TableResourceDefinition extends ChildResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String value) {
@@ -111,11 +108,5 @@ public abstract class TableResourceDefinition extends SimpleResourceDefinition i
 
     TableResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
         super(path, resolver);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        new ReloadRequiredWriteAttributeHandler(Attribute.class).register(registration);
-        new ReloadRequiredWriteAttributeHandler(ColumnAttribute.class).register(registration);
     }
 }

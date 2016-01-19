@@ -69,7 +69,6 @@ import java.util.Properties;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
-import javax.transaction.TransactionManager;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -84,11 +83,8 @@ import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JBossJSSESecurityDomain;
@@ -111,7 +107,6 @@ import org.jboss.security.config.MappingInfo;
 import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
-import org.jboss.security.plugins.TransactionManagerLocator;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 
 /**
@@ -160,23 +155,12 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
                 applicationPolicy, jsseSecurityDomain, cacheType);
         final ServiceTarget target = context.getServiceTarget();
-        // some login modules may require the TransactionManager
-        final Injector<TransactionManager> transactionManagerInjector = new Injector<TransactionManager>() {
-            public void inject(final TransactionManager value) throws InjectionException {
-                TransactionManagerLocator.setTransactionManager(value);
-            }
-
-            public void uninject() {
-            }
-        };
         ServiceBuilder<SecurityDomainContext> builder = target
                 .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                         securityDomainService.getSecurityManagementInjector())
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
-                        securityDomainService.getConfigurationInjector())
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class,
-                        transactionManagerInjector);
+                        securityDomainService.getConfigurationInjector());
 
         if ("infinispan".equals(cacheType)) {
             builder.addDependency(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CACHE_CONTAINER_NAME),

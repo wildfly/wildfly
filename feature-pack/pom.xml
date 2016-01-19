@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.Beta2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack</artifactId>
@@ -414,11 +414,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr-runtime</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <exclusions>
@@ -480,7 +475,7 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-resources</artifactId>
-            <classifier>wildfly900</classifier>
+            <classifier>wildfly1000</classifier>
         </dependency>
 
         <dependency>
@@ -711,6 +706,11 @@
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-boolean</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf.xjcplugins</groupId>
+            <artifactId>cxf-xjc-bug986</artifactId>
         </dependency>
 
         <dependency>
@@ -1584,6 +1584,17 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-hqclient-protocol</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-client</artifactId>
             <exclusions>
                 <exclusion>
@@ -1730,15 +1741,19 @@
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-memory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-misc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
         </dependency>
 
         <dependency>
@@ -1902,6 +1917,17 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-java8</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2082,14 +2108,6 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-directory-provider</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-lucene-directory</artifactId>
         </dependency>
 
         <dependency>
@@ -2281,7 +2299,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-marshalling</artifactId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2396,6 +2424,16 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-configadmin</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.jboss.hal</groupId>
             <artifactId>release-stream</artifactId>
@@ -2729,7 +2767,7 @@
                                 <goals>
                                     <goal>download-licenses</goal>
                                 </goals>
-                                <phase>package</phase>
+                                <phase>prepare-package</phase>
                                 <configuration>
                                     <licensesOutputDirectory>
                                         ${project.build.directory}/${project.build.finalName}/content/docs/licenses

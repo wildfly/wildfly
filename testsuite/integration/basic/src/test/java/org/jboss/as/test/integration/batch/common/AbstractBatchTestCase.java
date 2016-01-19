@@ -29,6 +29,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PropertyPermission;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -50,25 +51,13 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public abstract class AbstractBatchTestCase {
     static final String ENCODING = "utf-8";
-
-
-    public static WebArchive createDefaultWar(final String warName, final Package pkg, final String jobXml) {
-        return ShrinkWrap.create(WebArchive.class, warName)
-                .addPackage(AbstractBatchTestCase.class.getPackage())
-                .addClasses(TimeoutUtil.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsWebInfResource(pkg, jobXml, "classes/META-INF/batch-jobs/" + jobXml)
-                .setManifest(new StringAsset(
-                        Descriptors.create(ManifestDescriptor.class)
-                                .attribute("Dependencies", "org.jboss.msc,org.wildfly.security.manager")
-                                .exportAsString()));
-    }
-
 
     public static WebArchive createDefaultWar(final String warName, final Package pkg, final String... jobXmls) {
         final WebArchive deployment = ShrinkWrap.create(WebArchive.class, warName)
@@ -78,7 +67,8 @@ public abstract class AbstractBatchTestCase {
                 .setManifest(new StringAsset(
                         Descriptors.create(ManifestDescriptor.class)
                                 .attribute("Dependencies", "org.jboss.msc,org.wildfly.security.manager")
-                                .exportAsString()));
+                                .exportAsString()))
+                .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "permissions.xml");
         for (String jobXml : jobXmls) {
             deployment.addAsWebInfResource(pkg, jobXml, "classes/META-INF/batch-jobs/" + jobXml);
         }

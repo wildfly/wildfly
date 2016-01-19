@@ -47,7 +47,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
@@ -146,7 +145,6 @@ public class CustomLoginModuleTestCase {
     public static WebArchive deployment() throws IOException {
         WebArchive war = create("custom-login-module.war", SecuredServlet.class);
         WebSecurityPasswordBasedBase.printWar(war);
-        Logger.getLogger(CustomLoginModuleTestCase.class).debug(war.toString(true));
         return war;
     }
 
@@ -172,10 +170,10 @@ public class CustomLoginModuleTestCase {
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
-            System.out.println("Login form get: " + statusLine);
+            //System.out.println("Login form get: " + statusLine);
             assertEquals(200, statusLine.getStatusCode());
 
-            System.out.println("Initial set of cookies:");
+            /*System.out.println("Initial set of cookies:");
             List<Cookie> cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
                 System.out.println("None");
@@ -183,7 +181,7 @@ public class CustomLoginModuleTestCase {
                 for (int i = 0; i < cookies.size(); i++) {
                     System.out.println("- " + cookies.get(i).toString());
                 }
-            }
+            }*/
 
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(getURL() + "j_security_check");
@@ -211,7 +209,7 @@ public class CustomLoginModuleTestCase {
             entity = response.getEntity();
             if (entity != null) { EntityUtils.consume(entity); }
 
-            System.out.println("Post logon cookies:");
+            /*System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
                 System.out.println("None");
@@ -219,7 +217,7 @@ public class CustomLoginModuleTestCase {
                 for (int i = 0; i < cookies.size(); i++) {
                     System.out.println("- " + cookies.get(i).toString());
                 }
-            }
+            }*/
 
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();

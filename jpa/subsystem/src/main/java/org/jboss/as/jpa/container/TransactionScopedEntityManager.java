@@ -32,6 +32,8 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.SynchronizationType;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.messages.JpaLogger;
@@ -39,6 +41,8 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.txn.service.TransactionManagerService;
+import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 
@@ -59,13 +63,17 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     private final Map properties;
     private transient EntityManagerFactory emf;
     private final SynchronizationType synchronizationType;
+    private transient TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private transient TransactionManager transactionManager;
     private transient Boolean deferDetach;
 
-    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType) {
+    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
         this.synchronizationType = synchronizationType;
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+        this.transactionManager = transactionManager;
     }
 
     @Override
@@ -73,7 +81,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         EntityManager entityManager;
         boolean isInTx;
 
-        isInTx = TransactionUtil.isInTx();
+        isInTx = TransactionUtil.isInTx(transactionManager);
 
         if (isInTx) {
             entityManager = getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties, synchronizationType);
@@ -94,7 +102,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
 
     @Override
     protected boolean isInTx() {
-        return TransactionUtil.isInTx();
+        return TransactionUtil.isInTx(transactionManager);
     }
 
     /**
@@ -111,6 +119,9 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         in.defaultReadObject();
         final ServiceController<?> controller = currentServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) controller.getService();
+        transactionManager = (TransactionManager) currentServiceContainer().getService(TransactionManagerService.SERVICE_NAME).getValue();
+        transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) currentServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+
         emf = persistenceUnitService.getEntityManagerFactory();
     }
 
@@ -141,20 +152,21 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
             final String scopedPuName,
             final Map properties,
             final SynchronizationType synchronizationType) {
-        EntityManager entityManager = TransactionUtil.getTransactionScopedEntityManager(puScopedName);
+        EntityManager entityManager = TransactionUtil.getTransactionScopedEntityManager(puScopedName, transactionSynchronizationRegistry);
         if (entityManager == null) {
             entityManager = createEntityManager(emf, properties, synchronizationType);
-            if (ROOT_LOGGER.isDebugEnabled())
+            if (ROOT_LOGGER.isDebugEnabled()) {
                 ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
-                    TransactionUtil.getTransaction().toString());
-            TransactionUtil.registerSynchronization(entityManager, scopedPuName);
-            TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
+                        TransactionUtil.getTransaction(transactionManager).toString());
+            }
+            TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry, transactionManager);
+            TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager, transactionSynchronizationRegistry);
         }
         else {
             testForMixedSynchronizationTypes(entityManager, puScopedName, synchronizationType);
             if (ROOT_LOGGER.isDebugEnabled()) {
                 ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
-                    TransactionUtil.getTransaction().toString());
+                        TransactionUtil.getTransaction(transactionManager).toString());
             }
         }
         return entityManager;
@@ -197,6 +209,4 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
             throw JpaLogger.ROOT_LOGGER.badSynchronizationTypeCombination(scopedPuName);
         }
     }
-
-
 }

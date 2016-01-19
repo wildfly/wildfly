@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.handlers;
 
 import io.undertow.protocols.ssl.UndertowXnioSsl;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -55,6 +56,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -159,7 +161,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             }
             ReverseProxyHostService service = new ReverseProxyHostService(scheme, jvmRoute, path);
             ServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget().addService(SERVICE_NAME.append(proxyName).append(name), service)
-                    .addDependency(UndertowService.HANDLER.append(proxyName), ProxyHandler.class, service.proxyHandler)
+                    .addDependency(UndertowService.HANDLER.append(proxyName), HttpHandler.class, service.proxyHandler)
                     .addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(socketBinding), OutboundSocketBinding.class, service.socketBinding);
 
             if(securityRealm.isDefined()) {
@@ -172,7 +174,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     private static final class ReverseProxyHostService implements Service<ReverseProxyHostService> {
 
-        private final InjectedValue<ProxyHandler> proxyHandler = new InjectedValue<>();
+        private final InjectedValue<HttpHandler> proxyHandler = new InjectedValue<>();
         private final InjectedValue<OutboundSocketBinding> socketBinding = new InjectedValue<>();
         private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
 
@@ -192,7 +194,10 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
         @Override
         public void start(StartContext startContext) throws StartException {
-            final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getValue().getProxyClient();
+            //todo: this is a bit of a hack, as the proxy handler may be wrapped by a request controller handler for graceful shutdown
+            ProxyHandler proxyHandler = (ProxyHandler) (this.proxyHandler.getValue() instanceof GlobalRequestControllerHandler ? ((GlobalRequestControllerHandler)this.proxyHandler.getValue()).getNext() : this.proxyHandler.getValue());
+
+            final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getProxyClient();
             try {
                 if (securityRealm.getOptionalValue() == null) {
                     client.addHost(getUri(), instanceId);
@@ -213,7 +218,8 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
         @Override
         public void stop(StopContext stopContext) {
-            final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getValue().getProxyClient();
+            ProxyHandler proxyHandler = (ProxyHandler) (this.proxyHandler.getValue() instanceof GlobalRequestControllerHandler ? ((GlobalRequestControllerHandler)this.proxyHandler.getValue()).getNext() : this.proxyHandler.getValue());
+            final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getProxyClient();
             try {
                 client.removeHost(getUri());
             } catch (URISyntaxException e) {

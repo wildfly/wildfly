@@ -23,6 +23,8 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +41,7 @@ import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
@@ -88,46 +90,38 @@ public class SessionExpirationScheduler implements Scheduler {
     }
 
     @Override
-    public void schedule(ImmutableSession session) {
-        long timeout = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        if (timeout > 0) {
-            long lastAccessed = session.getMetaData().getLastAccessedTime().getTime();
-            long delay = Math.max(lastAccessed + timeout - System.currentTimeMillis(), 0);
-            String id = session.getId();
-            Runnable task = new ExpirationTask(id);
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", id, timeout);
+    public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
+        Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
+        if (!maxInactiveInterval.isZero()) {
+            Instant lastAccessed = metaData.getLastAccessedTime();
+            Duration delay = Duration.between(Instant.now(), lastAccessed.plus(maxInactiveInterval));
+            Runnable task = new ExpirationTask(sessionId);
+            long seconds = !delay.isNegative() ? delay.getSeconds() + 1 : 0;
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", sessionId, seconds);
             synchronized (task) {
-                this.expirationFutures.put(id, this.executor.schedule(task, delay, TimeUnit.MILLISECONDS));
+                this.expirationFutures.put(sessionId, this.executor.schedule(task, seconds, TimeUnit.SECONDS));
             }
         }
     }
 
     @Override
     public void cancel(Locality locality) {
-        for (String sessionId: this.expirationFutures.keySet()) {
-            if (!locality.isLocal(sessionId)) {
-                this.cancel(sessionId);
-            }
-        }
+        this.expirationFutures.keySet().stream().filter(sessionId -> !locality.isLocal(sessionId)).forEach(sessionId -> this.cancel(sessionId));
     }
 
     @Override
     public void close() {
         this.executor.shutdown();
-        for (Future<?> future: this.expirationFutures.values()) {
-            future.cancel(false);
-        }
-        for (Future<?> future: this.expirationFutures.values()) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException e) {
-                    // Ignore
-                }
+        this.expirationFutures.values().forEach(future -> future.cancel(false));
+        this.expirationFutures.values().stream().filter(future -> !future.isDone()).forEach(future -> {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                // Ignore
             }
-        }
+        });
         this.expirationFutures.clear();
     }
 

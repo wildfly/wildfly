@@ -47,5 +47,6 @@
         <module name="org.slf4j" />
         <module name="javax.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-validator-provider-11" optional="true" services="export" export="true"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
@@ -35,7 +36,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
-import org.wildfly.clustering.jgroups.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 import java.util.concurrent.Executor;
 
@@ -79,9 +80,10 @@ public final class DistributedWorkManagerService implements Service<DistributedW
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting JCA DistributedWorkManager: ", value.getName());
 
-        JGroupsTransport transport = new JGroupsTransport();
+        ChannelFactory factory = this.jGroupsChannelFactory.getValue();
+        JGroupsTransport transport = new ForkChannelTransport(factory);
         try {
-            transport.setChannel(jGroupsChannelFactory.getValue().createChannel(this.value.getName()));
+            transport.setChannel(factory.createChannel(this.value.getName()));
             transport.setClusterName(this.value.getName());
 
             this.value.setTransport(transport);

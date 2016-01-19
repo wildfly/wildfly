@@ -59,7 +59,7 @@ public class StatisticsResourceDefinition extends SimpleResourceDefinition {
      * @param plugin     the statistics plugins
      */
     public StatisticsResourceDefinition(final PathElement path, final String bundleName, final StatisticsPlugin plugin) {
-        super(path, getResolver("statistics", bundleName, plugin));
+        super(new Parameters(path, getResolver("statistics", bundleName, plugin)).setRuntime());
         this.plugin = plugin;
     }
 

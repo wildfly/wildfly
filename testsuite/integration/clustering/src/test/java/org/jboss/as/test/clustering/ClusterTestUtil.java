@@ -38,7 +38,7 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
 public class ClusterTestUtil {
 
     public static void waitForReplication(int millis) {
-        if (ClusteringTestConstants.TEST_CACHE_MODE.equalsIgnoreCase("SYNC")) {
+        if ("SYNC".equals(ClusteringTestConstants.TEST_CACHE_MODE)) {
             // In case the replication is sync, we do not need to wait for the replication to happen.
             return;
         }
@@ -57,7 +57,7 @@ public class ClusterTestUtil {
 
     public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws NamingException, InterruptedException {
         TopologyChangeListener listener = directory.lookupStateless(TopologyChangeListenerBean.class, TopologyChangeListener.class);
-        listener.establishTopology(container, cache, nodes);
+        listener.establishTopology(container, cache, TopologyChangeListener.DEFAULT_TIMEOUT, nodes);
     }
 
     private ClusterTestUtil() {

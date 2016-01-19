@@ -36,8 +36,7 @@ public class MimeMappingAdd implements OperationStepHandler {
     static final MimeMappingAdd INSTANCE = new MimeMappingAdd();
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation)throws OperationFailedException {
 
         final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
         if (operation.hasDefined("name") && operation.hasDefined("value")) {
@@ -45,7 +44,5 @@ public class MimeMappingAdd implements OperationStepHandler {
         } else {
             throw new OperationFailedException(MESSAGES.nameAndValueRequiredForAddMimeMapping());
         }
-
-        context.stepCompleted();
     }
 }

@@ -21,67 +21,42 @@
  */
 package org.jboss.as.security;
 
-import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.junit.Test;
 
-public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
+public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTest {
 
     public SecurityDomainModelv11UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
     }
 
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("securitysubsystemv11.xml");
-
-        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml)
-                .build();
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        servicesA.shutdown();
-
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(marshalled)
-                .build();
-        ModelNode modelB = servicesB.readWholeModel();
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-
-        assertRemoveSubsystemResources(servicesB);
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("securitysubsystemv11.xml");
     }
 
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, original, marshalled, true);
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-security_1_1.xsd";
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties p = new Properties();
+        p.setProperty("jboss.server.config.dir", "/some/path");
+        return p;
+    }
 
     @Test
     public void testParseAndMarshalModelWithJASPI() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("securitysubsystemJASPIv11.xml");
-
-        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml)
-                .build();
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        servicesA.shutdown();
-
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(marshalled)
-                .build();
-        ModelNode modelB = servicesB.readWholeModel();
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-
-        assertRemoveSubsystemResources(servicesB);
+        super.standardSubsystemTest("securitysubsystemJASPIv11.xml", false);
     }
 }

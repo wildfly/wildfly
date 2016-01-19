@@ -77,7 +77,6 @@ public class WarServletDeploymentTestCase {
         war.addAsWebInfResource(WarServletDeploymentTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsManifestResource(new StringAsset("Dependencies: deployment." + rarDeploymentName + "\n"), "MANIFEST.MF");
 
-        log.info(war.toString(true));
         return war;
     }
 

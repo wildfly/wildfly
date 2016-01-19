@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,14 +42,16 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         StateTransferResourceDefinition.buildTransformation(version, builder);
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(PartitionHandlingResourceDefinition.PATH);
+            builder.addChildResource(PartitionHandlingResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
             PartitionHandlingResourceDefinition.buildTransformation(version, builder);
         }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(BackupsResourceDefinition.PATH);
-            builder.rejectChildResource(BackupForResourceDefinition.PATH);
+            final ResourceTransformationDescriptionBuilder backupsBuilder = builder.addChildResource(BackupsResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
+            backupsBuilder.rejectChildResource(BackupResourceDefinition.WILDCARD_PATH);
+
+            builder.addChildResource(BackupForResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
             BackupsResourceDefinition.buildTransformation(version, builder);
             BackupForResourceDefinition.buildTransformation(version, builder);
@@ -62,12 +65,13 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        super.registerChildren(registration);
+    public void register(ManagementResourceRegistration registration) {
 
         new PartitionHandlingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new StateTransferResourceDefinition().register(registration);
         new BackupsResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new BackupForResourceDefinition().register(registration);
+
+        super.register(registration);
     }
 }

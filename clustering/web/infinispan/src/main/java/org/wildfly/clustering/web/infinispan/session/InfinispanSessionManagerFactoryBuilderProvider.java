@@ -23,7 +23,7 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.web.session.SessionManagerConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 
@@ -34,7 +34,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 public class InfinispanSessionManagerFactoryBuilderProvider implements SessionManagerFactoryBuilderProvider<TransactionBatch> {
 
     @Override
-    public Builder<SessionManagerFactory<TransactionBatch>> getBuilder(SessionManagerConfiguration config) {
+    public Builder<SessionManagerFactory<TransactionBatch>> getBuilder(SessionManagerFactoryConfiguration config) {
         return new InfinispanSessionManagerFactoryBuilder(config);
     }
 }

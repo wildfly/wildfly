@@ -33,32 +33,39 @@ import org.infinispan.remoting.transport.Address;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.MockitoAnnotations;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
+ * Unit test for {@link AffinityIdentifierFactory}
  * @author Paul Ferraro
  */
 public class AffinityIdentityFactoryTestCase {
 
     private final IdentifierFactory<String> factory = mock(IdentifierFactory.class);
     private final KeyAffinityServiceFactory affinityFactory = mock(KeyAffinityServiceFactory.class);
-    private final KeyAffinityService<String> affinity = mock(KeyAffinityService.class);
-    private final Cache<String, ?> cache = mock(Cache.class);
+    private final KeyAffinityService<Key<String>> affinity = mock(KeyAffinityService.class);
+    private final Cache<Key<String>, ?> cache = mock(Cache.class);
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
 
     private IdentifierFactory<String> subject;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Captor
+    private ArgumentCaptor<KeyGenerator<Key<String>>> capturedGenerator;
+
     @Before
     public void init() {
-        ArgumentCaptor<KeyGenerator> capturedGenerator = ArgumentCaptor.forClass(KeyGenerator.class);
-        when(this.affinityFactory.createService(same(this.cache), capturedGenerator.capture())).thenReturn(this.affinity);
+        MockitoAnnotations.initMocks(this);
+
+        when(this.affinityFactory.createService(same(this.cache), this.capturedGenerator.capture())).thenReturn(this.affinity);
         when(this.cache.getCacheManager()).thenReturn(this.manager);
 
         this.subject = new AffinityIdentifierFactory<>(this.factory, this.cache, this.affinityFactory);
 
-        KeyGenerator<String> generator = capturedGenerator.getValue();
+        KeyGenerator<Key<String>> generator = this.capturedGenerator.getValue();
 
         assertSame(generator, this.subject);
 
@@ -66,9 +73,9 @@ public class AffinityIdentityFactoryTestCase {
 
         when(this.factory.createIdentifier()).thenReturn(expected);
 
-        String result = generator.getKey();
+        Key<String> result = generator.getKey();
 
-        assertSame(expected, result);
+        assertSame(expected, result.getValue());
     }
 
     @Test
@@ -77,7 +84,7 @@ public class AffinityIdentityFactoryTestCase {
         Address address = mock(Address.class);
 
         when(this.manager.getAddress()).thenReturn(address);
-        when(this.affinity.getKeyForAddress(address)).thenReturn(expected);
+        when(this.affinity.getKeyForAddress(address)).thenReturn(new Key<>(expected));
 
         String result = this.subject.createIdentifier();
 

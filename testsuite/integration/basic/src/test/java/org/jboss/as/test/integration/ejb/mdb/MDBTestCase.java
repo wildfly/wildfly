@@ -105,8 +105,8 @@ public class MDBTestCase {
     @Deployment
     public static Archive getDeployment() {
 
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar");
-        ejbJar.addPackage(DDBasedMDB.class.getPackage());
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDBTestCase.jar");
+        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClass(JmsQueueSetup.class);
         ejbJar.addAsManifestResource(MDBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");

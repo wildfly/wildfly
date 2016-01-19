@@ -222,7 +222,6 @@ public class AsyncMethodTestCase {
             Assert.assertTrue("isDone() was expected to return true after a call to cancel() with mayBeInterrupting = true, returned true", future.isDone());
             Assert.assertTrue("isCancelled() was expected to return true after a call to cancel() returned true", future.isCancelled());
         }
-        singleton.latch2CountDown(); // the bean method can finish
         String result = future.get();
         Assert.assertFalse(wasCanceled); // this should be false because task was not cancelled
         Assert.assertEquals("false;true", result); // the bean knows that it was cancelled

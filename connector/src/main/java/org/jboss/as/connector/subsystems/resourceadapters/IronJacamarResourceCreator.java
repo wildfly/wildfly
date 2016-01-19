@@ -33,6 +33,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -193,6 +194,8 @@ public class IronJacamarResourceCreator {
             if (pool.getFlushStrategy() != null)
                 setAttribute(model, POOL_FLUSH_STRATEGY, pool.getFlushStrategy().name());
             setAttribute(model, POOL_PREFILL, pool.isPrefill());
+
+            setAttribute(model, POOL_FAIR, pool.isFair());
 
             if (connDef.isXa()) {
                 assert connDef.getPool() instanceof XaPool;

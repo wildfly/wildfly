@@ -23,23 +23,33 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 
 /**
  * Describes the common properties of a remove operation handler.
  * @author Paul Ferraro
  */
-public interface AddStepHandlerDescriptor extends RemoveStepHandlerDescriptor {
-    /**
-     * Attributes of the add operation.
-     * @return a collection of attributes
-     */
-    Collection<AttributeDefinition> getAttributes();
+public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescriptor, RemoveStepHandlerDescriptor {
 
     /**
      * Extra parameters (not specified by {@link #getAttributes()}) for the add operation.
      * @return a collection of attributes
      */
     Collection<AttributeDefinition> getExtraParameters();
+
+    /**
+     * Returns the required child resources for this resource description.
+     * @return a collection of resource paths
+     */
+    Set<PathElement> getRequiredChildren();
+
+    /**
+     * Returns the required singleton child resources for this resource description.
+     * This means only one child resource should exist for the given child type.
+     * @return a collection of resource paths
+     */
+    Set<PathElement> getRequiredSingletonChildren();
 }

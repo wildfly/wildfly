@@ -55,7 +55,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.0.0.Beta2-SNAPSHOT</version>
+        <version>10.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -141,10 +141,10 @@
         <ds.jdbc.driver.target.path>${basedir}/target/jbossas/standalone/deployments</ds.jdbc.driver.target.path>
 
         <!-- Common surefire properties. -->
-        <surefire.memory.args>-Xmx512m</surefire.memory.args>
+        <surefire.memory.args>-Xmx512m -XX:MaxMetaspaceSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
-        <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
+        <surefire.system.args> -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>1500</surefire.forked.process.timeout>
 
         <!-- If servers should be killed before the test suite is run-->

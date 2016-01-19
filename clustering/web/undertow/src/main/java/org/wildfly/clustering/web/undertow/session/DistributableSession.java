@@ -21,20 +21,19 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import io.undertow.UndertowLogger;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
-import java.io.NotSerializableException;
-import java.io.Serializable;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -76,6 +75,9 @@ public class DistributableSession implements io.undertow.server.session.Session 
             try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
                 this.entry.getKey().close();
                 this.batch.close();
+            } catch (Throwable e) {
+                // Don't propagate exceptions at the stage, since response was alread committed
+                UndertowLogger.REQUEST_LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
     }
@@ -88,28 +90,28 @@ public class DistributableSession implements io.undertow.server.session.Session 
     @Override
     public long getCreationTime() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return this.entry.getKey().getMetaData().getCreationTime().getTime();
+            return this.entry.getKey().getMetaData().getCreationTime().toEpochMilli();
         }
     }
 
     @Override
     public long getLastAccessedTime() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return this.entry.getKey().getMetaData().getLastAccessedTime().getTime();
+            return this.entry.getKey().getMetaData().getLastAccessedTime().toEpochMilli();
         }
     }
 
     @Override
     public int getMaxInactiveInterval() {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval(TimeUnit.SECONDS);
+            return (int) this.entry.getKey().getMetaData().getMaxInactiveInterval().getSeconds();
         }
     }
 
     @Override
     public void setMaxInactiveInterval(int interval) {
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            this.entry.getKey().getMetaData().setMaxInactiveInterval(interval, TimeUnit.SECONDS);
+            this.entry.getKey().getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
         }
     }
 
@@ -143,9 +145,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 AuthenticatedSession auth = (AuthenticatedSession) value;
                 return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
             }
-            if (!(value instanceof Serializable)) {
-                throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
-            }
             Object old = session.getAttributes().setAttribute(name, value);
             if (old == null) {
                 this.manager.getSessionListeners().attributeAdded(this, name, value);
@@ -174,10 +173,11 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public void invalidate(HttpServerExchange exchange) {
+        // Invoke listeners outside of the context of the batch associated with this session
+        this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         Map.Entry<Session<LocalSessionContext>, SessionConfig> entry = this.entry;
         Session<LocalSessionContext> session = entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
             session.invalidate();
             if (exchange != null) {
                 String id = session.getId();
@@ -197,14 +197,16 @@ public class DistributableSession implements io.undertow.server.session.Session 
             for (String name: oldSession.getAttributes().getAttributeNames()) {
                 newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
             }
-            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
             newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
             newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
             config.setSessionId(exchange, id);
             this.entry = new SimpleImmutableEntry<>(newSession, config);
             oldSession.invalidate();
-            return id;
         }
+        // Invoke listeners outside of the context of the batch associated with this session
+        this.manager.getSessionListeners().sessionIdChanged(this, oldSession.getId());
+        return id;
     }
 
     private AuthenticatedSession setLocalContext(AuthenticatedSession auth) {

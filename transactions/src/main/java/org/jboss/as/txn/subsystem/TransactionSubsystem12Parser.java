@@ -117,9 +117,9 @@ class TransactionSubsystem12Parser implements XMLStreamConstants, XMLElementRead
                             parseJts(reader, subsystem);
                             break;
                         }
-                        case USEHORNETQSTORE: {
-                            parseUsehornetqstore(reader, logStoreOperation);
-                            subsystem.get(CommonAttributes.USEHORNETQSTORE).set(true);
+                        case USE_HORNETQ_STORE: {
+                            parseUseJournalstore(reader, logStoreOperation);
+                            subsystem.get(CommonAttributes.USE_JOURNAL_STORE).set(true);
                             break;
                         }
                         default: {
@@ -147,8 +147,8 @@ class TransactionSubsystem12Parser implements XMLStreamConstants, XMLElementRead
         requireNoContent(reader);
     }
 
-    private void parseUsehornetqstore(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-        operation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("hornetq");
+    private void parseUseJournalstore(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        operation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("journal");
         requireNoContent(reader);
     }
 

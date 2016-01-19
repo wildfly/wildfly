@@ -46,7 +46,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
@@ -224,11 +224,11 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             // if no pool name has been explicitly set, then inject the *optional* "default slsb pool config".
             // If the default slsb pool config itself is not configured, then the pooling is disabled for the bean
             if (poolName == null) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, StrictMaxPoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
                         PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());
             } else {
                 // pool name has been explicitly set so the pool config is a required dependency
-                serviceBuilder.addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
+                serviceBuilder.addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
                         PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());
             }
         }

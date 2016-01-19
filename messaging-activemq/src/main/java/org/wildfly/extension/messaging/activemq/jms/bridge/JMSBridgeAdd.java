@@ -53,6 +53,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -173,7 +174,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                     clientID,
                     addMessageIDInHeader);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(e);
+            throw MessagingLogger.ROOT_LOGGER.unableToLoadModule(moduleName, e);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }

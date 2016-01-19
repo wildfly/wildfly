@@ -94,11 +94,6 @@ public class RegistryBean implements Registry<String, String>, Registry.Listener
     }
 
     @Override
-    public Map.Entry<String, String> getLocalEntry() {
-        return this.registry.getLocalEntry();
-    }
-
-    @Override
     public Map.Entry<String, String> getEntry(Node node) {
         return this.registry.getEntry(node);
     }

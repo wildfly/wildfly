@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PoolConfigService;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -41,15 +41,15 @@ import org.jboss.msc.service.ValueInjectionService;
 public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     public static final EJB3SubsystemDefaultPoolWriteHandler MDB_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
+            new EJB3SubsystemDefaultPoolWriteHandler(StrictMaxPoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL);
 
     public static final EJB3SubsystemDefaultPoolWriteHandler SLSB_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
+            new EJB3SubsystemDefaultPoolWriteHandler(StrictMaxPoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL);
 
     public static final EJB3SubsystemDefaultPoolWriteHandler ENTITY_BEAN_POOL =
-            new EJB3SubsystemDefaultPoolWriteHandler(PoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
+            new EJB3SubsystemDefaultPoolWriteHandler(StrictMaxPoolConfigService.DEFAULT_ENTITY_POOL_CONFIG_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
 
     private final ServiceName poolConfigServiceName;
@@ -94,7 +94,7 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
             final ValueInjectionService<PoolConfig> newDefaultPoolConfigService = new ValueInjectionService<PoolConfig>();
             ServiceController<?> newController =
                 context.getServiceTarget().addService(poolConfigServiceName, newDefaultPoolConfigService)
-                    .addDependency(PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName.asString()),
+                    .addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName.asString()),
                             PoolConfig.class, newDefaultPoolConfigService.getInjector())
                     .install();
         }

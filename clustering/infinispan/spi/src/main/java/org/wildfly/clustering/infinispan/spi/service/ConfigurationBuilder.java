@@ -77,6 +77,6 @@ public class ConfigurationBuilder implements Builder<Configuration>, Service<Con
 
     @Override
     public void stop(StopContext context) {
-        // Infinispan has no undefineConfiguration(...)
+        this.container.getValue().undefineConfiguration(this.cacheName);
     }
 }

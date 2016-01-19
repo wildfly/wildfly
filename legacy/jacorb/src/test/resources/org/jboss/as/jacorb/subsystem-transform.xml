@@ -1,0 +1,11 @@
+<subsystem xmlns="urn:jboss:domain:jacorb:2.0">
+    <orb giop-minor-version ="2" socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
+        <initializers security="off" transactions="spec"/>
+    </orb>
+    <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
+    <security support-ssl="off" add-component-via-interceptor="on" client-supports="MutualAuth"
+              client-requires="None" server-supports="MutualAuth" server-requires="None"/>
+    <properties>
+        <property name="some_property" value="some_value"/>
+    </properties>
+</subsystem>

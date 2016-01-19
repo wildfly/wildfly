@@ -24,43 +24,62 @@ package org.jboss.as.ejb3.clustering;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parses the urn:clustering namespace elements for clustering related metadata on EJBs.
  *
  * @author Jaikiran Pai
+ * @author Flavia Rainone
  */
 public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataParser<EJBBoundClusteringMetaData> {
 
-    public static final String NAMESPACE_URI = "urn:clustering:1.0";
-    private static final String ROOT_ELEMENT_CLUSTERING = "clustering";
+    private final ClusteringSchema schema;
+
+    public EJBBoundClusteringMetaDataParser(ClusteringSchema schema) {
+        this.schema = schema;
+    }
 
     @Override
-    public EJBBoundClusteringMetaData parse(final XMLStreamReader xmlStreamReader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        final String element = xmlStreamReader.getLocalName();
+    public EJBBoundClusteringMetaData parse(final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         // we only parse <clustering> (root) element
-        if (!ROOT_ELEMENT_CLUSTERING.equals(element)) {
-            throw unexpectedElement(xmlStreamReader);
+        if (!reader.getLocalName().equals("clustering")) {
+            throw unexpectedElement(reader);
+        }
+        if (this.schema == ClusteringSchema.VERSION_1_0) {
+            EjbLogger.ROOT_LOGGER.deprecatedNamespace(reader.getNamespaceURI(), reader.getLocalName());
         }
         EJBBoundClusteringMetaData metaData = new EJBBoundClusteringMetaData();
-        this.processElements(metaData, xmlStreamReader, propertyReplacer);
+        this.processElements(metaData, reader, propertyReplacer);
         return metaData;
     }
 
     @Override
     protected void processElement(final EJBBoundClusteringMetaData metaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (NAMESPACE_URI.equals(reader.getNamespaceURI())) {
-            EjbLogger.ROOT_LOGGER.deprecatedNamespace(NAMESPACE_URI, ROOT_ELEMENT_CLUSTERING);
-            final String localName = reader.getLocalName();
-            if (localName.equals("clustered")) {
-                getElementText(reader, propertyReplacer);
-            } else {
-                throw unexpectedElement(reader);
+        if (this.schema.getNamespaceUri().equals(reader.getNamespaceURI())) {
+            switch (reader.getLocalName()) {
+                case "clustered": {
+                    if (this.schema.since(ClusteringSchema.VERSION_1_1)) {
+                        throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                case "clustered-singleton":
+                    if (this.schema.since(ClusteringSchema.VERSION_1_1)) {
+                        requireNoAttributes(reader);
+                        final String text = getElementText(reader, propertyReplacer);
+                        if (text != null) {
+                            final boolean isClusteredSingleton = Boolean.parseBoolean(text.trim());
+                            metaData.setClusteredSingleton(isClusteredSingleton);
+                        }
+                        break;
+                    }
+                default: {
+                    throw unexpectedElement(reader);
+                }
             }
         } else {
             super.processElement(metaData, reader, propertyReplacer);

@@ -114,7 +114,7 @@ class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
         } else {
             // begin a new tx and add it to the tx repository
             // TODO: Fix the tx timeout to accept a value from the client (WFLY-2789)
-            final Transaction newSubOrdinateTx = this.ejbRemoteTransactionsRepository.importTransaction(xidTransactionID, Integer.MAX_VALUE);
+            final Transaction newSubOrdinateTx = this.ejbRemoteTransactionsRepository.importTransaction(xidTransactionID, Integer.getInteger("org.jboss.as.ejb3.remote-tx-timeout", 31536000)); // 31536000 = 60 * 60 * 24 * 365 (Year in seconds)
             // associate this tx with the thread
             transactionManager.resume(newSubOrdinateTx);
         }

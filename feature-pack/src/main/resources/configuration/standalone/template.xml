@@ -70,12 +70,9 @@
         <interface name="public">
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
-        <!-- TODO - only show this if the jacorb subsystem is added  -->
-        <interface name="unsecure">
-            <!-- Used for IIOP sockets in the standard configuration.
-                 To secure IIOP connections you need to setup SSL -->
-            <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
-        </interface>
+
+        <?INTERFACES?>
+
     </interfaces>
 
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">

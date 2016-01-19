@@ -22,11 +22,12 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import io.undertow.server.handlers.resource.FileResourceManager;
+import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceChangeListener;
 import io.undertow.server.handlers.resource.ResourceManager;
@@ -39,13 +40,14 @@ import org.jboss.vfs.VirtualFile;
  */
 public class ServletResourceManager implements ResourceManager {
 
-    private final FileResourceManager deploymentResourceManager;
+    private final PathResourceManager deploymentResourceManager;
     private final Collection<VirtualFile> overlays;
     private final boolean explodedDeployment;
 
     public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment, boolean followSymlink) throws IOException {
         this.explodedDeployment = explodedDeployment;
-        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024, followSymlink, "/"); //TODO: enable safe paths support
+        Path physicalFile = resourcesRoot.getPhysicalFile().toPath().toRealPath();
+        deploymentResourceManager = new PathResourceManager(physicalFile, 1024 * 1024, followSymlink, "/"); //TODO: enable safe paths support
         this.overlays = overlays;
     }
 

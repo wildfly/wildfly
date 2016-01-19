@@ -39,7 +39,7 @@ class SerializableEJBProxyWithEJBClientContextIdentifier implements Serializable
 
     private static final long serialVersionUID = 1L;
 
-    private final EJBLocator ejbLocator;
+    private final EJBLocator<?> ejbLocator;
     private final EJBClientContextIdentifier ejbClientContextIdentifier;
 
     /**
@@ -52,6 +52,7 @@ class SerializableEJBProxyWithEJBClientContextIdentifier implements Serializable
         this.ejbClientContextIdentifier = EJBClient.getEJBClientContextIdentifierFor(ejbProxy);
     }
 
+    @SuppressWarnings("unused")
     private Object readResolve() throws ObjectStreamException {
         // recreate the proxy using the locator and the EJB client context identifier
         return EJBClient.createProxy(this.ejbLocator, this.ejbClientContextIdentifier);

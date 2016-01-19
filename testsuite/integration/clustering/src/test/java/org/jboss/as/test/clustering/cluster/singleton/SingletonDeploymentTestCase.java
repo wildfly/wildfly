@@ -26,21 +26,26 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,26 +57,51 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCase {
 
-    @SuppressWarnings("unused")
+    private static final String DEPLOYMENT_NAME = "singleton-deployment-helper.war";
+    static final String SINGLETON_DEPLOYMENT_1 = "singleton-deployment-0";
+    static final String SINGLETON_DEPLOYMENT_2 = "singleton-deployment-1";
+
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_1)
+    public static Archive<?> deploymentHelper0() {
+        return createDeployment();
+    }
+
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(CONTAINER_2)
+    public static Archive<?> deploymentHelper1() {
+        return createDeployment();
+    }
+
+    private static Archive<?> createDeployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+        war.addPackage(TraceServlet.class.getPackage());
+        return war;
+    }
+
+    public static final int DELAY = TimeoutUtil.adjust(5000);
+
     private final String deploymentName;
 
-    protected SingletonDeploymentTestCase(String deploymentName) {
+    SingletonDeploymentTestCase(String deploymentName) {
         this.deploymentName = deploymentName;
     }
 
     @Test
     public void test(
             @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
                     throws IOException, URISyntaxException, InterruptedException {
 
-        HttpClient client = HttpClients.createDefault();
+        this.deploy(SINGLETON_DEPLOYMENT_1);
+        Thread.sleep(DELAY);
+        this.deploy(SINGLETON_DEPLOYMENT_2);
+        Thread.sleep(DELAY);
 
-        URI uri1 = TraceServlet.createURI(baseURL1);
-        // baseURL2 will not have been resolved, since the deployment would not have started
-        URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), baseURL1.getFile()));
+        URI uri1 = TraceServlet.createURI(new URL(baseURL1.getProtocol(), baseURL1.getHost(), baseURL1.getPort(), "/" + this.deploymentName + "/"));
+        URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), "/" + this.deploymentName + "/"));
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpTrace(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -86,27 +116,9 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.undeploy(DEPLOYMENT_1);
+            this.undeploy(SINGLETON_DEPLOYMENT_1);
 
-            TimeUnit.SECONDS.sleep(5);
-
-            response = client.execute(new HttpTrace(uri1));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpTrace(uri2));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            this.deploy(DEPLOYMENT_1);
-
-            TimeUnit.SECONDS.sleep(5);
+            Thread.sleep(DELAY);
 
             response = client.execute(new HttpTrace(uri1));
             try {
@@ -122,9 +134,27 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.undeploy(DEPLOYMENT_2);
+            this.deploy(SINGLETON_DEPLOYMENT_1);
 
-            TimeUnit.SECONDS.sleep(5);
+            Thread.sleep(DELAY);
+
+            response = client.execute(new HttpTrace(uri1));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            response = client.execute(new HttpTrace(uri2));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.undeploy(SINGLETON_DEPLOYMENT_2);
+
+            Thread.sleep(DELAY);
 
             response = client.execute(new HttpTrace(uri1));
             try {
@@ -140,9 +170,9 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
                 HttpClientUtils.closeQuietly(response);
             }
 
-            this.deploy(DEPLOYMENT_2);
+            this.deploy(SINGLETON_DEPLOYMENT_2);
 
-            TimeUnit.SECONDS.sleep(5);
+            Thread.sleep(DELAY);
 
             response = client.execute(new HttpTrace(uri1));
             try {
@@ -158,7 +188,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
                 HttpClientUtils.closeQuietly(response);
             }
         } finally {
-            HttpClientUtils.closeQuietly(client);
+            this.undeploy(SINGLETON_DEPLOYMENT_1, SINGLETON_DEPLOYMENT_2);
         }
     }
 }

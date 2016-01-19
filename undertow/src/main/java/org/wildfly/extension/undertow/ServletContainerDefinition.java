@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -108,13 +109,35 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(true))
-                    .build(); //30 minutes
+                    .build();
 
     protected static final AttributeDefinition DIRECTORY_LISTING =
             new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .build(); //30 minutes
+                    .build();
+
+    protected static final AttributeDefinition PROACTIVE_AUTHENTICATION =
+            new SimpleAttributeDefinitionBuilder(Constants.PROACTIVE_AUTHENTICATION, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(true))
+                    .setAllowExpression(true)
+                    .build();
+
+    protected static final AttributeDefinition SESSION_ID_LENGTH =
+            new SimpleAttributeDefinitionBuilder(Constants.SESSION_ID_LENGTH, ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setValidator(new IntRangeValidator(16, 200, true, true))
+                    .setDefaultValue(new ModelNode(30))
+                    .build();
+
+
+    protected static final AttributeDefinition MAX_SESSIONS =
+            new SimpleAttributeDefinitionBuilder(Constants.MAX_SESSIONS, ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .build();
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
@@ -127,7 +150,10 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             EAGER_FILTER_INIT,
             DEFAULT_SESSION_TIMEOUT,
             DISABLE_CACHING_FOR_SECURED_PAGES,
-            DIRECTORY_LISTING
+            DIRECTORY_LISTING,
+            PROACTIVE_AUTHENTICATION,
+            SESSION_ID_LENGTH,
+            MAX_SESSIONS
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
@@ -140,6 +166,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
         children.add(WebsocketsDefinition.INSTANCE);
         children.add(MimeMappingDefinition.INSTANCE);
         children.add(WelcomeFileDefinition.INSTANCE);
+        children.add(CrawlerSessionManagementDefinition.INSTANCE);
         CHILDREN = Collections.unmodifiableList(children);
     }
 

@@ -90,6 +90,22 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
+        // Version prior to 4_0 schema did not require stack being defined,
+        // thus iterate over channel add operations and set the stack explicitly.
+        if (!this.schema.since(JGroupsSchema.VERSION_4_0)) {
+            ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
+
+            for (Map.Entry<PathAddress, ModelNode> entry : operations.entrySet()) {
+                PathAddress opAddr = entry.getKey();
+                if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+                    ModelNode op = entry.getValue();
+                    if (!op.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
+                        op.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).set(defaultStack);
+                    }
+                }
+            }
+        }
+
         result.addAll(operations.values());
     }
 
@@ -146,6 +162,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 case MODULE: {
                     readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.MODULE);
                     break;
+                }
+                case CLUSTER: {
+                    if (this.schema.since(JGroupsSchema.VERSION_4_0)) {
+                        readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.CLUSTER);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
@@ -322,7 +344,36 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            this.parseProtocolElement(reader, address, operations);
+            XMLElement element = XMLElement.forName(reader.getLocalName());
+            switch (element) {
+                case DEFAULT_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.DEFAULT, reader, address, operations);
+                        break;
+                    }
+                }
+                case INTERNAL_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
+                        break;
+                    }
+                }
+                case OOB_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
+                        break;
+                    }
+                }
+                case TIMER_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                        this.parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
+                        break;
+                    }
+                }
+                default: {
+                    this.parseProtocolElement(reader, address, operations);
+                }
+            }
         }
     }
 
@@ -372,18 +423,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 this.parseProperty(reader, address, operations);
                 break;
             }
-            case DEFAULT_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.DEFAULT, reader, address, operations);
-                break;
-            case INTERNAL_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
-                break;
-            case OOB_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
-                break;
-            case TIMER_THREAD_POOL:
-                parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
-                break;
             default: {
                 throw ParseUtils.unexpectedElement(reader);
             }

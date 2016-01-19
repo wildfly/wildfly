@@ -39,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -59,6 +60,9 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDefinition {
+
+    public static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions")
+            .build();
 
     //recovery environment
     public static final SimpleAttributeDefinition BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.BINDING, ModelType.STRING, false)
@@ -159,28 +163,38 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
             .setAllowExpression(false).build();
 
-    public static final SimpleAttributeDefinition USEHORNETQSTORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USEHORNETQSTORE, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition USE_HORNETQ_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_HORNETQ_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
-            .setAlternatives(CommonAttributes.USE_JDBC_STORE)
-            .setAllowExpression(false).build();
+            .setAllowExpression(false)
+            .setDeprecated(ModelVersion.create(3)).build();
     public static final SimpleAttributeDefinition HORNETQ_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.ENABLE_ASYNC_IO.getLocalName())
             .setAllowExpression(true)
-            .setRequires(CommonAttributes.USEHORNETQSTORE).build();
+            .setRequires(CommonAttributes.USE_HORNETQ_STORE)
+            .setDeprecated(ModelVersion.create(3)).build();
+
+    public static final SimpleAttributeDefinition USE_JOURNAL_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JOURNAL_STORE, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setAllowExpression(false).build();
+    public static final SimpleAttributeDefinition JOURNAL_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.JOURNAL_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.ENABLE_ASYNC_IO.getLocalName())
+            .setAllowExpression(true)
+            .setRequires(CommonAttributes.USE_JOURNAL_STORE).build();
 
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
-                .setDefaultValue(new ModelNode(false))
-                .setFlags(AttributeAccess.Flag.RESTART_JVM)
-                .setAlternatives(CommonAttributes.USEHORNETQSTORE)
-                .setAllowExpression(false).build();
+            .setDefaultValue(new ModelNode(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setAllowExpression(false).build();
     public static final SimpleAttributeDefinition JDBC_STORE_DATASOURCE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STORE_DATASOURCE, ModelType.STRING, true)
-                .setFlags(AttributeAccess.Flag.RESTART_JVM)
-                .setXmlName(Attribute.DATASOURCE_JNDI_NAME.getLocalName())
-                .setAllowExpression(true)
-                .setRequires(CommonAttributes.USE_JDBC_STORE).build();
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.DATASOURCE_JNDI_NAME.getLocalName())
+            .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_TABLE_PREFIX =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -231,10 +245,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            HORNETQ_STORE_ENABLE_ASYNC_IO
+            JOURNAL_STORE_ENABLE_ASYNC_IO
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
@@ -243,7 +257,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_1 = new AttributeDefinition[] {
-            JTS, USEHORNETQSTORE
+            JTS, USE_HORNETQ_STORE
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
@@ -256,8 +270,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         // Register all attributes except of the mutual ones
         Set<AttributeDefinition> attributesWithoutMutuals = new HashSet<>(Arrays.asList(attributes));
-        attributesWithoutMutuals.remove(USEHORNETQSTORE);
+        attributesWithoutMutuals.remove(USE_JOURNAL_STORE);
         attributesWithoutMutuals.remove(USE_JDBC_STORE);
+
+        attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove this as it also needs special write handler
 
         attributesWithoutMutuals.remove(PROCESS_ID_UUID);
         attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_BINDING);
@@ -270,9 +286,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         }
 
         // Register mutual object store attributes
-        OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USEHORNETQSTORE, USE_JDBC_STORE);
-        resourceRegistration.registerReadWriteAttribute(USEHORNETQSTORE, null, mutualWriteHandler);
+        OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USE_JOURNAL_STORE, USE_JDBC_STORE);
+        resourceRegistration.registerReadWriteAttribute(USE_JOURNAL_STORE, null, mutualWriteHandler);
         resourceRegistration.registerReadWriteAttribute(USE_JDBC_STORE, null, mutualWriteHandler);
+
+        // Register jdbc-store-datasource attribute
+        resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
 
         // Register mutual object store attributes
         OperationStepHandler mutualProcessIdWriteHandler = new ProcessIdWriteHandler(PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING, PROCESS_ID_SOCKET_MAX_PORTS);
@@ -280,15 +299,31 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_BINDING, null, mutualProcessIdWriteHandler);
         resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_MAX_PORTS, null, mutualProcessIdWriteHandler);
 
-        EnableStatisticsHandler esh = new EnableStatisticsHandler();
+        AliasedHandler esh = new AliasedHandler(STATISTICS_ENABLED.getName());
         resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, esh, esh);
+
+        AliasedHandler hsh = new AliasedHandler(USE_JOURNAL_STORE.getName());
+        resourceRegistration.registerReadWriteAttribute(USE_HORNETQ_STORE, hsh, hsh);
+
+        AliasedHandler hseh = new AliasedHandler(JOURNAL_STORE_ENABLE_ASYNC_IO.getName());
+        resourceRegistration.registerReadWriteAttribute(HORNETQ_STORE_ENABLE_ASYNC_IO, hseh, hseh);
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
     }
 
-    private static class EnableStatisticsHandler implements OperationStepHandler {
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(TRANSACTION_CAPABILITY);
+    }
+
+    private static class AliasedHandler implements OperationStepHandler {
+        private String aliasedName;
+
+        public AliasedHandler(String aliasedName) {
+            this.aliasedName = aliasedName;
+        }
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -297,9 +332,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             context.stepCompleted();
         }
 
-        private static ModelNode getAliasedOperation(ModelNode operation) {
+        private ModelNode getAliasedOperation(ModelNode operation) {
             ModelNode aliased = operation.clone();
-            aliased.get(ModelDescriptionConstants.NAME).set(STATISTICS_ENABLED.getName());
+            aliased.get(ModelDescriptionConstants.NAME).set(aliasedName);
             return aliased;
         }
 
@@ -319,13 +354,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                         ModelNode newValue, ModelNode oldValue, final Resource model) throws OperationFailedException {
             super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
 
-            assert !USEHORNETQSTORE.isAllowExpression() && !USE_JDBC_STORE.isAllowExpression() : "rework this before enabling expression";
+            assert !USE_JOURNAL_STORE.isAllowExpression() && !USE_JDBC_STORE.isAllowExpression() : "rework this before enabling expression";
 
-            if (attributeName.equals(USEHORNETQSTORE.getName()) || attributeName.equals(USE_JDBC_STORE.getName())) {
-                if (newValue.asBoolean() == true) {
+            if (attributeName.equals(USE_JOURNAL_STORE.getName()) || attributeName.equals(USE_JDBC_STORE.getName())) {
+                if (newValue.isDefined() && newValue.asBoolean()) {
                     // check the value of the mutual attribute and disable it if it is set to true
                     final String mutualAttributeName = attributeName.equals(USE_JDBC_STORE.getName())
-                            ? USEHORNETQSTORE.getName()
+                            ? USE_JOURNAL_STORE.getName()
                             : USE_JDBC_STORE.getName();
 
                     ModelNode resourceModel = model.getModel();
@@ -333,6 +368,40 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                         resourceModel.get(mutualAttributeName).set(new ModelNode(false));
                     }
                 }
+            }
+
+            context.addStep(JdbcStoreValidationStep.INSTANCE, OperationContext.Stage.MODEL);
+        }
+    }
+
+    private static class JdbcStoreDatasourceWriteHandler extends ReloadRequiredWriteAttributeHandler {
+
+        public JdbcStoreDatasourceWriteHandler(AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+            super.validateUpdatedModel(context, model);
+            context.addStep(JdbcStoreValidationStep.INSTANCE, OperationContext.Stage.MODEL);
+        }
+    }
+
+    /**
+     * Validates that if use-jdbc-store is set, jdbc-store-datasource must be also set.
+     *
+     * Must be added to both use-jdbc-store and jdbc-store-datasource fields.
+     */
+    private static class JdbcStoreValidationStep implements OperationStepHandler {
+
+        private static JdbcStoreValidationStep INSTANCE = new JdbcStoreValidationStep();
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode modelNode = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            if (modelNode.hasDefined(USE_JDBC_STORE.getName()) && modelNode.get(USE_JDBC_STORE.getName()).asBoolean()
+                    && !modelNode.hasDefined(JDBC_STORE_DATASOURCE.getName())) {
+                throw TransactionLogger.ROOT_LOGGER.mustBeDefinedIfTrue(JDBC_STORE_DATASOURCE.getName(), USE_JDBC_STORE.getName());
             }
         }
     }
@@ -344,9 +413,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
         @Override
         protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
-            context.addStep(model.getModel(), new OperationStepHandler() {
+            context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(OperationContext operationContext, ModelNode node) throws OperationFailedException {
+                public void execute(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
+                    ModelNode node = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
                     if (node.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()) && node.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
                         if (node.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName())) {
                             throw TransactionLogger.ROOT_LOGGER.mustBeUndefinedIfTrue(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName());
@@ -361,8 +431,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                         // not uuid and also not sockets!
                         throw TransactionLogger.ROOT_LOGGER.eitherTrueOrDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName());
                     }
-
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.MODEL);
 

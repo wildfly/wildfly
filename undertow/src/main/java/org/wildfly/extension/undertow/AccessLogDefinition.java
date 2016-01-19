@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -56,12 +55,12 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .build();
     protected static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode("access_log"))
+            .setDefaultValue(new ModelNode("access_log."))
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder(Constants.SUFFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode(".log"))
+            .setDefaultValue(new ModelNode("log"))
             .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition ROTATE = new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
@@ -87,6 +86,14 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final SimpleAttributeDefinition EXTENDED = new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
+
+    protected static final SimpleAttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder(Constants.PREDICATE, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
 
     static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
@@ -97,14 +104,16 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             ROTATE,
             DIRECTORY,
             USE_SERVER_LOG,
-            RELATIVE_TO
+            RELATIVE_TO,
+            EXTENDED,
+            PREDICATE
     );
     static final AccessLogDefinition INSTANCE = new AccessLogDefinition();
     private final List<AccessConstraintDefinition> accessConstraints;
 
 
     private AccessLogDefinition() {
-        super(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG), new AccessLogAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG), AccessLogAdd.INSTANCE, AccessLogRemove.INSTANCE);
         SensitivityClassification sc = new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }

@@ -186,10 +186,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
         if (node.hasDefined(SECURITY_DOMAIN) && node.get(SECURITY_DOMAIN).asInt() > 0) {
             writer.writeStartElement(Element.SECURITY_DOMAINS.getLocalName());
-            for (Property policy : node.get(SECURITY_DOMAIN).asPropertyList()) {
+            ModelNode securityDomains = node.get(SECURITY_DOMAIN);
+            for (String policy : securityDomains.keys()) {
                 writer.writeStartElement(Element.SECURITY_DOMAIN.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), policy.getName());
-                ModelNode policyDetails = policy.getValue();
+                writer.writeAttribute(Attribute.NAME.getLocalName(), policy);
+                ModelNode policyDetails = securityDomains.get(policy);
                 SecurityDomainResourceDefinition.CACHE_TYPE.marshallAsAttribute(policyDetails, writer);
                 writeSecurityDomainContent(writer, policyDetails);
                 writer.writeEndElement();

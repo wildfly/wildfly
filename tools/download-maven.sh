@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 MAVEN_VERSION=3.2.5
 MAVEN_URL=http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.zip
 
@@ -9,8 +9,7 @@ fi
 
 if [ -d maven ]; then
   echo "Maven already exists"
-  version=`./maven/bin/mvn -version | grep "Apache Maven $MAVEN_VERSION"`
-  if [ "$version" ]; then
+  if version=`./maven/bin/mvn -version | grep "Apache Maven $MAVEN_VERSION"`; then
     echo "Maven is correct version"
     exit
   fi
