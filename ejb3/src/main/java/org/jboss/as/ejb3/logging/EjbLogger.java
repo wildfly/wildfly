@@ -1807,7 +1807,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 273, value = "% does not have an EJB 2.x local interface")
+    @Message(id = 273, value = "%s does not have an EJB 2.x local interface")
     RuntimeException invalidEjbLocalInterface(String componentName);
 
     /**
