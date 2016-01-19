@@ -38,14 +38,13 @@ public class TrustDomainService implements Service<TrustDomainService> {
     private static final String SERVICE_NAME = "TrustDomainService";
     private final String domainName;
     private final InjectedValue<IdentityProviderService> identityProviderService = new InjectedValue<IdentityProviderService>();
-    private final InjectedValue<FederationService> federationService = new InjectedValue<FederationService>();
 
     public TrustDomainService(String domainName) {
         this.domainName = domainName;
     }
 
-    public static ServiceName createServiceName(final String federationAlias, String domainName) {
-        return ServiceName.JBOSS.append(FederationExtension.SUBSYSTEM_NAME, SERVICE_NAME, federationAlias + "." + domainName);
+    public static ServiceName createServiceName(String identityProviderName, String domainName) {
+        return ServiceName.JBOSS.append(FederationExtension.SUBSYSTEM_NAME, SERVICE_NAME, identityProviderName + "." + domainName);
     }
 
     @Override
