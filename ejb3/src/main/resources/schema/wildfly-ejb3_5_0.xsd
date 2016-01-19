@@ -92,6 +92,7 @@
         <xs:attribute name="connector-ref" type="xs:string" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
         <xs:attribute name="cluster" type="xs:string" use="optional"/>
+        <xs:attribute name="execute-in-worker" type="xs:boolean" use="optional" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="profilesType">
