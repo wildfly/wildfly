@@ -50,6 +50,7 @@ public class UndertowExtension implements Extension {
     public static final PathElement PATH_FILTERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
     public static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
     public static final PathElement PATH_SESSION_COOKIE = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
+    public static final PathElement CRAWLER_SESSION_MANAGEMENT = PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
     public static final PathElement PATH_PERSISTENT_SESSIONS = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
     public static final PathElement PATH_WEBSOCKETS = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
     public static final PathElement PATH_MIME_MAPPING = PathElement.pathElement(Constants.MIME_MAPPING);

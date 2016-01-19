@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2015, Red Hat, Inc., and individual contributors
@@ -20,13 +21,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<jboss umlns="urn:jboss:1.0">
-    <batch xmlns="urn:jboss:batch-jberet:1.0">
-        <job-repository>
-            <!-- TODO (jrp) don't commit without understanding why this data-source won't work
-            <jdbc jndi-name="java:comp/DefaultDataSource"/> -->
-            <jdbc jndi-name="java:jboss/datasources/ExampleDS"/>
-        </job-repository>
-        <thread-pool name="deployment-thread-pool"/>
-    </batch>
-</jboss>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"	version="2.0">
+	<persistence-unit name="mainPu">
+        <jar-file>lib/jarfile.jar</jar-file>
+		<description>Persistence Unit.</description>
+		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+		<properties>
+			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.id.optimizer.pooled.preferred" value="pooled-lotl" />
+		</properties>
+	</persistence-unit>
+</persistence>

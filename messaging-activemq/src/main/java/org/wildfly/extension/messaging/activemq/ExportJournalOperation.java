@@ -43,6 +43,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
@@ -82,14 +83,13 @@ public class ExportJournalOperation extends AbstractRuntimeOnlyHandler {
             throw MessagingLogger.ROOT_LOGGER.managementOperationAllowedOnlyInRunningMode("export-journal", ADMIN_ONLY);
         }
 
-        final Resource serverResource = context.readResource(EMPTY_ADDRESS, false);
         final ServiceController<PathManager> service = (ServiceController<PathManager>) context.getServiceRegistry(false).getService(PathManagerService.SERVICE_NAME);
         final PathManager pathManager = service.getService().getValue();
 
-        final String journal = resolvePath(context, pathManager, JOURNAL_DIRECTORY_PATH, serverResource);
-        final String bindings = resolvePath(context, pathManager, BINDINGS_DIRECTORY_PATH, serverResource);
-        final String paging = resolvePath(context, pathManager, PAGING_DIRECTORY_PATH, serverResource);
-        final String largeMessages = resolvePath(context, pathManager, LARGE_MESSAGES_DIRECTORY_PATH, serverResource);
+        final String journal = resolvePath(context, pathManager, JOURNAL_DIRECTORY_PATH);
+        final String bindings = resolvePath(context, pathManager, BINDINGS_DIRECTORY_PATH);
+        final String paging = resolvePath(context, pathManager, PAGING_DIRECTORY_PATH);
+        final String largeMessages = resolvePath(context, pathManager, LARGE_MESSAGES_DIRECTORY_PATH);
 
         final XmlDataExporter exporter = new XmlDataExporter();
 
@@ -113,10 +113,13 @@ public class ExportJournalOperation extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private static String resolvePath(OperationContext context, PathManager pathManager, PathElement pathElement, Resource serverResource) throws OperationFailedException {
-        final ModelNode pathModel = serverResource.hasChild(pathElement) ? serverResource.getChild(pathElement).getModel() : new ModelNode();
-        final String relativeTo = PathDefinition.RELATIVE_TO.resolveModelAttribute(context, pathModel).asString();
-        final String path = PathDefinition.PATHS.get(pathElement.getValue()).resolveModelAttribute(context, pathModel).asString();
+    private static String resolvePath(OperationContext context, PathManager pathManager, PathElement pathElement) throws OperationFailedException {
+        Resource serverResource = context.readResource(EMPTY_ADDRESS);
+        // if the path resource does not exist, resolve its attributes against an empty ModelNode to get its default values
+        final ModelNode model = serverResource.hasChild(pathElement) ? serverResource.getChild(pathElement).getModel() : new ModelNode();
+        final String path = PathDefinition.PATHS.get(pathElement.getValue()).resolveModelAttribute(context, model).asString();
+        final String relativeToPath = PathDefinition.RELATIVE_TO.resolveModelAttribute(context, model).asString();
+        final String relativeTo = AbsolutePathService.isAbsoluteUnixOrWindowsPath(path) ? null : relativeToPath;
         return pathManager.resolveRelativePathEntry(path, relativeTo);
     }
 }

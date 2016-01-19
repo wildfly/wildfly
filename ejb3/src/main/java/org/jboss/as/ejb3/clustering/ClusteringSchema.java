@@ -22,30 +22,36 @@
 
 package org.jboss.as.ejb3.clustering;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import org.jboss.as.clustering.controller.Schema;
 
 /**
- * A service installed as a singleton, it is UP only on the master node of a the cluster.
- *
- * @author Flavia Rainone
+ * @author Paul Ferraro
  */
-public class ClusteredSingletonService implements Service<Void> {
+public enum ClusteringSchema implements Schema<ClusteringSchema> {
 
-    public void start(StartContext context) throws StartException {
-        ROOT_LOGGER.logClusterSigletonNode();
-    }
+    VERSION_1_0(1, 0),
+    VERSION_1_1(1, 1),
+    ;
+    private final int major;
+    private final int minor;
 
-    public void stop(StopContext context) {
-        ROOT_LOGGER.logNoLongerClusterSigletonNode();
+    ClusteringSchema(int major, int minor) {
+        this.major = major;
+        this.minor = minor;
     }
 
     @Override
-    public Void getValue() {
-        return null;
+    public int major() {
+        return this.major;
+    }
+
+    @Override
+    public int minor() {
+        return this.minor;
+    }
+
+    @Override
+    public String getNamespaceUri() {
+        return String.format("urn:clustering:%d.%d", this.major, this.minor);
     }
 }

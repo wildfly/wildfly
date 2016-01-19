@@ -64,16 +64,20 @@ public class MyServiceServlet extends HttpServlet {
         this.log(String.format("Received request for %s, expecting %s", serviceName, expected));
         @SuppressWarnings("unchecked")
         ServiceController<Environment> service = (ServiceController<Environment>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
-        Environment env = service.getValue();
-        if (expected != null) {
-            for (int i = 0; i < RETRIES; ++i) {
-                if ((env != null) && expected.equals(env.getNodeName())) break;
-                Thread.yield();
-                env = service.getValue();
+        try {
+            Environment env = service.getValue();
+            if (expected != null) {
+                for (int i = 0; i < RETRIES; ++i) {
+                    if ((env != null) && expected.equals(env.getNodeName())) break;
+                    Thread.yield();
+                    env = service.getValue();
+                }
             }
-        }
-        if (env != null) {
-            resp.setHeader("node", env.getNodeName());
+            if (env != null) {
+                resp.setHeader("node", env.getNodeName());
+            }
+        } catch (IllegalStateException e) {
+            // Service was not started
         }
         resp.getWriter().write("Success");
     }

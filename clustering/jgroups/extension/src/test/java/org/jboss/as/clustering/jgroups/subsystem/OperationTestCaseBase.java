@@ -22,28 +22,18 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 
 /**
 * Base test case for testing management operations.
@@ -286,35 +276,6 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected KernelServices buildKernelServices() throws Exception {
         return createKernelServicesBuilder(new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
-    }
-
-    protected List<ModelNode> executeOpInBothControllers(KernelServices services, ModelVersion version, ModelNode operation) throws Exception {
-        List<ModelNode> results = new ArrayList<>(2);
-        results.add(ModelTestUtils.checkOutcome(services.executeOperation(operation.clone())));
-        results.add(ModelTestUtils.checkOutcome(services.executeOperation(version, services.transformOperation(version, operation.clone()))));
-        return results;
-    }
-
-    /**
-     * Executes a given operation asserting that an attachment has been created. Given {@link KernelServices} must have enabled attachment grabber.
-     *
-     * @return {@link ModelNode} result of the transformed operation
-     */
-    protected ModelNode executeOpInBothControllersWithAttachments(KernelServices services, ModelVersion version, ModelNode operation) throws Exception {
-        OperationTransformer.TransformedOperation op = services.executeInMainAndGetTheTransformedOperation(operation, version);
-        Assert.assertFalse(op.rejectOperation(success()));
-        //System.out.println(operation + "\nbecomes\n" + op.getTransformedOperation());
-        if (op.getTransformedOperation() != null) {
-            return ModelTestUtils.checkOutcome(services.getLegacyServices(version).executeOperation(op.getTransformedOperation()));
-        }
-        return null;
-    }
-
-    private static ModelNode success() {
-        final ModelNode result = new ModelNode();
-        result.get(OUTCOME).set(SUCCESS);
-        result.get(RESULT);
-        return result;
     }
 
 }

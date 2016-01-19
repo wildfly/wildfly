@@ -21,14 +21,14 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapModels;
+import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapResults;
+import static org.jboss.as.clustering.controller.PropertiesTestUtil.executeOpInBothControllersWithAttachments;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -135,10 +135,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // check that both versions of the legacy model are the same and valid
         checkSubsystemModelTransformation(services, version);
 
-        // Test properties operations
-        propertiesMapOperationsTest(services, version);
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            // Test properties operations
+            propertiesMapOperationsTest(services, version);
 
-        testNonMapTransformersWork(services, version);
+            testNonMapTransformersWork(services, version);
+        }
     }
 
     private void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
@@ -287,62 +289,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(op.rejectOperation(success()));
     }
 
-    private void checkMapResults(KernelServices services, ModelNode expected, ModelVersion version, ModelNode operation) throws Exception {
-        ModelNode main = ModelTestUtils.checkOutcome(services.executeOperation(operation.clone())).get(ModelDescriptionConstants.RESULT);
-        ModelNode legacyResult = services.executeOperation(version, services.transformOperation(version, operation.clone()));
-        ModelNode legacy;
-        if (expected.isDefined()) {
-            legacy = ModelTestUtils.checkOutcome(legacyResult).get(ModelDescriptionConstants.RESULT);
-        } else {
-            ModelTestUtils.checkFailed(legacyResult);
-            legacy = new ModelNode();
-        }
-        Assert.assertEquals(main, legacy);
-        Assert.assertEquals(expected, legacy);
-    }
-
-    private void checkMapModels(KernelServices services, ModelVersion version, PathAddress address, String... properties) throws Exception {
-        final ModelNode readResource = Util.createEmptyOperation(READ_RESOURCE_OPERATION, address);
-        readResource.get(RECURSIVE).set(true);
-        readResource.get(INCLUDE_DEFAULTS).set(false);
-        ModelNode mainModel = services.executeForResult(readResource.clone());
-        checkMainMapModel(mainModel, properties);
-
-        final ModelNode legacyModel;
-        if (address.getLastElement().getKey().equals("transport")) {
-            //TODO get rid of this once the PathAddress transformer works properly
-            //Temporary workaround
-            readResource.get(OP_ADDR).set(address.subAddress(0, address.size() - 1).append("transport", "TRANSPORT").toModelNode());
-            legacyModel = services.getLegacyServices(version).executeForResult(readResource);
-        } else {
-            legacyModel = ModelTestUtils.checkResultAndGetContents(services.executeOperation(version, services.transformOperation(version, readResource.clone())));
-        }
-
-        checkLegacyChildResourceModel(legacyModel, properties);
-    }
-
-    private void checkMainMapModel(ModelNode model, String... properties) {
-        Assert.assertEquals(0, properties.length % 2);
-
-        ModelNode props = model.get("properties");
-        Assert.assertEquals(properties.length / 2, props.isDefined() ? props.keys().size() : 0);
-        for (int i = 0 ; i < properties.length ; i += 2) {
-            Assert.assertEquals(properties[i + 1], props.get(properties[i]).asString());
-        }
-    }
-
-    private void checkLegacyChildResourceModel(ModelNode model, String... properties) {
-        Assert.assertEquals(0, properties.length % 2);
-
-        ModelNode props = model.get("property");
-        Assert.assertEquals(properties.length / 2, props.isDefined() ? props.keys().size() : 0);
-        for (int i = 0 ; i < properties.length ; i += 2) {
-            ModelNode property = props.get(properties[i]);
-            Assert.assertTrue(property.isDefined());
-            Assert.assertEquals(1, property.keys().size());
-            Assert.assertEquals(properties[i + 1], property.get("value").asString());
-        }
-    }
     /**
      * Tests resolution of property expressions during performRuntime()
      *

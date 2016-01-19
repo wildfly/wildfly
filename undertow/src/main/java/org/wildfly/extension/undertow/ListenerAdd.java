@@ -26,6 +26,7 @@ import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.DisallowedMethodsHandler;
 import io.undertow.server.handlers.PeerNameResolvingHandler;
+import io.undertow.servlet.handlers.MarkSecureHandler;
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -65,6 +66,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         final String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         final boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         final boolean peerHostLookup = ListenerResourceDefinition.RESOLVE_PEER_ADDRESS.resolveModelAttribute(context, model).asBoolean();
+        final boolean secure = ListenerResourceDefinition.SECURE.resolveModelAttribute(context, model).asBoolean();
 
         OptionMap listenerOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.LISTENER_OPTIONS);
         OptionMap socketOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.SOCKET_OPTIONS);
@@ -78,6 +80,9 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
                     return new PeerNameResolvingHandler(handler);
                 }
             });
+        }
+        if(secure) {
+            service.addWrapperHandler(MarkSecureHandler.WRAPPER);
         }
         List<String> disallowedMethods = ListenerResourceDefinition.DISALLOWED_METHODS.unwrap(context, model);
         if(!disallowedMethods.isEmpty()) {

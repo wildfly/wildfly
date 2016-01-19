@@ -17,6 +17,7 @@
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
 import java.io.InputStream;
+import java.util.PropertyPermission;
 
 import javax.ejb.EJB;
 import javax.jms.Connection;
@@ -53,6 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -96,6 +98,7 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(TimeoutUtil.class);
         archive.addClass(PointlesMathInterface.class);
         archive.addClass(Constants.class);
+        archive.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         log.info(archive.toString(true));
         return archive;
     }
@@ -225,12 +228,13 @@ public class PooledEJBLifecycleTestCase {
             message.setJMSReplyTo(replyDestination);
             final Destination destination = (Destination) ctx.lookup(Constants.QUEUE_JNDI_NAME);
             final MessageProducer producer = session.createProducer(destination);
+            // create receiver
+            final QueueReceiver receiver = session.createReceiver(replyDestination);
             producer.send(message);
             producer.close();
 
-            // wait for a reply
-            final QueueReceiver receiver = session.createReceiver(replyDestination);
-            final Message reply = receiver.receive(TimeoutUtil.adjust(1000));
+            //wait for reply
+            final Message reply = receiver.receive(TimeoutUtil.adjust(5000));
             assertNotNull("Did not receive a reply on the reply queue. Perhaps the original (request) message didn't make it to the MDB?", reply);
             final String result = ((TextMessage) reply).getText();
             assertEquals("Unexpected reply messsage", Constants.REPLY_MESSAGE_PREFIX + requestMessage, result);

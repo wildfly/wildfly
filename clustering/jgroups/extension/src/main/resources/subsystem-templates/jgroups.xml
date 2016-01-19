@@ -105,9 +105,12 @@
     </supplement>
     <supplement name="ec2" includes="no-multicast s3-ping"/>
     <supplement name="gossip" includes="no-multicast gossip-discovery"/>
-    <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
-    <socket-binding name="jgroups-tcp" port="7600"/>
-    <socket-binding name="jgroups-tcp-fd" port="57600"/>
-    <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
-    <socket-binding name="jgroups-udp-fd" port="54200"/>
+    <socket-binding name="jgroups-mping" interface="private" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
+    <socket-binding name="jgroups-tcp" interface="private" port="7600"/>
+    <socket-binding name="jgroups-tcp-fd" interface="private" port="57600"/>
+    <socket-binding name="jgroups-udp" interface="private" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
+    <socket-binding name="jgroups-udp-fd" interface="private" port="54200"/>
+    <interface name="private">
+        <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
+    </interface>
 </config>

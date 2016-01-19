@@ -39,8 +39,7 @@ public class WebValveParamAdd implements OperationStepHandler {
     static final WebValveParamAdd INSTANCE = new WebValveParamAdd();
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(PARAM);
         if (operation.hasDefined("param-name") && operation.hasDefined("param-value")) {
@@ -63,7 +62,5 @@ public class WebValveParamAdd implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 }

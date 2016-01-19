@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.clustering;
 
 import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -52,7 +53,7 @@ public class ClusteredSingletonServiceCreator extends AbstractService<Void> {
     @Override public void start(StartContext context) throws StartException {
         final ServiceTarget target = context.getChildTarget();
         final SingletonPolicy singletonPolicyValue = singletonPolicy.getValue();
-        singletonPolicyValue.createSingletonServiceBuilder(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName(), new ClusteredSingletonService())
+        singletonPolicyValue.createSingletonServiceBuilder(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName(), Service.NULL)
                 .build(target)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();

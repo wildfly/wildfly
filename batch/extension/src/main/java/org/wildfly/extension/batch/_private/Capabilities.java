@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.batch._private;
 
-import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 
 /**
  * Capabilities for the batch extension. This is not to be used outside of this extension.
@@ -33,8 +33,8 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 public class Capabilities {
 
     /**
-     * A capability representing the default thread-pool to use in batch deployment environments.
+     * A capability for the current batch configuration.
      */
-    public static final RuntimeCapability<Void> DEFAULT_THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.default.thread.pool", false, JobExecutor.class)
+    public static final RuntimeCapability<Void> BATCH_CONFIGURATION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.configuration", false, BatchConfiguration.class)
             .build();
 }

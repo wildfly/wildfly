@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -107,7 +108,11 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                         model.get(DeprecatedAttribute.TABLE.getDefinition().getName()).set(binaryTableModel);
                     }
 
-                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+
+                    LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
+
                     context.processChildren(resource);
                 }
             });
@@ -157,18 +162,14 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredChildren(BinaryTableResourceDefinition.PATH)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 translateAddOperation(context, operation);
-                super.populateModel(context, operation, resource);
-            }
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                super.execute(context, operation);
                 if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
                     // Translate deprecated TABLE attribute into separate add table operation
                     ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH));
@@ -178,6 +179,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                     }
                     context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
+                super.populateModel(context, operation, resource);
             }
         }.register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

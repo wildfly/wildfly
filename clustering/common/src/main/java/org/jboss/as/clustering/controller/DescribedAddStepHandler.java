@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.msc;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.msc.service.ServiceController;
+import org.jboss.as.controller.OperationStepHandler;
 
 /**
+ * A described add operation handler.
  * @author Paul Ferraro
  */
-public interface ServiceControllerFactory {
-    ServiceControllerFactory SIMPLE = new ServiceControllerFactory() {
-        @Override
-        public <T> ServiceController<T> createServiceController(ServiceController<T> controller) {
-            return controller;
-        }
-    };
+public interface DescribedAddStepHandler extends OperationStepHandler, Described<AddStepHandlerDescriptor> {
 
-    <T> ServiceController<T> createServiceController(ServiceController<T> controller);
 }

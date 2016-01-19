@@ -88,7 +88,7 @@ public class DynamicMessageListenerTestCase {
                 new RuntimePermission("defineClassInPackage." + MyMdb.class.getPackage().getName()),
                 new RuntimePermission("getClassLoader"),
                 // TelnetServer binds socket and accepts connections
-                new SocketPermission(Utils.getDefaultHost(true), "accept,listen,resolve")),
+                new SocketPermission("*", "accept,listen")),
                 "permissions.xml");
         return ear;
     }

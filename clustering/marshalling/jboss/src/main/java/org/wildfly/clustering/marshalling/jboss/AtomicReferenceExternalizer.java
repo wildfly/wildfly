@@ -20,45 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet;
+package org.wildfly.clustering.marshalling.jboss;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * A simple service for storing a default value from another service.
- *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * {@link Externalizer} for an {@link AtomicReference>
+ * @author Paul Ferraro
  */
-public class DefaultValueService<T> implements Service<T> {
-
-    public static <T> DefaultValueService<T> create() {
-        return new DefaultValueService<>();
-    }
-
-    private final InjectedValue<T> injector = new InjectedValue<>();
-
-    private volatile T instance;
+public class AtomicReferenceExternalizer implements Externalizer<AtomicReference<Object>> {
 
     @Override
-    public void start(final StartContext context) throws StartException {
-        instance = injector.getValue();
+    public void writeObject(ObjectOutput output, AtomicReference<Object> reference) throws IOException {
+        output.writeObject(reference.get());
     }
 
     @Override
-    public void stop(final StopContext context) {
-        instance = null;
+    public AtomicReference<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new AtomicReference<>(input.readObject());
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public T getValue() throws IllegalStateException, IllegalArgumentException {
-        return instance;
-    }
-
-    protected InjectedValue<T> getInjector() {
-        return injector;
+    public Class<? extends AtomicReference<Object>> getTargetClass() {
+        Class targetClass = AtomicReference.class;
+        return targetClass;
     }
 }

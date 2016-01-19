@@ -20,31 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet;
+package org.jboss.as.test.integration.hibernate.generator;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.dmr.ModelNode;
+import org.hibernate.annotations.GenericGenerator;
 
 /**
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * Employee entity class
+ *
+ * @author Scott Marlow
  */
-public class NameAttributeMarshaller extends AttributeMarshaller {
-    public static final NameAttributeMarshaller INSTANCE = new NameAttributeMarshaller();
+@Entity
+public class Employee {
+    @Id
+    private int id;
 
-    private NameAttributeMarshaller() {
+    private String name;
+
+    private String address;
+
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (resourceModel.hasDefined(attribute.getName())) {
-            writer.writeStartElement(attribute.getName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), resourceModel.get(attribute.getName()).asString());
-            writer.writeEndElement();
-        }
+    public void setName(String name) {
+        this.name = name;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

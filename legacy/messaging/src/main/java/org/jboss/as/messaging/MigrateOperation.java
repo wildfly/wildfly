@@ -102,6 +102,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -431,7 +432,7 @@ public class MigrateOperation implements OperationStepHandler {
                                     if (parameterIsAllowed(name, resourceType)) {
                                         parentAddOp.get("params").add(new Property(name, value));
                                     } else {
-                                        warnings.add(ROOT_LOGGER.couldNotMigrateIgnoredParameter(name, address.getParent()));
+                                        warnings.add(ROOT_LOGGER.couldNotMigrateUnsupportedAttribute(name, address.getParent()));
                                     }
                                 }
                                 continue;
@@ -655,20 +656,20 @@ public class MigrateOperation implements OperationStepHandler {
             if (backup) {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-slave");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
-                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
+                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-master");
-                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
+                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
             }
         } else {
             if (backup) {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-slave");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
-                setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILBACK_DELAY, "failback-delay");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, MAX_SAVED_REPLICATED_JOURNAL_SIZE, "max-saved-replicated-journal-size");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, BACKUP_GROUP_NAME, "group-name");
+                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, CHECK_FOR_LIVE_SERVER, "check-for-live-server");
@@ -698,6 +699,12 @@ public class MigrateOperation implements OperationStepHandler {
             setNode.get(newAttributeName).set(attribute);
             discardNode.remove(legacyAttributeDefinition.getName());
         }
+    }
 
+    private void discardUnsupportedAttribute(ModelNode newAddOp, AttributeDefinition legacyAttributeDefinition, List<String> warnings) {
+        if (newAddOp.hasDefined(legacyAttributeDefinition.getName())) {
+            newAddOp.remove(legacyAttributeDefinition.getName());
+            warnings.add(MessagingLogger.ROOT_LOGGER.couldNotMigrateUnsupportedAttribute(legacyAttributeDefinition.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+        }
     }
 }

@@ -154,9 +154,9 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     @Override
     public void handleMessage(Channel channel, MessageInputStream messageInputStream) {
         try {
-            this.processMessage(channel, messageInputStream);
             // enroll for next message (whenever it's available)
             channel.receiveMessage(this);
+            this.processMessage(channel, messageInputStream);
 
         } catch (Throwable e) {
             // log it
@@ -310,8 +310,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             if (EjbLogger.REMOTE_LOGGER.isDebugEnabled()) {
                 EjbLogger.REMOTE_LOGGER.debugf("Received cluster removal notification for cluster %s", registry.getGroup());
             }
-            // when the membership of the cluster being left is 1, we are the last node
-            if (registry.getEntries().keySet().size() == 1) {
+            Map.Entry<String, List<ClientMapping>> localEntry = registry.getEntry(registry.getGroup().getLocalNode());
+            Map<String, List<ClientMapping>> entries = registry.getEntries();
+            // Send cluster removed message only if we are the only remaining member of the cluster that we are leaving
+            if ((localEntry != null) ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty()) {
                 this.sendClusterRemovedMessage(registry);
             }
         } catch (IOException ioe) {

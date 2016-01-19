@@ -25,6 +25,7 @@ package org.wildfly.extension.batch.jberet._private;
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.wildfly.extension.batch.jberet.BatchConfiguration;
 
 /**
  * Capabilities for the batch extension. This is not to be used outside of this extension.
@@ -39,15 +40,15 @@ public class Capabilities {
     public static final String DATA_SOURCE_CAPABILITY = "org.wildfly.data-source";
 
     /**
-     * A capability for thread-pools.
+     * A capability for the current batch configuration.
      */
-    public static final RuntimeCapability<Void> THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.thread.pool", true, JobExecutor.class)
+    public static final RuntimeCapability<Void> BATCH_CONFIGURATION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.configuration", false, BatchConfiguration.class)
             .build();
 
     /**
-     * A capability representing the default thread-pool to use in batch deployment environments.
+     * A capability for thread-pools.
      */
-    public static final RuntimeCapability<Void> DEFAULT_THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.default.thread.pool", false, JobExecutor.class)
+    public static final RuntimeCapability<Void> THREAD_POOL_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.thread.pool", true, JobExecutor.class)
             .build();
 
     /**
@@ -55,14 +56,5 @@ public class Capabilities {
      * implementation of the repository.
      */
     public static final RuntimeCapability<Void> JOB_REPOSITORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfy.batch.job.repository", true, JobRepository.class)
-            .build();
-
-    /**
-     * A capability for the default job repository.
-     * <p>
-     * This is an optional capability that will be defined only if the {@code default-job-repository} attribute is set.
-     * </p>
-     */
-    public static final RuntimeCapability<Void> DEFAULT_JOB_REPOSITORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfy.batch.default.job.repository", false, JobRepository.class)
             .build();
 }

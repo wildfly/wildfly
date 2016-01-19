@@ -73,6 +73,9 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
                 BatchSubsystemDefinition.DEFAULT_JOB_REPOSITORY.parseAndSetParameter(readNameAttribute(reader), subsystemAddOp, reader);
                 ParseUtils.requireNoContent(reader);
                 requiredElements.remove(Element.DEFAULT_JOB_REPOSITORY);
+            } else if (element == Element.RESTART_JOBS_ON_RESUME) {
+                BatchSubsystemDefinition.RESTART_JOBS_ON_RESUME.parseAndSetParameter(readValueAttribute(reader), subsystemAddOp, reader);
+                ParseUtils.requireNoContent(reader);
             } else if (element == Element.JOB_REPOSITORY) {
                 final String name = readNameAttribute(reader);
                 parseJobRepository(reader, subsystemAddress, name, ops);
@@ -117,6 +120,10 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
 
     static String readNameAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
         return readRequiredAttributes(reader, EnumSet.of(Attribute.NAME)).get(Attribute.NAME);
+    }
+
+    static String readValueAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        return readRequiredAttributes(reader, EnumSet.of(Attribute.VALUE)).get(Attribute.VALUE);
     }
 
     /**

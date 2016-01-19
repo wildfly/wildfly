@@ -32,6 +32,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 @RunWith(Arquillian.class)
 public class EarJbossStructureDepedenciesTestCase {
 
@@ -57,6 +59,7 @@ public class EarJbossStructureDepedenciesTestCase {
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
         earLib.addClass(TestBB.class);
         ear.addAsLibraries(earLib);
+        ear.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return ear;
     }
 

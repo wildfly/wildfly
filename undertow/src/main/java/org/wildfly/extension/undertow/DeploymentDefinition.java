@@ -28,6 +28,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.undertow.server.session.SessionManager;
+import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.servlet.api.Deployment;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -44,10 +47,6 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-
-import io.undertow.server.session.SessionManager;
-import io.undertow.server.session.SessionManagerStatistics;
-import io.undertow.servlet.api.Deployment;
 
 /**
  * @author Tomaz Cerar
@@ -99,8 +98,11 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             final String server = SERVER.resolveModelAttribute(context, subModel).asString();
 
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-            final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
+            if (controller.getState() != ServiceController.State.UP){//check if deployment is active at all
+                return;
+            }
 
+            final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
             SessionStat stat = SessionStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
 
             if (stat == null) {

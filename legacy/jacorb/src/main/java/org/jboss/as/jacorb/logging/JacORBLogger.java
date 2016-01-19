@@ -462,4 +462,8 @@ public interface JacORBLogger extends BasicLogger {
     @Message(id = 135, value = "Migration failed, see results for more details.")
     String migrationFailed();
 
+    @Message(id = 136, value = "The properties %s use expressions. Configuration properties that are used to resolve those expressions " +
+            "should be transformed manually to the new iiop-openjdk subsystem format")
+    String expressionMigrationWarning(String properties);
+
 }

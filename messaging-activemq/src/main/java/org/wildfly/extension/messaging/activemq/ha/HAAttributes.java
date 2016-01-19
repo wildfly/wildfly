@@ -93,14 +93,6 @@ public class HAAttributes {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultFailbackDelay()))
-            .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
-
     public static final SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultFailoverOnServerShutdown()))
             .setAllowNull(true)
@@ -109,6 +101,14 @@ public class HAAttributes {
             .build();
 
     public static SimpleAttributeDefinition GROUP_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.GROUP_NAME, STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition INITIAL_REPLICATION_SYNC_TIMEOUT = create("initial-replication-sync-timeout", LONG)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultInitialReplicationSyncTimeout()))
+            .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()

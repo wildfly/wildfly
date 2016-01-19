@@ -57,10 +57,6 @@ public class InfinispanRouteLocator implements RouteLocator {
             Node node = this.factory.createNode(location);
             entry = this.registry.getEntry(node);
         }
-        if (entry == null) {
-            // Accommodate mod_cluster's lazy route auto-generation
-            entry = this.registry.getLocalEntry();
-        }
         return (entry != null) ? entry.getKey() : null;
     }
 

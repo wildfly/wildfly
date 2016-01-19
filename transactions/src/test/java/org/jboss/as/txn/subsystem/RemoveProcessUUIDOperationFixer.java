@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.subsystem;
 
 import java.io.Serializable;
 
@@ -40,7 +40,7 @@ public class RemoveProcessUUIDOperationFixer implements OperationFixer, Serializ
 
     @Override
     public ModelNode fixOperation(ModelNode operation) {
-        if (operation.hasDefined("process-id-uuid") && operation.get("process-id-uuid").asString() == "false"){
+        if (operation.hasDefined("process-id-uuid") && operation.get("process-id-uuid").asString() .equals("false")){
             operation.remove("process-id-uuid");
         }
         return operation;

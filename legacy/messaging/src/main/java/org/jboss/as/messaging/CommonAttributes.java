@@ -54,6 +54,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@SuppressWarnings("deprecation")
 public interface CommonAttributes {
 
     String DISCOVERY_GROUP_NAME = "discovery-group-name";

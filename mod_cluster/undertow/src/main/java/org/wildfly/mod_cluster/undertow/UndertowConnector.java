@@ -34,7 +34,7 @@ import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
 import org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler;
 
 /**
- * Adapts {@link org.wildfly.extension.undertow.ListenerService} to a {@link Connector}.
+ * Adapts {@link ListenerService} to a {@link Connector}.
  *
  * @author Radoslav Husar
  * @version Aug 2013
@@ -43,6 +43,7 @@ import org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler;
 public class UndertowConnector implements Connector {
 
     private final ListenerService<?> listener;
+    private InetAddress address;
 
     public UndertowConnector(ListenerService<?> listener) {
         this.listener = listener;
@@ -69,12 +70,12 @@ public class UndertowConnector implements Connector {
 
     @Override
     public InetAddress getAddress() {
-        return this.listener.getBinding().getValue().getAddress();
+        return address == null ? this.listener.getBinding().getValue().getAddress() : address;
     }
 
     @Override
     public void setAddress(InetAddress address) {
-        // Do nothing
+        this.address = address;
     }
 
     @Override

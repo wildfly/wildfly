@@ -56,6 +56,8 @@ public class Constants {
 
     private static final String POOL_PREFILL_NAME = "pool-prefill";
 
+    private static final String POOL_FAIR_NAME = "pool-fair";
+
     private static final String POOL_USE_STRICT_MIN_NAME = "pool-use-strict-min";
 
     private static final String BACKGROUNDVALIDATIONMILLIS_NAME = "background-validation-millis";
@@ -192,6 +194,12 @@ public class Constants {
             .setXmlName(Pool.Tag.PREFILL.getLocalName())
             .build();
 
+    public static final SimpleAttributeDefinition POOL_FAIR = new SimpleAttributeDefinitionBuilder(POOL_FAIR_NAME, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(true)
+            .setXmlName(Pool.Tag.FAIR.getLocalName())
+            .build();
+
     public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinitionBuilder(POOL_USE_STRICT_MIN_NAME, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(Defaults.USE_STRICT_MIN))
             .setAllowExpression(true)
@@ -208,7 +216,7 @@ public class Constants {
 
 
     public static final AttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
-            BACKGROUNDVALIDATION, USE_FAST_FAIL, VALIDATE_ON_MATCH, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
+            BACKGROUNDVALIDATION, USE_FAST_FAIL, VALIDATE_ON_MATCH, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_FAIR, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
             CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
 
     public static SimpleAttributeDefinition POOL_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)

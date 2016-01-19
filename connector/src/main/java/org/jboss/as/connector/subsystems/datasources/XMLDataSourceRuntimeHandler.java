@@ -112,6 +112,11 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getPool().isPrefill());
+        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR.getName())) {
+            if (dataSource.getPool() == null) {
+                return;
+            }
+            setBooleanIfNotNull(context, dataSource.getPool().isFair());
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN.getName())) {
             if (dataSource.getPool() == null) {
                 return;
