@@ -239,13 +239,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         cacheStoreAddresses.add(getStringKeyedJDBCCacheStoreAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "cache-with-string-keyed-store"));
 
         // Legacy addresses
-        // TODO transformations do not kick in for legacy addresses
-//        cacheStoreAddresses.add(getBinaryKeyedJDBCCacheStoreLegacyAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "cache-with-binary-keyed-store"));
-//        cacheStoreAddresses.add(getCustomCacheStoreLegacyAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "repl"));
-//        cacheStoreAddresses.add(getFileCacheStoreLegacyAddress(cacheContainer, LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "local"));
-//        cacheStoreAddresses.add(getMixedKeyedJDBCCacheStoreLegacyAddress(cacheContainer, DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist"));
-//        cacheStoreAddresses.add(getRemoteCacheStoreLegacyAddress(cacheContainer, InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey(), "invalid"));
-//        cacheStoreAddresses.add(getStringKeyedJDBCCacheStoreLegacyAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "cache-with-string-keyed-store"));
+        cacheStoreAddresses.add(getBinaryKeyedJDBCCacheStoreLegacyAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "cache-with-binary-keyed-store"));
+        cacheStoreAddresses.add(getCustomCacheStoreLegacyAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "repl"));
+        cacheStoreAddresses.add(getFileCacheStoreLegacyAddress(cacheContainer, LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "local"));
+        cacheStoreAddresses.add(getMixedKeyedJDBCCacheStoreLegacyAddress(cacheContainer, DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist"));
+        cacheStoreAddresses.add(getRemoteCacheStoreLegacyAddress(cacheContainer, InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey(), "invalid"));
+        cacheStoreAddresses.add(getStringKeyedJDBCCacheStoreLegacyAddress(cacheContainer, ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey(), "cache-with-string-keyed-store"));
 
         for (PathAddress storeAddress : cacheStoreAddresses) {
 
