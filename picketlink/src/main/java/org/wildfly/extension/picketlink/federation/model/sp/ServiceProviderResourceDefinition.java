@@ -57,7 +57,7 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
     public static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_URL.getName(),ModelType.STRING, false)
         .setAllowExpression(true)
         .build();
-    public static final SimpleAttributeDefinition POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.SERVICE_PROVIDER_POST_BINDING.getName(), ModelType.STRING, true)
+    public static final SimpleAttributeDefinition POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.SERVICE_PROVIDER_POST_BINDING.getName(), ModelType.BOOLEAN, true)
         .setDefaultValue(new ModelNode(true))
         .setAllowExpression(true)
         .build();
