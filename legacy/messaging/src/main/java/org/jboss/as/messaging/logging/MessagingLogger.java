@@ -803,7 +803,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 79, value = "The migrate operation can not be performed: the server must be in admin-only mode")
     OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
 
-    @Message(id = 80, value = "Can not migrate attribute %s from resource %s. Use instead the socket-attribute to configure this broadcast-group.")
+    @Message(id = 80, value = "Can not migrate attribute %s from resource %s. Use instead the socket-binding attribute to configure this broadcast-group.")
     String couldNotMigrateBroadcastGroupAttribute(String attribute, PathAddress address);
 
     @Message(id = 81, value = "Migration failed, see results for more details.")
@@ -815,7 +815,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 83, value = "Can not migrate the HA configuration of %s. Its shared-store and backup attributes holds expressions and it is not possible to determine unambiguously how to create the corresponding ha-policy for the messaging-activemq's server.")
     String couldNotMigrateHA(PathAddress address);
 
-    @Message(id = 84, value = "Can not migrate attribute %s from resource %s. Use instead the socket-attribute to configure this discovery-group.")
+    @Message(id = 84, value = "Can not migrate attribute %s from resource %s. Use instead the socket-binding attribute to configure this discovery-group.")
     String couldNotMigrateDiscoveryGroupAttribute(String attribute, PathAddress address);
 
     @Message(id = 85, value = "Can not create a legacy-connection-factory based on connection-factory %s. It uses a HornetQ in-vm connector that is not compatible with Artemis in-vm connector ")
