@@ -56,6 +56,11 @@
         <module name="javax.xml.ws.api" export="true"/>
         <module name="org.glassfish.javax.el" export="true"/>
 
+        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
+             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
+        <module name="javax.xml.rpc.api" export="true"/>
+        <module name="org.omg.api" export="true"/>
+
         <!-- This one always goes last. -->
         <module name="javax.api" export="true"/>
     </dependencies>

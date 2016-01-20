@@ -101,9 +101,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-
             builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
-
             for (String opName : Operations.getAllWriteAttributeOperationNames()) {
                 builder.addOperationTransformationOverride(opName)
                         .inheritResourceAttributeDefinitions()

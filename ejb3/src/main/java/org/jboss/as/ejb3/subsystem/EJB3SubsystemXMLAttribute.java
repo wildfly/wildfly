@@ -99,6 +99,8 @@ public enum EJB3SubsystemXMLAttribute {
     VALUE("value"),
 
     ACTIVE("active"),
+
+    EXECUTE_IN_WORKER("execute-in-worker")
     ;
 
     private final String name;

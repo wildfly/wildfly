@@ -42,6 +42,7 @@
        <?SECURITY?>
        <default-missing-method-permissions-deny-access value="true" />
        <log-system-exceptions value="true" />
+
    </subsystem>
    <supplement name="no-elytron">
       <replacement placeholder="SECURITY">

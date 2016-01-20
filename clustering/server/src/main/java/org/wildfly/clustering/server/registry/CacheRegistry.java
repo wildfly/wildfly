@@ -62,10 +62,9 @@ import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
  * @param <K> key type
  * @param <V> value type
  */
-@org.infinispan.notifications.Listener(sync = false)
+@org.infinispan.notifications.Listener
 public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
-    private final String containerName;
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final Cache<Node, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
@@ -75,7 +74,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
 
     public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
-        this.containerName = config.getContainerName();
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
@@ -158,7 +156,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                             }
                         }
                     } catch (CacheException e) {
-                        ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, this.containerName, event.getCache().getName(), nodes);
+                        ClusteringServerLogger.ROOT_LOGGER.registryPurgeFailed(e, event.getCache().getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), event.getCache().getName(), nodes);
                     }
                     // Invoke listeners outside above tx context
                     if (!removed.isEmpty()) {
@@ -218,7 +216,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                     }
                 }
             } catch (Throwable e) {
-                ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.containerName, this.cache.getName(), type, entries);
+                ClusteringServerLogger.ROOT_LOGGER.registryListenerFailed(e, this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), this.cache.getName(), type, entries);
             }
         }
     }

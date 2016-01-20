@@ -92,8 +92,6 @@ public class InfinispanSessionFactoryTestCase {
         assertNotNull(existingSessionResult);
         assertSame(metaData, existingSessionResult.getKey());
         assertSame(attributes, existingSessionResult.getValue());
-
-        verify(this.metaDataFactory).remove(missingAttributesSessionId);
     }
 
     @Test

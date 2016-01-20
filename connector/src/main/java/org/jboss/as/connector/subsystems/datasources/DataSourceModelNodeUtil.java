@@ -33,6 +33,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -155,6 +156,7 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
         final Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, INITIAL_POOL_SIZE);
         final boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);
+        final boolean fair = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FAIR);
         final boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN);
         final String flushStrategyString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FLUSH_STRATEGY);
         final FlushStrategy flushStrategy = FlushStrategy.forName(flushStrategyString); // TODO relax case sensitivity
@@ -164,7 +166,7 @@ class DataSourceModelNodeUtil {
         final Capacity capacity = new Capacity(incrementer, decrementer);
         final Extension connectionListener = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES);
 
-        final DsPool pool = new DsPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers, capacity, connectionListener);
+        final DsPool pool = new DsPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers, capacity, fair, connectionListener);
 
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
 
@@ -245,6 +247,7 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
         final Integer initialPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, INITIAL_POOL_SIZE);
         final Boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);
+        final Boolean fair = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_FAIR);
         final Boolean useStrictMin = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_USE_STRICT_MIN);
         final Boolean interleaving = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, INTERLEAVING);
         final Boolean noTxSeparatePool = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_TX_SEPARATE_POOL);
@@ -261,7 +264,7 @@ class DataSourceModelNodeUtil {
         final Extension connectionListener = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES);
 
         final DsXaPool xaPool = new DsXaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
-                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers, capacity, connectionListener);
+                isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers, capacity, fair, connectionListener);
 
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
         final String password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);

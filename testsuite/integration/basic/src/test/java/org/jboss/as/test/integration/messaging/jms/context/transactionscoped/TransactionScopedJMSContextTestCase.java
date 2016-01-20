@@ -37,11 +37,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.messaging.jms.context.transactionscoped.auxiliary.AppScopedBean;
 import org.jboss.as.test.integration.messaging.jms.context.transactionscoped.auxiliary.ThreadLauncher;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,7 +63,6 @@ public class TransactionScopedJMSContextTestCase {
     @Deployment
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "TransactionScopedJMSContextTestCase.jar")
-                .addClass(TimeoutUtil.class)
                 .addPackage(AppScopedBean.class.getPackage())
                 .addAsManifestResource(EmptyAsset.INSTANCE,
                         "beans.xml");

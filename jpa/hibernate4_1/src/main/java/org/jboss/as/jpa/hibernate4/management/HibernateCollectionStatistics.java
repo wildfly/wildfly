@@ -25,7 +25,6 @@ package org.jboss.as.jpa.hibernate4.management;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -74,11 +73,17 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
 
     @Override
     public Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress) {
-        return Collections.unmodifiableCollection(Arrays.asList(
-                getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL))).getCollectionRoleNames()));
+        org.hibernate.stat.Statistics stats = getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL)));
+        if (stats == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableCollection(Arrays.asList(stats.getCollectionRoleNames()));
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
         if (sessionFactory != null) {
@@ -88,6 +93,9 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
     }
 
     private CollectionStatistics getStatistics(final EntityManagerFactory entityManagerFactory, String collectionName) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
         if (sessionFactory != null) {

@@ -52,7 +52,9 @@ public class AsyncBeanSynchronizeSingleton implements AsyncBeanSynchronizeSingle
     }
 
     public void latchAwaitSeconds(int sec) throws InterruptedException {
-        latch.await(sec, TimeUnit.SECONDS);
+        if(!latch.await(sec, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Await failed");
+        }
     }
     
     public void latch2AwaitSeconds(int sec) throws InterruptedException {

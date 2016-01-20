@@ -109,6 +109,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                         ServerDefinition.LOG_JOURNAL_WRITE_RATE,
                                         ServerDefinition.JOURNAL_FILE_SIZE,
                                         ServerDefinition.JOURNAL_MIN_FILES,
+                                        ServerDefinition.JOURNAL_POOL_FILES,
                                         ServerDefinition.JOURNAL_COMPACT_PERCENTAGE,
                                         ServerDefinition.JOURNAL_COMPACT_MIN_FILES,
                                         ServerDefinition.JOURNAL_MAX_IO,

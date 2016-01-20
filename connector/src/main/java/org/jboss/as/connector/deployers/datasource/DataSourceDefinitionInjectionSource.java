@@ -150,7 +150,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                                              maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : Integer.valueOf(maxPoolSize),
                                                              Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
                                                              Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID,
-                                                             Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL, Boolean.FALSE, null, null);
+                                                             Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL, Boolean.FALSE, null, Defaults.FAIR, null);
                 final ModifiableXaDataSource dataSource = new ModifiableXaDataSource(transactionIsolation(),
                         null, dsSecurity, null, null, null,
                         null, null, null, poolName, true,
@@ -164,7 +164,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                 final DsPoolImpl commonPool = new DsPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : Integer.valueOf(minPoolSize),
                                                              initialPoolSize < 0 ? Defaults.INITIAL_POOL_SIZE : Integer.valueOf(initialPoolSize),
                                                              maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : Integer.valueOf(maxPoolSize),
-                                                             Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, null);
+                                                             Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, Defaults.FAIR, null);
                 final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), properties,
                         null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM,
                         transactional, Defaults.CONNECTABLE, Defaults.TRACKING, Defaults.MCP, Defaults.ENLISTMENT_TRACE, commonPool);

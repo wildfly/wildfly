@@ -38,7 +38,6 @@ import org.wildfly.clustering.group.NodeFactory;
 public interface CacheRegistryFactoryConfiguration<K, V> {
     Batcher<? extends Batch> getBatcher();
     Group getGroup();
-    String getContainerName();
     Cache<Node, Map.Entry<K, V>> getCache();
     NodeFactory<Address> getNodeFactory();
 }

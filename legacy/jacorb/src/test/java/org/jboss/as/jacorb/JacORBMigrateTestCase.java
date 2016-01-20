@@ -32,10 +32,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -94,9 +96,7 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
         IIOPExtension newSubsystem = new IIOPExtension();
         boolean extensionAdded = false;
         @Override
-        public void initializeExtraSubystemsAndModel(final ExtensionRegistry extensionRegistry, Resource rootResource,
-                final ManagementResourceRegistration rootRegistration) {
-
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
 
             final OperationDefinition removeExtension = new SimpleOperationDefinitionBuilder("remove", new StandardResourceDescriptionResolver("test", "test", getClass().getClassLoader()))
                     .build();
@@ -121,5 +121,10 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
         protected RunningMode getRunningMode() {
             return RunningMode.ADMIN_ONLY;
         }
+
+        @Deprecated
+        protected ProcessType getProcessType() {
+                    return ProcessType.HOST_CONTROLLER;
+                }
     }
 }

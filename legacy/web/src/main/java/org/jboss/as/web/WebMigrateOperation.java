@@ -46,6 +46,7 @@ import org.jboss.dmr.ValueExpression;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,6 +86,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRU
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+import static org.wildfly.extension.undertow.UndertowExtension.PATH_FILTERS;
+
+import java.util.stream.Collectors;
 
 /**
  * Operation to migrate from the legacy web subsystem to the new undertow subsystem.
@@ -99,7 +103,7 @@ import static org.jboss.as.controller.operations.common.Util.createRemoveOperati
  * <li>for each web resources, transform the :add operations to add the
  * corresponding resource to the new undertow subsystem.
  * In this step, changes to the resources model are taken into account</li>
- * <li>:remove the messaging subsystem</li>
+ * <li>:remove the web subsystem</li>
  * </ul>
  * <p/>
  * The companion <code>:describe-migration</code> operation will return a list of all the actual operations that would be
@@ -138,6 +142,23 @@ public class WebMigrateOperation implements OperationStepHandler {
             .setValueType(ModelType.OBJECT)
             .setAllowNull(true)
             .build();
+
+    private static final Map<String, ValveHandler> VALVES_TO_FILTERS = new HashMap<String, ValveHandler>() {{
+            put("org.apache.catalina.valves.RequestDumperValve",
+                    new ValveHandler("io.undertow.server.handlers.RequestDumpingHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RewriteValve",
+                    new ValveHandler("io.undertow.server.handlers.SetAttributeHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RemoteHostValve",
+                    new ValveHandler("io.undertow.server.handlers.AccessControlListHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RemoteAddrValve",
+                    new ValveHandler("io.undertow.server.handlers.IPAddressAccessControlHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.RemoteIpValve",
+                    new ValveHandler("io.undertow.server.handlers.ProxyPeerAddressHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.StuckThreadDetectionValve",
+                    new ValveHandler("io.undertow.server.handlers.StuckThreadDetectionHandler", "io.undertow.core"));
+            put("org.apache.catalina.valves.CrawlerSessionManagerValve",
+                    new ValveHandler("io.undertow.servlet.handlers.CrawlerSessionManagerHandler", "io.undertow.servlet"));
+        }};
 
     private final boolean describe;
 
@@ -627,6 +648,8 @@ public class WebMigrateOperation implements OperationStepHandler {
                 // ignore, handled as part of connector migration
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH))) {
                 migrateVirtualHost(newAddOperations, newAddOp, address);
+            } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.VALVE_PATH))) {
+                migrateValves(newAddOperations, newAddOp, address);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH))) {
                 migrateAccessLog(newAddOperations, newAddOp, address, legacyModelDescription, warnings);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH, WebExtension.DIRECTORY_PATH))) {
@@ -715,6 +738,34 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.DEFAULT_WEB_MODULE).set(newAddOp.get(WebVirtualHostDefinition.DEFAULT_WEB_MODULE.getName()));
 
         newAddOperations.put(newAddress, add);
+        final PathAddress allFilterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
+        List<PathAddress> filterAddresses = newAddOperations.keySet().stream().filter(newOpAddress -> {
+            return wildcardEquals(allFilterAddress, newOpAddress);
+        }).collect(Collectors.toList());
+        for (PathAddress filterAddress : filterAddresses) {
+            PathAddress filterRefAddress = pathAddress(newAddress, pathElement(Constants.FILTER_REF, filterAddress.getLastElement().getValue()));
+            ModelNode filterRefAdd = createAddOperation(filterRefAddress);
+            newAddOperations.put(filterRefAddress, filterRefAdd);
+        }
+    }
+
+    private void migrateValves(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address) {
+        if (newAddOp.hasDefined(WebValveDefinition.CLASS_NAME.getName())) {
+            String valveClassName = newAddOp.get(WebValveDefinition.CLASS_NAME.getName()).asString();
+            if (VALVES_TO_FILTERS.containsKey(valveClassName)) {
+                newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
+                PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey(), address.getLastElement().getValue()));
+                if (!newAddOperations.containsKey(filterAddress)) {
+                    ModelNode filterAdd = createAddOperation(filterAddress);
+                    filterAdd.get(MODULE).set(VALVES_TO_FILTERS.get(valveClassName).module);
+                    filterAdd.get(CustomFilterDefinition.CLASS_NAME.getName()).set(VALVES_TO_FILTERS.get(valveClassName).handlerClassName);
+                    if(newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+                        filterAdd.get(CustomFilterDefinition.PARAMETERS.getName()).set(newAddOp.get(WebValveDefinition.PARAMS.getName()));
+                    }
+                    newAddOperations.put(filterAddress, filterAdd);
+                }
+            }
+        }
     }
 
     private void migrateConnector(OperationContext context, Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyModelAddOps, List<String> warnings, boolean domainMode) throws OperationFailedException {
@@ -789,6 +840,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         addConnector.get(Constants.REDIRECT_SOCKET).set(newAddOp.get(WebConnectorDefinition.REDIRECT_BINDING.getName()));
         addConnector.get(Constants.MAX_CONNECTIONS).set(newAddOp.get(WebConnectorDefinition.MAX_CONNECTIONS.getName()));
         addConnector.get(Constants.MAX_BUFFERED_REQUEST_SIZE).set(newAddOp.get(WebConnectorDefinition.MAX_SAVE_POST_SIZE.getName()));
+        addConnector.get(Constants.SECURE).set(newAddOp.get(WebConnectorDefinition.SECURE.getName()));
         if(newAddOp.hasDefined(WebConnectorDefinition.REDIRECT_PORT.getName())) {
             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(WebConnectorDefinition.REDIRECT_PORT.getName(), pathAddress(newAddOp.get(ADDRESS))));
         }
@@ -894,6 +946,16 @@ public class WebMigrateOperation implements OperationStepHandler {
             this.sessionTimeout = sessionTimeout;
             this.sslProtocol = sslProtocol;
             this.cipherSuites = cipherSuites;
+        }
+    }
+
+    private static class ValveHandler {
+        private String handlerClassName;
+        private String module;
+
+        private ValveHandler(String handlerClassName, String module) {
+            this.handlerClassName = handlerClassName;
+            this.module = module;
         }
     }
 }

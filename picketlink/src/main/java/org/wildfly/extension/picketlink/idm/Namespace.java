@@ -41,6 +41,7 @@ import java.util.Map;
 public enum Namespace {
 
     PICKETLINK_IDENTITY_MANAGEMENT_1_0(1, 0, 0, new IDMSubsystemReader_1_0(), new IDMSubsystemWriter()),
+    PICKETLINK_IDENTITY_MANAGEMENT_1_1(1, 1, 0, new IDMSubsystemReader_2_0(), new IDMSubsystemWriter()),
     PICKETLINK_IDENTITY_MANAGEMENT_2_0(2, 0, 0, new IDMSubsystemReader_2_0(), new IDMSubsystemWriter());
 
     public static final Namespace CURRENT = PICKETLINK_IDENTITY_MANAGEMENT_2_0;

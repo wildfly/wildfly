@@ -52,9 +52,9 @@ import org.wildfly.iiop.openjdk.Constants;
  */
 class JacORBSubsystemDefinitions {
 
-    static final ModelNode DEFAULT_DISABLED_PROPERTY = new ModelNode().set("off");
+    static final ModelNode DEFAULT_DISABLED_PROPERTY = new ModelNode("off");
 
-    static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode().set("on");
+    static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode("on");
 
     private static final ParameterValidator SSL_CONFIG_VALIDATOR =
             new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);

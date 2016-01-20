@@ -35,6 +35,7 @@
     </resources>
 
     <dependencies>
+        <module name="sun.jdk"/>
         <!-- javax.security.auth.callback -->
         <module name="javax.api"/>
         <module name="javax.resource.api"/>

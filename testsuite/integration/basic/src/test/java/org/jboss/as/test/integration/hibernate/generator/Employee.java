@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.msc;
+package org.jboss.as.test.integration.hibernate.generator;
 
-import org.jboss.msc.service.ServiceController;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import org.hibernate.annotations.GenericGenerator;
 
 /**
- * @author Paul Ferraro
+ * Employee entity class
+ *
+ * @author Scott Marlow
  */
-public interface ServiceControllerFactory {
-    ServiceControllerFactory SIMPLE = new ServiceControllerFactory() {
-        @Override
-        public <T> ServiceController<T> createServiceController(ServiceController<T> controller) {
-            return controller;
-        }
-    };
+@Entity
+public class Employee {
+    @Id
+    private int id;
 
-    <T> ServiceController<T> createServiceController(ServiceController<T> controller);
+    private String name;
+
+    private String address;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

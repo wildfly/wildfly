@@ -31,7 +31,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+import static org.jboss.dmr.ModelType.EXPRESSION;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -73,6 +75,10 @@ public class MigrateOperation implements OperationStepHandler {
     public static final String MIGRATION_WARNINGS = "migration-warnings";
     public static final String MIGRATION_ERROR = "migration-error";
     private static final PathAddress JACORB_EXTENSION = pathAddress(PathElement.pathElement(EXTENSION, "org.jboss.as.jacorb"));
+
+    private static final List<String> TRANSFORMED_PROPERTIES = Arrays.asList(JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION, JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS,
+            JacORBSubsystemConstants.ORB_INIT_SECURITY, JacORBSubsystemConstants.SECURITY_SUPPORT_SSL, JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR,
+            JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC);
 
 
     public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
@@ -144,6 +150,8 @@ public class MigrateOperation implements OperationStepHandler {
                     }
                 }
 
+                checkPropertiesWithExpression(jacorbModel, warnings);
+
                 final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
 
                 final PathAddress openjdkAddress = subsystemsAddress.append(OPENJDK_SUBSYSTEM_ELEMENT);
@@ -212,6 +220,18 @@ public class MigrateOperation implements OperationStepHandler {
 
     }
 
+    private void checkPropertiesWithExpression(final ModelNode legacyModel, final List<String> warnings) {
+        final List<String> transformedExpressionProperties = new LinkedList<>();
+        for (Property property : legacyModel.asPropertyList()) {
+            if (property.getValue().getType() == EXPRESSION && TRANSFORMED_PROPERTIES.contains(property.getName())) {
+                transformedExpressionProperties.add(property.getName());
+            }
+        }
+        if (!transformedExpressionProperties.isEmpty()) {
+            warnings.add(JacORBLogger.ROOT_LOGGER.expressionMigrationWarning(transformedExpressionProperties.toString()));
+        }
+    }
+
     private void addOpenjdkExtension(final OperationContext context, final Map<PathAddress, ModelNode> migrateOperations) {
         final PathAddress extensionAddress = PathAddress.EMPTY_ADDRESS.append(OPENJDK_EXTENSION_ELEMENT);
         OperationEntry addEntry = context.getRootResourceRegistration().getOperationEntry(extensionAddress, ADD);
@@ -224,7 +244,7 @@ public class MigrateOperation implements OperationStepHandler {
     }
 
     private void addOpenjdkSubsystem(final PathAddress address, final ModelNode model,
-            final Map<PathAddress, ModelNode> migrateOperations) {
+                                     final Map<PathAddress, ModelNode> migrateOperations) {
         final ModelNode operation = Util.createAddOperation(address);
         for (final Property property : model.asPropertyList()) {
             if (property.getValue().isDefined()) {
@@ -232,7 +252,6 @@ public class MigrateOperation implements OperationStepHandler {
             }
         }
         migrateOperations.put(address, operation);
-
     }
 
     private void removeJacorbSubsystem(final PathAddress address, final Map<PathAddress, ModelNode> migrateOperations, boolean standalone) {

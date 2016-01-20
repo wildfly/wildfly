@@ -31,12 +31,30 @@ import org.jboss.dmr.Property;
 
 /**
  * Implementation of a generic {@link DynamicDiscardPolicy} that discards child resources which have all their
- * attributes undefined; rejects otherwise. It is to be used for required child resources that are auto-created.
+ * attributes undefined, conditionally rejects or leaves resource for further transformation. It is to be used for required child
+ * resources that are auto-created.
  *
  * @author Radoslav Husar
  * @version Sep 2015
  */
-public class RequiredChildResourceDiscardPolicy implements DynamicDiscardPolicy {
+public enum RequiredChildResourceDiscardPolicy implements DynamicDiscardPolicy {
+
+    /**
+     * Policy that discards if all attributes are undefined; rejects otherwise.
+     */
+    REJECT_AND_WARN(DiscardPolicy.REJECT_AND_WARN),
+
+    /**
+     * Policy that discards if all attributes are undefined; never discards otherwise ({@link DiscardPolicy#NEVER}) in order to proceed with
+     * resource transformations.
+     */
+    NEVER(DiscardPolicy.NEVER);
+
+    private final DiscardPolicy policy;
+
+    RequiredChildResourceDiscardPolicy(DiscardPolicy policy) {
+        this.policy = policy;
+    }
 
     /**
      * @return {@link DiscardPolicy#REJECT_AND_WARN} if any of the attributes are defined; {@link DiscardPolicy#SILENT} otherwise
@@ -48,7 +66,7 @@ public class RequiredChildResourceDiscardPolicy implements DynamicDiscardPolicy 
         if (model.isDefined()) {
             for (Property entry : model.asPropertyList()) {
                 if (entry.getValue().isDefined()) {
-                    return DiscardPolicy.REJECT_AND_WARN;
+                    return policy;
                 }
             }
         }

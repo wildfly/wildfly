@@ -65,7 +65,7 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
                 return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
             }
             // Purge obsolete meta data
-            this.metaDataFactory.remove(id);
+            this.metaDataFactory.purge(id);
         }
         return null;
     }
@@ -79,7 +79,7 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
                 return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
             }
             // Purge obsolete meta data
-            this.metaDataFactory.remove(id);
+            this.metaDataFactory.purge(id);
         }
         return null;
     }

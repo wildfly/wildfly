@@ -218,7 +218,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
             }
 
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
-            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, new RequiredChildResourceDiscardPolicy());
+            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
             EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.buildTransformation(version, parent));
         }

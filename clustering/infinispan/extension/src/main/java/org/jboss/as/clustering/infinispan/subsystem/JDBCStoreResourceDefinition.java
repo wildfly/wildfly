@@ -29,8 +29,10 @@ import javax.sql.DataSource;
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
@@ -155,6 +157,11 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
                     .addRename(Attribute.DATA_SOURCE.getDefinition().getName(), DeprecatedAttribute.DATASOURCE.getDefinition().getName())
                     .setValueConverter(new SimpleAttributeConverter(converter), Attribute.DATA_SOURCE.getDefinition())
             ;
+        }
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
         }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {

@@ -22,19 +22,23 @@
 
 package org.jboss.as.jacorb;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 
 /**
  * <p>
@@ -44,7 +48,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class JacORBExtension implements Extension {
+public class JacORBExtension extends AbstractLegacyExtension {
 
     private static final JacORBSubsystemParser PARSER = JacORBSubsystemParser.INSTANCE;
 
@@ -56,6 +60,10 @@ public class JacORBExtension implements Extension {
 
     static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2, 0, 0);
 
+    public JacORBExtension() {
+        super("org.jboss.as.jacorb", SUBSYSTEM_NAME);
+    }
+
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
@@ -65,21 +73,21 @@ public class JacORBExtension implements Extension {
     }
 
     @Override
-    public void initialize(ExtensionContext context) {
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JacORBSubsystemResource.INSTANCE);
-        subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
 
         if (context.isRegisterTransformers()) {
             // Register the model transformers
-            registerTransformers_1_3(subsystem);
-            registerTransformers_1_4(subsystem);
+            registerTransformers(subsystem);
         }
+
+        return Collections.singleton(subsystemRegistration);
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    protected void initializeLegacyParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_2.getUriString(), PARSER);
@@ -93,30 +101,31 @@ public class JacORBExtension implements Extension {
      *
      * @param subsystem the subsystems registration
      */
-    protected static void registerTransformers_1_3(final SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory
-                .createSubsystemInstance();
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
-                IORTransportConfigDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]));
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
-                IORASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]));
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
-                IORSASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]));
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
-                JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID);
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 3, 0));
+    protected static void registerTransformers(final SubsystemRegistration subsystem) {
+        ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+        ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 4, 0);
+        ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 3, 0);//also EAP6.2
+
+        ResourceTransformationDescriptionBuilder builder64 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP64);
+        builder64.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID.getDefaultValue()), JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES),JacORBSubsystemDefinitions.INTEROP_CHUNK_RMI_VALUETYPES);
+
+
+        ResourceTransformationDescriptionBuilder builder63 = chained.createBuilder(MODEL_VERSION_EAP64, MODEL_VERSION_EAP63);
+        builder63.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IORTransportConfigDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IORASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IORSASContextDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                .end()
+                .rejectChildResource(IORSettingsDefinition.INSTANCE.getPathElement());
+
+
+        chained.buildAndRegister(subsystem, new ModelVersion[]{
+                MODEL_VERSION_EAP64,
+                MODEL_VERSION_EAP63
+        });
     }
 
-    /**
-     * Register the transformers for the 1.4.0 version.
-     *
-     * @param subsystem the subsystems registration
-     */
-    protected static void registerTransformers_1_4(final SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory
-                .createSubsystemInstance();
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
-                JacORBSubsystemDefinitions.PERSISTENT_SERVER_ID);
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 4, 0));
-    }
 }

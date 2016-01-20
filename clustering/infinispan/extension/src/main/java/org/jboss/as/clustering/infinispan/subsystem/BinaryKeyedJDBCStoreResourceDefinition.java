@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -107,7 +108,11 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                         model.get(DeprecatedAttribute.TABLE.getDefinition().getName()).set(binaryTableModel);
                     }
 
-                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+
+                    LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
+
                     context.processChildren(resource);
                 }
             });

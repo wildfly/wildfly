@@ -216,7 +216,7 @@ public class POARegistry implements Service<POARegistry> {
             final POA poa = transientPoaMap.remove(name);
             if (poa != null) {
                 poa.the_POAManager().deactivate(false, true);
-                poa.destroy(false, false);
+                poa.destroy(false, true);
             }
         }
 
@@ -250,7 +250,7 @@ public class POARegistry implements Service<POARegistry> {
             final POA poa = persistentPoaMap.remove(name);
             if (poa != null) {
                 poa.the_POAManager().deactivate(false, true);
-                poa.destroy(false, false);
+                poa.destroy(false, true);
             }
         }
 

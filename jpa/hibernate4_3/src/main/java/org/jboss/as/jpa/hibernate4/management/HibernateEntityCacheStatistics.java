@@ -25,7 +25,6 @@ package org.jboss.as.jpa.hibernate4.management;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -74,11 +73,17 @@ public class HibernateEntityCacheStatistics extends HibernateAbstractStatistics 
 
     @Override
     public Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress) {
-        return Collections.unmodifiableCollection(Arrays.asList(
-                getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL))).getEntityNames()));
+        org.hibernate.stat.Statistics stats = getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL)));
+        if (stats == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableCollection(Arrays.asList(stats.getEntityNames()));
     }
 
     private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
         HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
         SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
         if (sessionFactory != null) {
@@ -90,6 +95,9 @@ public class HibernateEntityCacheStatistics extends HibernateAbstractStatistics 
     org.hibernate.stat.SecondLevelCacheStatistics getStatistics(EntityManagerFactoryAccess entityManagerFactoryaccess, PathAddress pathAddress) {
         String scopedPersistenceUnitName = pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL);
         HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactoryaccess.entityManagerFactory(scopedPersistenceUnitName);
+        if (entityManagerFactoryImpl == null) {
+            return null;
+        }
         SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
         if (sessionFactory != null) {
             // The entity class name is prefixed by the application scoped persistence unit name
