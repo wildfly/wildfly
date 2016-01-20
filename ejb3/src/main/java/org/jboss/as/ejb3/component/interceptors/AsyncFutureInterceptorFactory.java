@@ -68,7 +68,7 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
 
         final SessionBeanComponent component = (SessionBeanComponent) context.getContextData().get(Component.class);
 
-        if (component.isSecurityDomainsConfigured()) {
+        if (component.isSecurityDomainKnown()) {
             return new Interceptor() {
                 @Override
                 public Object processInvocation(final InterceptorContext context) throws Exception {

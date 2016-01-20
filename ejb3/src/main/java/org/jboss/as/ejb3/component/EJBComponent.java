@@ -121,8 +121,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         }
     };
 
-    private final Map<String, SecurityDomain> securityDomainsByName;
-    private final boolean isSecurityDomainsConfigured;
     private final SecurityDomain securityDomain;
 
     /**
@@ -176,9 +174,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.controlPoint = ejbComponentCreateService.getControlPoint();
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
 
-        this.securityDomainsByName = ejbComponentCreateService.getSecurityDomainsByName();
-        this.isSecurityDomainsConfigured = (securityDomainsByName != null) && (! securityDomainsByName.isEmpty());
-        this.securityDomain = isSecurityDomainsConfigured ? securityDomainsByName.get(securityMetaData.getSecurityDomain()) : null;
+        this.securityDomain = ejbComponentCreateService.getSecurityDomain();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -262,8 +258,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public Principal getCallerPrincipal() {
-        if (isSecurityDomainsConfigured) {
-            return (securityDomain != null) ? securityDomain.getCurrentSecurityIdentity().getPrincipal() : AnonymousPrincipal.getInstance();
+        if (isSecurityDomainKnown()) {
+            return securityDomain.getCurrentSecurityIdentity().getPrincipal();
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(getCaller);
         } else {
@@ -407,10 +403,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
-        if (isSecurityDomainsConfigured) {
-            if (securityDomain == null) {
-                return false;
-            }
+        if (isSecurityDomainKnown()) {
             final SecurityIdentity identity = securityDomain.getCurrentSecurityIdentity();
             return "**".equals(roleName) ? ! (identity.getPrincipal() instanceof AnonymousPrincipal) : identity.getRoles("ejb").contains(roleName);
         } else if (WildFlySecurityManager.isChecking()) {
@@ -558,12 +551,12 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         return this.controlPoint;
     }
 
-    public Map<String, SecurityDomain> getSecurityDomainsByName() {
-        return securityDomainsByName;
+    public SecurityDomain getSecurityDomain() {
+        return securityDomain;
     }
 
-    public boolean isSecurityDomainsConfigured() {
-        return this.isSecurityDomainsConfigured;
+    public boolean isSecurityDomainKnown() {
+        return securityDomain != null;
     }
 
     @Override

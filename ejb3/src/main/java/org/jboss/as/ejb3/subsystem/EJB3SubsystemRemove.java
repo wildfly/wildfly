@@ -37,7 +37,6 @@ public class EJB3SubsystemRemove extends AbstractRemoveStepHandler {
     public static final EJB3SubsystemRemove INSTANCE = new EJB3SubsystemRemove();
 
     private EJB3SubsystemRemove() {
-        super(EJB3SubsystemRootResourceDefinition.SECURITY_DOMAINS_CAPABILITY);
     }
 
     @Override

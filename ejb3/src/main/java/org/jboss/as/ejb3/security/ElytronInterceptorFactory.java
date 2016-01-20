@@ -25,7 +25,6 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.Component;
@@ -44,7 +43,7 @@ import org.wildfly.security.authz.RoleMapper;
  */
 public class ElytronInterceptorFactory extends ComponentInterceptorFactory {
 
-    private static final String DEFAULT_DOMAIN = "ApplicationDomain";
+    private static final String DEFAULT_DOMAIN = "other";
 
     private final String policyContextID;
 
@@ -68,8 +67,7 @@ public class ElytronInterceptorFactory extends ComponentInterceptorFactory {
         if (securityDomainName == null) {
             securityDomainName = DEFAULT_DOMAIN;
         }
-        final Map<String, SecurityDomain> securityDomainsByName = ejbComponent.getSecurityDomainsByName();
-        final SecurityDomain securityDomain = securityDomainsByName.get(securityDomainName);
+        final SecurityDomain securityDomain = ejbComponent.getSecurityDomain();
         if (securityDomain == null) {
             throw EjbLogger.ROOT_LOGGER.invalidSecurityForDomainSet(ejbComponent.getComponentName());
         }
