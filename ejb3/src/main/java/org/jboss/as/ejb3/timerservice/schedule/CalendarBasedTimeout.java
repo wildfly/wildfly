@@ -259,6 +259,10 @@ public class CalendarBasedTimeout {
         if (nextMinute == null) {
             return null;
         }
+        // reset second if minute was changed  (Fix WFLY-5955)
+        if( nextMinute != currentMinute) {
+            nextSecond = this.second.getNextMatch(0);
+        }
         // compute next hour
         if (nextMinute < currentMinute) {
             currentHour++;
@@ -266,6 +270,11 @@ public class CalendarBasedTimeout {
         Integer nextHour = this.hour.getNextMatch(currentHour < 24 ? currentHour : 0);
         if (nextHour == null) {
             return null;
+        }
+        if(nextHour != currentHour) {
+            // reset second/minute if hour changed  (Fix WFLY-5955)
+            nextSecond = this.second.getNextMatch(0);
+            nextMinute = this.minute.getNextMatch(0);
         }
 
         final int nextTimeInSeconds = nextHour*3600 + nextMinute*60 + nextSecond;
