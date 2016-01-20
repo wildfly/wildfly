@@ -95,20 +95,20 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, original, marshalled, true);
+    }
+
+    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("jboss.server.config.dir", System.getProperty("java.io.tmpdir"));
         return properties;
     }
 
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        super.compareXml(configId, original, marshalled, true);
-    }
-
     @Test
     public void testOrder() throws Exception {
-        KernelServices service = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServices service = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("securitysubsystemv12.xml")
                 .build();
         PathAddress address = PathAddress.pathAddress().append("subsystem", "security").append("security-domain", "ordering");
