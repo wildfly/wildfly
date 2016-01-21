@@ -209,8 +209,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                     Set<String> ijMcfClasses = new HashSet<String>();
                     Set<String> ijAoClasses = new HashSet<String>();
 
-                    boolean mcfSingle = false;
-                    boolean aoSingle = false;
+                    boolean mcfSingle = raMcfClasses.size() == 1;
+                    boolean aoSingle = raAoClasses.size() == 1;
 
                     boolean mcfOk = true;
                     boolean aoOk = true;
@@ -218,22 +218,17 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                     if (activation.getConnectionDefinitions() != null) {
                         for (ConnectionDefinition def : activation.getConnectionDefinitions()) {
                             String clz = def.getClassName();
-
-                            if (clz == null) {
-                                if (raMcfClasses.size() == 1) {
-                                    mcfSingle = true;
-                                }
-                            } else {
+                            if (clz != null) {
                                 ijMcfClasses.add(clz);
                             }
                         }
                     }
 
                     if (!mcfSingle) {
-                        Iterator<String> it = raMcfClasses.iterator();
+                        Iterator<String> it = ijMcfClasses.iterator();
                         while (mcfOk && it.hasNext()) {
                             String clz = it.next();
-                            if (!ijMcfClasses.contains(clz))
+                            if (!raMcfClasses.contains(clz))
                                 mcfOk = false;
                         }
                     }
@@ -241,21 +236,17 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                     if (activation.getAdminObjects() != null) {
                         for (AdminObject def : activation.getAdminObjects()) {
                             String clz = def.getClassName();
-                            if (clz == null) {
-                                if (raAoClasses.size() == 1) {
-                                    aoSingle = true;
-                                }
-                            } else {
+                            if (clz != null) {
                                 ijAoClasses.add(clz);
                             }
                         }
                     }
 
                     if (!aoSingle) {
-                        Iterator<String> it = raAoClasses.iterator();
+                        Iterator<String> it = ijAoClasses.iterator();
                         while (aoOk && it.hasNext()) {
                             String clz = it.next();
-                            if (!ijAoClasses.contains(clz))
+                            if (!raAoClasses.contains(clz))
                                 aoOk = false;
                         }
                     }
