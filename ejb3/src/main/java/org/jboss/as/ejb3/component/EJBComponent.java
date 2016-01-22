@@ -405,7 +405,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
         if (isSecurityDomainKnown()) {
             final SecurityIdentity identity = securityDomain.getCurrentSecurityIdentity();
-            return "**".equals(roleName) ? ! (identity.getPrincipal() instanceof AnonymousPrincipal) : identity.getRoles("ejb").contains(roleName);
+            return "**".equals(roleName) ? ! (identity.getPrincipal() instanceof AnonymousPrincipal) : identity.getRoles("ejb", true).contains(roleName);
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
                 public Boolean run() {
