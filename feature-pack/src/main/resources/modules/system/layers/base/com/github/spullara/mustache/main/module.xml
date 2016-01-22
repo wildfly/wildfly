@@ -23,6 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.3" name="com.github.spullara.mustache">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <artifact name="${com.github.spullara.mustache.java:compiler}"/>
     </resources>
