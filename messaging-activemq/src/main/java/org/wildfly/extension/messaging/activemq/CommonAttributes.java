@@ -55,7 +55,6 @@ import org.jboss.dmr.ModelType;
  */
 public interface CommonAttributes {
 
-    String DISCOVERY_GROUP_NAME = "discovery-group-name";
     String ENTRIES = "entries";
     String MODULE = "module";
     String NAME = "name";
@@ -177,9 +176,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
-            .setAlternatives("socket-binding",
-                    "group-address", "group-port",
-                    "local-bind-address", "local-bind-port")
+            .setRequires("jgroups-channel")
             .setRestartAllServices()
             .build();
 
@@ -187,9 +184,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
-            .setAlternatives("socket-binding",
-                    "group-address", "group-port",
-                    "local-bind-address", "local-bind-port")
+            .setAlternatives("socket-binding")
             .setRestartAllServices()
             .build();
 
@@ -274,8 +269,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
             .setAllowNull(true)
-            .setAlternatives(JGROUPS_STACK.getName(),
-                    JGROUPS_CHANNEL.getName())
+            .setAlternatives(JGROUPS_CHANNEL.getName())
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
