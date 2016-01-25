@@ -78,7 +78,7 @@
             <heap size="64m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
-                <option value="-XX:MetaspaceSize=256m"/>
+                <option value="-XX:MetaspaceSize=96m"/>
                 <option value="-XX:MaxMetaspaceSize=256m"/>
             </jvm-options>
         </jvm>
