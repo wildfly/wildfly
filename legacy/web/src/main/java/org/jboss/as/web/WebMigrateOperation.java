@@ -47,6 +47,7 @@ import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
+import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -144,10 +145,6 @@ public class WebMigrateOperation implements OperationStepHandler {
             .build();
 
     private static final Map<String, ValveHandler> VALVES_TO_FILTERS = new HashMap<String, ValveHandler>() {{
-            put("org.apache.catalina.valves.RequestDumperValve",
-                    new ValveHandler("io.undertow.server.handlers.RequestDumpingHandler", "io.undertow.core"));
-            put("org.apache.catalina.valves.RewriteValve",
-                    new ValveHandler("io.undertow.server.handlers.SetAttributeHandler", "io.undertow.core"));
             put("org.apache.catalina.valves.RemoteHostValve",
                     new ValveHandler("io.undertow.server.handlers.AccessControlListHandler", "io.undertow.core"));
             put("org.apache.catalina.valves.RemoteAddrValve",
@@ -156,8 +153,6 @@ public class WebMigrateOperation implements OperationStepHandler {
                     new ValveHandler("io.undertow.server.handlers.ProxyPeerAddressHandler", "io.undertow.core"));
             put("org.apache.catalina.valves.StuckThreadDetectionValve",
                     new ValveHandler("io.undertow.server.handlers.StuckThreadDetectionHandler", "io.undertow.core"));
-            put("org.apache.catalina.valves.CrawlerSessionManagerValve",
-                    new ValveHandler("io.undertow.servlet.handlers.CrawlerSessionManagerHandler", "io.undertow.servlet"));
         }};
 
     private final boolean describe;
@@ -738,10 +733,14 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.DEFAULT_WEB_MODULE).set(newAddOp.get(WebVirtualHostDefinition.DEFAULT_WEB_MODULE.getName()));
 
         newAddOperations.put(newAddress, add);
-        final PathAddress allFilterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
-        List<PathAddress> filterAddresses = newAddOperations.keySet().stream().filter(newOpAddress -> {
-            return wildcardEquals(allFilterAddress, newOpAddress);
-        }).collect(Collectors.toList());
+        final PathAddress customFilterAddresses = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
+        final PathAddress expressionFilterAddresses = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey()));
+        List<PathAddress> filterAddresses = new ArrayList<>();
+        for(PathAddress a : newAddOperations.keySet()) {
+            if(wildcardEquals(customFilterAddresses, a) || wildcardEquals(expressionFilterAddresses, a)) {
+                filterAddresses.add(a);
+            }
+        }
         for (PathAddress filterAddress : filterAddresses) {
             PathAddress filterRefAddress = pathAddress(newAddress, pathElement(Constants.FILTER_REF, filterAddress.getLastElement().getValue()));
             ModelNode filterRefAdd = createAddOperation(filterRefAddress);
@@ -752,7 +751,27 @@ public class WebMigrateOperation implements OperationStepHandler {
     private void migrateValves(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address) {
         if (newAddOp.hasDefined(WebValveDefinition.CLASS_NAME.getName())) {
             String valveClassName = newAddOp.get(WebValveDefinition.CLASS_NAME.getName()).asString();
-            if (VALVES_TO_FILTERS.containsKey(valveClassName)) {
+            if(valveClassName.equals("org.apache.catalina.valves.CrawlerSessionManagerValve")) {
+                PathAddress crawlerAddress = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT));
+
+                ModelNode crawlerAdd = createAddOperation(crawlerAddress);
+                if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+                    ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
+                    if (params.hasDefined("crawlerUserAgents")) {
+                        crawlerAdd.get(Constants.USER_AGENTS).set(params.get("crawlerUserAgents"));
+                    }
+                    if (params.hasDefined("sessionInactiveInterval")) {
+                        crawlerAdd.get(Constants.SESSION_TIMEOUT).set(params.get("sessionInactiveInterval"));
+                    }
+                }
+                newAddOperations.put(crawlerAddress, crawlerAdd);
+            } else if (valveClassName.equals("org.apache.catalina.valves.RequestDumperValve")) {
+                newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
+                PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), address.getLastElement().getValue()));
+                ModelNode filterAdd = createAddOperation(filterAddress);
+                filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set("dump-request");
+                newAddOperations.put(filterAddress, filterAdd);
+            } else if (VALVES_TO_FILTERS.containsKey(valveClassName)) {
                 newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
                 PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey(), address.getLastElement().getValue()));
                 if (!newAddOperations.containsKey(filterAddress)) {
