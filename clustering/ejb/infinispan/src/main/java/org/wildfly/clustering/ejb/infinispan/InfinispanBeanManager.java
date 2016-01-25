@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -182,7 +183,14 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     @Override
     public Affinity getWeakAffinity(I id) {
-        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new NodeAffinity(this.registry.getEntry(this.locatePrimaryOwner(id)).getKey()) : Affinity.NONE;
+        if (this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered()) {
+            Node node = this.locatePrimaryOwner(id);
+            Map.Entry<String, ?> entry = this.registry.getEntry(node);
+            if (entry != null) {
+                return new NodeAffinity(entry.getKey());
+            }
+        }
+        return Affinity.NONE;
     }
 
     private void cancel(final Bean<G, I, T> bean) {
