@@ -102,4 +102,8 @@
             <valve name="remote-addr" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RemoteAddrValve">
                 <param param-name="allow" param-value="127.0.0.1,127.0.0.2" />
             </valve>
+            <valve name="crawler" class-name="org.apache.catalina.valves.CrawlerSessionManagerValve" module="org.jboss.as.web" >
+                <param param-name="sessionInactiveInterval" param-value="1" />
+                <param param-name="crawlerUserAgents" param-value="Google" />
+            </valve>
         </subsystem>

@@ -167,9 +167,8 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("${file-base}/jsse.keystore", trustStore.get(KeystoreAttributes.KEYSTORE_PATH.getName()).asString());
         //Valves
         ModelNode filters = newSubsystem.get(Constants.CONFIGURATION, Constants.FILTER);
-        ModelNode dumpFilter = filters.get("custom-filter", "request-dumper");
-        assertEquals("io.undertow.server.handlers.RequestDumpingHandler", dumpFilter.get(CLASS_NAME.getName()).asString());
-        assertEquals("io.undertow.core",  dumpFilter.get(MODULE).asString());
+        ModelNode dumpFilter = filters.get("expression-filter", "request-dumper");
+        assertEquals("dump-request", dumpFilter.get("expression").asString());
         ModelNode remoteAddrFilter = filters.get("custom-filter", "remote-addr");
         assertEquals("io.undertow.server.handlers.IPAddressAccessControlHandler", remoteAddrFilter.get(CLASS_NAME.getName()).asString());
         assertEquals("io.undertow.core",  remoteAddrFilter.get(MODULE).asString());
@@ -177,6 +176,11 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals(1, remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().size());
         assertEquals("allow", remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().get(0).getName());
         assertEquals("127.0.0.1,127.0.0.2", remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().get(0).getValue().asString());
+
+        ModelNode crawler = servletContainer.get(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
+        assertTrue(crawler.isDefined());
+        assertEquals(1, crawler.get(Constants.SESSION_TIMEOUT).asInt());
+        assertEquals("Google", crawler.get(Constants.USER_AGENTS).asString());
 
 
         //virtual host
