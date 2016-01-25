@@ -89,8 +89,6 @@ import static org.jboss.as.controller.operations.common.Util.createOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 import static org.wildfly.extension.undertow.UndertowExtension.PATH_FILTERS;
 
-import java.util.stream.Collectors;
-
 /**
  * Operation to migrate from the legacy web subsystem to the new undertow subsystem.
  * <p/>
@@ -644,7 +642,7 @@ public class WebMigrateOperation implements OperationStepHandler {
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH))) {
                 migrateVirtualHost(newAddOperations, newAddOp, address);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.VALVE_PATH))) {
-                migrateValves(newAddOperations, newAddOp, address);
+                migrateValves(newAddOperations, newAddOp, address, warnings);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH))) {
                 migrateAccessLog(newAddOperations, newAddOp, address, legacyModelDescription, warnings);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH, WebExtension.DIRECTORY_PATH))) {
@@ -748,7 +746,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         }
     }
 
-    private void migrateValves(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address) {
+    private void migrateValves(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, List<String> warnings) {
         if (newAddOp.hasDefined(WebValveDefinition.CLASS_NAME.getName())) {
             String valveClassName = newAddOp.get(WebValveDefinition.CLASS_NAME.getName()).asString();
             if(valveClassName.equals("org.apache.catalina.valves.CrawlerSessionManagerValve")) {
@@ -783,6 +781,8 @@ public class WebMigrateOperation implements OperationStepHandler {
                     }
                     newAddOperations.put(filterAddress, filterAdd);
                 }
+            } else {
+                warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(newAddOp));
             }
         }
     }
