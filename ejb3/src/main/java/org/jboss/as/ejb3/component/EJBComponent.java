@@ -122,6 +122,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     };
 
     private final SecurityDomain securityDomain;
+    private SecurityIdentity incomingRunAsIdentity;
 
     /**
      * Construct a new instance.
@@ -175,6 +176,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
 
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
+        this.incomingRunAsIdentity = null;
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -259,12 +261,20 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public Principal getCallerPrincipal() {
         if (isSecurityDomainKnown()) {
-            return securityDomain.getCurrentSecurityIdentity().getPrincipal();
+            return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity().getPrincipal() : incomingRunAsIdentity.getPrincipal();
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(getCaller);
         } else {
             return this.serverSecurityManager.getCallerPrincipal();
         }
+    }
+
+    public SecurityIdentity getIncomingRunAsIdentity() {
+        return incomingRunAsIdentity;
+    }
+
+    public void setIncomingRunAsIdentity(SecurityIdentity identity) {
+        this.incomingRunAsIdentity = identity;
     }
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
@@ -404,7 +414,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
         if (isSecurityDomainKnown()) {
-            final SecurityIdentity identity = securityDomain.getCurrentSecurityIdentity();
+            final SecurityIdentity identity = (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
             return "**".equals(roleName) ? ! (identity.getPrincipal() instanceof AnonymousPrincipal) : identity.getRoles("ejb", true).contains(roleName);
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
