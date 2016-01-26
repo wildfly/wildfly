@@ -24,12 +24,9 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.dmr.ModelNode;
@@ -51,14 +48,6 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_PASSIVATION_DISABLED_CACHE =
             new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
-
-    public static final OperationStepHandler CLUSTERED_SFSB_CACHE =
-            new ModelOnlyWriteAttributeHandler(EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE) {
-                @Override
-                protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
-                    context.addStep(new ValidateClusteredCacheRefHandler(), OperationContext.Stage.MODEL);
-                }
-            };
 
     private final ServiceName serviceName;
     private final AttributeDefinition attribute;
@@ -95,7 +84,7 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
             context.removeService(this.serviceName);
         }
         if (cacheName.isDefined()) {
-            ServiceController<?> controller = this.installValueService(context, this.serviceName, CacheFactoryBuilder.class, CacheFactoryBuilderService.getServiceName(cacheName.asString()));
+            this.installValueService(context, this.serviceName, CacheFactoryBuilder.class, CacheFactoryBuilderService.getServiceName(cacheName.asString()));
         }
     }
 
