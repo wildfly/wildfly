@@ -24,9 +24,9 @@ package org.wildfly.clustering.ee.infinispan;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.infinispan.commons.CacheException;
 
@@ -34,28 +34,22 @@ import org.infinispan.commons.CacheException;
  * An active {@link TransactionBatch}.
  * @author Paul Ferraro
  */
-public class ActiveTransactionBatch extends AbstractTransactionBatch {
-    private final TransactionManager tm;
+public class ActiveTransactionBatch extends NestedTransactionBatch {
 
-    public ActiveTransactionBatch(TransactionManager tm, Transaction tx) {
+    public ActiveTransactionBatch(Transaction tx) {
         super(tx);
-        this.tm = tm;
     }
 
     @Override
     public void close() {
+        Transaction tx = this.getTransaction();
         try {
-            this.tm.commit();
+            if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                tx.rollback();
+            } else {
+                tx.commit();
+            }
         } catch (RollbackException | HeuristicMixedException | HeuristicRollbackException | SystemException e) {
-            throw new CacheException(e);
-        }
-    }
-
-    @Override
-    public void discard() {
-        try {
-            this.tm.rollback();
-        } catch (SystemException e) {
             throw new CacheException(e);
         }
     }

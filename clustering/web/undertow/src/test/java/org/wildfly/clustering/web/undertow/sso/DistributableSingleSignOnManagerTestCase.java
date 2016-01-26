@@ -93,7 +93,7 @@ public class DistributableSingleSignOnManagerTestCase {
 
         assertNull(result);
 
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
 
         reset(batch);

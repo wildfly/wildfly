@@ -74,6 +74,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
             return new DistributableSingleSignOn(sso, this.registry, batcher, batch);
         } catch (RuntimeException | Error e) {
             batch.discard();
+            batch.close();
             throw e;
         } finally {
             if (batch.isActive()) {
@@ -90,14 +91,13 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         try {
             SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
             if (sso == null) {
-                batch.discard();
+                batch.close();
                 return null;
             }
             return new DistributableSingleSignOn(sso, this.registry, batcher, batch);
         } catch (RuntimeException | Error e) {
-            if (batch.isActive()) {
-                batch.discard();
-            }
+            batch.discard();
+            batch.close();
             throw e;
         } finally {
             if (batch.isActive()) {

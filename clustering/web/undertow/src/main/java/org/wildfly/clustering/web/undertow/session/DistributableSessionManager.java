@@ -113,6 +113,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
             return adapter;
         } catch (RuntimeException | Error e) {
             batch.discard();
+            batch.close();
             throw e;
         } finally {
             if (batch.isActive()) {
@@ -133,19 +134,20 @@ public class DistributableSessionManager implements UndertowSessionManager {
         try {
             String id = config.findSessionId(exchange);
             if (id == null) {
-                batch.discard();
+                batch.close();
                 return null;
             }
 
             Session<LocalSessionContext> session = this.manager.findSession(id);
             if (session == null) {
-                batch.discard();
+                batch.close();
                 return null;
             }
             return new DistributableSession(this, session, config, batch);
         } catch (RuntimeException | Error e) {
             if (batch.isActive()) {
                 batch.discard();
+                batch.close();
             }
             throw e;
         } finally {
@@ -189,12 +191,14 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
-        Batch batch = this.manager.getBatcher().createBatch();
-        try {
-            ImmutableSession session = this.manager.viewSession(sessionId);
-            return (session != null) ? new DistributableImmutableSession(this, session) : null;
-        } finally {
-            batch.discard();
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
+            try {
+                ImmutableSession session = this.manager.viewSession(sessionId);
+                return (session != null) ? new DistributableImmutableSession(this, session) : null;
+            } catch (RuntimeException | Error e) {
+                batch.discard();
+                throw e;
+            }
         }
     }
 

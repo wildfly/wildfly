@@ -35,7 +35,7 @@ import org.infinispan.commons.CacheException;
 public class NewTransactionBatch extends ActiveTransactionBatch {
 
     public NewTransactionBatch(TransactionManager tm) throws SystemException {
-        super(tm, begin(tm));
+        super(begin(tm));
     }
 
     private static Transaction begin(TransactionManager tm) throws SystemException {

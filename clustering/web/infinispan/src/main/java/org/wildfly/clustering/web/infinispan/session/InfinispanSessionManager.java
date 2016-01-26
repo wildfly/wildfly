@@ -37,6 +37,7 @@ import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
@@ -371,15 +372,16 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         try (Stream<? extends Key<String>> keys = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
             // If we are the new primary owner of this session then schedule expiration of this session locally
             keys.filter(this.filter).filter(key -> !oldLocality.isLocal(key) && newLocality.isLocal(key)).map(key -> key.getValue()).forEach(id -> {
-                Batch batch = this.batcher.createBatch();
-                try {
-                    // We need to lookup the session to obtain its meta data
-                    MV value = metaDataFactory.tryValue(id);
-                    if (value != null) {
-                        this.scheduler.schedule(id, metaDataFactory.createImmutableSessionMetaData(id, value));
+                try (Batch batch = this.batcher.createBatch()) {
+                    try {
+                        // We need to lookup the session to obtain its meta data
+                        MV value = metaDataFactory.tryValue(id);
+                        if (value != null) {
+                            this.scheduler.schedule(id, metaDataFactory.createImmutableSessionMetaData(id, value));
+                        }
+                    } catch (CacheException e) {
+                        batch.discard();
                     }
-                } finally {
-                    batch.discard();
                 }
             });
         }
