@@ -197,7 +197,7 @@ public class DistributableSessionManagerTestCase {
         
         assertNull(sessionAdapter);
         
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
     }
 
@@ -219,7 +219,7 @@ public class DistributableSessionManagerTestCase {
         
         assertNull(sessionAdapter);
         
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
     }
 
@@ -298,7 +298,7 @@ public class DistributableSessionManagerTestCase {
         assertEquals(names, result.getAttributeNames());
         assertSame(value, result.getAttribute(name));
         
-        verify(batch).discard();
+        verify(batch).close();
     }
 
     @Test
@@ -315,7 +315,7 @@ public class DistributableSessionManagerTestCase {
         
         assertNull(result);
 
-        verify(batch).discard();
+        verify(batch).close();
     }
 
     @Test

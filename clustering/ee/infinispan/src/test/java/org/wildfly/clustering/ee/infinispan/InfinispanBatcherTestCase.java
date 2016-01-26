@@ -52,7 +52,7 @@ public class InfinispanBatcherTestCase {
             assertSame(tx, batch.getTransaction());
         }
 
-        verify(this.tm).commit();
+        verify(tx).commit();
     }
 
     @Test
@@ -60,17 +60,19 @@ public class InfinispanBatcherTestCase {
         Transaction tx = mock(Transaction.class);
 
         when(this.tm.getTransaction()).thenReturn(null, tx);
+        when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK);
 
-        TransactionBatch batch = this.batcher.createBatch();
-        try {
+        try (TransactionBatch batch = this.batcher.createBatch()) {
             verify(this.tm).begin();
 
             assertSame(tx, batch.getTransaction());
-        } finally {
+
             batch.discard();
+
+            verify(tx).setRollbackOnly();
         }
 
-        verify(this.tm).rollback();
+        verify(tx).rollback();
     }
 
     @Test
@@ -94,7 +96,7 @@ public class InfinispanBatcherTestCase {
         Transaction tx = mock(Transaction.class);
 
         when(this.tm.getTransaction()).thenReturn(tx);
-        when(tx.getStatus()).thenReturn(Status.STATUS_COMMITTED);
+        when(tx.getStatus()).thenReturn(Status.STATUS_COMMITTED, Status.STATUS_ACTIVE);
 
         try (TransactionBatch batch = this.batcher.createBatch()) {
             verify(this.tm).suspend();
@@ -103,7 +105,7 @@ public class InfinispanBatcherTestCase {
             assertSame(tx, batch.getTransaction());
         }
 
-        verify(this.tm).commit();
+        verify(tx).commit();
     }
 
     @Test
@@ -111,18 +113,19 @@ public class InfinispanBatcherTestCase {
         Transaction tx = mock(Transaction.class);
 
         when(this.tm.getTransaction()).thenReturn(tx);
-        when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
+        when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK);
 
-        TransactionBatch batch = this.batcher.createBatch();
-        try {
+        try (TransactionBatch batch = this.batcher.createBatch()) {
             verify(this.tm, never()).begin();
 
             assertSame(tx, batch.getTransaction());
-        } finally {
+
             batch.discard();
+
+            verify(tx).setRollbackOnly();
         }
 
-        verify(this.tm, never()).rollback();
+        verify(tx, never()).rollback();
     }
 
     @Test
@@ -130,19 +133,20 @@ public class InfinispanBatcherTestCase {
         Transaction tx = mock(Transaction.class);
 
         when(this.tm.getTransaction()).thenReturn(tx);
-        when(tx.getStatus()).thenReturn(Status.STATUS_COMMITTED);
+        when(tx.getStatus()).thenReturn(Status.STATUS_COMMITTED, Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK);
 
-        TransactionBatch batch = this.batcher.createBatch();
-        try {
+        try (TransactionBatch batch = this.batcher.createBatch()) {
             verify(this.tm).suspend();
             verify(this.tm).begin();
 
             assertSame(tx, batch.getTransaction());
-        } finally {
+
             batch.discard();
+
+            verify(tx).setRollbackOnly();
         }
 
-        verify(this.tm).rollback();
+        verify(tx).rollback();
     }
 
     @Test

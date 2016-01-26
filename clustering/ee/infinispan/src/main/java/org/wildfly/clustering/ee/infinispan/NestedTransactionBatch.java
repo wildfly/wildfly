@@ -21,23 +21,49 @@
  */
 package org.wildfly.clustering.ee.infinispan;
 
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import org.infinispan.commons.CacheException;
+
 /**
- * A nested {@link TransactionBatch} that coalesces with an outer batch.
+ * Abstract {@link TransactionBatch} that associates and exposes the underlying transaction.
  * @author Paul Ferraro
  */
-public class NestedTransactionBatch extends AbstractTransactionBatch {
+public class NestedTransactionBatch implements TransactionBatch {
+    private final Transaction tx;
 
-    public NestedTransactionBatch(Transaction tx) {
-        super(tx);
+    protected NestedTransactionBatch(Transaction tx) {
+        this.tx = tx;
     }
 
     @Override
-    public void close() {
+    public Transaction getTransaction() {
+        return this.tx;
+    }
+
+    @Override
+    public boolean isActive() {
+        try {
+            return this.tx.getStatus() == Status.STATUS_ACTIVE;
+        } catch (SystemException e) {
+            throw new CacheException(e);
+        }
     }
 
     @Override
     public void discard() {
+        try {
+            if (this.tx.getStatus() == Status.STATUS_ACTIVE) {
+                this.tx.setRollbackOnly();
+            }
+        } catch (SystemException e) {
+            throw new CacheException(e);
+        }
+    }
+
+    @Override
+    public void close() {
     }
 }

@@ -87,7 +87,8 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
             Transaction tx = this.tm.getTransaction();
             if (tx != null) {
                 // Consolidate nested batches into a single operational batch
-                if (tx.getStatus() == Status.STATUS_ACTIVE) return new NestedTransactionBatch(tx);
+                int status = tx.getStatus();
+                if ((status == Status.STATUS_ACTIVE) || (status == Status.STATUS_MARKED_ROLLBACK)) return new NestedTransactionBatch(tx);
                 // If associated tx is not active, suspend it so we can start a new one.
                 this.tm.suspend();
             }
@@ -113,7 +114,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         if (this.tm == null) return null;
         try {
             Transaction tx = this.tm.suspend();
-            return (tx != null) ? new ActiveTransactionBatch(this.tm, tx) : null;
+            return (tx != null) ? new ActiveTransactionBatch(tx) : null;
         } catch (SystemException e) {
             throw new CacheException(e);
         }
