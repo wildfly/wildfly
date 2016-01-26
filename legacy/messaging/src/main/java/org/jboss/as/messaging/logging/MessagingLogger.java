@@ -826,4 +826,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 87, value = "Can not migrate attribute %s from resource %s. This attribute is not supported by the new messaging-activemq subsystem.")
     String couldNotMigrateUnsupportedAttribute(String attribute, PathAddress address);
+
+    @Message(id = 88, value = "Can not migrate attribute failback-delay from resource %s. Artemis detects failback deterministically and it no longer requires to specify a delay for failback to occur.")
+    String couldNotMigrateFailbackDelayAttribute(PathAddress address);
 }
