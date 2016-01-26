@@ -292,8 +292,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     private static void registerTransformers1_2_1_and_1_3_0(SubsystemRegistration subsystemRegistration, ModelVersion version) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
-        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
+        builder.getAttributeBuilder().addRename(DEFAULT_SFSB_CACHE, EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE);
+        builder.getAttributeBuilder().addRename(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemModel.DEFAULT_SFSB_CACHE);
         //This used to behave as 'true' and it is now defaulting as 'true'
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
