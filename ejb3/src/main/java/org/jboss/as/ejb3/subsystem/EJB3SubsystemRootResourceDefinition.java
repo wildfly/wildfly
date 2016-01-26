@@ -22,18 +22,23 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -172,7 +177,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     private static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
 
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
+        super(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
                 EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME),
                 new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor, missingMethodPermissionsDenyAccessMergingProcessor), EJB3SubsystemRemove.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
@@ -181,7 +186,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     }
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            DEFAULT_CLUSTERED_SFSB_CACHE,
             DEFAULT_ENTITY_BEAN_INSTANCE_POOL,
             DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING,
             DEFAULT_MDB_INSTANCE_POOL,
@@ -240,6 +244,21 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public void registerOperations(ManagementResourceRegistration subsystemRegistration) {
         super.registerOperations(subsystemRegistration);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+    }
+
+    /**
+     * Overrides the default impl to use a special definition of the add op that includes additional parameter
+     * {@link #DEFAULT_CLUSTERED_SFSB_CACHE}
+     * {@inheritDoc}
+     */
+    @Override
+    protected void registerAddOperation(ManagementResourceRegistration registration, AbstractAddStepHandler handler, OperationEntry.Flag... flags) {
+        OperationDefinition od = new SimpleOperationDefinitionBuilder(ADD, getResourceDescriptionResolver())
+                .setParameters(ATTRIBUTES)
+                .addParameter(DEFAULT_CLUSTERED_SFSB_CACHE)
+                .withFlags(flags)
+                .build();
+        registration.registerOperationHandler(od, handler);
     }
 
     @Override

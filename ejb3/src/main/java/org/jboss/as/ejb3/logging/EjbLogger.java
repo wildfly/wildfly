@@ -92,6 +92,7 @@ import org.jboss.as.ejb3.tx.TimerTransactionRolledBackException;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.XidTransactionID;
@@ -3107,4 +3108,11 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 485, value = "Transaction type %s is unspecified for the %s method of the %s message-driven bean. It will be handled as NOT_SUPPORTED.")
     void invalidTransactionTypeForMDB(TransactionAttributeType transactionAttributeType, String methond, String componentName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 486, value = "Parameter 'default-clustered-sfsb-cache' was defined for the 'add' operation for resource '%s'. " +
+            "This parameter is deprecated and its previous behavior has been remapped to attribute 'default-sfsb-cache'. " +
+            "As a result the 'default-sfsb-cache' attribute has been set to '%s' and the " +
+            "'default-sfsb-passivation-disabled-cache' attribute has been set to '%s'.")
+    void remappingCacheAttributes(String address, ModelNode defClustered, ModelNode passivationDisabled);
 }
