@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import javax.ejb.Remote;
+import javax.ejb.Stateful;
 
-public abstract class IncrementorBean implements Incrementor {
+import org.infinispan.statetransfer.OutdatedTopologyException;
 
-    private final AtomicInteger count = new AtomicInteger();
+/**
+ * Implementation of {@link Incrementor} which always throws a {@link RuntimeException}: an Infinispan's {@link OutdatedTopologyException}.
+ *
+ * @author Radoslav Husar
+ * @version January 2016
+ */
+@Stateful
+@Remote(Incrementor.class)
+public class InfinispanExceptionThrowingIncrementorBean implements Incrementor {
 
     @Override
     public Result<Integer> increment() {
-        return new Result<>(this.count.incrementAndGet());
+        throw new OutdatedTopologyException("Remote values are missing because of a topology change");
     }
 }
