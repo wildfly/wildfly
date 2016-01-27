@@ -120,7 +120,9 @@
                          send-to-dla-on-no-route="${send.to.dla.on.no.route:false}"
                          slow-consumer-check-period="${slow.consumer.check.period:123}"
                          slow-consumer-policy="${slow.consumer.policy:KILL}"
-                         slow-consumer-threshold="${slow.consumer.threshold:456}"/>
+                         slow-consumer-threshold="${slow.consumer.threshold:456}"
+                         auto-create-jms-queues="${auto.create.jms.queue:true}"
+                         auto-delete-jms-queues="${auto.delete.jms.queue:true}"/>
 
         <http-connector name="http"
                         socket-binding="http"
