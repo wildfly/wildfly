@@ -140,6 +140,12 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         if (config.hasDefined(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.getName())) {
             settings.setSlowConsumerThreshold(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.resolveModelAttribute(context, config).asLong());
         }
+        if (config.hasDefined(AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES.getName())) {
+            settings.setAutoCreateJmsQueues(AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        }
+        if (config.hasDefined(AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES.getName())) {
+            settings.setAutoDeleteJmsQueues(AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        }
         return settings;
     }
 
