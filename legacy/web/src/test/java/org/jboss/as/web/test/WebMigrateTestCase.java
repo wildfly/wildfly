@@ -200,15 +200,25 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("extended", accessLog.get(Constants.PATTERN).asString());
         assertEquals("toto", accessLog.get(Constants.DIRECTORY).asString());
         assertEquals("jboss.server.base.dir", accessLog.get(Constants.RELATIVE_TO).asString());
-
+        
         //sso
         ModelNode sso = virtualHost.get(Constants.SETTING, Constants.SINGLE_SIGN_ON);
         assertEquals("${prop.domain:myDomain}", sso.get(Constants.DOMAIN).asString());
         assertEquals("${prop.http-only:true}", sso.get(Constants.HTTP_ONLY).asString());
+        
+        //global access log valve
+        virtualHost = newServer.get(Constants.HOST, "vs1");
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
+        assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
+        accessLog = virtualHost.get(Constants.SETTING, Constants.ACCESS_LOG);
 
-
-
-
+        assertEquals("myapp_access_log.", accessLog.get(Constants.PREFIX).asString());
+        assertEquals(".log", accessLog.get(Constants.SUFFIX).asString());
+        assertEquals("true", accessLog.get(Constants.ROTATE).asString());
+        assertEquals("common", accessLog.get(Constants.PATTERN).asString());
+        assertEquals("${jboss.server.log.dir}", accessLog.get(Constants.DIRECTORY).asString());
+        assertEquals("exists(%{r,log-enabled})", accessLog.get(Constants.PREDICATE).asString());
     }
 
     private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {
