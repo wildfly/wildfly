@@ -32,18 +32,18 @@ import org.wildfly.security.authz.RoleMapper;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class RoleAddingInterceptor implements Interceptor {
+public class RoleAddingInterceptor implements Interceptor {
     private final String category;
     private final RoleMapper roleMapper;
 
-    RoleAddingInterceptor(final String category, final RoleMapper roleMapper) {
+    public RoleAddingInterceptor(final String category, final RoleMapper roleMapper) {
         this.category = category;
         this.roleMapper = roleMapper;
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
-        Assert.assertNotNull(securityDomain);
+        Assert.checkNotNullParam("securityDomain", securityDomain);
         final SecurityIdentity currentIdentity = securityDomain.getCurrentSecurityIdentity();
         final RoleMapper mergeMapper = roleMapper.or((roles) -> currentIdentity.getRoles(category));
         final SecurityIdentity newIdentity = currentIdentity.withRoleMapper(category, mergeMapper);

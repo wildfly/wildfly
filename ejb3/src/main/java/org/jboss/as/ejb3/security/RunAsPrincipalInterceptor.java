@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.security;
 
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.common.Assert;
@@ -31,17 +34,31 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-class RunAsPrincipalInterceptor implements Interceptor {
+public class RunAsPrincipalInterceptor implements Interceptor {
     private final String runAsPrincipal;
 
-    RunAsPrincipalInterceptor(final String runAsPrincipal) {
+    public RunAsPrincipalInterceptor(final String runAsPrincipal) {
         this.runAsPrincipal = runAsPrincipal;
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
+        final Component component = context.getPrivateData(Component.class);
+        if (component instanceof EJBComponent == false) {
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
+        }
+        final EJBComponent ejbComponent = (EJBComponent) component;
+
+        // Set the incomingRunAsIdentity before switching users
         final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
-        Assert.assertNotNull(securityDomain);
-        final SecurityIdentity newIdentity = securityDomain.getCurrentSecurityIdentity().createRunAsIdentity(runAsPrincipal);
-        return newIdentity.runAs(context);
+        Assert.checkNotNullParam("securityDomain", securityDomain);
+        final SecurityIdentity currentIdentity = securityDomain.getCurrentSecurityIdentity();
+        final SecurityIdentity oldIncomingRunAsIdentity = ejbComponent.getIncomingRunAsIdentity();
+        try {
+            final SecurityIdentity newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
+            ejbComponent.setIncomingRunAsIdentity(currentIdentity);
+            return newIdentity.runAs(context);
+        } finally {
+            ejbComponent.setIncomingRunAsIdentity(oldIncomingRunAsIdentity);
+        }
     }
 }

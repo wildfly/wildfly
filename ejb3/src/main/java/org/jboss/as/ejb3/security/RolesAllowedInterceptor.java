@@ -56,7 +56,7 @@ class RolesAllowedInterceptor implements Interceptor {
         if (iterator.hasNext()) {
             final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
             final SecurityIdentity identity = securityDomain.getCurrentSecurityIdentity();
-            final Set<String> ejbRoles = identity.getRoles("ejb");
+            final Set<String> ejbRoles = identity.getRoles("ejb", true);
             do {
                 final String role = iterator.next();
                 if (ejbRoles.contains(role)) {
