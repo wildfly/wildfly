@@ -95,4 +95,11 @@ public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>,
     int getPassivatedCount();
 
     int getTotalSize();
+
+    /**
+     * Checks whether the supplied {@link Throwable} is remotable meaning it can be safely sent to the client over the wire.
+     */
+    default boolean isRemotable(Throwable throwable) {
+        return true;
+    }
 }

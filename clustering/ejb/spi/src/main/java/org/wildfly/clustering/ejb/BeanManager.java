@@ -46,4 +46,6 @@ public interface BeanManager<G, I, T, B extends Batch> extends AffinitySupport<I
 
     void start();
     void stop();
+
+    boolean isRemotable(Throwable throwable);
 }

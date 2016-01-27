@@ -197,4 +197,9 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     public int getTotalSize() {
         return this.manager.getActiveCount() + this.manager.getPassiveCount();
     }
+
+    @Override
+    public boolean isRemotable(Throwable throwable) {
+        return this.manager.isRemotable(throwable);
+    }
 }
