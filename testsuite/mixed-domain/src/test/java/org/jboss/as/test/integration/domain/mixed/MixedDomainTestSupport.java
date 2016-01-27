@@ -34,12 +34,19 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
 
@@ -52,23 +59,26 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private final Version.AsVersion version;
     private final boolean adjustDomain;
+    private final boolean legacyConfig;
 
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
-                                   String jbossHome, boolean adjustDomain)
+                                   String jbossHome, boolean adjustDomain, boolean legacyConfig)
             throws Exception {
         super(testClass, domainConfig, masterConfig, slaveConfig, new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
         this.version = version;
         this.adjustDomain = adjustDomain;
+        this.legacyConfig = legacyConfig;
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
-        return create(testClass, version, STANDARD_DOMAIN_CONFIG, true);
+        return create(testClass, version, STANDARD_DOMAIN_CONFIG, true, false);
     }
 
-    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, boolean adjustDomain) throws Exception {
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
+                                                boolean adjustDomain, boolean legacyConfig) throws Exception {
         final File dir = OldVersionCopier.expandOldVersion(version);
         return new MixedDomainTestSupport(version, testClass, domainConfig, "master-config/host.xml",
-                "slave-config/host-slave.xml", dir.getAbsolutePath(), adjustDomain);
+                "slave-config/host-slave.xml", dir.getAbsolutePath(), adjustDomain, legacyConfig);
     }
 
     public void start() {
@@ -77,6 +87,47 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         } else {
             super.start();
         }
+
+        if (!legacyConfig) {
+            // The non-legacy config tests assume host=slave/server=server-one is auto-start and running
+            startSlaveServer();
+        }
+    }
+
+    private void startSlaveServer() {
+        DomainClient client = getDomainMasterLifecycleUtil().getDomainClient();
+        PathElement hostElement = PathElement.pathElement("host", "slave");
+
+        try {
+            PathAddress pa = PathAddress.pathAddress(hostElement, PathElement.pathElement("server-config", "server-one"));
+            DomainTestUtils.executeForResult(Util.getUndefineAttributeOperation(pa, "auto-start"), client);
+            DomainTestUtils.executeForResult(Util.createEmptyOperation("start", pa), client);
+        } catch (IOException | MgmtOperationException e) {
+            throw new RuntimeException(e);
+        }
+
+        long timeout = TimeoutUtil.adjust(20000);
+        long expired = System.currentTimeMillis() + timeout;
+        ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(hostElement, PathElement.pathElement("server", "server-one")), "server-state");
+        do {
+            try {
+                ModelNode state = DomainTestUtils.executeForResult(op, client);
+                if ("running".equalsIgnoreCase(state.asString())) {
+                    return;
+                }
+            } catch (IOException | MgmtOperationException e) {
+                // ignore and try again
+            }
+
+            try {
+                TimeUnit.MILLISECONDS.sleep(250L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Assert.fail();
+            }
+        } while (System.currentTimeMillis() < expired);
+
+        Assert.fail("Slave server-one did not start within " + timeout + " ms");
     }
 
     private void startAndAdjust() {
@@ -91,7 +142,11 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             masterUtil.getConfiguration().setAdminOnly(true);
             //masterUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             masterUtil.start();
-            DomainAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
+            if (legacyConfig) {
+                LegacyConfigAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
+            } else {
+                DomainAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
+            }
 
             //Now reload the master in normal mode
             masterUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "master")));
@@ -111,8 +166,12 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
     static String copyDomainFile() {
-
         final File originalDomainXml = loadFile("target", "jbossas", "domain", "configuration", "domain.xml");
+        return copyDomainFile(originalDomainXml);
+    }
+
+    static String copyDomainFile(final File originalDomainXml) {
+
         final File targetDirectory = createDirectory("target", "test-classes", "copied-master-config");
         final File copiedDomainXml = new File(targetDirectory, "domain.xml");
         if (copiedDomainXml.exists()) {
@@ -134,6 +193,12 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             throw new RuntimeException(e);
         }
         return STANDARD_DOMAIN_CONFIG;
+    }
+
+    static File loadLegacyDomainXml(Version.AsVersion version) {
+        String number = version.getVersion().replace('.', '-');
+        String fileName = "eap-" + number + ".xml";
+        return loadFile("..", "integration", "manualmode", "src", "test", "resources", "legacy-configs", "domain", fileName);
     }
 
     private static File loadFile(String first, String... parts) {
