@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.controller.PathAddress.pathAddress;
@@ -680,7 +682,26 @@ public class WebMigrateOperation implements OperationStepHandler {
         ModelNode add = createAddOperation(newAddress);
 
         //TODO: parse the pattern and modify to Undertow version
-        add.get(Constants.PATTERN).set(newAddOp.get(WebAccessLogDefinition.PATTERN.getName()).clone());
+
+        ModelNode patternNode = newAddOp.get(WebAccessLogDefinition.PATTERN.getName());
+        if(patternNode.isDefined()) {
+            String patternString = patternNode.asString();
+            Pattern p = Pattern.compile("%\\{(.*?)\\}(\\w)");
+            Matcher m = p.matcher(patternString);
+            StringBuilder sb = new StringBuilder();
+            int lastIndex = 0;
+            while (m.find()) {
+                sb.append(patternString.substring(lastIndex, m.start()));
+                lastIndex = m.end();
+                sb.append("%{");
+                sb.append(m.group(2));
+                sb.append(",");
+                sb.append(m.group(1));
+                sb.append("}");
+            }
+            sb.append(patternString.substring(lastIndex));
+            add.get(Constants.PATTERN).set(sb.toString());
+        }
         add.get(Constants.PREFIX).set(newAddOp.get(WebAccessLogDefinition.PREFIX.getName()).clone());
         add.get(Constants.ROTATE).set(newAddOp.get(WebAccessLogDefinition.ROTATE.getName()).clone());
         if (newAddOp.hasDefined(WebAccessLogDefinition.RESOLVE_HOSTS.getName())) {

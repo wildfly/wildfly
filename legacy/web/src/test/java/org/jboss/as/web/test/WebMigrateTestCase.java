@@ -197,7 +197,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
 
         assertEquals("prefix", accessLog.get(Constants.PREFIX).asString());
         assertEquals("true", accessLog.get(Constants.ROTATE).asString());
-        assertEquals("extended", accessLog.get(Constants.PATTERN).asString());
+        assertEquals("%h %l %u %t %r %s %b %{i,Referer} %{i,User-Agent} %b", accessLog.get(Constants.PATTERN).asString());
         assertEquals("toto", accessLog.get(Constants.DIRECTORY).asString());
         assertEquals("jboss.server.base.dir", accessLog.get(Constants.RELATIVE_TO).asString());
 
