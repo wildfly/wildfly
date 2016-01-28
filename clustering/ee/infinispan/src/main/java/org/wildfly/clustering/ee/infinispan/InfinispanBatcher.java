@@ -22,7 +22,9 @@
 package org.wildfly.clustering.ee.infinispan;
 
 import javax.transaction.InvalidTransactionException;
-import javax.transaction.Status;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -41,19 +43,11 @@ import org.wildfly.clustering.ee.Batcher;
  */
 public class InfinispanBatcher implements Batcher<TransactionBatch> {
 
-    private static final BatchContext PASSIVE_BATCH_CONTEXT = new BatchContext() {
-        @Override
-        public void close() {
-            // Do nothing
-        }
+    private static final BatchContext PASSIVE_BATCH_CONTEXT = () -> {
+        // Do nothing
     };
 
     private static final TransactionBatch NON_TX_BATCH = new TransactionBatch() {
-        @Override
-        public boolean isActive() {
-            return true;
-        }
-
         @Override
         public void close() {
             // No-op
@@ -67,6 +61,25 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         @Override
         public Transaction getTransaction() {
             return null;
+        }
+
+        @Override
+        public TransactionBatch interpose() {
+            return this;
+        }
+    };
+
+    // Used to coalesce interposed transactions
+    static final ThreadLocal<TransactionBatch> CURRENT_BATCH = new ThreadLocal<>();
+
+    private static final Synchronization CURRENT_BATCH_REMOVER = new Synchronization() {
+        @Override
+        public void beforeCompletion() {
+        }
+
+        @Override
+        public void afterCompletion(int status) {
+            CURRENT_BATCH.remove();
         }
     };
 
@@ -83,27 +96,62 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
     @Override
     public TransactionBatch createBatch() {
         if (this.tm == null) return NON_TX_BATCH;
+        TransactionBatch batch = CURRENT_BATCH.get();
+        if (batch != null) {
+            return batch.interpose();
+        }
         try {
+            this.tm.suspend();
+            this.tm.begin();
             Transaction tx = this.tm.getTransaction();
-            if (tx != null) {
-                // Consolidate nested batches into a single operational batch
-                int status = tx.getStatus();
-                if ((status == Status.STATUS_ACTIVE) || (status == Status.STATUS_MARKED_ROLLBACK)) return new NestedTransactionBatch(tx);
-                // If associated tx is not active, suspend it so we can start a new one.
-                this.tm.suspend();
-            }
-            return new NewTransactionBatch(this.tm);
-        } catch (SystemException e) {
+            tx.registerSynchronization(CURRENT_BATCH_REMOVER);
+            batch = new InfinispanBatch(tx);
+            CURRENT_BATCH.set(batch);
+            return batch;
+        } catch (RollbackException | SystemException | NotSupportedException e) {
             throw new CacheException(e);
         }
     }
 
     @Override
     public BatchContext resumeBatch(TransactionBatch batch) {
-        if (batch == null) return PASSIVE_BATCH_CONTEXT;
+        TransactionBatch existingBatch = CURRENT_BATCH.get();
+        // Trivial case - nothing to suspend/resume
+        if (batch == existingBatch) return PASSIVE_BATCH_CONTEXT;
+        Transaction tx = (batch != null) ? batch.getTransaction() : null;
+        // Non-tx case, just swap thread local
+        if ((batch == null) || (tx == null)) {
+            CURRENT_BATCH.set(batch);
+            return () -> {
+                CURRENT_BATCH.set(existingBatch);
+            };
+        }
         try {
-            Transaction tx = batch.getTransaction();
-            return (tx != null) ? new InfinispanBatchContext(this.tm, tx) : PASSIVE_BATCH_CONTEXT;
+            if (existingBatch != null) {
+                Transaction existingTx = this.tm.suspend();
+                if (existingBatch.getTransaction() != existingTx) {
+                    throw new IllegalStateException();
+                }
+            }
+            this.tm.resume(tx);
+            CURRENT_BATCH.set(batch);
+            return () -> {
+                try {
+                    this.tm.suspend();
+                    if (existingBatch != null) {
+                        try {
+                            this.tm.resume(existingBatch.getTransaction());
+                            CURRENT_BATCH.set(existingBatch);
+                        } catch (InvalidTransactionException e) {
+                            throw new CacheException(e);
+                        }
+                    } else {
+                        CURRENT_BATCH.remove();
+                    }
+                } catch (SystemException e) {
+                    throw new CacheException(e);
+                }
+            };
         } catch (SystemException | InvalidTransactionException e) {
             throw new CacheException(e);
         }
@@ -112,11 +160,19 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
     @Override
     public TransactionBatch suspendBatch() {
         if (this.tm == null) return null;
-        try {
-            Transaction tx = this.tm.suspend();
-            return (tx != null) ? new ActiveTransactionBatch(tx) : null;
-        } catch (SystemException e) {
-            throw new CacheException(e);
+        TransactionBatch batch = CURRENT_BATCH.get();
+        if (batch != null) {
+            try {
+                Transaction tx = this.tm.suspend();
+                if (batch.getTransaction() != tx) {
+                    throw new IllegalStateException();
+                }
+            } catch (SystemException e) {
+                throw new CacheException(e);
+            } finally {
+                CURRENT_BATCH.remove();
+            }
         }
+        return batch;
     }
 }

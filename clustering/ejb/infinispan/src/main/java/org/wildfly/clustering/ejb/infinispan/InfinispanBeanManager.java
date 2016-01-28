@@ -286,9 +286,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
                     G groupId = event.getValue().getGroupId();
                     BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
                     if (entry != null) {
-                        try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, entry)) {
-                            group.prePassivate(event.getKey().getId(), this.passivation.getPassivationListener());
-                        }
+                        this.groupFactory.createGroup(groupId, entry).prePassivate(event.getKey().getId(), this.passivation.getPassivationListener());
                     }
                 });
             }
@@ -304,9 +302,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
                     G groupId = event.getValue().getGroupId();
                     BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
                     if (entry != null) {
-                        try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, entry)) {
-                            group.postActivate(event.getKey().getId(), this.passivation.getPassivationListener());
-                        }
+                        this.groupFactory.createGroup(groupId, entry).postActivate(event.getKey().getId(), this.passivation.getPassivationListener());
                     }
                 });
             }

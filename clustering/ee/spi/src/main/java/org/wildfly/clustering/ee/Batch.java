@@ -28,12 +28,6 @@ package org.wildfly.clustering.ee;
 public interface Batch extends AutoCloseable {
 
     /**
-     * Indicates whether or not this batch is active (i.e. not closed or discarded).
-     * @return true if this batch is active, false otherwise.
-     */
-    boolean isActive();
-
-    /**
      * Closes this batch.  Batch may or may not have been discarded.
      */
     @Override

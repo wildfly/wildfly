@@ -81,7 +81,7 @@ public class DistributableSessionTestCase {
         BatchContext context = mock(BatchContext.class);
         HttpServerExchange exchange = new HttpServerExchange(null);
 
-        when(this.batch.isActive()).thenReturn(true);
+        when(this.session.isValid()).thenReturn(true);
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
@@ -94,7 +94,7 @@ public class DistributableSessionTestCase {
 
         reset(this.batch, this.session, context);
 
-        when(this.batch.isActive()).thenReturn(false);
+        when(this.session.isValid()).thenReturn(false);
 
         this.adapter.requestDone(exchange);
 

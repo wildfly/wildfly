@@ -101,7 +101,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        when(batch.isActive()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
 
@@ -134,7 +133,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        when(batch.isActive()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
         
@@ -165,7 +163,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        when(batch.isActive()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
@@ -213,7 +210,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.findSession(sessionId)).thenReturn(null);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
-        when(batch.isActive()).thenReturn(false);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         

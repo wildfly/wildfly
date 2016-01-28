@@ -88,6 +88,8 @@ public class DistributableSessionManager implements UndertowSessionManager {
         }
 
         Batcher<Batch> batcher = this.manager.getBatcher();
+        // Batch will be closed by Session.close();
+        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
             String id = config.findSessionId(exchange);
@@ -105,7 +107,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
             }
 
             Session<LocalSessionContext> session = this.manager.createSession(id);
-            io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
+            io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batcher.suspendBatch());
             this.listeners.sessionCreated(adapter, exchange);
             if (this.statistics != null) {
                 this.statistics.record(adapter);
@@ -115,11 +117,6 @@ public class DistributableSessionManager implements UndertowSessionManager {
             batch.discard();
             batch.close();
             throw e;
-        } finally {
-            if (batch.isActive()) {
-                // Always disassociate the batch with the thread
-                batcher.suspendBatch();
-            }
         }
     }
 
@@ -130,6 +127,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         }
 
         Batcher<Batch> batcher = this.manager.getBatcher();
+        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
             String id = config.findSessionId(exchange);
@@ -143,18 +141,11 @@ public class DistributableSessionManager implements UndertowSessionManager {
                 batch.close();
                 return null;
             }
-            return new DistributableSession(this, session, config, batch);
+            return new DistributableSession(this, session, config, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
-            if (batch.isActive()) {
-                batch.discard();
-                batch.close();
-            }
+            batch.discard();
+            batch.close();
             throw e;
-        } finally {
-            if (batch.isActive()) {
-                // Always disassociate the batch with the thread
-                batcher.suspendBatch();
-            }
         }
     }
 
