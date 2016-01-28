@@ -53,13 +53,15 @@ import org.jboss.dmr.ModelType;
 public class AddressSettingDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition AUTO_CREATE_JMS_QUEUES = create("auto-create-jms-queues", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_AUTO_CREATE_QUEUES))
+            // Default value is false to have the same behaviour than the legacy messaging subsystem (Artemis defaults to true)
+            .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition AUTO_DELETE_JMS_QUEUES = create("auto-delete-jms-queues", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_AUTO_DELETE_QUEUES))
+            // Default value is false to have the same behaviour than the legacy messaging subsystem (Artemis defaults to true)
+            .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
