@@ -91,6 +91,16 @@
             </virtual-server>
             <virtual-server name="vs1" />
             <virtual-server name="vs2" />
+            <valve name="accessLog" module="org.jboss.as.web" class-name="org.apache.catalina.valves.AccessLogValve">        
+                <param param-name="prefix" param-value="myapp_access_log." />
+                <param param-name="suffix" param-value=".log" />
+                <param param-name="rotatable" param-value="true" />
+                <param param-name="fileDateFormat" param-value="yyyy-MM-dd" />
+                <param param-name="pattern" param-value="common" />
+                <param param-name="directory" param-value="${jboss.server.log.dir}" />
+                <param param-name="resolveHosts" param-value="false"/>
+                <param param-name="conditionIf" param-value="log-enabled"/>
+            </valve>
             <valve name="myvalve" module="org.jboss.some.module" class-name="org.jboss.some.class" enabled="${prop.valve-enabled:true}">
                <param param-name="param-name" param-value="${prop.valve-param:some-value}"/>
             </valve>
