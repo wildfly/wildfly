@@ -30,6 +30,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.authz.AuthorizationCheckException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -53,8 +54,15 @@ public class RunAsPrincipalInterceptor implements Interceptor {
         Assert.checkNotNullParam("securityDomain", securityDomain);
         final SecurityIdentity currentIdentity = securityDomain.getCurrentSecurityIdentity();
         final SecurityIdentity oldIncomingRunAsIdentity = ejbComponent.getIncomingRunAsIdentity();
+        SecurityIdentity newIdentity;
         try {
-            final SecurityIdentity newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
+            // The run-as-principal operation should succeed if the current identity is authorized to
+            // run as a user with the given name or if the caller has sufficient permission
+            try {
+                newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
+            } catch (AuthorizationCheckException ex) {
+                newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal, false);
+            }
             ejbComponent.setIncomingRunAsIdentity(currentIdentity);
             return newIdentity.runAs(context);
         } finally {
