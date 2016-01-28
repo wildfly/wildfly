@@ -67,26 +67,25 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     public SingleSignOn createSingleSignOn(Account account, String mechanism) {
         String id = this.manager.createIdentifier();
         Batcher<Batch> batcher = this.manager.getBatcher();
+        // Batch will be closed when SSO is closed
+        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
             AuthenticatedSession session = new AuthenticatedSession(account, mechanism);
             SSO<AuthenticatedSession, String, Void> sso = this.manager.createSSO(id, session);
-            return new DistributableSingleSignOn(sso, this.registry, batcher, batch);
+            return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
             batch.close();
             throw e;
-        } finally {
-            if (batch.isActive()) {
-                // Always disassociate the batch with the current thread
-                batcher.suspendBatch();
-            }
         }
     }
 
     @Override
     public SingleSignOn findSingleSignOn(String id) {
         Batcher<Batch> batcher = this.manager.getBatcher();
+        // Batch will be closed when SSO is closed
+        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
             SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
@@ -94,16 +93,11 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
                 batch.close();
                 return null;
             }
-            return new DistributableSingleSignOn(sso, this.registry, batcher, batch);
+            return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
             batch.close();
             throw e;
-        } finally {
-            if (batch.isActive()) {
-                // Always disassociate the batch with the current thread
-                batcher.suspendBatch();
-            }
         }
     }
 

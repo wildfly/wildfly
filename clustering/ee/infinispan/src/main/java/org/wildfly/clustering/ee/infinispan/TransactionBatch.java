@@ -35,4 +35,9 @@ public interface TransactionBatch extends Batch {
      * @return a transaction
      */
     Transaction getTransaction();
+
+    /**
+     * Increments the usage count of this batch.
+     */
+    void increment();
 }
