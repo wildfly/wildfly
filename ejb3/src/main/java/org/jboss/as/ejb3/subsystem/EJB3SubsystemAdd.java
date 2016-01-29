@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -30,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.ServerSecurityManager;
@@ -101,6 +103,7 @@ import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcess
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBTransactionRecoveryService;
@@ -151,6 +154,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIV
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
 
 /**
@@ -180,8 +184,34 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         for (SimpleAttributeDefinition attr : EJB3SubsystemRootResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
-        if (context.getProcessType().isServer()) {
-            context.addStep(new ValidateClusteredCacheRefHandler(), OperationContext.Stage.MODEL);
+
+        // WFLY-5520 deal with legacy default-clustered-sfsb-cache
+        ModelNode defClustered = DEFAULT_CLUSTERED_SFSB_CACHE.validateOperation(operation);
+        if (defClustered.isDefined())  {
+            boolean setDefaultSfsbCache = true;
+            // Assume this is a legacy script and try and adapt the params to the new attributes
+            if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
+                if (model.hasDefined(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
+                    // All 3 params were defined. This is only ok if default-clustered-sfsb-cache and default-sfsb-cache
+                    // are the same, meaning default-clustered-sfsb-cache is redundant
+                    if (!defClustered.equals(model.get(DEFAULT_SFSB_CACHE))) {
+                        // No good. Log or fail
+                        if(context.getRunningMode() == RunningMode.ADMIN_ONLY) {
+                            EjbLogger.ROOT_LOGGER.logInconsistentAttributeNotSupported(DEFAULT_CLUSTERED_SFSB_CACHE.getName(), DEFAULT_SFSB_CACHE);
+                            setDefaultSfsbCache = false; // don't overwrite default-sfsb-cache
+                        } else {
+                            throw EjbLogger.ROOT_LOGGER.inconsistentAttributeNotSupported(DEFAULT_CLUSTERED_SFSB_CACHE.getName(), DEFAULT_SFSB_CACHE);
+                        }
+                    }
+                } else {
+                    // The old attributes were defined; new one wasn't so, move the old default-sfsb-cache to default-passivation-disabled
+                    model.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE).set(model.get(DEFAULT_SFSB_CACHE));
+                }
+            }
+            if (setDefaultSfsbCache) {
+                model.get(DEFAULT_SFSB_CACHE).set(defClustered);
+                EjbLogger.ROOT_LOGGER.remappingCacheAttributes(context.getCurrentAddress().toCLIStyleString(), defClustered, model.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE));
+            }
         }
     }
 

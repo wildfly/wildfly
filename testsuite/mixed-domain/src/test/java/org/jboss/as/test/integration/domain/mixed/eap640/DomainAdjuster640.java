@@ -120,10 +120,6 @@ public class DomainAdjuster640 extends DomainAdjuster {
 
     private List<ModelNode> adjustEjb3(final PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
-        //passivation-disabled-cache-ref is not understood
-        list.add(
-                getUndefineAttributeOperation(
-                        subsystem, "default-sfsb-passivation-disabled-cache"));
         list.add(
                 getUndefineAttributeOperation(
                         subsystem.append("strict-max-bean-instance-pool", "slsb-strict-max-pool"), "derive-size"));
