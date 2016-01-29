@@ -342,6 +342,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
     protected void parseStatefulBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT, EJB3SubsystemXMLAttribute.CACHE_REF);
+        String cacheRef = null;
+        String clusteredCacheRef = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -352,11 +354,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case CACHE_REF: {
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    cacheRef = value;
                     break;
                 }
                 case CLUSTERED_CACHE_REF: {
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    clusteredCacheRef = value;
                     break;
                 }
                 default: {
@@ -365,6 +367,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             }
             // found the mandatory attribute
             missingRequiredAttributes.remove(attribute);
+
+            // differentiate between non-HA and HA profile
+            if (clusteredCacheRef == null) {
+                EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(cacheRef, ejb3SubsystemAddOperation, reader);
+            } else {
+                EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(clusteredCacheRef, ejb3SubsystemAddOperation, reader);
+                EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.parseAndSetParameter(cacheRef, ejb3SubsystemAddOperation, reader);
+            }
         }
         requireNoContent(reader);
         if (!missingRequiredAttributes.isEmpty()) {

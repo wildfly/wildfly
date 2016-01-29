@@ -27,11 +27,10 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * User: jpai
+ * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public interface EJB3SubsystemModel {
-    String LITE = "lite";
     String ALIASES = "aliases";
 
     String ASYNC = "async";
@@ -47,7 +46,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS = "default-missing-method-permissions-deny-access";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
     String DEFAULT_SFSB_CACHE = "default-sfsb-cache";
-    String DEFAULT_CLUSTERED_SFSB_CACHE = "default-clustered-sfsb-cache";
+    @Deprecated String DEFAULT_CLUSTERED_SFSB_CACHE = "default-clustered-sfsb-cache";
     String DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE = "default-sfsb-passivation-disabled-cache";
     String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
     String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
@@ -65,9 +64,6 @@ public interface EJB3SubsystemModel {
     String DERIVE_SIZE = "derive-size";
 
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
-
-    String MAX_THREADS = "max-threads";
-    String KEEPALIVE_TIME = "keepalive-time";
 
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
@@ -100,7 +96,7 @@ public interface EJB3SubsystemModel {
     String PASSIVATION_STORE = "passivation-store";
 
     String MDB_DELIVERY_GROUP="mdb-delivery-group";
-    String MDB_DELVIERY_GROUP_ACTIVE = "active";
+    String MDB_DELIVERY_GROUP_ACTIVE = "active";
 
     @Deprecated String FILE_PASSIVATION_STORE = "file-passivation-store";
     @Deprecated String IDLE_TIMEOUT = "idle-timeout";
@@ -130,7 +126,6 @@ public interface EJB3SubsystemModel {
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_PATH = PathElement.pathElement(TIMER);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
-    PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
     PathElement FILE_DATA_STORE_PATH = PathElement.pathElement(FILE_DATA_STORE);
     PathElement DATABASE_DATA_STORE_PATH = PathElement.pathElement(DATABASE_DATA_STORE);
