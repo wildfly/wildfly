@@ -66,7 +66,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 .addChild(
                                         builder(AjpListenerResourceDefinition.INSTANCE)
 
-                                                .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET)
+                                                .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER)
                                                 .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
@@ -76,7 +76,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                 )
                                 .addChild(
                                         builder(HttpListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
+                                                .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
                                                 .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
@@ -232,7 +232,7 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                 builder(ResponseHeaderFilter.INSTANCE)
-                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
+                                        .addAttributes(ResponseHeaderFilter.VALUE, ResponseHeaderFilter.NAME)
                         ).addChild(
                                 builder(GzipFilter.INSTANCE)
                         ).addChild(
