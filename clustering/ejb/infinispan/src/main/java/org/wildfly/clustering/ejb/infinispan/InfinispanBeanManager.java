@@ -46,6 +46,7 @@ import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
@@ -95,7 +96,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     private final PassivationConfiguration<T> passivation;
     private final AtomicInteger passiveCount = new AtomicInteger();
     private final Batcher<TransactionBatch> batcher;
-    private final Invoker invoker = new RetryingInvoker(0, 10, 100);
+    private final Invoker invoker = new RetryingInvoker(0, 10, 100, 1000);
     private final BeanKeyFilter<I> filter;
 
     private volatile CommandDispatcher<Scheduler<I>> dispatcher;
@@ -213,8 +214,9 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         this.invoker.invoke(() -> {
             // This should only go remote following a failover
             Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
-            return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node);
-        }).get();
+            CommandResponse<Void> commandResponse = InfinispanBeanManager.this.dispatcher.executeOnNode(command, node);
+            return commandResponse.get();
+        });
     }
 
     Node locatePrimaryOwner(I id) {
