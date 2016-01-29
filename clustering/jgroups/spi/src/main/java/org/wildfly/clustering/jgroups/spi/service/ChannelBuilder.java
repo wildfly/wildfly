@@ -82,7 +82,7 @@ public class ChannelBuilder implements Service<Channel>, Builder<Channel> {
 
         if (LOGGER.isTraceEnabled())  {
             String output = this.channel.getProtocolStack().printProtocolSpec(true);
-            LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, output);
+            LOGGER.tracef("JGroups channel %s created with configuration:%n%s", this.name, output);
         }
     }
 
