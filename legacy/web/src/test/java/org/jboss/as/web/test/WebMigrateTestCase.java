@@ -169,13 +169,11 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         ModelNode filters = newSubsystem.get(Constants.CONFIGURATION, Constants.FILTER);
         ModelNode dumpFilter = filters.get("expression-filter", "request-dumper");
         assertEquals("dump-request", dumpFilter.get("expression").asString());
-        ModelNode remoteAddrFilter = filters.get("custom-filter", "remote-addr");
-        assertEquals("io.undertow.server.handlers.IPAddressAccessControlHandler", remoteAddrFilter.get(CLASS_NAME.getName()).asString());
-        assertEquals("io.undertow.core",  remoteAddrFilter.get(MODULE).asString());
-        assertTrue(remoteAddrFilter.hasDefined(PARAMETERS.getName()));
-        assertEquals(1, remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().size());
-        assertEquals("allow", remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().get(0).getName());
-        assertEquals("127.0.0.1,127.0.0.2", remoteAddrFilter.get(PARAMETERS.getName()).asPropertyList().get(0).getValue().asString());
+        ModelNode remoteAddrFilter = filters.get("expression-filter", "remote-addr");
+        assertEquals("access-control(acl='192.168.1.20 deny, 127.0.0.1 allow, 127.0.0.2 allow', attribute=%a)", remoteAddrFilter.get("expression").asString());
+
+        ModelNode proxyFilter = filters.get("expression-filter", "proxy");
+        assertEquals("regexp(pattern=\"proxy1|proxy2\", value=%{i, x-forwarded-for}, full-match=true) and regexp(pattern=\"192\\.168\\.0\\.10|192\\.168\\.0\\.11\", value=%{i, x-forwarded-for}, full-match=true) -> { proxy-peer-address(); }", proxyFilter.get("expression").asString());
 
         ModelNode crawler = servletContainer.get(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
         assertTrue(crawler.isDefined());
@@ -191,6 +189,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("localhost", virtualHost.get("alias").asList().get(0).asString());
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "proxy"));
         assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
 
         ModelNode accessLog = virtualHost.get(Constants.SETTING, Constants.ACCESS_LOG);
@@ -211,6 +210,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
         assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "proxy"));
         accessLog = virtualHost.get(Constants.SETTING, Constants.ACCESS_LOG);
 
         assertEquals("myapp_access_log.", accessLog.get(Constants.PREFIX).asString());
@@ -219,6 +219,21 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("common", accessLog.get(Constants.PATTERN).asString());
         assertEquals("${jboss.server.log.dir}", accessLog.get(Constants.DIRECTORY).asString());
         assertEquals("exists(%{r,log-enabled})", accessLog.get(Constants.PREDICATE).asString());
+
+        //proxy valve
+        virtualHost = newServer.get(Constants.HOST, "vs1");
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
+        assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "proxy"));
+
+        assertEquals("myapp_access_log.", accessLog.get(Constants.PREFIX).asString());
+        assertEquals(".log", accessLog.get(Constants.SUFFIX).asString());
+        assertEquals("true", accessLog.get(Constants.ROTATE).asString());
+        assertEquals("common", accessLog.get(Constants.PATTERN).asString());
+        assertEquals("${jboss.server.log.dir}", accessLog.get(Constants.DIRECTORY).asString());
+        assertEquals("exists(%{r,log-enabled})", accessLog.get(Constants.PREDICATE).asString());
+
     }
 
     private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {

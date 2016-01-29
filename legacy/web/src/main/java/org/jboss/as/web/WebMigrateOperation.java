@@ -22,6 +22,9 @@
 
 package org.jboss.as.web;
 
+import static io.undertow.util.Headers.X_FORWARDED_FOR_STRING;
+import static io.undertow.util.Headers.X_FORWARDED_PROTO_STRING;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -726,7 +729,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         return sb.toString();
     }
 
-    private void migrateAccessLogValve(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyAddOps, List<String> warnings) {
+    private void migrateAccessLogValve(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, String valveName, List<String> warnings) {
         ModelNode add = createAddOperation(VALVE_ACCESS_LOG_ADDRESS);
         final ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
         //TODO: parse the pattern and modify to Undertow version
@@ -748,12 +751,12 @@ public class WebMigrateOperation implements OperationStepHandler {
             add.get(Constants.PREDICATE).set("not exists(%{r," + params.get("conditionUnless").asString() + "})");
         }
         if(params.hasDefined("condition")) {
-            add.get(Constants.PREDICATE).set("not exists(%{r," + params.get("conditionUnless").asString() + "})");
+            add.get(Constants.PREDICATE).set("not exists(%{r," + params.get("condition").asString() + "})");
         }
         final String[] unsupportedConfigParams = new String[] {"resolveHosts", "fileDateFormat", "renameOnRotate", "encoding",
             "locale", "requestAttributesEnabled", "buffered"};
         for(String unsupportedConfigParam : unsupportedConfigParams) {
-            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(unsupportedConfigParam, pathAddress(newAddOp.get(ADDRESS))));
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute(unsupportedConfigParam, valveName));
         }
         newAddOperations.put(VALVE_ACCESS_LOG_ADDRESS, add);
     }
@@ -815,48 +818,123 @@ public class WebMigrateOperation implements OperationStepHandler {
     private void migrateValves(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, List<String> warnings) {
         if (newAddOp.hasDefined(WebValveDefinition.CLASS_NAME.getName())) {
             String valveClassName = newAddOp.get(WebValveDefinition.CLASS_NAME.getName()).asString();
-            if(valveClassName.equals("org.apache.catalina.valves.CrawlerSessionManagerValve")) {
-                PathAddress crawlerAddress = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT));
-
-                ModelNode crawlerAdd = createAddOperation(crawlerAddress);
-                if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
-                    ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
-                    if (params.hasDefined("crawlerUserAgents")) {
-                        crawlerAdd.get(Constants.USER_AGENTS).set(params.get("crawlerUserAgents"));
+            String valveName = address.getLastElement().getValue();
+            switch (valveClassName) {
+                case "org.apache.catalina.valves.CrawlerSessionManagerValve":
+                    PathAddress crawlerAddress = pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), pathElement(Constants.SERVLET_CONTAINER, "default"), pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT));
+                    ModelNode crawlerAdd = createAddOperation(crawlerAddress);
+                    if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+                        ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
+                        if (params.hasDefined("crawlerUserAgents")) {
+                            crawlerAdd.get(Constants.USER_AGENTS).set(params.get("crawlerUserAgents"));
+                        }
+                        if (params.hasDefined("sessionInactiveInterval")) {
+                            crawlerAdd.get(Constants.SESSION_TIMEOUT).set(params.get("sessionInactiveInterval"));
+                        }
                     }
-                    if (params.hasDefined("sessionInactiveInterval")) {
-                        crawlerAdd.get(Constants.SESSION_TIMEOUT).set(params.get("sessionInactiveInterval"));
-                    }
-                }
-                newAddOperations.put(crawlerAddress, crawlerAdd);
-            } else if (valveClassName.equals("org.apache.catalina.valves.RequestDumperValve")) {
-                newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
-                PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), address.getLastElement().getValue()));
-                ModelNode filterAdd = createAddOperation(filterAddress);
-                filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set("dump-request");
-                newAddOperations.put(filterAddress, filterAdd);
-            } else if ("org.apache.catalina.valves.AccessLogValve".equals(valveClassName)) {
-                newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).set(false);
-                migrateAccessLogValve(newAddOperations, newAddOp, address, newAddOp, warnings);
-            } else if ("org.apache.catalina.valves.ExtendedAccessLogValve".equals(valveClassName)) {
-                newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).set(true);
-                migrateAccessLogValve(newAddOperations, newAddOp, address, newAddOp, warnings);
-            } else if (VALVES_TO_FILTERS.containsKey(valveClassName)) {
-                newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
-                PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey(), address.getLastElement().getValue()));
-                if (!newAddOperations.containsKey(filterAddress)) {
+                    newAddOperations.put(crawlerAddress, crawlerAdd);
+                    break;
+                case "org.apache.catalina.valves.RequestDumperValve":
+                    newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
+                    PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), valveName));
                     ModelNode filterAdd = createAddOperation(filterAddress);
-                    filterAdd.get(MODULE).set(VALVES_TO_FILTERS.get(valveClassName).module);
-                    filterAdd.get(CustomFilterDefinition.CLASS_NAME.getName()).set(VALVES_TO_FILTERS.get(valveClassName).handlerClassName);
-                    if(newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
-                        filterAdd.get(CustomFilterDefinition.PARAMETERS.getName()).set(newAddOp.get(WebValveDefinition.PARAMS.getName()));
+                    filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set("dump-request");
+                    newAddOperations.put(filterAddress, filterAdd);
+                    break;
+                case "org.apache.catalina.valves.AccessLogValve":
+                    newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).set(false);
+                    migrateAccessLogValve(newAddOperations, newAddOp, valveName, warnings);
+                    break;
+                case "org.apache.catalina.valves.ExtendedAccessLogValve":
+                    newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).set(true);
+                    migrateAccessLogValve(newAddOperations, newAddOp, valveName, warnings);
+                    break;
+                case "org.apache.catalina.valves.RemoteHostValve":
+                    createAccesControlExpressionFilter(newAddOperations, warnings, valveName, "%h", newAddOp);
+                    break;
+                case "org.apache.catalina.valves.RemoteAddrValve":
+                    createAccesControlExpressionFilter(newAddOperations, warnings, valveName, "%a", newAddOp);
+                    break;
+                case "org.apache.catalina.valves.RemoteIpValve":
+                    if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+                        StringBuilder expression = new StringBuilder();
+                        ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
+                        if(params.hasDefined("remoteIpHeader") && ! X_FORWARDED_FOR_STRING.equalsIgnoreCase(params.get("remoteIpHeader").asString())) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("remoteIpHeader", valveName));
+                        }
+                        if(params.hasDefined("protocolHeader") && ! X_FORWARDED_PROTO_STRING.equalsIgnoreCase(params.get("protocolHeader").asString())) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("protocolHeader", valveName));
+                        }
+                        if(params.hasDefined("httpServerPort")) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("httpServerPort", valveName));
+                        }
+                        if(params.hasDefined("httpsServerPort")) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("httpsServerPort", valveName));
+                        }
+                        boolean trustedProxies = false;
+                        if (params.hasDefined("trustedProxies")) {
+                            expression.append("regexp(pattern=\"").append(params.get("trustedProxies").asString()).append("\", value=%{i, x-forwarded-for}, full-match=true)");
+                            trustedProxies = true;
+                        }
+                        String internalProxies;
+                        if (params.hasDefined("internalProxies")) {
+                            internalProxies = params.get("internalProxies").asString();
+                        } else {
+                            internalProxies = "10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|192\\.168\\.\\d{1,3}\\.\\d{1,3}|169\\.254\\.\\d{1,3}\\.\\d{1,3}|127\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
+                        }
+                        if (trustedProxies) {
+                            expression.append(" and ");
+                        }
+                        expression.append("regexp(pattern=\"").append(internalProxies).append("\", value=%{i, x-forwarded-for}, full-match=true)");
+                        expression.append(" -> { proxy-peer-address(); }");
+                        createExpressionFilter(newAddOperations, valveName, expression.toString());
                     }
-                    newAddOperations.putIfAbsent(filterAddress, filterAdd);
-                }
-            } else {
-                warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(newAddOp));
+                    break;
+                default:
+                    warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValve(valveName));
+                    break;
             }
         }
+    }
+
+    private void createAccesControlExpressionFilter(Map<PathAddress, ModelNode> newAddOperations, List<String> warnings, String name, String attribute, ModelNode newAddOp) {
+        if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+            StringBuilder expression = new StringBuilder();
+            expression.append("access-control(acl='");
+            ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
+            boolean isValid = false;
+            if (params.hasDefined("deny")) {
+                isValid = true;
+                String[] denied = params.get("deny").asString().split(",");
+                for (String deny : denied) {
+                    expression.append(deny.trim()).append(" deny, ");
+                }
+            }
+            if (params.hasDefined("allow")) {
+                isValid = true;
+                String[] allowed = params.get("allow").asString().split(",");
+                for (String allow : allowed) {
+                    expression.append(allow.trim()).append(" allow, ");
+                }
+            }
+            if (isValid) {
+                expression.delete(expression.length() - 2, expression.length());
+                expression.append("', attribute=").append(attribute).append(')');
+                createExpressionFilter(newAddOperations, name, expression.toString());
+            } else {
+                warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValve(name));
+            }
+        } else {
+            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValve(name));
+        }
+    }
+
+    private void createExpressionFilter(Map<PathAddress, ModelNode> newAddOperations, String name, String expression) {
+        newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
+        PathAddress filterAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), name));
+        ModelNode filterAdd = createAddOperation(filterAddress);
+        filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set(expression);
+        newAddOperations.put(filterAddress, filterAdd);
     }
 
     private void migrateConnector(OperationContext context, Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address, ModelNode legacyModelAddOps, List<String> warnings, boolean domainMode) throws OperationFailedException {
