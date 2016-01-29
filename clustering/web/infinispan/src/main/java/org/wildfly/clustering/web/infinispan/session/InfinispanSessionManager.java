@@ -53,6 +53,7 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
@@ -95,7 +96,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private final int maxActiveSessions;
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private final boolean persistent;
-    private final Invoker invoker = new RetryingInvoker(0, 10, 100);
+    private final Invoker invoker = new RetryingInvoker(0, 10, 100, 1000);
     private final SessionCreationMetaDataKeyFilter filter = new SessionCreationMetaDataKeyFilter();
     private final Recordable<ImmutableSession> recorder;
     private final ServletContext context;
@@ -194,8 +195,9 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         this.invoker.invoke(() -> {
             // This should only go remote following a failover
             Node node = this.locatePrimaryOwner(sessionId);
-            return this.dispatcher.executeOnNode(command, node);
-        }).get();
+            CommandResponse<Void> commandResponse = this.dispatcher.executeOnNode(command, node);
+            return commandResponse.get();
+        });
     }
 
     private Node locatePrimaryOwner(String sessionId) {
