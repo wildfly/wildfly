@@ -22,14 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -66,32 +58,33 @@ import org.xnio.Options;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
+
 /**
  * This is the barebone test example that tests subsystem
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class UndertowSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
-    public UndertowSubsystemTestCase() {
+    public UndertowSubsystem30TestCase() {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-3.1.xml");
+        return readResource("undertow-3.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_3_1.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/undertow.xml"
-        };
+        return "schema/wildfly-undertow_3_0.xsd";
     }
 
     @Override
@@ -101,6 +94,11 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
         properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
         return properties;
+    }
+    
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
