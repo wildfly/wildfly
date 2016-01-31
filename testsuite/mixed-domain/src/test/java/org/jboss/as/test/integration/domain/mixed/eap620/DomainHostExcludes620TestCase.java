@@ -16,35 +16,27 @@ limitations under the License.
 
 package org.jboss.as.test.integration.domain.mixed.eap620;
 
-import java.util.Map;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.test.integration.domain.mixed.LegacyConfigTest;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
+import org.jboss.as.test.integration.domain.mixed.eap640.LegacyConfig640TestSuite;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.BeforeClass;
 
 /**
- * EAP 6.2 variant of the superclass.
+ * Tests of the ability of a DC to exclude resources from visibility to an EAP 6.2 slave.
  *
  * @author Brian Stansberry
  */
 @Version(Version.AsVersion.EAP_6_2_0)
-public class LegacyConfig620TestCase extends LegacyConfigTest {
+public class DomainHostExcludes620TestCase extends DomainHostExcludesTest {
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
         LegacyConfig620TestSuite.initializeDomain();
-    }
-
-    @Override
-    protected Map<String, String> getProfilesToTest() {
-        Map<String, String> result =  super.getProfilesToTest();
-
-        // The following is unnecessary following addition of LegacyConfigAdjuster620.workAroundWFLY2335
-        // but is just commented out in case that proves unreliable
-
-//        // Due to WFLY-2335, EAP 6.2 full-ha servers won't launch on JDK 8,
-//        // so skip testing that profile
-//        result.remove("full-ha");
-        return result;
+        setup(DomainHostExcludes620TestCase.class, "EAP6.2", ModelVersion.create(1, 5));
     }
 }

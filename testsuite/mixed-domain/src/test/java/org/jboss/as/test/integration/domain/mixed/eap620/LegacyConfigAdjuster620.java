@@ -39,6 +39,10 @@ public class LegacyConfigAdjuster620 extends LegacyConfigAdjuster630 {
 
         enableDatasourceStatistics(profileAddress, result);
 
+        if ("full-ha".equals(profileAddress.getLastElement().getValue())) {
+            workAroundWFLY2335(profileAddress, result);
+        }
+
         // DO NOT INTRODUCE NEW ADJUSTMENTS HERE WITHOUT SOME SORT OF PUBLIC DISCUSSION.
         // CAREFULLY DOCUMENT IN THIS CLASS WHY ANY ADJUSTMENT IS NEEDED AND IS THE BEST APPROACH.
         // If an adjustment is needed here, that means our users will need to do the same
@@ -61,5 +65,12 @@ public class LegacyConfigAdjuster620 extends LegacyConfigAdjuster630 {
         ModelNode op = Util.getWriteAttributeOperation(ds, "statistics-enabled", true);
         ops.add(op);
 
+    }
+
+    private void workAroundWFLY2335(PathAddress profileAddress, List<ModelNode> ops) {
+        ModelNode connectorRefs = new ModelNode();
+        connectorRefs.add("in-vm");
+        ModelNode op = Util.getWriteAttributeOperation(profileAddress.append("subsystem", "messaging").append("hornetq-server", "default").append("broadcast-group", "bg-group1"), "connectors", connectorRefs);
+        ops.add(op);
     }
 }

@@ -66,6 +66,7 @@ public class MixedDomainTestSuite {
      * Call this from a @BeforeClass method
      *
      * @param testClass the test/suite class
+     * @param version the version of the legacy slave.
      */
     protected static MixedDomainTestSupport getSupportForLegacyConfig(Class<?> testClass, Version.AsVersion version) {
         if (support == null) {

@@ -28,7 +28,7 @@ import org.junit.runners.Suite;
  * @author Brian Stansberry
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(value= {LegacyConfig620TestCase.class})
+@Suite.SuiteClasses(value= {LegacyConfig620TestCase.class, DomainHostExcludes620TestCase.class})
 @Version(Version.AsVersion.EAP_6_2_0)
 public class LegacyConfig620TestSuite extends MixedDomainTestSuite {
 

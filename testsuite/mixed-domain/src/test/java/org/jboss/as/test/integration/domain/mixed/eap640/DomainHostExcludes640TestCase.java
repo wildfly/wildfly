@@ -16,24 +16,27 @@ limitations under the License.
 
 package org.jboss.as.test.integration.domain.mixed.eap640;
 
-import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
+import org.jboss.as.test.integration.domain.mixed.eap630.MixedDomain630TestSuite;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 /**
- * Tests of using EAP 6.4 domain.xml with a current DC and a 6.4 slave.
+ * Tests of the ability of a DC to exclude resources from visibility to an EAP 6.2 slave.
  *
  * @author Brian Stansberry
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {LegacyConfig640TestCase.class, DomainHostExcludes640TestCase.class})
 @Version(Version.AsVersion.EAP_6_4_0)
-public class LegacyConfig640TestSuite extends MixedDomainTestSuite {
+public class DomainHostExcludes640TestCase extends DomainHostExcludesTest {
 
     @BeforeClass
-    public static void initializeDomain() {
-        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig640TestSuite.class, Version.AsVersion.EAP_6_4_0);
+    public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
+        LegacyConfig640TestSuite.initializeDomain();
+        setup(DomainHostExcludes640TestCase.class, "EAP6.4", ModelVersion.create(1, 7));
     }
 }
