@@ -748,7 +748,7 @@ public class WebMigrateOperation implements OperationStepHandler {
             add.get(Constants.PREDICATE).set("not exists(%{r," + params.get("conditionUnless").asString() + "})");
         }
         if(params.hasDefined("condition")) {
-            add.get(Constants.PREDICATE).set("not exists(%{r," + params.get("conditionUnless").asString() + "})");
+            add.get(Constants.PREDICATE).set("not exists(%{r," + params.get("condition").asString() + "})");
         }
         final String[] unsupportedConfigParams = new String[] {"resolveHosts", "fileDateFormat", "renameOnRotate", "encoding",
             "locale", "requestAttributesEnabled", "buffered"};
