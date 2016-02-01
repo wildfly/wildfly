@@ -78,7 +78,7 @@
         <version.org.jboss.arquillian.extension.drone>1.3.1.Final</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.0.3.Final</version.org.jboss.arquillian.graphene>
         <version.org.wildfly.arquillian.container>1.0.2.Final</version.org.wildfly.arquillian.container>
-        <version.org.jboss.narayana>5.2.9.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.2.12.Final</version.org.jboss.narayana>
         <version.org.jboss.logging>3.3.0.Final</version.org.jboss.logging>
         <version.org.jboss.logging.jboss-logging-tools>2.0.1.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.resteasy>3.0.14.Final</version.org.jboss.resteasy>
@@ -88,20 +88,20 @@
         <version.org.picketlink>2.5.5.SP1</version.org.picketlink>
 
         <!-- Version of Hibernate projects -->
-        <version.org.hibernate>5.0.6.Final</version.org.hibernate>
+        <version.org.hibernate>5.0.7.Final</version.org.hibernate>
         <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
-        <version.org.hibernate.validator>5.2.2.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>5.2.3.Final</version.org.hibernate.validator>
         <version.org.hibernate.search>5.5.1.Final</version.org.hibernate.search>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
         <version.junit>4.12</version.junit>
-        <version.log4j>1.2.16</version.log4j>
-        <version.org.testng>6.8.8</version.org.testng>
+        <version.log4j>1.2.17</version.log4j>
+        <version.org.testng>6.9.10</version.org.testng>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.surefire.plugin>2.17</version.surefire.plugin>
         <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
-        <version.io.undertow>1.3.11.Final</version.io.undertow>
+        <version.io.undertow>1.3.15.Final</version.io.undertow>
     </properties>
 
     <dependencyManagement>
