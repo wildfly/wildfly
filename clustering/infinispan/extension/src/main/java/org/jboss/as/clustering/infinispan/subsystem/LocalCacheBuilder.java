@@ -76,10 +76,9 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
         PersistenceConfiguration persistence = this.persistence.getValue();
 
         // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
-        final boolean simpleCache = !transaction.transactionMode().isTransactional() && !persistence.usingStores();
-        builder.simpleCache(simpleCache);
-        if (InfinispanLogger.ROOT_LOGGER.isTraceEnabled()) {
-            InfinispanLogger.ROOT_LOGGER.tracef("LocalCacheBuilder is creating configuration builder for container '%s', cache '%s', simpleCache '%b'", containerName, cacheName, simpleCache);
+        builder.simpleCache(!transaction.transactionMode().isTransactional() && !persistence.usingStores());
+        if (InfinispanLogger.ROOT_LOGGER.isTraceEnabled() && builder.simpleCache()) {
+            InfinispanLogger.ROOT_LOGGER.tracef("Configuration for container '%s', cache '%s' will use simple cache optimization", this.containerName, this.cacheName);
         }
         if ((transaction.lockingMode() == LockingMode.OPTIMISTIC) && (locking.isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
             builder.locking().writeSkewCheck(true);

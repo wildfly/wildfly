@@ -53,16 +53,12 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
     private final Cache<BeanKey<I>, BeanEntry<G>> findCache;
     private final Time timeout;
     private final PassivationListener<T> listener;
-    private final boolean lockOnRead;
 
     public InfinispanBeanFactory(String beanName, BeanGroupFactory<G, I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<G>> cache, boolean lockOnRead, Time timeout, PassivationListener<T> listener) {
         this.beanName = beanName;
         this.groupFactory = groupFactory;
         this.cache = cache;
-        // this.findCache = lockOnRead ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
-        // Workaround for ISPN-6007
-        this.findCache = this.cache;
-        this.lockOnRead = lockOnRead;
+        this.findCache = lockOnRead ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
         this.timeout = timeout;
         this.listener = listener;
     }
@@ -84,15 +80,9 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
         return new InfinispanBean<>(id, entry, group, mutator, this, this.timeout, this.listener);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public BeanEntry<G> findValue(I id) {
-        BeanKey<I> key = this.createKey(id);
-        // Workaround for ISPN-6007
-        if (this.lockOnRead) {
-            this.findCache.getAdvancedCache().lock(key);
-        }
-        return this.findCache.get(key);
+        return this.findCache.get(this.createKey(id));
     }
 
     @Override
