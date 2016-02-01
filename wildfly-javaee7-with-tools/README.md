@@ -11,16 +11,16 @@ Usage
 To use the BOM, import into your dependency management:
 
     <dependencyManagement>
-        <dependencies>
-            <dependency>
-               <groupId>org.wildfly.bom</groupId>
-               <artifactId>jboss-javaee-7.0-wildfly-with-tools</artifactId>
-               <version>9.0.0.CR1-SNAPSHOT</version>
-               <type>pom</type>
-               <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement> 
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.bom</groupId>
+                    <artifactId>wildfly-javaee7-with-tools</artifactId>
+                    <scope>import</scope>
+                    <type>pom</type>
+                    <version>10.0.0.Final</version>
+                </dependency>
+            </dependencies>
+        </dependencyManagement>
 	
 Unfortunately, Maven doesn't allow you to specify plugin versions this way. To use the plugins associated with "Java EE with Tools recommended by WildFly" BOM, add:
 
@@ -29,7 +29,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. To u
             <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.10</version>
+                <version>2.17</version>
             </plugin>
             <!-- The WildFly plugin deploys your war to a local WildFly container -->
             <!-- To use, set the JBOSS_HOME environment variable and run:

@@ -12,9 +12,10 @@ To use the BOM, import into your dependency management. For example, if you want
         <dependencies>
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
-                <<artifactId>wildfly-javaee7</artifactId>
-                <version>10.0.0.Final</version>
+                <artifactId>wildfly-javaee7</artifactId>
                 <scope>import</scope>
+                <type>pom</type>
+                <version>10.0.0.Final</version>
             </dependency>
         </dependencies>
     </dependencyManagement> 
