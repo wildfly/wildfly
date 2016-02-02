@@ -224,12 +224,17 @@ public class Configuration {
         if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
             result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
         }
-        else if (provider == null
-            || provider.equals(Configuration.PROVIDER_CLASS_HIBERNATE)) {
+        else if (isHibernateProvider(provider)) {
             String useHibernateClassEnhancer = pu.getProperties().getProperty("hibernate.ejb.use_class_enhancer");
             result = "true".equals(useHibernateClassEnhancer);
         }
         return result;
+    }
+
+    private static boolean isHibernateProvider(String provider) {
+        return provider == null ||
+                PROVIDER_CLASS_HIBERNATE.equals(provider) ||
+                PROVIDER_CLASS_HIBERNATE4_1.equals(provider);
     }
 
     // key = provider class name, value = adapter module name
