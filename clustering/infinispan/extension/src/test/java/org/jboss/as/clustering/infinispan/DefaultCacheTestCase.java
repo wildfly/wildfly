@@ -88,6 +88,7 @@ public class DefaultCacheTestCase {
         // Verify commit
         subject.endBatch(true);
 
+        verify(batch, never()).discard();
         verify(batch).close();
         reset(batch);
 
@@ -105,6 +106,7 @@ public class DefaultCacheTestCase {
         subject.endBatch(false);
 
         verify(batch).discard();
+        verify(batch).close();
 
         reset(batch);
 

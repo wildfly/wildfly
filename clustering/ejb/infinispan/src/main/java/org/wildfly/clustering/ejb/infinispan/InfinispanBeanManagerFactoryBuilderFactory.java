@@ -54,7 +54,7 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagerFactoryBuilderFactory<G, I> implements BeanManagerFactoryBuilderFactory<G, I, TransactionBatch> {
+public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManagerFactoryBuilderFactory<I, TransactionBatch> {
 
     private static final ThreadFactory EXPIRATION_THREAD_FACTORY = createThreadFactory();
     private static final ThreadFactory EVICTION_THREAD_FACTORY = createThreadFactory();
@@ -106,7 +106,7 @@ public class InfinispanBeanManagerFactoryBuilderFactory<G, I> implements BeanMan
     }
 
     @Override
-    public <T> Builder<? extends BeanManagerFactory<G, I, T, TransactionBatch>> getBeanManagerFactoryBuilder(BeanContext context) {
+    public <T> Builder<? extends BeanManagerFactory<I, T, TransactionBatch>> getBeanManagerFactoryBuilder(BeanContext context) {
         return new InfinispanBeanManagerFactoryBuilder<>(this.name, context, this.config);
     }
 }
