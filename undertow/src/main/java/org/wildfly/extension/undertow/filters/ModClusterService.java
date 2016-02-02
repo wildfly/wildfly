@@ -62,11 +62,12 @@ public class ModClusterService extends FilterService {
     private final int requestQueueSize;
     private final boolean useAlias;
     private final boolean enableHttp2;
+    private final Integer maxAjpPacketSize;
 
     private ModCluster modCluster;
     private MCMPConfig config;
 
-    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate, int connectionsPerThread, int cachedConnections, int connectionIdleTimeout, int requestQueueSize, boolean useAlias, boolean enableHttp2) {
+    ModClusterService(ModelNode model, long healthCheckInterval, int maxRequestTime, long removeBrokenNodes, int advertiseFrequency, String advertisePath, String advertiseProtocol, String securityKey, Predicate managementAccessPredicate, int connectionsPerThread, int cachedConnections, int connectionIdleTimeout, int requestQueueSize, boolean useAlias, boolean enableHttp2, Integer maxAjpPacketSize) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
         this.maxRequestTime = maxRequestTime;
@@ -82,6 +83,7 @@ public class ModClusterService extends FilterService {
         this.requestQueueSize = requestQueueSize;
         this.useAlias = useAlias;
         this.enableHttp2 = enableHttp2;
+        this.maxAjpPacketSize = maxAjpPacketSize;
     }
 
     @Override
@@ -107,6 +109,9 @@ public class ModClusterService extends FilterService {
         }
         if(enableHttp2) {
             modClusterBuilder.setClientOptions(OptionMap.create(UndertowOptions.ENABLE_HTTP2, true));
+        }
+        if(maxAjpPacketSize != null) {
+            modClusterBuilder.setClientOptions(OptionMap.create(UndertowOptions.MAX_AJP_PACKET_SIZE, maxAjpPacketSize));
         }
         modClusterBuilder.setHealthCheckInterval(healthCheckInterval)
                 .setMaxRequestTime(maxRequestTime)
@@ -206,6 +211,12 @@ public class ModClusterService extends FilterService {
         }
         final ModelNode securityRealm = ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(operationContext, model);
 
+        Integer maxAjpPacketSize = null;
+        final ModelNode packetSizeNode = ModClusterDefinition.MAX_AJP_PACKET_SIZE.resolveModelAttribute(operationContext, model);
+        if(packetSizeNode.isDefined()) {
+            maxAjpPacketSize = packetSizeNode.asInt();
+        }
+
         ModClusterService service = new ModClusterService(model,
                 ModClusterDefinition.HEALTH_CHECK_INTERVAL.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.MAX_REQUEST_TIME.resolveModelAttribute(operationContext, model).asInt(),
@@ -219,7 +230,8 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.USE_ALIAS.resolveModelAttribute(operationContext, model).asBoolean(),
-                ModClusterDefinition.ENABLE_HTTP2.resolveModelAttribute(operationContext, model).asBoolean());
+                ModClusterDefinition.ENABLE_HTTP2.resolveModelAttribute(operationContext, model).asBoolean(),
+                maxAjpPacketSize);
         ServiceBuilder<FilterService> builder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);
