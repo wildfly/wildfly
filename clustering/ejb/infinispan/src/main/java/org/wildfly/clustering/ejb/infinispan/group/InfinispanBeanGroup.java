@@ -42,15 +42,15 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanGroup<G, I, T> implements BeanGroup<G, I, T> {
+public class InfinispanBeanGroup<I, T> implements BeanGroup<I, T> {
 
-    private final G id;
+    private final I id;
     private final BeanGroupEntry<I, T> entry;
     private final MarshallingContext context;
     private final Mutator mutator;
-    private final Remover<G> remover;
+    private final Remover<I> remover;
 
-    public InfinispanBeanGroup(G id, BeanGroupEntry<I, T> entry, MarshallingContext context, Mutator mutator, Remover<G> remover) {
+    public InfinispanBeanGroup(I id, BeanGroupEntry<I, T> entry, MarshallingContext context, Mutator mutator, Remover<I> remover) {
         this.id = id;
         this.entry = entry;
         this.context = context;
@@ -59,7 +59,7 @@ public class InfinispanBeanGroup<G, I, T> implements BeanGroup<G, I, T> {
     }
 
     @Override
-    public G getId() {
+    public I getId() {
         return this.id;
     }
 
@@ -147,7 +147,7 @@ public class InfinispanBeanGroup<G, I, T> implements BeanGroup<G, I, T> {
     public boolean equals(Object object) {
         if (!(object instanceof BeanGroup)) return false;
         @SuppressWarnings("unchecked")
-        BeanGroup<G, I, T> group = (BeanGroup<G, I, T>) object;
+        BeanGroup<I, T> group = (BeanGroup<I, T>) object;
         return this.id.equals(group.getId());
     }
 

@@ -35,8 +35,8 @@ import org.wildfly.clustering.ejb.Bean;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public interface BeanFactory<G, I, T> extends Creator<I, BeanEntry<G>, G>, Locator<I, BeanEntry<G>>, BeanRemover<I, T>, Evictor<I> {
-    Bean<G, I, T> createBean(I id, BeanEntry<G> entry);
+public interface BeanFactory<I, T> extends Creator<I, BeanEntry<I>, I>, Locator<I, BeanEntry<I>>, BeanRemover<I, T>, Evictor<I> {
+    Bean<I, T> createBean(I id, BeanEntry<I> entry);
 
     BeanKey<I> createKey(I id);
 }

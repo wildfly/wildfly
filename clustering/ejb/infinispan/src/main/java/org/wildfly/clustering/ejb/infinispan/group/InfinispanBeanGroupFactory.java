@@ -43,30 +43,30 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, I, T> {
+public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> {
 
-    private final Cache<G, BeanGroupEntry<I, T>> cache;
+    private final Cache<I, BeanGroupEntry<I, T>> cache;
     private final MarshalledValueFactory<MarshallingContext> factory;
     private final MarshallingContext context;
 
-    public InfinispanBeanGroupFactory(Cache<G, BeanGroupEntry<I, T>> cache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
+    public InfinispanBeanGroupFactory(Cache<I, BeanGroupEntry<I, T>> cache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
         this.cache = cache;
         this.factory = factory;
         this.context = context;
     }
 
     @Override
-    public BeanGroupEntry<I, T> createValue(G id, Void context) {
+    public BeanGroupEntry<I, T> createValue(I id, Void context) {
         return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(id, key -> new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>())));
     }
 
     @Override
-    public BeanGroupEntry<I, T> findValue(G id) {
+    public BeanGroupEntry<I, T> findValue(I id) {
         return this.cache.get(id);
     }
 
     @Override
-    public void evict(G id) {
+    public void evict(I id) {
         try {
             this.cache.evict(id);
         } catch (Throwable e) {
@@ -75,13 +75,13 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
     }
 
     @Override
-    public boolean remove(G id) {
+    public boolean remove(I id) {
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
         return true;
     }
 
     @Override
-    public BeanGroup<G, I, T> createGroup(final G id, final BeanGroupEntry<I, T> entry) {
+    public BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry) {
         Mutator mutator = new CacheEntryMutator<>(this.cache, id, entry);
         return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
     }

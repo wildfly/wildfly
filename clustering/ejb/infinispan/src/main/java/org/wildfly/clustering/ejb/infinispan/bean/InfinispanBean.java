@@ -44,18 +44,18 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBean<G, I, T> implements Bean<G, I, T> {
+public class InfinispanBean<I, T> implements Bean<I, T> {
 
     private final I id;
-    private final BeanEntry<G> entry;
-    private final BeanGroup<G, I, T> group;
+    private final BeanEntry<I> entry;
+    private final BeanGroup<I, T> group;
     private final Mutator mutator;
     private final BeanRemover<I, T> remover;
     private final Time timeout;
     private final PassivationListener<T> listener;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
-    public InfinispanBean(I id, BeanEntry<G> entry, BeanGroup<G, I, T> group, Mutator mutator, BeanRemover<I, T> remover, Time timeout, PassivationListener<T> listener) {
+    public InfinispanBean(I id, BeanEntry<I> entry, BeanGroup<I, T> group, Mutator mutator, BeanRemover<I, T> remover, Time timeout, PassivationListener<T> listener) {
         this.id = id;
         this.entry = entry;
         this.group = group;
@@ -71,7 +71,7 @@ public class InfinispanBean<G, I, T> implements Bean<G, I, T> {
     }
 
     @Override
-    public G getGroupId() {
+    public I getGroupId() {
         return this.entry.getGroupId();
     }
 
@@ -122,7 +122,7 @@ public class InfinispanBean<G, I, T> implements Bean<G, I, T> {
     public boolean equals(Object object) {
         if (!(object instanceof Bean)) return false;
         @SuppressWarnings("unchecked")
-        Bean<G, I, T> bean = (Bean<G, I, T>) object;
+        Bean<I, T> bean = (Bean<I, T>) object;
         return this.id.equals(bean.getId());
     }
 
