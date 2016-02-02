@@ -23,6 +23,7 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
@@ -51,9 +52,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -131,4 +148,58 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource(resource);
     }
 
+    @Override
+    protected void compare(ModelNode node1, ModelNode node2) {
+        node1.remove(EXTENSION);
+        node2.remove(EXTENSION);
+        node1.get(SUBSYSTEM).remove("bean-validation");
+        node2.get(SUBSYSTEM).remove("bean-validation");
+        super.compare(node1, node2);
+    }
+
+    boolean extensionAdded = false;
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+
+        return new AdditionalInitialization() {
+
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+                if (!extensionAdded) {
+                    //extensionAdded = true;
+                    //bean validation depends on EE, so we can't use the real subsystem here
+                    final OperationDefinition removeExtension = new SimpleOperationDefinitionBuilder("remove", NonResolvingResourceDescriptionResolver.INSTANCE)
+                            .build();
+
+                    final OperationDefinition addExtension = new SimpleOperationDefinitionBuilder("add", NonResolvingResourceDescriptionResolver.INSTANCE)
+                            .addParameter(new SimpleAttributeDefinition("module", ModelType.STRING, false))
+                            .build();
+
+                    PathElement bvExtension = PathElement.pathElement(EXTENSION, "org.wildfly.extension.bean-validation");
+                    ManagementResourceRegistration extensionRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvExtension, NonResolvingResourceDescriptionResolver.INSTANCE));
+                    extensionRegistration.registerReadOnlyAttribute(new SimpleAttributeDefinition("module", ModelType.STRING, false), new ReloadRequiredWriteAttributeHandler());
+                    extensionRegistration.registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    extensionRegistration.registerOperationHandler(addExtension, new ReloadRequiredAddStepHandler(new SimpleAttributeDefinition("module", ModelType.STRING, false)));
+
+                    final OperationDefinition removeSubsystem = new SimpleOperationDefinitionBuilder("remove", NonResolvingResourceDescriptionResolver.INSTANCE)
+                            .build();
+
+                    final OperationDefinition addSubsystem = new SimpleOperationDefinitionBuilder("add", NonResolvingResourceDescriptionResolver.INSTANCE)
+                            .build();
+
+                    PathElement bvSubsystem = PathElement.pathElement(SUBSYSTEM, "bean-validation");
+                    ManagementResourceRegistration subsystemRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvSubsystem, NonResolvingResourceDescriptionResolver.INSTANCE));
+                    subsystemRegistration.registerOperationHandler(removeSubsystem, new ReloadRequiredRemoveStepHandler());
+                    subsystemRegistration.registerOperationHandler(addSubsystem, new ReloadRequiredAddStepHandler());
+                }
+
+            }
+        };
+
+    }
 }
