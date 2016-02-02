@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan.bean;
 
-import org.wildfly.clustering.ejb.infinispan.BeanKey;
+package org.wildfly.clustering.ejb.infinispan.group;
+
+import org.wildfly.clustering.ejb.infinispan.BeanGroupKey;
 
 /**
- * The cache key for a bean.
- *
  * @author Paul Ferraro
- *
- * @param <I> the bean identifier type
  */
-public class InfinispanBeanKey<I> implements BeanKey<I> {
+public class InfinispanBeanGroupKey<I> implements BeanGroupKey<I> {
 
     private final I id;
 
-    public InfinispanBeanKey(I id) {
+    public InfinispanBeanGroupKey(I id) {
         this.id = id;
     }
 
@@ -50,9 +47,9 @@ public class InfinispanBeanKey<I> implements BeanKey<I> {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof BeanKey)) return false;
+        if (!(object instanceof BeanGroupKey)) return false;
         @SuppressWarnings("unchecked")
-        BeanKey<I> key = (BeanKey<I>) object;
+        BeanGroupKey<I> key = (BeanGroupKey<I>) object;
         return this.id.equals(key.getId());
     }
 

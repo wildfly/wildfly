@@ -38,13 +38,13 @@ import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
 public class InfinispanBeanGroupTestCase {
-    private Integer id;
+    private String id;
     private BeanGroupEntry<String, Object> entry = mock(BeanGroupEntry.class);
     private MarshallingContext context = mock(MarshallingContext.class);
     private Mutator mutator = mock(Mutator.class);
-    private Remover<Integer> remover = mock(Remover.class);
+    private Remover<String> remover = mock(Remover.class);
 
-    private BeanGroup<Integer, String, Object> group = new InfinispanBeanGroup<>(this.id, this.entry, this.context, this.mutator, this.remover);
+    private BeanGroup<String, Object> group = new InfinispanBeanGroup<>(this.id, this.entry, this.context, this.mutator, this.remover);
 
     @Test
     public void getId() {

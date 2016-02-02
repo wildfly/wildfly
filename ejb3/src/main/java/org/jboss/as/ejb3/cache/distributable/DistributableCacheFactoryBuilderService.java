@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.cache.distributable;
 
 import java.util.ServiceLoader;
-import java.util.UUID;
 
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
@@ -54,7 +53,7 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     private final String name;
-    private final BeanManagerFactoryBuilderFactory<UUID, K, Batch> builder;
+    private final BeanManagerFactoryBuilderFactory<K, Batch> builder;
     private final BeanManagerFactoryBuilderConfiguration config;
 
     public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderConfiguration config) {
@@ -71,7 +70,7 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderFactoryProvider<Batch> provider, BeanManagerFactoryBuilderConfiguration config) {
         this.name = name;
         this.config = config;
-        this.builder = provider.<UUID, K>getBeanManagerFactoryBuilder(name, config);
+        this.builder = provider.<K>getBeanManagerFactoryBuilder(name, config);
     }
 
     public ServiceBuilder<DistributableCacheFactoryBuilder<K, V>> build(ServiceTarget target) {
@@ -97,7 +96,7 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
 
     @Override
     public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName serviceName, BeanContext context, StatefulTimeoutInfo statefulTimeout) {
-        Builder<? extends BeanManagerFactory<UUID, K, V, Batch>> builder = this.builder.getBeanManagerFactoryBuilder(context);
+        Builder<? extends BeanManagerFactory<K, V, Batch>> builder = this.builder.getBeanManagerFactoryBuilder(context);
         return new DistributableCacheFactoryService<>(serviceName, builder).build(target);
     }
 

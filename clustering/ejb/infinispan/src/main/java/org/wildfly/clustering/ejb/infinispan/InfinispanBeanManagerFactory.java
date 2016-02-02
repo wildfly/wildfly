@@ -56,7 +56,7 @@ import org.wildfly.clustering.registry.Registry;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory<G, I, T, TransactionBatch> {
+public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I, T, TransactionBatch> {
 
     private final InfinispanBeanManagerFactoryConfiguration configuration;
 
@@ -65,14 +65,14 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
     }
 
     @Override
-    public BeanManager<G, I, T, TransactionBatch> createBeanManager(final IdentifierFactory<G> groupIdentifierFactory, final IdentifierFactory<I> beanIdentifierFactory, final PassivationListener<T> passivationListener, final RemoveListener<T> removeListener) {
+    public BeanManager<I, T, TransactionBatch> createBeanManager(IdentifierFactory<I> identifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener) {
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
-        Cache<G, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
+        Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
+        Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
         org.infinispan.configuration.cache.Configuration config = groupCache.getCacheConfiguration();
-        BeanGroupFactory<G, I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, factory, context);
-        Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory, groupIdentifierFactory);
-        Cache<BeanKey<I>, BeanEntry<G>> beanCache = this.configuration.getCache();
+        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, factory, context);
+        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         final String beanName = this.configuration.getBeanContext().getBeanName();
         // If cache is clustered or configured with a write-through cache store
         // then we need to trigger any @PrePassivate/@PostActivate per request
@@ -81,8 +81,8 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
         final boolean passivationEnabled = evictionAllowed && config.persistence().passivation();
         final boolean persistent = config.clustering().cacheMode().isClustered() || (evictionAllowed && !passivationEnabled);
         boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
-        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, lockOnRead, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
-        Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory, beanIdentifierFactory);
+        BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, lockOnRead, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
+        Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         final NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
         final Registry<String, ?> registry = this.configuration.getRegistry();
         final KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
@@ -169,18 +169,16 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
                 return passivation;
             }
         };
-        return new InfinispanBeanManager<>(configuration, beanConfiguration, groupConfiguration);
+        return new InfinispanBeanManager<>(configuration, identifierFactory, beanConfiguration, groupConfiguration);
     }
 
-    private static class SimpleConfiguration<I, K, V, F> implements Configuration<I, K, V, F> {
+    private static class SimpleConfiguration<K, V, F> implements Configuration<K, V, F> {
         private final F factory;
         private final Cache<K, V> cache;
-        private final IdentifierFactory<I> identifierFactory;
 
-        SimpleConfiguration(Cache<K, V> cache, F factory, IdentifierFactory<I> identifierFactory) {
+        SimpleConfiguration(Cache<K, V> cache, F factory) {
             this.factory = factory;
             this.cache = cache;
-            this.identifierFactory = identifierFactory;
         }
 
         @Override
@@ -191,11 +189,6 @@ public class InfinispanBeanManagerFactory<G, I, T> implements BeanManagerFactory
         @Override
         public Cache<K, V> getCache() {
             return this.cache;
-        }
-
-        @Override
-        public IdentifierFactory<I> getIdentifierFactory() {
-            return this.identifierFactory;
         }
     }
 }

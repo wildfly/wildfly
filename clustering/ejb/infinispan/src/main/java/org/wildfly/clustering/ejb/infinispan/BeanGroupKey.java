@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,34 +22,9 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.io.Serializable;
-import java.util.function.Predicate;
-
-import org.infinispan.filter.KeyFilter;
-
 /**
- * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class BeanKeyFilter<I> implements KeyFilter<Object>, Predicate<Object>, Serializable {
-    private static final long serialVersionUID = -1079989480899595045L;
-
-    private final String beanName;
-
-    public BeanKeyFilter(String beanName) {
-        this.beanName = beanName;
-    }
-
-    @Override
-    public boolean accept(Object key) {
-        if (!(key instanceof BeanKey)) return false;
-        @SuppressWarnings("unchecked")
-        BeanKey<I> beanKey = (BeanKey<I>) key;
-        return beanKey.getBeanName().equals(this.beanName);
-    }
-
-    @Override
-    public boolean test(Object key) {
-        return this.accept(key);
-    }
+public interface BeanGroupKey<I> {
+    I getId();
 }

@@ -27,9 +27,13 @@ import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
+import org.wildfly.clustering.ejb.infinispan.BeanGroupKey;
+import org.wildfly.clustering.ejb.infinispan.BeanKey;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
@@ -39,50 +43,72 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, I, T> {
+public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> {
 
-    private final Cache<G, BeanGroupEntry<I, T>> cache;
+    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache;
+    private final Cache<BeanKey<I>, BeanEntry<I>> beanCache;
     private final MarshalledValueFactory<MarshallingContext> factory;
     private final MarshallingContext context;
 
-    public InfinispanBeanGroupFactory(Cache<G, BeanGroupEntry<I, T>> cache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
+    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
         this.cache = cache;
+        this.beanCache = beanCache;
         this.factory = factory;
         this.context = context;
     }
 
     @Override
-    public BeanGroupEntry<I, T> createValue(G id, Void context) {
-        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(id, key -> new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>())));
+    public BeanGroupKey<I> createKey(I id) {
+        return new InfinispanBeanGroupKey<>(id);
     }
 
     @Override
-    public BeanGroupEntry<I, T> findValue(G id) {
-        return this.cache.get(id);
+    public BeanGroupEntry<I, T> createValue(I id, Void context) {
+        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(this.createKey(id), key -> new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(new ConcurrentHashMap<>())));
     }
 
     @Override
-    public void evict(G id) {
-        try {
-            this.cache.evict(id);
-        } catch (Throwable e) {
-            InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBeanGroup(e, id);
+    public BeanGroupEntry<I, T> findValue(I id) {
+        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(this.createKey(id));
+    }
+
+    @Override
+    public BeanGroupEntry<I, T> tryValue(I id) {
+        return this.cache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).get(this.createKey(id));
+    }
+
+    @Override
+    public void evict(I id) {
+        BeanGroupKey<I> key = this.createKey(id);
+        BeanGroupEntry<I, T> entry = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.FORCE_WRITE_LOCK, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).get(key);
+        if (entry != null) {
+            try {
+                for (I beanId : entry.getBeans().get(this.context).keySet()) {
+                    this.beanCache.evict(new InfinispanBeanKey<>(beanId));
+                }
+                try {
+                    this.cache.evict(key);
+                } catch (Throwable e) {
+                    InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBeanGroup(e, id);
+                }
+            } catch (Exception e) {
+                InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            }
         }
     }
 
     @Override
-    public boolean remove(G id) {
+    public boolean remove(I id) {
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
         return true;
     }
 
     @Override
-    public BeanGroup<G, I, T> createGroup(final G id, final BeanGroupEntry<I, T> entry) {
-        Mutator mutator = new CacheEntryMutator<>(this.cache, id, entry);
+    public BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry) {
+        Mutator mutator = new CacheEntryMutator<>(this.cache, this.createKey(id), entry);
         return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
     }
 }

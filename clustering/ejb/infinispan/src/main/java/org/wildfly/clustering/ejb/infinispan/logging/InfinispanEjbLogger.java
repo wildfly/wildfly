@@ -67,6 +67,7 @@ public interface InfinispanEjbLogger extends BasicLogger {
     @Message(id = 6, value = "Failed to schedule expiration/passivation of bean %s on primary owner.")
     void failedToScheduleBean(@Cause Throwable cause, Object beanId);
 
+    @LogMessage(level = WARN)
     @Message(id = 8, value = "Stateful session bean %s refers to an invalid bean group %s")
-    IllegalStateException invalidBeanGroup(Object beanId, Object groupId);
+    void invalidBeanGroup(Object beanId, Object groupId);
 }
