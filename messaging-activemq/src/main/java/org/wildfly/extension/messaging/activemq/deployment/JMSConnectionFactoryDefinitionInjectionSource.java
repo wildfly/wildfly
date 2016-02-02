@@ -42,6 +42,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.resource.spi.TransactionSupport;
+
+import org.jboss.as.connector.deployers.ra.ConnectionFactoryDefinitionInjectionSource;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -148,10 +151,33 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     public void getResourceValue(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        try {
-            startedPooledConnectionFactory(context, jndiName, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector);
-        } catch (OperationFailedException e) {
-            throw new DeploymentUnitProcessingException(e);
+        // if the resourceAdapter is empty, we use the embedded Artemis server to create a pooled-connection-factory
+        if (resourceAdapter == null || resourceAdapter.isEmpty()) {
+            try {
+                startedPooledConnectionFactory(context, jndiName, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector);
+            } catch (OperationFailedException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
+        } else {
+            // delegate to the resource-adapter subsystem to create a generic JCA connection factory.
+            ConnectionFactoryDefinitionInjectionSource cfdis = new ConnectionFactoryDefinitionInjectionSource(jndiName, interfaceName, resourceAdapter);
+            cfdis.setMaxPoolSize(maxPoolSize);
+            cfdis.setMinPoolSize(minPoolSize);
+            cfdis.setTransactionSupportLevel(transactional ? TransactionSupport.TransactionSupportLevel.XATransaction : TransactionSupport.TransactionSupportLevel.NoTransaction);
+            // transfer all the generic properties + the additional properties specific to the JMSConnectionFactoryDefinition
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                cfdis.addProperty(property.getKey(), property.getValue());
+            }
+            if (!user.isEmpty()) {
+                cfdis.addProperty("user", user);
+            }
+            if (!password.isEmpty()) {
+                cfdis.addProperty("password", password);
+            }
+            if (!clientId.isEmpty()) {
+                cfdis.addProperty("clientId", clientId);
+            }
+            cfdis.getResourceValue(context, serviceBuilder, phaseContext, injector);
         }
     }
 

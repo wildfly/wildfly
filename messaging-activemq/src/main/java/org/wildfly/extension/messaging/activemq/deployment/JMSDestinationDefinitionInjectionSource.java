@@ -32,25 +32,22 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SELECTOR
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
+import java.util.Map;
+
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
+import org.jboss.as.connector.deployers.ra.AdministeredObjectDefinitionInjectionSource;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentResourceSupport;
-import org.wildfly.extension.messaging.activemq.MessagingExtension;
-import org.wildfly.extension.messaging.activemq.MessagingServices;
-import org.wildfly.extension.messaging.activemq.jms.JMSQueueConfigurationRuntimeHandler;
-import org.wildfly.extension.messaging.activemq.jms.JMSQueueService;
-import org.wildfly.extension.messaging.activemq.jms.JMSTopicConfigurationRuntimeHandler;
-import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -61,6 +58,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.messaging.activemq.MessagingExtension;
+import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.JMSQueueConfigurationRuntimeHandler;
+import org.wildfly.extension.messaging.activemq.jms.JMSQueueService;
+import org.wildfly.extension.messaging.activemq.jms.JMSTopicConfigurationRuntimeHandler;
+import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
 import org.wildfly.extension.messaging.activemq.jms.WildFlyBindingRegistry;
 
 /**
@@ -119,6 +122,24 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
     }
 
     public void getResourceValue(final InjectionSource.ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        // if the resourceAdapter is empty, we use the embedded Artemis server to create the JMS destination
+        if (resourceAdapter == null || resourceAdapter.isEmpty()) {
+            startActiveMQDestination(context, serviceBuilder, phaseContext, injector);
+        } else {
+            // delegate to the resource-adapter subsystem to create a generic JCA admin object.
+            AdministeredObjectDefinitionInjectionSource aodis = new AdministeredObjectDefinitionInjectionSource(jndiName, className, resourceAdapter);
+            aodis.setInterface(interfaceName);
+            aodis.setDescription(description);
+            // transfer all the generic properties
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                aodis.addProperty(property.getKey(), property.getValue());
+            }
+            aodis.getResourceValue(context, serviceBuilder, phaseContext, injector);
+
+        }
+    }
+
+    private void startActiveMQDestination(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final String uniqueName = uniqueName(context);
         try {
