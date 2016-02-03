@@ -36,7 +36,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -203,12 +202,12 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     // TODO WFCORE-1353 means this doesn't have to always fail now; consider just deleting this
-    @Override
-    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
+//    @Override
+//    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
 //        final ModelNode operation = createDescribeOperation();
 //        final ModelNode result = hc.executeOperation(operation);
 //        Assert.assertTrue("The subsystem describe operation must fail",
 //                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
-    }
+//    }
 
 }
