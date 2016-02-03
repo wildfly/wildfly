@@ -353,12 +353,13 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         return addr;
     }
 
+    // TODO WFCORE-1353 means this doesn't have to always fail now; consider just deleting this
     @Override
     protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = hc.executeOperation(operation);
-        Assert.assertTrue("The subsystem describe operation must fail",
-                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
+//        final ModelNode operation = createDescribeOperation();
+//        final ModelNode result = hc.executeOperation(operation);
+//        Assert.assertTrue("The subsystem describe operation must fail",
+//                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
     }
 
     private static class SSLConfigurationNameFixer implements ModelFixer {
