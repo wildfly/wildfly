@@ -43,7 +43,7 @@ import org.jboss.modules.security.PermissionFactory;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * This class implements a {@code DeploymentUnitProcessor} that parses security permission files that might be
+ * This class implements a {@link DeploymentUnitProcessor} that parses security permission files that might be
  * included in application components.
  * <p/>
  * The EE7 specification (section EE6.2.2.6) allows application components to specify required security permissions:
@@ -67,7 +67,7 @@ import org.jboss.vfs.VirtualFile;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class PermissionsParseProcessor implements DeploymentUnitProcessor {
+public class PermissionsParserProcessor implements DeploymentUnitProcessor {
 
     private static final String PERMISSIONS_XML = "META-INF/permissions.xml";
 
@@ -76,20 +76,13 @@ public class PermissionsParseProcessor implements DeploymentUnitProcessor {
     // minimum set of permissions that are to be granted to all deployments.
     private final List<PermissionFactory> minPermissions;
 
-    // maximum set of permissions deployments should have.
-    private final List<PermissionFactory> maxPermissions;
-
     /**
-     * Creates an instance of {@link PermissionsParseProcessor} with the specified minimum and maximum set of permissions.
+     * Creates an instance of {@link PermissionsParserProcessor} with the specified minimum and maximum set of permissions.
      *
      * @param minPermissions a {@link List} containing the permissions that are to be granted to all deployments.
-     * @param maxPermissions a {@link List} containing the maximum set of permissions a deployment can have. In other words,
-     *                       all permissions in the minimum set plus the permissions parsed in META-INF/permissions.xml
-     *                       must be implied by the maximum set.
      */
-    public PermissionsParseProcessor(List<PermissionFactory> minPermissions, List<PermissionFactory> maxPermissions) {
+    public PermissionsParserProcessor(List<PermissionFactory> minPermissions) {
         this.minPermissions = minPermissions;
-        this.maxPermissions = maxPermissions;
     }
 
     @Override
@@ -140,9 +133,6 @@ public class PermissionsParseProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-
-
-        // TODO validate the resulting set of permissions against the maximum set
     }
 
     @Override
