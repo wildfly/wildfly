@@ -28,11 +28,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.IOException;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -202,12 +202,13 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         return AdditionalInitialization.ADMIN_ONLY_HC;
     }
 
+    // TODO WFCORE-1353 means this doesn't have to always fail now; consider just deleting this
     @Override
     protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = hc.executeOperation(operation);
-        Assert.assertTrue("The subsystem describe operation must fail",
-                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
+//        final ModelNode operation = createDescribeOperation();
+//        final ModelNode result = hc.executeOperation(operation);
+//        Assert.assertTrue("The subsystem describe operation must fail",
+//                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
     }
 
 }

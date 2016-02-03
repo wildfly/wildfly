@@ -22,21 +22,13 @@
 package org.jboss.as.jaxr.extension;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -159,12 +151,13 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
+    // TODO WFCORE-1353 means this doesn't have to always fail now; consider just deleting this
     @Override
     protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = hc.executeOperation(operation);
-        Assert.assertTrue("The subsystem describe operation must fail",
-                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
+//        final ModelNode operation = createDescribeOperation();
+//        final ModelNode result = hc.executeOperation(operation);
+//        Assert.assertTrue("The subsystem describe operation must fail",
+//                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
     }
 
 
