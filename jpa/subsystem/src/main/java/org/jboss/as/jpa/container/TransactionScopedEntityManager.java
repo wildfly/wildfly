@@ -177,13 +177,18 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         // only JPA 2.1 applications can specify UNSYNCHRONIZED.
         // Default is SYNCHRONIZED if synchronizationType is not passed to createEntityManager
         if (SynchronizationType.UNSYNCHRONIZED.equals(synchronizationType)) {
-            return emf.createEntityManager(synchronizationType, properties); // properties may be null in jpa 2.1
+            // properties are allowed to be be null in jpa 2.1
+            return unsynchronizedEntityManagerWrapper(emf.createEntityManager(synchronizationType, properties));
         }
 
         if (properties != null && properties.size() > 0) {
             return emf.createEntityManager(properties);
         }
         return emf.createEntityManager();
+    }
+
+    private EntityManager unsynchronizedEntityManagerWrapper(EntityManager entityManager) {
+        return new UnsynchronizedEntityManagerWrapper(entityManager);
     }
 
     /**
@@ -203,9 +208,9 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
      * is requested.  We are only fussy in this test, if the target component persistence context is SYNCHRONIZED.
      */
     private static void testForMixedSynchronizationTypes(EntityManager entityManager, String scopedPuName, final SynchronizationType targetSynchronizationType) {
-        if (SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType)
-                && entityManager instanceof AbstractEntityManager
-                && SynchronizationType.UNSYNCHRONIZED.equals( ((AbstractEntityManager)entityManager).getSynchronizationType())) {
+        if (SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType) &&
+                entityManager instanceof SynchronizationTypeAccess &&
+                SynchronizationType.UNSYNCHRONIZED.equals(((SynchronizationTypeAccess)entityManager).getSynchronizationType())) {
             throw JpaLogger.ROOT_LOGGER.badSynchronizationTypeCombination(scopedPuName);
         }
     }
