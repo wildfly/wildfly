@@ -32,6 +32,6 @@ import org.wildfly.clustering.ee.Batch;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public interface BeanManagerFactory<G, I, T, B extends Batch> {
-    BeanManager<G, I, T, B> createBeanManager(IdentifierFactory<G> groupIdentifierFactory, IdentifierFactory<I> beanIdentifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener);
+public interface BeanManagerFactory<I, T, B extends Batch> {
+    BeanManager<I, T, B> createBeanManager(IdentifierFactory<I> factory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener);
 }

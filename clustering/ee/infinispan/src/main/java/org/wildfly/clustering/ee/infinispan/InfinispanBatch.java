@@ -21,45 +21,65 @@
  */
 package org.wildfly.clustering.ee.infinispan;
 
-import javax.transaction.InvalidTransactionException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.infinispan.commons.CacheException;
-import org.wildfly.clustering.ee.BatchContext;
 
 /**
- * A {@link BatchContext} that performs transaction context switching.
+ * Abstract {@link TransactionBatch} that associates and exposes the underlying transaction.
  * @author Paul Ferraro
  */
-public class InfinispanBatchContext implements BatchContext {
-    private final TransactionManager tm;
-    private final Transaction existingTx;
-    private final Transaction tx;
+public class InfinispanBatch implements TransactionBatch {
 
-    InfinispanBatchContext(TransactionManager tm, Transaction tx) throws SystemException, InvalidTransactionException {
-        this.tm = tm;
+    private final Transaction tx;
+    private final AtomicInteger count = new AtomicInteger(0);
+
+    public InfinispanBatch(Transaction tx) {
         this.tx = tx;
-        // Switch transaction context
-        this.existingTx = this.tm.suspend();
-        this.tm.resume(this.tx);
+    }
+
+    @Override
+    public Transaction getTransaction() {
+        return this.tx;
+    }
+
+    @Override
+    public TransactionBatch interpose() {
+        this.count.incrementAndGet();
+        return this;
+    }
+
+    @Override
+    public void discard() {
+        try {
+            if (this.tx.getStatus() == Status.STATUS_ACTIVE) {
+                this.tx.setRollbackOnly();
+            }
+        } catch (SystemException e) {
+            throw new CacheException(e);
+        }
     }
 
     @Override
     public void close() {
-        try {
-            // Restore previous transaction context
-            this.tm.suspend();
-            if (this.existingTx != null) {
-                try {
-                    this.tm.resume(this.existingTx);
-                } catch (InvalidTransactionException e) {
-                    throw new CacheException(e);
+        if (this.count.getAndDecrement() == 0) {
+            try {
+                int status = this.tx.getStatus();
+                if (status == Status.STATUS_MARKED_ROLLBACK) {
+                    this.tx.rollback();
+                } else {
+                    this.tx.commit();
                 }
+            } catch (RollbackException | HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+                throw new CacheException(e);
             }
-        } catch (SystemException e) {
-            throw new CacheException(e);
         }
     }
 }

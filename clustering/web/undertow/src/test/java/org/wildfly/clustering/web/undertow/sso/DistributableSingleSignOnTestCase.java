@@ -244,44 +244,29 @@ public class DistributableSingleSignOnTestCase {
 
     @Test
     public void close() {
-        when(this.batch.isActive()).thenReturn(false);
-
-        this.subject.close();
-
-        verify(this.batch, never()).close();
-
         BatchContext context = mock(BatchContext.class);
 
-        when(this.batch.isActive()).thenReturn(true);
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
 
         this.subject.close();
         
         verify(this.batch).close();
         verify(context).close();
+        reset(this.batch);
+
+        this.subject.close();
+
+        verify(this.batch, never()).close();
     }
 
     @Test
     public void invalidate() {
         BatchContext context = mock(BatchContext.class);
 
-        when(this.batch.isActive()).thenReturn(true);
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
 
         this.subject.invalidate();
 
         verify(context).close();
-        reset(this.batch, context);
-
-        Batch batch = mock(Batch.class);
-
-        when(this.batch.isActive()).thenReturn(false);
-        when(this.batcher.createBatch()).thenReturn(batch);
-
-        this.subject.invalidate();
-
-        verify(this.batch, never()).close();
-        verify(context, never()).close();
-        verify(batch).close();
     }
 }

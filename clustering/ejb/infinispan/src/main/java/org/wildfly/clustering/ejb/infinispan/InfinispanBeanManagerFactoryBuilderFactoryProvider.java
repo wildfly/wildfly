@@ -32,7 +32,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
 public class InfinispanBeanManagerFactoryBuilderFactoryProvider implements BeanManagerFactoryBuilderFactoryProvider<TransactionBatch> {
 
     @Override
-    public <G, I> BeanManagerFactoryBuilderFactory<G, I, TransactionBatch> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config) {
+    public <I> BeanManagerFactoryBuilderFactory<I, TransactionBatch> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config) {
         return new InfinispanBeanManagerFactoryBuilderFactory<>(name, config);
     }
 }

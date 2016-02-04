@@ -38,15 +38,12 @@ public class InfinispanBeanKeyExternalizer implements Externalizer<InfinispanBea
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanKey<SessionID> key) throws IOException {
-        output.writeUTF(key.getBeanName());
         this.externalizer.writeObject(output, key.getId());
     }
 
     @Override
     public InfinispanBeanKey<SessionID> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        String beanName = input.readUTF();
-        SessionID id = this.externalizer.readObject(input);
-        return new InfinispanBeanKey<>(beanName, id);
+        return new InfinispanBeanKey<>(this.externalizer.readObject(input));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

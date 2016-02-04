@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
-import java.util.UUID;
-
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
@@ -47,12 +45,12 @@ import org.wildfly.clustering.ejb.RemoveListener;
  * @param <V> the cache value type
  */
 public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>> implements Cache<K, V> {
-
-    private final BeanManager<UUID, K, V, Batch> manager;
+    private final ThreadLocal<K> group = new ThreadLocal<>();
+    private final BeanManager<K, V, Batch> manager;
     private final StatefulObjectFactory<V> factory;
     private final RemoveListener<V> listener;
 
-    public DistributableCache(BeanManager<UUID, K, V, Batch> manager, StatefulObjectFactory<V> factory) {
+    public DistributableCache(BeanManager<K, V, Batch> manager, StatefulObjectFactory<V> factory) {
         this.manager = manager;
         this.factory = factory;
         this.listener = new RemoveListenerAdapter<>(factory);
@@ -74,49 +72,44 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public K createIdentifier() {
-        return this.manager.getBeanIdentifierFactory().createIdentifier();
+        K id = this.manager.getIdentifierFactory().createIdentifier();
+        K group = this.group.get();
+        if (group == null) {
+            group = id;
+            this.group.set(group);
+        }
+        return id;
     }
 
     @Override
     public V create() {
-        boolean newGroup = false;
-        boolean success = false;
-        UUID group = CURRENT_GROUP.get();
-        Batch batch = this.manager.getBatcher().createBatch();
-        try {
-            if (group == null) {
-                newGroup = true;
-                group = this.manager.getGroupIdentifierFactory().createIdentifier();
-                CURRENT_GROUP.set(group);
-            }
-
+        boolean newGroup = this.group.get() == null;
+        try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
                 // This will invoke Cache.create() for nested beans
                 // Nested beans will share the same group identifier
                 V instance = this.factory.createInstance();
                 K id = instance.getId();
-                this.manager.createBean(id, group, instance).close();
-                success = true;
+                this.manager.createBean(id, this.group.get(), instance).close();
                 return instance;
-            } finally {
-                if (newGroup) {
-                    CURRENT_GROUP.remove();
-                }
+            } catch (RuntimeException | Error e) {
+                batch.discard();
+                throw e;
             }
         } finally {
-            if (success) {
-                batch.close();
-            } else {
-                batch.discard();
+            if (newGroup) {
+                this.group.remove();
             }
         }
     }
 
     @Override
     public V get(K id) {
+        // Batch is not closed here - it will be closed during release(...) or discard(...)
+        @SuppressWarnings("resource")
         Batch batch = this.manager.getBatcher().createBatch();
         try {
-            Bean<UUID, K, V> bean = this.manager.findBean(id);
+            Bean<K, V> bean = this.manager.findBean(id);
             if (bean == null) {
                 batch.close();
                 return null;
@@ -126,6 +119,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
             return result;
         } catch (RuntimeException | Error e) {
             batch.discard();
+            batch.close();
             throw e;
         }
     }
@@ -134,11 +128,16 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     public void release(V value) {
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
             try (Batch batch = value.getCacheContext()) {
-                Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
-                if (bean != null) {
-                    if (bean.release()) {
-                        bean.close();
+                try {
+                    Bean<K, V> bean = this.manager.findBean(value.getId());
+                    if (bean != null) {
+                        if (bean.release()) {
+                            bean.close();
+                        }
                     }
+                } catch (RuntimeException | Error e) {
+                    batch.discard();
+                    throw e;
                 }
             }
         }
@@ -147,9 +146,14 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     @Override
     public void remove(K id) {
         try (Batch batch = this.manager.getBatcher().createBatch()) {
-            Bean<UUID, K, V> bean = this.manager.findBean(id);
-            if (bean != null) {
-                bean.remove(this.listener);
+            try {
+                Bean<K, V> bean = this.manager.findBean(id);
+                if (bean != null) {
+                    bean.remove(this.listener);
+                }
+            } catch (RuntimeException | Error e) {
+                batch.discard();
+                throw e;
             }
         }
     }
@@ -158,9 +162,14 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     public void discard(V value) {
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
             try (Batch batch = value.getCacheContext()) {
-                Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
-                if (bean != null) {
-                    bean.remove(null);
+                try {
+                    Bean<K, V> bean = this.manager.findBean(value.getId());
+                    if (bean != null) {
+                        bean.remove(null);
+                    }
+                } catch (RuntimeException | Error e) {
+                    batch.discard();
+                    throw e;
                 }
             }
         }

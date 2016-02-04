@@ -40,19 +40,15 @@ public class BeanEvictionCommand<I> implements Command<Void, BeanEvictionContext
 
     @Override
     public Void execute(BeanEvictionContext<I> context) throws Exception {
-        Batch batch = context.getBatcher().createBatch();
-        boolean success = false;
-        try {
-            InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
-            context.getEvictor().evict(this.id);
-            success = true;
-        } finally {
-            if (success) {
-                batch.close();
-            } else {
+        InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
+        try (Batch batch = context.getBatcher().createBatch()) {
+            try {
+                context.getEvictor().evict(this.id);
+                return null;
+            } catch (Exception e) {
                 batch.discard();
+                throw e;
             }
         }
-        return null;
     }
 }

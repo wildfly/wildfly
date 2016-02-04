@@ -64,7 +64,6 @@ public class DistributableSingleSignOnManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.createSSO(same(id), authenticationCaptor.capture())).thenReturn(sso);
-        when(batch.isActive()).thenReturn(true);
 
         SingleSignOn result = this.subject.createSingleSignOn(account, mechanism);
 
@@ -87,13 +86,12 @@ public class DistributableSingleSignOnManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.findSSO(id)).thenReturn(null);
-        when(batch.isActive()).thenReturn(false);
 
         SingleSignOn result = this.subject.findSingleSignOn(id);
 
         assertNull(result);
 
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
 
         reset(batch);
@@ -101,7 +99,6 @@ public class DistributableSingleSignOnManagerTestCase {
         SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
 
         when(this.manager.findSSO(id)).thenReturn(sso);
-        when(batch.isActive()).thenReturn(true);
 
         result = this.subject.findSingleSignOn(id);
 
