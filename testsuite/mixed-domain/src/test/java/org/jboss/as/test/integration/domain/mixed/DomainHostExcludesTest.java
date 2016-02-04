@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -89,7 +90,7 @@ public abstract class DomainHostExcludesTest {
 
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
-        testSupport.getDomainSlaveLifecycleUtil().stop();
+        stopSlave();
 
         ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         setupExclude(client, hostRelease, slaveApiVersion);
@@ -98,6 +99,27 @@ public abstract class DomainHostExcludesTest {
         addExtensions(true, client);
 
         startSlave();
+    }
+
+    private static void stopSlave() throws IOException, MgmtOperationException, InterruptedException {
+        ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+        executeForResult(Util.createEmptyOperation(SHUTDOWN, PathAddress.pathAddress(HOST)), client);
+        boolean gone = false;
+        long timeout = TimeoutUtil.adjust(30000);
+        long deadline = System.currentTimeMillis() + timeout;
+        do {
+            ModelNode hosts = readChildrenNames(client, PathAddress.EMPTY_ADDRESS, HOST.getKey());
+            gone = true;
+            for (ModelNode host : hosts.asList()) {
+                if (HOST.getValue().equals(host.asString())) {
+                    gone = false;
+                    Thread.sleep(100);
+                    break;
+                }
+            }
+        } while (!gone && System.currentTimeMillis() < deadline);
+        Assert.assertTrue("Slave was not removed within " + timeout + " ms", gone);
+        testSupport.getDomainSlaveLifecycleUtil().stop();
     }
 
     private static void setupExclude(ModelControllerClient client, String hostRelease, ModelVersion hostVersion) throws IOException, MgmtOperationException {
@@ -274,7 +296,7 @@ public abstract class DomainHostExcludesTest {
         executeForResult(op, client);
     }
 
-    private ModelNode readChildrenNames(ModelControllerClient client, PathAddress pathAddress, String childType) throws IOException, MgmtOperationException {
+    private static ModelNode readChildrenNames(ModelControllerClient client, PathAddress pathAddress, String childType) throws IOException, MgmtOperationException {
         ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, pathAddress);
         op.get(CHILD_TYPE).set(childType);
         return executeForResult(op, client);
