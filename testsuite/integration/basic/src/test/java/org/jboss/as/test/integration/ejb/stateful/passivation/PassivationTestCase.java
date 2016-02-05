@@ -76,40 +76,36 @@ public class PassivationTestCase {
     @Test
     public void testPassivationMaxSize() throws Exception {
         PassivationInterceptor.reset();
-        TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/"
-                + TestPassivationBean.class.getSimpleName());
-        Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote1.returnTrueString());
-        remote1.addEntity(1, "Bob");
-        remote1.setManagedBeanMessage("bar");
-        Assert.assertTrue(remote1.isPersistenceContextSame());
+        try (TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {
+            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                    remote1.returnTrueString());
+            remote1.addEntity(1, "Bob");
+            remote1.setManagedBeanMessage("bar");
+            Assert.assertTrue(remote1.isPersistenceContextSame());
 
-        TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/"
-                + TestPassivationBean.class.getSimpleName());
-        Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote2.returnTrueString());
-        Assert.assertTrue(remote2.isPersistenceContextSame());
+            try (TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {
+                Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                        remote2.returnTrueString());
+                Assert.assertTrue(remote2.isPersistenceContextSame());
 
-        // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
-        ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName());
+                // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
+                ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName());
 
-        // Passivation happens asynchronously, so give it a sec
-        Thread.sleep(PASSIVATION_WAIT);
+                // Passivation happens asynchronously, so give it a sec
+                Thread.sleep(PASSIVATION_WAIT);
 
-        Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
-                remote1.hasBeenPassivated());
-        Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
-                remote2.hasBeenPassivated());
-        // TODO: https://issues.jboss.org/browse/WFLY-6120
-//        Assert.assertTrue(remote1.isPersistenceContextSame());
-//        Assert.assertTrue(remote2.isPersistenceContextSame());
-        Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
-        Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
-        Assert.assertEquals("bar", remote1.getManagedBeanMessage());
-        Assert.assertEquals("bar", remote2.getManagedBeanMessage());
-
-        remote1.remove();
-        remote2.remove();
+                Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
+                        remote1.hasBeenPassivated());
+                Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
+                        remote2.hasBeenPassivated());
+                Assert.assertTrue(remote1.isPersistenceContextSame());
+                Assert.assertTrue(remote2.isPersistenceContextSame());
+                Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
+                Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
+                Assert.assertEquals("bar", remote1.getManagedBeanMessage());
+                Assert.assertEquals("bar", remote2.getManagedBeanMessage());
+            }
+        }
         Assert.assertTrue("invalid: " + PassivationInterceptor.getPrePassivateTarget(), PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
         Assert.assertTrue("invalid: " + PassivationInterceptor.getPostActivateTarget(), PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
     }
@@ -121,27 +117,31 @@ public class PassivationTestCase {
      */
     @Test
     public void testPassivationDisabledBean() throws Exception {
-        final PassivationDisabledBean bean = (PassivationDisabledBean) ctx.lookup("java:module/" + PassivationDisabledBean.class.getSimpleName() + "!" + PassivationDisabledBean.class.getName());
-        bean.doNothing();
-        // now do the same with a deployment descriptor configured stateful bean
-        final DDBasedSFSB ddBean = (DDBasedSFSB) ctx.lookup("java:module/passivation-disabled-bean" + "!" + DDBasedSFSB.class.getName());
-        ddBean.doNothing();
+        try (Bean bean = (Bean) ctx.lookup("java:module/" + PassivationDisabledBean.class.getSimpleName() + "!" + Bean.class.getName())) {
+            bean.doNothing();
+            // now do the same with a deployment descriptor configured stateful bean
+            try (Bean ddBean = (Bean) ctx.lookup("java:module/passivation-disabled-bean" + "!" + Bean.class.getName())) {
+                ddBean.doNothing();
 
-        final PassivationDisabledBean bean2 = (PassivationDisabledBean) ctx.lookup("java:module/" + PassivationDisabledBean.class.getSimpleName() + "!" + PassivationDisabledBean.class.getName());
-        bean2.doNothing();
-        // now do the same with a deployment descriptor configured stateful bean
-        final DDBasedSFSB ddBean2 = (DDBasedSFSB) ctx.lookup("java:module/passivation-disabled-bean" + "!" + DDBasedSFSB.class.getName());
-        ddBean2.doNothing();
+                try (Bean bean2 = (Bean) ctx.lookup("java:module/" + PassivationDisabledBean.class.getSimpleName() + "!" + Bean.class.getName())) {
+                    bean2.doNothing();
+                    // now do the same with a deployment descriptor configured stateful bean
+                    try (Bean ddBean2 = (Bean) ctx.lookup("java:module/passivation-disabled-bean" + "!" + Bean.class.getName())) {
+                        ddBean2.doNothing();
 
-        // Passivation happens asynchronously, so give it a sec
-        Thread.sleep(PASSIVATION_WAIT);
+                        // Passivation happens asynchronously, so give it a sec
+                        Thread.sleep(PASSIVATION_WAIT);
 
-        // make sure bean's passivation and activation callbacks weren't invoked
-        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
-        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", bean.wasActivated());
+                        // make sure bean's passivation and activation callbacks weren't invoked
+                        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
+                        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", bean.wasActivated());
 
-        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly passivated", ddBean.wasPassivated());
-        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly activated", ddBean.wasActivated());
+                        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly passivated", ddBean.wasPassivated());
+                        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly activated", ddBean.wasActivated());
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -151,27 +151,31 @@ public class PassivationTestCase {
      */
     @Test
     public void testPassivationEnabledBean() throws Exception {
-        final PassivationEnabledBean bean = (PassivationEnabledBean) ctx.lookup("java:module/" + PassivationEnabledBean.class.getSimpleName() + "!" + PassivationEnabledBean.class.getName());
-        // make an invocation
-        bean.doNothing();
-        // now do the same with a deployment descriptor configured stateful bean
-        final DDBasedSFSB ddBean = (DDBasedSFSB) ctx.lookup("java:module/passivation-enabled-bean" + "!" + DDBasedSFSB.class.getName());
-        ddBean.doNothing();
+        try (Bean bean = (Bean) ctx.lookup("java:module/" + PassivationEnabledBean.class.getSimpleName() + "!" + Bean.class.getName())) {
+            // make an invocation
+            bean.doNothing();
+            // now do the same with a deployment descriptor configured stateful bean
+            try (Bean ddBean = (Bean) ctx.lookup("java:module/passivation-enabled-bean" + "!" + Bean.class.getName())) {
+                ddBean.doNothing();
 
-        // Create a 2nd set of beans, forcing the first set to passivate
-        final PassivationEnabledBean bean2 = (PassivationEnabledBean) ctx.lookup("java:module/" + PassivationEnabledBean.class.getSimpleName() + "!" + PassivationEnabledBean.class.getName());
-        bean2.doNothing();
-        final DDBasedSFSB ddBean2 = (DDBasedSFSB) ctx.lookup("java:module/passivation-enabled-bean" + "!" + DDBasedSFSB.class.getName());
-        ddBean2.doNothing();
+                // Create a 2nd set of beans, forcing the first set to passivate
+                try (Bean bean2 = (Bean) ctx.lookup("java:module/" + PassivationEnabledBean.class.getSimpleName() + "!" + Bean.class.getName())) {
+                    bean2.doNothing();
+                    try (Bean ddBean2 = (Bean) ctx.lookup("java:module/passivation-enabled-bean" + "!" + Bean.class.getName())) {
+                        ddBean2.doNothing();
 
-        // Passivation happens asynchronously, so give it a sec
-        Thread.sleep(PASSIVATION_WAIT);
+                        // Passivation happens asynchronously, so give it a sec
+                        Thread.sleep(PASSIVATION_WAIT);
 
-        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
-        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
+                        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
+                        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
 
-        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated", ddBean.wasPassivated());
-        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated", ddBean.wasActivated());
+                        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated", ddBean.wasPassivated());
+                        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated", ddBean.wasActivated());
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -182,20 +186,22 @@ public class PassivationTestCase {
      */
     @Test
     public void testPassivationDDOverrideBean() throws Exception {
-        final PassivationEnabledBean passivationOverrideBean = (PassivationEnabledBean) ctx.lookup("java:module/passivation-override-bean" + "!" + PassivationEnabledBean.class.getName());
-        // make an invocation
-        passivationOverrideBean.doNothing();
+        try (Bean passivationOverrideBean = (Bean) ctx.lookup("java:module/passivation-override-bean" + "!" + Bean.class.getName())) {
+            // make an invocation
+            passivationOverrideBean.doNothing();
 
-        // Create a 2nd set of beans, that would normally force the first set to passivate
-        final PassivationEnabledBean passivationOverrideBean2 = (PassivationEnabledBean) ctx.lookup("java:module/passivation-override-bean" + "!" + PassivationEnabledBean.class.getName());
-        passivationOverrideBean2.doNothing();
+            // Create a 2nd set of beans, that would normally force the first set to passivate
+            try (Bean passivationOverrideBean2 = (Bean) ctx.lookup("java:module/passivation-override-bean" + "!" + Bean.class.getName())) {
+                passivationOverrideBean2.doNothing();
 
-        // Passivation happens asynchronously, so give it a sec
-        Thread.sleep(PASSIVATION_WAIT);
+                // Passivation happens asynchronously, so give it a sec
+                Thread.sleep(PASSIVATION_WAIT);
 
-        // make sure bean's passivation and activation callbacks weren't invoked
-        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", passivationOverrideBean.wasPassivated());
-        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", passivationOverrideBean.wasActivated());
+                // make sure bean's passivation and activation callbacks weren't invoked
+                Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", passivationOverrideBean.wasPassivated());
+                Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", passivationOverrideBean.wasActivated());
+            }
+        }
     }
 
     /**
@@ -206,35 +212,39 @@ public class PassivationTestCase {
         PassivationInterceptor.reset();
 
         // create first bean
-        TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/"
-                + BeanWithSerializationIssue.class.getSimpleName());
-        // make an invocation
-        Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote1.returnTrueString());
+        try (TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/" + BeanWithSerializationIssue.class.getSimpleName())) {
+            // make an invocation
+            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                    remote1.returnTrueString());
 
-        // create second bean, this should force the first bean to passivate
-        TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/"
-                + BeanWithSerializationIssue.class.getSimpleName());
-        // make an invocation
-        Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote2.returnTrueString());
+            // create second bean, this should force the first bean to passivate
+            try (TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/" + BeanWithSerializationIssue.class.getSimpleName())) {
+                // make an invocation
+                Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                        remote2.returnTrueString());
 
-        // passivation happens asynchronously, so give it a sec
-        Thread.sleep(PASSIVATION_WAIT);
+                // passivation happens asynchronously, so give it a sec
+                Thread.sleep(PASSIVATION_WAIT);
 
-        // verify that remote1 was prePassivated
-        Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof BeanWithSerializationIssue);
-        Assert.assertTrue(((BeanWithSerializationIssue) PassivationInterceptor.getPrePassivateTarget())
-                .hasBeenPassivated());
-        // verify that remote1 was not postActivated yet
-        Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() == null);
+                // verify that remote1 was prePassivated
+                Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof BeanWithSerializationIssue);
+                Assert.assertTrue(((BeanWithSerializationIssue) PassivationInterceptor.getPrePassivateTarget())
+                        .hasBeenPassivated());
+                // verify that remote1 was not postActivated yet
+                Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() == null);
 
-        // From EJB 4.2.1:
-        // The container may destroy a session bean instance if the instance does not meet the requirements for serialization after PrePassivate.
-        try {
-            // make another invocation on the first bean
-            remote1.returnTrueString();
-            Assert.fail("This invocation should not succeed since passivation failed");
+                // From EJB 4.2.1:
+                // The container may destroy a session bean instance if the instance does not meet the requirements for serialization after PrePassivate.
+                try {
+                    // make another invocation on the first bean
+                    remote1.returnTrueString();
+                    Assert.fail("This invocation should not succeed since passivation failed");
+                } catch (NoSuchEJBException e) {
+                    // Expected
+                }
+            } catch (NoSuchEJBException e) {
+                // Expected
+            }
         } catch (NoSuchEJBException e) {
             // Expected
         }

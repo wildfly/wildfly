@@ -71,8 +71,6 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
         Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
         org.infinispan.configuration.cache.Configuration config = groupCache.getCacheConfiguration();
-        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, factory, context);
-        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         final String beanName = this.configuration.getBeanContext().getBeanName();
         // If cache is clustered or configured with a write-through cache store
         // then we need to trigger any @PrePassivate/@PostActivate per request
@@ -81,6 +79,8 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         final boolean passivationEnabled = evictionAllowed && config.persistence().passivation();
         final boolean persistent = config.clustering().cacheMode().isClustered() || (evictionAllowed && !passivationEnabled);
         boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
+        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, factory, context, lockOnRead);
+        Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, lockOnRead, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         final NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();

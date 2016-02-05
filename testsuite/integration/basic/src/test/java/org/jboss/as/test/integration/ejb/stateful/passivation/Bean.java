@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+package org.jboss.as.test.integration.ejb.stateful.passivation;
+
+import javax.ejb.Local;
+import javax.ejb.Remove;
 
 /**
- * Command that evicts a bean.
  * @author Paul Ferraro
  */
-public class BeanEvictionCommand<I> implements Command<Void, BeanEvictionContext<I>> {
-    private static final long serialVersionUID = -6593293772761100784L;
+@Local
+public interface Bean extends AutoCloseable {
+    /**
+     * Returns whether or not this instance has been passivated
+     */
+    boolean wasPassivated();
 
-    private final I id;
+    /**
+     * Returns whether or not this instance has been activated
+     */
+    boolean wasActivated();
 
-    public BeanEvictionCommand(I id) {
-        this.id = id;
+    default void doNothing() {
     }
 
     @Override
-    public Void execute(BeanEvictionContext<I> context) throws Exception {
-        InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
-        try (Batch batch = context.getBatcher().createBatch()) {
-            try {
-                context.getEvictor().evict(this.id);
-                return null;
-            } catch (Exception e) {
-                batch.discard();
-                throw e;
-            }
-        }
-    }
+    @Remove
+    void close();
 }

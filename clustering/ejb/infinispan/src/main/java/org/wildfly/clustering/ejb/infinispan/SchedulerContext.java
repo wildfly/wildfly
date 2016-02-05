@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ejb.Bean;
-
 /**
- * Command that schedules a session.
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand<I> implements Command<Void, SchedulerContext<I>> {
-    private static final long serialVersionUID = -2606847692331278614L;
-
-    private final I beanId;
-    private final I groupId;
-
-    public ScheduleSchedulerCommand(Bean<I, ?> bean) {
-        this.beanId = bean.getId();
-        this.groupId = bean.getGroupId();
-    }
+public interface SchedulerContext<I> extends AutoCloseable {
+    Scheduler<I> getBeanScheduler();
+    Scheduler<I> getBeanGroupScheduler();
 
     @Override
-    public Void execute(SchedulerContext<I> context) {
-        context.getBeanScheduler().schedule(this.beanId);
-        context.getBeanGroupScheduler().schedule(this.groupId);
-        return null;
-    }
+    void close();
 }

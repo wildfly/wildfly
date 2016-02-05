@@ -42,19 +42,19 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionContext<I> {
+public class BeanGroupEvictionScheduler<I> implements Scheduler<I>, BeanGroupEvictionContext<I> {
 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
     private final Batcher<TransactionBatch> batcher;
     private final Evictor<I> evictor;
-    private final CommandDispatcher<BeanEvictionContext<I>> dispatcher;
+    private final CommandDispatcher<BeanGroupEvictionContext<I>> dispatcher;
     private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(String name, Batcher<TransactionBatch> batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
+    public BeanGroupEvictionScheduler(String name, Batcher<TransactionBatch> batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;
-        this.dispatcher = dispatcherFactory.<BeanEvictionContext<I>>createCommandDispatcher(name, this);
+        this.dispatcher = dispatcherFactory.<BeanGroupEvictionContext<I>>createCommandDispatcher(name, this);
     }
 
     @Override
@@ -77,11 +77,11 @@ public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionConte
     @Override
     public void cancel(Locality locality) {
         synchronized (this.evictionQueue) {
-            Iterator<I> beans = this.evictionQueue.iterator();
-            while (beans.hasNext()) {
-                I id = beans.next();
+            Iterator<I> groups = this.evictionQueue.iterator();
+            while (groups.hasNext()) {
+                I id = groups.next();
                 if (!locality.isLocal(id)) {
-                    beans.remove();
+                    groups.remove();
                 }
             }
         }
@@ -93,13 +93,13 @@ public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionConte
             this.evictionQueue.add(id);
             // Trigger eviction of oldest bean if necessary
             if (this.evictionQueue.size() > this.config.getConfiguration().getMaxSize()) {
-                Iterator<I> beans = this.evictionQueue.iterator();
-                I bean = beans.next();
+                Iterator<I> groups = this.evictionQueue.iterator();
+                I group = groups.next();
                 try {
-                    this.dispatcher.submitOnCluster(new BeanEvictionCommand<>(bean));
-                    beans.remove();
+                    this.dispatcher.submitOnCluster(new BeanGroupEvictionCommand<>(group));
+                    groups.remove();
                 } catch (Exception e) {
-                    InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBean(e, bean);
+                    InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBean(e, group);
                 }
             }
         }
