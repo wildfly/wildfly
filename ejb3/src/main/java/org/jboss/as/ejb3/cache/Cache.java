@@ -31,6 +31,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */
 public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>, IdentifierFactory<K> {
+    ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**
      * Creates and caches a new instance of <code>T</code>.

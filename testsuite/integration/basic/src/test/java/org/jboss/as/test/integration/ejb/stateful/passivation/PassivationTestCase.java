@@ -100,9 +100,8 @@ public class PassivationTestCase {
                 remote1.hasBeenPassivated());
         Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time",
                 remote2.hasBeenPassivated());
-        // TODO: https://issues.jboss.org/browse/WFLY-6120
-//        Assert.assertTrue(remote1.isPersistenceContextSame());
-//        Assert.assertTrue(remote2.isPersistenceContextSame());
+        Assert.assertTrue(remote1.isPersistenceContextSame());
+        Assert.assertTrue(remote2.isPersistenceContextSame());
         Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
         Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
         Assert.assertEquals("bar", remote1.getManagedBeanMessage());

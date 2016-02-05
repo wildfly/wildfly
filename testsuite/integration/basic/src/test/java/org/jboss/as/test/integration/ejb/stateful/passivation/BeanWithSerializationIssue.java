@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.stateful.passivation;
 
 import java.io.Serializable;
 
+import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
@@ -39,6 +40,9 @@ import org.jboss.ejb3.annotation.Cache;
 public class BeanWithSerializationIssue extends TestPassivationBean {
 
     private Object object;
+
+    @EJB
+    private NestledBean nestledBean;
 
     public BeanWithSerializationIssue() {
         object = new Serializable() {

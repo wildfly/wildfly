@@ -57,7 +57,7 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
         operation.get(OP).set("write-attribute");
         operation.get(OP_ADDR).set(passivationStoreAddress);
         operation.get("name").set("max-size");
-        operation.get("value").set(1);
+        operation.get("value").set(2);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.info("modelnode operation write attribute max-size=1: " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());

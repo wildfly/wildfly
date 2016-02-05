@@ -99,6 +99,8 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
             } catch (Exception e) {
                 InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             }
+        } else {
+            InfinispanEjbLogger.ROOT_LOGGER.debugf("Skipping eviction of bean group %s.", id);
         }
     }
 
