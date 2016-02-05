@@ -45,7 +45,6 @@ import org.wildfly.clustering.ejb.RemoveListener;
  * @param <V> the cache value type
  */
 public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>> implements Cache<K, V> {
-    private final ThreadLocal<K> group = new ThreadLocal<>();
     private final BeanManager<K, V, Batch> manager;
     private final StatefulObjectFactory<V> factory;
     private final RemoveListener<V> listener;
@@ -70,27 +69,29 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public K createIdentifier() {
         K id = this.manager.getIdentifierFactory().createIdentifier();
-        K group = this.group.get();
+        K group = (K) CURRENT_GROUP.get();
         if (group == null) {
             group = id;
-            this.group.set(group);
+            CURRENT_GROUP.set(group);
         }
         return id;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public V create() {
-        boolean newGroup = this.group.get() == null;
+        boolean newGroup = CURRENT_GROUP.get() == null;
         try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
                 // This will invoke Cache.create() for nested beans
                 // Nested beans will share the same group identifier
                 V instance = this.factory.createInstance();
                 K id = instance.getId();
-                this.manager.createBean(id, this.group.get(), instance).close();
+                this.manager.createBean(id, (K) CURRENT_GROUP.get(), instance).close();
                 return instance;
             } catch (RuntimeException | Error e) {
                 batch.discard();
@@ -98,7 +99,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
             }
         } finally {
             if (newGroup) {
-                this.group.remove();
+                CURRENT_GROUP.remove();
             }
         }
     }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
+import javax.ejb.EJB;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;
@@ -34,6 +35,9 @@ import org.jboss.ejb3.annotation.Cache;
 @Stateful(passivationCapable = true)
 @Cache("passivating")
 public class PassivationEnabledBean {
+
+    @EJB
+    private NestledBean nestledBean;
 
     private boolean prePrePassivateInvoked;
     private boolean postActivateInvoked;

@@ -451,11 +451,14 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
         @Override
         public void close() {
-            if (InfinispanSessionManager.this.isPersistent()) {
+            boolean valid = this.session.isValid();
+            if (valid && InfinispanSessionManager.this.isPersistent()) {
                 InfinispanSessionManager.this.triggerPrePassivationEvents(this.immutableSession);
             }
             this.session.close();
-            InfinispanSessionManager.this.schedule(this.immutableSession.getId(), this.immutableSession.getMetaData());
+            if (valid) {
+                InfinispanSessionManager.this.schedule(this.immutableSession.getId(), this.immutableSession.getMetaData());
+            }
         }
 
         @Override

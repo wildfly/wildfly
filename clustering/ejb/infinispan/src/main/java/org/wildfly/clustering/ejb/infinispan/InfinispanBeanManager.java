@@ -350,6 +350,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         }
 
         @Override
+        public boolean isValid() {
+            return this.bean.isValid();
+        }
+
+        @Override
         public T acquire() {
             return this.bean.acquire();
         }
@@ -362,7 +367,9 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         @Override
         public void close() {
             this.bean.close();
-            InfinispanBeanManager.this.schedule(this.bean);
+            if (this.bean.isValid()) {
+                InfinispanBeanManager.this.schedule(this.bean);
+            }
         }
     }
 }

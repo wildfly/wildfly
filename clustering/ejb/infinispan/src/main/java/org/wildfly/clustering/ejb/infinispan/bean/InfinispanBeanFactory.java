@@ -116,6 +116,11 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
 
     @Override
     public void evict(I id) {
-        this.groupFactory.evict(id);
+        BeanEntry<I> entry = this.findCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY, Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).get(this.createKey(id));
+        if (entry != null) {
+            this.groupFactory.evict(entry.getGroupId());
+        } else {
+            InfinispanEjbLogger.ROOT_LOGGER.debugf("Skipping eviction of bean %s.", id);
+        }
     }
 }
