@@ -152,17 +152,6 @@ public class WebMigrateOperation implements OperationStepHandler {
             .setAllowNull(true)
             .build();
 
-    private static final Map<String, ValveHandler> VALVES_TO_FILTERS = new HashMap<String, ValveHandler>() {{
-            put("org.apache.catalina.valves.RemoteHostValve",
-                    new ValveHandler("io.undertow.server.handlers.AccessControlListHandler", "io.undertow.core"));
-            put("org.apache.catalina.valves.RemoteAddrValve",
-                    new ValveHandler("io.undertow.server.handlers.IPAddressAccessControlHandler", "io.undertow.core"));
-            put("org.apache.catalina.valves.RemoteIpValve",
-                    new ValveHandler("io.undertow.server.handlers.ProxyPeerAddressHandler", "io.undertow.core"));
-            put("org.apache.catalina.valves.StuckThreadDetectionValve",
-                    new ValveHandler("io.undertow.server.handlers.StuckThreadDetectionHandler", "io.undertow.core"));
-        }};
-
     private final boolean describe;
 
     private WebMigrateOperation(boolean describe) {
@@ -756,7 +745,9 @@ public class WebMigrateOperation implements OperationStepHandler {
         final String[] unsupportedConfigParams = new String[] {"resolveHosts", "fileDateFormat", "renameOnRotate", "encoding",
             "locale", "requestAttributesEnabled", "buffered"};
         for(String unsupportedConfigParam : unsupportedConfigParams) {
-            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute(unsupportedConfigParam, valveName));
+            if(params.hasDefined(unsupportedConfigParam)) {
+                warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute(unsupportedConfigParam, valveName));
+            }
         }
         newAddOperations.put(VALVE_ACCESS_LOG_ADDRESS, add);
     }
@@ -841,6 +832,23 @@ public class WebMigrateOperation implements OperationStepHandler {
                     filterAdd.get(ExpressionFilterDefinition.EXPRESSION.getName()).set("dump-request");
                     newAddOperations.put(filterAddress, filterAdd);
                     break;
+                case "org.apache.catalina.valves.StuckThreadDetectionValve":
+                    newAddOperations.putIfAbsent(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS), createAddOperation(pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS)));
+                    PathAddress filterAddressStuckThread = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey(), valveName));
+                    ModelNode filterAddStuckThread = createAddOperation(filterAddressStuckThread);
+                    StringBuilder expressionStruckThread = new StringBuilder("stuck-thread-detector");
+                    if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
+                        ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
+                        if (params.hasDefined("threshold")) {
+                            expressionStruckThread.append("(threshhold='").append(params.get("threshold").asInt()).append("')");
+                        }
+                        if (params.hasDefined("interruptThreadThreshold")) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("interruptThreadThreshold", valveName));
+                        }
+                    }
+                    filterAddStuckThread.get(ExpressionFilterDefinition.EXPRESSION.getName()).set(expressionStruckThread.toString());
+                    newAddOperations.put(filterAddressStuckThread, filterAddStuckThread);
+                    break;
                 case "org.apache.catalina.valves.AccessLogValve":
                     newAddOp.get(WebAccessLogDefinition.EXTENDED.getName()).set(false);
                     migrateAccessLogValve(newAddOperations, newAddOp, valveName, warnings);
@@ -871,9 +879,15 @@ public class WebMigrateOperation implements OperationStepHandler {
                         if(params.hasDefined("httpsServerPort")) {
                             warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("httpsServerPort", valveName));
                         }
+                        if(params.hasDefined("proxiesHeader")) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("proxiesHeader", valveName));
+                        }
+                        if(params.hasDefined("protocolHeaderHttpsValue")) {
+                            warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValveAttribute("protocolHeaderHttpsValue", valveName));
+                        }
                         boolean trustedProxies = false;
                         if (params.hasDefined("trustedProxies")) {
-                            expression.append("regexp(pattern=\"").append(params.get("trustedProxies").asString()).append("\", value=%{i, x-forwarded-for}, full-match=true)");
+                            expression.append("regex(pattern=\"").append(params.get("trustedProxies").asString()).append("\", value=%{i,x-forwarded-for}, full-match=true)");
                             trustedProxies = true;
                         }
                         String internalProxies;
@@ -885,8 +899,8 @@ public class WebMigrateOperation implements OperationStepHandler {
                         if (trustedProxies) {
                             expression.append(" and ");
                         }
-                        expression.append("regexp(pattern=\"").append(internalProxies).append("\", value=%{i, x-forwarded-for}, full-match=true)");
-                        expression.append(" -> { proxy-peer-address(); }");
+                        expression.append("regex(pattern=\"").append(internalProxies).append("\", value=%{i,x-forwarded-for}, full-match=true)");
+                        expression.append(" -> proxy-peer-address");
                         createExpressionFilter(newAddOperations, valveName, expression.toString());
                     }
                     break;
@@ -900,26 +914,26 @@ public class WebMigrateOperation implements OperationStepHandler {
     private void createAccesControlExpressionFilter(Map<PathAddress, ModelNode> newAddOperations, List<String> warnings, String name, String attribute, ModelNode newAddOp) {
         if (newAddOp.hasDefined(WebValveDefinition.PARAMS.getName())) {
             StringBuilder expression = new StringBuilder();
-            expression.append("access-control(acl='");
+            expression.append("access-control(acl={");
             ModelNode params = newAddOp.get(WebValveDefinition.PARAMS.getName());
             boolean isValid = false;
             if (params.hasDefined("deny")) {
                 isValid = true;
                 String[] denied = params.get("deny").asString().split(",");
                 for (String deny : denied) {
-                    expression.append(deny.trim()).append(" deny, ");
+                    expression.append('\'').append(deny.trim()).append(" deny\', ");
                 }
             }
             if (params.hasDefined("allow")) {
                 isValid = true;
                 String[] allowed = params.get("allow").asString().split(",");
                 for (String allow : allowed) {
-                    expression.append(allow.trim()).append(" allow, ");
+                    expression.append('\'').append(allow.trim()).append(" allow\', ");
                 }
             }
             if (isValid) {
                 expression.delete(expression.length() - 2, expression.length());
-                expression.append("', attribute=").append(attribute).append(')');
+                expression.append("} , attribute=").append(attribute.trim()).append(')');
                 createExpressionFilter(newAddOperations, name, expression.toString());
             } else {
                 warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateValve(name));
@@ -1115,16 +1129,6 @@ public class WebMigrateOperation implements OperationStepHandler {
             this.sessionTimeout = sessionTimeout;
             this.sslProtocol = sslProtocol;
             this.cipherSuites = cipherSuites;
-        }
-    }
-
-    private static class ValveHandler {
-        private String handlerClassName;
-        private String module;
-
-        private ValveHandler(String handlerClassName, String module) {
-            this.handlerClassName = handlerClassName;
-            this.module = module;
         }
     }
 }

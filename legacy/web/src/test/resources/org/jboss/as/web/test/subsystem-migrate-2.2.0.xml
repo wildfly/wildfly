@@ -117,6 +117,10 @@
                 <param param-name="sessionInactiveInterval" param-value="1" />
                 <param param-name="crawlerUserAgents" param-value="Google" />
             </valve>
+            <valve name="stuck" class-name="org.apache.catalina.valves.StuckThreadDetectionValve" module="org.jboss.as.web" >
+                <param param-name="threshold" param-value="1000" />
+                <param param-name="interruptThreadThreshold" param-value="2000" />
+            </valve>
             <valve name="proxy" class-name="org.apache.catalina.valves.RemoteIpValve" module="org.jboss.as.web" >
                 <param param-name="internalProxies" param-value="192\.168\.0\.10|192\.168\.0\.11" />
                 <param param-name="remoteIpHeader" param-value="x-forwarded-for" />
