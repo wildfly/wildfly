@@ -657,11 +657,11 @@ public class MigrateOperation implements OperationStepHandler {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-slave");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
-                discardFailbackDelay(haPolicyAddOperation, warnings);
+                discardFailbackDelay(serverAddOperation, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
-                discardFailbackDelay(haPolicyAddOperation, warnings);
+                discardFailbackDelay(serverAddOperation, warnings);
             }
         } else {
             if (backup) {
@@ -669,7 +669,7 @@ public class MigrateOperation implements OperationStepHandler {
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, MAX_SAVED_REPLICATED_JOURNAL_SIZE, "max-saved-replicated-journal-size");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, BACKUP_GROUP_NAME, "group-name");
-                discardFailbackDelay(haPolicyAddOperation, warnings);
+                discardFailbackDelay(serverAddOperation, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, CHECK_FOR_LIVE_SERVER, "check-for-live-server");
