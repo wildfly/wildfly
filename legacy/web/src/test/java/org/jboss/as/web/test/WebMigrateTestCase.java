@@ -48,6 +48,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -302,6 +303,10 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
             return RunningMode.ADMIN_ONLY;
         }
 
+        @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.SELF_CONTAINED;
+        }
 
     }
 }
