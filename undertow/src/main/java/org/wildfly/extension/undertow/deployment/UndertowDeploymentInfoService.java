@@ -287,6 +287,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     (deploymentInfo);
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
             handleAuthManagerLogout(deploymentInfo, mergedMetaData);
+            if(host.getValue().isSsoRegistered()) {
+                deploymentInfo.setUseCachedAuthenticationMechanism(false);
+            }
 
             if(mergedMetaData.isUseJBossAuthorization()) {
                 deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));

@@ -47,7 +47,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -109,13 +108,6 @@ public abstract class SSOTestBase {
 
             // Now try logging out of war2
             executeLogout(httpclient, warB2);
-        } finally {
-            HttpClientUtils.closeQuietly(httpclient);
-        }
-
-        try {
-            // Reset Http client
-            httpclient = HttpClients.createDefault();
 
             // Try accessing war1 again
             checkAccessDenied(httpclient, warA1 + "index.html");

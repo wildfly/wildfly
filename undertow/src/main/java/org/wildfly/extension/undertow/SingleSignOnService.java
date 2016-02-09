@@ -65,10 +65,12 @@ class SingleSignOnService implements Service<SingleSignOnService> {
         mechanism.setSecure(this.secure);
         mechanism.setCookieName(this.cookieName);
         this.host.getValue().registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
+        this.host.getValue().setSsoRegistered(true);
     }
 
     @Override
     public void stop(StopContext stopContext) {
+        this.host.getValue().setSsoRegistered(false);
         this.host.getValue().unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
     }
 
