@@ -476,7 +476,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         if(ret.getNextExpiration() == null) {
                             ret.setTimerState(TimerState.CANCELED);
                             persistTimer(ret);
-                            return null;
                         } else {
                             ret.setTimerState(TimerState.ACTIVE);
                             persistTimer(ret);
