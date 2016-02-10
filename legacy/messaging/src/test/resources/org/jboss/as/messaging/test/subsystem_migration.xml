@@ -28,6 +28,9 @@
         <message-expiry-thread-priority>${message.expiry.thread.priority:7}</message-expiry-thread-priority>
         <id-cache-size>${id.cache.size:102030}</id-cache-size>
         <persist-id-cache>${persist.id.cache:false}</persist-id-cache>
+        <remoting-interceptors>
+            <class-name>incoming.baz.Interceptor</class-name>
+        </remoting-interceptors>
         <remoting-incoming-interceptors>
             <class-name>incoming.foo.Interceptor</class-name>
             <class-name>incoming.bar.Interceptor</class-name>
