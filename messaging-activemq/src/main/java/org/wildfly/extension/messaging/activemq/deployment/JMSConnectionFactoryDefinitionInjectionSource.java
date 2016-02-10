@@ -63,11 +63,14 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
+import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
+import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryConfigProperties;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryConfigurationRuntimeHandler;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
@@ -151,8 +154,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     public void getResourceValue(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        // if the resourceAdapter is empty, we use the embedded Artemis server to create a pooled-connection-factory
-        if (resourceAdapter == null || resourceAdapter.isEmpty()) {
+        if (targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
             try {
                 startedPooledConnectionFactory(context, jndiName, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector);
             } catch (OperationFailedException e) {
@@ -222,9 +224,10 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(model);
         String txSupport = transactional ? XA_TX : NO_TX;
 
+        final String serverName = getActiveMQServerName(properties);
         final String pcfName = uniqueName(context, name);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), name);
-        PooledConnectionFactoryService.installService(serviceTarget, pcfName, getActiveMQServerName(), connectors,
+        PooledConnectionFactoryService.installService(serviceTarget, pcfName, serverName, connectors,
                 discoveryGroupName, jgroupsChannelName, adapterParams,
                 bindInfo,
                 txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, true);
@@ -235,13 +238,13 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
         //create the management registration
         String managementName = managementName(context, name);
-        final PathElement serverElement = PathElement.pathElement(SERVER, getActiveMQServerName());
+        final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
         deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         final PathElement pcfPath = PathElement.pathElement(POOLED_CONNECTION_FACTORY, managementName);
         PathAddress registration = PathAddress.pathAddress(serverElement, pcfPath);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
-        PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE.registerResource(getActiveMQServerName(), managementName, model);
+        PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, managementName, model);
     }
 
     private List<String> getConnectors(Map<String, String> props) {
@@ -309,11 +312,28 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         return props;
     }
 
+
+    /**
+     * Return whether the definition targets an existing pooled connection factory or use a JCA-based ConnectionFactory.
+     *
+     * Checks the service registry for a PooledConnectionFactoryService with the ServiceName
+     * created by the {@code server} property (or {@code "default") and the {@code resourceAdapter} property.
+     */
+    static boolean targetsPooledConnectionFactory(String server, String resourceAdapter, ServiceRegistry serviceRegistry) {
+        // if the resourceAdapter is not defined, the default behaviour is to create a pooled-connection-factory.
+        if (resourceAdapter == null || resourceAdapter.isEmpty()) {
+            return true;
+        }
+        ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(server);
+        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(activeMQServiceName).append(resourceAdapter);
+        return serviceRegistry.getServiceNames().contains(pcfName);
+    }
+
     /**
      * The JMS connection factory can specify another server to deploy its destinations
      * by passing a property server=&lt;name of the server>. Otherwise, "default" is used by default.
      */
-    private String getActiveMQServerName() {
+    static String getActiveMQServerName(Map<String, String> properties) {
         return properties.containsKey(SERVER) ? properties.get(SERVER) : DEFAULT;
     }
 
