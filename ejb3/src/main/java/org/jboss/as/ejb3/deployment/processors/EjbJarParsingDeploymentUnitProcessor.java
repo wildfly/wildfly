@@ -67,6 +67,7 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.JBossEjb3MetaDataParser;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.TransactionTimeoutMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
+import org.jboss.metadata.ejb.spec.AbstractEnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
@@ -158,6 +159,26 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             //EJB spec 20.5.1, we do not process annotations for older deployments
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
+
+        if(ejbJarMetaData.getEnterpriseBeans() != null) {
+            //check for entity beans
+            StringBuilder beans = new StringBuilder();
+            boolean error = false;
+            for (AbstractEnterpriseBeanMetaData bean : ejbJarMetaData.getEnterpriseBeans()) {
+                if (bean.isEntity()) {
+                    if (!error) {
+                        error = true;
+                    } else {
+                        beans.append(", ");
+                    }
+                    beans.append(bean.getEjbName());
+                }
+            }
+            if (error) {
+                throw EjbLogger.ROOT_LOGGER.entityBeansAreNotSupported(beans.toString());
+            }
+        }
+
     }
 
     /**

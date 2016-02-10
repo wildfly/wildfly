@@ -27,7 +27,6 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
@@ -38,7 +37,6 @@ import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
-import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.InterceptorContext;
@@ -295,9 +293,6 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
         // add the session id to the interceptor context, if it's a stateful ejb locator
         if (ejbLocator instanceof StatefulEJBLocator) {
             interceptorContext.putPrivateData(SessionID.class, ((StatefulEJBLocator<?>) ejbLocator).getSessionId());
-        } else if (ejbLocator instanceof EntityEJBLocator) {
-            final Object primaryKey = ((EntityEJBLocator<?>) ejbLocator).getPrimaryKey();
-            interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
