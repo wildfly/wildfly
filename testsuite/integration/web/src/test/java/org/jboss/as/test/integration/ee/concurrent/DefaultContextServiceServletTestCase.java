@@ -25,6 +25,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.URL;
+import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -57,7 +58,9 @@ public class DefaultContextServiceServletTestCase {
                         // TODO (jrp) This permission needs to be removed once WFLY-4176 is resolved
                         new RuntimePermission("getClassLoader"),
                         new RuntimePermission("modifyThread"),
-                        new RuntimePermission("getBootModuleLoader")
+                        new RuntimePermission("getBootModuleLoader"),
+                        // WFLY-5588: DefaultContextServiceServletTestCase fails on IBM jdk
+                        new PropertyPermission("com.ibm.enableClassCaching", "write")
                         ), "permissions.xml");
         return war;
     }
