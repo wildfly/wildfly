@@ -57,7 +57,6 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -489,13 +488,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @return The primary key of the current EJB, or null if not applicable
      */
     private Object currentPrimaryKey() {
-
-        final InterceptorContext context = CurrentInvocationContext.get();
-
-        if (context == null) {
-            return null;
-        }
-        return context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
+        return null;
     }
 
     /**

@@ -78,7 +78,6 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
@@ -390,9 +389,9 @@ public interface EjbLogger extends BasicLogger {
     /**
      * Logs an error message indicating it discarding entity component instance
      */
-    @LogMessage(level = ERROR)
-    @Message(id = 33, value = "Discarding entity component instance: %s due to exception")
-    void discardingEntityComponent(EntityBeanComponentInstance instance, @Cause Throwable t);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 33, value = "Discarding entity component instance: %s due to exception")
+//    void discardingEntityComponent(EntityBeanComponentInstance instance, @Cause Throwable t);
 
     /**
      * Logs an error message indicating that an invocation failed
@@ -577,26 +576,26 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 65, value = "View interface cannot be null")
     IllegalArgumentException viewInterfaceCannotBeNull();
 
-    @Message(id = 66, value = "Cannot call getEjbObject before the object is associated with a primary key")
-    IllegalStateException cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
-
-    @Message(id = 67, value = "Cannot call getEjbLocalObject before the object is associated with a primary key")
-    IllegalStateException cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
+//    @Message(id = 66, value = "Cannot call getEjbObject before the object is associated with a primary key")
+//    IllegalStateException cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
+//
+//    @Message(id = 67, value = "Cannot call getEjbLocalObject before the object is associated with a primary key")
+//    IllegalStateException cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
 
     @Message(id = 68, value = "Could not load view class for component %s")
     RuntimeException failedToLoadViewClassForComponent(@Cause Exception e, String componentName);
 
-    @Message(id = 69, value = "Entities can not be created for %s bean since no create method is available.")
-    IllegalStateException entityCannotBeCreatedDueToMissingCreateMethod(String beanName);
-
-    @Message(id = 70, value = "%s is not an entity bean component")
-    IllegalArgumentException notAnEntityBean(Component component);
-
-    @Message(id = 71, value = "Instance for PK [%s] already registered")
-    IllegalStateException instanceAlreadyRegisteredForPK(Object primaryKey);
-
-    @Message(id = 72, value = "Instance [%s] not found in cache")
-    IllegalStateException entityBeanInstanceNotFoundInCache(EntityBeanComponentInstance instance);
+//    @Message(id = 69, value = "Entities can not be created for %s bean since no create method is available.")
+//    IllegalStateException entityCannotBeCreatedDueToMissingCreateMethod(String beanName);
+//
+//    @Message(id = 70, value = "%s is not an entity bean component")
+//    IllegalArgumentException notAnEntityBean(Component component);
+//
+//    @Message(id = 71, value = "Instance for PK [%s] already registered")
+//    IllegalStateException instanceAlreadyRegisteredForPK(Object primaryKey);
+//
+//    @Message(id = 72, value = "Instance [%s] not found in cache")
+//    IllegalStateException entityBeanInstanceNotFoundInCache(EntityBeanComponentInstance instance);
 
     @Message(id = 73, value = "Illegal call to EJBHome.remove(Object) on a session bean")
     RemoveException illegalCallToEjbHomeRemove();
@@ -610,8 +609,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 76, value = "Singleton beans cannot have EJB 2.x views")
     RuntimeException ejb2xViewNotApplicableForSingletonBeans();
 
-    @Message(id = 77, value = "ClassTable %s cannot find a class for class index %d")
-    ClassNotFoundException classNotFoundInClassTable(String classTableName, int index);
+//    @Message(id = 77, value = "ClassTable %s cannot find a class for class index %d")
+//    ClassNotFoundException classNotFoundInClassTable(String classTableName, int index);
 
     @Message(id = 78, value = "Bean %s does not have an EJBLocalObject")
     IllegalStateException ejbLocalObjectUnavailable(String beanName);
@@ -703,8 +702,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 107, value = "Timer invocation failed, invoker is not started")
     IllegalStateException timerInvocationFailedDueToInvokerNotBeingStarted();
 
-    @Message(id = 108, value = "Could not load timer with id %s")
-    NoSuchObjectLocalException timerNotFound(String timerId);
+//    @Message(id = 108, value = "Could not load timer with id %s")
+//    NoSuchObjectLocalException timerNotFound(String timerId);
 
     @Message(id = 109, value = "Invalid value for second: %s")
     IllegalArgumentException invalidValueForSecondInScheduleExpression(String value);
@@ -2981,8 +2980,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 449, value = "Timerservice API is not allowed on stateful session bean %s")
     String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
 
-    @Message(id = 450, value = "CMP Entity Beans are not supported")
-    DeploymentUnitProcessingException cmpEntityBeansAreNotSupported();
+    @Message(id = 450, value = "Entity Beans are no longer supported, beans %s cannot be deployed")
+    DeploymentUnitProcessingException entityBeansAreNotSupported(String beanName);
 
     @Message(id = 451, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
     OperationFailedException inconsistentAttributeNotSupported(String attributeName, String mustMatch);
