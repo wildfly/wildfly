@@ -88,7 +88,8 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         ModelNode warnings = response.get(RESULT, "migration-warnings");
         // 1 warning about unmigrated-backup
         // 1 warning about shared-store
-        assertEquals(warnings.toString(), 2, warnings.asList().size());
+        // 3 warnings aboud discarded failback-delay attribute
+        assertEquals(warnings.toString(), 1 + 1 + 3, warnings.asList().size());
 
         model = services.readWholeModel();
         System.out.println("model = " + model);
