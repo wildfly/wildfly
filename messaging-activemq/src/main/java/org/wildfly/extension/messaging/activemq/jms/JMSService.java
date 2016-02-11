@@ -148,7 +148,9 @@ public class JMSService implements Service<JMSServerManager> {
                     // ActiveMQ only provides a callback to be notified when ActiveMQ core server is activated.
                     // but the JMS service start must not be completed until the JMSServerManager wrappee is indeed started (and has deployed the JMS resources, etc.).
                     // It is possible that the activation service has already been installed but becomes passive when a backup server has failed over (-> ACTIVE) and failed back (-> PASSIVE)
-                    if (activeMQActivationController == null) {
+                    // [WFLY-6178] check if the service container is shutdown to avoid an IllegalStateException if an
+                    //   ActiveMQ backup server is activated during failover while the WildFly server is shutting down.
+                    if (activeMQActivationController == null && !serviceContainer.isShutdown()) {
                         activeMQActivationController = serviceContainer.addService(ActiveMQActivationService.getServiceName(serverServiceName), new ActiveMQActivationService())
                                 .setInitialMode(Mode.ACTIVE)
                                 .install();
