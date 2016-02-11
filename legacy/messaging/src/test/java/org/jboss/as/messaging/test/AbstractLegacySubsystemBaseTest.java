@@ -25,8 +25,6 @@ package org.jboss.as.messaging.test;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
@@ -43,11 +41,11 @@ public abstract class AbstractLegacySubsystemBaseTest extends AbstractSubsystemB
     }
 
     // TODO WFCORE-1353 means this doesn't have to always fail now; consider just deleting this
-    @Override
-    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
+//    @Override
+//    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
 //        final ModelNode operation = createDescribeOperation();
 //        final ModelNode result = hc.executeOperation(operation);
 //        Assert.assertTrue("The subsystem describe operation must fail",
 //                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
-    }
+//    }
 }

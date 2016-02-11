@@ -62,6 +62,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
@@ -77,30 +78,62 @@ import org.junit.Test;
 public class WildcardReadsTestCase {
 
     private static final PathElement HOST_WILD = PathElement.pathElement(HOST);
+    private static final PathElement HOST_MASTER = PathElement.pathElement(HOST, "master");
     private static final PathElement HOST_SLAVE = PathElement.pathElement(HOST, "slave");
     private static final PathElement SERVER_WILD = PathElement.pathElement(RUNNING_SERVER);
     private static final PathElement SERVER_ONE = PathElement.pathElement(RUNNING_SERVER, "server-one");
     private static final PathElement INTERFACE_WILD = PathElement.pathElement(INTERFACE);
     private static final PathElement INTERFACE_PUBLIC = PathElement.pathElement(INTERFACE, "public");
     private static final PathElement SERVER_CONFIG_WILD = PathElement.pathElement(SERVER_CONFIG);
+    private static final PathElement SERVER_CONFIG_ONE = PathElement.pathElement(SERVER_CONFIG, "server-one");
     private static final PathAddress SOCKET_BINDING_HTTP = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, "standard-sockets"), PathElement.pathElement(SOCKET_BINDING, "http"));
     private static final ValueExpression MASTER_ADDRESS = new ValueExpression("${jboss.test.host.master.address}");
     private static final ValueExpression SLAVE_ADDRESS = new ValueExpression("${jboss.test.host.slave.address}");
 
     private static final Set<String> VALID_STATES = new HashSet<>(Arrays.asList("running", "stopped"));
 
-    DomainTestSupport support;
-    Version.AsVersion version;
+    private static DomainTestSupport support;
+    private static Boolean masterServerOneStarted;
 
     @Before
     public void init() throws Exception {
-        support = MixedDomainTestSuite.getSupport(this.getClass());
-        version = MixedDomainTestSuite.getVersion(this.getClass());
+        support = KernelBehaviorTestSuite.getSupport(this.getClass());
+
+        if (masterServerOneStarted == null) {
+            String state = readMasterServerOneState();
+            masterServerOneStarted = "running".equalsIgnoreCase(state);
+        }
+        if (!masterServerOneStarted) {
+            ModelNode op = Util.createEmptyOperation("start", PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_ONE));
+            executeForResult(op, ModelType.STRING);
+
+            String state;
+            long timeout = System.currentTimeMillis() + TimeoutUtil.adjust(30000);
+            while (!"running".equalsIgnoreCase(state = readMasterServerOneState())
+                    && System.currentTimeMillis() < timeout) {
+                Thread.sleep(25);
+            }
+            assertNotNull("Could not start master/server-one", state);
+            assertEquals("Could not start master/server-one", "running", state.toLowerCase(Locale.ENGLISH));
+        }
+    }
+
+    private static String readMasterServerOneState() throws IOException {
+        ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(HOST_MASTER, SERVER_ONE), "server-state");
+        ModelNode response = support.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        if (SUCCESS.equals(response.get(OUTCOME).asString())) {
+            return response.get(RESULT).asString();
+        }
+        return null;
     }
 
     @AfterClass
     public synchronized static void afterClass() {
-        MixedDomainTestSuite.afterClass();
+        if (masterServerOneStarted == Boolean.FALSE) {
+            ModelNode op = Util.createEmptyOperation("stop", PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_ONE));
+            executeForResult(op, ModelType.STRING);
+        }
+        KernelBehaviorTestSuite.afterClass();
     }
 
     @Test
@@ -375,10 +408,10 @@ public class WildcardReadsTestCase {
         }
         assertEquals(resp.toString(), 2, masterCount);
 
-        // Now limit the result to slaves
+        // Now limit the result to non-auto-start
         op.get(WHERE, AUTO_START).set(false);
         resp = executeForResult(op);
-        assertEquals(resp.toString(), 2, resp.asInt());
+        assertEquals(resp.toString(), 3, resp.asInt());
         for (ModelNode item : resp.asList()) {
             assertTrue(resp.toString(), autoStarts.contains(item.get(RESULT)));
         }
@@ -386,7 +419,7 @@ public class WildcardReadsTestCase {
         // Now slim down the output
         op.get(SELECT).add(GROUP);
         resp = executeForResult(op);
-        assertEquals(resp.toString(), 2, resp.asInt());
+        assertEquals(resp.toString(), 3, resp.asInt());
         for (ModelNode item : resp.asList()) {
             ModelNode result = item.get(RESULT);
             assertEquals(resp.toString(), 1, result.keys().size());
@@ -642,7 +675,7 @@ public class WildcardReadsTestCase {
         return executeForResult(op, ModelType.LIST);
     }
 
-    private ModelNode executeForResult(ModelNode op, ModelType expectedType) {
+    private static ModelNode executeForResult(ModelNode op, ModelType expectedType) {
         try {
             ModelNode response = support.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
             assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
