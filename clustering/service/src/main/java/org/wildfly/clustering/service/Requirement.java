@@ -20,19 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
-
-import org.jboss.as.controller.OperationContext;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.Requirement;
+package org.wildfly.clustering.service;
 
 /**
- * Service dependency whose provided value is supplied by a {@link Capability}.
+ * Identifies a requirement.
  * @author Paul Ferraro
  */
-public class CapabilityDependency<T> extends InjectedValueDependency<T> {
+public interface Requirement {
 
-    public CapabilityDependency(OperationContext context, Requirement requirement, String name, Class<T> targetClass) {
-        super(context.getCapabilityServiceName(requirement.getName(), name, targetClass), targetClass);
-    }
+    String getName();
 }
