@@ -24,7 +24,9 @@ package org.jboss.as.security;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -46,5 +48,16 @@ public class SecurityDomainReloadRemoveHandler extends RestartParentResourceRemo
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         return SecurityDomainResourceDefinition.getSecurityDomainServiceName(parentAddress);
+    }
+
+    @Override
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (context.removeResource(PathAddress.EMPTY_ADDRESS) == null) {
+            PathElement path = null;
+            for (PathElement element : context.getCurrentAddress()) {
+                path = element;
+            }
+            throw new OperationFailedException(ControllerLogger.ROOT_LOGGER.childResourceNotFound(path));
+        }
     }
 }
