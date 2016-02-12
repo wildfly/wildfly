@@ -109,6 +109,12 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         res.add(ENABLE_SPDY);
         res.add(SSL_SESSION_CACHE_SIZE);
         res.add(SSL_SESSION_TIMEOUT);
+        res.add(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH);
+        res.add(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE);
+        res.add(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE);
+        res.add(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS);
+        res.add(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE);
+        res.add(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE);
         return res;
     }
 

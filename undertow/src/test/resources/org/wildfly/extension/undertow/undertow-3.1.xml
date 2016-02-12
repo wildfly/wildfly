@@ -28,8 +28,8 @@
 
     <server name="some-server" default-host="other-host" servlet-container="myContainer">
         <ajp-listener name="ajp-connector" disallowed-methods="FOO TRACE" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000" tcp-keep-alive="true" tcp-backlog="500" receive-buffer="5000" send-buffer="50000" resolve-peer-address="true" no-request-timeout="10000" request-parse-timeout="2000" secure="true" max-ajp-packet-size="10000"/>
-        <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}" resolve-peer-address="true"/>
-        <http-listener name="second"  socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default"/>
+        <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}" resolve-peer-address="true" http2-enable-push="false"/>
+        <http-listener name="second"  socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default" http2-max-concurrent-streams="10"/>
         <http-listener name="no-redirect" worker="non-default" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
         <https-listener name="https" disallowed-methods="" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true" max-connections="100"/>
         <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1"/>
@@ -118,7 +118,7 @@
                      management-access-predicate="method[GET]"
                      management-socket-binding="test3" max-request-time="1000"
                      security-realm="foo"
-                     name="mod-cluster" security-key="password" max-ajp-packet-size="10000"/>
+                     name="mod-cluster" security-key="password" max-ajp-packet-size="10000" http2-header-table-size="8000"/>
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
         <expression-filter name="requestDumper" expression="dump-request" />
         <rewrite name="redirects" target="'/foo/'" redirect="true" />
