@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.arjuna.ats.arjuna.coordinator.TxControl;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -142,7 +144,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition DEFAULT_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_TIMEOUT, ModelType.INT, true)
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setDefaultValue(new ModelNode().set(300))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setXmlName(Attribute.DEFAULT_TIMEOUT.getLocalName())
             .setAllowExpression(true).build();
 
@@ -273,7 +275,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(USE_JOURNAL_STORE);
         attributesWithoutMutuals.remove(USE_JDBC_STORE);
 
-        attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove this as it also needs special write handler
+        attributesWithoutMutuals.remove(DEFAULT_TIMEOUT);
+        attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove these as it also needs special write handler
 
         attributesWithoutMutuals.remove(PROCESS_ID_UUID);
         attributesWithoutMutuals.remove(PROCESS_ID_SOCKET_BINDING);
@@ -289,6 +292,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USE_JOURNAL_STORE, USE_JDBC_STORE);
         resourceRegistration.registerReadWriteAttribute(USE_JOURNAL_STORE, null, mutualWriteHandler);
         resourceRegistration.registerReadWriteAttribute(USE_JDBC_STORE, null, mutualWriteHandler);
+
+        //Register default-timeout attribute
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new DefaultTimeoutHandler(DEFAULT_TIMEOUT));
 
         // Register jdbc-store-datasource attribute
         resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
@@ -470,6 +476,30 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new CMResourceResourceDefinition());
+    }
+
+    private static class DefaultTimeoutHandler extends AbstractWriteAttributeHandler<Void> {
+        public DefaultTimeoutHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+            throws OperationFailedException {
+            TxControl.setDefaultTimeout(resolvedValue.asInt());
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+            throws OperationFailedException {
+            TxControl.setDefaultTimeout(valueToRestore.asInt());
+        }
     }
 
 }
