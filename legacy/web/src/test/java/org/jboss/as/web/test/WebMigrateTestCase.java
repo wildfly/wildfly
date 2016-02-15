@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
@@ -36,9 +35,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.extension.undertow.filters.CustomFilterDefinition.CLASS_NAME;
-import static org.wildfly.extension.undertow.filters.CustomFilterDefinition.PARAMETERS;
 
+import io.undertow.predicate.PredicateParser;
+import io.undertow.server.handlers.builder.PredicatedHandlersParser;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -169,11 +168,19 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         ModelNode filters = newSubsystem.get(Constants.CONFIGURATION, Constants.FILTER);
         ModelNode dumpFilter = filters.get("expression-filter", "request-dumper");
         assertEquals("dump-request", dumpFilter.get("expression").asString());
+        validateExpressionFilter(dumpFilter);
+
         ModelNode remoteAddrFilter = filters.get("expression-filter", "remote-addr");
-        assertEquals("access-control(acl='192.168.1.20 deny, 127.0.0.1 allow, 127.0.0.2 allow', attribute=%a)", remoteAddrFilter.get("expression").asString());
+        assertEquals("access-control(acl={'192.168.1.20 deny', '127.0.0.1 allow', '127.0.0.2 allow'} , attribute=%a)", remoteAddrFilter.get("expression").asString());
+        validateExpressionFilter(remoteAddrFilter);
+
+        ModelNode stuckFilter = filters.get("expression-filter", "stuck");
+        assertEquals("stuck-thread-detector(threshhold='1000')", stuckFilter.get("expression").asString());
+        validateExpressionFilter(stuckFilter);
 
         ModelNode proxyFilter = filters.get("expression-filter", "proxy");
-        assertEquals("regexp(pattern=\"proxy1|proxy2\", value=%{i, x-forwarded-for}, full-match=true) and regexp(pattern=\"192\\.168\\.0\\.10|192\\.168\\.0\\.11\", value=%{i, x-forwarded-for}, full-match=true) -> { proxy-peer-address(); }", proxyFilter.get("expression").asString());
+        assertEquals("regex(pattern=\"proxy1|proxy2\", value=%{i,x-forwarded-for}, full-match=true) and regex(pattern=\"192\\.168\\.0\\.10|192\\.168\\.0\\.11\", value=%{i,x-forwarded-for}, full-match=true) -> proxy-peer-address", proxyFilter.get("expression").asString());
+        validateExpressionFilter(proxyFilter);
 
         ModelNode crawler = servletContainer.get(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
         assertTrue(crawler.isDefined());
@@ -190,6 +197,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "proxy"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "stuck"));
         assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
 
         ModelNode accessLog = virtualHost.get(Constants.SETTING, Constants.ACCESS_LOG);
@@ -211,6 +219,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
         assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "proxy"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "stuck"));
         accessLog = virtualHost.get(Constants.SETTING, Constants.ACCESS_LOG);
 
         assertEquals("myapp_access_log.", accessLog.get(Constants.PREFIX).asString());
@@ -226,6 +235,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "remote-addr"));
         assertFalse(virtualHost.hasDefined(Constants.FILTER_REF, "myvalve"));
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "proxy"));
+        assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "stuck"));
 
         assertEquals("myapp_access_log.", accessLog.get(Constants.PREFIX).asString());
         assertEquals(".log", accessLog.get(Constants.SUFFIX).asString());
@@ -236,6 +246,9 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
 
     }
 
+    private void validateExpressionFilter(ModelNode filter) {
+        PredicatedHandlersParser.parse(filter.get("expression").asString(), PredicateParser.class.getClassLoader());
+    }
     private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {
 
         UndertowExtension undertow = new UndertowExtension();
