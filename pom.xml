@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>19</version>
+      <version>20</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -64,10 +64,10 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.2.1</maven.min.version>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
 
         <version.surefire.plugin>2.18</version.surefire.plugin>
+        <!-- use older version of checkstyle as otherwise lots of checks fail -->
+        <version.checkstyle>6.8</version.checkstyle>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -233,6 +233,10 @@
         <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
         <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0</version.xml.plugin>
+
+        <!-- Modularized JDK support (various workarounds) - activated via profile -->
+        <modular.jdk.args/>
+        <modular.jdk.props/>
 
 
         <!-- Surefire args -->
@@ -406,6 +410,7 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <useFile/>
+                        <excludes>**/*$logger.java,**/*$bundle.java</excludes>
                     </configuration>
                     <dependencies>
                         <dependency>
@@ -6105,6 +6110,44 @@
 
     <!-- Profiles -->
     <profiles>
+        <!--
+                  Name: modularizedJdk
+                  Descr: various workarounds activation for modularized JDK
+                -->
+        <profile>
+            <id>modularizedJdk</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <!-- [WFCORE-1431] remove SASL workaround -->
+                <modular.jdk.args>-XaddExports:java.security.sasl/com.sun.security.sasl.digest=ALL-UNNAMED
+                    -XaddExports:java.security.sasl/com.sun.security.sasl=ALL-UNNAMED -XaddExports:jdk.unsupported/sun.reflect=ALL-UNNAMED
+                    -XaddExports:jdk.unsupported/sun.misc=ALL-UNNAMED
+                </modular.jdk.args>
+                <!-- [WFCORE-1494] remove JUL workaround -->
+                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true</modular.jdk.props>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>${version.compiler.plugin}</version>
+                        <configuration>
+                            <!-- fork is needed so compiler args can be used -->
+                            <fork>true</fork>
+                            <compilerArgs>
+                                <arg>-J-addmods</arg>
+                                <arg>-Jjava.annotations.common</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
         <!--
           Name: jpda
           Descr: Enable JPDA remote debuging
