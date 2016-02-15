@@ -69,6 +69,7 @@ import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
 import org.jboss.metadata.ejb.spec.AbstractEnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.ejb.spec.EjbType;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
 
@@ -165,7 +166,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             StringBuilder beans = new StringBuilder();
             boolean error = false;
             for (AbstractEnterpriseBeanMetaData bean : ejbJarMetaData.getEnterpriseBeans()) {
-                if (bean.isEntity()) {
+                if (bean.getEjbType() == EjbType.ENTITY) {
                     if (!error) {
                         error = true;
                     } else {
