@@ -22,10 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
+import javax.ejb.Remove;
+
 /**
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
-public interface TestPassivationRemote {
+public interface TestPassivationRemote extends AutoCloseable {
     String EXPECTED_RESULT = "true";
 
     /**
@@ -50,11 +52,6 @@ public interface TestPassivationRemote {
 
     void addEntity(int id, String name);
 
-    /**
-     * Annotate for removing.
-     */
-    void remove();
-
     Employee getSuperEmployee();
     
     /**
@@ -63,4 +60,8 @@ public interface TestPassivationRemote {
     String getManagedBeanMessage();
     
     void setManagedBeanMessage(String message);
+
+    @Override
+    @Remove
+    void close();
 }

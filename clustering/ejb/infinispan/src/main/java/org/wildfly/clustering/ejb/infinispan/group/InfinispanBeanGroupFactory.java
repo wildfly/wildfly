@@ -48,14 +48,17 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  */
 public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> {
 
+    private static final Flag[] EVICTION_FLAGS = new Flag[] { Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY };
     private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache;
+    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> findCache;
     private final Cache<BeanKey<I>, BeanEntry<I>> beanCache;
     private final MarshalledValueFactory<MarshallingContext> factory;
     private final MarshallingContext context;
 
-    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
+    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context, boolean lockOnRead) {
         this.cache = cache;
-        this.beanCache = beanCache;
+        this.findCache = lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
+        this.beanCache = lockOnRead ? beanCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : beanCache;
         this.factory = factory;
         this.context = context;
     }
@@ -72,22 +75,25 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
 
     @Override
     public BeanGroupEntry<I, T> findValue(I id) {
-        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(this.createKey(id));
+        return this.findCache.get(this.createKey(id));
     }
 
     @Override
     public BeanGroupEntry<I, T> tryValue(I id) {
-        return this.cache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).get(this.createKey(id));
+        return this.findCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).get(this.createKey(id));
     }
 
     @Override
     public void evict(I id) {
         BeanGroupKey<I> key = this.createKey(id);
-        BeanGroupEntry<I, T> entry = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.FORCE_WRITE_LOCK, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).get(key);
+        BeanGroupEntry<I, T> entry = this.findCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(key);
         if (entry != null) {
             try {
                 for (I beanId : entry.getBeans().get(this.context).keySet()) {
-                    this.beanCache.evict(new InfinispanBeanKey<>(beanId));
+                    BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
+                    if (this.beanCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(beanKey) != null) {
+                        this.beanCache.evict(beanKey);
+                    }
                 }
                 try {
                     this.cache.evict(key);

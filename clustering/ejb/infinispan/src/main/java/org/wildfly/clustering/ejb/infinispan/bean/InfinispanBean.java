@@ -84,6 +84,11 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
     }
 
     @Override
+    public boolean isValid() {
+        return this.valid.get();
+    }
+
+    @Override
     public void remove(RemoveListener<T> listener) {
         if (this.valid.compareAndSet(true, false)) {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Removing bean %s", this.id);

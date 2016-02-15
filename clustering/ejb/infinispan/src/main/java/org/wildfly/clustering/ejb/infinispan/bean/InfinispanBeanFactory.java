@@ -113,9 +113,4 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
             }
         }
     }
-
-    @Override
-    public void evict(I id) {
-        this.groupFactory.evict(id);
-    }
 }

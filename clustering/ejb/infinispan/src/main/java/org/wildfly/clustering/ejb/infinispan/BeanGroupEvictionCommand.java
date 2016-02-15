@@ -21,17 +21,34 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
- * Encapsulates the context for session eviction.
+ * Command that evicts a bean.
  * @author Paul Ferraro
  */
-public interface BeanEvictionContext<I> {
+public class BeanGroupEvictionCommand<I> implements Command<Void, BeanGroupEvictionContext<I>> {
+    private static final long serialVersionUID = -6593293772761100784L;
 
-    Batcher<TransactionBatch> getBatcher();
+    private final I id;
 
-    Evictor<I> getEvictor();
+    public BeanGroupEvictionCommand(I id) {
+        this.id = id;
+    }
+
+    @Override
+    public Void execute(BeanGroupEvictionContext<I> context) throws Exception {
+        InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
+        try (Batch batch = context.getBatcher().createBatch()) {
+            try {
+                context.getEvictor().evict(this.id);
+                return null;
+            } catch (Exception e) {
+                batch.discard();
+                throw e;
+            }
+        }
+    }
 }

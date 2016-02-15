@@ -68,6 +68,12 @@ public interface Bean<I, T> extends AutoCloseable {
     void remove(RemoveListener<T> listener);
 
     /**
+     * Indicates whether this bean was removed.
+     * @return false, if this bean was removed, true otherwise.
+     */
+    boolean isValid();
+
+    /**
      * Closes any resources used by this bean.
      * A bean should only be closed when all referenced have been released,
      * i.e. {@link #release()} returned true.
