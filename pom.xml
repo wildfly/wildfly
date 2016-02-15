@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>19</version>
+      <version>20</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -64,10 +64,9 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.2.1</maven.min.version>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
 
-        <version.surefire.plugin>2.17</version.surefire.plugin>
+        <!-- use older version of checkstyle as otherwise lots of checks fail -->
+        <version.checkstyle>6.8</version.checkstyle>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -405,6 +404,7 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <useFile/>
+                        <excludes>**/*$logger.java,**/*$bundle.java</excludes>
                     </configuration>
                     <dependencies>
                         <dependency>
