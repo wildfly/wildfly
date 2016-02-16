@@ -62,9 +62,9 @@ public class HibernateSecondLevelCacheTestCase {
     public static final String hibernate_cfg = "<?xml version='1.0' encoding='utf-8'?>"
             + "<!DOCTYPE hibernate-configuration PUBLIC " + "\"//Hibernate/Hibernate Configuration DTD 3.0//EN\" "
             + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
-            + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">true</property>"
+            + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">false</property>"
             + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
-            + "<property name=\"hibernate.show_sql\">true</property>"
+            + "<property name=\"hibernate.show_sql\">false</property>"
             + FACTORY_CLASS
             + "<property name=\"hibernate.cache.infinispan.cachemanager\">java:jboss/infinispan/container/hibernate</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";

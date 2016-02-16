@@ -28,7 +28,7 @@
 		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
 		<properties>
 			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
-			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.show_sql" value="false" />
 			<property name="hibernate.generate_statistics" value="true" />
 		</properties>
 	</persistence-unit>
