@@ -38,7 +38,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxws}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
-        <artifact name="${org.apache.cxf:cxf-rt-security?jandex}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-security}"/>
         <artifact name="${org.apache.cxf:cxf-rt-security-saml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http-hc}"/>
@@ -49,7 +49,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-ws-mex}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-policy}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-rm}"/>
-        <artifact name="${org.apache.cxf:cxf-rt-ws-security?jandex}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-ws-security}"/>
         <artifact name="${org.apache.cxf:cxf-tools-common}"/>
         <artifact name="${org.apache.cxf:cxf-tools-java2ws}"/>
         <artifact name="${org.apache.cxf:cxf-tools-validator}"/>
