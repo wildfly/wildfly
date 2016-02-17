@@ -150,6 +150,12 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="http2-enable-push" type="xs:boolean" use="optional" />
+                <xs:attribute name="http2-header-table-size" type="xs:int" use="optional" />
+                <xs:attribute name="http2-initial-window-size" type="xs:int" use="optional" />
+                <xs:attribute name="http2-max-concurrent-streams" type="xs:int" use="optional" />
+                <xs:attribute name="http2-max-frame-size" type="xs:int" use="optional" />
+                <xs:attribute name="http2-max-header-list-size" type="xs:int" use="optional" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -165,6 +171,12 @@
                 <xs:attribute name="enable-spdy" use="optional" type="xs:string"/>
                 <xs:attribute name="ssl-session-cache-size" use="optional" type="xs:string"/>
                 <xs:attribute name="ssl-session-timeout" use="optional" type="xs:string"/>
+                <xs:attribute name="http2-enable-push" type="xs:boolean" use="optional" />
+                <xs:attribute name="http2-header-table-size" type="xs:int" use="optional" />
+                <xs:attribute name="http2-initial-window-size" type="xs:int" use="optional" />
+                <xs:attribute name="http2-max-concurrent-streams" type="xs:int" use="optional" />
+                <xs:attribute name="http2-max-frame-size" type="xs:int" use="optional" />
+                <xs:attribute name="http2-max-header-list-size" type="xs:int" use="optional" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -545,5 +557,11 @@
         <xs:attribute name="use-alias" type="xs:string" use="optional" default="false" />
         <xs:attribute name="enable-http2" type="xs:string" use="optional" default="false" />
         <xs:attribute name="max-ajp-packet-size" type="xs:int" use="optional" />
+        <xs:attribute name="http2-enable-push" type="xs:boolean" use="optional" />
+        <xs:attribute name="http2-header-table-size" type="xs:int" use="optional" />
+        <xs:attribute name="http2-initial-window-size" type="xs:int" use="optional" />
+        <xs:attribute name="http2-max-concurrent-streams" type="xs:int" use="optional" />
+        <xs:attribute name="http2-max-frame-size" type="xs:int" use="optional" />
+        <xs:attribute name="http2-max-header-list-size" type="xs:int" use="optional" />
     </xs:complexType>
 </xs:schema>
