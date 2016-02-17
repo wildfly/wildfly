@@ -65,7 +65,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Scott Marlow
  */
-public class ExtendedEntityManager extends AbstractEntityManager implements Serializable {
+public class ExtendedEntityManager extends AbstractEntityManager implements Serializable, SynchronizationTypeAccess {
 
     /**
      * Adding fields to this class, may require incrementing the serialVersionUID (always increment it).
@@ -260,7 +260,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
         return ID != null ? ID.hashCode() : 0;
     }
 
-    @Override
+    @Override // SynchronizationTypeAccess
     public SynchronizationType getSynchronizationType() {
         return SynchronizationType.SYNCHRONIZED;
     }
