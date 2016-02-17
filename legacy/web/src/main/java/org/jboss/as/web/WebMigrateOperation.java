@@ -208,7 +208,8 @@ public class WebMigrateOperation implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 addDefaultResources(sortedMigrationOperations, legacyModelAddOps, warnings);
                 // transform the legacy add operations and put them in migrationOperations
-                boolean domainMode = context.getCallEnvironment().getProcessType() != ProcessType.STANDALONE_SERVER;
+                ProcessType processType = context.getCallEnvironment().getProcessType();
+                boolean domainMode = processType != ProcessType.STANDALONE_SERVER && processType != ProcessType.SELF_CONTAINED;
                 PathAddress baseAddres;
                 if(domainMode) {
                     baseAddres = pathAddress(operation.get(ADDRESS)).getParent();
