@@ -22,52 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.stateful.exception;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.LocalBean;
-import javax.ejb.Remote;
-import javax.ejb.Remove;
-import javax.ejb.Stateful;
+public class TestException extends Exception {
+    private static final long serialVersionUID = 1L;
 
-/**
- * stateful session bean
- */
-@Stateful
-@Remote
-@LocalBean
-public class SFSB1 implements SFSB1Interface {
-    public final static String MESSAGE = "Expected Exception";
-
-    @EJB
-    private DestroyMarkerBean marker;
-
-
-    @PostConstruct
-    public void postConstruct() {
-        marker.set(false);
-    }
-    
-    @PreDestroy
-    public void preDestroy() {
-        marker.set(true);
-    }
-
-    public void systemException() {
-        throw new RuntimeException(MESSAGE);
-    }
-
-    public void ejbException() {
-        throw new EJBException(MESSAGE);
-    }
-    
-    public void userException() throws TestException {
-        throw new TestException(MESSAGE);
-    }
-
-    @Remove
-    public void remove() {
-        // just removed
+    public TestException(String message) {
+        super(message);
     }
 }
