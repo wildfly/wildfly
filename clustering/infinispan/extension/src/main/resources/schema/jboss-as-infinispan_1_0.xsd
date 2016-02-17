@@ -234,7 +234,7 @@
     </xs:complexType>
 
     <xs:complexType name="locking">
-        <xs:attribute name="isolation" type="tns:isolation" default="REPEATABLE_READ">
+        <xs:attribute name="isolation" type="tns:isolation" default="READ_COMMITTED">
             <xs:annotation>
                 <xs:documentation>Sets the cache locking isolation level.</xs:documentation>
             </xs:annotation>
