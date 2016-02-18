@@ -20,13 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.clustering.singleton;
+
+import org.wildfly.clustering.service.Requirement;
 
 /**
- * Identifies a requirement.
+ * Enumerates capability requirements for singleton resources
  * @author Paul Ferraro
  */
-public interface Requirement {
+public enum RequiredCapability implements Requirement {
+    SINGLETON_POLICY("org.wildfly.clustering.singleton.policy"),
+    ;
+    private final String name;
 
-    String getName();
+    RequiredCapability(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
 }

@@ -26,13 +26,13 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.Requirement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.wildfly.clustering.service.Requirement;
 
 /**
  * {@link AdditionalInitialization} extension that simplifies setup of required capabilities.
