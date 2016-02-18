@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.web.security.runas;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilePermission;
 import java.io.FileReader;
 import java.io.IOException;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -45,6 +46,7 @@ import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbS
 import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_NOT_PASS;
 import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_PASS;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertTrue;
@@ -271,6 +273,7 @@ public class ServletRunAsTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "servlet-runas.war");
         war.addClasses(CallProtectedEjbServlet.class, RunAsAdminServlet.class, RunAsUserServlet.class, Hello.class,
                 HelloBean.class);
+        war.addAsWebResource(PermissionUtils.createPermissionsXmlAsset(new FilePermission(WORK_DIR.getAbsolutePath() + "/*", "read,write")), "META-INF/permissions.xml");
         return war;
     }
 
