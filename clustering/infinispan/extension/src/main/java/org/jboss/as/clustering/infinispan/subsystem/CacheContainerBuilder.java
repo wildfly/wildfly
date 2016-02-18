@@ -37,6 +37,7 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
+import org.jboss.as.clustering.infinispan.InfinispanBatcherFactory;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -80,6 +81,7 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
     public Builder<CacheContainer> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.aliases.clear();
         this.aliases.addAll(ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(context, model)));
+        this.defaultCache = ModelNodes.asString(DEFAULT_CACHE.getDefinition().resolveModelAttribute(context, model));
         return this;
     }
 
@@ -90,11 +92,6 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
         ;
         this.aliases.forEach(alias -> builder.addAliases(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(alias)));
         return builder.setInitialMode(ServiceController.Mode.PASSIVE);
-    }
-
-    CacheContainerBuilder setDefaultCache(String defaultCache) {
-        this.defaultCache = defaultCache;
-        return this;
     }
 
     @Override
@@ -108,19 +105,21 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
         this.manager = new DefaultCacheManager(config, null, false);
         this.manager.addListener(this);
         this.manager.start();
-        this.container = new DefaultCacheContainer(this.name, this.manager, this.defaultCache);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
         // Ensure global components of this cache container start eagerly
-        this.container.getGlobalComponentRegistry().start();
+        this.manager.getGlobalComponentRegistry().start();
+        this.container = new DefaultCacheContainer(this.name, this.manager, this.defaultCache, new InfinispanBatcherFactory());
     }
 
     @Override
     public void stop(StopContext context) {
-        if ((this.manager != null) && this.manager.getStatus().allowInvocations()) {
-            this.manager.stop();
+        if (this.manager != null) {
+            if (this.manager.getStatus().allowInvocations()) {
+                this.manager.stop();
+                InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
+            }
             this.manager.removeListener(this);
             this.manager = null;
-            InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
         }
         this.container = null;
     }
