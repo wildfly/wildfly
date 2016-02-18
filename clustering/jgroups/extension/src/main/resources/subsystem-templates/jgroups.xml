@@ -89,6 +89,22 @@
             </protocol>
         </replacement>
     </supplement>
+    <supplement name="azure-ping">
+        <replacement placeholder="TCP-DISCOVERY">
+            <protocol type="azure.AZURE_PING">
+                <property name="storage_account_name">${jboss.jgroups.azure_ping.storage_account_name}</property>
+                <property name="storage_access_key">${jboss.jgroups.azure_ping.storage_access_key}</property>
+                <property name="container">${jboss.jgroups.azure_ping.container}</property>
+            </protocol>
+        </replacement>
+        <replacement placeholder="UDP-DISCOVERY">
+            <protocol type="azure.AZURE_PING">
+                <property name="storage_account_name">${jboss.jgroups.azure_ping.storage_account_name}</property>
+                <property name="storage_access_key">${jboss.jgroups.azure_ping.storage_access_key}</property>
+                <property name="container">${jboss.jgroups.azure_ping.container}</property>
+            </protocol>
+        </replacement>
+    </supplement>
     <supplement name="gossip-discovery">
         <replacement placeholder="TCP-DISCOVERY">
             <protocol type="TCPGOSSIP">
@@ -104,6 +120,7 @@
         </replacement>
     </supplement>
     <supplement name="ec2" includes="no-multicast s3-ping"/>
+    <supplement name="azure" includes="no-multicast azure-ping"/>
     <supplement name="gossip" includes="no-multicast gossip-discovery"/>
     <socket-binding name="jgroups-mping" interface="private" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
     <socket-binding name="jgroups-tcp" interface="private" port="7600"/>
