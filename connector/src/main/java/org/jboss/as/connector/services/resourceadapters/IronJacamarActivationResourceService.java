@@ -265,7 +265,7 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
         }
 
 
-        IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr.getValue());
+        IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr.getValue(), deployment.getValue().getRaName());
 
 
     }
