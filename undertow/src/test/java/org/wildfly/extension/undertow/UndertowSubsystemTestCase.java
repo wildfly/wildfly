@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -225,6 +227,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
                 capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry), SocketBinding.class);
             }
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.http-server-authentication", "elytron-factory"), HttpAuthenticationFactory.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "TestContext"), SSLContext.class);
             registerServiceCapabilities(capabilityRegistry, capabilities);
 
         }

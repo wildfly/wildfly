@@ -39,6 +39,7 @@ public interface Constants {
     String SETTING = "setting";
     String SECURITY_REALM = "security-realm";
     String SOCKET_BINDING = "socket-binding";
+    String SSL_CONTEXT = "ssl-context";
     String PATH = "path";
     String HTTP_LISTENER = "http-listener";
     String HTTPS_LISTENER = "https-listener";

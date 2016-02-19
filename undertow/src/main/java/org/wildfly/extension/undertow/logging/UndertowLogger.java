@@ -336,6 +336,6 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 77, value = "Error invoking secure response")
     void errorInvokingSecureResponse(@Cause Exception e);
 
-    @Message(id = 79, value = "No SSL Context available from security realm. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
-    IllegalStateException noSslContextInSecurityRealm();
+    @Message(id = 79, value = "No SSL Context available from security realm '%s'. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
+    IllegalStateException noSslContextInSecurityRealm(String securityRealm);
 }

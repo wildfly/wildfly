@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -119,6 +120,15 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
 
     private static void registerTransformers_3_0_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        // Version 3.0.0 adds the new SSL_CONTEXT attribute, however it is mutually exclusive to the SECURITY_REALM attribute, both of which can
+        // now be set to 'undefined' so instead of rejecting a defined SSL_CONTEXT, reject an undefined SECURITY_REALM as that covers the
+        // two new combinations.
+        builder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                .end();
+
         builder.discardChildResource(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_0_0);
     }

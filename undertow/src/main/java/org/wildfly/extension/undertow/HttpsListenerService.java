@@ -25,27 +25,18 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
-import io.undertow.UndertowOptions;
-import io.undertow.protocols.ssl.UndertowXnioSsl;
-import io.undertow.server.OpenListener;
-import io.undertow.server.protocol.http.AlpnOpenListener;
-import io.undertow.server.protocol.http.HttpOpenListener;
-import io.undertow.server.protocol.http2.Http2OpenListener;
-import io.undertow.server.protocol.spdy.SpdyOpenListener;
-
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkUtils;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.ssl.CipherSuiteSelector;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
+import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
-import org.xnio.Option;
 import org.xnio.Options;
 import org.xnio.Pool;
 import org.xnio.Sequence;
@@ -55,6 +46,14 @@ import org.xnio.channels.AcceptingChannel;
 import org.xnio.ssl.SslConnection;
 import org.xnio.ssl.XnioSsl;
 
+import io.undertow.UndertowOptions;
+import io.undertow.protocols.ssl.UndertowXnioSsl;
+import io.undertow.server.OpenListener;
+import io.undertow.server.protocol.http.AlpnOpenListener;
+import io.undertow.server.protocol.http.HttpOpenListener;
+import io.undertow.server.protocol.http2.Http2OpenListener;
+import io.undertow.server.protocol.spdy.SpdyOpenListener;
+
 /**
  * An extension of {@see HttpListenerService} to add SSL.
  *
@@ -63,7 +62,7 @@ import org.xnio.ssl.XnioSsl;
  */
 public class HttpsListenerService extends HttpListenerService {
 
-    private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
+    private Supplier<SSLContext> sslContextSupplier;
     private volatile AcceptingChannel<SslConnection> sslServer;
     static final String PROTOCOL = "https";
     private final String cipherSuites;
@@ -71,6 +70,10 @@ public class HttpsListenerService extends HttpListenerService {
     public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions) {
         super(name, serverName, listenerOptions, socketOptions, false, false);
         this.cipherSuites = cipherSuites;
+    }
+
+    void setSSLContextSupplier(Supplier<SSLContext> sslContextSupplier) {
+        this.sslContextSupplier = sslContextSupplier;
     }
 
     @Override
@@ -110,13 +113,7 @@ public class HttpsListenerService extends HttpListenerService {
 
     @Override
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
-
-        SSLContext sslContext = securityRealm.getValue().getSSLContext();
-
-        if(sslContext == null) {
-            throw UndertowLogger.ROOT_LOGGER.noSslContextInSecurityRealm();
-        }
-
+        SSLContext sslContext = sslContextSupplier.get();
         Builder builder = OptionMap.builder().addAll(commonOptions);
         builder.addAll(socketOptions);
         builder.set(Options.USE_DIRECT_BUFFERS, true);
@@ -148,10 +145,6 @@ public class HttpsListenerService extends HttpListenerService {
         sslServer = null;
         UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
         httpListenerRegistry.getValue().removeListener(getName());
-    }
-
-    public InjectedValue<SecurityRealm> getSecurityRealm() {
-        return securityRealm;
     }
 
     @Override

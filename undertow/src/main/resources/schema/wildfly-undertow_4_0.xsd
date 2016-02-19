@@ -158,7 +158,24 @@
     <xs:complexType name="https-listener-type">
         <xs:complexContent>
             <xs:extension base="listener-type">
-                <xs:attribute name="security-realm" use="required" type="xs:string"/>
+                <xs:attribute name="ssl-context" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Reference to the SSLContext that should be used by this listener.
+
+                            If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="security-realm" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Reference to the legacy security realm to use to obtain an SSLContext.
+
+                            If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="verify-client" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-cipher-suites" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-protocols" use="optional" type="xs:string"/>
