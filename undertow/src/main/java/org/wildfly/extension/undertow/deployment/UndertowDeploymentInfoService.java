@@ -176,6 +176,7 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -641,7 +642,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new WebInjectionContainer(module.getClassLoader(), componentRegistryInjectedValue.getValue())));
 
                 if (mergedMetaData.getJspConfig() != null) {
-                    Collection<JspPropertyGroup> values = new HashSet<>(propertyGroups.values());
+                    Collection<JspPropertyGroup> values = new LinkedHashSet<>(propertyGroups.values());
                     d.setJspConfigDescriptor(new JspConfigDescriptorImpl(tldInfo.values(), values));
                 }
 
