@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
@@ -172,6 +173,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
             this.schedulerContext.close();
             this.affinity.stop();
         });
+    }
+
+    @Override
+    public boolean isRemotable(Throwable throwable) {
+        return !(throwable instanceof CacheException);
     }
 
     @Override

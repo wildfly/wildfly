@@ -394,4 +394,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         }
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
+
+    public boolean isRemotable(Throwable throwable) {
+        return cache.isRemotable(throwable);
+    }
 }
