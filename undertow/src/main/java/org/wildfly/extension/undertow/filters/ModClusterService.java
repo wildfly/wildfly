@@ -142,7 +142,7 @@ public class ModClusterService extends FilterService {
             builder.enableAdvertise()
                     .setAdvertiseAddress(advertiseSocketBinding.getValue().getSocketAddress().getAddress().getHostAddress())
                     .setAdvertiseGroup(multicastAddress.getHostAddress())
-                    .setAdvertisePort(advertiseSocketBinding.getValue().getPort())
+                    .setAdvertisePort(advertiseSocketBinding.getValue().getMulticastPort())
                     .setAdvertiseFrequency(advertiseFrequency)
                     .setPath(advertisePath)
                     .setProtocol(advertiseProtocol)
