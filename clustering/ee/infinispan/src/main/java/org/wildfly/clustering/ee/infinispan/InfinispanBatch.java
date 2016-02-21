@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
-import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
@@ -39,6 +38,7 @@ import org.infinispan.commons.CacheException;
 public class InfinispanBatch implements TransactionBatch {
 
     private final Transaction tx;
+    private volatile boolean rollback = false;
     private final AtomicInteger count = new AtomicInteger(0);
 
     public InfinispanBatch(Transaction tx) {
@@ -58,21 +58,14 @@ public class InfinispanBatch implements TransactionBatch {
 
     @Override
     public void discard() {
-        try {
-            if (this.tx.getStatus() == Status.STATUS_ACTIVE) {
-                this.tx.setRollbackOnly();
-            }
-        } catch (SystemException e) {
-            throw new CacheException(e);
-        }
+        this.rollback = true;
     }
 
     @Override
     public void close() {
         if (this.count.getAndDecrement() == 0) {
             try {
-                int status = this.tx.getStatus();
-                if (status == Status.STATUS_MARKED_ROLLBACK) {
+                if (this.rollback) {
                     this.tx.rollback();
                 } else {
                     this.tx.commit();

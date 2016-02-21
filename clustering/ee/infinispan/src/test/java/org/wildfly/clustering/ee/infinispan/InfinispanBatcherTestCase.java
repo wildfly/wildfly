@@ -79,7 +79,6 @@ public class InfinispanBatcherTestCase {
             capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
         }
 
-        verify(tx, never()).setRollbackOnly();
         verify(tx).commit();
 
         assertNull(InfinispanBatcher.CURRENT_BATCH.get());
@@ -99,9 +98,6 @@ public class InfinispanBatcherTestCase {
             assertSame(tx, batch.getTransaction());
 
             batch.discard();
-
-            verify(tx).setRollbackOnly();
-            when(tx.getStatus()).thenReturn(Status.STATUS_MARKED_ROLLBACK);
         } finally {
             capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
         }
@@ -166,9 +162,6 @@ public class InfinispanBatcherTestCase {
                 verify(this.tm, never()).begin();
 
                 innerBatch.discard();
-
-                verify(tx).setRollbackOnly();
-                when(tx.getStatus()).thenReturn(Status.STATUS_MARKED_ROLLBACK);
             }
 
             verify(tx, never()).commit();
@@ -245,10 +238,6 @@ public class InfinispanBatcherTestCase {
                 verify(this.tm, never()).begin();
 
                 innerBatch.discard();
-
-                verify(tx).setRollbackOnly();
-
-                when(tx.getStatus()).thenReturn(Status.STATUS_MARKED_ROLLBACK);
 
                 batch.close();
 
