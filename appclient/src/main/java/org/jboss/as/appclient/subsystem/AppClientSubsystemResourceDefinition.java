@@ -31,7 +31,6 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -62,12 +61,13 @@ public class AppClientSubsystemResourceDefinition extends SimpleResourceDefiniti
                     .setAllowExpression(true).build();
 
     public static final StringListAttributeDefinition PARAMETERS = new StringListAttributeDefinition.Builder(Constants.PARAMETERS)
+            .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
     private AppClientSubsystemResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, AppClientExtension.SUBSYSTEM_NAME),
-                AppClientExtension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME),
+                AppClientExtension.getResourceDescriptionResolver(),
                 AppClientSubsystemAdd.INSTANCE, null,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
     }
