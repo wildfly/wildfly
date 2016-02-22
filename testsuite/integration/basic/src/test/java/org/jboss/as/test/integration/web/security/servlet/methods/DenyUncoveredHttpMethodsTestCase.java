@@ -45,6 +45,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,11 +80,12 @@ public class DenyUncoveredHttpMethodsTestCase {
     }
 
     @Test
+    @Ignore("WFCORE-1347")
     public void testTraceMethod() throws Exception {
         HttpTrace httpTrace = new HttpTrace(getURL());
         HttpResponse response = getHttpResponse(httpTrace);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_UNAUTHORIZED));
+        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
     }
 
     @Test
