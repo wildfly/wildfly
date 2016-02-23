@@ -33,7 +33,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -42,16 +41,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.TopologyChangeListener;
-import org.jboss.as.test.clustering.TopologyChangeListenerBean;
-import org.jboss.as.test.clustering.TopologyChangeListenerServlet;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jgroups.stack.GossipRouter;
 import org.junit.Assert;
@@ -118,7 +113,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
     public void testSingletonService(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         // URLs look like "http://IP:PORT/singleton/service"
         URI serviceANode1Uri = MyServiceServlet.createURI(baseURL1, SingletonServiceActivator.SERVICE_A_NAME);
@@ -189,12 +184,12 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
         checkSingletonNode(serviceBNode2Uri, NODE_2);
     }
 
-    private void checkSingletonNode(URI serviceUri, String expectedProviderNode) throws IOException {
+    private static void checkSingletonNode(URI serviceUri, String expectedProviderNode) throws IOException {
         String node = getSingletonNode(serviceUri);
         Assert.assertEquals("Expected different provider node.", expectedProviderNode, node);
     }
 
-    private String getSingletonNode(URI serviceUri) throws IOException {
+    private static String getSingletonNode(URI serviceUri) throws IOException {
         CloseableHttpClient client = org.jboss.as.test.http.util.TestHttpClientUtils.promiscuousCookieHttpClient();
         HttpResponse response = client.execute(new HttpGet(serviceUri));
         try {
@@ -208,7 +203,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
         }
     }
 
-    private void waitForView(URL baseURL, String... members) throws IOException, URISyntaxException {
+    private static void waitForView(URL baseURL, String... members) throws IOException, URISyntaxException {
         ClusterHttpClientUtil.establishTopology(baseURL, CONTAINER, "default", TOPOLOGY_CHANGE_TIMEOUT, members);
         try {
             Thread.sleep(5000); // it takes a little extra time after merge for the singleton service to migrate

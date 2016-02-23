@@ -25,15 +25,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
 public class MyService implements Service<Environment> {
-
-    public static final ServiceName DEFAULT_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "default");
-    public static final ServiceName QUORUM_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "quorum");
 
     private final Value<ServerEnvironment> env;
     private final AtomicBoolean started = new AtomicBoolean(false);

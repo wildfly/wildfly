@@ -39,7 +39,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceActivator;
+import org.jboss.as.test.clustering.cluster.singleton.service.MyServicePolicyActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingletonServiceTestCase extends ClusterAbstractTestCase {
+public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -70,7 +70,7 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
         war.addPackage(MyService.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
-        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServiceActivator.class);
+        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServicePolicyActivator.class);
         return war;
     }
 
@@ -84,7 +84,7 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
         stop(CONTAINER_2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
+            HttpResponse response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
@@ -92,51 +92,27 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
             start(CONTAINER_2);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             stop(CONTAINER_2);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
@@ -144,69 +120,37 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
             start(CONTAINER_2);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             stop(CONTAINER_1);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServicePolicyActivator.SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             start(CONTAINER_1);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServicePolicyActivator.SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
@@ -214,23 +158,7 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServicePolicyActivator.SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
