@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-testsuite</artifactId>
+        <version>10.1.0.Final-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.jboss.eap</groupId>
+    <artifactId>wildfly-ts-additional-testsuite</artifactId>
+    <packaging>pom</packaging>
+
+    <name>WildFly Test Suite:: Additional Testsuite</name>
+
+    <properties>
+        <antrun-plugin-version>1.8</antrun-plugin-version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${antrun-plugin-version}</version>
+
+                <executions>
+                    <execution>
+                        <id>prepare</id>
+                        <inherited>false</inherited>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target name="command">
+                                <exec executable="/bin/bash" osfamily="unix">
+				    <arg value="eap-additional-testsuite-run.sh" />
+				</exec>
+                                <!--exec executable="cmd" osfamily="windows">
+                                    <arg value="/c" />
+				    <arg value="eap-additional-testsuite-run.bat" />
+				</exec-->
+			        <loadfile property="error" srcFile="errors.txt" failonerror="false"/>
+                                <fail message="Error in Additional Testsuite ...  ${error}">
+				    <condition>
+					<available file="errors.txt" />
+				    </condition>
+				</fail>            
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
