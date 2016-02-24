@@ -199,6 +199,28 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
+    public void getSessionInvalidCharacters() {
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        SessionConfig config = mock(SessionConfig.class);
+        String sessionId = "session+";
+
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+
+        io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
+
+        assertNull(sessionAdapter);
+
+        verify(batch).close();
+        verify(batcher, never()).suspendBatch();
+        verify(this.manager, never()).findSession(sessionId);
+    }
+
+
+    @Test
     public void getSessionNotExists() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher<Batch> batcher = mock(Batcher.class);
