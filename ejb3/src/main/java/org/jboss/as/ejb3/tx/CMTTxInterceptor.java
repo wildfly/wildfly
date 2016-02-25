@@ -83,15 +83,16 @@ public class CMTTxInterceptor implements Interceptor {
                 throw EjbLogger.ROOT_LOGGER.wrongTxOnThread(tx, tm.getTransaction());
             }
             final int txStatus = tx.getStatus();
-            if (txStatus == Status.STATUS_ACTIVE) {
+            if (txStatus == Status.STATUS_ACTIVE || txStatus == Status.STATUS_PREPARED || txStatus == Status.STATUS_COMMITTED) {
                 // Commit tx
                 // This will happen if
                 // a) everything goes well
                 // b) app. exception was thrown
+                // c) background thread prepared or committed the transaction already
                 tm.commit();
             } else if (txStatus == Status.STATUS_MARKED_ROLLBACK) {
                 tm.rollback();
-            } else if (txStatus == Status.STATUS_ROLLEDBACK) {
+            } else if (txStatus == Status.STATUS_ROLLEDBACK || txStatus == Status.STATUS_ROLLING_BACK) {
                 // handle reaper canceled (rolled back) tx case (see WFLY-1346)
                 // clear current tx state and throw RollbackException (EJBTransactionRolledbackException)
                 tm.rollback();
@@ -105,11 +106,10 @@ public class CMTTxInterceptor implements Interceptor {
                 throw EjbLogger.ROOT_LOGGER.transactionInUnexpectedState(tx, statusAsString(txStatus));
             } else {
                 // logically, all of the following (unexpected) tx states are handled here:
-                //  Status.STATUS_PREPARED
-                //  Status.STATUS_PREPARING
-                //  Status.STATUS_ROLLING_BACK
+                //
+                //  Status.STATUS_PREPARING in a background thread
+                //  Status.STATUS_ROLLING_BACK in a background thread
                 //  Status.STATUS_NO_TRANSACTION
-                //  Status.STATUS_COMMITTED
                 tm.suspend();                       // clear current tx state and throw EJBException
                 throw EjbLogger.ROOT_LOGGER.transactionInUnexpectedState(tx, statusAsString(txStatus));
             }
