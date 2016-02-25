@@ -14,7 +14,7 @@
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
-        <subsystem>jgroups.xml</subsystem>
+        <subsystem supplement="${jgroups.supplement}">jgroups.xml</subsystem>
         <subsystem>jmx.xml</subsystem>
         <subsystem>jpa.xml</subsystem>
         <subsystem>jsf.xml</subsystem>
