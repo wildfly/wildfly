@@ -91,7 +91,7 @@ public class CMTTxInterceptor implements Interceptor {
                 tm.commit();
             } else if (txStatus == Status.STATUS_MARKED_ROLLBACK) {
                 tm.rollback();
-            } else if (txStatus == Status.STATUS_ROLLEDBACK) {
+            } else if (txStatus == Status.STATUS_ROLLEDBACK || txStatus == Status.STATUS_ROLLING_BACK) {
                 // handle reaper canceled (rolled back) tx case (see WFLY-1346)
                 // clear current tx state and throw RollbackException (EJBTransactionRolledbackException)
                 tm.rollback();
@@ -107,7 +107,7 @@ public class CMTTxInterceptor implements Interceptor {
                 // logically, all of the following (unexpected) tx states are handled here:
                 //  Status.STATUS_PREPARED
                 //  Status.STATUS_PREPARING
-                //  Status.STATUS_ROLLING_BACK
+                //  Status.STATUS_COMMITTING
                 //  Status.STATUS_NO_TRANSACTION
                 //  Status.STATUS_COMMITTED
                 tm.suspend();                       // clear current tx state and throw EJBException
