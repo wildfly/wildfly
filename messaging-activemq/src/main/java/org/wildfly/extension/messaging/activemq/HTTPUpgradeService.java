@@ -156,8 +156,12 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                 }
                 NettyAcceptor acceptor = (NettyAcceptor) remotingService.getAcceptor(acceptorName);
                 SocketChannel channel = new WrappingXnioSocketChannel(connection);
-                acceptor.transfer(channel);
-                connection.getSourceChannel().resumeReads();
+                try {
+                    acceptor.transfer(channel);
+                    connection.getSourceChannel().resumeReads();
+                } catch (IllegalStateException e) {
+                    IoUtils.safeClose(connection);
+                }
             }
         };
     }
