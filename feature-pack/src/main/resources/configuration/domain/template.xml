@@ -24,18 +24,18 @@
     </management>
 
     <profiles>
-       <profile name="default">
-           <?SUBSYSTEMS socket-binding-group="standard-sockets"?>
-       </profile>
-       <profile name="ha">
-           <?SUBSYSTEMS socket-binding-group="ha-sockets"?>
-       </profile>
-       <profile name="full">
-           <?SUBSYSTEMS socket-binding-group="full-sockets"?>
-       </profile>
-       <profile name="full-ha">
-           <?SUBSYSTEMS socket-binding-group="full-ha-sockets"?>
-       </profile>
+        <profile name="default">
+            <?SUBSYSTEMS socket-binding-group="standard-sockets"?>
+        </profile>
+        <profile name="ha">
+            <?SUBSYSTEMS socket-binding-group="ha-sockets"?>
+        </profile>
+        <profile name="full">
+            <?SUBSYSTEMS socket-binding-group="full-sockets"?>
+        </profile>
+        <profile name="full-ha">
+            <?SUBSYSTEMS socket-binding-group="full-ha-sockets"?>
+        </profile>
     </profiles>
 
     <!--
