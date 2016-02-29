@@ -179,7 +179,7 @@
           If running within an AS then the address the AS is bound to (jboss.bind.address) takes precedence
     -->
     <entry key="JTSEnvironmentBean.recoveryManagerAddress"></entry>
-    
-     <entry key="com.arjuna.ats.jts.alwaysPropagateContext">YES</entry>
+
+    <entry key="com.arjuna.ats.jts.alwaysPropagateContext">YES</entry>
 
 </properties>

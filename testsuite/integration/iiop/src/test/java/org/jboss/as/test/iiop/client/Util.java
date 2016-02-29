@@ -86,9 +86,7 @@ public class Util {
     }
 
     public static void tearDownOrb() {
-        if (orb != null) {
-            orb.shutdown();
-        }
+        ORBManager.reset();
         recoveryManagerPool.shutdown();
     }
 

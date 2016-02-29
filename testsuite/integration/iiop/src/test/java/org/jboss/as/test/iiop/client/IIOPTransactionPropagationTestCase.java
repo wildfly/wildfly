@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.iiop.client;
 
+import java.io.IOException;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
@@ -33,6 +39,13 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -148,6 +161,7 @@ public class IIOPTransactionPropagationTestCase {
         public static final String IIOP_TRANSACTIONS_JTA = "spec";
         public static final String IIOP_TRANSACTIONS_JTS = "on";
 
+        private static final Logger log = Logger.getLogger(JTSSetup.class);
         private boolean isTransactionJTS = true;
         private String iiopTransaction = IIOP_TRANSACTIONS_JTA;
 
@@ -177,7 +191,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
             }
         }
 
@@ -199,7 +213,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
             }
         }
 
@@ -253,19 +267,8 @@ public class IIOPTransactionPropagationTestCase {
             executeOperation(operation);
         }
 
-        private ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
-            ModelNode ret = managementClient.getControllerClient().execute(op);
-            if (!unwrapResult)
-                return ret;
-
-            if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
-                throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op, ret);
-            }
-            return ret.get(RESULT);
-        }
-
         private ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
-            return executeOperation(op, true);
+            return ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
     }
 }
