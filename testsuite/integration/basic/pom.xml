@@ -158,6 +158,7 @@
                                         <include>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
+                                        <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
                                         <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
@@ -216,6 +217,7 @@
                                         <exclude>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/*/security/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>

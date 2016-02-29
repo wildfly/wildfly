@@ -43,13 +43,18 @@ public final class TxTestUtil {
         // no instance here
     }
 
-    public static void enlistTestXAResource(Transaction txn) {
-        TestXAResource xaResource = new TestXAResource(getChecker());
+    public static TestXAResource enlistTestXAResource(Transaction txn) {
+        return enlistTestXAResource(txn, getChecker());
+    }
+
+    public static TestXAResource enlistTestXAResource(Transaction txn, TransactionCheckerSingleton checker) {
+        TestXAResource xaResource = new TestXAResource(checker);
         try {
             txn.enlistResource(xaResource);
         } catch (IllegalStateException | RollbackException | SystemException e) {
             throw new RuntimeException("Can't enlist test xa resource '" + xaResource + "'", e);
         }
+        return xaResource;
     }
 
     public static void addSynchronization(Transaction txn) {

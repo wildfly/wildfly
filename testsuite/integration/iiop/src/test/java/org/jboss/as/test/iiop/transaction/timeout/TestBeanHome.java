@@ -20,28 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.transaction.utils;
+package org.jboss.as.test.iiop.transaction.timeout;
 
-public interface SingletonCheckerRemote {
-    int getCommitted();
-    void addCommit();
-    void resetCommitted();
-    int getRolledback();
-    void addRollback();
-    void resetRolledback();
-    boolean isSynchronizedBefore();
-    int countSynchronizedBefore();
-    void setSynchronizedBefore();
-    void resetSynchronizedBefore();
-    boolean isSynchronizedAfter();
-    int countSynchronizedAfter();
-    int countSynchronizedAfterCommitted();
-    int countSynchronizedAfterRolledBack();
-    void setSynchronizedAfter(boolean isCommit);
-    void resetSynchronizedAfter();
-    boolean isSynchronizedBegin();
-    int countSynchronizedBegin();
-    void setSynchronizedBegin();
-    void resetSynchronizedBegin();
-    void resetAll();
+import javax.ejb.EJBHome;
+import java.rmi.RemoteException;
+
+public interface TestBeanHome extends EJBHome {
+    public TestBeanRemote create() throws RemoteException;
 }
