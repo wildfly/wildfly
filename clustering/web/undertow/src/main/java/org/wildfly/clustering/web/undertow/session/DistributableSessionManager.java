@@ -29,6 +29,7 @@ import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
 
 import java.time.Duration;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
 
@@ -132,6 +133,14 @@ public class DistributableSessionManager implements UndertowSessionManager {
         try {
             String id = config.findSessionId(exchange);
             if (id == null) {
+                batch.close();
+                return null;
+            }
+
+            // If requested id contains invalid characters, then session cannot exist and would otherwise cause session lookup to fail
+            try {
+                Base64.getUrlDecoder().decode(id);
+            } catch (IllegalArgumentException e) {
                 batch.close();
                 return null;
             }
