@@ -56,16 +56,25 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
 public class RemotingLoginModule extends AbstractServerLoginModule {
 
     /**
-     * If a {@link X509Certificate} is available from the client as a result of a {@link SSLSession} being established should
+     * If a {@link javax.security.cert.X509Certificate} is available from the client as a result of a {@link SSLSession} being established should
      * this be used for the credential.
      *
      * Default = false.
      */
     private static final String USE_CLIENT_CERT_OPTION = "useClientCert";
 
-    private static final String[] ALL_OPTIONS = new String[] { USE_CLIENT_CERT_OPTION };
+    /**
+     * If a {@link java.security.cert.X509Certificate} is available from the client as a result of a {@link SSLSession} being established should
+     * this be used for the credential.
+     *
+     * Default = false.
+     */
+    private static final String USE_NEW_CLIENT_CERT_OPTION = "useNewClientCert";
+
+    private static final String[] ALL_OPTIONS = new String[] { USE_CLIENT_CERT_OPTION, USE_NEW_CLIENT_CERT_OPTION };
 
     private boolean useClientCert = false;
+    private boolean useNewClientCert = false;
     private Principal identity;
 
     @Override
@@ -75,6 +84,9 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
 
         if (options.containsKey(USE_CLIENT_CERT_OPTION)) {
             useClientCert = Boolean.parseBoolean(options.get(USE_CLIENT_CERT_OPTION).toString());
+        }
+        if (options.containsKey(USE_NEW_CLIENT_CERT_OPTION)) {
+            useNewClientCert = Boolean.parseBoolean(options.get(USE_NEW_CLIENT_CERT_OPTION).toString());
         }
     }
 
@@ -119,7 +131,17 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
                     // Add the username to the shared state map
                     sharedState.put("javax.security.auth.login.name", identity);
 
-                    if (useClientCert) {
+                    if (useNewClientCert) {
+                        SSLSession session = con.getSslSession();
+                        if (session != null) {
+                            try {
+                                credential = session.getPeerCertificates()[0];
+                                log.debug("Using new certificate as credential.");
+                            } catch (SSLPeerUnverifiedException e) {
+                                log.debugf("No peer certificate available for '%s'", userName);
+                            }
+                        }
+                    } else if (useClientCert) {
                         SSLSession session = con.getSslSession();
                         if (session != null) {
                             try {
