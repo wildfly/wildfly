@@ -35,9 +35,11 @@
         <artifact name="${org.apache.cxf:cxf-rt-bindings-xml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-aegis}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-jaxb}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxrs}" />
         <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxws}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-rs-client}" />
         <artifact name="${org.apache.cxf:cxf-rt-security?jandex}"/>
         <artifact name="${org.apache.cxf:cxf-rt-security-saml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
@@ -73,6 +75,7 @@
         <module name="javax.resource.api" />
         <module name="javax.servlet.api" />
         <module name="javax.wsdl4j.api" />
+        <module name="javax.ws.rs.api" />
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
         <module name="javax.xml.soap.api" />
@@ -120,4 +123,9 @@
           </exports>
         </module>
     </dependencies>
+    <exports>
+      <exclude path="OSGI-INF/blueprint" />
+      <exclude path="OSGI-INF/metatype" />
+      <exclude path="schemas/blueprint" />
+    </exports>
 </module>
