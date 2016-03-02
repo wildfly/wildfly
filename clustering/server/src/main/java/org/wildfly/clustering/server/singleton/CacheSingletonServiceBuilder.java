@@ -116,6 +116,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
                 .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(this.containerName, this.cacheName), ServiceProviderRegistry.class, this.registry)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
         ;
     }
 
