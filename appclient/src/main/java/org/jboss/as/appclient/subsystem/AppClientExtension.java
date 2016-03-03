@@ -34,8 +34,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -61,8 +61,6 @@ public class AppClientExtension implements Extension {
 
     private static final ApplicationClientSubsystemParser parser = new ApplicationClientSubsystemParser();
 
-
-    private static final String RESOURCE_NAME = AppClientExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -99,8 +97,8 @@ public class AppClientExtension implements Extension {
         }
     }
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, AppClientExtension.class.getClassLoader(), true, true);
+    public static ResourceDescriptionResolver getResourceDescriptionResolver() {
+        return new NonResolvingResourceDescriptionResolver();
     }
 
 }
