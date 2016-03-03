@@ -42,7 +42,8 @@ import java.sql.SQLException;
         ),
         @DataSourceDefinition(
                 name = "java:comp/dse",
-                className = "org.jboss.as.test.integration.ee.datasourcedefinition.EmbeddedDataSource"
+                className = "org.jboss.as.test.integration.ee.datasourcedefinition.EmbeddedDataSource",
+                url = "jdbc:embedded:/some/url"
         )
 }
 )
