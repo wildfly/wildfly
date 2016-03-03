@@ -89,7 +89,7 @@
                 <xs:attribute name="enabled" type="xs:boolean" default="true"/>
                 <xs:attribute name="resolve-peer-address" type="xs:boolean" default="false"/>
                 <xs:attribute name="max-post-size" type="xs:long" default="0"/>
-                <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
+                <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="false"/>
                 <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
                 <xs:attribute name="max-parameters" type="xs:long" default="1000"/>
                 <xs:attribute name="max-headers" type="xs:long" default="200"/>
@@ -101,7 +101,7 @@
                 <xs:attribute name="max-buffered-request-size" type="xs:long" default="16384"/>
                 <xs:attribute name="record-request-start-time" type="xs:boolean" default="false"/>
                 <xs:attribute name="allow-equals-in-cookie-value" type="xs:boolean" default="false"/>
-                <xs:attribute name="no-request-timeout" type="xs:int"/>
+                <xs:attribute name="no-request-timeout" type="xs:int" default="60000"/>
                 <xs:attribute name="request-parse-timeout" type="xs:int"/>
                 <xs:attribute name="disallowed-methods" type="stringList"/>
                 <xs:attribute name="secure" type="xs:boolean" default="false"/>
