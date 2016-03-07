@@ -94,4 +94,29 @@
             </plugin>
         </plugins>
     </build>
+    <!-- WFLY-5588 DefaultContextServiceServletTestCase fails on IBM jdk -->
+    <profiles>
+        <profile>
+            <id>ibmjdk.profile</id>
+            <activation>
+                <property>
+                    <name>java.vendor</name>
+                    <value>IBM Corporation</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <jboss.args>${jboss.args} -Dcom.ibm.enableClassCaching=false</jboss.args>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
