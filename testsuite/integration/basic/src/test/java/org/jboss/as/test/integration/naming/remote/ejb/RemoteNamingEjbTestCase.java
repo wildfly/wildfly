@@ -46,7 +46,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.naming.JndiPermission;
+import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
