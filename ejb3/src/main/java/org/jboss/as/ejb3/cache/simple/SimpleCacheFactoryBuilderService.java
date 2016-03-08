@@ -49,6 +49,7 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
 public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> implements CacheFactoryBuilder<K, V>  {
 
     private static final ThreadFactory THREAD_FACTORY = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+        @Override
         public JBossThreadFactory run() {
             return new JBossThreadFactory(new ThreadGroup(SimpleCache.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
         }
