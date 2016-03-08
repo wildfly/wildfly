@@ -100,4 +100,8 @@ public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>,
     default boolean isRemotable(Throwable throwable) {
         return true;
     }
+
+    default AutoCloseable createThreadContext() {
+        return () -> {};
+    }
 }

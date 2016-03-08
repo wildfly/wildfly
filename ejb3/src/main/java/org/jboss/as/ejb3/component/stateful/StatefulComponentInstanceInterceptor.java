@@ -29,6 +29,7 @@ import javax.ejb.RemoveException;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -55,38 +56,41 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             throw EjbLogger.ROOT_LOGGER.statefulSessionIdIsNull(component.getComponentName());
         }
         ROOT_LOGGER.debugf("Looking for stateful component instance with session id: %s", sessionId);
-        StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
-        if (instance == null) {
-            //This exception will be transformed into the correct exception type by the exception transforming interceptor
-            throw EjbLogger.ROOT_LOGGER.couldNotFindEjb(sessionId.toString());
-        }
-        try {
-            context.putPrivateData(ComponentInstance.class, instance);
-            return context.proceed();
-        } catch (Exception ex) {
-            // Detect app exception
-            if (component.getApplicationException(ex.getClass(), context.getMethod()) != null) {
-                // it's an application exception, just throw it back.
-                throw ex;
+        Cache<SessionID, StatefulSessionComponentInstance> cache = component.getCache();
+        try (AutoCloseable ctx = cache.createThreadContext()) {
+            StatefulSessionComponentInstance instance = cache.get(sessionId);
+            if (instance == null) {
+                //This exception will be transformed into the correct exception type by the exception transforming interceptor
+                throw EjbLogger.ROOT_LOGGER.couldNotFindEjb(sessionId.toString());
             }
-            if (ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
-                throw ex;
-            }
-            if (!(ex instanceof RemoveException)) {
-                if (ex instanceof RuntimeException || ex instanceof RemoteException) {
-                    ROOT_LOGGER.tracef(ex, "Removing bean %s because of exception", sessionId);
-                    instance.discard();
+            try {
+                context.putPrivateData(ComponentInstance.class, instance);
+                return context.proceed();
+            } catch (Exception ex) {
+                // Detect app exception
+                if (component.getApplicationException(ex.getClass(), context.getMethod()) != null) {
+                    // it's an application exception, just throw it back.
+                    throw ex;
                 }
+                if (ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
+                    throw ex;
+                }
+                if (!(ex instanceof RemoveException)) {
+                    if (ex instanceof RuntimeException || ex instanceof RemoteException) {
+                        ROOT_LOGGER.tracef(ex, "Removing bean %s because of exception", sessionId);
+                        instance.discard();
+                    }
+                }
+                throw ex;
+            } catch (final Error e) {
+                ROOT_LOGGER.tracef(e, "Removing bean %s because of error", sessionId);
+                instance.discard();
+                throw e;
+            } catch (final Throwable t) {
+                ROOT_LOGGER.tracef(t, "Removing bean %s because of Throwable", sessionId);
+                instance.discard();
+                throw new RuntimeException(t);
             }
-            throw ex;
-        } catch (final Error e) {
-            ROOT_LOGGER.tracef(e, "Removing bean %s because of error", sessionId);
-            instance.discard();
-            throw e;
-        } catch (final Throwable t) {
-            ROOT_LOGGER.tracef(t, "Removing bean %s because of Throwable", sessionId);
-            instance.discard();
-            throw new RuntimeException(t);
         }
     }
 

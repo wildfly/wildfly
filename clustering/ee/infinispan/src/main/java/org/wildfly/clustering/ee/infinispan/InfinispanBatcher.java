@@ -70,16 +70,28 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
     };
 
     // Used to coalesce interposed transactions
-    static final ThreadLocal<TransactionBatch> CURRENT_BATCH = new ThreadLocal<>();
+    private static final ThreadLocal<TransactionBatch> CURRENT_BATCH = new ThreadLocal<>();
 
-    private static final Synchronization CURRENT_BATCH_REMOVER = new Synchronization() {
+    static TransactionBatch getCurrentBatch() {
+        return CURRENT_BATCH.get();
+    }
+
+    static void setCurrentBatch(TransactionBatch batch) {
+        if (batch != null) {
+            CURRENT_BATCH.set(batch);
+        } else {
+            CURRENT_BATCH.remove();
+        }
+    }
+
+    private static final Synchronization CURRENT_BATCH_SYNCHRONIZATION = new Synchronization() {
         @Override
         public void beforeCompletion() {
         }
 
         @Override
         public void afterCompletion(int status) {
-            CURRENT_BATCH.remove();
+            setCurrentBatch(null);
         }
     };
 
@@ -96,7 +108,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
     @Override
     public TransactionBatch createBatch() {
         if (this.tm == null) return NON_TX_BATCH;
-        TransactionBatch batch = CURRENT_BATCH.get();
+        TransactionBatch batch = getCurrentBatch();
         if (batch != null) {
             return batch.interpose();
         }
@@ -104,9 +116,9 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
             this.tm.suspend();
             this.tm.begin();
             Transaction tx = this.tm.getTransaction();
-            tx.registerSynchronization(CURRENT_BATCH_REMOVER);
+            tx.registerSynchronization(CURRENT_BATCH_SYNCHRONIZATION);
             batch = new InfinispanBatch(tx);
-            CURRENT_BATCH.set(batch);
+            setCurrentBatch(batch);
             return batch;
         } catch (RollbackException | SystemException | NotSupportedException e) {
             throw new CacheException(e);
@@ -115,15 +127,15 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
 
     @Override
     public BatchContext resumeBatch(TransactionBatch batch) {
-        TransactionBatch existingBatch = CURRENT_BATCH.get();
+        TransactionBatch existingBatch = getCurrentBatch();
         // Trivial case - nothing to suspend/resume
         if (batch == existingBatch) return PASSIVE_BATCH_CONTEXT;
         Transaction tx = (batch != null) ? batch.getTransaction() : null;
-        // Non-tx case, just swap thread local
+        // Non-tx case, just swap batch references
         if ((batch == null) || (tx == null)) {
-            CURRENT_BATCH.set(batch);
+            setCurrentBatch(batch);
             return () -> {
-                CURRENT_BATCH.set(existingBatch);
+                setCurrentBatch(existingBatch);
             };
         }
         try {
@@ -134,22 +146,21 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
                 }
             }
             this.tm.resume(tx);
-            CURRENT_BATCH.set(batch);
+            setCurrentBatch(batch);
             return () -> {
                 try {
                     this.tm.suspend();
                     if (existingBatch != null) {
                         try {
                             this.tm.resume(existingBatch.getTransaction());
-                            CURRENT_BATCH.set(existingBatch);
                         } catch (InvalidTransactionException e) {
                             throw new CacheException(e);
                         }
-                    } else {
-                        CURRENT_BATCH.remove();
                     }
                 } catch (SystemException e) {
                     throw new CacheException(e);
+                } finally {
+                    setCurrentBatch(existingBatch);
                 }
             };
         } catch (SystemException | InvalidTransactionException e) {
@@ -160,7 +171,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
     @Override
     public TransactionBatch suspendBatch() {
         if (this.tm == null) return null;
-        TransactionBatch batch = CURRENT_BATCH.get();
+        TransactionBatch batch = getCurrentBatch();
         if (batch != null) {
             try {
                 Transaction tx = this.tm.suspend();
@@ -170,7 +181,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
             } catch (SystemException e) {
                 throw new CacheException(e);
             } finally {
-                CURRENT_BATCH.remove();
+                setCurrentBatch(null);
             }
         }
         return batch;
