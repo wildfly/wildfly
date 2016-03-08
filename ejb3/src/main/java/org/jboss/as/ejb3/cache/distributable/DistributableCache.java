@@ -128,7 +128,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     @Override
     public void release(V value) {
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
-            try (Batch batch = value.getCacheContext()) {
+            try (Batch batch = value.removeCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
                     if (bean != null) {
@@ -162,7 +162,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     @Override
     public void discard(V value) {
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
-            try (Batch batch = value.getCacheContext()) {
+            try (Batch batch = value.removeCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
                     if (bean != null) {

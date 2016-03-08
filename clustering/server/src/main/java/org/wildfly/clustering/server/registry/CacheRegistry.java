@@ -120,12 +120,16 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     @Override
     public Map<K, V> getEntries() {
         Set<Node> nodes = this.group.getNodes().stream().collect(Collectors.toSet());
-        return this.cache.getAdvancedCache().getAll(nodes).values().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        try (Batch batch = this.batcher.createBatch()) {
+            return this.cache.getAdvancedCache().getAll(nodes).values().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        }
     }
 
     @Override
     public Map.Entry<K, V> getEntry(Node node) {
-        return this.cache.get(node);
+        try (Batch batch = this.batcher.createBatch()) {
+            return this.cache.get(node);
+        }
     }
 
     @TopologyChanged
