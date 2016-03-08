@@ -487,7 +487,6 @@
                                 </goals>
                                 <phase>validate</phase>
                                 <configuration>
-                                    <debug>true</debug>
                                     <verbose>true</verbose>
                                     <maxmemory>2400m</maxmemory>
                                     <!-- To prevent problems with author names written in non-UTF-8:
