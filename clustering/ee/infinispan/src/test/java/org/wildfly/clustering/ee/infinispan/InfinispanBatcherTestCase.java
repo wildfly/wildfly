@@ -45,14 +45,17 @@ public class InfinispanBatcherTestCase {
 
     @After
     public void destroy() {
-        InfinispanBatcher.CURRENT_BATCH.remove();
+        InfinispanBatcher.setCurrentBatch(null);
     }
 
     @Test
     public void createExistingBatch() throws Exception {
         TransactionBatch existingBatch = mock(TransactionBatch.class);
+        Transaction tx = mock(Transaction.class);
 
-        InfinispanBatcher.CURRENT_BATCH.set(existingBatch);
+        InfinispanBatcher.setCurrentBatch(existingBatch);
+        when(existingBatch.getTransaction()).thenReturn(tx);
+        when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
         when(existingBatch.interpose()).thenReturn(existingBatch);
 
         TransactionBatch result = this.batcher.createBatch();
@@ -61,6 +64,34 @@ public class InfinispanBatcherTestCase {
         verifyZeroInteractions(this.tm);
 
         assertSame(existingBatch, result);
+    }
+
+    @Test
+    public void createExistingRogueBatch() throws Exception {
+        TransactionBatch existingBatch = mock(TransactionBatch.class);
+        Transaction existingTx = mock(Transaction.class);
+        Transaction tx = mock(Transaction.class);
+        ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
+
+        InfinispanBatcher.setCurrentBatch(existingBatch);
+        when(existingBatch.getTransaction()).thenReturn(existingTx);
+        when(existingTx.getStatus()).thenReturn(Status.STATUS_COMMITTED);
+
+        when(this.tm.getTransaction()).thenReturn(tx);
+
+        try (TransactionBatch batch = this.batcher.createBatch()) {
+            verify(this.tm).begin();
+            verify(tx).registerSynchronization(capturedSync.capture());
+
+            assertSame(tx, batch.getTransaction());
+            assertSame(batch, InfinispanBatcher.getCurrentBatch());
+        } finally {
+            capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+        }
+
+        verify(tx).commit();
+
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
@@ -81,7 +112,7 @@ public class InfinispanBatcherTestCase {
 
         verify(tx).commit();
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
@@ -105,7 +136,7 @@ public class InfinispanBatcherTestCase {
         verify(tx, never()).commit();
         verify(tx).rollback();
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
@@ -138,7 +169,7 @@ public class InfinispanBatcherTestCase {
         verify(tx, never()).rollback();
         verify(tx).commit();
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
@@ -173,7 +204,7 @@ public class InfinispanBatcherTestCase {
         verify(tx).rollback();
         verify(tx, never()).commit();
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @SuppressWarnings("resource")
@@ -211,7 +242,7 @@ public class InfinispanBatcherTestCase {
         verify(tx, never()).rollback();
         verify(tx).commit();
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @SuppressWarnings("resource")
@@ -251,34 +282,34 @@ public class InfinispanBatcherTestCase {
         verify(tx).rollback();
         verify(tx, never()).commit();
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
     public void resumeNullBatch() throws Exception {
         TransactionBatch batch = mock(TransactionBatch.class);
-        InfinispanBatcher.CURRENT_BATCH.set(batch);
+        InfinispanBatcher.setCurrentBatch(batch);
 
         try (BatchContext context = this.batcher.resumeBatch(null)) {
             verifyZeroInteractions(this.tm);
-            assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+            assertNull(InfinispanBatcher.getCurrentBatch());
         }
         verifyZeroInteractions(this.tm);
-        assertSame(batch, InfinispanBatcher.CURRENT_BATCH.get());
+        assertSame(batch, InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
     public void resumeNonTxBatch() throws Exception {
         TransactionBatch existingBatch = mock(TransactionBatch.class);
-        InfinispanBatcher.CURRENT_BATCH.set(existingBatch);
+        InfinispanBatcher.setCurrentBatch(existingBatch);
         TransactionBatch batch = mock(TransactionBatch.class);
 
         try (BatchContext context = this.batcher.resumeBatch(batch)) {
             verifyZeroInteractions(this.tm);
-            assertSame(batch, InfinispanBatcher.CURRENT_BATCH.get());
+            assertSame(batch, InfinispanBatcher.getCurrentBatch());
         }
         verifyZeroInteractions(this.tm);
-        assertSame(existingBatch, InfinispanBatcher.CURRENT_BATCH.get());
+        assertSame(existingBatch, InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
@@ -293,20 +324,20 @@ public class InfinispanBatcherTestCase {
             verify(this.tm).resume(tx);
             reset(this.tm);
 
-            assertSame(batch, InfinispanBatcher.CURRENT_BATCH.get());
+            assertSame(batch, InfinispanBatcher.getCurrentBatch());
         }
 
         verify(this.tm).suspend();
         verify(this.tm, never()).resume(any());
 
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
     public void resumeBatchExisting() throws Exception {
         TransactionBatch existingBatch = mock(TransactionBatch.class);
         Transaction existingTx = mock(Transaction.class);
-        InfinispanBatcher.CURRENT_BATCH.set(existingBatch);
+        InfinispanBatcher.setCurrentBatch(existingBatch);
         TransactionBatch batch = mock(TransactionBatch.class);
         Transaction tx = mock(Transaction.class);
 
@@ -318,27 +349,27 @@ public class InfinispanBatcherTestCase {
             verify(this.tm).resume(tx);
             reset(this.tm);
 
-            assertSame(batch, InfinispanBatcher.CURRENT_BATCH.get());
+            assertSame(batch, InfinispanBatcher.getCurrentBatch());
 
             when(this.tm.suspend()).thenReturn(tx);
         }
 
         verify(this.tm).resume(existingTx);
 
-        assertSame(existingBatch, InfinispanBatcher.CURRENT_BATCH.get());
+        assertSame(existingBatch, InfinispanBatcher.getCurrentBatch());
     }
 
     @Test
     public void suspendBatch() throws Exception {
         TransactionBatch batch = mock(TransactionBatch.class);
-        InfinispanBatcher.CURRENT_BATCH.set(batch);
+        InfinispanBatcher.setCurrentBatch(batch);
 
         TransactionBatch result = this.batcher.suspendBatch();
 
         verify(this.tm).suspend();
 
         assertSame(batch, result);
-        assertNull(InfinispanBatcher.CURRENT_BATCH.get());
+        assertNull(InfinispanBatcher.getCurrentBatch());
     }
 
     @Test

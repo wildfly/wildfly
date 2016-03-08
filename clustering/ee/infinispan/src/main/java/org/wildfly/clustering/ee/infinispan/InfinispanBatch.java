@@ -75,4 +75,21 @@ public class InfinispanBatch implements TransactionBatch {
             }
         }
     }
+
+    @Override
+    public int hashCode() {
+        return this.tx.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof InfinispanBatch)) return false;
+        InfinispanBatch batch = (InfinispanBatch) object;
+        return this.tx.equals(batch.tx);
+    }
+
+    @Override
+    public String toString() {
+        return this.tx.toString();
+    }
 }
