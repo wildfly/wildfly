@@ -37,6 +37,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
@@ -151,8 +152,9 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
     @Test
     public void testPropertyPerm(@ArquillianResource URL webAppURL) throws Exception {
         try {
-            doCliOperation(
+            CLIOpResult opResult = doCliOperation(
                     "/subsystem=security-manager/deployment-permissions=default:add(maximum-permissions=[{class=java.util.PropertyPermission, actions=read, name=\"*\"}])");
+            assertOperationRequiresReload(opResult);
             reloadServer();
 
             assertDeployable(DEPLOYMENT_PERM, true);
@@ -160,8 +162,9 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
             assertPropertyNonReadable(DEPLOYMENT_NO_PERM);
 
         } finally {
-            doCliOperationWithoutChecks("/subsystem=security-manager/deployment-permissions=default:remove()");
+            CLIOpResult opResult = doCliOperationWithoutChecks("/subsystem=security-manager/deployment-permissions=default:remove()");
             reloadServer();
+            assertOperationRequiresReload(opResult);
         }
     }
 
@@ -186,8 +189,9 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
                 try {
                     // after removing permissions from maximum-set the deployment which requests non-granted permissions should
                     // fail.
-                    doCliOperation(
-                            "/subsystem=security-manager/deployment-permissions=default:write-attribute(name=maximum-permissions, value=[])");
+                    CLIOpResult opResult = doCliOperation(
+                            "/subsystem=security-manager/deployment-permissions=default:write-attribute(name=maximum-permissions, value=[]");
+                    assertOperationRequiresReload(opResult);
                     reloadServer();
 
                     assertNotDeployed(DEPLOYMENT_PERM);
@@ -195,17 +199,19 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
                     assertDeployed(DEPLOYMENT_NO_PERM);
                 } finally {
                     // clean-up - undeploy
-                    doCliOperation(
+                    CLIOpResult opResult =  doCliOperation(
                             "/subsystem=security-manager/deployment-permissions=default:write-attribute(name=maximum-permissions, value=[{class=java.security.AllPermission}])");
                     reloadServer();
+                    assertOperationRequiresReload(opResult);
                 }
             } finally {
                 deployer.undeploy(DEPLOYMENT_PERM);
                 deployer.undeploy(DEPLOYMENT_JBOSS_PERM);
             }
         } finally {
-            doCliOperationWithoutChecks("/subsystem=security-manager/deployment-permissions=default:remove()");
+            CLIOpResult opResult = doCliOperationWithoutChecks("/subsystem=security-manager/deployment-permissions=default:remove()");
             reloadServer();
+            assertOperationRequiresReload(opResult);
         }
     }
 

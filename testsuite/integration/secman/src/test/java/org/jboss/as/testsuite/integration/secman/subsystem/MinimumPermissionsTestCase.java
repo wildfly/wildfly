@@ -31,6 +31,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.testsuite.integration.secman.servlets.PrintSystemPropertyServlet;
 import org.jboss.logging.Logger;
@@ -86,14 +87,16 @@ public class MinimumPermissionsTestCase extends ReloadableCliTestBase {
      */
     @Test
     public void testFilePerm(@ArquillianResource URL webAppURL) throws Exception {
-        doCliOperation(
+        CLIOpResult opResult = doCliOperation(
                 "/subsystem=security-manager/deployment-permissions=default:write-attribute(name=minimum-permissions, value=[{class=java.io.FilePermission, actions=read, name=\"/-\"}])");
+        assertOperationRequiresReload(opResult);
         reloadServer();
 
         assertPropertyNonReadable();
 
-        doCliOperation(
+        opResult = doCliOperation(
                 "/subsystem=security-manager/deployment-permissions=default:undefine-attribute(name=minimum-permissions)");
+        assertOperationRequiresReload(opResult);
         reloadServer();
     }
 
