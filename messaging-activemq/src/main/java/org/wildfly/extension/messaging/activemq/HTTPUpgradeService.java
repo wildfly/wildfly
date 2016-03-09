@@ -54,6 +54,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.xnio.ChannelListener;
+import org.xnio.IoUtils;
 import org.xnio.StreamConnection;
 import org.xnio.netty.transport.WrappingXnioSocketChannel;
 
@@ -147,10 +148,14 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
             @Override
             public void handleEvent(final StreamConnection connection) {
                 MessagingLogger.ROOT_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", protocolName, acceptorName);
-                SocketChannel channel = new WrappingXnioSocketChannel(connection);
                 RemotingService remotingService = activemqServer.getRemotingService();
-
-                NettyAcceptor acceptor = (NettyAcceptor)remotingService.getAcceptor(acceptorName);
+                if (!remotingService.isStarted()) {
+                    // ActiveMQ no longer accepts connection
+                    IoUtils.safeClose(connection);
+                    return;
+                }
+                NettyAcceptor acceptor = (NettyAcceptor) remotingService.getAcceptor(acceptorName);
+                SocketChannel channel = new WrappingXnioSocketChannel(connection);
                 acceptor.transfer(channel);
                 connection.getSourceChannel().resumeReads();
             }
@@ -178,8 +183,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
      * Service to handle HTTP upgrade for legacy (HornetQ) clients.
      *
      * Legacy clients use different protocol and security key and accept headers during the HTTP Upgrade handshake.
-     */
-    static class LegacyHttpUpgradeService extends HTTPUpgradeService {
+     */static class LegacyHttpUpgradeService extends HTTPUpgradeService {
 
         public static void installService(final ServiceTarget serviceTarget, String activeMQServerName, final String acceptorName, final String httpListenerName) {
 
