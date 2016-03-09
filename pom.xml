@@ -213,7 +213,6 @@
         <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP2</version.org.picketlink>
-        <version.org.scannotation>1.0.3</version.org.scannotation>
         <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
@@ -4689,10 +4688,6 @@
                         <artifactId>httpclient</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.scannotation</groupId>
-                        <artifactId>scannotation</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>net.jcip</groupId>
                         <artifactId>jcip</artifactId>
                     </exclusion>
@@ -5959,19 +5954,6 @@
                 <artifactId>picketlink-wildfly8</artifactId>
                 <version>${version.org.picketlink}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.scannotation</groupId>
-                <artifactId>scannotation</artifactId>
-                <version>${version.org.scannotation}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javassist</groupId>
-                        <artifactId>javassist</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
 
             <dependency>
                 <groupId>org.slf4j</groupId>
