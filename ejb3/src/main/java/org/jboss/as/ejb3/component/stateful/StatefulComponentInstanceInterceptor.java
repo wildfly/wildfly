@@ -75,16 +75,19 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             if (!(ex instanceof RemoveException)) {
                 if (ex instanceof RuntimeException || ex instanceof RemoteException) {
                     ROOT_LOGGER.tracef(ex, "Removing bean %s because of exception", sessionId);
+                    System.out.println("StatefulComponentInstanceInterceptor: removing bean because of exception: id = " + sessionId);
                     instance.discard();
                 }
             }
             throw ex;
         } catch (final Error e) {
             ROOT_LOGGER.tracef(e, "Removing bean %s because of error", sessionId);
+            System.out.println("StatefulComponentInstanceInterceptor: removing bean because of error: id = " + sessionId);
             instance.discard();
             throw e;
         } catch (final Throwable t) {
             ROOT_LOGGER.tracef(t, "Removing bean %s because of Throwable", sessionId);
+            System.out.println("StatefulComponentInstanceInterceptor: removing bean because of throwable: id = " + sessionId);
             instance.discard();
             throw new RuntimeException(t);
         }
