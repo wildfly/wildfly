@@ -187,7 +187,6 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
     /*
      * Tests concurrent fail-over with a managed transaction context on the forwarder.
      */
-    @Ignore("See EJBCLIENT-137")
     @Test
     @InSequence(2)
     public void testConcurrentFailoverOverWithTransactions() throws Exception {
