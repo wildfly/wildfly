@@ -247,9 +247,6 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .build();
 
-        /**
-         * Attributes are defined in the <em>same order than in the XSD schema</em>
-         */
         ConnectionFactoryAttribute[] ATTRIBUTES = {
                 create(DISCOVERY_GROUP, null, false),
                 create(CONNECTORS, null, false),
@@ -428,9 +425,6 @@ public interface ConnectionFactoryAttributes {
                 .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
                 .build();
 
-        /**
-         * Attributes are defined in the <em>same order than in the XSD schema</em>
-         */
         ConnectionFactoryAttribute[] ATTRIBUTES = {
                 /* inbound config */
                 create(USE_JNDI, USE_JNDI_PROP_NAME, true, true),
