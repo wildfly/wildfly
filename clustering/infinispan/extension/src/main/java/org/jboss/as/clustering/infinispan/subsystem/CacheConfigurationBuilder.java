@@ -24,15 +24,20 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
 
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.configuration.cache.JMXStatisticsConfiguration;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.distribution.group.Grouper;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -48,14 +53,13 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilderFactory;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a cache configuration from its components.
  * @author Paul Ferraro
  */
-public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configuration>, ConfigurationBuilderFactory {
+public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Consumer<ConfigurationBuilder> {
 
     private final InjectedValue<EvictionConfiguration> eviction = new InjectedValue<>();
     private final InjectedValue<ExpirationConfiguration> expiration = new InjectedValue<>();
@@ -91,7 +95,7 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
                 .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
                 .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.containerName), GlobalConfiguration.class, this.global)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-        ;
+                ;
     }
 
     @Override
@@ -105,9 +109,7 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-
+    public void accept(ConfigurationBuilder builder) {
         EvictionConfiguration eviction = this.eviction.getValue();
         ExpirationConfiguration expiration = this.expiration.getValue();
         LockingConfiguration locking = this.locking.getValue();
@@ -121,10 +123,11 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
         builder.transaction().read(transaction);
         builder.jmxStatistics().read(this.statistics);
 
-        return builder;
+        GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
+        ServiceLoader.load(Grouper.class, this.getClassLoader()).forEach(grouper -> groupsBuilder.addGrouper(grouper));
     }
 
-    ClassLoader getClassLoader() {
+    private ClassLoader getClassLoader() {
         if (this.module != null) {
             try {
                 return this.loader.getValue().loadModule(this.module).getClassLoader();

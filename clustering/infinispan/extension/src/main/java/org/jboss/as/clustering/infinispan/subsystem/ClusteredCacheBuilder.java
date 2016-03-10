@@ -72,9 +72,8 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = super.createConfigurationBuilder();
+    public void accept(ConfigurationBuilder builder) {
         builder.clustering().read(this.clustering);
-        return builder;
+        super.accept(builder);
     }
 }

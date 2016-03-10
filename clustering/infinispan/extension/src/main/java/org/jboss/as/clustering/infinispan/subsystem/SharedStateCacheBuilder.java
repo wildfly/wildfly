@@ -73,8 +73,9 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = super.createConfigurationBuilder();
+    public void accept(ConfigurationBuilder builder) {
+        super.accept(builder);
+
         builder.clustering().partitionHandling().read(this.partitionHandling.getValue());
         builder.clustering().stateTransfer().read(this.stateTransfer.getValue());
 
@@ -88,7 +89,5 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
         SitesConfigurationBuilder sitesBuilder = builder.sites();
         sitesBuilder.read(this.backups.getValue());
         sitesBuilder.backupFor().read(this.backupFor.getValue());
-
-        return builder;
     }
 }
