@@ -67,8 +67,9 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = super.createConfigurationBuilder();
+    public void accept(ConfigurationBuilder builder) {
+        super.accept(builder);
+
         builder.clustering().cacheMode(CacheMode.LOCAL);
 
         TransactionConfiguration transaction = this.transaction.getValue();
@@ -84,8 +85,5 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
             builder.locking().writeSkewCheck(true);
             builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
         }
-
-        return builder;
     }
-
 }
