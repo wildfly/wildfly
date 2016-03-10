@@ -37,8 +37,9 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -54,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -71,6 +74,12 @@ public class FormAuthUnitTestCase {
 
     @ArquillianResource
     private URL baseURLNoAuth;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
+
+    private static final String USERNAME = "user2";
+    private static final String PASSWORD = "password2";
 
     DefaultHttpClient httpclient = new DefaultHttpClient();
 
@@ -99,21 +108,6 @@ public class FormAuthUnitTestCase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "restricted/login.html"), "restricted/login.html");
 
         return war;
-    }
-
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
-        for (ModelNode update : updates) {
-            log.debug("+++ Update on " + client + ":\n" + update.toString());
-            ModelNode result = client.execute(new OperationBuilder(update).build());
-            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                if (result.hasDefined("result"))
-                    log.trace(result.get("result"));
-            } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            } else {
-                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-            }
-        }
     }
 
     /**
@@ -297,42 +291,41 @@ public class FormAuthUnitTestCase {
      * jaas security domain cache entries after the web session has been
      * invalidated.
      */
-    // lbarerreiro: SKIPPED !!! No JMX connection on AS7
-    // TODO: Other ways of getting this values !?!?
-    //@Ignore
     @Test
     public void testFlushOnSessionInvalidation() throws Exception {
         log.trace("+++ testFlushOnSessionInvalidation");
 
-        // MBeanServerConnection conn = (MBeanServerConnection) getServer();
-        // ObjectName name = new
-        // ObjectName("jboss.security:service=JaasSecurityManager");
-        // JaasSecurityManagerServiceMBean secMgrService =
-        // (JaasSecurityManagerServiceMBean)
-        // MBeanServerInvocationHandler.newProxyInstance(conn, name,
-        // JaasSecurityManagerServiceMBean.class, false);
+        final ModelNode addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "security");
+        addr.add("security-domain", "other");
+        addr.protect();
+        final ModelNode listCachedPrincipalsOperation = new ModelNode();
+        listCachedPrincipalsOperation.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        listCachedPrincipalsOperation.get(ModelDescriptionConstants.OP).set("list-cached-principals");
+
+        final ModelNode cachedPrincipals0 = ManagementOperations.executeOperation(managementClient.getControllerClient(), listCachedPrincipalsOperation);
+        assertNotNull(cachedPrincipals0);
+        assertTrue("There should be no principal in the security domain's cache.", cachedPrincipals0.asList().isEmpty());
 
         // Access a secured servlet to create a session and jaas cache entry
         doSecureGetWithLogin("restricted/SecuredServlet");
 
         // Validate that the jaas cache has 1 principal
-        // List<Principal> principals =
-        // secMgrService.getAuthenticationCachePrincipals("jbossweb-form-auth");
-        // assertTrue("jbossweb-form-auth does not have one and only one principal",
-        // principals.size() == 1);
+        final ModelNode cachedPrincipals1 = ManagementOperations.executeOperation(managementClient.getControllerClient(), listCachedPrincipalsOperation);
+        assertNotNull(cachedPrincipals1);
+        assertEquals("There should be exactly 1 principal in the security domain's cache after login.", 1, cachedPrincipals1.asList().size());
+        assertEquals("Unexpected principal in the security domain's cache.", USERNAME, cachedPrincipals1.asList().get(0).asString());
 
         // Logout to clear the cache
         doSecureGet("Logout");
-        // principals =
-        // secMgrService.getAuthenticationCachePrincipals("jbossweb-form-auth");
-        // log.trace("jbossweb-form-auth principals = " +
-        // Arrays.toString(principals.toArray()));
-        // assertTrue("jbossweb-form-auth has cached principals",
-        // principals.size() == 0);
+
+        final ModelNode cachedPrincipals2 = ManagementOperations.executeOperation(managementClient.getControllerClient(), listCachedPrincipalsOperation);
+        assertNotNull(cachedPrincipals2);
+        assertTrue("There should be no principal in the security domain's cache after logout.", cachedPrincipals2.asList().isEmpty());
     }
 
     public HttpPost doSecureGetWithLogin(String path) throws Exception {
-        return doSecureGetWithLogin(path, "user2", "password2");
+        return doSecureGetWithLogin(path, USERNAME, PASSWORD);
     }
 
     public HttpPost doSecureGetWithLogin(String path, String username, String password) throws Exception {
