@@ -25,12 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
-import org.infinispan.configuration.cache.VersioningScheme;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -42,7 +38,6 @@ import org.jboss.msc.value.InjectedValue;
 public class LocalCacheBuilder extends CacheConfigurationBuilder {
 
     private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
-    private final InjectedValue<LockingConfiguration> locking = new InjectedValue<>();
     private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
 
     private final String containerName;
@@ -61,18 +56,17 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         return super.build(target)
                 .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
-                .addDependency(CacheComponent.LOCKING.getServiceName(this.containerName, this.cacheName), LockingConfiguration.class, this.locking)
                 .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.containerName, this.cacheName), PersistenceConfiguration.class, this.persistence)
         ;
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = super.createConfigurationBuilder();
+    public void accept(ConfigurationBuilder builder) {
+        super.accept(builder);
+
         builder.clustering().cacheMode(CacheMode.LOCAL);
 
         TransactionConfiguration transaction = this.transaction.getValue();
-        LockingConfiguration locking = this.locking.getValue();
         PersistenceConfiguration persistence = this.persistence.getValue();
 
         // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
@@ -80,12 +74,5 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
         if (InfinispanLogger.ROOT_LOGGER.isTraceEnabled() && builder.simpleCache()) {
             InfinispanLogger.ROOT_LOGGER.tracef("Configuration for container '%s', cache '%s' will use simple cache optimization", this.containerName, this.cacheName);
         }
-        if ((transaction.lockingMode() == LockingMode.OPTIMISTIC) && (locking.isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
-            builder.locking().writeSkewCheck(true);
-            builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
-        }
-
-        return builder;
     }
-
 }

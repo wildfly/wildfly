@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.infinispan.spi.service;
 
+import java.util.function.Consumer;
+
 import org.infinispan.configuration.cache.Configuration;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -32,7 +34,7 @@ import org.wildfly.clustering.service.Builder;
  * Builds a cache configuration based on the configuration of a template cache.
  * @author Paul Ferraro
  */
-public class TemplateConfigurationBuilder implements Builder<Configuration>, ConfigurationBuilderFactory {
+public class TemplateConfigurationBuilder implements Builder<Configuration> {
 
     private final InjectedValue<Configuration> template = new InjectedValue<>();
     private final Builder<Configuration> builder;
@@ -46,7 +48,12 @@ public class TemplateConfigurationBuilder implements Builder<Configuration>, Con
      * @param templateCacheName the name of the template cache
      */
     public TemplateConfigurationBuilder(String containerName, String cacheName, String templateCacheName) {
-        this.builder = new ConfigurationBuilder(containerName, cacheName, this);
+        this(containerName, cacheName, templateCacheName, null);
+    }
+
+    public TemplateConfigurationBuilder(String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
+        Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> consumer = builder -> builder.read(this.template.getValue());
+        this.builder = new ConfigurationBuilder(containerName, cacheName, (templateConsumer != null) ? consumer.andThen(templateConsumer) : consumer);
         this.containerName = containerName;
         this.templateCacheName = templateCacheName;
     }
@@ -59,10 +66,5 @@ public class TemplateConfigurationBuilder implements Builder<Configuration>, Con
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         return this.builder.build(target).addDependency(CacheServiceName.CONFIGURATION.getServiceName(this.containerName, this.templateCacheName), Configuration.class, this.template);
-    }
-
-    @Override
-    public org.infinispan.configuration.cache.ConfigurationBuilder createConfigurationBuilder() {
-        return new org.infinispan.configuration.cache.ConfigurationBuilder().read(this.template.getValue());
     }
 }
