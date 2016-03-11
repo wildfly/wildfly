@@ -13,7 +13,7 @@
     <artifactId>wildfly-ts-integ</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly Test Suite: Integration</name>
+    <name>WildFly Test Suite: Integration (parent)</name>
 
     <properties>
         <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->

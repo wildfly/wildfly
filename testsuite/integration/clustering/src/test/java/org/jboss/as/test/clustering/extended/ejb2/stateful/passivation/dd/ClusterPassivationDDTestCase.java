@@ -42,7 +42,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,15 +65,13 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        Archive<?> archive = createDeployment();
-        return archive;
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        Archive<?> archive = createDeployment();
-        return archive;
+        return createDeployment();
     }
 
     private static Archive<?> createDeployment() {
@@ -100,13 +97,13 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     }
 
     @Test
-    @InSequence(-1)
+    @InSequence(-2)
     public void startServersForTests() {
         startServers(null, null);
     }
 
     /**
-     * Associtation of node names to deployment,container names and client context
+     * Association of node names to deployment,container names and client context
      */
     @Test
     @InSequence(-1)
@@ -124,7 +121,6 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
         log.info("URL2 nodename: " + nodeName2);
     }
 
-    @Ignore("JBPAPP-8774")
     @Test
     @InSequence(1)
     public void testPassivationBeanDefinedByDescriptor(
