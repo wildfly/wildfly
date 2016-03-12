@@ -79,7 +79,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.realm.DomainContextRealmService;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
@@ -87,7 +86,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JBossJSSESecurityDomain;
@@ -111,7 +109,6 @@ import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.security.auth.server.SecurityRealm;
 
 /**
  * Add a security domain configuration.
@@ -137,16 +134,6 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attribute : SecurityDomainResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
-        }
-    }
-
-    @Override
-    protected void recordCapabilitiesAndRequirements(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
-        // register the security realm capabality if the export-elytron-realm attribute has been set.
-        ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, resource.getModel());
-        if (elytronRealm.isDefined()) {
-            context.registerCapability(Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.fromBaseCapability(elytronRealm.asString()), null);
         }
     }
 
@@ -187,15 +174,6 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                     Object.class, securityDomainService.getCacheManagerInjector());
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-        final ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, model);
-        if (elytronRealm.isDefined()) {
-            final ServiceName realmServiceName = context.getCapabilityServiceName(Capabilities.SECURITY_REALM_CAPABILITY, elytronRealm.asString(), SecurityRealm.class);
-            final DomainContextRealmService domainContextRealmService = new DomainContextRealmService();
-            target.addService(realmServiceName, domainContextRealmService)
-                    .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, domainContextRealmService.getSecurityDomainContextInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
-        }
     }
 
     private ApplicationPolicy createApplicationPolicy(OperationContext context, String securityDomain, final ModelNode model)

@@ -47,15 +47,4 @@ public class SecurityDomainReloadRemoveHandler extends RestartParentResourceRemo
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         return SecurityDomainResourceDefinition.getSecurityDomainServiceName(parentAddress);
     }
-
-    @Override
-    protected void removeServices(final OperationContext context, final ServiceName parentService, final ModelNode parentModel) throws OperationFailedException {
-        super.removeServices(context, parentService, parentModel);
-        // make sure the security realm service is also removed.
-        ModelNode elytronRealm = SecurityDomainResourceDefinition.EXPORT_ELYTRON_REALM.resolveModelAttribute(context, parentModel);
-        if (elytronRealm.isDefined()) {
-            ServiceName serviceName = Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY.getCapabilityServiceName(elytronRealm.asString());
-            context.removeService(serviceName);
-        }
-    }
 }

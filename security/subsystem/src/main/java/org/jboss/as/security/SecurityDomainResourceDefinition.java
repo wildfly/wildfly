@@ -34,7 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
@@ -45,7 +45,6 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.security.logging.SecurityLogger;
@@ -69,12 +68,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             .setAllowedValues("default", "infinispan")
             .build();
 
-    public static final SimpleAttributeDefinition EXPORT_ELYTRON_REALM = new SimpleAttributeDefinitionBuilder(Constants.EXPORT_ELYTRON_REALM, ModelType.STRING, true)
-            .setAllowExpression(false)
-            .setValidator(new StringLengthValidator(1, true))
-            .build();
-
-    public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {CACHE_TYPE, EXPORT_ELYTRON_REALM};
+    public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {CACHE_TYPE};
 
     private final boolean registerRuntimeOnly;
     private final List<AccessConstraintDefinition> accessConstraints;
@@ -82,7 +76,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
         super(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE,
-                new SecurityDomainRemove(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE));
+                new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE));
         this.registerRuntimeOnly = registerRuntimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
@@ -93,7 +87,6 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler());
-        resourceRegistration.registerReadWriteAttribute(EXPORT_ELYTRON_REALM, null, new ReloadRequiredWriteAttributeHandler());
     }
 
     @Override

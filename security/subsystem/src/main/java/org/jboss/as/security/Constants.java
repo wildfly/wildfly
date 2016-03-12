@@ -117,5 +117,7 @@ public interface Constants {
     String LIST_CACHED_PRINCIPALS = "list-cached-principals";
     String FLUSH_CACHE = "flush-cache";
     String PRINCIPAL_ARGUMENT = "principal";
-    String EXPORT_ELYTRON_REALM = "export-elytron-realm";
+    String ELYTRON_INTEGRATION = "elytron-integration";
+    String ELYTRON_REALM = "elytron-realm";
+    String LEGACY_DOMAIN_NAME = "legacy-domain-name";
 }

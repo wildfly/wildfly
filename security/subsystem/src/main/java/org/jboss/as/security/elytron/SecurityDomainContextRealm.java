@@ -1,26 +1,19 @@
 /*
- *  JBoss, Home of Professional Open Source.
- *  Copyright 2015, Red Hat, Inc., and individual contributors
- *  as indicated by the @author tags. See the copyright.txt file in the
- *  distribution for a full listing of individual contributors.
+ * Copyright 2016 Red Hat, Inc.
  *
- *  This is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as
- *  published by the Free Software Foundation; either version 2.1 of
- *  the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  This software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  Lesser General Public License for more details.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this software; if not, write to the Free
- *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
-package org.jboss.as.security.realm;
+package org.jboss.as.security.elytron;
 
 import java.security.Principal;
 import java.security.acl.Group;
@@ -45,41 +38,55 @@ import org.wildfly.security.evidence.Evidence;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
 
 /**
- * <p>
- * A {@link org.wildfly.security.auth.server.SecurityRealm} implementation that delegates credential verification to the
+ * A {@link org.wildfly.security.auth.server.SecurityRealm} implementation that delegates credential verification to an
  * underlying {@link org.jboss.as.security.plugins.SecurityDomainContext}. This realm is exported as a capability by the
- * security subsystem if the {@code export-elytron-realm} attribute is defined in the security domain configuration. The
- * example bellow illustrates how to export a realm for the security domain {@code legacy-domain}:
+ * legacy security subsystem by using the {@code elytron-realm} element that is available in the {@code elytron-integration}
+ * section in the subsystem configuration. The example bellow illustrates how to export a realm for the security domain
+ * {@code mydomain}:
  *
  * <pre>
- *     &lt;security-domain name="legacy-domain" cache-type="default" export-elytron-realm="legacy-realm"&gt;
+ *     &lt;subsystem xmlns="urn:jboss:domain:security:3.0"&gt;
+ *         &lt;security-domains&gt;
+ *             &lt;security-domain name="mydomain" cache-type="default"&gt;
+ *                 ...
+ *             &lt;/security-domain&gt;
+ *             ...
+ *         &lt;/security-domains&gt;
+ *         &lt;elytron-integration&gt;
+ *             &lt;elytron-realm name="LegacyRealm" legacy-domain-name="mydomain"/&gt;
+ *         &lt;/elytron-integration&gt;
  *         ...
- *     &lt;/security-domain&gt;
+ *     &lt;/subsystem&gt;
  * </pre>
- *</p>
- * <p>
- * The value of {@code export-elytron-realm} attribute is used as the dynamic name of the exported realm. This is the
- * name that must be used in the {@code Elytron} subsystem to reference this {@link org.jboss.as.security.plugins.SecurityDomainContext}
- * based realm. So, for the above example, an {@code Elytron} configuration would look like this:
+ * <p/>
+ * The value of the {@code name} attribute is used as the dynamic name of the exported realm. This is the name that must
+ * be used in the {@code Elytron} subsystem to reference this realm. So, for the above example, an {@code Elytron}
+ * configuration would look like this:
  *
  * <pre>
  *     &lt;subsystem xmlns="urn:wildfly:elytron:1.0"&gt;
  *         &lt;security-domains&gt;
- *             &lt;security-domain name="ApplicationDomain" default-realm="legacy-realm"&gt;
- *                 &lt;realm name="legacy-realm"/&gt;
+ *             &lt;security-domain name="ApplicationDomain" default-realm="LegacyRealm"&gt;
+ *                 &lt;realm name="LegacyRealm"/&gt;
  *             &lt;/security-domain&gt;
  *         &lt;/security-domains&gt;
+ *         ...
  *     &lt;/subsystem&gt;
  * </pre>
+ * <p/>
+ * The above Elytron security domain can then be used anywhere in the Elytron subsystem (for example, to setup a
+ * http-server-authentication).
  * </p>
+ * The {@code legacy-domain-name} attribute MUST reference a valid legacy security domain. Failure to do so will result
+ * in a dependency resolution error that will prevent the realm from being created.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class DomainContextRealm implements SecurityRealm {
+public class SecurityDomainContextRealm implements SecurityRealm {
 
     private SecurityDomainContext domainContext;
 
-    public DomainContextRealm(final SecurityDomainContext context) {
+    public SecurityDomainContextRealm(final SecurityDomainContext context) {
         this.domainContext = context;
     }
 
@@ -113,7 +120,7 @@ public class DomainContextRealm implements SecurityRealm {
 
         @Override
         public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName) throws RealmUnavailableException {
-            return DomainContextRealm.this.getCredentialAcquireSupport(credentialType, algorithmName);
+            return SecurityDomainContextRealm.this.getCredentialAcquireSupport(credentialType, algorithmName);
         }
 
         @Override
@@ -123,7 +130,7 @@ public class DomainContextRealm implements SecurityRealm {
 
         @Override
         public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
-            return DomainContextRealm.this.getEvidenceVerifySupport(evidenceType, algorithmName);
+            return SecurityDomainContextRealm.this.getEvidenceVerifySupport(evidenceType, algorithmName);
         }
 
         @Override

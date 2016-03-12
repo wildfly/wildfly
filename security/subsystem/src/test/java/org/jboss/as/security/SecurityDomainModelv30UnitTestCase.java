@@ -36,6 +36,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.security.elytron.ElytronRealmResourceDefinition;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -44,6 +45,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Security subsystem tests for the version 3.0 of the subsystem schema.
+ */
 public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTest {
 
     public SecurityDomainModelv30UnitTestCase() {
@@ -117,12 +121,12 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
 
-        // the elytron domain should be rejected because it has defined the export-elytron-realm attribute as true.
-        PathAddress domainAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement(Constants.SECURITY_DOMAIN, "legacy-domain"));
+        // any elytron-realm resources in the model should get rejected as those are not supported in model version 1.3.0.
+        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version,
                 builder.parseXmlResource("securitysubsystemv30.xml"),
                 new FailedOperationTransformationConfig()
-                        .addFailedAttribute(PathAddress.pathAddress(domainAddress),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
+                        .addFailedAttribute(PathAddress.pathAddress(subsystemAddress,
+                                ElytronRealmResourceDefinition.ELYTRON_REALM_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 }

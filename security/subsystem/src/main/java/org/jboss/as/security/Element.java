@@ -59,7 +59,9 @@ enum Element {
     SUBJECT_FACTORY("subject-factory"),
     TRUST_MODULE("trust-module"),
     VAULT("vault"),
-    VAULT_OPTION("vault-option");
+    VAULT_OPTION("vault-option"),
+    ELYTRON_INTEGRATION("elytron-integration"),
+    ElYTRON_REALM("elytron-realm");
 
     private final String name;
 
