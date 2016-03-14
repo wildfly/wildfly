@@ -508,7 +508,89 @@
                 </plugins>
             </build>
         </profile>
-        
+
+        <profile>
+            <id>ts.clustering.two.clusters.profile</id>
+            <activation><property><name>!ts.noClustering</name></property></activation>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.config-as.clustering.two.clusters</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo>Creating two clusters configurations</echo>
+                                        <!-- Build the UDP server configs in target/ . -->
+                                        <!-- this configuration uses one interface and port offsets -->
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="node0" value="${node0}"/>
+                                            <property name="node1" value="${node1}"/>
+                                            <property name="node2" value="${node2}"/>
+                                            <property name="node3" value="${node3}"/>
+                                            <property name="mcast-clusterA" value="${mcast}"/>
+                                            <property name="mcast-clusterB" value="${mcast1}"/>
+                                            <property name="mcast-mping" value="${mcast2}"/>
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
+                                            <target name="build-clustering-two-clusters"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Single node clustering tests. -->
+                            <execution>
+                                <id>ts.surefire.clustering.two.clusters</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/twoclusters/RemoteEJBTwoClusterTestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>clustering-two-clusters</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <stack>udp</stack>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+
         <profile>
             <id>ts.clustering.session-db-persistence.profile</id>
             <activation>

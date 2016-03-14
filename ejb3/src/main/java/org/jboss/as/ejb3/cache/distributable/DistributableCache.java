@@ -146,6 +146,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void remove(K id) {
+        System.out.println("DistributableCache: calling cache remove() for bean " + id);
         try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
                 Bean<K, V> bean = this.manager.findBean(id);
@@ -161,6 +162,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void discard(V value) {
+        System.out.println("DistributableCache: calling cache discard() for bean" + value.getId());
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
             try (Batch batch = value.getCacheContext()) {
                 try {

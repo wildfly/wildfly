@@ -293,6 +293,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
      * @param sessionId The session id
      */
     public void removeSession(final SessionID sessionId) {
+        System.out.println("StatefulSessionComponent: calling removeSession() for sessionID " + sessionId);
         //The cache takes care of the transactional behavoir
         this.cache.remove(sessionId);
     }
