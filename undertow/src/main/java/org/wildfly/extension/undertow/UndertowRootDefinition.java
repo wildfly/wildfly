@@ -31,6 +31,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ValueExpression;
 import org.jboss.security.SecurityConstants;
@@ -73,6 +74,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("default-security-domain", ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(SecurityConstants.DEFAULT_APPLICATION_POLICY))
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
                     .build();
 
 
