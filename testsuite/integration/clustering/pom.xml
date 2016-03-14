@@ -511,7 +511,7 @@
 
         <profile>
             <id>ts.clustering.two.clusters.profile</id>
-            <activation><property><name>!ts.noClustering</name></property></activation>
+            <activation><property><name>extendedTests</name></property></activation>
 
             <!--
                 Server configuration executions.
