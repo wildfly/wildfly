@@ -32,6 +32,10 @@ public interface ATM {
 
     double getBalance(long id);
 
+    double depositTwice(long id, double a1, double a2);
+
+    double depositTwiceRawSQL(long id, double a1, double a2);
+
     double depositTwiceWithRollback(long id, double a1, double a2);
 
     double withdrawTwiceWithRollback(long id, double a1, double a2);
