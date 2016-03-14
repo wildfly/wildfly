@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ejb.EJBException;
 import javax.naming.NamingException;
-import javax.validation.constraints.AssertTrue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
