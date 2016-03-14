@@ -40,6 +40,23 @@ public class JBossServiceConfig implements Serializable {
     private JBossServiceAttributeConfig[] attributeConfigs;
     private JBossServiceConstructorConfig constructorConfig;
 
+    public JBossServiceConfig() {
+        super();
+    }
+
+    public JBossServiceConfig(String name, String code, JBossServiceDependencyConfig[] dependencyConfigs,
+            JBossServiceDependencyListConfig[] dependencyConfigLists, String[] aliases, String[] annotations,
+            JBossServiceAttributeConfig[] attributeConfigs, JBossServiceConstructorConfig constructorConfig) {
+        this.name = name;
+        this.code = code;
+        this.aliases = aliases;
+        this.annotations = annotations;
+        this.dependencyConfigs = dependencyConfigs;
+        this.dependencyConfigLists = dependencyConfigLists;
+        this.attributeConfigs = attributeConfigs;
+        this.constructorConfig = constructorConfig;
+    }
+
     public String getName() {
         return name;
     }
