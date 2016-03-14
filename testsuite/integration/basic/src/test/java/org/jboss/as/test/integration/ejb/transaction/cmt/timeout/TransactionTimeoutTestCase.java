@@ -22,9 +22,7 @@
 package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 
 import static org.junit.Assert.assertEquals;
-
 import javax.naming.InitialContext;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
