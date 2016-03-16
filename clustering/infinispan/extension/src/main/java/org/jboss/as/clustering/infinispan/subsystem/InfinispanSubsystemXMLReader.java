@@ -535,11 +535,17 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case QUEUE_SIZE: {
-                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.QUEUE_SIZE);
+                if (this.schema.since(InfinispanSchema.VERSION_4_1)) {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+                }
+                ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
             case QUEUE_FLUSH_INTERVAL: {
-                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.QUEUE_FLUSH_INTERVAL);
+                if (this.schema.since(InfinispanSchema.VERSION_4_1)) {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+                }
+                ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
             case REMOTE_TIMEOUT: {
