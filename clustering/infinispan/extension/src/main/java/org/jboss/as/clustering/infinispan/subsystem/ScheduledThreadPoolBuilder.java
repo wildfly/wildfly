@@ -57,13 +57,14 @@ public class ScheduledThreadPoolBuilder extends CacheContainerComponentBuilder<T
         long keepAliveTime = this.definition.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asLong();
 
         ThreadPoolExecutorFactory<?> factory = new ThreadPoolExecutorFactory<ScheduledExecutorService>() {
-
             @Override
             public ScheduledExecutorService createExecutor(ThreadFactory factory) {
-                ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(0);
-                scheduledExecutor.setCorePoolSize(maxThreads);
-                scheduledExecutor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
-                return scheduledExecutor;
+                // Use fixed size, based on maxThreads
+                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, factory);
+                executor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
+                executor.setRemoveOnCancelPolicy(true);
+                executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+                return executor;
             }
 
             @Override
