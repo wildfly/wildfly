@@ -31,6 +31,7 @@ import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.infinispan.ClassLoaderThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +61,7 @@ public class ScheduledThreadPoolBuilder extends CacheContainerComponentBuilder<T
             @Override
             public ScheduledExecutorService createExecutor(ThreadFactory factory) {
                 // Use fixed size, based on maxThreads
-                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, factory);
+                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, new ClassLoaderThreadFactory(factory, ClassLoaderThreadFactory.class.getClassLoader()));
                 executor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
                 executor.setRemoveOnCancelPolicy(true);
                 executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
@@ -69,7 +70,7 @@ public class ScheduledThreadPoolBuilder extends CacheContainerComponentBuilder<T
 
             @Override
             public void validate() {
-
+                // Do nothing
             }
         };
         this.builder.threadPoolFactory(factory);
