@@ -34,6 +34,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
  *
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public class StoreMetricExecutor implements MetricExecutor<ActivationInterceptor> {
 
     @Override

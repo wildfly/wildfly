@@ -37,6 +37,7 @@ import org.jboss.dmr.ModelType;
  * Enumeration of management metrics for a cache.
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public enum CacheMetric implements Metric<Cache<?, ?>> {
 
     ACTIVATIONS(MetricKeys.ACTIVATIONS, ModelType.LONG) {
