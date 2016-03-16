@@ -28,7 +28,9 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 
 import javax.naming.Reference;
 import javax.resource.spi.ManagedConnectionFactory;
+import javax.security.auth.Subject;
 import javax.sql.DataSource;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Driver;
@@ -44,6 +46,7 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.JDBCResourceAdapter;
@@ -118,6 +121,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
+    private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
     private final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
 
 
@@ -271,6 +275,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             return raRepository;
         }
 
+    public Injector<ServerSecurityManager> getServerSecurityManager() {
+        return secManager;
+    }
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
         final StringBuffer valueBuf = new StringBuffer();
@@ -426,7 +433,22 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
                 return null;
             } else {
-                return new PicketBoxSubjectFactory(subjectFactory.getValue());
+                return new PicketBoxSubjectFactory(subjectFactory.getValue()){
+                    @Override
+                    public Subject createSubject(final String sd) {
+                        ServerSecurityManager sm = secManager.getOptionalValue();
+                        if (sm != null) {
+                            sm.push(sd);
+                        }
+                        try {
+                            return super.createSubject(sd);
+                        } finally {
+                            if (sm != null) {
+                                sm.pop();
+                            }
+                        }
+                    }
+                };
             }
         }
 
