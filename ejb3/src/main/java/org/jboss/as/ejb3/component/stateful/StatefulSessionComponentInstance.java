@@ -25,7 +25,10 @@ import java.io.ObjectStreamException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ejb.EJBException;
 import javax.transaction.Transaction;
@@ -75,7 +78,9 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     /**
      * The thread based lock for the stateful bean
      */
-    private final Object threadLock = new Object();
+    private final ReentrantLock threadLock = new ReentrantLock();
+    private final ReentrantLock invocationLock = new ReentrantLock();
+    private final Queue<Integer> callbackQueue = new ConcurrentLinkedQueue<>();
     private boolean removed = false;
 
     boolean isSynchronizationRegistered() {
@@ -86,8 +91,16 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         this.synchronizationRegistered = synchronizationRegistered;
     }
 
-    Object getThreadLock() {
+    ReentrantLock getThreadLock() {
         return threadLock;
+    }
+
+    ReentrantLock getInvocationLock() {
+        return invocationLock;
+    }
+
+    Queue<Integer> getCallbackQueue() {
+        return callbackQueue;
     }
 
     OwnableReentrantLock getLock() {

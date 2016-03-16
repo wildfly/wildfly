@@ -39,6 +39,7 @@ import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.IllegalLoopbackException;
 import javax.ejb.LockType;
 import javax.ejb.NoMoreTimeoutsException;
@@ -3114,4 +3115,11 @@ public interface EjbLogger extends BasicLogger {
             "As a result the 'default-sfsb-cache' attribute has been set to '%s' and the " +
             "'default-sfsb-passivation-disabled-cache' attribute has been set to '%s'.")
     void remappingCacheAttributes(String address, ModelNode defClustered, ModelNode passivationDisabled);
+
+    @Message(id = 487, value = "Cannot invoke EJB method, as its parent transaction has already completed with exit status %d.")
+    EJBTransactionRolledbackException transactionNoLongerActive(int txStatus);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 488, value = "Exception encountered when executing delayed afterCompletion callback for transaction %s")
+    void exceptionThrownInDelayedAfterCompletion(@Cause Throwable cause, Object txKey);
 }
