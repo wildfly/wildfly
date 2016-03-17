@@ -35,12 +35,9 @@ enum Namespace {
 
     UNKNOWN(null),
 
-    SECURITY_MANAGER_1_0("urn:jboss:domain:security-manager:1.0");
+    SECURITY_MANAGER_1_0("urn:jboss:domain:security-manager:1.0"),
 
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = SECURITY_MANAGER_1_0;
+    SECURITY_MANAGER_3_0("urn:jboss:domain:security-manager:3.0");
 
     private final String name;
 

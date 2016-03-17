@@ -23,24 +23,24 @@
 
 package org.wildfly.extension.security.manager;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-
 /**
- * This class implements a parser for the security manager subsystem.
+ * This class implements a parser for version 3.0 of the security manager subsystem.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-class SecurityManagerSubsystemParser extends PersistentResourceXMLParser {
+class SecurityManagerSubsystemParser_3_0 extends PersistentResourceXMLParser {
 
-    static final SecurityManagerSubsystemParser INSTANCE = new SecurityManagerSubsystemParser();
+    static final SecurityManagerSubsystemParser_3_0 INSTANCE = new SecurityManagerSubsystemParser_3_0();
 
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(SecurityManagerRootDefinition.INSTANCE, Namespace.SECURITY_MANAGER_1_0.getUriString())
+        xmlDescription = builder(SecurityManagerRootDefinition.INSTANCE, Namespace.SECURITY_MANAGER_3_0.getUriString())
                 .addChild(builder(DeploymentPermissionsResourceDefinition.INSTANCE)
                                 .setXmlElementName(Constants.DEPLOYMENT_PERMISSIONS)
                                 .addAttribute(DeploymentPermissionsResourceDefinition.MINIMUM_PERMISSIONS)
@@ -53,7 +53,7 @@ class SecurityManagerSubsystemParser extends PersistentResourceXMLParser {
     /**
      * Private constructor to enforce usage of the static singleton instance.
      */
-    private SecurityManagerSubsystemParser() {
+    private SecurityManagerSubsystemParser_3_0() {
     }
 
     @Override

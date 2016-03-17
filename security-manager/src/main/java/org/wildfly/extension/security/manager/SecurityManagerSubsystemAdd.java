@@ -23,15 +23,18 @@
 
 package org.wildfly.extension.security.manager;
 
-import static org.wildfly.extension.security.manager.Constants.DEFAULT_VALUE;
-import static org.wildfly.extension.security.manager.Constants.DEPLOYMENT_PERMISSIONS;
-import static org.wildfly.extension.security.manager.Constants.MAXIMUM_PERMISSIONS;
-import static org.wildfly.extension.security.manager.Constants.MINIMUM_PERMISSIONS;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_ACTIONS;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_MODULE;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.ACTIONS;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.CLASS;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.DEFAULT_MAXIMUM_SET;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.DEPLOYMENT_PERMISSIONS_PATH;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.MAXIMUM_PERMISSIONS;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.MINIMUM_PERMISSIONS;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.MODULE;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.NAME;
 
-import java.security.AllPermission;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +53,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.security.FactoryPermissionCollection;
-import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 import org.wildfly.extension.security.manager.deployment.PermissionsParserProcessor;
@@ -60,7 +62,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Handler that adds the security manager subsystem. It instantiates the permissions specified in the subsystem configuration
- * and installs the service that will activate the {@link WildFlySecurityManager}.
+ * and installs the DUPs that parse and validate the deployment permissions.
  *
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  */
@@ -85,7 +87,7 @@ class SecurityManagerSubsystemAdd extends AbstractBoottimeAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 ModelNode node = Resource.Tools.readModel(resource);
-                launchServices(context, node);
+                installProcessors(context, node);
                 // Rollback handled by the parent step
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
@@ -93,42 +95,39 @@ class SecurityManagerSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     /**
-     * Retrieves the permissions configured in the security manager subsystem and installs the service that will enable
-     * the {@link WildFlySecurityManager}.
+     * Retrieves the permissions configured in the security manager subsystem and installs the DUPs that parse and validate
+     * the deployment permissions.
      *
      * @param context a reference to the {@link OperationContext}.
-     * @param node the {@link ModelNode} that contains all the configured permissions.
-     *                   be added.
-     * @throws OperationFailedException if an error occurs while launching the security manager services.
+     * @param node the {@link ModelNode} that contains all the configured permissions be added.
+     * @throws OperationFailedException if an error occurs while processing the permissions specified in the subsystem.
      */
-    protected void launchServices(final OperationContext context, final ModelNode node)
+    protected void installProcessors(final OperationContext context, final ModelNode node)
             throws OperationFailedException {
 
         // get the minimum set of deployment permissions.
-        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context,
-                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MINIMUM_PERMISSIONS));
+        final ModelNode deploymentPermissionsModel = node.get(DEPLOYMENT_PERMISSIONS_PATH.getKeyValuePair());
+        final ModelNode minimumPermissionsNode = MINIMUM_PERMISSIONS.resolveModelAttribute(context, deploymentPermissionsModel);
+        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context, minimumPermissionsNode);
 
         // get the maximum set of deployment permissions.
-        final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context,
-                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MAXIMUM_PERMISSIONS));
+        ModelNode maximumPermissionsNode = MAXIMUM_PERMISSIONS.resolveModelAttribute(context, deploymentPermissionsModel);
+        if (!maximumPermissionsNode.isDefined())
+            maximumPermissionsNode = DEFAULT_MAXIMUM_SET;
+        final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context, maximumPermissionsNode);
 
-        if (maximumSet.isEmpty()) {
-            maximumSet.add(new ImmediatePermissionFactory(new AllPermission()));
-        }
-
-        // validate the configured permissions - the mininum set must be implid by the maximum set.
+        // validate the configured permissions - the minimum set must be implied by the maximum set.
         final FactoryPermissionCollection maxPermissionCollection = new FactoryPermissionCollection(maximumSet.toArray(new PermissionFactory[maximumSet.size()]));
         final StringBuilder failedPermissions = new StringBuilder();
         for (PermissionFactory factory : minimumSet) {
             Permission permission = factory.construct();
             if (!maxPermissionCollection.implies(permission)) {
-                failedPermissions.append("\n\t\t" + permission);
+                failedPermissions.append("\n\t\t").append(permission);
             }
         }
         if (failedPermissions.length() > 0) {
             throw SecurityManagerLogger.ROOT_LOGGER.invalidSubsystemConfiguration(failedPermissions);
         }
-
 
         // install the DUPs responsible for parsing and validating security permissions found in META-INF/permissions.xml.
         context.addStep(new AbstractDeploymentChainStep() {
@@ -151,20 +150,20 @@ class SecurityManagerSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     protected List<PermissionFactory> retrievePermissionSet(final OperationContext context, final ModelNode node) throws OperationFailedException {
 
-        final List<PermissionFactory> permissions = new ArrayList<PermissionFactory>();
+        final List<PermissionFactory> permissions = new ArrayList<>();
 
         if (node != null && node.isDefined()) {
             for (ModelNode permissionNode : node.asList()) {
-                String permissionClass = DeploymentPermissionsResourceDefinition.CLASS.resolveModelAttribute(context, permissionNode).asString();
+                String permissionClass = CLASS.resolveModelAttribute(context, permissionNode).asString();
                 String permissionName = null;
                 if (permissionNode.hasDefined(PERMISSION_NAME))
-                    permissionName = DeploymentPermissionsResourceDefinition.NAME.resolveModelAttribute(context, permissionNode).asString();
+                    permissionName = NAME.resolveModelAttribute(context, permissionNode).asString();
                 String permissionActions = null;
                 if (permissionNode.hasDefined(PERMISSION_ACTIONS))
-                    permissionActions = DeploymentPermissionsResourceDefinition.ACTIONS.resolveModelAttribute(context, permissionNode).asString();
+                    permissionActions = ACTIONS.resolveModelAttribute(context, permissionNode).asString();
                 String moduleName = null;
                 if(permissionNode.hasDefined(PERMISSION_MODULE)) {
-                    moduleName =  DeploymentPermissionsResourceDefinition.MODULE.resolveModelAttribute(context, permissionNode).asString();
+                    moduleName =  MODULE.resolveModelAttribute(context, permissionNode).asString();
                 }
                 ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
                 if(moduleName != null) {
@@ -180,25 +179,5 @@ class SecurityManagerSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }
         return permissions;
-    }
-
-
-    /**
-     * Utility method that traverses a {@link ModelNode} according to the provided path. If a valid node is reached, it is
-     * returned.
-     *
-     * @param node the node to be traversed.
-     * @param args a {@code String[]} that forms the path to be traversed.
-     * @return a reference to the {@link ModelNode} that was reached at the end of the path, or {@code null} if path doesn't
-     * lead to a defined node.
-     */
-    protected ModelNode peek(ModelNode node, String... args) {
-        for (String arg : args) {
-            if (!node.hasDefined(arg)) {
-                return null;
-            }
-            node = node.get(arg);
-        }
-        return node;
     }
 }
