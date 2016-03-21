@@ -20,15 +20,13 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
+        <groupId>org.jboss</groupId>
         <version>20</version>
     </parent>
 
@@ -42,17 +40,14 @@
     <description>Dependency Management BOM</description>
 
     <url>http://www.wildfly.org</url>
-    <issueManagement>
-        <system>JIRA</system>
-        <url>https://issues.jboss.org/</url>
-    </issueManagement>
 
-    <scm>
-        <connection>scm:git:https://github.com/wildfly/boms.git</connection>
-        <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
-        <url>http://github.com/wildfly/boms</url>
-        <tag>HEAD</tag>
-    </scm>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <developers>
         <developer>
@@ -63,15 +58,34 @@
         </developer>
     </developers>
 
-    <licenses>
-        <license>
-            <name>GNU Lesser General Public License, Version 2.1</name>
-            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <modules>
+        <module>wildfly-javaee7-with-tools</module>
+    </modules>
+
+    <scm>
+        <connection>scm:git:https://github.com/wildfly/boms.git</connection>
+        <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>http://github.com/wildfly/boms</url>
+    </scm>
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.jboss.org/</url>
+    </issueManagement>
 
     <properties>
+        <version.io.undertow>1.3.15.Final</version.io.undertow>
+        <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
+
+        <!-- Versions of projects not directly under JBoss umbrella -->
+        <version.junit>4.12</version.junit>
+        <version.log4j>1.2.17</version.log4j>
+
+        <!-- Version of Hibernate projects -->
+        <version.org.hibernate>5.0.7.Final</version.org.hibernate>
+        <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
+        <version.org.hibernate.search>5.5.1.Final</version.org.hibernate.search>
+        <version.org.hibernate.validator>5.2.3.Final</version.org.hibernate.validator>
 
         <!-- Versions of JBoss projects -->
         <version.org.infinispan>8.1.0.Final</version.org.infinispan>
@@ -79,72 +93,38 @@
         <version.org.jboss.arquillian.extension.drone>1.3.1.Final</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.0.3.Final</version.org.jboss.arquillian.graphene>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.narayana>5.2.12.Final</version.org.jboss.narayana>
+        <version.org.jboss.jboss-dmr>1.3.0.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.logging>3.3.0.Final</version.org.jboss.logging>
         <version.org.jboss.logging.jboss-logging-tools>2.0.1.Final</version.org.jboss.logging.jboss-logging-tools>
+        <version.org.jboss.narayana>5.2.12.Final</version.org.jboss.narayana>
         <version.org.jboss.resteasy>3.0.14.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.negotiation>3.0.0.Final</version.org.jboss.security.negotiation>
-        <version.org.jboss.spec.jboss.javaee.7>1.0.3.Final</version.org.jboss.spec.jboss.javaee.7>
         <version.org.jboss.shrinkwrap.resolver>2.2.2</version.org.jboss.shrinkwrap.resolver>
-        <version.org.jboss.jboss-dmr>1.3.0.Final</version.org.jboss.jboss-dmr>
+        <version.org.jboss.spec.jboss.javaee.7>1.0.3.Final</version.org.jboss.spec.jboss.javaee.7>
         <version.org.picketlink>2.5.5.SP1</version.org.picketlink>
-
-        <!-- Version of Hibernate projects -->
-        <version.org.hibernate>5.0.7.Final</version.org.hibernate>
-        <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
-        <version.org.hibernate.validator>5.2.3.Final</version.org.hibernate.validator>
-        <version.org.hibernate.search>5.5.1.Final</version.org.hibernate.search>
-        <version.org.wildfly.arquillian.container>1.0.2.Final</version.org.wildfly.arquillian.container>
-
-        <!-- Versions of projects not directly under JBoss umbrella -->
-        <version.junit>4.12</version.junit>
-        <version.log4j>1.2.17</version.log4j>
         <version.org.slf4j>1.7.7</version.org.slf4j>
         <version.org.testng>6.9.10</version.org.testng>
+        <version.org.wildfly.arquillian.container>1.0.2.Final</version.org.wildfly.arquillian.container>
+        <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.surefire.plugin>2.17</version.surefire.plugin>
-        <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
-        <version.io.undertow>1.3.15.Final</version.io.undertow>
-        <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- BOM imports -->
-            <!-- JBoss distributes a complete set of Java EE 7 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-                a collection) of artifacts. We use this here so that we always get the correct
-                versions of artifacts. Here we use the jboss-javaee-7.0 stack (you can read
-                this as the JBoss stack of the Java EE full Profile 7 APIs). You can actually use
-                this stack with any version of WildFly that implements Java EE 7! -->
-            <dependency>
-                <groupId>org.jboss.spec</groupId>
-                <artifactId>jboss-javaee-7.0</artifactId>
-                <version>${version.org.jboss.spec.jboss.javaee.7}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3</groupId>
-                <artifactId>jboss-ejb3-ext-api</artifactId>
-                <version>${version.org.jboss.ejb3.ext-api}</version>
-                <scope>provided</scope>
-            </dependency>
-
 
             <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>
                 <version>${version.io.undertow}</version>
+                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.undertow</groupId>
                         <artifactId>undertow-build-config</artifactId>
+                        <groupId>io.undertow</groupId>
                     </exclusion>
                 </exclusions>
-                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -154,12 +134,12 @@
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.undertow</groupId>
                         <artifactId>undertow-build-config</artifactId>
+                        <groupId>io.undertow</groupId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
                         <artifactId>jboss-jsp-api_2.2_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -171,8 +151,8 @@
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.undertow</groupId>
                         <artifactId>undertow-build-config</artifactId>
+                        <groupId>io.undertow</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -184,12 +164,19 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- Thirdparty dependencies -->
             <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-dmr</artifactId>
-                <version>${version.org.jboss.jboss-dmr}</version>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${version.log4j}</version>
+                <scope>provided</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-c3p0</artifactId>
+                <version>${version.org.hibernate}</version>
+                <scope>provided</scope>
+            </dependency>
 
             <!-- Hibernate ORM sub-modules -->
             <dependency>
@@ -200,10 +187,16 @@
                 <!-- this already part of JDK6 -->
                 <exclusions>
                     <exclusion>
-                        <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
+                        <groupId>xml-apis</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-ehcache</artifactId>
+                <version>${version.org.hibernate}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -223,33 +216,20 @@
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
                         <artifactId>jboss-transaction-api</artifactId>
+                        <groupId>org.jboss.javaee</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-c3p0</artifactId>
-                <version>${version.org.hibernate}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-ehcache</artifactId>
-                <version>${version.org.hibernate}</version>
-                <scope>provided</scope>
+                <artifactId>hibernate-jpamodelgen</artifactId>
+                <version>${version.org.hibernate-jpamodelgen}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-proxool</artifactId>
                 <version>${version.org.hibernate}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -276,6 +256,12 @@
                 <version>${version.org.hibernate.search}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${version.org.hibernate.validator}</version>
+                <scope>provided</scope>
+            </dependency>
             <!-- Tools -->
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -283,9 +269,10 @@
                 <version>${version.org.hibernate.validator}</version>
             </dependency>
             <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-jpamodelgen</artifactId>
-                <version>${version.org.hibernate-jpamodelgen}</version>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-client-hotrod</artifactId>
+                <version>${version.org.infinispan}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -294,10 +281,25 @@
                 <version>${version.org.infinispan}</version>
                 <scope>provided</scope>
             </dependency>
+
             <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-client-hotrod</artifactId>
-                <version>${version.org.infinispan}</version>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-dmr</artifactId>
+                <version>${version.org.jboss.jboss-dmr}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ejb3</groupId>
+                <artifactId>jboss-ejb3-ext-api</artifactId>
+                <version>${version.org.jboss.ejb3.ext-api}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!--  jboss-logging API -->
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+                <version>${version.org.jboss.logging}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -316,12 +318,10 @@
                 <version>${version.org.jboss.logging.jboss-logging-tools}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <!--  jboss-logging API -->
             <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <version>${version.org.jboss.logging}</version>
+                <groupId>org.jboss.narayana.jts</groupId>
+                <artifactId>narayana-jts-jacorb</artifactId>
+                <version>${version.org.jboss.narayana}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -330,13 +330,7 @@
                 <groupId>org.jboss.narayana.xts</groupId>
                 <artifactId>jbossxts</artifactId>
                 <version>${version.org.jboss.narayana}</version>
-                <scope>provided</scope>
                 <classifier>api</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-jacorb</artifactId>
-                <version>${version.org.jboss.narayana}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -348,31 +342,55 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>jose-jwt</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>bcprov-jdk16</artifactId>
+                        <groupId>org.bouncycastle</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
+                        <groupId>com.sun.xml.bind</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jaxb-provider</artifactId>
+                <artifactId>resteasy-client</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jettison-provider</artifactId>
+                <artifactId>resteasy-crypto</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>mail</artifactId>
+                        <groupId>javax.mail</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>apache-mime4j</artifactId>
+                        <groupId>org.apache.james</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>bcprov-jdk16</artifactId>
+                        <groupId>org.bouncycastle</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>bcmail-jdk16</artifactId>
+                        <groupId>org.bouncycastle</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
@@ -388,47 +406,37 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxb-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jaxb-impl</artifactId>
+                        <groupId>com.sun.xml.bind</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>net.jcip</groupId>
                         <artifactId>jcip-annotations</artifactId>
+                        <groupId>net.jcip</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-client</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-multipart-provider</artifactId>
+                <artifactId>resteasy-jettison-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.james</groupId>
-                        <artifactId>apache-mime4j</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-yaml-provider</artifactId>
+                <artifactId>resteasy-jsapi</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.yaml</groupId>
-                        <artifactId>snakeyaml</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
@@ -437,48 +445,12 @@
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.json</groupId>
                         <artifactId>javax.json-api</artifactId>
+                        <groupId>javax.json</groupId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.glassfish</groupId>
                         <artifactId>javax.json</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-crypto</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.james</groupId>
-                        <artifactId>apache-mime4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk16</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcmail-jdk16</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>jose-jwt</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk16</artifactId>
+                        <groupId>org.glassfish</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -489,18 +461,34 @@
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.glassfish</groupId>
                         <artifactId>javax.el</artifactId>
+                        <groupId>org.glassfish</groupId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.hibernate.javax.persistence</groupId>
                         <artifactId>hibernate-jpa-2.0-api</artifactId>
+                        <groupId>org.hibernate.javax.persistence</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jsapi</artifactId>
+                <artifactId>resteasy-multipart-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>mail</artifactId>
+                        <groupId>javax.mail</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>apache-mime4j</artifactId>
+                        <groupId>org.apache.james</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-servlet-initializer</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <scope>provided</scope>
             </dependency>
@@ -511,20 +499,26 @@
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-validator</artifactId>
+                        <groupId>org.hibernate</groupId>
                     </exclusion>
                     <exclusion>
-                        <groupId>com.fasterxml</groupId>
                         <artifactId>classmate</artifactId>
+                        <groupId>com.fasterxml</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-servlet-initializer</artifactId>
+                <artifactId>resteasy-yaml-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>snakeyaml</artifactId>
+                        <groupId>org.yaml</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -549,16 +543,24 @@
                 <version>${version.org.jboss.security.negotiation}</version>
                 <scope>provided</scope>
             </dependency>
+            <!-- BOM imports -->
+            <!-- JBoss distributes a complete set of Java EE 7 APIs including
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
+                a collection) of artifacts. We use this here so that we always get the correct
+                versions of artifacts. Here we use the jboss-javaee-7.0 stack (you can read
+                this as the JBoss stack of the Java EE full Profile 7 APIs). You can actually use
+                this stack with any version of WildFly that implements Java EE 7! -->
+            <dependency>
+                <groupId>org.jboss.spec</groupId>
+                <artifactId>jboss-javaee-7.0</artifactId>
+                <version>${version.org.jboss.spec.jboss.javaee.7}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <dependency>
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-api</artifactId>
-                <version>${version.org.picketlink}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-impl</artifactId>
                 <version>${version.org.picketlink}</version>
                 <scope>provided</scope>
             </dependency>
@@ -574,12 +576,10 @@
                 <version>${version.org.picketlink}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <!-- Thirdparty dependencies -->
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${version.log4j}</version>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-impl</artifactId>
+                <version>${version.org.picketlink}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -590,13 +590,8 @@
                 <scope>provided</scope>
             </dependency>
 
-
         </dependencies>
     </dependencyManagement>
-
-    <modules>
-        <module>wildfly-javaee7-with-tools</module>
-    </modules>
 
     <build>
         <pluginManagement>

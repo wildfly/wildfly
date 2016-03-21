@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2014, Red Hat, Inc., and individual contributors
@@ -25,8 +25,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.bom</groupId>
         <artifactId>wildfly-javaee7</artifactId>
+        <groupId>org.wildfly.bom</groupId>
         <version>10.0.1.Final-SNAPSHOT</version>
     </parent>
 
@@ -59,23 +59,6 @@
                 <artifactId>junit</artifactId>
                 <version>${version.junit}</version>
                 <scope>test</scope>
-            </dependency>
-
-            <!-- Recommended TestNG version -->
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>${version.org.testng}</version>
-            </dependency>
-
-            <!-- ShrinkWrap Resolvers project provides a Java API to obtain
-                artifacts from a repository system. -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>${version.org.jboss.shrinkwrap.resolver}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <!-- Arquillian lets test you your applications in real environment -->
@@ -120,6 +103,23 @@
                 <artifactId>graphene-webdriver</artifactId>
                 <version>${version.org.jboss.arquillian.graphene}</version>
                 <type>pom</type>
+            </dependency>
+
+            <!-- ShrinkWrap Resolvers project provides a Java API to obtain
+                artifacts from a repository system. -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Recommended TestNG version -->
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${version.org.testng}</version>
             </dependency>
 
             <!-- Arquillian support for JBoss WildFly 8 container -->
