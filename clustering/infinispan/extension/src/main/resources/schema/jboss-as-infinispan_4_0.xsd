@@ -81,9 +81,9 @@
                     <xs:documentation>Defines a thread pool used for asynchronous transport communication.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="expiration-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+            <xs:element name="expiration-thread-pool" type="tns:scheduled-thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for expiration.</xs:documentation>
+                    <xs:documentation>Defines a scheduled thread pool used for expiration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:choice maxOccurs="unbounded">
@@ -1073,6 +1073,19 @@
         <xs:attribute name="keepalive-time" type="xs:long" use="optional">
             <xs:annotation>
                 <xs:documentation>Timeout in milliseconds to remove idle thread from the pool.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="scheduled-thread-pool">
+        <xs:attribute name="max-threads" type="xs:int" use="optional">
+            <xs:annotation>
+                <xs:documentation>Fixed thread pool size for the scheduled thread pool.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="keepalive-time" type="xs:long" use="optional">
+            <xs:annotation>
+                <xs:documentation>Timeout in milliseconds to remove idle thread from the scheduled thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
