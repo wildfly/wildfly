@@ -52,7 +52,7 @@ public class StatelessTimeoutTestCase {
     private InitialContext initCtx;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
 
     @Deployment
     public static Archive<?> createDeployment() {
@@ -75,7 +75,7 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void noTimeout() throws Exception {
-        StatelessBmtBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(1, 0);
     }
 
@@ -87,7 +87,7 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void timeout() throws Exception {
-        StatelessBmtBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(3, 1);
 
         Assert.assertEquals("Two times two XA resources - for each commit happened", 4, checker.getCommitted());
@@ -102,9 +102,9 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void timeoutMultiple() throws Exception {
-        StatelessBmtBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(4, 3);
-        
+
         Assert.assertEquals("One time two XA resources - for each commit happened", 2, checker.getCommitted());
         Assert.assertEquals("Three times two XA resources - for each rollback happened", 6, checker.getRolledback());
     }
@@ -116,8 +116,8 @@ public class StatelessTimeoutTestCase {
      */
     @Test
     public void resetTimeoutToDefault() throws Exception {
-        StatelessBmtRestartTimeoutBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtRestartTimeoutBean.class);
+        StatelessBmtRestartTimeoutBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtRestartTimeoutBean.class);
         bean.test();
     }
-    
+
 }

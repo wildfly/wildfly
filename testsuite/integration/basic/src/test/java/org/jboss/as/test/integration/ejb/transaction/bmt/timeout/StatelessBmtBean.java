@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.transaction.bmt.timeout;
 
 import java.rmi.RemoteException;
 import javax.annotation.Resource;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -33,7 +32,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
 @Stateless
@@ -47,7 +46,8 @@ public class StatelessBmtBean {
     @Resource(name = "java:jboss/TransactionManager")
     private TransactionManager tm;
 
-    public String testTransaction(int transactionCount, int timeoutCount) throws RemoteException, NamingException {
+    public String testTransaction(int transactionCount, int timeoutCount)
+            throws RemoteException, NamingException, SystemException {
         TxTestUtil.checkTransactionExists(tm, false);
 
         for(int i = 1; i <= transactionCount; i++) {
@@ -55,11 +55,7 @@ public class StatelessBmtBean {
             runTransaction(isTimeout);
         }
 
-        try {
-            return TxTestUtil.getStatusAsString(txn.getStatus());
-        } catch (SystemException se) {
-            throw new EJBException("Can't get status of transaction", se);
-        }
+        return TxTestUtil.getStatusAsString(txn.getStatus());
     }
 
     private void runTransaction(boolean isTimeout) {

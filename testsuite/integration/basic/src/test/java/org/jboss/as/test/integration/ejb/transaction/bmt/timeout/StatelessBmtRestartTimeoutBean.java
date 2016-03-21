@@ -28,7 +28,8 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.RollbackException;
 import javax.transaction.TransactionManager;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 

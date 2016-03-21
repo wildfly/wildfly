@@ -52,7 +52,7 @@ public class ActivationPropertyTimeoutMDB implements MessageListener {
     private TransactionManager tm;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
 
     @Override
     public void onMessage(Message message) {
