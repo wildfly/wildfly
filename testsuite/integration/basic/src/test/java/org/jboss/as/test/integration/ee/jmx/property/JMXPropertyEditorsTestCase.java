@@ -116,7 +116,7 @@ public class JMXPropertyEditorsTestCase {
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
         final String address = managementClient.getMgmtAddress()+":"+managementClient.getMgmtPort();
-        connector = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:http-remoting-jmx://"+address), DefaultConfiguration.credentials());
+        connector = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remote+http://"+address), DefaultConfiguration.credentials());
         return connector.getMBeanServerConnection();
     }
 

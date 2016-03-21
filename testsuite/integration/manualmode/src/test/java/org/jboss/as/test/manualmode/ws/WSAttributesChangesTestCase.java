@@ -116,7 +116,7 @@ public class WSAttributesChangesTestCase {
     private void performWsdlHostAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;
@@ -181,7 +181,7 @@ public class WSAttributesChangesTestCase {
     private void performWsdlPortAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
         ModelControllerClient client = managementClient.getControllerClient();
         try {
@@ -240,7 +240,7 @@ public class WSAttributesChangesTestCase {
     private void performWsdlUriSchemeAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlUriScheme = null;
@@ -312,7 +312,7 @@ public class WSAttributesChangesTestCase {
     private void performWsdlPathRewriteRuleAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
         ModelControllerClient client = managementClient.getControllerClient();
 
