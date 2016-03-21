@@ -267,7 +267,7 @@ public class EJBManagementUtil {
             addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
             addRemoteOutboundConnection.get(SECURITY_REALM).set("PasswordRealm");
             addRemoteOutboundConnection.get("username").set("user1");
-            addRemoteOutboundConnection.get("protocol").set("http-remoting");
+            addRemoteOutboundConnection.get("protocol").set("remote+http");
 
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);

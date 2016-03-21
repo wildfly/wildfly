@@ -37,10 +37,13 @@
             </feature>
         </feature>
 
-        <feature spec="host.core-service.management.management-interface.native-interface">
+        <feature spec="host.core-service.management.management-interface.http-interface">
             <param name="security-realm" value="ManagementRealm"/>
             <param name="interface" value="management"/>
-            <param name="port" value="${jboss.management.native.port:9999}"/>
+            <param name="port" value="${jboss.management.http.port:9990}"/>
+            <feature spec="host.core-service.management.management-interface.http-interface.http-upgrade">
+                <param name="enabled" value="true"/>
+            </feature>
         </feature>
 
         <feature spec="host.interface">
@@ -51,8 +54,8 @@
         <feature spec="host.core-service.discovery-options">
             <feature spec="host.core-service.discovery-options.static-discovery">
                 <param name="static-discovery" value="primary"/>
-                <param name="protocol" value="${jboss.domain.master.protocol:remote}"/>
-                <param name="port" value="${jboss.domain.master.port:9999}"/>
+                <param name="protocol" value="${jboss.domain.master.protocol:remote+http}"/>
+                <param name="port" value="${jboss.domain.master.port:9990}"/>
             </feature>
         </feature>
     </feature>

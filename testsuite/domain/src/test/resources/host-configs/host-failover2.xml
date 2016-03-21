@@ -56,7 +56,7 @@
     </management>
 
     <domain-controller>
-        <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm"/>
+         <remote host="${jboss.test.host.master.address}" protocol="${jboss.domain.master.protocol:remote+http}" port="9990" security-realm="ManagementRealm"/>
     </domain-controller>
 
     <!--

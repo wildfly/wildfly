@@ -167,7 +167,7 @@ public class OutboundLdapConnectionTestCase {
         if (containerController.isStarted(CONTAINER) && !serverConfigured) {
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             ManagementClient mgmtClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                    TestSuiteEnvironment.getServerPort(), "http-remoting");
+                    TestSuiteEnvironment.getServerPort(), "remote+http");
             prepareServer(mgmtClient);
         }
     }
@@ -177,7 +177,7 @@ public class OutboundLdapConnectionTestCase {
         if (serverConfigured && containerController.isStarted(CONTAINER)) {
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             ManagementClient mgmtClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                    TestSuiteEnvironment.getServerPort(), "http-remoting");
+                    TestSuiteEnvironment.getServerPort(), "remote+http");
             cleanUpServer(mgmtClient);
         }
     }

@@ -17,7 +17,7 @@
     <xsl:param name="remotePort" select="'4447'"/>
     <xsl:param name="securityRealm" select="NOT_DEFINED"/>
     <xsl:param name="userName" select="NOT_DEFINED"/>
-    <xsl:param name="protocol" select="http-remoting"/>
+    <xsl:param name="protocol" select="remote+http"/>
 
     <xsl:template name="newRemoteOutboundConnection">        
         <xsl:element name="remote-outbound-connection" namespace="{namespace-uri()}">
