@@ -33,9 +33,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.transaction.TransactionManager;
-
-import org.jboss.as.test.integration.ejb.transaction.utils.SingletonChecker;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
 @MessageDriven(activationConfig = {
@@ -53,7 +52,7 @@ public class ActivationPropertyTimeoutMDB implements MessageListener {
     private TransactionManager tm;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
 
     @Override
     public void onMessage(Message message) {

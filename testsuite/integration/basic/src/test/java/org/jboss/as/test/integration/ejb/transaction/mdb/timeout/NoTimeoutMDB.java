@@ -33,7 +33,8 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
 @MessageDriven(activationConfig = {

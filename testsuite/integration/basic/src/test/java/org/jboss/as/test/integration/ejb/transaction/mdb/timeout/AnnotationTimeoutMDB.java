@@ -34,7 +34,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.transaction.TransactionManager;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;
 

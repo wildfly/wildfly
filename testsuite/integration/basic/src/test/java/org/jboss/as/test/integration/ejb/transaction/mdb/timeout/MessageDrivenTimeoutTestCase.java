@@ -39,8 +39,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.transaction.utils.SingletonChecker;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,7 +58,7 @@ public class MessageDrivenTimeoutTestCase {
     private InitialContext initCtx;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
     
     @Deployment
     public static Archive<?> deployment() {
