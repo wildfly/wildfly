@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.security;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -34,6 +33,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.authz.Roles;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -56,7 +56,7 @@ class RolesAllowedInterceptor implements Interceptor {
         if (iterator.hasNext()) {
             final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
             final SecurityIdentity identity = securityDomain.getCurrentSecurityIdentity();
-            final Set<String> ejbRoles = identity.getRoles("ejb", true);
+            final Roles ejbRoles = identity.getRoles("ejb", true);
             do {
                 final String role = iterator.next();
                 if (ejbRoles.contains(role)) {

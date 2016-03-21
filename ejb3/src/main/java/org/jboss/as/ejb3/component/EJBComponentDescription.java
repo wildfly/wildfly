@@ -115,6 +115,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.security.SecurityConstants;
+import org.wildfly.security.authz.Roles;
 import org.wildfly.security.authz.RoleMapper;
 
 /**
@@ -1111,17 +1112,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             // Next interceptor: extra principal roles
             final Set<String> extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
             if (! extraRoles.isEmpty()) {
-                interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(extraRoles))));
+                interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(extraRoles)))));
             }
         }
 
         // Next interceptor: run-as-role
         if (runAsRole != null) {
-            interceptorFactories.put(InterceptorOrder.View.RUN_AS_ROLE, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Collections.singleton(runAsRole)))));
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_ROLE, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(Collections.singleton(runAsRole))))));
         }
 
         // Ignoring declared roles
-        RoleMapper.constant(getDeclaredRoles());
+        RoleMapper.constant(Roles.fromSet(getDeclaredRoles()));
 
         return interceptorFactories;
     }
