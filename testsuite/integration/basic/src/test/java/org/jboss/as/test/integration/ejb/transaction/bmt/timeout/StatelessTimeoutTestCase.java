@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.ejb.transaction.bmt.timeout;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.ejb.transaction.utils.SingletonChecker;
-import org.jboss.as.test.integration.ejb.transaction.utils.TestLookupUtil;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -50,7 +50,7 @@ public class StatelessTimeoutTestCase {
     private InitialContext initCtx;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
 
     @Deployment
     public static Archive<?> createDeployment() {
@@ -68,13 +68,13 @@ public class StatelessTimeoutTestCase {
 
     @Test
     public void noTimeout() throws Exception {
-        StatelessBmtBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(1, 0);
     }
     
     @Test
     public void timeout() throws Exception {
-        StatelessBmtBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(3, 1);
 
         Assert.assertEquals("Two times two XA resources - for each commit happened", 4, checker.getCommitted());
@@ -83,7 +83,7 @@ public class StatelessTimeoutTestCase {
     
     @Test
     public void timeoutMultiple() throws Exception {
-        StatelessBmtBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(4, 3);
         
         Assert.assertEquals("One time two XA resources - for each commit happened", 2, checker.getCommitted());
@@ -92,7 +92,7 @@ public class StatelessTimeoutTestCase {
 
     @Test
     public void resetTimeoutToDefault() throws Exception {
-        StatelessBmtRestartTimeoutBean bean = TestLookupUtil.lookupModule(initCtx, StatelessBmtRestartTimeoutBean.class);
+        StatelessBmtRestartTimeoutBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtRestartTimeoutBean.class);
         bean.test();
     }
     

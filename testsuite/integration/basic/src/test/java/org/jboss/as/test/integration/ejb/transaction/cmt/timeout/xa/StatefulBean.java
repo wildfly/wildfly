@@ -27,8 +27,7 @@ import javax.ejb.Stateful;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;
 

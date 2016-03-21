@@ -32,8 +32,9 @@ import javax.inject.Inject;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import org.jboss.as.test.integration.ejb.transaction.utils.SingletonChecker;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
 /**
@@ -48,7 +49,7 @@ public class StatelessWithAnnotationBean {
     private TransactionManager tm;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
 
     @AfterBegin
     public void afterBegin() {

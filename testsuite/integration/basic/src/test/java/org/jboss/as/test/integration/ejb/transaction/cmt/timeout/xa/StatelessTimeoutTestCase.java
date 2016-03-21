@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.ejb.transaction.cmt.timeout.xa;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.ejb.transaction.utils.SingletonChecker;
-import org.jboss.as.test.integration.ejb.transaction.utils.TestLookupUtil;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -50,7 +50,7 @@ public class StatelessTimeoutTestCase {
     private InitialContext initCtx;
 
     @Inject
-    private SingletonChecker checker;
+    private TransactionCheckerSingleton checker;
     
 
     @Deployment
@@ -70,7 +70,7 @@ public class StatelessTimeoutTestCase {
     @Test
     public void noTimeout() throws Exception {
         
-        StatelessWithAnnotationBean bean = TestLookupUtil.lookupModule(initCtx, StatelessWithAnnotationBean.class);
+        StatelessWithAnnotationBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessWithAnnotationBean.class);
         bean.testTransaction();
         bean.testTransaction();
 

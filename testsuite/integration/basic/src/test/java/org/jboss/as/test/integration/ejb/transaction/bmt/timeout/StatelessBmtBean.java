@@ -33,7 +33,8 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import org.jboss.as.test.integration.ejb.transaction.utils.TxTestUtil;
+
+import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
 @Stateless
