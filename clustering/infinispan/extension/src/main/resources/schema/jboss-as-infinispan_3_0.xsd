@@ -300,7 +300,7 @@
     <xs:complexType name="transaction">
         <xs:attribute name="mode" type="tns:transaction-mode" default="NONE">
             <xs:annotation>
-                <xs:documentation>Sets the cache transaction mode to one of NONE, NON_XA, NON_DURABLE_XA, FULL_XA.</xs:documentation>
+                <xs:documentation>Defines the transaction mode of the cache.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="stop-timeout" type="xs:long" default="30000">
