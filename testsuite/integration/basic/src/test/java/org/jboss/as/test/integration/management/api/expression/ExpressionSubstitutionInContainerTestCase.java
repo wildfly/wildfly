@@ -41,6 +41,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * Validation of the system property substitution for expressions handling. Test for AS7-6120.
  * Global parameters testing could be found in domain module: ExpressionSupportSmokeTestCase
@@ -85,7 +89,10 @@ public class ExpressionSubstitutionInContainerTestCase {
                 "Class-Path: \n" +  // there has to be a spacer - otherwise you meet "java.io.IOException: invalid header field"     
                 "Dependencies: org.jboss.msc,org.jboss.as.controller-client,org.jboss.as.controller,org.jboss.as.server, org.jboss.dmr\n"),
                 "MANIFEST.MF");
-        
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                // Needed by the StatelessBean#addSystemProperty()
+                new PropertyPermission("*", "write")
+        ), "jboss-permissions.xml");
         return jar;
     }
     
