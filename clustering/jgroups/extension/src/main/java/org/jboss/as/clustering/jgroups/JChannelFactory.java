@@ -92,10 +92,18 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         PrivilegedExceptionAction<JChannel> action = new PrivilegedExceptionAction<JChannel>() {
             @Override
             public JChannel run() throws Exception {
-                return new JChannel(JChannelFactory.this);
+                Thread thread = Thread.currentThread();
+                ClassLoader loader = thread.getContextClassLoader();
+                // We need to set the TCCL to be able to resolve custom ProtocolHook class names
+                thread.setContextClassLoader(JChannelFactory.class.getClassLoader());
+                try {
+                    return new JChannel(JChannelFactory.this);
+                } finally {
+                    thread.setContextClassLoader(loader);
+                }
             }
         };
-        final JChannel channel = WildFlySecurityManager.doChecked(action);
+        final JChannel channel = WildFlySecurityManager.doUnchecked(action);
         ProtocolStack stack = channel.getProtocolStack();
 
         TransportConfiguration transportConfig = this.configuration.getTransport();
@@ -231,6 +239,8 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             configureMulticastSocket(introspector, protocol, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
         }
 
+        setProperty(introspector, protocol, "after_creation_hook", TransportConfigurator.class.getName());
+
         stack.add(protocol);
 
         final Class<? extends TP> transportClass = introspector.getProtocolClass().asSubclass(TP.class);
@@ -242,7 +252,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         };
 
         try {
-            stack.addAll(createProtocols(this.configuration, WildFlySecurityManager.doChecked(action).isMulticastCapable()));
+            stack.addAll(createProtocols(this.configuration, WildFlySecurityManager.doUnchecked(action).isMulticastCapable()));
         } catch (PrivilegedActionException e) {
             throw new IllegalStateException(e.getCause());
         }
@@ -368,7 +378,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                         return null;
                     }
                 };
-                WildFlySecurityManager.doChecked(action);
+                WildFlySecurityManager.doUnchecked(action);
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException(e);
             }
