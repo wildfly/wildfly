@@ -1,4 +1,4 @@
-The jboss-cli-client jar can be used to remotely manage a JBoss AS instance with CLI or jconsole.  Copy jboss-cli-client.jar to your client machine.  You do not need to install JBoss AS.
+The jboss-cli-client jar can be used to remotely manage a WildFly instance with CLI or jconsole.  Copy jboss-cli-client.jar to your client machine.  You do not need to install WildFly.
 
 TO RUN CLI:
 java -jar <PATH TO jboss-cli-client.jar> [--help] [--version] [--controller=host:port]
