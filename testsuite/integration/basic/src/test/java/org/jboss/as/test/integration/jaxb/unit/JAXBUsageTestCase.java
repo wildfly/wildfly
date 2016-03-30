@@ -40,10 +40,11 @@ import org.jboss.as.test.integration.jaxb.bindings.Items;
 import org.jboss.as.test.integration.jaxb.bindings.ObjectFactory;
 import org.jboss.as.test.integration.jaxb.bindings.PurchaseOrderType;
 import org.jboss.as.test.integration.jaxb.bindings.USAddress;
-import org.jboss.logging.Logger;
+import org.jboss.as.test.shared.SecurityManagerFailure;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,8 +59,6 @@ public class JAXBUsageTestCase {
 
     private static final String WEB_APP_CONTEXT = "jaxb-webapp";
 
-    private static final Logger logger = Logger.getLogger(JAXBUsageTestCase.class);
-
     @ArquillianResource
     private URL url;
 
@@ -72,10 +71,13 @@ public class JAXBUsageTestCase {
     public static WebArchive createDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT + ".war");
         war.addClasses(JAXBUsageServlet.class, Items.class, ObjectFactory.class, PurchaseOrderType.class, USAddress.class);
-
         return war;
     }
 
+    @BeforeClass
+    public static void beforeClass() {
+        SecurityManagerFailure.thisTestIsFailingUnderSM("WFLY-6192");
+    }
 
     @OperateOnDeployment("app")
     @Test
