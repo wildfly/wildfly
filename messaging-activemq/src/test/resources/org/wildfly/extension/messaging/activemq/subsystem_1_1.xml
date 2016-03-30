@@ -417,6 +417,7 @@
             <inbound-config
                     use-jndi="${use.jndi:false}"
                     jndi-params="${jndi.params:whatever}"
+                    rebalance-connections="${inbound.rebalance-connections:true}"
                     use-local-tx="${use.local.tx:true}"
                     setup-attempts="${setup-attempts:123}"
                     setup-interval="${setup-interval:456}" />

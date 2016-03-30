@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
+
 import java.util.Collection;
 import java.util.Collections;
 
@@ -29,9 +31,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -61,6 +65,22 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
     private static void registerTransformers_EAP_7_0_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
+        ResourceTransformationDescriptionBuilder server = builder.addChildResource(MessagingExtension.SERVER_PATH);
+        ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        // reject rebalance-connections introduced in management version 2.0.0 if it is defined and different from the default value.
+        rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS);
+
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
+    }
+
+    /**
+     * Reject the attributes if they are defined or discard them if they are undefined or set to their default value.
+     */
+    private static void rejectDefinedAttributeWithDefaultValue(ResourceTransformationDescriptionBuilder builder, AttributeDefinition... attrs) {
+        for (AttributeDefinition attr : attrs) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(attr.getDefaultValue()), attr)
+                    .addRejectCheck(DEFINED, attr);
+        }
     }
 }
