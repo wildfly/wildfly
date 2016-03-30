@@ -555,6 +555,7 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                                                         // pooled
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
                                                         ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,
+                                                        ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
                                                         ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX,
                                                         ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL,

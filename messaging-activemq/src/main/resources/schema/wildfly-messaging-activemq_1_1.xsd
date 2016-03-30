@@ -547,6 +547,7 @@
                             <xs:complexType>
                                 <xs:attribute name="use-jndi" type="xs:boolean" use="optional" />
                                 <xs:attribute name="jndi-params" type="xs:string" use="optional" />
+                                <xs:attribute name="rebalance-connections" type="xs:boolean" use="optional" />
                                 <xs:attribute name="use-local-tx" type="xs:boolean" use="optional" />
                                 <xs:attribute name="setup-attempts" type="xs:int" use="optional" />
                                 <xs:attribute name="setup-interval" type="xs:long" use="optional" />

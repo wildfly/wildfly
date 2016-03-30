@@ -311,6 +311,7 @@ public interface ConnectionFactoryAttributes {
         String USE_JNDI_PROP_NAME = "useJNDI";
         String SETUP_ATTEMPTS_PROP_NAME = "setupAttempts";
         String SETUP_INTERVAL_PROP_NAME = "setupInterval";
+        String REBALANCE_CONNECTIONS_PROP_NAME = "rebalanceConnections";
         String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
 
         SimpleAttributeDefinition ENLISTMENT_TRACE = SimpleAttributeDefinitionBuilder.create("enlistment-trace", BOOLEAN)
@@ -367,6 +368,14 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                .build();
+
+        SimpleAttributeDefinition REBALANCE_CONNECTIONS = SimpleAttributeDefinitionBuilder.create("rebalance-connections", BOOLEAN)
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                .setDefaultValue(new ModelNode(false))
+                .setAttributeGroup("inbound-config")
+                .setRestartAllServices()
                 .build();
 
         /**
@@ -435,6 +444,7 @@ public interface ConnectionFactoryAttributes {
                 /* inbound config */
                 create(USE_JNDI, USE_JNDI_PROP_NAME, true, true),
                 create(JNDI_PARAMS, "jndiParams", true, true),
+                create(REBALANCE_CONNECTIONS, REBALANCE_CONNECTIONS_PROP_NAME, true, true),
                 create(USE_LOCAL_TX, "useLocalTx", true, true),
                 create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true, true),
                 create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true, true),

@@ -26,16 +26,25 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_PATH;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
@@ -90,6 +99,11 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         testTransformers(EAP_7_0_0, MessagingExtension.VERSION_1_0_0);
     }
 
+    @Test
+    public void testRejectingTransformersEAP_7_0_0() throws Exception {
+        testRejectingTransformers(EAP_7_0_0, MessagingExtension.VERSION_1_0_0);
+    }
+
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -104,6 +118,26 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, messagingVersion);
+    }
+
+    private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
+        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
+                .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
+
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_1_1_reject_transform.xml");
+        System.out.println("ops = " + ops);
+        PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS)));
     }
 
 }

@@ -26,6 +26,7 @@ import static java.util.Collections.EMPTY_LIST;
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.getActiveMQServiceName;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -371,11 +372,20 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             boolean hasReconnect = false;
+            final List<ConfigProperty> inboundProperties = new ArrayList<>();
             final String reconnectName = ConnectionFactoryAttributes.Pooled.RECONNECT_ATTEMPTS_PROP_NAME;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
                 hasReconnect |= reconnectName.equals(adapterParam.getName());
 
-                properties.add(simpleProperty15(adapterParam.getName(), adapterParam.getType(), adapterParam.getValue()));
+                ConfigProperty p = simpleProperty15(adapterParam.getName(), adapterParam.getType(), adapterParam.getValue());
+                if (adapterParam.getName().equals(REBALANCE_CONNECTIONS_PROP_NAME)) {
+                    boolean rebalanceConnections = Boolean.parseBoolean(adapterParam.getValue());
+                    if (rebalanceConnections) {
+                        inboundProperties.add(p);
+                    }
+                } else {
+                    properties.add(p);
+                }
             }
 
             // The default -1, which will hang forever until a server appears
@@ -386,7 +396,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             WildFlyRecoveryRegistry.container = container;
 
             OutboundResourceAdapter outbound = createOutbound();
-            InboundResourceAdapter inbound = createInbound();
+            InboundResourceAdapter inbound = createInbound(inboundProperties);
             ResourceAdapter ra = createResourceAdapter15(properties, outbound, inbound);
             Connector cmd = createConnector15(ra);
 
@@ -499,10 +509,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return new ResourceAdapterImpl(str(ACTIVEMQ_RESOURCE_ADAPTER), properties, outbound, inbound, Collections.<org.jboss.jca.common.api.metadata.spec.AdminObject>emptyList(), Collections.<SecurityPermission>emptyList(), null);
     }
 
-    private InboundResourceAdapter createInbound() {
+    private InboundResourceAdapter createInbound(List<ConfigProperty> inboundProps) {
         List<RequiredConfigProperty> destination = Collections.<RequiredConfigProperty>singletonList(new RequiredConfigPropertyImpl(EMPTY_LOCL, str("destination"), null));
 
-        Activationspec activation15 = new ActivationSpecImpl(str(ACTIVEMQ_ACTIVATION), destination, null, null);
+        Activationspec activation15 = new ActivationSpecImpl(str(ACTIVEMQ_ACTIVATION), destination, inboundProps, null);
         List<MessageListener> messageListeners = Collections.<MessageListener>singletonList(new MessageListenerImpl(str(JMS_MESSAGE_LISTENER), activation15, null));
         Messageadapter message = new MessageAdapterImpl(messageListeners, null);
 
