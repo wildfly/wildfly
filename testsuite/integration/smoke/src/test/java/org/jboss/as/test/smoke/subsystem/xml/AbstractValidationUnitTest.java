@@ -59,8 +59,10 @@ public class AbstractValidationUnitTest {
 
     private static final String SCHEMAS_LOCATION = "docs/schema";
     private static final String JBOSS_DIST_PROP_NAME = "jboss.dist";
+    private static final String FUTURE_SCHEMA_PROP_NAME = "jboss.test.xml.validation.future.schemas";
 
     private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<String>();
+    private static final Set<String> FUTURE_SCHEMA_FILES = new HashSet<String>();
     private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
     private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new HashMap<String, File>();
     private static Map<String, String> NAMESPACE_MAP = new HashMap<String, String>();
@@ -85,9 +87,34 @@ public class AbstractValidationUnitTest {
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_0.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security_1_1.xsd");
         EXCLUDED_SCHEMA_FILES.add("jboss-ejb-security-role_1_0.xsd");
-    }
 
-    static {
+        String coreVersion = System.getProperty("version.org.wildfly.core");
+        if (coreVersion != null) {
+            // We are testing a different version of core than was used in creating our standard configs
+            // See if we are configured to specially handle newer schema versions in that core
+            String excluded = System.getProperty(FUTURE_SCHEMA_PROP_NAME);
+            if (excluded != null) {
+                excluded = excluded.trim();
+                String[] pairs = excluded.split(",");
+                for (String pair : pairs) {
+                    if (pair.length() > 0) {
+                        // The format is <core_version>/<schema_file>
+                        String[] tuple = pair.split("/");
+                        // We only care about the pair if the <core_version> bit matches the
+                        // value of the version.org.wildfly.core system property. This
+                        // way if someone sets -Djboss.test.xml.validation.future.schemas
+                        // in a CI test setup and then forgets to update the setup when
+                        // the relevant core version gets released and integrated, the
+                        // setting will no longer be effective and the no longer "future"
+                        // xsd will get tested normally.
+                        if (tuple.length == 2 && coreVersion.equals(tuple[0])) {
+                            FUTURE_SCHEMA_FILES.add(tuple[1]);
+                        }
+                    }
+                }
+            }
+        }
+
         NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/javaee_6.xsd", "schema/javaee_6.xsd");
         NAMESPACE_MAP.put("http://www.w3.org/2001/xml.xsd", "schema/xml.xsd");
         NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd", "schema/ejb-jar_3_1.xsd");
@@ -111,6 +138,10 @@ public class AbstractValidationUnitTest {
             Map<String, String> mostRecentNames = new HashMap<>();
             Pattern pattern = Pattern.compile("(.*?)_(\\d)_(\\d).xsd");
             for(Map.Entry<String, File> entry : JBOSS_SCHEMAS_MAP.entrySet()) {
+                if (FUTURE_SCHEMA_FILES.contains(entry.getKey())) {
+                    // not "current"; it's future.
+                    continue;
+                }
                 final Matcher match = pattern.matcher(entry.getKey());
                 if(!match.matches()) {
                     continue;
@@ -126,6 +157,10 @@ public class AbstractValidationUnitTest {
                 }
             }
             for (Map.Entry<String, File> entry : JBOSS_SCHEMAS_MAP.entrySet()) {
+                if (FUTURE_SCHEMA_FILES.contains(entry.getKey())) {
+                    // not "current" or "outdated"; it's future.
+                    continue;
+                }
                 final Matcher match = pattern.matcher(entry.getKey());
                 if (!match.matches()) {
                     continue;
