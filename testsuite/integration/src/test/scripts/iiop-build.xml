@@ -36,7 +36,7 @@
             <fileset dir="target/jbossas"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-client"
-                                        node="${node1}"
+                                        node="${node0}"
                                         mcast="${mcast}"
         />
         <copy todir="target/jbossas-iiop-ssl-client/standalone/configuration">
