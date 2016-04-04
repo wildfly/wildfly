@@ -174,5 +174,11 @@ public class DomainContextRealm implements SecurityRealm {
                 attributes = Attributes.EMPTY;
             return AuthorizationIdentity.basicIdentity(attributes);
         }
+
+        @Override
+        public boolean createdBySecurityRealm(SecurityRealm securityRealm) {
+            return securityRealm == DomainContextRealm.this;
+        }
+
     }
 }
