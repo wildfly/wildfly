@@ -55,7 +55,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
 
     static {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_4_0.getUriString())
-                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
+                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID, UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
                         builder(BufferCacheDefinition.INSTANCE)
@@ -65,8 +65,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                                 .addChild(
                                         builder(AjpListenerResourceDefinition.INSTANCE)
-
-                                                .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET)
+                                                .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE)
                                                 .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
@@ -76,7 +75,13 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 )
                                 .addChild(
                                         builder(HttpListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
+                                                .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
+                                                .addAttribute(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
                                                 .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
                                                         ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
@@ -86,6 +91,13 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 ).addChild(
                                         builder(HttpsListenerResourceDefinition.INSTANCE)
                                                 .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
+                                                .addAttribute(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
+                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
+                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                                 .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
                                                 .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES, HttpsListenerResourceDefinition.ENABLED_PROTOCOLS, HttpsListenerResourceDefinition.ENABLE_HTTP2, HttpsListenerResourceDefinition.ENABLE_SPDY, HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE, HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT)
                                                 .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
@@ -232,7 +244,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                 builder(ResponseHeaderFilter.INSTANCE)
-                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
+                                        .addAttributes(ResponseHeaderFilter.VALUE, ResponseHeaderFilter.NAME)
                         ).addChild(
                                 builder(GzipFilter.INSTANCE)
                         ).addChild(
@@ -257,7 +269,14 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.REQUEST_QUEUE_SIZE,
                                         ModClusterDefinition.SECURITY_REALM,
                                         ModClusterDefinition.USE_ALIAS,
-                                        ModClusterDefinition.ENABLE_HTTP2)
+                                        ModClusterDefinition.ENABLE_HTTP2,
+                                        ModClusterDefinition.MAX_AJP_PACKET_SIZE,
+                                        ModClusterDefinition.HTTP2_ENABLE_PUSH,
+                                        ModClusterDefinition.HTTP2_HEADER_TABLE_SIZE,
+                                        ModClusterDefinition.HTTP2_INITIAL_WINDOW_SIZE,
+                                        ModClusterDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
+                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
+                                        ModClusterDefinition.HTTP2_MAX_FRAME_SIZE)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
