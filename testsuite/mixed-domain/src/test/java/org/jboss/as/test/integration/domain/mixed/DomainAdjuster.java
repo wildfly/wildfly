@@ -121,6 +121,10 @@ public class DomainAdjuster {
 
         removeIpv4SystemProperty(client);
 
+        // We don't want any standard host-excludes as the tests are meant to see what happens
+        // with the current configs on legacy slaves
+        removeHostExcludes(client);
+
         //Add a jaspi test security domain used later by the tests
         addJaspiTestSecurityDomain(client);
 
@@ -134,6 +138,14 @@ public class DomainAdjuster {
         DomainTestUtils.executeForResult(
                 Util.createRemoveOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, "java.net.preferIPv4Stack")), client);
 
+    }
+
+    private void removeHostExcludes(DomainClient client) throws Exception {
+        final List<String> allHostExcludes = getAllChildrenOfType(client, PathAddress.EMPTY_ADDRESS, "host-exclude");
+        for (String exclude : allHostExcludes) {
+            DomainTestUtils.executeForResult(
+                    Util.createRemoveOperation(PathAddress.pathAddress("host-exclude", exclude)), client);
+        }
     }
 
     protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress) throws  Exception {

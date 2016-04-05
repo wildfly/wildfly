@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import java.util.UUID;
-
 import org.wildfly.clustering.ejb.AffinitySupport;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 
@@ -33,7 +31,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */
 public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>, IdentifierFactory<K> {
-    ThreadLocal<UUID> CURRENT_GROUP = new ThreadLocal<>();
+    ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**
      * Creates and caches a new instance of <code>T</code>.
@@ -95,4 +93,11 @@ public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>,
     int getPassivatedCount();
 
     int getTotalSize();
+
+    /**
+     * Checks whether the supplied {@link Throwable} is remotable meaning it can be safely sent to the client over the wire.
+     */
+    default boolean isRemotable(Throwable throwable) {
+        return true;
+    }
 }

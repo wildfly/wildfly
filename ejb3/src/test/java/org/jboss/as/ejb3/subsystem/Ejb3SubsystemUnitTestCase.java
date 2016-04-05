@@ -23,26 +23,11 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelFixer;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.wildfly.clustering.singleton.SingletonPolicy;
+import org.wildfly.clustering.singleton.RequiredCapability;
 
 /**
  * Test case for testing the integrity of the EJB3 subsystem.
@@ -59,7 +44,7 @@ import org.wildfly.clustering.singleton.SingletonPolicy;
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
-            SingletonPolicy.CAPABILITY_NAME.concat(".default"));
+            RequiredCapability.SINGLETON_POLICY.getName());
 
     public Ejb3SubsystemUnitTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());

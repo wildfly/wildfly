@@ -25,9 +25,10 @@ package org.jboss.as.web;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -37,8 +38,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.extension.UnsupportedSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -55,7 +55,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author Tomaz Cerar
  */
-public class WebExtension implements Extension {
+public class WebExtension extends AbstractLegacyExtension {
     public static final String SUBSYSTEM_NAME = "web";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     public static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
@@ -78,7 +78,7 @@ public class WebExtension implements Extension {
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 2, 0);
     static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,5,0);
-    private static final String extensionName = "org.jboss.as.web";
+    private static final String EXTENSION_NAME = "org.jboss.as.web";
 
     static final SensitiveTargetAccessConstraintDefinition WEB_CONNECTOR_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
@@ -87,6 +87,7 @@ public class WebExtension implements Extension {
             new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", false, false, false));
 
     public WebExtension() {
+        super(EXTENSION_NAME, "web");
     }
 
     @SuppressWarnings("deprecation")
@@ -96,7 +97,7 @@ public class WebExtension implements Extension {
     }
 
     @Override
-    public void initialize(ExtensionContext context) {
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebDefinition.INSTANCE);
@@ -150,13 +151,11 @@ public class WebExtension implements Extension {
             registerTransformers_2_x_0(subsystem, 0);
             registerTransformers_2_x_0(subsystem, 1);
         }
-
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,
-                new UnsupportedSubsystemDescribeHandler(extensionName));
+        return Collections.singleton(registration);
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    protected void initializeLegacyParsers(ExtensionParsingContext context) {
         for (Namespace ns : Namespace.values()) {
             if (ns.getUriString() != null) {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser.getInstance());

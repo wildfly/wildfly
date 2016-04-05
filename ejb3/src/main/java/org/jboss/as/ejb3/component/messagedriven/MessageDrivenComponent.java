@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.ejb.TransactionAttributeType;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
@@ -158,7 +159,17 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 if(isBeanManagedTransaction())
                     return false;
                 // an MDB doesn't expose a real view
-                return getTransactionAttributeType(MESSAGE_ENDPOINT, method) == REQUIRED;
+                TransactionAttributeType transactionAttributeType = getTransactionAttributeType(MESSAGE_ENDPOINT, method);
+                switch (transactionAttributeType) {
+                    case REQUIRED:
+                        return true;
+                    case NOT_SUPPORTED:
+                        return false;
+                    default:
+                        // WFLY-5074 - treat any other unspecified tx attribute type as NOT_SUPPORTED
+                        ROOT_LOGGER.invalidTransactionTypeForMDB(transactionAttributeType, method.getName(), getComponentName());
+                        return false;
+                }
             }
 
             @Override

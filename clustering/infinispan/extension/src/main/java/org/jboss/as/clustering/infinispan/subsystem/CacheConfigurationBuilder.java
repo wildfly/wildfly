@@ -24,15 +24,24 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
 
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.configuration.cache.JMXStatisticsConfiguration;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
+import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.distribution.group.Grouper;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -48,14 +57,13 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilderFactory;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a cache configuration from its components.
  * @author Paul Ferraro
  */
-public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configuration>, ConfigurationBuilderFactory {
+public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Consumer<ConfigurationBuilder> {
 
     private final InjectedValue<EvictionConfiguration> eviction = new InjectedValue<>();
     private final InjectedValue<ExpirationConfiguration> expiration = new InjectedValue<>();
@@ -83,7 +91,17 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(this.containerName, this.cacheName, this).build(target)
+        return new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(this.containerName, this.cacheName, this.andThen(builder -> {
+            CacheMode mode = builder.clustering().cacheMode();
+
+            if (mode.isSynchronous() && (this.transaction.getValue().lockingMode() == LockingMode.OPTIMISTIC) && (this.locking.getValue().isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
+                builder.locking().writeSkewCheck(true);
+                builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
+            }
+
+            GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
+            ServiceLoader.load(Grouper.class, this.getClassLoader()).forEach(grouper -> groupsBuilder.addGrouper(grouper));
+        })).build(target)
                 .addDependency(CacheComponent.EVICTION.getServiceName(this.containerName, this.cacheName), EvictionConfiguration.class, this.eviction)
                 .addDependency(CacheComponent.EXPIRATION.getServiceName(this.containerName, this.cacheName), ExpirationConfiguration.class, this.expiration)
                 .addDependency(CacheComponent.LOCKING.getServiceName(this.containerName, this.cacheName), LockingConfiguration.class, this.locking)
@@ -91,7 +109,7 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
                 .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
                 .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.containerName), GlobalConfiguration.class, this.global)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-        ;
+                ;
     }
 
     @Override
@@ -105,26 +123,16 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-
-        EvictionConfiguration eviction = this.eviction.getValue();
-        ExpirationConfiguration expiration = this.expiration.getValue();
-        LockingConfiguration locking = this.locking.getValue();
-        PersistenceConfiguration persistence = this.persistence.getValue();
-        TransactionConfiguration transaction = this.transaction.getValue();
-
-        builder.eviction().read(eviction);
-        builder.expiration().read(expiration);
-        builder.locking().read(locking);
-        builder.persistence().read(persistence);
-        builder.transaction().read(transaction);
+    public void accept(ConfigurationBuilder builder) {
+        builder.eviction().read(this.eviction.getValue());
+        builder.expiration().read(this.expiration.getValue());
+        builder.locking().read(this.locking.getValue());
+        builder.persistence().read(this.persistence.getValue());
+        builder.transaction().read(this.transaction.getValue());
         builder.jmxStatistics().read(this.statistics);
-
-        return builder;
     }
 
-    ClassLoader getClassLoader() {
+    private ClassLoader getClassLoader() {
         if (this.module != null) {
             try {
                 return this.loader.getValue().loadModule(this.module).getClassLoader();

@@ -40,6 +40,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.resource.spi.XATerminator;
 import javax.transaction.NotSupportedException;
@@ -70,6 +71,13 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
     private final InjectedValue<RecoveryManagerService> recoveryManagerService = new InjectedValue<>();
 
     private final Map<UserTransactionID, Uid> userTransactions = Collections.synchronizedMap(new HashMap<UserTransactionID, Uid>());
+
+    private static final Xid[] NO_XIDS = new Xid[0];
+    private static final boolean RECOVER_IN_FLIGHT;
+
+    static {
+        RECOVER_IN_FLIGHT = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("org.wildfly.ejb.txn.recovery.in-flight", "false"));
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -164,11 +172,13 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     public Xid[] getXidsToRecoverForParentNode(final String parentNodeName, int recoveryFlags) throws XAException {
         final Set<Xid> xidsToRecover = new HashSet<Xid>();
-        final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
-        if (transactionImporter instanceof TransactionImporterImple) {
-            final Set<Xid> inFlightXids = ((TransactionImporterImple) transactionImporter).getInflightXids(parentNodeName);
-            if (inFlightXids != null) {
-                xidsToRecover.addAll(inFlightXids);
+        if (RECOVER_IN_FLIGHT) {
+            final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
+            if (transactionImporter instanceof TransactionImporterImple) {
+                final Set<Xid> inFlightXids = ((TransactionImporterImple) transactionImporter).getInflightXids(parentNodeName);
+                if (inFlightXids != null) {
+                    xidsToRecover.addAll(inFlightXids);
+                }
             }
         }
         final XATerminator xaTerminator = SubordinationManager.getXATerminator();
@@ -183,7 +193,7 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
                 xidsToRecover.addAll(Arrays.asList(inDoubtTransactions));
             }
         }
-        return xidsToRecover.toArray(new Xid[0]);
+        return xidsToRecover.toArray(NO_XIDS);
     }
 
     public UserTransaction getUserTransaction() {

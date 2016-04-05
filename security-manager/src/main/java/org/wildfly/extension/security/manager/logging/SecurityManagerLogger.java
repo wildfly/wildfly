@@ -26,6 +26,8 @@ import static org.jboss.logging.Logger.Level.INFO;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -55,4 +57,24 @@ public interface SecurityManagerLogger extends BasicLogger {
     @Message(id = 2, value = "Invalid version found in the permissions element. Found %s, expected %s")
     XMLStreamException invalidPermissionsXMLVersion(String found, String expected);
 
+    /**
+     * Creates a {@link org.jboss.as.controller.OperationFailedException} to indicate that the security manager subsystem
+     * was incorrectly configured. As a rule the minimum-set permissions must be implied by the maximum-set permissions.
+     *
+     * @param failedPermissions a list of the permissions in the minimum-set that are not implied by the maximum-set.
+     * @return the constructed {@link org.jboss.as.controller.OperationFailedException}
+     */
+    @Message(id = 3, value = "Subsystem configuration error: the following permissions are not implied by the maximum permissions set %s")
+    OperationFailedException invalidSubsystemConfiguration(StringBuilder failedPermissions);
+
+    /**
+     * Creates a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} to indicate that the deployment
+     * was incorrectly configured. As a rule the permissions specified in the deployment descriptors (permissions.xml or
+     * jboss-permissions.xml) must be implied by the subsystem maximum-set.
+     *
+     * @param failedPermissions a list of the permissions in deployment descriptors that are not implied by the maximum-set.
+     * @return the constructed {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException}
+     */
+    @Message(id = 4, value = "Deployment configuration error: the following permissions are not implied by the maximum permissions set %s")
+    DeploymentUnitProcessingException invalidDeploymentConfiguration(StringBuilder failedPermissions);
 }

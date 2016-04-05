@@ -94,7 +94,7 @@
 
 
     <servers>
-        <server name="server-one" group="other-server-group"/>
+        <server name="server-one" group="other-server-group" auto-start="false"/>
         <server name="server-two" group="other-server-group" auto-start="false"/>
     </servers>
 </host>

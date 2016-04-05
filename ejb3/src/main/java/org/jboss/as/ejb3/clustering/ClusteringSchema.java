@@ -32,6 +32,8 @@ public enum ClusteringSchema implements Schema<ClusteringSchema> {
     VERSION_1_0(1, 0),
     VERSION_1_1(1, 1),
     ;
+    static final ClusteringSchema CURRENT = VERSION_1_1;
+
     private final int major;
     private final int minor;
 

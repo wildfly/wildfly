@@ -63,7 +63,8 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
         final String attributeName = operation.get(NAME).asString();
         // when an attribute is undefined, check that an alternative is present
         // otherwise when an attribute is written, check that there is no alternative
-        boolean alternativeMustBeSet = ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName);
+        boolean alternativeMustBeSet = ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName)
+                || (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operationName) && !operation.get("value").isDefined()); // operation is undefine-attr or write-attr with value = undefined
         checkAlternativeAttribute(context, attributeName, alternativeMustBeSet);
     }
 
@@ -72,7 +73,7 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
             AttributeDefinition attr = attributeDefinitions.get(attributeName);
             final Resource resource = context.readResource(EMPTY_ADDRESS);
             if (alternativeMustBeSet) {
-                if (!attr.hasAlternative(resource.getModel())) {
+                if (hasDefinedAlternatives(attr) && !attr.hasAlternative(resource.getModel())) {
                     throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.undefineAttributeWithoutAlternative(attributeName));
                 }
             } else {
@@ -91,5 +92,9 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
         } else if (hasAttr1 && hasAttr2) {
             throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.cannotIncludeOperationParameters(attr1, attr2));
         }
+    }
+
+    private boolean hasDefinedAlternatives(AttributeDefinition definition) {
+        return definition.getAlternatives() != null && definition.getAlternatives().length > 0;
     }
 }

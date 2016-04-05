@@ -48,7 +48,20 @@ public class HttpListenerAdd extends ListenerAdd {
         final boolean proxyAddressForwarding = HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         HttpListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
+
+
+        handleHttp2Options(context, model, listenerBuilder);
+
         return new HttpListenerService(name, serverName, listenerBuilder.getMap(), socketOptions, certificateForwarding, proxyAddressForwarding);
+    }
+
+    static void handleHttp2Options(OperationContext context, ModelNode model, OptionMap.Builder listenerBuilder) throws OperationFailedException {
+        HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH.resolveOption(context, model,listenerBuilder);
+        HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE.resolveOption(context, model,listenerBuilder);
+        HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE.resolveOption(context, model,listenerBuilder);
+        HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS.resolveOption(context, model,listenerBuilder);
+        HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE.resolveOption(context, model,listenerBuilder);
+        HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE.resolveOption(context, model,listenerBuilder);
     }
 
     @Override

@@ -26,23 +26,28 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 
+import org.jboss.ejb.client.SessionID;
+import org.wildfly.clustering.ejb.infinispan.BasicSessionIDExternalizer;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanBeanEntry<Object>> {
+public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanBeanEntry<SessionID>> {
+
+    private final Externalizer<SessionID> externalizer = new BasicSessionIDExternalizer();
 
     @Override
-    public void writeObject(ObjectOutput output, InfinispanBeanEntry<Object> entry) throws IOException {
-        output.writeObject(entry.getGroupId());
+    public void writeObject(ObjectOutput output, InfinispanBeanEntry<SessionID> entry) throws IOException {
+        output.writeUTF(entry.getBeanName());
+        this.externalizer.writeObject(output, entry.getGroupId());
         Date lastAccessedTime = entry.getLastAccessedTime();
         output.writeLong((lastAccessedTime != null) ? lastAccessedTime.getTime() : 0);
     }
 
     @Override
-    public InfinispanBeanEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        InfinispanBeanEntry<Object> entry = new InfinispanBeanEntry<>(input.readObject());
+    public InfinispanBeanEntry<SessionID> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>(input.readUTF(), this.externalizer.readObject(input));
         long time = input.readLong();
         if (time > 0) {
             entry.setLastAccessedTime(new Date(time));
@@ -52,7 +57,7 @@ public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanB
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Class<InfinispanBeanEntry<Object>> getTargetClass() {
+    public Class<InfinispanBeanEntry<SessionID>> getTargetClass() {
         Class targetClass = InfinispanBeanEntry.class;
         return targetClass;
     }

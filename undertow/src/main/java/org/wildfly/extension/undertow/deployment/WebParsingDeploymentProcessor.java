@@ -65,76 +65,82 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            return; // Skip non web deployments
-        }
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR);
-        // Locate the descriptor
-        final VirtualFile webXml;
-        if (alternateDescriptor != null) {
-            webXml = alternateDescriptor;
-        } else {
-            webXml = deploymentRoot.getRoot().getChild(WEB_XML);
-        }
-        final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        assert warMetaData != null;
-        if (webXml.exists()) {
-            InputStream is = null;
-            try {
-                is = webXml.openStream();
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-
-                MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
-                inputFactory.setXMLResolver(dtdInfo);
-                final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-
-                WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
-
-                if (schemaValidation && webMetaData.getSchemaLocation() != null) {
-                    XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());
-                    InputStream xmlInput = webXml.openStream();
-                    try {
-                        if (webMetaData.is23())
-                            validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", xmlInput);
-                        else if(webMetaData.is24())
-                            validator.validate("http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd", xmlInput);
-                        else if (webMetaData.is25())
-                            validator.validate("http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd", xmlInput);
-                        else if (webMetaData.is30())
-                            validator.validate("http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd", xmlInput);
-                        else if (webMetaData.is31())
-                            validator.validate("http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd", xmlInput);
-                        else
-                            validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", xmlInput);
-                    } catch (SAXException e) {
-                        throw new DeploymentUnitProcessingException("Failed to validate " + webXml, e);
-                    } finally {
-                        xmlInput.close();
-                    }
-                }
-                warMetaData.setWebMetaData(webMetaData);
-
-            } catch (XMLStreamException e) {
-                Integer lineNumber = null;
-                Integer columnNumber = null;
-                if (e.getLocation() != null) {
-                    lineNumber = e.getLocation().getLineNumber();
-                    columnNumber = e.getLocation().getColumnNumber();
-                }
-                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml.toString(), lineNumber, columnNumber), e);
-            } catch (IOException e) {
-                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml.toString()), e);
-            } finally {
+        ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(WebParsingDeploymentProcessor.class);
+            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+            if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+                return; // Skip non web deployments
+            }
+            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR);
+            // Locate the descriptor
+            final VirtualFile webXml;
+            if (alternateDescriptor != null) {
+                webXml = alternateDescriptor;
+            } else {
+                webXml = deploymentRoot.getRoot().getChild(WEB_XML);
+            }
+            final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+            assert warMetaData != null;
+            if (webXml.exists()) {
+                InputStream is = null;
                 try {
-                    if (is != null) {
-                        is.close();
+                    is = webXml.openStream();
+                    final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+
+                    MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
+                    inputFactory.setXMLResolver(dtdInfo);
+                    final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
+
+                    WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
+
+                    if (schemaValidation && webMetaData.getSchemaLocation() != null) {
+                        XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());
+                        InputStream xmlInput = webXml.openStream();
+                        try {
+                            if (webMetaData.is23())
+                                validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", xmlInput);
+                            else if (webMetaData.is24())
+                                validator.validate("http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd", xmlInput);
+                            else if (webMetaData.is25())
+                                validator.validate("http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd", xmlInput);
+                            else if (webMetaData.is30())
+                                validator.validate("http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd", xmlInput);
+                            else if (webMetaData.is31())
+                                validator.validate("http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd", xmlInput);
+                            else
+                                validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", xmlInput);
+                        } catch (SAXException e) {
+                            throw new DeploymentUnitProcessingException("Failed to validate " + webXml, e);
+                        } finally {
+                            xmlInput.close();
+                        }
                     }
+                    warMetaData.setWebMetaData(webMetaData);
+
+                } catch (XMLStreamException e) {
+                    Integer lineNumber = null;
+                    Integer columnNumber = null;
+                    if (e.getLocation() != null) {
+                        lineNumber = e.getLocation().getLineNumber();
+                        columnNumber = e.getLocation().getColumnNumber();
+                    }
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml.toString(), lineNumber, columnNumber), e);
                 } catch (IOException e) {
-                    // Ignore
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml.toString()), e);
+                } finally {
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException e) {
+                        // Ignore
+                    }
                 }
             }
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
         }
     }
 

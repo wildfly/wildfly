@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
@@ -52,13 +53,14 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     private final Batcher<Batch> batcher;
     private final Batch batch;
     private final SessionListener listener;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batcher<Batch> batcher, Batch batch) {
         this.sso = sso;
         this.registry = registry;
         this.batcher = batcher;
         this.batch = batch;
-        this.listener = new SessionIdChangeListener(sso, batcher, batch);
+        this.listener = new SessionIdChangeListener(sso, batcher, batch, this.closed);
     }
 
     @Override
@@ -132,7 +134,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
 
     @Override
     public void close() {
-        if (this.batch.isActive()) {
+        if (this.closed.compareAndSet(false, true)) {
             try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
                 this.batch.close();
             }
@@ -142,9 +144,8 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     @Override
     public void invalidate() {
         // The batch associated with this SSO might not be valid (e.g. in the case of logout).
-        boolean active = this.batch.isActive();
-        try (BatchContext context = active ? this.batcher.resumeBatch(this.batch) : null) {
-            try (Batch batch = active ? this.batch : this.batcher.createBatch()) {
+        try (BatchContext context = this.closed.compareAndSet(false, true) ? this.batcher.resumeBatch(this.batch) : null) {
+            try (Batch batch = (context != null) ? this.batch : this.batcher.createBatch()) {
                 this.sso.invalidate();
             }
         }
@@ -265,19 +266,20 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         private final SSO<AuthenticatedSession, String, Void> sso;
         private final Batcher<Batch> batcher;
         private final Batch batch;
+        private final AtomicBoolean closed;
 
-        SessionIdChangeListener(SSO<AuthenticatedSession, String, Void> sso, Batcher<Batch> batcher, Batch batch) {
+        SessionIdChangeListener(SSO<AuthenticatedSession, String, Void> sso, Batcher<Batch> batcher, Batch batch, AtomicBoolean closed) {
             this.sso = sso;
             this.batcher = batcher;
             this.batch = batch;
+            this.closed = closed;
         }
 
         @Override
         public void sessionIdChanged(Session session, String oldSessionId) {
-            // The batch associated with this SSO might not be valid.
-            boolean active = this.batch.isActive();
-            try (BatchContext context = active ? this.batcher.resumeBatch(this.batch) : null) {
-                try (Batch batch = active ? this.batch : this.batcher.createBatch()) {
+            // The batch associated with this SSO might not be valid in this context.
+            try (BatchContext context = this.closed.compareAndSet(false, true) ? this.batcher.resumeBatch(this.batch) : null) {
+                try (Batch batch = (context != null) ? this.batch : this.batcher.createBatch()) {
                     String deployment = session.getSessionManager().getDeploymentName();
                     Sessions<String> sessions = this.sso.getSessions();
                     sessions.removeSession(deployment);

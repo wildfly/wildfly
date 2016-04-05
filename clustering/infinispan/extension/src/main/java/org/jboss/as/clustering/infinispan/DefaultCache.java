@@ -80,19 +80,16 @@ public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
 
     @Override
     public void endBatch(boolean successful) {
-        Batch batch = CURRENT_BATCH.get();
-        // If no batch is associated with the current thread then this is a no-op
-        if (batch != null) {
-            try {
-                if (successful) {
-                    batch.close();
-                } else {
+        try (Batch batch = CURRENT_BATCH.get()) {
+            // If no batch is associated with the current thread then this is a no-op
+            if (batch != null) {
+                if (!successful) {
                     batch.discard();
                 }
-            } finally {
-                // Disassociate the batch with the current thread no matter what
-                CURRENT_BATCH.remove();
             }
+        } finally {
+            // Disassociate the batch with the current thread no matter what
+            CURRENT_BATCH.remove();
         }
     }
 

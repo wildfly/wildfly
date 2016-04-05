@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.controller;
 
+import org.wildfly.clustering.service.Requirement;
+
 /**
  * Enumerates capability requirements for clustering resources
  * @author Paul Ferraro

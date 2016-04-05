@@ -22,7 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.UndertowExtension.MODEL_VERSION_3_0_0;
+import static org.wildfly.extension.undertow.UndertowExtension.MODEL_VERSION_3_1_0;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -78,6 +80,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("default-security-domain", ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(SecurityConstants.DEFAULT_APPLICATION_POLICY))
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
                     .build();
 
 
@@ -116,7 +119,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     private static void registerTransformers_3_0_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_0_0);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_1_0);
     }
 
 }

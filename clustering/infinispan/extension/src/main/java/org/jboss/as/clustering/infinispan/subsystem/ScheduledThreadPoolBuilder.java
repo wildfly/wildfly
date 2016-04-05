@@ -31,6 +31,7 @@ import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.infinispan.ClassLoaderThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -57,18 +58,19 @@ public class ScheduledThreadPoolBuilder extends CacheContainerComponentBuilder<T
         long keepAliveTime = this.definition.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asLong();
 
         ThreadPoolExecutorFactory<?> factory = new ThreadPoolExecutorFactory<ScheduledExecutorService>() {
-
             @Override
             public ScheduledExecutorService createExecutor(ThreadFactory factory) {
-                ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(0);
-                scheduledExecutor.setCorePoolSize(maxThreads);
-                scheduledExecutor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
-                return scheduledExecutor;
+                // Use fixed size, based on maxThreads
+                ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(maxThreads, new ClassLoaderThreadFactory(factory, ClassLoaderThreadFactory.class.getClassLoader()));
+                executor.setKeepAliveTime(keepAliveTime, TimeUnit.MILLISECONDS);
+                executor.setRemoveOnCancelPolicy(true);
+                executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+                return executor;
             }
 
             @Override
             public void validate() {
-
+                // Do nothing
             }
         };
         this.builder.threadPoolFactory(factory);

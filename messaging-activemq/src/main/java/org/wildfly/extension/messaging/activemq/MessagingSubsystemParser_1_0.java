@@ -288,7 +288,9 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE,
                                                         AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD,
                                                         AddressSettingDefinition.SLOW_CONSUMER_POLICY,
-                                                        AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD))
+                                                        AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
+                                                        AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
+                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
                                 .addChild(
                                         builder(HTTPConnectorDefinition.INSTANCE)
                                                 .addAttributes(

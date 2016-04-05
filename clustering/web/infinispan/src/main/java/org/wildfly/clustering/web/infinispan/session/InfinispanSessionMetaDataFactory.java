@@ -22,9 +22,6 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
@@ -42,18 +39,14 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> findCreationMetaDataCache;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final boolean transactional;
-    private final boolean lockOnRead;
     private final boolean lockOnWrite;
 
     @SuppressWarnings("unchecked")
     public InfinispanSessionMetaDataFactory(Cache<? extends Key<String>, ?> cache, boolean transactional, boolean lockOnRead, boolean lockOnWrite) {
         this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
-        // this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
-        // Workaround for ISPN-6007
-        this.findCreationMetaDataCache = this.creationMetaDataCache;
+        this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
         this.transactional = transactional;
-        this.lockOnRead = lockOnRead;
         this.lockOnWrite = lockOnWrite;
     }
 
@@ -76,19 +69,6 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     private InfinispanSessionMetaData<L> getValue(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        // Workaround for ISPN-6007
-        if (this.lockOnRead) {
-            try {
-                // lock() can only be called within an active tx context
-                if (creationMetaDataCache.getAdvancedCache().getTransactionManager().getStatus() == Status.STATUS_ACTIVE) {
-                    if (!creationMetaDataCache.getAdvancedCache().lock(key)) {
-                        return null;
-                    }
-                }
-            } catch (SystemException e) {
-                throw new IllegalStateException(e);
-            }
-        }
         SessionCreationMetaDataEntry<L> creationMetaDataEntry = creationMetaDataCache.get(key);
         if (creationMetaDataEntry != null) {
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(new SessionAccessMetaDataKey(id));
