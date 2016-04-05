@@ -74,6 +74,9 @@ public class EmbeddedDataSource implements DataSource {
         return null;
     }
 
+    public void setUrl(String v) {
+    }
+
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;

@@ -62,7 +62,7 @@ import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
  * @param <K> key type
  * @param <V> value type
  */
-@org.infinispan.notifications.Listener
+@org.infinispan.notifications.Listener(sync = false)
 public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();

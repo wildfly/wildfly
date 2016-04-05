@@ -23,6 +23,8 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+
 import org.junit.AfterClass;
 
 /**
@@ -54,19 +56,35 @@ public class MixedDomainTestSuite {
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
         if (support == null) {
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
-            return getSupport(testClass, copiedDomainXml, true);
+            return getSupport(testClass, copiedDomainXml, true, false);
         } else {
             return support;
         }
     }
 
-    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, boolean adjustDomain) {
+    /**
+     * Call this from a @BeforeClass method
+     *
+     * @param testClass the test/suite class
+     * @param version the version of the legacy slave.
+     */
+    protected static MixedDomainTestSupport getSupportForLegacyConfig(Class<?> testClass, Version.AsVersion version) {
+        if (support == null) {
+            final File originalDomainXml = MixedDomainTestSupport.loadLegacyDomainXml(version);
+            final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile(originalDomainXml);
+            return getSupport(testClass, copiedDomainXml, true, true);
+        } else {
+            return support;
+        }
+    }
+
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, boolean adjustDomain, boolean legacyConfig) {
         if (support == null) {
             final Version.AsVersion version = getVersion(testClass);
             final MixedDomainTestSupport testSupport;
             try {
                 if (domainConfig != null) {
-                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain);
+                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain, legacyConfig);
                 } else {
                     testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
                 }

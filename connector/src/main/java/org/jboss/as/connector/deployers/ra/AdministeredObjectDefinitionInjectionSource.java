@@ -68,6 +68,10 @@ public class AdministeredObjectDefinitionInjectionSource extends ResourceDefinit
         this.resourceAdapter = resourceAdapter;
     }
 
+    public void addProperty(String key, String value) {
+        properties.put(key, value);
+    }
+
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);

@@ -22,11 +22,15 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
+
 import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.infinispan.ClassLoaderThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -53,7 +57,12 @@ public class ThreadPoolBuilder extends CacheContainerComponentBuilder<ThreadPool
                 this.definition.getMinThreads().getDefinition().resolveModelAttribute(context, model).asInt(),
                 this.definition.getQueueLength().getDefinition().resolveModelAttribute(context, model).asInt(),
                 this.definition.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asLong()
-        );
+        ) {
+            @Override
+            public ExecutorService createExecutor(ThreadFactory factory) {
+                return super.createExecutor(new ClassLoaderThreadFactory(factory, ClassLoaderThreadFactory.class.getClassLoader()));
+            }
+        };
         this.builder.threadPoolFactory(factory);
 
         return this;

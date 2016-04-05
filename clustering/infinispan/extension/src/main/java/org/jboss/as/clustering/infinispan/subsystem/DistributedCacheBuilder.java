@@ -24,17 +24,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.DistributedCacheResourceDefinition.Attribute.*;
 
-import java.util.ServiceLoader;
-
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.configuration.cache.HashConfiguration;
 import org.infinispan.configuration.cache.L1Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.distribution.group.Grouper;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -87,16 +83,13 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = super.createConfigurationBuilder();
-        GroupsConfigurationBuilder groupsBuilder = builder.clustering()
+    public void accept(ConfigurationBuilder builder) {
+        super.accept(builder);
+
+        builder.clustering()
                 .l1().read(this.l1)
                 .hash().read(this.hash)
                 .consistentHashFactory(this.consistentHashStrategy.createConsistentHashFactory(this.container.getValue().transport().hasTopologyInfo()))
-                .groups().enabled();
-        for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, this.getClassLoader())) {
-            groupsBuilder.addGrouper(grouper);
-        }
-        return builder;
+                ;
     }
 }

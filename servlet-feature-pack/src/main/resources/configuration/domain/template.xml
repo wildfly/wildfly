@@ -81,6 +81,9 @@
             </jvm>
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
+        <server-group name="other-server-group" profile="default">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
     </server-groups>
 
 </domain>

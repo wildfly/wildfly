@@ -108,7 +108,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
-            .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
+            .setAlternatives(CommonAttributes.DISCOVERY_GROUP)
             .setRestartAllServices()
             .build();
 

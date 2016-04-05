@@ -338,4 +338,8 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 79, value = "No SSL Context available from security realm. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
     IllegalStateException noSslContextInSecurityRealm();
+
+    @LogMessage(level = WARN)
+    @Message(id = 80, value = "Valves are no longer supported, %s is not activated.")
+    void unsupportedValveFeature(String valve);
 }

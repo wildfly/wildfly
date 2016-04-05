@@ -40,4 +40,10 @@ public interface WebLogger extends BasicLogger {
 
     @Message(id = 7, value = "Could not migrate verify-client expression %s")
     String couldNotTranslateVerifyClientExpression(String s);
+
+    @Message(id = 8, value = "Could not migrate valve %s")
+    String couldNotMigrateValve(String valveName);
+
+    @Message(id = 9, value = "Could not migrate attribute %s from valve %s")
+    String couldNotMigrateValveAttribute(String attribute, String valveName);
 }

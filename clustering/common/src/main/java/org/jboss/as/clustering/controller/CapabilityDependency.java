@@ -24,6 +24,7 @@ package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.OperationContext;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.Requirement;
 
 /**
  * Service dependency whose provided value is supplied by a {@link Capability}.

@@ -35,7 +35,6 @@ import javax.rmi.PortableRemoteObject;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -337,25 +336,17 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             final HomeHandleImplIIOP homeHandle = new HomeHandleImplIIOP(orb.object_to_string(corbaRef));
             homeServant.setHomeHandle(homeHandle);
 
-            // Initialize beanPOA and create metadata depending on the kind of bean
-            if (component instanceof EntityBeanComponent) {
-
-                // This is an entity bean (lifespan: persistent)
-                beanServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
-                final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
-                final Class<?> pkClass = entityBeanComponent.getPrimaryKeyClass();
-                ejbMetaData = new EJBMetaDataImplIIOP(entityBeanComponent.getRemoteClass(), entityBeanComponent.getHomeClass(), pkClass, false, false, homeHandle);
+            // Initialize beanPOA and create metadata
+            // This is a session bean (lifespan: transient)
+            beanServantRegistry = poaRegistry.getValue().getRegistryWithTransientPOAPerServant();
+            if (component instanceof StatelessSessionComponent) {
+                // Stateless session bean
+                ejbMetaData = new EJBMetaDataImplIIOP(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, true, homeHandle);
             } else {
-                // This is a session bean (lifespan: transient)
-                beanServantRegistry = poaRegistry.getValue().getRegistryWithTransientPOAPerServant();
-                if (component instanceof StatelessSessionComponent) {
-                    // Stateless session bean
-                    ejbMetaData = new EJBMetaDataImplIIOP(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, true, homeHandle);
-                } else {
-                    // Stateful session bean
-                    ejbMetaData = new EJBMetaDataImplIIOP(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, false, homeHandle);
-                }
+                // Stateful session bean
+                ejbMetaData = new EJBMetaDataImplIIOP(remoteView.getValue().getViewClass(), homeView.getValue().getViewClass(), null, true, false, homeHandle);
             }
+
             homeServant.setEjbMetaData(ejbMetaData);
 
             // If there is an interface repository, then get the beanInterfaceDef from the IR

@@ -74,27 +74,40 @@ public class PassivationSucceedsEJB2TestCase {
     public void testPassivationMaxSize() throws Exception {
         TestPassivationRemoteHome home = (TestPassivationRemoteHome) ctx.lookup(jndi);
         TestPassivationRemote remote1 = home.create();
-        Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote1.returnTrueString());
+        try {
+            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                    remote1.returnTrueString());
 
-        TestPassivationRemote remote2 = home.create();
-        Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote2.returnTrueString());
+            TestPassivationRemote remote2 = home.create();
+            try {
+                Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
+                        remote2.returnTrueString());
 
-        // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
-        home.create();
+                // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
+                TestPassivationRemote remote3 = home.create();
+                try {
+                    TestPassivationRemote remote4 = home.create();
+                    try {
+                        // Passivation is asynchronous, so wait a sec for it to complete
+                        TimeUnit.SECONDS.sleep(1);
 
-        // Passivation is asynchronous, so wait a sec for it to complete
-        TimeUnit.SECONDS.sleep(1);
-
-        Assert.assertTrue("ejbPassivate not called on remote1, check cache configuration and client sleep time",
-                remote1.hasBeenPassivated());
-        Assert.assertTrue("ejbPassivate not called on remote2, check cache configuration and client sleep time",
-                remote2.hasBeenPassivated());
-        // Assert.assertTrue("ejbActivate not called on remote1", remote1.hasBeenActivated());
-        // Assert.assertTrue("ejbActivate not called on remote2", remote2.hasBeenActivated());
-
-        remote1.remove();
-        remote2.remove();
+                        Assert.assertTrue("ejbPassivate not called on remote1, check cache configuration and client sleep time",
+                                remote1.hasBeenPassivated());
+                        Assert.assertTrue("ejbPassivate not called on remote2, check cache configuration and client sleep time",
+                                remote2.hasBeenPassivated());
+                        Assert.assertTrue("ejbActivate not called on remote1", remote1.hasBeenActivated());
+                        Assert.assertTrue("ejbActivate not called on remote2", remote2.hasBeenActivated());
+                    } finally {
+                        remote4.remove();
+                    }
+                } finally {
+                    remote3.remove();
+                }
+            } finally {
+                remote2.remove();
+            }
+        } finally {
+            remote1.remove();
+        }
     }
 }

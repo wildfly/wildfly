@@ -54,15 +54,7 @@ public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T> {
 
     @Override
     public int incrementUsage(I id) {
-        AtomicInteger count = this.usage.get(id);
-        if (count == null) {
-            count = new AtomicInteger();
-            AtomicInteger old = this.usage.putIfAbsent(id, count);
-            if (old != null) {
-                count = old;
-            }
-        }
-        return count.getAndIncrement();
+        return this.usage.computeIfAbsent(id, (I key) -> new AtomicInteger(0)).getAndIncrement();
     }
 
     @Override
@@ -73,10 +65,6 @@ public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T> {
 
     @Override
     public int totalUsage() {
-        int total = 0;
-        for (AtomicInteger count: this.usage.values()) {
-            total += count.get();
-        }
-        return total;
+        return this.usage.values().stream().mapToInt((AtomicInteger usage) -> usage.get()).sum();
     }
 }

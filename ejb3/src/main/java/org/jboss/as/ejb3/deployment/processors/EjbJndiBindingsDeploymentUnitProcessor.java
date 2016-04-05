@@ -38,7 +38,6 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
 import org.jboss.as.naming.ManagedReference;
@@ -85,7 +84,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         if (componentDescriptions != null) {
             for (ComponentDescription componentDescription : componentDescriptions) {
                 // process only EJB session beans
-                if (componentDescription instanceof SessionBeanComponentDescription || componentDescription instanceof EntityBeanComponentDescription) {
+                if (componentDescription instanceof SessionBeanComponentDescription) {
                     this.setupJNDIBindings((EJBComponentDescription) componentDescription, deploymentUnit);
                 }
             }

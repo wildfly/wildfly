@@ -27,7 +27,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
 
-public interface BeanManagerFactoryBuilderFactory<G, I, B extends Batch> {
+public interface BeanManagerFactoryBuilderFactory<I, B extends Batch> {
 
     /**
      * Installs dependencies for a deployment unit
@@ -40,5 +40,5 @@ public interface BeanManagerFactoryBuilderFactory<G, I, B extends Batch> {
      * @param context the bean context
      * @return a service builder
      */
-    <T> Builder<? extends BeanManagerFactory<G, I, T, B>> getBeanManagerFactoryBuilder(BeanContext context);
+    <T> Builder<? extends BeanManagerFactory<I, T, B>> getBeanManagerFactoryBuilder(BeanContext context);
 }

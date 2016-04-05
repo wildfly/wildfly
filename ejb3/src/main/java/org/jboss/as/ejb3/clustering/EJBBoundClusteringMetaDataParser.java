@@ -49,7 +49,7 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
         if (!reader.getLocalName().equals("clustering")) {
             throw unexpectedElement(reader);
         }
-        if (this.schema == ClusteringSchema.VERSION_1_0) {
+        if (this.schema != ClusteringSchema.CURRENT) {
             EjbLogger.ROOT_LOGGER.deprecatedNamespace(reader.getNamespaceURI(), reader.getLocalName());
         }
         EJBBoundClusteringMetaData metaData = new EJBBoundClusteringMetaData();
@@ -65,6 +65,8 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
                     if (this.schema.since(ClusteringSchema.VERSION_1_1)) {
                         throw unexpectedElement(reader);
                     }
+                    // Swallow ignored content
+                    reader.getElementText();
                     break;
                 }
                 case "clustered-singleton":
