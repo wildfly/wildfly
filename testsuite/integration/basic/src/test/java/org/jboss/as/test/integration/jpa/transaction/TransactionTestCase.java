@@ -26,7 +26,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.TransactionRequiredException;
@@ -64,7 +66,8 @@ public class TransactionTestCase {
             SLSB1.class,
             UnsynchronizedSFSB.class,
             InnerUnsynchronizedSFSB.class,
-            UnsynchronizedSFSBXPC.class
+            UnsynchronizedSFSBXPC.class,
+            InnerSynchronizedSFSB.class
         );
         jar.addAsManifestResource(TransactionTestCase.class.getPackage(), "persistence.xml","persistence.xml");
         return jar;
@@ -264,5 +267,20 @@ public class TransactionTestCase {
         assertTrue("expecting that lazily fetched association is still attached, so that we can verify its lazy fetched collection size of one", sfsb1.isLazyAssociationAccessibleWithDeferredDetach(204));
     }
 
+    @Test
+    @InSequence(11)
+    public void testSyncUnsynchMixedErrorExpected() throws Exception {
+        UnsynchronizedSFSB unsynchronizedSFSB = lookup("UnsynchronizedSFSB", UnsynchronizedSFSB.class);
+
+        try {
+            Employee employee = unsynchronizedSFSB.createAndPropagatedFindMixExceptionExcepted("Catherine Stark", "Winterfell", 203);
+            fail("If there is a persistence context of type SynchronizationType.UNSYNCHRONIZED\n" +
+                    "associated with the JTA transaction and the target component specifies a persistence context of\n" +
+                    "type SynchronizationType.SYNCHRONIZED, the IllegalStateException is\n" +
+                    "thrown by the container.");
+        } catch (/*EJBTransactionRolledbackException*/ Exception expected) {
+            assertTrue("should of been caused by IllegalStateException", expected.getCause() instanceof IllegalStateException);
+        }
+    }
 
 }

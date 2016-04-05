@@ -26,11 +26,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.io.OptionAttributeDefinition;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -43,6 +46,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
+    public static final OptionAttributeDefinition MAX_AJP_PACKET_SIZE = OptionAttributeDefinition.builder("max-ajp-packet-size", UndertowOptions.MAX_AJP_PACKET_SIZE).setMeasurementUnit(MeasurementUnit.BYTES).setAllowNull(true).setAllowExpression(true).build();
 
     private AjpListenerResourceDefinition() {
         super(UndertowExtension.AJP_LISTENER_PATH);
@@ -58,6 +62,9 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
         List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
         attrs.add(SCHEME);
         attrs.add(REDIRECT_SOCKET);
+        attrs.add(MAX_AJP_PACKET_SIZE);
         return attrs;
     }
+
+
 }

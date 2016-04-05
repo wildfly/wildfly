@@ -25,6 +25,8 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.ignoreOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.EXPIRY_DELAY;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.LAST_VALUE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS;
@@ -130,7 +132,8 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(SLOW_CONSUMER_CHECK_PERIOD.getName()).set(settings.getSlowConsumerCheckPeriod());
         result.get(SLOW_CONSUMER_POLICY.getName()).set(settings.getSlowConsumerPolicy().toString());
         result.get(SLOW_CONSUMER_THRESHOLD.getName()).set(settings.getSlowConsumerThreshold());
-
+        result.get(AUTO_CREATE_JMS_QUEUES.getName()).set(settings.isAutoCreateJmsQueues());
+        result.get(AUTO_DELETE_JMS_QUEUES.getName()).set(settings.isAutoDeleteJmsQueues());
     }
 
     public static void registerOperationHandler(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {

@@ -75,7 +75,12 @@ public class IdentityProviderConfigAddStepHandler extends RestartParentResourceA
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, verificationHandler, null, parentAddress);
+        IdentityProviderAddHandler.launchServices(context, parentModel, verificationHandler, null, parentAddress, true);
+    }
+
+    @Override
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+        IdentityProviderAddHandler.launchServices(context, parentModel, null, null, parentAddress, true);
     }
 
     @Override

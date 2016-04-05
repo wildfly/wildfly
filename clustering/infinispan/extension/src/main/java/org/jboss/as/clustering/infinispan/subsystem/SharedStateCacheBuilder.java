@@ -26,15 +26,10 @@ import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
-import org.infinispan.configuration.cache.TransactionConfiguration;
-import org.infinispan.configuration.cache.VersioningScheme;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -48,8 +43,6 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
     private final InjectedValue<StateTransferConfiguration> stateTransfer = new InjectedValue<>();
     private final InjectedValue<BackupForConfiguration> backupFor = new InjectedValue<>();
     private final InjectedValue<SitesConfiguration> backups = new InjectedValue<>();
-    private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
-    private final InjectedValue<LockingConfiguration> locking = new InjectedValue<>();
 
     private final String containerName;
     private final String cacheName;
@@ -67,28 +60,18 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
                 .addDependency(CacheComponent.STATE_TRANSFER.getServiceName(this.containerName, this.cacheName), StateTransferConfiguration.class, this.stateTransfer)
                 .addDependency(CacheComponent.BACKUPS.getServiceName(this.containerName, this.cacheName), SitesConfiguration.class, this.backups)
                 .addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.containerName, this.cacheName), BackupForConfiguration.class, this.backupFor)
-                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
-                .addDependency(CacheComponent.LOCKING.getServiceName(this.containerName, this.cacheName), LockingConfiguration.class, this.locking)
         ;
     }
 
     @Override
-    public ConfigurationBuilder createConfigurationBuilder() {
-        ConfigurationBuilder builder = super.createConfigurationBuilder();
+    public void accept(ConfigurationBuilder builder) {
+        super.accept(builder);
+
         builder.clustering().partitionHandling().read(this.partitionHandling.getValue());
         builder.clustering().stateTransfer().read(this.stateTransfer.getValue());
-
-        CacheMode mode = builder.clustering().cacheMode();
-
-        if (mode.isSynchronous() && (this.transaction.getValue().lockingMode() == LockingMode.OPTIMISTIC) && (this.locking.getValue().isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
-            builder.locking().writeSkewCheck(true);
-            builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
-        }
 
         SitesConfigurationBuilder sitesBuilder = builder.sites();
         sitesBuilder.read(this.backups.getValue());
         sitesBuilder.backupFor().read(this.backupFor.getValue());
-
-        return builder;
     }
 }

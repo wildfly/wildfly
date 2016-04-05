@@ -626,6 +626,7 @@ public class MigrateOperation implements OperationStepHandler {
 
 
     private void migrateServer(ModelNode addOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
+        discardInterceptors(addOperation, CommonAttributes.REMOTING_INTERCEPTORS.getName(), warnings);
         discardInterceptors(addOperation, CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName(), warnings);
         discardInterceptors(addOperation, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName(), warnings);
 
@@ -657,11 +658,11 @@ public class MigrateOperation implements OperationStepHandler {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-slave");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
-                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
+                discardFailbackDelay(serverAddOperation, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "shared-store-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, FAILOVER_ON_SHUTDOWN, "failover-on-server-shutdown");
-                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
+                discardFailbackDelay(serverAddOperation, warnings);
             }
         } else {
             if (backup) {
@@ -669,7 +670,7 @@ public class MigrateOperation implements OperationStepHandler {
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, ALLOW_FAILBACK, "allow-failback");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, MAX_SAVED_REPLICATED_JOURNAL_SIZE, "max-saved-replicated-journal-size");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, BACKUP_GROUP_NAME, "group-name");
-                discardUnsupportedAttribute(haPolicyAddOperation, FAILBACK_DELAY, warnings);
+                discardFailbackDelay(serverAddOperation, warnings);
             } else {
                 haPolicyAddress = serverAddress.append(HA_POLICY, "replication-master");
                 setAndDiscard(haPolicyAddOperation, serverAddOperation, CHECK_FOR_LIVE_SERVER, "check-for-live-server");
@@ -705,6 +706,13 @@ public class MigrateOperation implements OperationStepHandler {
         if (newAddOp.hasDefined(legacyAttributeDefinition.getName())) {
             newAddOp.remove(legacyAttributeDefinition.getName());
             warnings.add(MessagingLogger.ROOT_LOGGER.couldNotMigrateUnsupportedAttribute(legacyAttributeDefinition.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+        }
+    }
+
+    private void discardFailbackDelay(ModelNode newAddOp, List<String> warnings) {
+        if (newAddOp.hasDefined(FAILBACK_DELAY.getName())) {
+            newAddOp.remove(FAILBACK_DELAY.getName());
+            warnings.add(MessagingLogger.ROOT_LOGGER.couldNotMigrateFailbackDelayAttribute(pathAddress(newAddOp.get(OP_ADDR))));
         }
     }
 }

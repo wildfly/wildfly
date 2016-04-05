@@ -33,6 +33,7 @@ import java.util.Date;
 public interface BeanEntry<G> {
 
     G getGroupId();
+    String getBeanName();
 
     Date getLastAccessedTime();
     void setLastAccessedTime(Date time);

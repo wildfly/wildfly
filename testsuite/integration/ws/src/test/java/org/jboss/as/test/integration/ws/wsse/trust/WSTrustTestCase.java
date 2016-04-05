@@ -91,7 +91,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl annotations\n")) //cxf impl required to extend STS impl
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts annotations\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.STSCallbackHandler.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.SampleSTS.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils.class)
@@ -146,7 +146,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, ACT_AS_SERVER_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.apache.cxf.impl\n"))
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.jboss.ws.cxf.sts\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.SayHello.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.SayHelloResponse.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.actas.ActAsCallbackHandler.class)
@@ -168,7 +168,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, ON_BEHALF_OF_SERVER_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.apache.cxf.impl\n"))
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.jboss.ws.cxf.sts\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.SayHello.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.SayHelloResponse.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.onbehalfof.OnBehalfOfCallbackHandler.class)
@@ -190,7 +190,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, HOLDER_OF_KEY_STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl annotations\n")) //cxf impl required to extend STS impl
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts annotations\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.stsholderofkey.STSHolderOfKeyCallbackHandler.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.stsholderofkey.SampleSTSHolderOfKey.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils.class)
@@ -226,7 +226,7 @@ public class WSTrustTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, BEARER_STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl annotations\n")) //cxf impl required to extend STS impl
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.jboss.ws.cxf.sts annotations\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.stsbearer.STSBearerCallbackHandler.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.stsbearer.SampleSTSBearer.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.shared.WSTrustAppUtils.class)

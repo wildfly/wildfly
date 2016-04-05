@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.session;
 import javax.servlet.ServletContext;
 
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -39,7 +40,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.ThreadSetupAction;
 
 /**
  * Factory for creating a {@link DistributableSessionManager}.
@@ -89,21 +89,13 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
         };
         SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(configuration);
-        final Batcher<Batch> batcher = manager.getBatcher();
-        info.addThreadSetupAction(new ThreadSetupAction() {
-            @Override
-            public Handle setup(HttpServerExchange exchange) {
-                Batch batch = batcher.suspendBatch();
-                if (batch != null) {
-                    batcher.resumeBatch(batch);
-                }
-                return () -> {
-                    // Prevent tx leaking into other users of this thread
-                    if (batch == null) {
-                        batcher.suspendBatch();
-                    }
-                };
-            }
+        Batcher<Batch> batcher = manager.getBatcher();
+        info.addThreadSetupAction((HttpServerExchange exchange) -> {
+            Batch batch = batcher.suspendBatch();
+            BatchContext context = batcher.resumeBatch(batch);
+            return () -> {
+                context.close();
+            };
         });
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics) : null;
         return new DistributableSessionManager(info.getDeploymentName(), manager, listeners, statistics);

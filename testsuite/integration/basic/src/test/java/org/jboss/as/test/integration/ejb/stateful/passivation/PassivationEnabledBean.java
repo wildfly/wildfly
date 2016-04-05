@@ -33,7 +33,7 @@ import org.jboss.ejb3.annotation.Cache;
  */
 @Stateful(passivationCapable = true)
 @Cache("passivating")
-public class PassivationEnabledBean {
+public class PassivationEnabledBean implements Bean {
 
     private boolean prePrePassivateInvoked;
     private boolean postActivateInvoked;
@@ -48,16 +48,17 @@ public class PassivationEnabledBean {
         this.postActivateInvoked = true;
     }
 
-    public void doNothing() {
-
-    }
-
+    @Override
     public boolean wasPassivated() {
         return this.prePrePassivateInvoked;
     }
 
+    @Override
     public boolean wasActivated() {
         return this.postActivateInvoked;
     }
 
+    @Override
+    public void close() {
+    }
 }

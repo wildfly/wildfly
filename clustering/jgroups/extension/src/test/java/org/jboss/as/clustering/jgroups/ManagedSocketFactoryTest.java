@@ -119,6 +119,7 @@ public class ManagedSocketFactoryTest {
         DatagramSocket socket2 = mock(DatagramSocket.class);
         DatagramSocket socket3 = mock(DatagramSocket.class);
         DatagramSocket socket4 = mock(DatagramSocket.class);
+        DatagramSocket socket5 = mock(DatagramSocket.class);
         InetAddress localhost = InetAddress.getLocalHost();
         SocketAddress socketAddress = new InetSocketAddress(localhost, 2);
 
@@ -126,16 +127,19 @@ public class ManagedSocketFactoryTest {
         when(this.manager.createDatagramSocket("test", new InetSocketAddress(1))).thenReturn(socket2);
         when(this.manager.createDatagramSocket("test", socketAddress)).thenReturn(socket3);
         when(this.manager.createDatagramSocket("test", new InetSocketAddress(localhost, 1))).thenReturn(socket4);
+        when(this.manager.createDatagramSocket("test")).thenReturn(socket5);
 
         DatagramSocket result1 = this.subject.createDatagramSocket("test");
         DatagramSocket result2 = this.subject.createDatagramSocket("test", 1);
         DatagramSocket result3 = this.subject.createDatagramSocket("test", socketAddress);
         DatagramSocket result4 = this.subject.createDatagramSocket("test", 1, localhost);
+        DatagramSocket result5 = this.subject.createDatagramSocket("test", null);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
         assertSame(socket3, result3);
         assertSame(socket4, result4);
+        assertSame(socket5, result5);
     }
 
     @Test
@@ -144,19 +148,23 @@ public class ManagedSocketFactoryTest {
         MulticastSocket socket1 = mock(MulticastSocket.class);
         MulticastSocket socket2 = mock(MulticastSocket.class);
         MulticastSocket socket3 = mock(MulticastSocket.class);
+        MulticastSocket socket4 = mock(MulticastSocket.class);
         SocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), 1);
 
         when(this.manager.createMulticastSocket("test", new InetSocketAddress(0))).thenReturn(socket1);
         when(this.manager.createMulticastSocket("test", new InetSocketAddress(1))).thenReturn(socket2);
         when(this.manager.createMulticastSocket("test", address)).thenReturn(socket3);
+        when(this.manager.createMulticastSocket("test")).thenReturn(socket4);
 
         MulticastSocket result1 = this.subject.createMulticastSocket("test");
         MulticastSocket result2 = this.subject.createMulticastSocket("test", 1);
         MulticastSocket result3 = this.subject.createMulticastSocket("test", address);
+        MulticastSocket result4 = this.subject.createMulticastSocket("test", null);
 
         assertSame(socket1, result1);
         assertSame(socket2, result2);
         assertSame(socket3, result3);
+        assertSame(socket4, result4);
     }
 
     @Test

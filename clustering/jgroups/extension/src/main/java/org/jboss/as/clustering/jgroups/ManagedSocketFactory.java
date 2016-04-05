@@ -99,7 +99,7 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public DatagramSocket createDatagramSocket(String name, SocketAddress address) throws SocketException {
-        return this.manager.createDatagramSocket(name, address);
+        return (address != null) ? this.manager.createDatagramSocket(name, address) : this.manager.createDatagramSocket(name);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public MulticastSocket createMulticastSocket(String name, SocketAddress address) throws IOException {
-        return this.manager.createMulticastSocket(name, address);
+        return (address != null) ? this.manager.createMulticastSocket(name, address) : this.manager.createMulticastSocket(name);
     }
 
     @Override

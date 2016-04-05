@@ -25,13 +25,9 @@ import java.io.IOException;
 
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.web.WebExtension;
-import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 
 /**
  * @author Jean-Frederic Clere
@@ -58,13 +54,14 @@ public class WebSubsystemBareTestCase extends AbstractSubsystemBaseTest {
         super.compareXml(configId, original, marshalled, true);
     }
 
-    @Override
-    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = hc.executeOperation(operation);
-        Assert.assertTrue("The subsystem describe operation must fail",
-                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
-    }
+    // TODO WFCORE-1353 means this doesn't have to always fail now; consider just deleting this
+//    @Override
+//    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
+//        final ModelNode operation = createDescribeOperation();
+//        final ModelNode result = hc.executeOperation(operation);
+//        Assert.assertTrue("The subsystem describe operation must fail",
+//                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
+//    }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {

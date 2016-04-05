@@ -24,18 +24,24 @@ package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.singleton.RequiredCapability;
+import org.wildfly.clustering.singleton.SingletonPolicy;
 
 /**
  * Definition of the singleton deployer resource.
@@ -45,13 +51,36 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME);
 
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        DEFAULT_POLICY(RequiredCapability.SINGLETON_POLICY.getName(), SingletonPolicy.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> type) {
+            this.definition = RuntimeCapability.Builder.of(name, false).setServiceType(type).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+            return this.getDefinition();
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT("default", ModelType.STRING),
+        DEFAULT("default", ModelType.STRING, new CapabilityReference(RequiredCapability.SINGLETON_POLICY, Capability.DEFAULT_POLICY)),
         ;
         private final SimpleAttributeDefinition definition;
 
-        private Attribute(String name, ModelType type) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type).setFlags(Flag.RESTART_RESOURCE_SERVICES).build();
+        private Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setCapabilityReference(reference)
+                    .setFlags(Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -70,7 +99,10 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
 
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addCapabilities(Capability.class)
+                ;
         ResourceServiceHandler handler = new SingletonServiceHandler();
         new BoottimeAddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

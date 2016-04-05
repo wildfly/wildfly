@@ -25,8 +25,10 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -54,8 +56,6 @@ public class SessionOperationServlet extends HttpServlet {
     private static final String VALUE = "value";
     public static final String RESULT = "result";
     public static final String SESSION_ID = "jsessionid";
-    public static final String PASSIVATED_SESSIONS = "passivated";
-    public static final String ACTIVATED_SESSIONS = "activated";
 
     public static URI createGetURI(URL baseURL, String name) throws URISyntaxException {
         return createGetURI(baseURL, name, null);
@@ -125,18 +125,11 @@ public class SessionOperationServlet extends HttpServlet {
             throw new ServletException("Unrecognized operation: " + operation);
         }
 
-        setHeader(resp, ACTIVATED_SESSIONS, SessionAttributeValue.activatedSessions);
-        setHeader(resp, PASSIVATED_SESSIONS, SessionAttributeValue.passivatedSessions);
-    }
-
-    private static void setHeader(HttpServletResponse response, String header, BlockingQueue<String> queue) {
-        if (queue != null) {
-            List<String> values = new LinkedList<>();
-            if (queue.drainTo(values) > 0) {
-                for (String value: values) {
-                    response.addHeader(header, value);
-                }
-            }
+        List<Map.Entry<String, EventType>> events = new LinkedList<>();
+        if (SessionAttributeValue.events.drainTo(events) > 0) {
+            events.forEach((Map.Entry<String, EventType> entry) -> {
+                resp.addHeader(entry.getKey(), entry.getValue().name());
+            });
         }
     }
 
@@ -148,10 +141,13 @@ public class SessionOperationServlet extends HttpServlet {
         return value;
     }
 
+    public enum EventType {
+        PASSIVATION, ACTIVATION;
+    }
+
     public static class SessionAttributeValue implements Serializable, HttpSessionActivationListener {
         private static final long serialVersionUID = -8824497321979784527L;
-        static BlockingQueue<String> passivatedSessions = new LinkedBlockingQueue<>();
-        static BlockingQueue<String> activatedSessions = new LinkedBlockingQueue<>();
+        static BlockingQueue<Map.Entry<String, EventType>> events = new LinkedBlockingQueue<>();
 
         private final String value;
 
@@ -165,12 +161,12 @@ public class SessionOperationServlet extends HttpServlet {
 
         @Override
         public void sessionWillPassivate(HttpSessionEvent event) {
-            passivatedSessions.add(event.getSession().getId());
+            events.add(new SimpleImmutableEntry<>(event.getSession().getId(), EventType.PASSIVATION));
         }
 
         @Override
         public void sessionDidActivate(HttpSessionEvent event) {
-            activatedSessions.add(event.getSession().getId());
+            events.add(new SimpleImmutableEntry<>(event.getSession().getId(), EventType.ACTIVATION));
         }
     }
 }

@@ -34,19 +34,20 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class ExpiredBeanRemover<G, I, T> implements BeanRemover<I, T> {
+public class ExpiredBeanRemover<I, T> implements BeanRemover<I, T> {
 
-    private final BeanFactory<G, I, T> factory;
+    private final BeanFactory<I, T> factory;
 
-    public ExpiredBeanRemover(BeanFactory<G, I, T> factory) {
+    public ExpiredBeanRemover(BeanFactory<I, T> factory) {
         this.factory = factory;
     }
 
     @Override
     public void remove(I id, RemoveListener<T> listener) {
-        BeanEntry<G> entry = this.factory.findValue(id);
-        if (entry != null) {
-            Bean<G, I, T> bean = this.factory.createBean(id, entry);
+        BeanEntry<I> entry = this.factory.findValue(id);
+        @SuppressWarnings("resource")
+        Bean<I, T> bean = (entry != null) ? this.factory.createBean(id, entry) : null;
+        if (bean != null) {
             if (bean.isExpired()) {
                 InfinispanEjbLogger.ROOT_LOGGER.tracef("Removing expired bean %s", id);
                 this.factory.remove(id, listener);

@@ -31,6 +31,6 @@
     <dependencies>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.api"/>
-        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.service" export="true"/>
     </dependencies>
 </module>

@@ -92,8 +92,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         ALIASES("aliases"),
-        MODULE("module", ModelType.STRING, new ModelNode("org.jboss.as.clustering.infinispan"), new ModuleIdentifierValidatorBuilder()),
         DEFAULT_CACHE("default-cache", ModelType.STRING, null),
+        MODULE("module", ModelType.STRING, new ModelNode("org.jboss.as.clustering.infinispan"), new ModuleIdentifierValidatorBuilder()),
         JNDI_NAME("jndi-name", ModelType.STRING, null),
         STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, new ModelNode(false)),
         ;
