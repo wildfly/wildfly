@@ -45,7 +45,9 @@ class AjpListenerAdd extends ListenerAdd {
         if (schemeNode.isDefined()) {
             scheme = schemeNode.asString();
         }
-        return new AjpListenerService(name, scheme, listenerOptions, socketOptions);
+        OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
+        AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE.resolveOption(context, model,listenerBuilder);
+        return new AjpListenerService(name, scheme, listenerBuilder.getMap(), socketOptions);
     }
 
     @Override

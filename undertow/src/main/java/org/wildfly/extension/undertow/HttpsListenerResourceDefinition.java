@@ -32,6 +32,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -59,6 +60,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY, LISTENER_CAPABILITY_NAME, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
 
     protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING, true)
@@ -124,6 +126,12 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         res.add(ENABLE_SPDY);
         res.add(SSL_SESSION_CACHE_SIZE);
         res.add(SSL_SESSION_TIMEOUT);
+        res.add(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH);
+        res.add(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE);
+        res.add(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE);
+        res.add(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS);
+        res.add(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE);
+        res.add(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE);
         return res;
     }
 

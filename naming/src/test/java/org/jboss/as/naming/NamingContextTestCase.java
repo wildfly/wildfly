@@ -47,12 +47,11 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 
+import org.wildfly.naming.java.permission.JndiPermission;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import org.jboss.as.naming.JndiPermission.Action;
 
 /**
  * @author John E. Bailey
@@ -90,7 +89,7 @@ public class NamingContextTestCase {
         assertEquals(object, result);
         
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, namingContext, "test");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, namingContext, "test");
         assertEquals(object, result);
     }
 
@@ -104,7 +103,7 @@ public class NamingContextTestCase {
         assertEquals("test", result);
         
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, namingContext, "test");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, namingContext, "test");
         assertEquals("test", result);
     }
 
@@ -119,7 +118,7 @@ public class NamingContextTestCase {
         assertEquals("test", result);
 
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("comp/nested",  "lookup")), namingContext, "test/nested");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, Arrays.asList(new JndiPermission("comp/nested",  "lookup")), namingContext, "test/nested");
         assertEquals("test", result);
     }
 
@@ -134,7 +133,7 @@ public class NamingContextTestCase {
         assertEquals("test", result);
 
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test/nested", "lookup")), namingContext, "comp/nested");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, Arrays.asList(new JndiPermission("test/nested", "lookup")), namingContext, "comp/nested");
         assertEquals("test", result);
     }
 
@@ -148,7 +147,7 @@ public class NamingContextTestCase {
         assertEquals("testValue", result);
 
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test", "lookup")), namingContext, "link");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, Arrays.asList(new JndiPermission("test", "lookup")), namingContext, "link");
         assertEquals("testValue", result);
         
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, InitialContextFactory.class.getName());
@@ -157,7 +156,7 @@ public class NamingContextTestCase {
         assertEquals("testValue", result);
         
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test", "lookup")), namingContext, "link");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, Arrays.asList(new JndiPermission("test", "lookup")), namingContext, "link");
         assertEquals("testValue", result);
     }
 
@@ -171,7 +170,7 @@ public class NamingContextTestCase {
         assertEquals("testValue", result);
         
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, Arrays.asList(new JndiPermission("test", "lookup"), 
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, Arrays.asList(new JndiPermission("test", "lookup"),
             new JndiPermission("test/value", "lookup")), namingContext, "link/value");
         
         assertEquals("testValue", result);        
@@ -188,7 +187,7 @@ public class NamingContextTestCase {
 
         //the same with security permissions
         try {
-            testActionPermission(Action.LOOKUP, namingContext, "test");
+            testActionPermission(JndiPermission.ACTION_LOOKUP, namingContext, "test");
             fail("Should have thrown and NameNotFoundException with appropriate permissions");
         } catch (NameNotFoundException expected) {
         }
@@ -202,9 +201,9 @@ public class NamingContextTestCase {
         assertTrue(result instanceof NamingContext);
         
         //the same with security permissions
-        result = testActionPermission(Action.LOOKUP, namingContext, null);
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, namingContext, null);
         assertTrue(result instanceof NamingContext);
-        result = testActionPermission(Action.LOOKUP, namingContext, "");
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, namingContext, "");
         assertTrue(result instanceof NamingContext);
     }
 
@@ -217,7 +216,7 @@ public class NamingContextTestCase {
         
         //the same with security permissions
         name = new CompositeName("securitytest");
-        testActionPermission(Action.BIND, namingContext, "securitytest", value);
+        testActionPermission(JndiPermission.ACTION_BIND, namingContext, "securitytest", value);
         assertEquals(value, namingStore.lookup(name));        
     }
 
@@ -231,8 +230,8 @@ public class NamingContextTestCase {
 
         //the same with security permissions
         name = new CompositeName("securitytest");
-        testActionPermission(Action.BIND, namingContext, "securitytest", referenceable);
-        result = testActionPermission(Action.LOOKUP, namingContext, "securitytest");
+        testActionPermission(JndiPermission.ACTION_BIND, namingContext, "securitytest", referenceable);
+        result = testActionPermission(JndiPermission.ACTION_LOOKUP, namingContext, "securitytest");
         assertEquals(referenceable.addr, result);
     }
     
@@ -248,8 +247,8 @@ public class NamingContextTestCase {
         } catch (NameNotFoundException expect) {}
 
         //the same with security permissions
-        testActionPermission(Action.BIND, namingContext, "test", value);
-        testActionPermission(Action.UNBIND, namingContext, "test");
+        testActionPermission(JndiPermission.ACTION_BIND, namingContext, "test", value);
+        testActionPermission(JndiPermission.ACTION_UNBIND, namingContext, "test");
         try {
             namingStore.lookup(name);
             fail("Should have thrown name not found");
@@ -261,7 +260,7 @@ public class NamingContextTestCase {
         assertTrue(namingContext.createSubcontext(new CompositeName("test")) instanceof NamingContext);
         
         //the same with security permissions
-        assertTrue(testActionPermission(Action.CREATE_SUBCONTEXT, namingContext, "securitytest") instanceof NamingContext);
+        assertTrue(testActionPermission(JndiPermission.ACTION_CREATE_SUBCONTEXT, namingContext, "securitytest") instanceof NamingContext);
     }
 
     @Test
@@ -275,7 +274,7 @@ public class NamingContextTestCase {
         
         //the same with security permissions
         newValue = new Object();
-        testActionPermission(Action.REBIND, namingContext, "test", newValue);
+        testActionPermission(JndiPermission.ACTION_REBIND, namingContext, "test", newValue);
         assertEquals(newValue, namingStore.lookup(name));
     }
 
@@ -291,7 +290,7 @@ public class NamingContextTestCase {
         
         //the same with security permissions
         newReferenceable = new TestObjectReferenceable("yetAnotherNewAddr");
-        testActionPermission(Action.REBIND, namingContext, "test", newReferenceable);
+        testActionPermission(JndiPermission.ACTION_REBIND, namingContext, "test", newReferenceable);
         result = namingContext.lookup(name);
         assertEquals(newReferenceable.addr, result);
     }
@@ -306,7 +305,7 @@ public class NamingContextTestCase {
 
         //the same with security permissions
         try {
-            testActionPermission(Action.LIST, namingContext, "test");
+            testActionPermission(JndiPermission.ACTION_LIST, namingContext, "test");
             fail("Should have thrown and NameNotFoundException with appropriate permissions");
         } catch (NameNotFoundException expected) {
         }
@@ -321,7 +320,7 @@ public class NamingContextTestCase {
         checkListResults(results);
 
         //the same with security permissions        
-        results = (NamingEnumeration<NameClassPair>) testActionPermission(Action.LIST, namingContext, null);
+        results = (NamingEnumeration<NameClassPair>) testActionPermission(JndiPermission.ACTION_LIST, namingContext, null);
         checkListResults(results);
     }
 
@@ -334,7 +333,7 @@ public class NamingContextTestCase {
         checkListWithContinuationsResults(results);
         
         //the same with security permissions        
-        results = (NamingEnumeration<NameClassPair>) testActionPermission(Action.LIST, Arrays.asList(
+        results = (NamingEnumeration<NameClassPair>) testActionPermission(JndiPermission.ACTION_LIST, Arrays.asList(
             new JndiPermission("test", "list")), namingContext, "comp");
         
         checkListWithContinuationsResults(results);
@@ -350,7 +349,7 @@ public class NamingContextTestCase {
 
         //the same with security permissions        
         try {
-            testActionPermission(Action.LIST_BINDINGS, namingContext, "test");
+            testActionPermission(JndiPermission.ACTION_LIST_BINDINGS, namingContext, "test");
             fail("Should have thrown and NameNotFoundException with appropriate permissions");
         } catch (NameNotFoundException expected) {
         }
@@ -365,7 +364,7 @@ public class NamingContextTestCase {
         checkListResults(results);
         
         //the same with security permissions
-        results = (NamingEnumeration<Binding>) testActionPermission(Action.LIST_BINDINGS, namingContext, null);
+        results = (NamingEnumeration<Binding>) testActionPermission(JndiPermission.ACTION_LIST_BINDINGS, namingContext, null);
         checkListResults(results);
     }
 
@@ -378,7 +377,7 @@ public class NamingContextTestCase {
         checkListWithContinuationsResults(results);
         
         //the same with security permissions
-        results = (NamingEnumeration<Binding>) testActionPermission(Action.LIST_BINDINGS, Arrays.asList(
+        results = (NamingEnumeration<Binding>) testActionPermission(JndiPermission.ACTION_LIST_BINDINGS, Arrays.asList(
             new JndiPermission("test", "listBindings")), namingContext, "comp");
         
         checkListWithContinuationsResults(results);

@@ -1,0 +1,127 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:undertow:3.1" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
+           default-server="some-server" instance-id="some-id" statistics-enabled="true">
+
+    <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
+    <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
+
+    <server name="some-server" default-host="other-host" servlet-container="myContainer">
+        <ajp-listener name="ajp-connector" disallowed-methods="FOO TRACE" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000" tcp-keep-alive="true" tcp-backlog="500" receive-buffer="5000" send-buffer="50000" resolve-peer-address="true" no-request-timeout="10000" request-parse-timeout="2000" secure="true" max-ajp-packet-size="10000"/>
+        <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}" resolve-peer-address="true" http2-enable-push="false"/>
+        <http-listener name="second"  socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default" http2-max-concurrent-streams="10"/>
+        <http-listener name="no-redirect" worker="non-default" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
+        <https-listener name="https" disallowed-methods="" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true" max-connections="100"/>
+        <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1"/>
+
+        <host name="default-host" alias="localhost, some.host" default-web-module="something.war" default-response-code="503">
+            <location name="/" handler="welcome-content">
+                <!--<filter-ref name="security-other"/>-->
+                <filter-ref name="limit-connections"/>
+                <filter-ref name="headers" priority="${some.priority:10}"/>
+                <filter-ref name="404-handler"/>
+                <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']"/>
+            </location>
+            <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access" rotate="false" predicate="not path-suffix[*.css]"/>
+            <single-sign-on domain="${prop.domain:myDomain}" http-only="true" secure="true" path="/path" cookie-name="SSOID"/>
+        </host>
+        <host name="other-host" alias="www.mysite.com, ${prop.value:default-alias}" default-web-module="something.war" disable-console-redirect="true">
+            <location name="/" handler="welcome-content">
+                <filter-ref name="limit-connections"/>
+                <filter-ref name="headers"/>
+                <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']"/>
+                <filter-ref name="404-handler"/>
+                <filter-ref name="mod-cluster"/>
+            </location>
+            <filter-ref name="headers"/>
+        </host>
+    </server>
+
+
+    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true"
+                       eager-filter-initialization="true" default-session-timeout="100" directory-listing="true" proactive-authentication="${prop.pro:false}">
+        <jsp-config
+                disabled="${prop.disabled:false}"
+                keep-generated="${prop.keep-generated:true}"
+                trim-spaces="${prop.trim-spaces:true}"
+                tag-pooling="${prop.tag-pooling:true}"
+                mapped-file="${prop.mapped-file:true}"
+                check-interval="${prop.check-interval:20}"
+                modification-test-interval="${prop.modification-test-interval:1000}"
+                recompile-on-fail="${prop.recompile-on-fail:true}"
+                smap="${prop.smap:true}"
+                dump-smap="${prop.dump-smap:true}"
+                generate-strings-as-char-arrays="${prop.generate-strings-as-char-arrays:true}"
+                error-on-use-bean-invalid-class-attribute="${prop.error-on-use-bean-invalid-class-attribute:true}"
+                scratch-dir="${prop.scratch-dir:/some/dir}"
+                source-vm="${prop.source-vm:1.7}"
+                target-vm="${prop.target-vm:1.7}"
+                java-encoding="${prop.java-encoding:utf-8}"
+                x-powered-by="${prop.x-powered-by:true}"
+                display-source-fragment="${prop.display-source-fragment:true}"
+                optimize-scriptlets="${prop.optimise-scriptlets:true}"/>
+        <session-cookie name="MYSESSIONCOOKIE"
+                        domain="example.com"
+                        comment="session cookie"
+                        secure="true"
+                        http-only="true"
+                        max-age="1000"/>
+        <!--<persistent-sessions relative-to="${server.data.dir}" path="web-sessions"/>-->
+        <websockets dispatch-to-worker="false" />
+        <mime-mappings>
+            <mime-mapping name="txt" value="text/plain" />
+        </mime-mappings>
+        <welcome-files>
+            <welcome-file name="index.seam" />
+        </welcome-files>
+        <crawler-session-management session-timeout="2" user-agents=".*googlebot.*"/>
+    </servlet-container>
+
+    <handlers>
+        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true" case-sensitive="false" follow-symlink="true" safe-symlink-paths="/path/to/folder /second/path"/>
+        <reverse-proxy connection-idle-timeout="60"
+                       connections-per-thread="30" name="reverse-proxy">
+            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test" security-realm="foo"/>
+            <!-- ajp://localhost:8080 -->
+        </reverse-proxy>
+    </handlers>
+    <filters>
+        <!--<basic-auth name="security-other" security-domain="other"/>-->
+        <request-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
+        <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
+        <gzip name="static-gzip"/>
+        <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
+        <mod-cluster advertise-frequency="1000"  advertise-protocol="ajp" advertise-path="/foo"
+                     advertise-socket-binding="test2" broken-node-timeout="1000"
+                     cached-connections-per-thread="10"
+                     connection-idle-timeout="10" health-check-interval="600"
+                     management-access-predicate="method[GET]"
+                     management-socket-binding="test3" max-request-time="1000"
+                     security-realm="foo"
+                     name="mod-cluster" security-key="password" max-ajp-packet-size="10000" http2-header-table-size="8000"/>
+        <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
+        <expression-filter name="requestDumper" expression="dump-request" />
+        <rewrite name="redirects" target="'/foo/'" redirect="true" />
+    </filters>
+
+</subsystem>

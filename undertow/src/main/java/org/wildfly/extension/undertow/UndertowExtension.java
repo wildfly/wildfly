@@ -74,7 +74,7 @@ public class UndertowExtension implements Extension {
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
-    static final ModelVersion MODEL_VERSION_3_0_0 = ModelVersion.create(3);
+    static final ModelVersion MODEL_VERSION_3_1_0 = ModelVersion.create(3, 1);
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
@@ -92,6 +92,7 @@ public class UndertowExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_1_2.getUriString(), UndertowSubsystemParser_1_2.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_2_0.getUriString(), UndertowSubsystemParser_2_0.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_0.getUriString(), UndertowSubsystemParser_3_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_1.getUriString(), UndertowSubsystemParser_3_1.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_4_0.getUriString(), UndertowSubsystemParser_4_0.INSTANCE);
     }
 

@@ -22,29 +22,30 @@
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 
 /**
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 public class CarGroupSequenceProvider implements DefaultGroupSequenceProvider<Car> {
 
-    List<Class<?>> defaultGroupSequence = new ArrayList<Class<?>>();
+    private static final List<Class<?>> DEFAULT_SEQUENCE = Arrays.asList(Car.class, CarChecks.class);
 
     @Override
     public List<Class<?>> getValidationGroups(Car car) {
-
-        defaultGroupSequence.add(Car.class);
-        defaultGroupSequence.add(CarChecks.class);
-
-        if (car != null && car.inspectionCompleted()) {
-            defaultGroupSequence.add(FinalInspection.class);
-
+        if (car == null || !car.inspectionCompleted()) {
+            return DEFAULT_SEQUENCE;
         }
+        else {
+            List<Class<?>> finalInspectionSequence = new ArrayList<>(3);
+            finalInspectionSequence.addAll(DEFAULT_SEQUENCE);
+            finalInspectionSequence.add(FinalInspection.class);
 
-        return defaultGroupSequence;
+            return finalInspectionSequence;
+        }
     }
 }

@@ -1,6 +1,5 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
-import java.lang.reflect.ReflectPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.PropertyPermission;
@@ -18,7 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import org.jboss.as.naming.JndiPermission;
+import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import org.jboss.remoting3.security.RemotingPermission;

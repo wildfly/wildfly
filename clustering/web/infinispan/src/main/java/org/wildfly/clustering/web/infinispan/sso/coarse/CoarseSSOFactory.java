@@ -49,18 +49,14 @@ public class CoarseSSOFactory<A, D, L> implements SSOFactory<CoarseSSOEntry<A, D
     private final Cache<CoarseSessionsKey, Map<D, String>> sessionsCache;
     private final Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller;
     private final LocalContextFactory<L> localContextFactory;
-    private final boolean lockOnRead;
 
     @SuppressWarnings("unchecked")
     public CoarseSSOFactory(Cache<? extends Key<String>, ?> cache, Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, boolean lockOnRead) {
         this.authenticationCache = (Cache<AuthenticationKey, AuthenticationEntry<A, D, L>>) cache;
-        // this.findAuthenticationCache = lockOnRead ? this.authenticationCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.authenticationCache;
-        // Workaround for ISPN-6007
-        this.findAuthenticationCache = this.authenticationCache;
+        this.findAuthenticationCache = lockOnRead ? this.authenticationCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.authenticationCache;
         this.sessionsCache = (Cache<CoarseSessionsKey, Map<D, String>>) cache;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
-        this.lockOnRead = lockOnRead;
     }
 
     @Override
@@ -89,10 +85,6 @@ public class CoarseSSOFactory<A, D, L> implements SSOFactory<CoarseSSOEntry<A, D
     @Override
     public CoarseSSOEntry<A, D, L> findValue(String id) {
         AuthenticationKey key = new AuthenticationKey(id);
-        // Workaround for ISPN-6007
-        if (this.lockOnRead) {
-            this.findAuthenticationCache.getAdvancedCache().lock(key);
-        }
         AuthenticationEntry<A, D, L> entry = this.findAuthenticationCache.get(key);
         if (entry != null) {
             Map<D, String> map = this.sessionsCache.get(new CoarseSessionsKey(id));

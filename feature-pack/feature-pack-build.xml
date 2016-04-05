@@ -62,6 +62,20 @@
                 output-file="docs/examples/configs/standalone-ec2-ha.xml">
             <property name="jgroups.supplement" value="ec2" />
         </standalone>
+        <!-- azure.AZURE_PING -->
+        <standalone
+                template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-full-ha.xml"
+                output-file="docs/examples/configs/standalone-azure-full-ha.xml">
+            <property name="jgroups.supplement" value="azure"/>
+        </standalone>
+        <standalone
+                template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-ha.xml"
+                output-file="docs/examples/configs/standalone-azure-ha.xml">
+            <property name="jgroups.supplement" value="azure"/>
+        </standalone>
+        <!-- TCPGOSSIP -->
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full-ha.xml"

@@ -30,11 +30,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.NodeAffinity;

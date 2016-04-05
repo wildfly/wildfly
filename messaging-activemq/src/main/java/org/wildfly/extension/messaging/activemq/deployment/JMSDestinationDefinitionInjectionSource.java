@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.deployment;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ENTRIES;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
@@ -30,27 +29,26 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPI
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SELECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
+import static org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionInjectionSource.getActiveMQServerName;
+import static org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionInjectionSource.targetsPooledConnectionFactory;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
+import org.jboss.as.connector.deployers.ra.AdministeredObjectDefinitionInjectionSource;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentResourceSupport;
-import org.wildfly.extension.messaging.activemq.MessagingExtension;
-import org.wildfly.extension.messaging.activemq.MessagingServices;
-import org.wildfly.extension.messaging.activemq.jms.JMSQueueConfigurationRuntimeHandler;
-import org.wildfly.extension.messaging.activemq.jms.JMSQueueService;
-import org.wildfly.extension.messaging.activemq.jms.JMSTopicConfigurationRuntimeHandler;
-import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -61,6 +59,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.messaging.activemq.MessagingExtension;
+import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.JMSQueueConfigurationRuntimeHandler;
+import org.wildfly.extension.messaging.activemq.jms.JMSQueueService;
+import org.wildfly.extension.messaging.activemq.jms.JMSTopicConfigurationRuntimeHandler;
+import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
 import org.wildfly.extension.messaging.activemq.jms.WildFlyBindingRegistry;
 
 /**
@@ -119,10 +123,27 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
     }
 
     public void getResourceValue(final InjectionSource.ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        if (targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
+            startActiveMQDestination(context, serviceBuilder, phaseContext, injector);
+        } else {
+            // delegate to the resource-adapter subsystem to create a generic JCA admin object.
+            AdministeredObjectDefinitionInjectionSource aodis = new AdministeredObjectDefinitionInjectionSource(jndiName, className, resourceAdapter);
+            aodis.setInterface(interfaceName);
+            aodis.setDescription(description);
+            // transfer all the generic properties
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                aodis.addProperty(property.getKey(), property.getValue());
+            }
+            aodis.getResourceValue(context, serviceBuilder, phaseContext, injector);
+
+        }
+    }
+
+    private void startActiveMQDestination(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final String uniqueName = uniqueName(context);
         try {
-            ServiceName serviceName = MessagingServices.getActiveMQServiceName(getActiveMQServerName());
+            ServiceName serviceName = MessagingServices.getActiveMQServiceName(getActiveMQServerName(properties));
 
             if (interfaceName.equals(Queue.class.getName())) {
                 startQueue(uniqueName, phaseContext.getServiceTarget(), serviceName, serviceBuilder, deploymentUnit, injector);
@@ -161,13 +182,14 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         inject(serviceBuilder, injector, queueService);
 
         //create the management registration
-        final PathElement serverElement = PathElement.pathElement(SERVER, getActiveMQServerName());
+        String serverName = getActiveMQServerName(properties);
+        final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
         final PathElement dest = PathElement.pathElement(JMS_QUEUE, queueName);
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
         deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
-        JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(getActiveMQServerName(), queueName, destination);
+        JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, queueName, destination);
     }
 
     private void startTopic(String topicName,
@@ -184,13 +206,14 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         inject(serviceBuilder, injector, topicService);
 
         //create the management registration
-        final PathElement serverElement = PathElement.pathElement(SERVER, getActiveMQServerName());
+        String serverName = getActiveMQServerName(properties);
+        final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
         final PathElement dest = PathElement.pathElement(JMS_TOPIC, topicName);
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
         deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
-        JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(getActiveMQServerName(), topicName, destination);
+        JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, topicName, destination);
     }
 
     private <D extends Destination> void inject(ServiceBuilder<?> serviceBuilder, Injector<ManagedReferenceFactory> injector, Service<D> destinationService) {
@@ -214,14 +237,6 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                         }
                     }
                 });
-    }
-
-    /**
-     * The JMS destination can specify another server to deploy its destinations
-     * by passing a property server=&lt;name of the server>. Otherwise, "default" is used by default.
-     */
-    private String getActiveMQServerName() {
-        return properties.containsKey(SERVER) ? properties.get(SERVER) : DEFAULT;
     }
 
     @Override

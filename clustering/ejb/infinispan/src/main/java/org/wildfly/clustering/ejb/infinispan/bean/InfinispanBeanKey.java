@@ -32,17 +32,10 @@ import org.wildfly.clustering.ejb.infinispan.BeanKey;
  */
 public class InfinispanBeanKey<I> implements BeanKey<I> {
 
-    private final String beanName;
     private final I id;
 
-    public InfinispanBeanKey(String beanName, I id) {
-        this.beanName = beanName;
+    public InfinispanBeanKey(I id) {
         this.id = id;
-    }
-
-    @Override
-    public String getBeanName() {
-        return this.beanName;
     }
 
     @Override

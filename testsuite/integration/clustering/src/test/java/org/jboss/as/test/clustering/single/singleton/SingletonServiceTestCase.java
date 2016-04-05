@@ -72,8 +72,8 @@ public class SingletonServiceTestCase {
     public void testSingletonService(@ArquillianResource(MyServiceServlet.class) URL baseURL) throws IOException, URISyntaxException {
 
         // URLs look like "http://IP:PORT/singleton/service"
-        URI defaultURI = MyServiceServlet.createURI(baseURL, MyService.DEFAULT_SERVICE_NAME);
-        URI quorumURI = MyServiceServlet.createURI(baseURL, MyService.QUORUM_SERVICE_NAME);
+        URI defaultURI = MyServiceServlet.createURI(baseURL, MyServiceActivator.DEFAULT_SERVICE_NAME);
+        URI quorumURI = MyServiceServlet.createURI(baseURL, MyServiceActivator.QUORUM_SERVICE_NAME);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(defaultURI));

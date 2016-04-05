@@ -66,4 +66,11 @@ public interface Component {
 
     NamespaceContextSelector getNamespaceContextSelector();
 
+    /**
+     * Checks whether the supplied {@link Throwable} is remotable meaning it can be safely sent to the client over the wire.
+     */
+    default boolean isRemotable(Throwable throwable) {
+        return true;
+    }
+
 }

@@ -251,6 +251,8 @@
                         </xs:simpleType>
                     </xs:attribute>
                     <xs:attribute name="slow-consumer-threshold" type="xs:long" use="optional" />
+                    <xs:attribute name="auto-create-jms-queues" type="xs:boolean" use="optional" />
+                    <xs:attribute name="auto-delete-jms-queues" type="xs:boolean" use="optional" />
                 </xs:complexType>
             </xs:element>
 

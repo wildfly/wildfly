@@ -220,6 +220,7 @@ public interface Constants {
     String USER_AGENTS = "user-agents";
     String SESSION_TIMEOUT = "session-timeout";
     String CRAWLER_SESSION_MANAGEMENT = "crawler-session-management";
+    String MAX_AJP_PACKET_SIZE = "max-ajp-packet-size";
 
     // Elytron Integration
     String APPLICATION_SECURITY_DOMAIN = "application-security-domain";

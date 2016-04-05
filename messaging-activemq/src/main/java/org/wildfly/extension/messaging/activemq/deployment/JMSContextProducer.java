@@ -50,8 +50,6 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XAJMSContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -59,8 +57,8 @@ import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.metadata.property.PropertyReplacer;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Producer factory for JMSContext resources.
@@ -189,8 +187,7 @@ public class JMSContextProducer {
             inTransaction = inTx;
             ConnectionFactory cf = (ConnectionFactory) lookup(info.connectionFactoryLookup);
             if (inTransaction) {
-                XAJMSContext xaContext = ((XAConnectionFactory) cf).createXAContext(info.userName, info.password);
-                return xaContext.getContext();
+                return cf.createContext(info.userName, info.password);
             } else {
                 return cf.createContext(info.userName, info.password, info.ackMode);
             }
@@ -215,7 +212,7 @@ public class JMSContextProducer {
                     return (JMSContext) resource;
                 } else {
                     final JMSContext transactedContext = create(info, inTx);
-                    txSyncRegistry.putResource(TRANSACTION_KEY, resource);
+                    txSyncRegistry.putResource(TRANSACTION_KEY, transactedContext);
                     txSyncRegistry.registerInterposedSynchronization(new Synchronization() {
                         @Override
                         public void beforeCompletion() {

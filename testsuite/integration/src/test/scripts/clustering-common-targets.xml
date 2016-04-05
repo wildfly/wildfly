@@ -197,6 +197,23 @@
         </sequential>
     </macrodef>
 
+
+    <!--
+          Enable http trace method on all http-listeners in undertow subsystem
+      -->
+      <macrodef name="ts.config-as.enable-trace-http-method" description="Enable trace http method in undertow subsystem">
+
+          <attribute name="name" default="wildfly"/>
+          <attribute name="output.dir" default="${project.build.directory}"/>
+          <attribute name="config.dir.name" default="standalone/configuration"/>
+
+          <sequential>
+              <echo message="Enabling http TRACE method for all http listeners @{name}" />
+
+              <execute-xslt-transform transform="enableHttpTrace.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}" />
+          </sequential>
+      </macrodef>
+
     <!--
         Add a new cache container to the Infinispan subsystem.
         The container definition is loaded from a file.

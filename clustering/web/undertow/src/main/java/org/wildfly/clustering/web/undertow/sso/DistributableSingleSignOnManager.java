@@ -25,6 +25,8 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
 
+import java.util.Base64;
+
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
@@ -67,43 +69,44 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     public SingleSignOn createSingleSignOn(Account account, String mechanism) {
         String id = this.manager.createIdentifier();
         Batcher<Batch> batcher = this.manager.getBatcher();
+        // Batch will be closed when SSO is closed
+        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
             AuthenticatedSession session = new AuthenticatedSession(account, mechanism);
             SSO<AuthenticatedSession, String, Void> sso = this.manager.createSSO(id, session);
-            return new DistributableSingleSignOn(sso, this.registry, batcher, batch);
+            return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
+            batch.close();
             throw e;
-        } finally {
-            if (batch.isActive()) {
-                // Always disassociate the batch with the current thread
-                batcher.suspendBatch();
-            }
         }
     }
 
     @Override
     public SingleSignOn findSingleSignOn(String id) {
+        // If requested id contains invalid characters, then sso cannot exist and would otherwise cause sso lookup to fail
+        try {
+            Base64.getUrlDecoder().decode(id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+
         Batcher<Batch> batcher = this.manager.getBatcher();
+        // Batch will be closed when SSO is closed
+        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
             SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
             if (sso == null) {
-                batch.discard();
+                batch.close();
                 return null;
             }
-            return new DistributableSingleSignOn(sso, this.registry, batcher, batch);
+            return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
-            if (batch.isActive()) {
-                batch.discard();
-            }
+            batch.discard();
+            batch.close();
             throw e;
-        } finally {
-            if (batch.isActive()) {
-                // Always disassociate the batch with the current thread
-                batcher.suspendBatch();
-            }
         }
     }
 

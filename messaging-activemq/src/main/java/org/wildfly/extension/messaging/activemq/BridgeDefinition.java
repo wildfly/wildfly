@@ -59,6 +59,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .setAllowExpression(false)
+            .setAlternatives(CommonAttributes.DISCOVERY_GROUP)
             .setRestartAllServices()
             .build();
 

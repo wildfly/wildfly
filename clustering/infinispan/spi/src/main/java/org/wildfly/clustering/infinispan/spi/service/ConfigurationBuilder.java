@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.infinispan.spi.service;
 
+import java.util.function.Consumer;
+
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.msc.service.Service;
@@ -44,12 +46,12 @@ public class ConfigurationBuilder implements Builder<Configuration>, Service<Con
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
     private final String containerName;
     private final String cacheName;
-    private final ConfigurationBuilderFactory factory;
+    private final Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> consumer;
 
-    public ConfigurationBuilder(String containerName, String cacheName, ConfigurationBuilderFactory factory) {
+    public ConfigurationBuilder(String containerName, String cacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> consumer) {
         this.containerName = containerName;
         this.cacheName = cacheName;
-        this.factory = factory;
+        this.consumer = consumer;
     }
 
     @Override
@@ -72,7 +74,9 @@ public class ConfigurationBuilder implements Builder<Configuration>, Service<Con
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.container.getValue().defineConfiguration(this.cacheName, this.factory.createConfigurationBuilder().build());
+        org.infinispan.configuration.cache.ConfigurationBuilder builder = new org.infinispan.configuration.cache.ConfigurationBuilder();
+        this.consumer.accept(builder);
+        this.container.getValue().defineConfiguration(this.cacheName, builder.build());
     }
 
     @Override
