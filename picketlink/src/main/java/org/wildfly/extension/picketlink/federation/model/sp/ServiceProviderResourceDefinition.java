@@ -21,23 +21,21 @@
  */
 package org.wildfly.extension.picketlink.federation.model.sp;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RestartParentWriteAttributeHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
@@ -57,7 +55,7 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
     public static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_URL.getName(),ModelType.STRING, false)
         .setAllowExpression(true)
         .build();
-    public static final SimpleAttributeDefinition POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.SERVICE_PROVIDER_POST_BINDING.getName(), ModelType.STRING, true)
+    public static final SimpleAttributeDefinition POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.SERVICE_PROVIDER_POST_BINDING.getName(), ModelType.BOOLEAN, true)
         .setDefaultValue(new ModelNode(true))
         .setAllowExpression(true)
         .build();
@@ -115,43 +113,20 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
     @Override
     protected OperationStepHandler createAttributeWriterHandler() {
         List<SimpleAttributeDefinition> attributes = getAttributes();
-        return new AbstractWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
+        return new RestartParentWriteAttributeHandler(ModelElement.SERVICE_PROVIDER.getName(), attributes.toArray(new AttributeDefinition[attributes.size()])) {
             @Override
-            protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
-                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-
-                updateConfiguration(context, pathAddress, false);
-
-                return false;
+            protected ServiceName getParentServiceName(PathAddress parentAddress) {
+                return ServiceProviderService.createServiceName(parentAddress.getLastElement().getValue());
             }
 
             @Override
-            protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
-                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-
-                updateConfiguration(context, pathAddress, true);
+            protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+                ServiceProviderAddHandler.launchService(context, parentAddress, parentModel, null, null);
             }
 
-            private void updateConfiguration(OperationContext context, PathAddress pathAddress, boolean rollback) throws OperationFailedException {
-                String alias = pathAddress.getLastElement().getValue();
-                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                ServiceController<ServiceProviderService> serviceController =
-                        (ServiceController<ServiceProviderService>) serviceRegistry.getService(ServiceProviderService.createServiceName(alias));
-
-                if (serviceController != null) {
-                    ServiceProviderService service = serviceController.getValue();
-
-                    ModelNode serviceProviderNode;
-
-                    if (!rollback) {
-                        serviceProviderNode = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
-                    } else {
-                        Resource rc = context.getOriginalRootResource().navigate(pathAddress);
-                        serviceProviderNode = rc.getModel();
-                    }
-
-                    service.setConfiguration(ServiceProviderAddHandler.toSPConfig(context, serviceProviderNode, alias));
-                }
+            @Override
+            protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+                ServiceProviderAddHandler.launchService(context, parentAddress, parentModel, null, null);
             }
         };
     }

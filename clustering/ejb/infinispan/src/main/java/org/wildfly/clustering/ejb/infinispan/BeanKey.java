@@ -30,6 +30,5 @@ package org.wildfly.clustering.ejb.infinispan;
  * @param <I> the bean identifier type
  */
 public interface BeanKey<I> {
-    String getBeanName();
     I getId();
 }

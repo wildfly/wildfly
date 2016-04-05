@@ -10,7 +10,7 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <local default-user="$local" skip-group-loading="true" />
+                    <local default-user="$local" skip-group-loading="true"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
                 <authorization map-groups-to-roles="false">
@@ -19,7 +19,7 @@
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
-                    <local default-user="$local" allowed-users="*" skip-group-loading="true" />
+                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
                     <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
                 <authorization>
@@ -29,15 +29,15 @@
         </security-realms>
         <audit-log>
             <formatters>
-               <json-formatter name="json-formatter"/>
-            </formatters>        
+                <json-formatter name="json-formatter"/>
+            </formatters>
             <handlers>
-               <file-handler name="file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+                <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
             <logger log-boot="true" log-read-only="false" enabled="false">
-               <handlers>
-                  <handler name="file"/>
-               </handlers>
+                <handlers>
+                    <handler name="file"/>
+                </handlers>
             </logger>
         </audit-log>
         <management-interfaces>

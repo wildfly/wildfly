@@ -23,10 +23,20 @@
 
 package org.jboss.as.test.integration.ws.schemalocations;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import org.apache.cxf.helpers.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -50,8 +60,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class SchemaLocationsRewriteTestCase {
 
-    private final static String FAIL_MESSAGE = "Schema location was not rewritten.";
-
     @ArquillianResource
     URL baseUrl;
 
@@ -70,38 +78,76 @@ public class SchemaLocationsRewriteTestCase {
     }
 
     @Test
-    public void testSchemaLocationRewrittenWsdl() throws Exception {
-        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl"), baseUrl.getPath() + "SimpleService?xsd=");
-        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl"), baseUrl.getPath() + "SimpleService?wsdl=");
+    public void testSchemaLocationsRewritten() throws Exception {
+        // first path: SimpleService.wsdl -> imported/AnotherService.wsdl -> SimpleService.xsd -> importschema.xsd
+
+        String importedWsdlLocation = getWsdlLocation(new URL(baseUrl, "SimpleService?wsdl"), "AnotherService.wsdl");
+        verifyLocationRewritten(importedWsdlLocation);
+
+        String xsdLocation = getSchemaLocation(new URL(importedWsdlLocation), "SimpleService.xsd");
+        verifyLocationRewritten(xsdLocation);
+
+        String importedXsdLocation = getSchemaLocation(new URL(xsdLocation), "importedschema.xsd");
+        verifyLocationRewritten(importedXsdLocation);
+
+        // second path: SimpleService.wsdl -> imported/SimpleService.xsd -> importedschema.xsd
+
+        xsdLocation = getSchemaLocation(new URL(baseUrl, "SimpleService?wsdl"), "SimpleService.xsd");
+        verifyLocationRewritten(xsdLocation);
+
+        importedXsdLocation = getSchemaLocation(new URL(xsdLocation), "importedschema.xsd");
+        verifyLocationRewritten(importedXsdLocation);
     }
 
-    @Test
-    public void testSchemaLocationRewrittenNestedWsdl() throws Exception {
-        verifySchemaContains(new URL(baseUrl, "SimpleService?wsdl=imported/AnotherService.wsdl"), baseUrl.getPath() + "SimpleService?xsd=");
+    private String getSchemaLocation(URL url, String locationSuffix) throws Exception {
+        List<String> schemaLocations = getAttributeValues(url, "schemaLocation");
+        return findLocation(schemaLocations, locationSuffix);
     }
 
-    /**
-     * CXF-6469: this test is actually CXF implementation specific, it does not really make sense to assume the imported schema
-     * is at a given URL in this case; what really matters is that the published wsdl has consistent links to imported wsdl/xsd,
-     * so that you can actually build up a client with it and invoke the endpoint. I'm leaving the test here, though, with a
-     * workaround for old cxf impl versions.
-     */
-    @Test
-    public void testSchemaLocationRewrittenNestedXsd() throws Exception {
-        try {
-            verifySchemaContains(new URL(baseUrl, "SimpleService?xsd=imported/SimpleService.xsd"), baseUrl.getPath() + "SimpleService?xsd=");
-        } catch (IOException e) {
-            //fallback to old 
-            verifySchemaContains(new URL(baseUrl, "SimpleService?xsd=SimpleService.xsd"), baseUrl.getPath() + "SimpleService?xsd=");
+    private String getWsdlLocation(URL url, String locationSuffix) throws Exception {
+        List<String> schemaLocations = getAttributeValues(url, "location");
+        return findLocation(schemaLocations, locationSuffix);
+    }
+
+    private String findLocation(List<String> values, String locationSuffix) {
+        String result = null;
+        for (String location: values) {
+            if (location.endsWith(locationSuffix)) {
+                if (result == null) {
+                    result = location;
+                } else {
+                    throw new IllegalStateException("Schema or WSDL location end is not unique for given document.");
+                }
+            }
         }
+        Assert.assertNotNull(String.format("Location ending with '%s' not found in", locationSuffix), result);
+        return result;
     }
 
-    private void verifySchemaContains(URL url, String s) throws IOException {
-        String schema = IOUtils.toString(url.openStream());
-        if (!schema.contains(s)) {
-            log.log(Level.SEVERE, FAIL_MESSAGE + String.format(" String '%s' not found in:\n%s", s, schema));
-            Assert.fail(FAIL_MESSAGE);
+    private void verifyLocationRewritten(String schemaLocation) {
+        Assert.assertTrue(String.format("Location was not rewritten: %s", schemaLocation),
+                schemaLocation.contains("?xsd=") || schemaLocation.contains("?wsdl="));
+    }
+
+    private List<String> getAttributeValues(URL url, String localPart) throws Exception {
+        String document = IOUtils.toString(url.openStream());
+        log.log(Level.FINE, document);
+
+        List<String> values = new ArrayList<>();
+        XMLInputFactory xmlif = XMLInputFactory.newInstance();
+        XMLEventReader eventReader = xmlif.createXMLEventReader(new ByteArrayInputStream(document.getBytes()));
+
+        while (eventReader.hasNext()) {
+            XMLEvent xmlEvent = eventReader.nextEvent();
+            if (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT) {
+                StartElement startElement = xmlEvent.asStartElement();
+                Attribute attribute = startElement.getAttributeByName(new QName("", localPart));
+                if (attribute != null) {
+                    values.add(attribute.getValue());
+                }
+            }
         }
-    }
 
+        return values;
+    }
 }

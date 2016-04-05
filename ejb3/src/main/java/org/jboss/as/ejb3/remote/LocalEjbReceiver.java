@@ -47,7 +47,6 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -206,8 +205,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             final SessionID sessionID = ((StatefulEJBLocator<?>) locator).getSessionId();
             interceptorContext.putPrivateData(SessionID.class, sessionID);
         } else if (locator instanceof EntityEJBLocator) {
-            final Object primaryKey = ((EntityEJBLocator<?>) locator).getPrimaryKey();
-            interceptorContext.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
+            throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(locator.getBeanName(), locator.getAppName(), locator.getModuleName(), locator.getDistinctName());
         }
 
         final ClonerConfiguration config = new ClonerConfiguration();

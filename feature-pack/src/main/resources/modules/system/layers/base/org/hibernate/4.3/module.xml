@@ -25,7 +25,6 @@
 <!-- Represents the Hibernate 4.3.x module  -->
 <module xmlns="urn:jboss:module:1.3" name="org.hibernate" slot="4.3">
    <resources>
-        <artifact name="${org.wildfly:jipijapa-hibernate4-3}" services="import"/>
     </resources>
 
     <dependencies>
@@ -47,5 +46,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
         <module name="org.hibernate.commons-annotations"/>
+        <module name="org.hibernate.jipijapa-hibernate4-3" services="import"/>
     </dependencies>
 </module>

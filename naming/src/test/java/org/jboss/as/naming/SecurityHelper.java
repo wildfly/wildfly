@@ -43,6 +43,8 @@ import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
+import org.wildfly.naming.java.permission.JndiPermission;
+
 /**
  * @author Lukas Krejci
  */
@@ -52,13 +54,13 @@ public class SecurityHelper {
 
     }
 
-    public static Object testActionPermission(final JndiPermission.Action action, final NamingContext namingContext,
+    public static Object testActionPermission(final int action, final NamingContext namingContext,
         final String name, final Object... params) throws Exception {
 
         return testActionPermission(action, Collections.<JndiPermission>emptyList(), namingContext, name, params);
     }
 
-    public static Object testActionPermission(final JndiPermission.Action action, 
+    public static Object testActionPermission(final int action, 
         final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
         final Object... params) throws Exception {
         
@@ -99,7 +101,7 @@ public class SecurityHelper {
         
     }
     
-    public static Object testActionWithPermission(final JndiPermission.Action action, 
+    public static Object testActionWithPermission(final int action,
         final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
         final Object... params) throws Exception {
 
@@ -117,7 +119,7 @@ public class SecurityHelper {
         }, getSecurityContextForJNDILookup(allPerms));
     }
 
-    public static void testActionWithoutPermission(final JndiPermission.Action action, 
+    public static void testActionWithoutPermission(final int action,
         final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
         final Object... params) throws Exception {
 
@@ -141,34 +143,27 @@ public class SecurityHelper {
         }
     }
 
-    private static JndiPermission.Action not(JndiPermission.Action action) {
-        for (JndiPermission.Action a : JndiPermission.Action.values()) {
-            //none is considered an invalid value
-            if (a != action && a != JndiPermission.Action.NONE) {
-                return a;
-            }
-        }
-
-        return null;
+    private static int not(int action) {
+        return ~action & JndiPermission.ACTION_ALL;
     }
 
-    private static Object performAction(JndiPermission.Action action, NamingContext namingContext, Name name,
+    private static Object performAction(int action, NamingContext namingContext, Name name,
         Object... params) throws NamingException {
         switch (action) {
-        case BIND:
+        case JndiPermission.ACTION_BIND:
             if (params.length == 1) {
                 namingContext.bind(name, params[0]);
             } else {
                 throw new IllegalArgumentException("Invalid number of arguments passed to bind()");
             }
             return null;
-        case CREATE_SUBCONTEXT:
+        case JndiPermission.ACTION_CREATE_SUBCONTEXT:
             return namingContext.createSubcontext(name);
-        case LIST:
+        case JndiPermission.ACTION_LIST:
             return namingContext.list(name);
-        case LIST_BINDINGS:
+        case JndiPermission.ACTION_LIST_BINDINGS:
             return namingContext.listBindings(name);
-        case LOOKUP:
+        case JndiPermission.ACTION_LOOKUP:
             if (params.length == 0) {
                 return namingContext.lookup(name);
             } else if (params.length == 1) {
@@ -176,14 +171,14 @@ public class SecurityHelper {
             } else {
                 throw new IllegalArgumentException("Invalid number of arguments passed to lookup()");
             }
-        case REBIND:
+        case JndiPermission.ACTION_REBIND:
             if (params.length == 1) {
                 namingContext.rebind(name, params[0]);
             } else {
                 throw new IllegalArgumentException("Invalid number of arguments passed to rebind()");
             }
             return null;
-        case UNBIND:
+        case JndiPermission.ACTION_UNBIND:
             namingContext.unbind(name);
             return null;
         default:

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.integration.jsp;
 
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,8 +30,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 /**
  * See WFLY-2690
@@ -43,43 +44,27 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class JspTagTestCase {
 
-    private static final StringAsset WEB_XML = new StringAsset(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<web-app xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-            "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd\"\n" +
-            "         version=\"3.1\">\n" +
-            "</web-app>");
-    
-    private static final StringAsset TAG_TAG = new StringAsset(
-            "<%@ tag language=\"java\" pageEncoding=\"UTF-8\" body-content=\"empty\"%>\n" +
-            "<div>tag</div>");
-
-    private static final StringAsset INDEX_JSP = new StringAsset(
-            "<%@ page contentType=\"text/html;charset=UTF-8\" language=\"java\" %>\n" + 
-            "<%@ taglib tagdir=\"/WEB-INF/tags\" prefix=\"my\" %>\n" +
-            "<html>\n" +
-            "  <head>\n" +
-            "    <title></title>\n" +
-            "  </head>\n" +
-            "  <body>\n" +
-            "    <my:tag/>\n" +
-            "  </body>\n" +
-            "</html>");
+    private static final String RESULT = "This is a header\n" +
+            "\n" +
+            "\n" +
+            "<div>tag</div>\n" +
+            "\n" +
+            "Static content\n";
 
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class)
-                .addAsWebInfResource(WEB_XML, "web.xml")
+                .addAsWebInfResource(JspTagTestCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsWebInfResource(TAG_TAG, "tags/tag.tag")
-                .addAsWebResource(INDEX_JSP, "index.jsp")
-                .addAsWebResource(INDEX_JSP, "index2.jsp");
+                .addAsWebInfResource(JspTagTestCase.class.getPackage(), "tag.tag", "tags/tag.tag")
+                .addAsWebResource(JspTagTestCase.class.getPackage(), "index.jsp", "index.jsp")
+                .addAsWebResource(JspTagTestCase.class.getPackage(), "index.jsp", "index2.jsp")
+                .addAsWebInfResource(JspTagTestCase.class.getPackage(), "header.jsp", "header.jsp");
     }
 
     @Test
     public void test(@ArquillianResource URL url) throws Exception {
-        HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS);
-        HttpRequest.get(url + "index2.jsp", 10, TimeUnit.SECONDS);
+        Assert.assertEquals(RESULT,HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS));
+        Assert.assertEquals(RESULT,HttpRequest.get(url + "index2.jsp", 10, TimeUnit.SECONDS));
     }
 }

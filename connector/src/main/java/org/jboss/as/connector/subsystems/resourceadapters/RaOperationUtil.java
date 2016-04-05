@@ -360,7 +360,7 @@ public class RaOperationUtil {
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
         Activation raxml = (Activation) RaxmlController.getValue();
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(),
-                archiveName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource());
+                archiveName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), registry);
     }
 
     public static ServiceName installRaServices(OperationContext context, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {

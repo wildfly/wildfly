@@ -4,8 +4,6 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
-import java.util.UUID;
-
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Contextual;
@@ -34,11 +32,11 @@ import org.wildfly.clustering.service.Builder;
 public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Contextual<Batch>> implements Builder<CacheFactory<K, V>>, Value<CacheFactory<K, V>>, CacheFactory<K, V> {
 
     private final ServiceName name;
-    private final Builder<? extends BeanManagerFactory<UUID, K, V, Batch>> builder;
+    private final Builder<? extends BeanManagerFactory<K, V, Batch>> builder;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<BeanManagerFactory> factory = new InjectedValue<>();
 
-    public DistributableCacheFactoryService(ServiceName name, Builder<? extends BeanManagerFactory<UUID, K, V, Batch>> builder) {
+    public DistributableCacheFactoryService(ServiceName name, Builder<? extends BeanManagerFactory<K, V, Batch>> builder) {
         this.name = name;
         this.builder = builder;
     }
@@ -63,7 +61,7 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
 
     @Override
     public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
-        BeanManager<UUID, K, V, Batch> manager = this.factory.getValue().createBeanManager(new GroupIdentifierFactory(), identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
+        BeanManager<K, V, Batch> manager = this.factory.getValue().createBeanManager(identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
         return new DistributableCache<>(manager, factory);
     }
 }

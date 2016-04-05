@@ -33,9 +33,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 
 /**
- * <p>This remove handler is used during the removal of all partition-manager child resources. Its purpose is restart the
- * identity store services prior to the child removal, so we can stop all store services properly before restarting the parent.</p>
- *
  * @author Pedro Silva
  */
 public class IdentityProviderConfigRemoveStepHandler extends RestartParentResourceRemoveHandler {
@@ -48,7 +45,12 @@ public class IdentityProviderConfigRemoveStepHandler extends RestartParentResour
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, verificationHandler, null, parentAddress);
+        IdentityProviderAddHandler.launchServices(context, parentModel, verificationHandler, null, parentAddress, true);
+    }
+
+    @Override
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+        IdentityProviderAddHandler.launchServices(context, parentModel, null, null, parentAddress, true);
     }
 
     @Override

@@ -31,7 +31,6 @@ import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -94,10 +93,6 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
             context.setParameters(params);
         }
         context.setTimer(timer);
-
-        if(timer.getPrimaryKey() != null) {
-            context.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, timer.getPrimaryKey());
-        }
         context.putPrivateData(Component.class, ejbComponent.getValue());
         context.putPrivateData(MethodIntf.class, MethodIntf.TIMER);
         context.putPrivateData(InvocationType.class, InvocationType.TIMER);

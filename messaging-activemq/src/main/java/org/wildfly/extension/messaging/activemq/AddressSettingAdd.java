@@ -140,6 +140,9 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         if (config.hasDefined(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.getName())) {
             settings.setSlowConsumerThreshold(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.resolveModelAttribute(context, config).asLong());
         }
+        // always set the auto-create|delete-jms-queues attributes as their default attribute values differ from Artemis defaults.
+        settings.setAutoCreateJmsQueues(AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteJmsQueues(AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
         return settings;
     }
 

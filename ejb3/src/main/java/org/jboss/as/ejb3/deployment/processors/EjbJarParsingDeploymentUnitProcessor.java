@@ -67,7 +67,9 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.JBossEjb3MetaDataParser;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.TransactionTimeoutMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
+import org.jboss.metadata.ejb.spec.AbstractEnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.ejb.spec.EjbType;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
 
@@ -158,6 +160,26 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             //EJB spec 20.5.1, we do not process annotations for older deployments
             MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
         }
+
+        if(ejbJarMetaData.getEnterpriseBeans() != null) {
+            //check for entity beans
+            StringBuilder beans = new StringBuilder();
+            boolean error = false;
+            for (AbstractEnterpriseBeanMetaData bean : ejbJarMetaData.getEnterpriseBeans()) {
+                if (bean.getEjbType() == EjbType.ENTITY) {
+                    if (!error) {
+                        error = true;
+                    } else {
+                        beans.append(", ");
+                    }
+                    beans.append(bean.getEjbName());
+                }
+            }
+            if (error) {
+                throw EjbLogger.ROOT_LOGGER.entityBeansAreNotSupported(beans.toString());
+            }
+        }
+
     }
 
     /**
@@ -293,7 +315,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
     static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
         Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
-        EnumSet.allOf(ClusteringSchema.class).forEach((ClusteringSchema schema) -> parsers.put(schema.getNamespaceUri(), new EJBBoundClusteringMetaDataParser(schema)));
+        EnumSet.allOf(ClusteringSchema.class).forEach(schema -> parsers.put(schema.getNamespaceUri(), new EJBBoundClusteringMetaDataParser(schema)));
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundSecurityMetaDataParser11.INSTANCE);

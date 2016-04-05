@@ -60,8 +60,8 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EVICTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
         STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class)),
+        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
         ;
         private final AttributeDefinition definition;
 

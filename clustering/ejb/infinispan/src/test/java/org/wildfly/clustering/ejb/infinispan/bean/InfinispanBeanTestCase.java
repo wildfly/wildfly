@@ -42,14 +42,14 @@ import org.wildfly.clustering.ejb.infinispan.BeanRemover;
 public class InfinispanBeanTestCase {
 
     private final String id = "id";
-    private final BeanEntry<Integer> entry = mock(BeanEntry.class);
-    private final BeanGroup<Integer, String, Object> group = mock(BeanGroup.class);
+    private final BeanEntry<String> entry = mock(BeanEntry.class);
+    private final BeanGroup<String, Object> group = mock(BeanGroup.class);
     private final Mutator mutator = mock(Mutator.class);
     private final BeanRemover<String, Object> remover = mock(BeanRemover.class);
     private final Time timeout = new Time(1, TimeUnit.MINUTES);
     private final PassivationListener<Object> listener = mock(PassivationListener.class);
 
-    private final Bean<Integer, String, Object> bean = new InfinispanBean<>(this.id, this.entry, this.group, this.mutator, this.remover, this.timeout, this.listener);
+    private final Bean<String, Object> bean = new InfinispanBean<>(this.id, this.entry, this.group, this.mutator, this.remover, this.timeout, this.listener);
 
     @After
     public void tearDown() {
@@ -63,9 +63,9 @@ public class InfinispanBeanTestCase {
 
     @Test
     public void getGroupId() {
-        Integer groupId = 1;
+        String groupId = "group";
         when(this.entry.getGroupId()).thenReturn(groupId);
-        Integer result = this.bean.getGroupId();
+        String result = this.bean.getGroupId();
         Assert.assertSame(groupId, result);
     }
 

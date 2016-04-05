@@ -53,7 +53,7 @@ import org.wildfly.clustering.spi.GroupServiceName;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<BeanManagerFactory<G, I, T, TransactionBatch>>, Value<BeanManagerFactory<G, I, T, TransactionBatch>>, InfinispanBeanManagerFactoryConfiguration {
+public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanManagerFactory<I, T, TransactionBatch>>, Value<BeanManagerFactory<I, T, TransactionBatch>>, InfinispanBeanManagerFactoryConfiguration {
 
     private final String name;
     private final BeanContext context;
@@ -83,7 +83,7 @@ public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<Bea
     }
 
     @Override
-    public ServiceBuilder<BeanManagerFactory<G, I, T, TransactionBatch>> build(ServiceTarget target) {
+    public ServiceBuilder<BeanManagerFactory<I, T, TransactionBatch>> build(ServiceTarget target) {
         String containerName = this.configuration.getContainerName();
         ServiceName deploymentUnitServiceName = this.context.getDeploymentUnitServiceName();
         return target.addService(this.getServiceName(), new ValueService<>(this))
@@ -100,7 +100,7 @@ public class InfinispanBeanManagerFactoryBuilder<G, I, T> implements Builder<Bea
     }
 
     @Override
-    public BeanManagerFactory<G, I, T, TransactionBatch> getValue() {
+    public BeanManagerFactory<I, T, TransactionBatch> getValue() {
         return new InfinispanBeanManagerFactory<>(this);
     }
 

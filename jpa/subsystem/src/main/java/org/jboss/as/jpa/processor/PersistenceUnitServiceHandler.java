@@ -138,6 +138,7 @@ public class PersistenceUnitServiceHandler {
     }
 
     public static void undeploy(DeploymentUnit context) {
+
         List<PersistenceAdaptorRemoval> removals = context.getAttachmentList(REMOVAL_KEY);
         if (removals != null) {
             for (PersistenceAdaptorRemoval removal : removals) {
@@ -347,7 +348,8 @@ public class PersistenceUnitServiceHandler {
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
 
-            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
+            final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
@@ -431,7 +433,7 @@ public class PersistenceUnitServiceHandler {
             builder.install();
 
             ROOT_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
-            addManagementConsole(deploymentUnit, pu, adaptor);
+            addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 
         } catch (ServiceRegistryException e) {
             throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
@@ -584,8 +586,8 @@ public class PersistenceUnitServiceHandler {
             }
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
-
-            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
+            final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
@@ -677,7 +679,7 @@ public class PersistenceUnitServiceHandler {
             builder.install();
 
             ROOT_LOGGER.tracef("added PersistenceUnitService (phase 2 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
-            addManagementConsole(deploymentUnit, pu, adaptor);
+            addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 
         } catch (ServiceRegistryException e) {
             throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
@@ -1103,13 +1105,13 @@ public class PersistenceUnitServiceHandler {
      * <p/>
      * /deployment=jpa_SecondLevelCacheTestCase.jar/subsystem=jpa/hibernate-persistence-unit=jpa_SecondLevelCacheTestCase.jar#mypc/
      * cache=org.jboss.as.test.integration.jpa.hibernate.Employee
-     *
-     * @param deploymentUnit
+     *  @param deploymentUnit
      * @param pu
      * @param adaptor
+     * @param persistenceAdaptorRemoval
      */
     private static void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu,
-                                      final PersistenceProviderAdaptor adaptor) {
+                                             final PersistenceProviderAdaptor adaptor, PersistenceAdaptorRemoval persistenceAdaptorRemoval) {
         ManagementAdaptor managementAdaptor = adaptor.getManagementAdaptor();
         // workaround for AS7-4441, if a custom hibernate.cache.region_prefix is specified, don't show the persistence
         // unit in management console.
@@ -1130,6 +1132,8 @@ public class PersistenceUnitServiceHandler {
             }
             synchronized (subsystemResource) {
                 subsystemResource.registerChild(PathElement.pathElement(providerLabel, scopedPersistenceUnitName), providerResource);
+                // save the subsystemResource reference + path to scoped pu, so we can remove it during undeploy
+                persistenceAdaptorRemoval.registerManagementConsoleChild(subsystemResource, PathElement.pathElement(providerLabel, scopedPersistenceUnitName));
             }
         }
     }
@@ -1157,6 +1161,8 @@ public class PersistenceUnitServiceHandler {
     private static class PersistenceAdaptorRemoval {
         final PersistenceUnitMetadata pu;
         final PersistenceProviderAdaptor adaptor;
+        volatile Resource subsystemResource;
+        volatile PathElement pathToScopedPu;
 
         public PersistenceAdaptorRemoval(PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
             this.pu = pu;
@@ -1165,6 +1171,14 @@ public class PersistenceUnitServiceHandler {
 
         private void cleanup() {
             adaptor.cleanup(pu);
+            if(subsystemResource != null && pathToScopedPu != null) {
+                subsystemResource.removeChild(pathToScopedPu);
+            }
+        }
+
+        public void registerManagementConsoleChild(Resource subsystemResource, PathElement pathElement) {
+            this.subsystemResource = subsystemResource;
+            this.pathToScopedPu = pathElement;
         }
     }
 

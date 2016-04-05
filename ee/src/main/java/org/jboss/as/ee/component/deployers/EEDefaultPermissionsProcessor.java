@@ -30,7 +30,7 @@ import java.security.Permissions;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.jboss.as.naming.JndiPermission;
+import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,10 +40,6 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
-
-import static org.jboss.as.naming.JndiPermission.Action.LIST;
-import static org.jboss.as.naming.JndiPermission.Action.LIST_BINDINGS;
-import static org.jboss.as.naming.JndiPermission.Action.LOOKUP;
 
 /**
  * A processor which sets up the default Java EE permission set.
@@ -55,17 +51,18 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
 
     static {
         final Permissions permissions = new Permissions();
-        permissions.add(new JndiPermission("java:comp", LOOKUP, LIST, LIST_BINDINGS));
-        permissions.add(new JndiPermission("java:comp/-", LOOKUP, LIST, LIST_BINDINGS));
-        permissions.add(new JndiPermission("java:module", LOOKUP, LIST, LIST_BINDINGS));
-        permissions.add(new JndiPermission("java:module/-", LOOKUP, LIST, LIST_BINDINGS));
-        permissions.add(new JndiPermission("java:app", LOOKUP, LIST, LIST_BINDINGS));
-        permissions.add(new JndiPermission("java:app/-", LOOKUP, LIST, LIST_BINDINGS));
-        permissions.add(new JndiPermission("java:global", LOOKUP));
-        permissions.add(new JndiPermission("java:global/-", LOOKUP));
-        permissions.add(new JndiPermission("java:jboss", LOOKUP));
-        permissions.add(new JndiPermission("java:jboss/-", LOOKUP));
-        permissions.add(new JndiPermission("java:/-", LOOKUP));
+        final int actionBits = JndiPermission.ACTION_LOOKUP | JndiPermission.ACTION_LIST | JndiPermission.ACTION_LIST_BINDINGS;
+        permissions.add(new JndiPermission("java:comp", actionBits));
+        permissions.add(new JndiPermission("java:comp/-", actionBits));
+        permissions.add(new JndiPermission("java:module", actionBits));
+        permissions.add(new JndiPermission("java:module/-", actionBits));
+        permissions.add(new JndiPermission("java:app", actionBits));
+        permissions.add(new JndiPermission("java:app/-", actionBits));
+        permissions.add(new JndiPermission("java:global", JndiPermission.ACTION_LOOKUP));
+        permissions.add(new JndiPermission("java:global/-", JndiPermission.ACTION_LOOKUP));
+        permissions.add(new JndiPermission("java:jboss", JndiPermission.ACTION_LOOKUP));
+        permissions.add(new JndiPermission("java:jboss/-", JndiPermission.ACTION_LOOKUP));
+        permissions.add(new JndiPermission("java:/-", JndiPermission.ACTION_LOOKUP));
         DEFAULT_PERMISSIONS = permissions;
     }
 

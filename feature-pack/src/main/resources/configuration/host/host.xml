@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
 <host name="master" xmlns="urn:jboss:domain:5.0">
+
     <extensions>
         <?EXTENSIONS?>
     </extensions>
@@ -31,8 +32,8 @@
                 <json-formatter name="json-formatter"/>
             </formatters>
             <handlers>
-                <file-handler name="host-file" formatter="json-formatter" relative-to="jboss.domain.data.dir" path="audit-log.log"/>
-                <file-handler name="server-file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+                <file-handler name="host-file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.domain.data.dir"/>
+                <file-handler name="server-file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
             <logger log-boot="true" log-read-only="false" enabled="false">
                 <handlers>
@@ -78,7 +79,7 @@
             <heap size="64m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
-                <option value="-XX:MetaspaceSize=256m"/>
+                <option value="-XX:MetaspaceSize=96m"/>
                 <option value="-XX:MaxMetaspaceSize=256m"/>
             </jvm-options>
         </jvm>

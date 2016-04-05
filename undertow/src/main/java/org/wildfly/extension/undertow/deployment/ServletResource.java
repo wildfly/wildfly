@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.resource.RangeAwareResource;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.util.ETag;
 import io.undertow.util.MimeMappings;
@@ -40,7 +41,7 @@ import java.util.List;
  *
  * @author Stuart Douglas
  */
-public class ServletResource implements Resource {
+public class ServletResource implements Resource, RangeAwareResource {
 
     private final ServletResourceManager resourceManager;
     private final Resource underlying;
@@ -130,5 +131,18 @@ public class ServletResource implements Resource {
             return null;
         }
         return getFile().toPath();
+    }
+
+    @Override
+    public void serveRange(Sender sender, HttpServerExchange exchange, long start, long end, IoCallback completionCallback) {
+        ((RangeAwareResource) underlying).serveRange(sender, exchange, start, end, completionCallback);
+    }
+
+    @Override
+    public boolean isRangeSupported() {
+        if(underlying instanceof RangeAwareResource) {
+            return ((RangeAwareResource) underlying).isRangeSupported();
+        }
+        return false;
     }
 }

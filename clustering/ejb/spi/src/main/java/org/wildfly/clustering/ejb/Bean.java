@@ -29,7 +29,7 @@ package org.wildfly.clustering.ejb;
  * @param <I> the bean identifier type
  * @param <T> the bean instance type
  */
-public interface Bean<G, I, T> extends AutoCloseable {
+public interface Bean<I, T> extends AutoCloseable {
     /**
      * Returns the identifier of this bean.
      * @return a unique identifier
@@ -40,7 +40,7 @@ public interface Bean<G, I, T> extends AutoCloseable {
      * Returns the identifier of the group to which this bean is associated.
      * @return a unique identifier of a group
      */
-    G getGroupId();
+    I getGroupId();
 
     /**
      * Acquires a reference to the bean instance.
@@ -66,6 +66,12 @@ public interface Bean<G, I, T> extends AutoCloseable {
      * @param listener a remove listener
      */
     void remove(RemoveListener<T> listener);
+
+    /**
+     * Indicates whether this bean was removed.
+     * @return false, if this bean was removed, true otherwise.
+     */
+    boolean isValid();
 
     /**
      * Closes any resources used by this bean.

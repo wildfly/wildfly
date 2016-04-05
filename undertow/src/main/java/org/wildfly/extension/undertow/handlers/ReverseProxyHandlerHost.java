@@ -107,6 +107,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
 
     private ReverseProxyHandlerHost() {
