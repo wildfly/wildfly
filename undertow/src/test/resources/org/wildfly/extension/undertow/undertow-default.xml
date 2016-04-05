@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:undertow:3.0">
+<subsystem xmlns="urn:jboss:domain:undertow:3.1">
        <buffer-cache name="default" />
        <server name="default-server">
            <http-listener name="default" socket-binding="http" />

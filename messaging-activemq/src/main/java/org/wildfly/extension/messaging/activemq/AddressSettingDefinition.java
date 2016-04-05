@@ -52,6 +52,20 @@ import org.jboss.dmr.ModelType;
  */
 public class AddressSettingDefinition extends PersistentResourceDefinition {
 
+    public static final SimpleAttributeDefinition AUTO_CREATE_JMS_QUEUES = create("auto-create-jms-queues", ModelType.BOOLEAN)
+            // Default value is false to have the same behaviour than the legacy messaging subsystem (Artemis defaults to true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
+    public static final SimpleAttributeDefinition AUTO_DELETE_JMS_QUEUES = create("auto-delete-jms-queues", ModelType.BOOLEAN)
+            // Default value is false to have the same behaviour than the legacy messaging subsystem (Artemis defaults to true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()))
             .setValidator(new EnumValidator<>(AddressFullMessagePolicy.class, true, false))
@@ -180,7 +194,9 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             SEND_TO_DLA_ON_NO_ROUTE,
             SLOW_CONSUMER_CHECK_PERIOD,
             SLOW_CONSUMER_POLICY,
-            SLOW_CONSUMER_THRESHOLD
+            SLOW_CONSUMER_THRESHOLD,
+            AUTO_CREATE_JMS_QUEUES,
+            AUTO_DELETE_JMS_QUEUES
     };
 
     static final AddressSettingDefinition INSTANCE = new AddressSettingDefinition();

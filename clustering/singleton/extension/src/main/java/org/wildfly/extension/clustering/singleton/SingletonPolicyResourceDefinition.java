@@ -36,6 +36,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
+import org.wildfly.clustering.singleton.RequiredCapability;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 
 /**
@@ -51,7 +52,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        POLICY(SingletonPolicy.CAPABILITY_NAME, SingletonPolicy.class),
+        POLICY(RequiredCapability.SINGLETON_POLICY.getName(), SingletonPolicy.class),
         ;
         private final RuntimeCapability<Void> definition;
 

@@ -51,7 +51,7 @@ import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.naming.spi.ResolveResult;
 
-import org.jboss.as.naming.JndiPermission.Action;
+import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.util.NameParser;
@@ -194,7 +194,7 @@ public class NamingContext implements EventContext {
     }
 
     public Object lookup(final Name name, boolean dereference) throws NamingException {
-        check(name, Action.LOOKUP);
+        check(name, JndiPermission.ACTION_LOOKUP);
 
         if (isEmpty(name)) {
             return new NamingContext(prefix, namingStore, environment);
@@ -248,7 +248,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void bind(final Name name, final Object object) throws NamingException {
-        check(name, Action.BIND);
+        check(name, JndiPermission.ACTION_BIND);
 
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
@@ -291,7 +291,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void rebind(final Name name, Object object) throws NamingException {
-        check(name, Action.REBIND);
+        check(name, JndiPermission.ACTION_REBIND);
 
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
@@ -311,7 +311,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void unbind(final Name name) throws NamingException {
-        check(name, Action.UNBIND);
+        check(name, JndiPermission.ACTION_UNBIND);
 
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
@@ -330,8 +330,8 @@ public class NamingContext implements EventContext {
     public void rename(final Name oldName, final Name newName) throws NamingException {
         //check for appropriate permissions first so that no other info leaks from this context
         //in case of insufficient perms (like the fact if it is readonly or not)
-        check(oldName, Action.LOOKUP, Action.UNBIND);
-        check(newName, Action.BIND);
+        check(oldName, JndiPermission.ACTION_LOOKUP | JndiPermission.ACTION_UNBIND);
+        check(newName, JndiPermission.ACTION_BIND);
 
         if (namingStore instanceof WritableNamingStore) {
             bind(newName, lookup(oldName));
@@ -348,7 +348,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public NamingEnumeration<NameClassPair> list(final Name name) throws NamingException {
-        check(name, Action.LIST);
+        check(name, JndiPermission.ACTION_LIST);
 
         try {
             return namingEnumeration(namingStore.list(getAbsoluteName(name)));
@@ -372,7 +372,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public NamingEnumeration<Binding> listBindings(final Name name) throws NamingException {
-        check(name, Action.LIST_BINDINGS);
+        check(name, JndiPermission.ACTION_LIST_BINDINGS);
 
         try {
             return namingEnumeration(namingStore.listBindings(getAbsoluteName(name)));
@@ -396,7 +396,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void destroySubcontext(final Name name) throws NamingException {
-        check(name, Action.DESTROY_SUBCONTEXT);
+        check(name, JndiPermission.ACTION_DESTROY_SUBCONTEXT);
 
         if(!(namingStore instanceof WritableNamingStore)) {
             throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
@@ -410,7 +410,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
-        check(name, Action.CREATE_SUBCONTEXT);
+        check(name, JndiPermission.ACTION_CREATE_SUBCONTEXT);
 
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
@@ -427,7 +427,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Object lookupLink(Name name) throws NamingException {
-        check(name, Action.LOOKUP);
+        check(name, JndiPermission.ACTION_LOOKUP);
 
         if (name.isEmpty()) {
             return lookup(name);
@@ -500,7 +500,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void addNamingListener(final Name target, final int scope, final NamingListener listener) throws NamingException {
-        check(target, Action.ADD_NAMING_LISTENER);
+        check(target, JndiPermission.ACTION_ADD_NAMING_LISTENER);
         namingStore.addNamingListener(target, scope, listener);
     }
 
@@ -570,7 +570,7 @@ public class NamingContext implements EventContext {
         return linkResult;
     }
 
-    private void check(Name name, Action... actions) throws NamingException {
+    private void check(Name name, int actions) throws NamingException {
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null && WildFlySecurityManager.isChecking()) {
             // build absolute name (including store's base name)
@@ -588,7 +588,7 @@ public class NamingContext implements EventContext {
                     absoluteName.addAll(name);
                 }
             }
-            sm.checkPermission(new JndiPermission(absoluteName, actions));
+            sm.checkPermission(new JndiPermission(absoluteName.toString(), actions));
         }
     }
 

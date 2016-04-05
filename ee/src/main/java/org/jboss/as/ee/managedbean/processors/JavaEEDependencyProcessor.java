@@ -87,6 +87,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         ee.addImportFilter(PathFilters.acceptAll(), false);
         moduleSpecification.addSystemDependency(ee);
 
+        // add dep for naming permission
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.create("org.wildfly.naming"), false, false, false, false));
 
         //we always add all Java EE API modules, as the platform spec requires them to always be available
         //we do not just add the javaee.api module, as this breaks excludes

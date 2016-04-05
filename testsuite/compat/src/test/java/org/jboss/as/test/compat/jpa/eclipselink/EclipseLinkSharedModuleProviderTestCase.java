@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.compat.jpa.eclipselink;
 
+import static org.junit.Assume.assumeTrue;
+
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -124,6 +126,7 @@ public class EclipseLinkSharedModuleProviderTestCase {
 
     @Test
     public void testSimpleCreateAndLoadEntities() throws Exception {
+        assumeTrue(System.getSecurityManager() == null);    // ignore test if System.getSecurityManager() returns non-null
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
         sfsb1.createEmployee("Alex Scott", "London, England", 20);

@@ -27,5 +27,5 @@ import org.wildfly.clustering.ee.Batch;
  * @author Paul Ferraro
  */
 public interface BeanManagerFactoryBuilderFactoryProvider<B extends Batch> {
-    <G, I> BeanManagerFactoryBuilderFactory<G, I, B> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config);
+    <I> BeanManagerFactoryBuilderFactory<I, B> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config);
 }

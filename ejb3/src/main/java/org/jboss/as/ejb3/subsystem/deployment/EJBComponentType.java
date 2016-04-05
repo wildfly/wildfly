@@ -29,8 +29,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
@@ -49,7 +47,6 @@ import org.jboss.as.ejb3.pool.Pool;
  */
 public enum EJBComponentType {
 
-    ENTITY("entity-bean", EntityBeanComponent.class, EntityBeanComponentDescription.class),
     MESSAGE_DRIVEN("message-driven-bean", MessageDrivenComponent.class, MessageDrivenComponentDescription.class),
     SINGLETON("singleton-bean", SingletonComponent.class, SingletonComponentDescription.class),
     STATELESS("stateless-session-bean", StatelessSessionComponent.class, StatelessComponentDescription.class),
@@ -103,7 +100,6 @@ public enum EJBComponentType {
             case SINGLETON:
             case MESSAGE_DRIVEN:
                 return true;
-            case ENTITY: // TODO an EJB 2 entity instance can have a timer, but, meh
             default:
                 return false;
         }
@@ -116,8 +112,6 @@ public enum EJBComponentType {
 
     public AbstractEJBComponentRuntimeHandler<?> getRuntimeHandler() {
         switch (this) {
-            case ENTITY:
-                return EntityBeanRuntimeHandler.INSTANCE;
             case MESSAGE_DRIVEN:
                 return MessageDrivenBeanRuntimeHandler.INSTANCE;
             case SINGLETON:
@@ -149,8 +143,6 @@ public enum EJBComponentType {
 
     protected PooledComponent<?> pooledComponent(final EJBComponent component) {
         switch (this) {
-            case ENTITY:
-                return EntityBeanComponent.class.cast(component);
             case MESSAGE_DRIVEN:
                 return MessageDrivenComponent.class.cast(component);
             case STATELESS:

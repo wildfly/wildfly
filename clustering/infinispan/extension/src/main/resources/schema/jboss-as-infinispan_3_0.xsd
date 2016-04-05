@@ -275,7 +275,7 @@
     </xs:complexType>
 
     <xs:complexType name="locking">
-        <xs:attribute name="isolation" type="tns:isolation" default="REPEATABLE_READ">
+        <xs:attribute name="isolation" type="tns:isolation" default="READ_COMMITTED">
             <xs:annotation>
                 <xs:documentation>Sets the cache locking isolation level.</xs:documentation>
             </xs:annotation>
@@ -308,7 +308,7 @@
                 <xs:documentation>If there are any ongoing transactions when a cache is stopped, Infinispan waits for ongoing remote and local transactions to finish. The amount of time to wait for is defined by the cache stop timeout.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="locking" type="tns:locking-mode" default="OPTIMISTIC">
+        <xs:attribute name="locking" type="tns:locking-mode" default="PESSIMISTIC">
             <xs:annotation>
                 <xs:documentation>The locking mode for this cache, one of OPTIMISTIC or PESSIMISTIC.</xs:documentation>
             </xs:annotation>

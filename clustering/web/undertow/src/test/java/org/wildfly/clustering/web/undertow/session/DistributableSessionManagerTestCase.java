@@ -101,7 +101,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        when(batch.isActive()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
 
@@ -134,7 +133,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        when(batch.isActive()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
         
@@ -165,7 +163,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
-        when(batch.isActive()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
@@ -197,9 +194,31 @@ public class DistributableSessionManagerTestCase {
         
         assertNull(sessionAdapter);
         
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
     }
+
+    @Test
+    public void getSessionInvalidCharacters() {
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        SessionConfig config = mock(SessionConfig.class);
+        String sessionId = "session+";
+
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+
+        io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
+
+        assertNull(sessionAdapter);
+
+        verify(batch).close();
+        verify(batcher, never()).suspendBatch();
+        verify(this.manager, never()).findSession(sessionId);
+    }
+
 
     @Test
     public void getSessionNotExists() {
@@ -213,13 +232,12 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.findSession(sessionId)).thenReturn(null);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
-        when(batch.isActive()).thenReturn(false);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
         assertNull(sessionAdapter);
         
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
     }
 
@@ -298,7 +316,7 @@ public class DistributableSessionManagerTestCase {
         assertEquals(names, result.getAttributeNames());
         assertSame(value, result.getAttribute(name));
         
-        verify(batch).discard();
+        verify(batch).close();
     }
 
     @Test
@@ -315,7 +333,7 @@ public class DistributableSessionManagerTestCase {
         
         assertNull(result);
 
-        verify(batch).discard();
+        verify(batch).close();
     }
 
     @Test

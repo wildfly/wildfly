@@ -35,4 +35,9 @@ public interface TransactionBatch extends Batch {
      * @return a transaction
      */
     Transaction getTransaction();
+
+    /**
+     * Returns an interposed batch.
+     */
+    TransactionBatch interpose();
 }

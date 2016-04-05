@@ -23,7 +23,6 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public abstract class IncrementorBean implements Incrementor {
 
     private final AtomicInteger count = new AtomicInteger();

@@ -32,17 +32,24 @@ import java.util.Date;
  *
  * @param <G> the group identifier type
  */
-public class InfinispanBeanEntry<G> implements BeanEntry<G> {
+public class InfinispanBeanEntry<I> implements BeanEntry<I> {
 
-    private final G groupId;
+    private final String beanName;
+    private final I groupId;
     private volatile Date lastAccessedTime;
 
-    public InfinispanBeanEntry(G groupId) {
+    public InfinispanBeanEntry(String beanName, I groupId) {
+        this.beanName = beanName;
         this.groupId = groupId;
     }
 
     @Override
-    public G getGroupId() {
+    public String getBeanName() {
+        return this.beanName;
+    }
+
+    @Override
+    public I getGroupId() {
         return this.groupId;
     }
 

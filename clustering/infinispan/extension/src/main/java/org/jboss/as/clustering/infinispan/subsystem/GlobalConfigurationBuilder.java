@@ -24,6 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import javax.management.MBeanServer;
@@ -58,6 +61,8 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
@@ -67,13 +72,8 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<MBeanServer> server = new InjectedValue<>();
     private final InjectedValue<TransportConfiguration> transport = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> asyncOperationsThreadPool = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> expirationThreadPool = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> listenerThreadPool = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> persistenceThreadPool = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> remoteCommandThreadPool = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> stateTransferThreadPool = new InjectedValue<>();
-    private final InjectedValue<ThreadPoolConfiguration> transportThreadPool = new InjectedValue<>();
+    private final Map<ThreadPoolResourceDefinition, ValueDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
+    private final Map<ScheduledThreadPoolResourceDefinition, ValueDependency<ThreadPoolConfiguration>> schedulers = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
     private final String name;
 
     private volatile boolean statisticsEnabled;
@@ -81,6 +81,8 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
 
     GlobalConfigurationBuilder(String name) {
         this.name = name;
+        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> this.pools.put(pool, new InjectedValueDependency<>(pool.getServiceName(name), ThreadPoolConfiguration.class)));
+        EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> this.schedulers.put(pool, new InjectedValueDependency<>(pool.getServiceName(name), ThreadPoolConfiguration.class)));
     }
 
     @Override
@@ -124,14 +126,14 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
             throw new IllegalStateException(e);
         }
 
-        builder.transport().transportThreadPool().read(this.transportThreadPool.getValue());
-        builder.transport().remoteCommandThreadPool().read(this.remoteCommandThreadPool.getValue());
+        builder.transport().transportThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.TRANSPORT).getValue());
+        builder.transport().remoteCommandThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.REMOTE_COMMAND).getValue());
 
-        builder.asyncThreadPool().read(this.asyncOperationsThreadPool.getValue());
-        builder.expirationThreadPool().read(this.expirationThreadPool.getValue());
-        builder.listenerThreadPool().read(this.listenerThreadPool.getValue());
-        builder.stateTransferThreadPool().read(this.stateTransferThreadPool.getValue());
-        builder.persistenceThreadPool().read(this.persistenceThreadPool.getValue());
+        builder.asyncThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.ASYNC_OPERATIONS).getValue());
+        builder.expirationThreadPool().read(this.schedulers.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).getValue());
+        builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).getValue());
+        builder.stateTransferThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.STATE_TRANSFER).getValue());
+        builder.persistenceThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.PERSISTENCE).getValue());
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         builder.globalJmxStatistics()
@@ -146,18 +148,14 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
 
     @Override
     public ServiceBuilder<GlobalConfiguration> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, this.server)
                 .addDependency(CacheContainerComponent.TRANSPORT.getServiceName(this.name), TransportConfiguration.class, this.transport)
-                .addDependency(ThreadPoolResourceDefinition.ASYNC_OPERATIONS.getServiceName(this.name), ThreadPoolConfiguration.class, this.asyncOperationsThreadPool)
-                .addDependency(ScheduledThreadPoolResourceDefinition.EXPIRATION.getServiceName(this.name), ThreadPoolConfiguration.class, this.expirationThreadPool)
-                .addDependency(ThreadPoolResourceDefinition.LISTENER.getServiceName(this.name), ThreadPoolConfiguration.class, this.listenerThreadPool)
-                .addDependency(ThreadPoolResourceDefinition.STATE_TRANSFER.getServiceName(this.name), ThreadPoolConfiguration.class, this.stateTransferThreadPool)
-                .addDependency(ThreadPoolResourceDefinition.PERSISTENCE.getServiceName(this.name), ThreadPoolConfiguration.class, this.persistenceThreadPool)
-                .addDependency(ThreadPoolResourceDefinition.REMOTE_COMMAND.getServiceName(this.name), ThreadPoolConfiguration.class, this.remoteCommandThreadPool)
-                .addDependency(ThreadPoolResourceDefinition.TRANSPORT.getServiceName(this.name), ThreadPoolConfiguration.class, this.transportThreadPool)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
-        ;
+                ;
+        this.pools.values().forEach(dependency -> dependency.register(builder));
+        this.schedulers.values().forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 }

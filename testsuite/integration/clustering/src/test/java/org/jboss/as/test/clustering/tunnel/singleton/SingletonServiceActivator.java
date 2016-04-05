@@ -22,18 +22,31 @@
 
 package org.jboss.as.test.clustering.tunnel.singleton;
 
-import org.jboss.as.test.clustering.cluster.singleton.service.AbstractServiceActivator;
+import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.singleton.SingletonServiceName;
+import org.wildfly.clustering.singleton.election.NamePreference;
+import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
+import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
+
 /**
  * @author Tomas Hofman
  */
-public class SingletonServiceActivator extends AbstractServiceActivator {
+public class SingletonServiceActivator implements ServiceActivator {
 
+    private static final String CONTAINER_NAME = "server";
     public static final ServiceName SERVICE_A_NAME = ServiceName.JBOSS.append("test1", "myservice", "default");
     public static final ServiceName SERVICE_B_NAME = ServiceName.JBOSS.append("test2", "myservice", "default");
     public static final String SERVICE_A_PREFERRED_NODE = NODE_2;
@@ -41,8 +54,24 @@ public class SingletonServiceActivator extends AbstractServiceActivator {
 
     @Override
     public void activate(ServiceActivatorContext context) {
-        install(SERVICE_A_NAME, 1, SERVICE_A_PREFERRED_NODE, context);
-        install(SERVICE_B_NAME, 1, SERVICE_B_PREFERRED_NODE, context);
+        try {
+            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(CONTAINER_NAME)).awaitValue();
+            ServiceTarget target = context.getServiceTarget();
+            install(target, factory, SERVICE_A_NAME, SERVICE_A_PREFERRED_NODE);
+            install(target, factory, SERVICE_B_NAME, SERVICE_B_PREFERRED_NODE);
+        } catch (InterruptedException e) {
+            throw new ServiceRegistryException(e);
+        }
+    }
+
+    private static void install(ServiceTarget target, SingletonServiceBuilderFactory factory, ServiceName name, String preferredNode) {
+        InjectedValue<ServerEnvironment> env = new InjectedValue<>();
+        MyService service = new MyService(env);
+        factory.createSingletonServiceBuilder(name, service)
+            .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(preferredNode)))
+            .build(target)
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)
+                .install();
     }
 
 }

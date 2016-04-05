@@ -33,17 +33,18 @@ import org.wildfly.clustering.ee.Batcher;
  * @param <I> the bean identifier type
  * @param <T> the bean instance type
  */
-public interface BeanManager<G, I, T, B extends Batch> extends AffinitySupport<I>, BeanManagerStatistics {
-    Bean<G, I, T> createBean(I id, G group, T bean);
-    Bean<G, I, T> findBean(I id);
+public interface BeanManager<I, T, B extends Batch> extends AffinitySupport<I>, BeanManagerStatistics {
+    Bean<I, T> createBean(I id, I group, T bean);
+    Bean<I, T> findBean(I id);
 
     boolean containsBean(I id);
 
-    IdentifierFactory<G> getGroupIdentifierFactory();
-    IdentifierFactory<I> getBeanIdentifierFactory();
+    IdentifierFactory<I> getIdentifierFactory();
 
     Batcher<B> getBatcher();
 
     void start();
     void stop();
+
+    boolean isRemotable(Throwable throwable);
 }

@@ -31,6 +31,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager;
@@ -76,10 +77,18 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
         ModelNode identityProviderNode = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
-        launchServices(context, identityProviderNode, verificationHandler, newControllers, pathAddress);
+        launchServices(context, identityProviderNode, verificationHandler, newControllers, pathAddress, false);
     }
 
-    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, PathAddress pathAddress) throws OperationFailedException {
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            IdentityProviderRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
+        } catch (OperationFailedException ignore) {
+        }
+    }
+
+    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, PathAddress pathAddress, boolean isRestart) throws OperationFailedException {
         String alias = pathAddress.getLastElement().getValue();
         IdentityProviderService service = new IdentityProviderService(toIDPConfig(context, model, alias));
         ServiceBuilder<IdentityProviderService> serviceBuilder = context.getServiceTarget().addService(IdentityProviderService.createServiceName(alias), service);
@@ -104,6 +113,10 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
 
         if (newControllers != null) {
             newControllers.add(controller);
+        }
+
+        if (isRestart) {
+            restartTrustDomains(alias, model, context);
         }
     }
 
@@ -151,7 +164,6 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
             String roleGeneratorType;
 
             if (roleGenerator.isDefined()) {
-                //TODO: resolve PLINK-
                 ModelNode roleGeneratorValue = roleGenerator.asProperty().getValue();
                 ModelNode classNameNode = RoleGeneratorResourceDefinition.CLASS_NAME.resolveModelAttribute(context, roleGeneratorValue);
                 ModelNode codeNode = RoleGeneratorResourceDefinition.CODE.resolveModelAttribute(context, roleGeneratorValue);
@@ -194,10 +206,13 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
         return idpType;
     }
 
-    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-        try {
-            IdentityProviderRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
-        } catch (OperationFailedException ignore) {
+    private static void restartTrustDomains(String identityProviderName, ModelNode modelNode, OperationContext context) {
+        if (modelNode.hasDefined(ModelElement.IDENTITY_PROVIDER_TRUST_DOMAIN.getName())) {
+            for (Property handlerProperty : modelNode.get(ModelElement.IDENTITY_PROVIDER_TRUST_DOMAIN.getName()).asPropertyList()) {
+                String domainName = handlerProperty.getName();
+
+                TrustDomainAddHandler.restartServices(context, identityProviderName , domainName);
+            }
         }
     }
 }

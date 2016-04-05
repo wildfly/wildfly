@@ -697,7 +697,7 @@ public interface JpaLogger extends BasicLogger {
      * Can't use a new unsynchronization persistence context when transaction already has a synchronized persistence context.
      *
      * @param puScopedName          the persistence unit name.
-     * @return an {@link javax.ejb.EJBException} for the error.
+     * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 64, value =
             "JTA transaction already has a 'SynchronizationType.UNSYNCHRONIZED' persistence context (EntityManager) joined to it " +
@@ -706,7 +706,7 @@ public interface JpaLogger extends BasicLogger {
             "change the called component code to also use 'SynchronizationType.UNSYNCHRONIZED'.  "+
             "See JPA spec 2.1 section 7.6.4.1.  " +
             "Scoped persistence unit name=%s.")
-    EJBException badSynchronizationTypeCombination(String puScopedName);
+    IllegalStateException badSynchronizationTypeCombination(String puScopedName);
 
     @Message(id = 65, value = "Resources of type %s cannot be registered")
     UnsupportedOperationException resourcesOfTypeCannotBeRegistered(String key);

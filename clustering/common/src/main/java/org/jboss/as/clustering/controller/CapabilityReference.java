@@ -24,6 +24,7 @@ package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.wildfly.clustering.service.Requirement;
 import org.jboss.as.controller.OperationContext;
 
 /**

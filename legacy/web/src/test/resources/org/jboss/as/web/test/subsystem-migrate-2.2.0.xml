@@ -91,6 +91,16 @@
             </virtual-server>
             <virtual-server name="vs1" />
             <virtual-server name="vs2" />
+            <valve name="accessLog" module="org.jboss.as.web" class-name="org.apache.catalina.valves.AccessLogValve">        
+                <param param-name="prefix" param-value="myapp_access_log." />
+                <param param-name="suffix" param-value=".log" />
+                <param param-name="rotatable" param-value="true" />
+                <param param-name="fileDateFormat" param-value="yyyy-MM-dd" />
+                <param param-name="pattern" param-value="common" />
+                <param param-name="directory" param-value="${jboss.server.log.dir}" />
+                <param param-name="resolveHosts" param-value="false"/>
+                <param param-name="conditionIf" param-value="log-enabled"/>
+            </valve>
             <valve name="myvalve" module="org.jboss.some.module" class-name="org.jboss.some.class" enabled="${prop.valve-enabled:true}">
                <param param-name="param-name" param-value="${prop.valve-param:some-value}"/>
             </valve>
@@ -101,5 +111,20 @@
             <valve name="request-dumper" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RequestDumperValve"/>
             <valve name="remote-addr" module="org.jboss.as.web" class-name="org.apache.catalina.valves.RemoteAddrValve">
                 <param param-name="allow" param-value="127.0.0.1,127.0.0.2" />
+                <param param-name="deny" param-value="192.168.1.20" />
+            </valve>
+            <valve name="crawler" class-name="org.apache.catalina.valves.CrawlerSessionManagerValve" module="org.jboss.as.web" >
+                <param param-name="sessionInactiveInterval" param-value="1" />
+                <param param-name="crawlerUserAgents" param-value="Google" />
+            </valve>
+            <valve name="stuck" class-name="org.apache.catalina.valves.StuckThreadDetectionValve" module="org.jboss.as.web" >
+                <param param-name="threshold" param-value="1000" />
+                <param param-name="interruptThreadThreshold" param-value="2000" />
+            </valve>
+            <valve name="proxy" class-name="org.apache.catalina.valves.RemoteIpValve" module="org.jboss.as.web" >
+                <param param-name="internalProxies" param-value="192\.168\.0\.10|192\.168\.0\.11" />
+                <param param-name="remoteIpHeader" param-value="x-forwarded-for" />
+                <param param-name="proxiesHeader" param-value="x-forwarded-by" />
+                <param param-name="trustedProxies" param-value="proxy1|proxy2" />
             </valve>
         </subsystem>

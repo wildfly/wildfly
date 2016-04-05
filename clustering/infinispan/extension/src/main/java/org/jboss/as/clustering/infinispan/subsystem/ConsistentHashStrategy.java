@@ -21,12 +21,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.HashConfigurationBuilder;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.ConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
-import org.infinispan.distribution.ch.impl.ReplicatedConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
 import org.infinispan.distribution.ch.impl.TopologyAwareSyncConsistentHashFactory;
@@ -50,15 +47,4 @@ public enum ConsistentHashStrategy {
     };
 
     abstract ConsistentHashFactory<? extends ConsistentHash> createConsistentHashFactory(boolean topologyAware);
-
-    public void buildHashConfiguration(HashConfigurationBuilder builder, CacheMode mode, boolean topologyAware) {
-        if (mode.isClustered()) {
-            if (mode.isDistributed()) {
-                builder.consistentHashFactory(this.createConsistentHashFactory(topologyAware));
-            } else {
-                // Used for REPL and INVALIDATION
-                builder.consistentHashFactory(new ReplicatedConsistentHashFactory());
-            }
-        }
-    }
 }

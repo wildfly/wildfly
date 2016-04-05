@@ -64,7 +64,6 @@ public class DistributableSingleSignOnManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.createSSO(same(id), authenticationCaptor.capture())).thenReturn(sso);
-        when(batch.isActive()).thenReturn(true);
 
         SingleSignOn result = this.subject.createSingleSignOn(account, mechanism);
 
@@ -79,7 +78,7 @@ public class DistributableSingleSignOnManagerTestCase {
     }
 
     @Test
-    public void findSingleSignOn() {
+    public void findSingleSignOnNotExists() {
         String id = "sso";
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
@@ -87,23 +86,38 @@ public class DistributableSingleSignOnManagerTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.findSSO(id)).thenReturn(null);
-        when(batch.isActive()).thenReturn(false);
 
         SingleSignOn result = this.subject.findSingleSignOn(id);
 
         assertNull(result);
 
-        verify(batch).discard();
+        verify(batch).close();
         verify(batcher, never()).suspendBatch();
+    }
 
-        reset(batch);
+    @Test
+    public void findSingleSignOnInvalidCharacters() {
+        String id = "sso+";
 
+        SingleSignOn result = this.subject.findSingleSignOn(id);
+
+        assertNull(result);
+
+        verifyZeroInteractions(this.manager);
+    }
+
+    @Test
+    public void findSingleSignOn() {
+        String id = "sso";
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
 
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.findSSO(id)).thenReturn(sso);
-        when(batch.isActive()).thenReturn(true);
 
-        result = this.subject.findSingleSignOn(id);
+        SingleSignOn result = this.subject.findSingleSignOn(id);
 
         assertNotNull(result);
 

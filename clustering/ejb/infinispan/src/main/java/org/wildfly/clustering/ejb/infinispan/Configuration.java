@@ -22,7 +22,6 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.Cache;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 
 /**
  * Exposes the configuration common to beans and bean groups.
@@ -34,9 +33,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
  * @param <V> the cache value type
  * @param <F> the factory type
  */
-public interface Configuration<I, K, V, F> {
-
-    IdentifierFactory<I> getIdentifierFactory();
+public interface Configuration<K, V, F> {
 
     Cache<K, V> getCache();
 

@@ -22,21 +22,54 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.singleton.SingletonServiceName;
+import org.wildfly.clustering.singleton.election.NamePreference;
+import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
+import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
+
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 
 /**
  * @author Paul Ferraro
  */
-public class MyServiceActivator extends AbstractServiceActivator {
+public class MyServiceActivator implements ServiceActivator {
 
+    public static final ServiceName DEFAULT_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "default");
+    public static final ServiceName QUORUM_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "quorum");
+
+    private static final String CONTAINER_NAME = "server";
     public static final String PREFERRED_NODE = NODE_2;
 
     @Override
     public void activate(ServiceActivatorContext context) {
-        install(MyService.DEFAULT_SERVICE_NAME, 1, PREFERRED_NODE, context);
-        install(MyService.QUORUM_SERVICE_NAME, 2, PREFERRED_NODE, context);
+        ServiceTarget target = context.getServiceTarget();
+        try {
+            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(CONTAINER_NAME)).awaitValue();
+            install(target, factory, DEFAULT_SERVICE_NAME, 1);
+            install(target, factory, QUORUM_SERVICE_NAME, 2);
+        } catch (InterruptedException e) {
+            throw new ServiceRegistryException(e);
+        }
     }
 
+    private static void install(ServiceTarget target, SingletonServiceBuilderFactory factory, ServiceName name, int quorum) {
+        InjectedValue<ServerEnvironment> env = new InjectedValue<>();
+        MyService service = new MyService(env);
+        factory.createSingletonServiceBuilder(name, service)
+            .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE)))
+            .requireQuorum(quorum)
+            .build(target)
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)
+                .install();
+    }
 }
