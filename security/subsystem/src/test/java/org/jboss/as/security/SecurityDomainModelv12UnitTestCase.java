@@ -95,10 +95,8 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/security.xml"
-        };
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, original, marshalled, true);
     }
 
     @Override
