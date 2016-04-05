@@ -63,6 +63,8 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, new StartupCountdown(moduleDescription.getStartupBeansCount())); // now all startup beans are counted and we can initialize a CDL to be used by interceptors
+
         final Set<ServiceName> failed = new HashSet<ServiceName>();
 
         final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription);
