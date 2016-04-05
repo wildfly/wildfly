@@ -133,6 +133,11 @@ public final class CSIv2Util {
             return null;
         }
 
+        if (sslPort == 0) {
+            // no support for transport security.
+            return null;
+        }
+
         TaggedComponent tc;
         try {
             int supports = createTargetSupports(metadata.getTransportConfig());
@@ -348,7 +353,7 @@ public final class CSIv2Util {
             support = createTargetSupports(tconfig);
         }
 
-        if (tconfig == null || support == 0 || sslPort < 0) {
+        if (tconfig == null || support == 0 || sslPort == 0) {
             // no support for transport security.
             tc = new TaggedComponent(TAG_NULL_TAG.value, new byte[0]);
         } else {

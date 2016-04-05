@@ -43,6 +43,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.COMM_FAILURE;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.MARSHAL;
@@ -388,4 +389,13 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 105, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
     String serverRequiresSslNotSupportedInPreviousVersions();
+
+    @Message(id = 106, value = "SSL socket is required by server but secure connections have not been configured")
+    COMM_FAILURE cannotCreateSSLSocket();
+
+    @Message(id = 107, value = "Client requires SSL but server does not support it")
+    IllegalStateException serverDoesNotSupportSsl();
+
+    @Message(id = 108, value = "SSL has not been configured but ssl-port property has been specified")
+    OperationFailedException sslPortWithoutSslConfiguration();
 }

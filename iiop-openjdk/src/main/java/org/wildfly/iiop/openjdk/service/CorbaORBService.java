@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -108,7 +108,7 @@ public class CorbaORBService implements Service<ORB> {
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
             }
-            if (this.iiopSSLSocketBindingInjector.getValue() != null) {
+            if (this.iiopSSLSocketBindingInjector.getOptionalValue() != null) {
                 InetSocketAddress address = this.iiopSSLSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(Constants.ORB_SSL_PORT, String.valueOf(address.getPort()));
                 final String sslSocket = new StringBuilder().append(Constants.SSL_SOCKET_TYPE).append(':')
