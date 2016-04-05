@@ -815,4 +815,11 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 86, value = "Unable to load module %s")
     OperationFailedException unableToLoadModule(String moduleName, @Cause ModuleLoadException cause);
+
+    /**
+     * Logs a info message indicating AIO was not found.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 87, value = "AIO was located on this platform but the filesystem does not support AIO, it will fall back to using pure Java NIO. Journal path: %s")
+    void aioInfoPath(String path);
 }

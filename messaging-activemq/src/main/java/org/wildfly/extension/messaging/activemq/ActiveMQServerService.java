@@ -149,6 +149,14 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
     public synchronized void start(final StartContext context) throws StartException {
         ClassLoader origTCCL = org.wildfly.security.manager.WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+
+        // Setup paths
+        PathManager pathManager = this.pathManager.getValue();
+        configuration.setBindingsDirectory(pathConfig.resolveBindingsPath(pathManager));
+        configuration.setLargeMessagesDirectory(pathConfig.resolveLargeMessagePath(pathManager));
+        configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager));
+        configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager));
+
         // Validate whether the AIO native layer can be used
         JournalType jtype = configuration.getJournalType();
         if (jtype == JournalType.ASYNCIO) {
@@ -161,15 +169,11 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     ROOT_LOGGER.aioInfo();
                 }
                 configuration.setJournalType(JournalType.NIO);
+            } else if (! AIOSequentialFileFactory.isSupported(configuration.getJournalDirectory())) {
+                ROOT_LOGGER.aioInfoPath(configuration.getJournalDirectory());
+                configuration.setJournalType(JournalType.NIO);
             }
         }
-
-        // Setup paths
-        PathManager pathManager = this.pathManager.getValue();
-        configuration.setBindingsDirectory(pathConfig.resolveBindingsPath(pathManager));
-        configuration.setLargeMessagesDirectory(pathConfig.resolveLargeMessagePath(pathManager));
-        configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager));
-        configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager));
 
         try {
             // Update the acceptor/connector port/host values from the
