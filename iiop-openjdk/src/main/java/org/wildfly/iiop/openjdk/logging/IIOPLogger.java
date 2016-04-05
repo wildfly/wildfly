@@ -382,4 +382,13 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
     OperationFailedException sslNotConfigured();
+
+    @Message(id = 104, value = "SSL socket is required by server but secure connections have not been configured")
+    COMM_FAILURE cannotCreateSSLSocket();
+
+    @Message(id = 105, value = "Client requires SSL but server does not support it")
+    IllegalStateException serverDoesNotSupportSsl();
+
+    @Message(id = 106, value = "SSL has not been configured but ssl-port property has been specified")
+    OperationFailedException sslPortWithoutSslConfiguration();
 }

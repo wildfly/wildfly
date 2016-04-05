@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,9 +27,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -37,17 +34,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 import org.wildfly.iiop.openjdk.Constants;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 
-import com.sun.corba.se.impl.orbutil.ORBConstants;
-import com.sun.corba.se.pept.transport.Acceptor;
 import com.sun.corba.se.spi.orb.ORB;
-import com.sun.corba.se.spi.transport.ORBSocketFactory;
 
 /**
  * <p>
@@ -58,12 +51,12 @@ import com.sun.corba.se.spi.transport.ORBSocketFactory;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 
-public class SocketFactory implements ORBSocketFactory {
+public class SSLSocketFactory extends SocketFactoryBase {
 
     private static String securityDomain = null;
 
     public static void setSecurityDomain(final String securityDomain) {
-        SocketFactory.securityDomain = securityDomain;
+        SSLSocketFactory.securityDomain = securityDomain;
     }
 
     private ORB orb;
@@ -78,6 +71,7 @@ public class SocketFactory implements ORBSocketFactory {
 
     @Override
     public void setORB(ORB orb) {
+        super.setORB(orb);
         this.orb = orb;
 
         try {
@@ -94,52 +88,28 @@ public class SocketFactory implements ORBSocketFactory {
 
     @Override
     public ServerSocket createServerSocket(String type, InetSocketAddress inetSocketAddress) throws IOException {
-        ServerSocketChannel serverSocketChannel = null;
-        ServerSocket serverSocket = null;
-
         if (type.equals(Constants.SSL_SOCKET_TYPE)) {
-            serverSocket = createSSLServerSocket(inetSocketAddress.getPort(), 1000,
+            return createSSLServerSocket(inetSocketAddress.getPort(), 1000,
                     InetAddress.getByName(inetSocketAddress.getHostName()));
-        } else if (orb.getORBData().acceptorSocketType().equals(ORBConstants.SOCKETCHANNEL)) {
-            serverSocketChannel = ServerSocketChannel.open();
-            serverSocket = serverSocketChannel.socket();
         } else {
-            serverSocket = new ServerSocket();
+            return super.createServerSocket(type, inetSocketAddress);
         }
-        if (!type.equals(Constants.SSL_SOCKET_TYPE)) {
-            serverSocket.bind(inetSocketAddress);
-        }
-        return serverSocket;
     }
 
+    @Override
     public Socket createSocket(String type, InetSocketAddress inetSocketAddress) throws IOException {
-        SocketChannel socketChannel = null;
-        Socket socket = null;
-
-        if (type.contains(Constants.SSL_SOCKET_TYPE)) {
-            socket = createSSLSocket(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
-        } else if (orb.getORBData().connectionSocketType().equals(ORBConstants.SOCKETCHANNEL)) {
-            socketChannel = SocketChannel.open(inetSocketAddress);
-            socket = socketChannel.socket();
+        if (type.contains(Constants.SSL_SOCKET_TYPE)){
+            return createSSLSocket(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
         } else {
-            socket = new Socket(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
+            return super.createSocket(type, inetSocketAddress);
         }
-
-        // Disable Nagle's algorithm (i.e., always send immediately).
-        socket.setTcpNoDelay(true);
-        return socket;
-    }
-
-    public void setAcceptedSocketOptions(Acceptor acceptor, ServerSocket serverSocket, Socket socket) throws SocketException {
-        // Disable Nagle's algorithm (i.e., always send immediately).
-        socket.setTcpNoDelay(true);
     }
 
     public Socket createSSLSocket(String host, int port) throws IOException {
         this.initSSLContext();
         InetAddress address = InetAddress.getByName(host);
 
-        SSLSocketFactory socketFactory = this.sslContext.getSocketFactory();
+        javax.net.ssl.SSLSocketFactory socketFactory = this.sslContext.getSocketFactory();
         SSLSocket socket = (SSLSocket) socketFactory.createSocket(address, port);
         if (this.jsseSecurityDomain.getProtocols() != null)
             socket.setEnabledProtocols(this.jsseSecurityDomain.getProtocols());
