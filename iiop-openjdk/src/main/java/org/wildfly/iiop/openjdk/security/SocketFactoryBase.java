@@ -39,7 +39,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 public abstract class SocketFactoryBase implements ORBSocketFactory {
-    private ORB orb;
+    protected ORB orb;
 
     @Override
     public void setORB(ORB orb) {
