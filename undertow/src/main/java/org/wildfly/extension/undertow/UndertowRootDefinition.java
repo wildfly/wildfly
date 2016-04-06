@@ -72,12 +72,12 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode().set(new ValueExpression("${jboss.node.name}")))
                     .build();
     protected static final SimpleAttributeDefinition STATISTICS_ENABLED =
-                new SimpleAttributeDefinitionBuilder("statistics-enabled", ModelType.BOOLEAN, true)
+                new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
                         .setAllowExpression(true)
                         .setDefaultValue(new ModelNode(false))
                         .build();
     protected static final SimpleAttributeDefinition DEFAULT_SECURITY_DOMAIN =
-            new SimpleAttributeDefinitionBuilder("default-security-domain", ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SECURITY_DOMAIN, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(SecurityConstants.DEFAULT_APPLICATION_POLICY))
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
@@ -113,10 +113,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     }
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        registerTransformers_3_0_0(subsystemRegistration);
+        registerTransformers_3_1_0(subsystemRegistration);
     }
 
-    private static void registerTransformers_3_0_0(SubsystemRegistration subsystemRegistration) {
+    private static void registerTransformers_3_1_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_1_0);

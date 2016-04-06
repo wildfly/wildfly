@@ -220,4 +220,8 @@ public interface Constants {
     String SESSION_TIMEOUT = "session-timeout";
     String CRAWLER_SESSION_MANAGEMENT = "crawler-session-management";
     String MAX_AJP_PACKET_SIZE = "max-ajp-packet-size";
+    String STATISTICS_ENABLED = "statistics-enabled";
+    String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
+
+
 }
