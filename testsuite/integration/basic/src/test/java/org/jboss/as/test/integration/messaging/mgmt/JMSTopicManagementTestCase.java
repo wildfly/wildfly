@@ -27,7 +27,6 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -399,8 +398,6 @@ public class JMSTopicManagementTestCase {
 
     @Test
     public void removeJMSTopicRemovesAllMessages() throws Exception {
-
-        thisTestIsFailingIntermittently("WFLY-5019");
 
         // create a durable subscriber
         final String subscriptionName = "removeJMSTopicRemovesAllMessages";
