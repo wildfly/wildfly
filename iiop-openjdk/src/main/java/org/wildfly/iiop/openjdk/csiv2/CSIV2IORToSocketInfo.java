@@ -136,7 +136,10 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
             }
         });
         in.consumeEndian();
-        return SSLHelper.read(in);
+        SSL ssl = SSLHelper.read(in);
+
+        // HACK: Previous versions advertise they support SSL when they do not
+        return ssl.target_requires > 0 ? ssl : null;
     }
 
     private TransportAddress selectSSLTransportAddress(IOR ior) {
