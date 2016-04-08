@@ -358,15 +358,16 @@ public class MigrateOperation implements OperationStepHandler {
     private void transformResources(OperationContext context, final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, boolean addLegacyEntries, List<String> warnings) throws OperationFailedException {
         for (ModelNode legacyAddOp : legacyModelDescription.get(RESULT).asList()) {
             final ModelNode newAddOp = legacyAddOp.clone();
+            ModelNode legacyAddress = legacyAddOp.get(OP_ADDR);
 
-            ModelNode newAddress = transformAddress(legacyAddOp.get(OP_ADDR).clone());
+            ModelNode newAddress = transformAddress(legacyAddress.clone());
             newAddOp.get(OP_ADDR).set(newAddress);
 
             PathAddress address = PathAddress.pathAddress(newAddress);
 
             // migrate server resource
             if (address.size() == 2 && "server".equals(address.getLastElement().getKey())) {
-                migrateServer(newAddOp, newAddOperations, warnings);
+                migrateServer(PathAddress.pathAddress(legacyAddress), newAddOp, newAddOperations, warnings);
                 continue;
             }
 
@@ -625,7 +626,7 @@ public class MigrateOperation implements OperationStepHandler {
     }
 
 
-    private void migrateServer(ModelNode addOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
+    private void migrateServer(PathAddress legacyAddress, ModelNode addOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
         discardInterceptors(addOperation, CommonAttributes.REMOTING_INTERCEPTORS.getName(), warnings);
         discardInterceptors(addOperation, CommonAttributes.REMOTING_INCOMING_INTERCEPTORS.getName(), warnings);
         discardInterceptors(addOperation, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS.getName(), warnings);
@@ -633,17 +634,17 @@ public class MigrateOperation implements OperationStepHandler {
         // add the server :add operation before eventually adding a ha-policy child :add operation in migrateHAPolicy.
         newAddOperations.put(pathAddress(addOperation.get(OP_ADDR)), addOperation);
 
-        migrateHAPolicy(addOperation, newAddOperations, warnings);
+        migrateHAPolicy(legacyAddress, addOperation, newAddOperations, warnings);
     }
 
-    private void migrateHAPolicy(ModelNode serverAddOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
+    private void migrateHAPolicy(PathAddress legacyAddress, ModelNode serverAddOperation, Map<PathAddress, ModelNode> newAddOperations, List<String> warnings) {
         PathAddress serverAddress = PathAddress.pathAddress(serverAddOperation.get(OP_ADDR));
 
         ModelNode sharedStoreAttr = serverAddOperation.get(SHARED_STORE.getName());
         ModelNode backupAttr = serverAddOperation.get(BACKUP.getName());
 
         if (sharedStoreAttr.getType() == EXPRESSION || backupAttr.getType() == EXPRESSION) {
-            warnings.add(ROOT_LOGGER.couldNotMigrateHA(serverAddress));
+            warnings.add(ROOT_LOGGER.couldNotMigrateHA(legacyAddress));
             return;
         }
 
