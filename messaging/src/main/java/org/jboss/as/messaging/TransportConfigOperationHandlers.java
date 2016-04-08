@@ -81,8 +81,8 @@ class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
-                final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
-                parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
+                final String binding = config.get(GenericTransportDefinition.SOCKET_BINDING.getName()).asString();
+                parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
@@ -137,7 +137,7 @@ class TransportConfigOperationHandlers {
      * @param bindings      the referenced socket bindings
      * @throws OperationFailedException
      */
-    static void processConnectors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
+    public static void processConnectors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
         final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
         if (params.hasDefined(CONNECTOR)) {
             for (final Property property : params.get(CONNECTOR).asPropertyList()) {
@@ -145,6 +145,13 @@ class TransportConfigOperationHandlers {
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
+                //we treat it as remote_connector
+                ModelNode bindingNode = config.get(GenericTransportDefinition.SOCKET_BINDING.getName());
+                if (bindingNode != null && bindingNode.isDefined()) {
+                    final String binding = bindingNode.asString();
+                    parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), binding);
+                    bindings.add(binding);
+                }
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
         }
@@ -153,8 +160,8 @@ class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
-                final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
-                parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
+                final String binding = config.get(GenericTransportDefinition.SOCKET_BINDING.getName()).asString();
+                parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
