@@ -239,10 +239,9 @@ public class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
-                final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
+                final String binding = config.get(GenericTransportDefinition.SOCKET_BINDING.getName()).asString();
+                parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
-                // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
-                parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
                 acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
@@ -303,13 +302,14 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
-                ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
-                if (socketBinding.isDefined()) {
-                    bindings.add(socketBinding.asString());
-                    // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
-                    parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), socketBinding.asString());
-                }
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
+                //we treat it as remote_connector
+                ModelNode bindingNode = config.get(GenericTransportDefinition.SOCKET_BINDING.getName());
+                if (bindingNode != null && bindingNode.isDefined()) {
+                    final String binding = bindingNode.asString();
+                    parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), binding);
+                    bindings.add(binding);
+                 }
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
         }
@@ -318,10 +318,10 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
-                final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
+                final String binding = config.get(GenericTransportDefinition.SOCKET_BINDING.getName()).asString();
+                parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
-                parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
