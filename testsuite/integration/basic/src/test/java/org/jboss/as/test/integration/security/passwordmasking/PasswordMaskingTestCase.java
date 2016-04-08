@@ -164,7 +164,7 @@ public class PasswordMaskingTestCase {
 
    }
 
-   static final String RESOURCE_LOCATION = PasswordMaskingTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile()
+   static final String RESOURCE_LOCATION = PasswordMaskingTestCase.class.getResource("/").getPath()
            + "security/pwdmsk-vault/";
    static final String VAULT_BLOCK = "MaskedDS";
    static final String DS_CLEAR_TEXT_PASSWORD = "sa";

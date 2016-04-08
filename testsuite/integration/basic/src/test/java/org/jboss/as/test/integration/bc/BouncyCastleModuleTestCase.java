@@ -57,8 +57,7 @@ public class BouncyCastleModuleTestCase {
         archive.addPackage(BouncyCastleModuleTestCase.class.getPackage());
         archive.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml"); //needed to load CDI for arquillian
         archive.addAsManifestResource(createPermissionsXmlAsset(
-                new SecurityPermission("insertProvider"),
-                new RuntimePermission("getProtectionDomain")
+                new SecurityPermission("insertProvider")
         ), "permissions.xml");
         archive.setManifest(new StringAsset(""
                 + "Manifest-Version: 1.0\n"
@@ -77,7 +76,7 @@ public class BouncyCastleModuleTestCase {
             if (e instanceof SecurityException && e.getMessage().contains("JCE cannot authenticate the provider")) {
                 String bcLocation = (bcProvider == null)
                         ? ""
-                        : "(" + bcProvider.getClass().getProtectionDomain().getCodeSource().getLocation() + ")";
+                        : "(" + bcProvider.getClass().getResource("/") + ")";
                 throw new Exception("Packaging with BouncyCastleProvider" + bcLocation
                         + " is probably not properly signed for JCE usage, see server log for details.", e);
             } else {

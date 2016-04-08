@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class MDBWithVaultedPropertiesTestCase {
     private static final String QUEUE_NAME = "vaultedproperties_queue";
     static final String CLEAR_TEXT_DESTINATION_LOOKUP = "java:jboss/messaging/vaultedproperties/queue";
 
-    static final String VAULT_LOCATION = MDBWithVaultedPropertiesTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "security/jms-vault/";
+    static final String VAULT_LOCATION = MDBWithVaultedPropertiesTestCase.class.getResource("/").getPath() + "security/jms-vault/";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
@@ -166,8 +165,7 @@ public class MDBWithVaultedPropertiesTestCase {
         return ShrinkWrap.create(JavaArchive.class, "MDBWithVaultedPropertiesTestCase.jar")
                 .addClass(StoreVaultedPropertyTask.class)
                 .addClass(MDB.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Resource(mappedName = CLEAR_TEXT_DESTINATION_LOOKUP)

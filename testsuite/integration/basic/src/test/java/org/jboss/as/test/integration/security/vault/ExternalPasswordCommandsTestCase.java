@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -108,6 +109,7 @@ public class ExternalPasswordCommandsTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "vault" + ".war");
         war.addClass(CheckVaultedPassServlet.class);
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.picketbox"), "jboss-deployment-structure.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("org.jboss.security.vault.SecurityVaultFactory.get")), "permissions.xml");
         LOGGER.debug(war.toString(true));
 
         return war;
