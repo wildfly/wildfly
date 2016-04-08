@@ -22,8 +22,13 @@
 
 package org.wildfly.extension.undertow;
 
+import static io.undertow.UndertowLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +40,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import javax.servlet.ServletContext;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -70,13 +77,17 @@ import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.http.HttpAuthenticationException;
+import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
+import org.wildfly.security.http.Scope;
 
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
+import io.undertow.servlet.handlers.ServletRequestContext;
 
 /**
  * A {@link ResourceDefinition} to define the mapping from a security domain as specified in a web application
@@ -289,8 +300,66 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return mechanismNames.get().stream().map(this::createMechanism).collect(Collectors.toList());
         }
 
+        private InputStream getResource(DeploymentInfo deploymentInfo, String path) {
+            try {
+                io.undertow.server.handlers.resource.Resource resource = deploymentInfo.getResourceManager().getResource(path);
+                if (resource != null) {
+                    File file = resource.getFile();
+                    if (file != null) {
+                        return new FileInputStream(file);
+                    }
+                }
+            } catch (IOException e) {
+                ROOT_LOGGER.debug(e);
+            }
+            return null;
+        }
+
         private HttpHandler initialSecurityHandler(final DeploymentInfo deploymentInfo, HttpHandler toWrap) {
-            return new ElytronContextAssociationHandler(toWrap, () -> getAuthenticationMechanisms(() -> desiredMechanisms(deploymentInfo)));
+            return ElytronContextAssociationHandler.builder()
+                    .setNext(toWrap)
+                    .setMechanismSupplier(() -> getAuthenticationMechanisms(() -> desiredMechanisms(deploymentInfo)))
+                    .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
+                    .build();
+        }
+
+        private static HttpScope applicationScope(HttpServerExchange exchange) {
+            ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+
+            if (servletRequestContext != null) {
+                final ServletContext servletContext = servletRequestContext.getDeployment().getServletContext();
+                return new HttpScope() {
+
+                    @Override
+                    public boolean supportsAttachments() {
+                        return true;
+                    }
+
+                    @Override
+                    public void setAttachment(String key, Object value) {
+                        servletContext.setAttribute(key, value);
+                    }
+
+                    @Override
+                    public Object getAttachment(String key) {
+                        return servletContext.getAttribute(key);
+                    }
+
+                    @Override
+                    public boolean supportsResources() {
+                        return true;
+                    }
+
+                    @Override
+                    public InputStream getResource(String path) {
+                        return servletContext.getResourceAsStream(path);
+                    }
+
+
+                };
+            }
+
+            return null;
         }
 
         private HttpHandler finalSecurityHandlers(HttpHandler toWrap) {
