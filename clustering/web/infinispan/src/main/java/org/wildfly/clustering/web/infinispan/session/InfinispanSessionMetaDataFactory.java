@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
@@ -37,16 +38,14 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> findCreationMetaDataCache;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
-    private final boolean transactional;
-    private final boolean lockOnWrite;
+    private final CacheProperties properties;
 
     @SuppressWarnings("unchecked")
-    public InfinispanSessionMetaDataFactory(Cache<? extends Key<String>, ?> cache, boolean transactional, boolean lockOnRead, boolean lockOnWrite) {
+    public InfinispanSessionMetaDataFactory(Cache<? extends Key<String>, ?> cache, CacheProperties properties) {
         this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
-        this.findCreationMetaDataCache = lockOnRead ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
+        this.findCreationMetaDataCache = properties.isLockOnRead() ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
-        this.transactional = transactional;
-        this.lockOnWrite = lockOnWrite;
+        this.properties = properties;
     }
 
     @Override
@@ -83,11 +82,11 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, InfinispanSessionMetaData<L> entry) {
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        Mutator creationMutator = this.transactional && this.creationMetaDataCache.getAdvancedCache().getCacheEntry(creationMetaDataKey).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
+        Mutator creationMutator = this.properties.isTransactional() && this.creationMetaDataCache.getAdvancedCache().getCacheEntry(creationMetaDataKey).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
         SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaData(), creationMutator);
 
         SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-        Mutator accessMutator = this.transactional && this.accessMetaDataCache.getAdvancedCache().getCacheEntry(accessMetaDataKey).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, entry.getAccessMetaData());
+        Mutator accessMutator = this.properties.isTransactional() && this.accessMetaDataCache.getAdvancedCache().getCacheEntry(accessMetaDataKey).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, entry.getAccessMetaData());
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), accessMutator);
 
         return new SimpleSessionMetaData(creationMetaData, accessMetaData);
@@ -110,7 +109,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     private boolean remove(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        if (this.lockOnWrite && creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
+        if (this.properties.isLockOnWrite() && creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
             creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(key);
             this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAccessMetaDataKey(id));
             return true;

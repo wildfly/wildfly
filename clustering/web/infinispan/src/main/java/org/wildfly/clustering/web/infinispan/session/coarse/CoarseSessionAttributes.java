@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 import java.util.Map;
 
 import org.infinispan.commons.marshall.NotSerializableException;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
@@ -37,14 +38,14 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     private final Map<String, Object> attributes;
     private final Mutator mutator;
     private final MarshallingContext context;
-    private final boolean requireMarshallable;
+    private final CacheProperties properties;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context, boolean requireMarshallable) {
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context, CacheProperties properties) {
         super(attributes);
         this.attributes = attributes;
         this.mutator = mutator;
         this.context = context;
-        this.requireMarshallable = requireMarshallable;
+        this.properties = properties;
     }
 
     @Override
@@ -59,7 +60,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
         if (value == null) {
             return this.removeAttribute(name);
         }
-        if (this.requireMarshallable && !this.context.isMarshallable(value)) {
+        if (this.properties.isMarshalling() && !this.context.isMarshallable(value)) {
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.attributes.put(name, value);
@@ -70,7 +71,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     @Override
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
-        if (MutableDetector.isMutable(value)) {
+        if (this.properties.isTransactional() && MutableDetector.isMutable(value)) {
             this.mutator.mutate();
         }
         return value;

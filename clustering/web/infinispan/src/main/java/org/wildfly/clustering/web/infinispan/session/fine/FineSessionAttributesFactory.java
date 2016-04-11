@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
@@ -49,13 +49,12 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ob
     private final Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> cache;
     private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller;
     private final Predicate<Map.Entry<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>>> invalidAttribute;
-    private final boolean requireMarshallable;
+    private final CacheProperties properties;
 
-    @SuppressWarnings("unchecked")
-    public FineSessionAttributesFactory(Cache<? extends Key<String>, ?> cache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, boolean requireMarshallable) {
-        this.cache = (Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>>) cache;
+    public FineSessionAttributesFactory(Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> cache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
+        this.cache = cache;
         this.marshaller = marshaller;
-        this.requireMarshallable = requireMarshallable;
+        this.properties = properties;
         this.invalidAttribute = entry -> {
             try {
                 this.marshaller.read(entry.getValue());
@@ -107,7 +106,7 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ob
 
     @Override
     public SessionAttributes createSessionAttributes(String id, Object value) {
-        return new FineSessionAttributes<>(id, this.cache, this.marshaller, this.requireMarshallable);
+        return new FineSessionAttributes<>(id, this.cache, this.marshaller, this.properties);
     }
 
     @Override

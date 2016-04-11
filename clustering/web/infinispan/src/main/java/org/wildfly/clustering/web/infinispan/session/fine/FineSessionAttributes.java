@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
@@ -37,13 +38,13 @@ import org.wildfly.clustering.web.session.SessionAttributes;
 public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> implements SessionAttributes {
     private final Cache<SessionAttributeKey, V> cache;
     private final Marshaller<Object, V, MarshallingContext> marshaller;
-    private final boolean requireMarshallable;
+    private final CacheProperties properties;
 
-    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller, boolean requireMarshallable) {
+    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller, CacheProperties configuration) {
         super(id, attributeCache, marshaller);
         this.cache = attributeCache;
         this.marshaller = marshaller;
-        this.requireMarshallable = requireMarshallable;
+        this.properties = configuration;
     }
 
     @Override
@@ -57,7 +58,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (attribute == null) {
             return this.removeAttribute(name);
         }
-        if (this.requireMarshallable && !this.marshaller.getContext().isMarshallable(attribute)) {
+        if (this.properties.isMarshalling() && !this.marshaller.getContext().isMarshallable(attribute)) {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
         SessionAttributeKey key = this.createKey(name);
@@ -72,7 +73,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         Object attribute = this.read(name, value);
         if (attribute != null) {
             // If the object is mutable, we need to indicate that the attribute should be replicated
-            if (MutableDetector.isMutable(attribute)) {
+            if (this.properties.isTransactional() && MutableDetector.isMutable(attribute)) {
                 new CacheEntryMutator<>(this.cache, key, value).mutate();
             }
         }

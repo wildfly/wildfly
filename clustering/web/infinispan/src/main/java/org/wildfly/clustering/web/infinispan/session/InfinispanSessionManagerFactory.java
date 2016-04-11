@@ -23,32 +23,28 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.Externalizable;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValueMarshaller;
-import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
@@ -106,6 +102,7 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
     public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionManagerConfiguration<L> configuration) {
         final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.config.getCache());
         final Cache<Key<String>, ?> cache = this.config.getCache();
+        final CacheProperties properties = new InfinispanCacheProperties(cache.getCacheConfiguration());
         final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), cache, this.config.getKeyAffinityServiceFactory());
         final CommandDispatcherFactory dispatcherFactory = this.config.getCommandDispatcherFactory();
         final NodeFactory<Address> nodeFactory = this.config.getNodeFactory();
@@ -124,6 +121,11 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
             @Override
             public Cache<Key<String>, ?> getCache() {
                 return cache;
+            }
+
+            @Override
+            public CacheProperties getProperties() {
+                return properties;
             }
 
             @Override
@@ -156,33 +158,26 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
                 return configuration.getInactiveSessionRecorder();
             }
         };
-        return new InfinispanSessionManager<>(this.createSessionFactory(configuration.getLocalContextFactory()), config);
+        return new InfinispanSessionManager<>(this.createSessionFactory(properties, configuration.getLocalContextFactory()), config);
     }
 
-    private <L> SessionFactory<?, ?, L> createSessionFactory(LocalContextFactory<L> localContextFactory) {
-        Configuration config = this.config.getCache().getCacheConfiguration();
-        boolean transactional = config.transaction().transactionMode().isTransactional();
-        boolean lockOnWrite = transactional && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC);
-        boolean lockOnRead = lockOnWrite && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
-        boolean requireMarshallable = config.clustering().cacheMode().needsStateTransfer() || config.persistence().usingStores();
-        SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.config.getCache(), transactional, lockOnRead, lockOnWrite);
-        return new InfinispanSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(lockOnRead, requireMarshallable), localContextFactory);
+    private <L> SessionFactory<?, ?, L> createSessionFactory(CacheProperties properties, LocalContextFactory<L> localContextFactory) {
+        SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.config.getCache(), properties);
+        return new InfinispanSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(properties), localContextFactory);
     }
 
-    private <L> SessionAttributesFactory<?> createSessionAttributesFactory(boolean lockOnRead, boolean requireMarshallable) {
+    private SessionAttributesFactory<?> createSessionAttributesFactory(CacheProperties properties) {
         SessionManagerFactoryConfiguration config = this.config.getSessionManagerFactoryConfiguration();
         Module module = config.getModule();
-        MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
-        MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
+        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
+        MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
 
         switch (this.config.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
             case FINE: {
-                Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new FineSessionAttributesFactory(this.config.getCache(), marshaller, requireMarshallable);
+                return new FineSessionAttributesFactory(this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
             }
             case COARSE: {
-                Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionAttributesFactory(this.config.getCache(), marshaller, lockOnRead, requireMarshallable);
+                return new CoarseSessionAttributesFactory(this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
             }
             default: {
                 // Impossible

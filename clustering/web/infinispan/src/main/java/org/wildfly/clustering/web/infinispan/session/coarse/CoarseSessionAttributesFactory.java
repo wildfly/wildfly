@@ -29,9 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
@@ -49,23 +49,18 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
 
     private final Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> cache;
     private final Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller;
-    private final boolean transactional;
-    private final boolean lockOnRead;
-    private final boolean requireMarshallable;
+    private final CacheProperties properties;
 
-    @SuppressWarnings("unchecked")
-    public CoarseSessionAttributesFactory(Cache<? extends Key<String>, ?> cache, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, boolean lockOnRead, boolean requireMarshallable) {
-        this.cache = (Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>>) cache;
+    public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> cache, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
+        this.cache = cache;
         this.marshaller = marshaller;
-        this.transactional = cache.getCacheConfiguration().transaction().transactionMode().isTransactional();
-        this.lockOnRead = lockOnRead;
-        this.requireMarshallable = requireMarshallable;
+        this.properties = properties;
     }
 
     @Override
     public Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> createValue(String id, Void context) {
         SessionAttributesKey attributesKey = new SessionAttributesKey(id);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(attributesKey, key -> this.marshaller.write(this.lockOnRead ? new HashMap<>() : new ConcurrentHashMap<>()));
+        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(attributesKey, key -> this.marshaller.write(this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>()));
         try {
             Map<String, Object> attributes = this.marshaller.read(value);
             return new SimpleImmutableEntry<>(attributes, value);
@@ -105,8 +100,8 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
     @Override
     public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> entry) {
         SessionAttributesKey key = new SessionAttributesKey(id);
-        Mutator mutator = this.transactional && this.cache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, key, entry.getValue());
-        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller.getContext(), this.requireMarshallable);
+        Mutator mutator = this.properties.isTransactional() && this.cache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, key, entry.getValue());
+        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller.getContext(), this.properties);
     }
 
     @Override
