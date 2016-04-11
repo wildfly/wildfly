@@ -61,6 +61,23 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- Recommended TestNG version -->
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${version.org.testng}</version>
+            </dependency>
+
+            <!-- ShrinkWrap Resolvers project provides a Java API to obtain
+                artifacts from a repository system. -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Arquillian lets test you your applications in real environment -->
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
@@ -95,23 +112,6 @@
                 <artifactId>graphene-webdriver</artifactId>
                 <version>${version.org.jboss.arquillian.graphene}</version>
                 <type>pom</type>
-            </dependency>
-
-            <!-- ShrinkWrap Resolvers project provides a Java API to obtain
-                artifacts from a repository system. -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>${version.org.jboss.shrinkwrap.resolver}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Recommended TestNG version -->
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>${version.org.testng}</version>
             </dependency>
 
             <!-- Arquillian support for JBoss WildFly 8 container -->
