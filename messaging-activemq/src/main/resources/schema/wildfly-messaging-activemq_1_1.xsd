@@ -576,6 +576,7 @@
                     <xs:attribute name="enlistment-trace" type="xs:boolean" use="optional" />
                     <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
                     <xs:attribute name="initial-connect-attempts" type="xs:int" use="optional" />
+                    <xs:attribute name="statistics-enabled" type="xs:boolean" use="optional" />
                 </xs:complexType>
             </xs:element>
         </xs:sequence>

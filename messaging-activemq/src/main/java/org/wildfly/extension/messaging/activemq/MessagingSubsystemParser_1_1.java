@@ -568,7 +568,8 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
                                                         ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)))
+                                                        ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
+                                                        ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)))
                 .addChild(
                         builder(JMSBridgeDefinition.INSTANCE)
                                 .addAttributes(
