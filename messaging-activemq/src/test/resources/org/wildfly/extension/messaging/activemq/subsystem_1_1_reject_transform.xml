@@ -5,7 +5,8 @@
                                    user="alice"
                                    password="alicepassword"
                                    connectors="in-vm"
-                                   entries="java:/JmsLocal">
+                                   entries="java:/JmsLocal"
+                                   statistics-enabled="true">
         <inbound-config
                 rebalance-connections="true" />
         </pooled-connection-factory>

@@ -137,7 +137,9 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS)));
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
+                                ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)));
     }
 
 }
