@@ -53,7 +53,6 @@ public class ServletLifecycleMethodDescriptorTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "single.war");
         war.addClasses(HttpRequest.class, LifeCycleMethodServlet.class);
         war.addAsWebInfResource(ServletLifecycleMethodDescriptorTestCase.class.getPackage(), "web.xml", "web.xml");
-        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming meta-inf\n"), "MANIFEST.MF");
         war.addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("java:global/env/foo", "bind")), "permissions.xml");
         return war;
     }
