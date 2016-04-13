@@ -7,6 +7,8 @@
 
     <xsl:variable name="securityNS" select="'urn:jboss:domain:security:'"/>
     <xsl:variable name="jacorbNS" select="'urn:jboss:domain:iiop-openjdk:'"/>
+    <xsl:variable name="iiop" select="'iiop'"/>
+    <xsl:variable name="iiop-ssl" select="'iiop-ssl'"/>
 
     <!-- traverse the whole tree, so that all elements and attributes are eventually current node -->
     <xsl:template match="node()|@*">
@@ -14,6 +16,15 @@
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
+
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jacorbNS)]
+                                          /*[local-name()='orb']">
+        <xsl:copy>
+            <xsl:attribute name="socket-binding"><xsl:value-of select="$iiop"/></xsl:attribute>
+            <xsl:attribute name="ssl-socket-binding"><xsl:value-of select="$iiop-ssl"/></xsl:attribute>
+        </xsl:copy>
+    </xsl:template>
+
 
     <!-- Create a security domain with keystore used by Jacorb -->
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $securityNS)]
