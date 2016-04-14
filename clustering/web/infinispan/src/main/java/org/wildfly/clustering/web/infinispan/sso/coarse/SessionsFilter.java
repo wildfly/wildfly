@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
 
-import java.util.concurrent.atomic.AtomicReference;
+package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
- * Cache entry that store authentication data plus any local context.
+ * Filter/mapper that handles filtering and casting for cache entries containing SSO sessions.
  * @author Paul Ferraro
- * @param <A> the identity type
- * @param <L> the local context type
  */
-public class AuthenticationEntry<A, L> {
+public class SessionsFilter<D> implements Predicate<Map.Entry<?, ?>>, Function<Map.Entry<?, ?>, Map.Entry<CoarseSessionsKey, Map<D, String>>> {
 
-    private final MarshalledValue<A, MarshallingContext> authentication;
-    private final AtomicReference<L> localContext = new AtomicReference<>();
-
-    public AuthenticationEntry(MarshalledValue<A, MarshallingContext> authentication) {
-        this.authentication = authentication;
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map.Entry<CoarseSessionsKey, Map<D, String>> apply(Map.Entry<?, ?> entry) {
+        return (Map.Entry<CoarseSessionsKey, Map<D, String>>) entry;
     }
 
-    public MarshalledValue<A, MarshallingContext> getAuthentication() {
-        return this.authentication;
-    }
-
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
+    @Override
+    public boolean test(Map.Entry<?, ?> entry) {
+        return (entry.getKey() instanceof CoarseSessionsKey);
     }
 }

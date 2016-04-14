@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,41 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
 
-import java.io.IOException;
+package org.wildfly.clustering.web.infinispan.sso.coarse;
+
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
 
 /**
- * Externalizer for {@link AuthenticationEntry}.
  * @author Paul Ferraro
- * @param <A>
- * @param <D>
  */
-public class AuthenticationEntryExternalizer<A, L> implements Externalizer<AuthenticationEntry<A, L>> {
+public class SessionsFilterExternalizer<D> implements Externalizer<SessionsFilter<D>> {
 
-    private final Externalizer<SimpleMarshalledValue<A>> externalizer = new SimpleMarshalledValueExternalizer<>();
+    private final SessionsFilter<D> filter = new SessionsFilter<>();
 
     @Override
-    public void writeObject(ObjectOutput output, AuthenticationEntry<A, L> entry) throws IOException {
-        SimpleMarshalledValue<A> value = (SimpleMarshalledValue<A>) entry.getAuthentication();
-        this.externalizer.writeObject(output, value);
+    public void writeObject(ObjectOutput output, SessionsFilter<D> filter) {
+        // Do nothing
     }
 
     @Override
-    public AuthenticationEntry<A, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new AuthenticationEntry<>(this.externalizer.readObject(input));
+    public SessionsFilter<D> readObject(ObjectInput input) {
+        return this.filter;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Class<AuthenticationEntry<A, L>> getTargetClass() {
-        Class targetClass = AuthenticationEntry.class;
+    public Class<? extends SessionsFilter<D>> getTargetClass() {
+        Class targetClass = SessionsFilter.class;
         return targetClass;
     }
 }

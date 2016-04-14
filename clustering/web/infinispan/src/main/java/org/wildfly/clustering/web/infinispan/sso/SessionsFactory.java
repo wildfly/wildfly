@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.infinispan.sso;
 
 import java.util.Map;
@@ -26,15 +27,10 @@ import java.util.Map;
 import org.wildfly.clustering.ee.infinispan.Creator;
 import org.wildfly.clustering.ee.infinispan.Locator;
 import org.wildfly.clustering.ee.infinispan.Remover;
-import org.wildfly.clustering.web.sso.SSO;
+import org.wildfly.clustering.web.sso.Sessions;
 
-/**
- * Creates an {@link SSO} from its cache storage value.
- * @author Paul Ferraro
- * @param <V> the cache value type
- */
-public interface SSOFactory<AV, SV, A, D, L> extends Creator<String, Map.Entry<AV, SV>, A>, Locator<String, Map.Entry<AV, SV>>, Remover<String> {
-    SSO<A, D, L> createSSO(String id, Map.Entry<AV, SV> value);
+public interface SessionsFactory<V, D> extends Creator<String, V, Void>, Locator<String, V>, Remover<String> {
+    Sessions<D> createSessions(String ssoId, V value);
 
-    SessionsFactory<SV, D> getSessionsFactory();
+    Map.Entry<String, V> findEntryContaining(String sessionId);
 }
