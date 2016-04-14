@@ -24,6 +24,7 @@ package org.jboss.as.txn.service;
 
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.JTAActionStatusServiceXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateJTAXAResourceOrphanFilter;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
@@ -44,9 +45,11 @@ import java.util.Collections;
 public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
 
     private final String nodeIdentifier;
+    private boolean useActionStatusServiceRecoveryFilter;
 
     public JTAEnvironmentBeanService(final String nodeIdentifier) {
         this.nodeIdentifier = nodeIdentifier;
+        this.useActionStatusServiceRecoveryFilter = Boolean.valueOf(System.getProperty("org.jboss.narayana.wildfly.useActionStatusServiceRecoveryFilter.deprecated", "false"));
     }
 
     @Override
@@ -56,7 +59,11 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
         // recovery nodes
         jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList(nodeIdentifier));
         // setup the XA orphan filters
-        jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName(), SubordinateJTAXAResourceOrphanFilter.class.getName()));
+        if (useActionStatusServiceRecoveryFilter) {
+            jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName(), SubordinateJTAXAResourceOrphanFilter.class.getName(), JTAActionStatusServiceXAResourceOrphanFilter.class.getName()));
+        } else {
+            jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName(), SubordinateJTAXAResourceOrphanFilter.class.getName()));
+        }
         jtaEnvironmentBean.setXAResourceRecordWrappingPlugin(new com.arjuna.ats.internal.jbossatx.jta.XAResourceRecordWrappingPluginImpl());
         jtaEnvironmentBean.setTransactionManagerJNDIContext("java:jboss/TransactionManager");
         jtaEnvironmentBean.setTransactionSynchronizationRegistryJNDIContext("java:jboss/TransactionSynchronizationRegistry");
