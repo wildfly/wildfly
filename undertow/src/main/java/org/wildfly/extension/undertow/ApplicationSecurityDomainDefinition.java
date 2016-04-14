@@ -75,6 +75,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
+import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
@@ -268,8 +269,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
         private Registration applyElytronSecurity(final DeploymentInfo deploymentInfo) {
+            final ScopeSessionListener scopeSessionListener = ScopeSessionListener.builder()
+                    .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
+                    .build();
+            deploymentInfo.addSessionListener(scopeSessionListener);
+
             deploymentInfo.addInnerHandlerChainWrapper(this::finalSecurityHandlers);
-            deploymentInfo.setInitialSecurityWrapper(h -> initialSecurityHandler(deploymentInfo, h));
+            deploymentInfo.setInitialSecurityWrapper(h -> initialSecurityHandler(deploymentInfo, h, scopeSessionListener));
 
             RegistrationImpl registration = new RegistrationImpl(deploymentInfo);
             synchronized(registrations) {
@@ -315,11 +321,12 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return null;
         }
 
-        private HttpHandler initialSecurityHandler(final DeploymentInfo deploymentInfo, HttpHandler toWrap) {
+        private HttpHandler initialSecurityHandler(final DeploymentInfo deploymentInfo, HttpHandler toWrap, ScopeSessionListener scopeSessionListener) {
             return ElytronContextAssociationHandler.builder()
                     .setNext(toWrap)
                     .setMechanismSupplier(() -> getAuthenticationMechanisms(() -> desiredMechanisms(deploymentInfo)))
                     .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
+                    .setScopeSessionListener(scopeSessionListener)
                     .build();
         }
 
