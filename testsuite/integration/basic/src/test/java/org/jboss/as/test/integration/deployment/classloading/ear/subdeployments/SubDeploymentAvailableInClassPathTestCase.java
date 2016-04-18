@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.ejb.EJBBusinessInterface;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.ejb.SimpleSLSB;
+import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.servlet.EjbInvokeToStringServlet;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.servlet.EjbInvokingServlet;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.servlet.HelloWorldServlet;
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.servlet.ServletInOtherWar;
@@ -66,6 +67,8 @@ public class SubDeploymentAvailableInClassPathTestCase {
     private static final String WEB_APP_CONTEXT_ONE = "war-access-to-ejb";
 
     private static final String WEB_APP_CONTEXT_TWO = "war-access-to-war";
+    
+    private static final String WEB_APP_CONTEXT_THREE = "war-access-to-jar";
 
     private static final String OTHER_WEB_APP_CONTEXT = "other-war";
 
@@ -132,6 +135,27 @@ public class SubDeploymentAvailableInClassPathTestCase {
         ear.addAsModule(otherWar);
 
         logger.info(ear.toString(true));
+        return ear;
+    }
+    
+    @Deployment(name = "ear-with-war-and-jar", testable = false)
+    public static EnterpriseArchive createEarWithWarJarAndLib() {
+        final JavaArchive servletLogicJar = ShrinkWrap.create(JavaArchive.class, "servlet-logic.jar");
+        servletLogicJar.addClasses(ClassInJar.class);
+
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT_THREE + ".war");
+        war.addClasses(EjbInvokeToStringServlet.class);
+        war.addAsManifestResource(SubDeploymentAvailableInClassPathTestCase.class.getPackage(),"MANIFEST.MF", "MANIFEST.MF");
+
+        // TODO: Currently, due to an issue in AS7 integration with Arquillian, the web-app context and the
+        // .ear name should be the same or else you run into test deployment failures like:
+        // Caused by: java.lang.IllegalStateException: Error launching test at
+        // http://127.0.0.1:8080/<earname>/ArquillianServletRunner?outputMode=serializedObject&className=org.jboss.as.test.spec.ear.classpath.unit.SubDeploymentAvailableInClassPathTestCase&methodName=testEjbClassAvailableInServlet. Kept on getting 404s.
+        // @see https://issues.jboss.org/browse/AS7-367
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, WEB_APP_CONTEXT_THREE + ".ear");
+        ear.addAsModule(servletLogicJar);
+        ear.addAsModule(war);
+        ear.addAsLibrary("javax/naming/javax-naming-test-impl.jar", "javax-naming-test-impl.jar");
         return ear;
     }
 
@@ -227,6 +251,38 @@ public class SubDeploymentAvailableInClassPathTestCase {
     }
 
 
+    /**
+     * Tests that for a .ear like this one:
+     * myapp.ear
+     * |
+     * |--- lib/javax-naming-test-impl.jar this jar contains override for javax.naming.Binding class
+     * |                                   which has to be resolved from implicit modules
+     * |
+     * |--- war-access-to-jar.war
+     * |
+     * |--- servlet-logic.jar
+     * <p/>
+     * the classes within the war-access-to-jar.war have access to the classes in the servlet-logic.jar
+     * and servlet-logic.jar has implicit module dependencies first in class path
+     *
+     * @throws Exception
+     */
+    
+    @Test
+    @OperateOnDeployment("ear-with-war-and-jar")
+    public void testWarSeeJarAndJarSeeImplicitModulesFirst() throws Exception {
+        final HttpClient httpClient = new DefaultHttpClient();
+        final String requestURL = managementClient.getWebUri() + "/" + WEB_APP_CONTEXT_THREE
+                + EjbInvokeToStringServlet.URL_PATTERN + "?" + EjbInvokeToStringServlet.CLASS_NAME_PARAMETER
+                + "=javax.naming.Binding";
+        final HttpGet request = new HttpGet(requestURL);
+        final HttpResponse response = httpClient.execute(request);
+        final HttpEntity entity = response.getEntity();
+        Assert.assertNotNull("Response message from servlet was null", entity);
+        final String responseMessage = EntityUtils.toString(entity);
+        Assert.assertNotEquals("Unexpected response from servlet", "BindingFromLib", responseMessage);
+    }
+    
     /**
      * Tests that for a .ear like this one:
      * myapp.ear
