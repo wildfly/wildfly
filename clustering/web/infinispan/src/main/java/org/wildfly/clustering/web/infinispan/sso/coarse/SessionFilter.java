@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 /**
- * Simple container for CoarseAuthenticationEntry and sessions map.
+ * Selects SSO sessions entries containing the specified session.
  * @author Paul Ferraro
+ * @param <D> the deployment type
  */
-public class CoarseSSOEntry<A, D, L> {
+public class SessionFilter<D> implements Predicate<Map.Entry<CoarseSessionsKey, Map<D, String>>> {
 
-    private final A authentication;
-    private final AtomicReference<L> localContext;
-    private final Map<D, String> sessions;
+    private final String sessionId;
 
-    public CoarseSSOEntry(A authentication, AtomicReference<L> localContext, Map<D, String> sessions) {
-        this.authentication = authentication;
-        this.localContext = localContext;
-        this.sessions = sessions;
+    public SessionFilter(String sessionId) {
+        this.sessionId = sessionId;
     }
 
-    public A getAuthentication() {
-        return this.authentication;
+    public String getSessionId() {
+        return this.sessionId;
     }
 
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
-    }
-
-    public Map<D, String> getSessions() {
-        return this.sessions;
+    @Override
+    public boolean test(Map.Entry<CoarseSessionsKey, Map<D, String>> entry) {
+        return entry.getValue().values().contains(this.sessionId);
     }
 }

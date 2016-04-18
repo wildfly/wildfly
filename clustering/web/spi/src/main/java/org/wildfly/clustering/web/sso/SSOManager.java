@@ -48,6 +48,13 @@ public interface SSOManager<A, D, L, B extends Batch> extends IdentifierFactory<
     SSO<A, D, L> findSSO(String ssoId);
 
     /**
+     * Searches for the sessions of the single sign on entry containing the specified session.
+     * @param sessionId a unique session identifier
+     * @return an existing sessions of an SSO, or null, if no SSO was found
+     */
+    Sessions<D> findSessionsContaining(String sessionId);
+
+    /**
      * A mechanism for starting/stopping a batch.
      * @return a batching mechanism.
      */
