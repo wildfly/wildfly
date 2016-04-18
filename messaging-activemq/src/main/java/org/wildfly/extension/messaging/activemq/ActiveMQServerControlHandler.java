@@ -38,6 +38,7 @@ import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.JournalType;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -70,13 +71,17 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
             .setStorageRuntime()
             .build();
 
+    public static final SimpleAttributeDefinition RUNTIME_JOURNAL_TYPE = create("runtime-journal-type", STRING)
+            .setStorageRuntime()
+            .build();
+
     public static final AttributeDefinition STARTED = new SimpleAttributeDefinition(CommonAttributes.STARTED, ModelType.BOOLEAN,
             false, AttributeAccess.Flag.STORAGE_RUNTIME);
 
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinition(CommonAttributes.VERSION, ModelType.STRING,
             true, AttributeAccess.Flag.STORAGE_RUNTIME);
 
-    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE };
+    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE, RUNTIME_JOURNAL_TYPE};
     public static final String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
 //    public static final String ENABLE_MESSAGE_COUNTERS = "enable-message-counters";
 //    public static final String DISABLE_MESSAGE_COUNTERS = "disable-message-counters";
@@ -358,6 +363,13 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         } else if (ACTIVE.getName().equals(name)) {
             boolean active = server != null ? server.isActive() : false;
             context.getResult().set(active);
+        } else if (RUNTIME_JOURNAL_TYPE.getName().equals(name)) {
+            if (server != null) {
+                // if the configured journal type is not supported (e.g. using ASYNCIO without having installed libaio),
+                // ActiveMQ will override its configuration to use the NIO journal type (that is available on any platform).
+                JournalType runtimeJournalType = server.getConfiguration().getJournalType();
+                context.getResult().set(runtimeJournalType.toString());
+            }
         } else {
             // Bug
             throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
