@@ -32,11 +32,12 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.FilterLocation;
+import org.wildfly.extension.undertow.UndertowFilter;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class FilterRef implements Service<FilterRef> {
+public class FilterRef implements Service<FilterRef>, UndertowFilter {
     private final Predicate predicate;
     private final int priority;
     private final InjectedValue<FilterService> filter = new InjectedValue<>();
@@ -49,12 +50,12 @@ public class FilterRef implements Service<FilterRef> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        location.getValue().addFilterRef(this);
+        location.getValue().addFilter(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        location.getValue().removeFilterRef(this);
+        location.getValue().removeFilter(this);
     }
 
     InjectedValue<FilterService> getFilter() {
@@ -69,6 +70,10 @@ public class FilterRef implements Service<FilterRef> {
         return filter.getValue().createHttpHandler(predicate, next);
     }
 
+    public Predicate getPredicate() {
+        return predicate;
+    }
+
     public int getPriority() {
         return priority;
     }
@@ -76,5 +81,10 @@ public class FilterRef implements Service<FilterRef> {
     @Override
     public FilterRef getValue() throws IllegalStateException {
         return this;
+    }
+
+    @Override
+    public HttpHandler wrap(HttpHandler handler) {
+        return filter.getValue().createHttpHandler(predicate, handler);
     }
 }
