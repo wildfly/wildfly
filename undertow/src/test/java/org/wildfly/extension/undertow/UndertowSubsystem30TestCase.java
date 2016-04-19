@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -43,6 +44,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -107,7 +109,7 @@ public class UndertowSubsystem30TestCase extends AbstractSubsystemBaseTest {
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
-        KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME)
+        KernelServicesBuilder builder = createKernelServicesBuilder(UndertowSubsystemTestCase.RUNTIME)
                 .setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
@@ -190,96 +192,9 @@ public class UndertowSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
     }
 
-    static final AdditionalInitialization DEFAULT = new DefaultInitialization();
-    static final AdditionalInitialization RUNTIME = new RuntimeInitialization();
-
-    private static class DefaultInitialization extends AdditionalInitialization {
-        protected final Map<String, Integer> sockets = new HashMap<>();
-
-        {
-            sockets.put("ajp", 8009);
-            sockets.put("http", 8080);
-            sockets.put("http-2", 8081);
-            sockets.put("https-non-default", 8433);
-            sockets.put("https-2", 8434);
-            sockets.put("ajps", 8010);
-        }
-
-        @Override
-        protected RunningMode getRunningMode() {
-            return RunningMode.ADMIN_ONLY;
-        }
-
-        @Override
-        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
-            super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
-            Map<String, Class> capabilities = new HashMap<>();
-            capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, ListenerResourceDefinition.WORKER.getDefaultValue().asString()), XnioWorker.class);
-            capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, "non-default"), XnioWorker.class);
-            capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, ListenerResourceDefinition.BUFFER_POOL.getDefaultValue().asString()), Pool.class);
-            for (String entry : sockets.keySet()) {
-                capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry), SocketBinding.class);
-            }
-            registerServiceCapabilities(capabilityRegistry, capabilities);
-
-        }
-    }
-
-
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return DEFAULT;
+        return UndertowSubsystemTestCase.DEFAULT;
     }
 
-    private static class RuntimeInitialization extends DefaultInitialization {
-        @Override
-        protected RunningMode getRunningMode() {
-            return RunningMode.NORMAL;
-        }
-
-        @Override
-        protected void setupController(ControllerInitializer controllerInitializer) {
-            super.setupController(controllerInitializer);
-
-            for (Map.Entry<String, Integer> entry : sockets.entrySet()) {
-                controllerInitializer.addSocketBinding(entry.getKey(), entry.getValue());
-            }
-        }
-
-        @Override
-        protected void addExtraServices(ServiceTarget target) {
-            super.addExtraServices(target);
-            target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
-            target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-            target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-
-            target.addService(IOServices.WORKER.append("default"), new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-
-            target.addService(IOServices.WORKER.append("non-default"), new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-
-            target.addService(IOServices.BUFFER_POOL.append("default"), new BufferPoolService(2048, 2048, true))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-            //ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default", InetSocketAddress.createUnresolved("localhost",8080));
-            target.addService(HttpListenerAdd.REGISTRY_SERVICE_NAME, new HttpListenerRegistryService())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-
-            target.addService(SecurityRealm.ServiceUtil.createServiceName("UndertowRealm"), new SecurityRealmService("UndertowRealm", false))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-            target.addService(SecurityRealm.ServiceUtil.createServiceName("other"), new SecurityRealmService("other", false))
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
-
-        }
-    }
 }
