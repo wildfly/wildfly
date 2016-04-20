@@ -288,14 +288,19 @@
                 a new thread is created.  Otherwise, the task is placed in queue.  If too many tasks are allowed to be
                 submitted to this type of executor, an out of memory condition may occur.
 
-                The "name" attribute is the name of the created executor.
+                Warning: the current implementation of the thread pool can not be reduce to its core size, and thus
+                core size is de facto equals to max-threads. This behavior however will be implemented in future version.
 
-                The "max-threads" attribute must be used to specify the thread pool size.  The nested
+                The "max-threads" attribute must be used to specify the thread pool size. The nested
                 "keepalive-time" element may used to specify the amount of time that pool threads should
-                be kept running when idle; if not specified, threads will run until the executor is shut down.
+                be kept running when idle; if not specified, threads will run until the executor is shut down. (however
+                this behavior is not yet implemented, so this attribute is currently not used).
+
                 The "thread-factory" element specifies the bean name of a specific threads subsystem thread factory to
                 use to create worker threads. Usually it will not be set for an EJB3 thread pool and an appropriate
                 default thread factory will be used.
+
+                The "name" attribute is the name of the created executor.
             ]]>
             </xs:documentation>
         </xs:annotation>
