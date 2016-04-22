@@ -63,7 +63,7 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
     public static void setup() throws Exception {
 
         CLITestSuite.createSupport(DomainDeployWithRuntimeNameTestCase.class.getSimpleName());
-        List<String> groups = new ArrayList(CLITestSuite.serverGroups.keySet());
+        List<String> groups = new ArrayList<>(CLITestSuite.serverGroups.keySet());
         Collections.sort(groups);
         serverGroups = groups.toArray(new String[groups.size()]);
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);

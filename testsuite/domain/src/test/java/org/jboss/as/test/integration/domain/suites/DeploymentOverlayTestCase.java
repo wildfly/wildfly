@@ -30,11 +30,12 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.impl.client.HttpClients;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Assert;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.as.cli.Util;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -306,11 +307,11 @@ public class DeploymentOverlayTestCase {
         ModelNode socketBinding = validateResponse(client.execute(op));
 
         URL url = new URL("http",
-                org.jboss.as.arquillian.container.NetworkUtils.formatPossibleIpv6Address(socketBinding.get("bound-address").asString()),
+                TestSuiteEnvironment.formatPossibleIpv6Address(socketBinding.get("bound-address").asString()),
                 socketBinding.get("bound-port").asInt(),
                 "/test/");
         HttpGet get = new HttpGet(url.toURI());
-        HttpClient httpClient = new DefaultHttpClient();
+        HttpClient httpClient = HttpClients.createDefault();
         HttpResponse response = httpClient.execute(get);
         return getContent(response);
     }
