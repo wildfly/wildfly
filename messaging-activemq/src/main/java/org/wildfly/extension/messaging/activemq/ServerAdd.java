@@ -449,7 +449,7 @@ class ServerAdd extends AbstractAddStepHandler {
             String className = classModel.get(NAME).asString();
             String moduleName = classModel.get(MODULE).asString();
             try {
-                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
                 Module module = Module.getCallerModuleLoader().loadModule(moduleID);
                 Class<?> clazz = module.getClassLoader().loadClass(className);
                 classes.add(clazz);

@@ -93,7 +93,7 @@ class JMSBridgeService implements Service<JMSBridge> {
     public void startBridge() throws Exception {
         final Module module;
         if (moduleName != null) {
-            ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+            ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
             module =  Module.getContextModuleLoader().loadModule(moduleID);
         } else {
             module = Module.forClass(JMSBridgeService.class);
