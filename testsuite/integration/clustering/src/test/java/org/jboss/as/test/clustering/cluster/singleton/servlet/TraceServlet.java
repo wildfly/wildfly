@@ -48,8 +48,7 @@ public class TraceServlet extends HttpServlet {
     }
 
     @Override
-    protected void doTrace(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.log(request.getRequestURI());
-        super.doTrace(request, response);
     }
 }
