@@ -198,9 +198,10 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     }
                     if (!found) {
                         UndertowLogger.ROOT_LOGGER.invalidAbsoluteOrdering(orderingElementMetaData.getName());
+                    } else {
+                        i++;
                     }
                 }
-                i++;
             }
             if (otherPos >= 0) {
                 order.addAll(otherPos, jarsSet);
