@@ -46,6 +46,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -65,6 +66,12 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
 
     public static final JaxrsDeploymentDefinition DEPLOYMENT_INSTANCE = new JaxrsDeploymentDefinition(true);
     public static final JaxrsDeploymentDefinition SUBSYSTEM_INSTANCE = new JaxrsDeploymentDefinition(false);
+    private static final SimpleOperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, JaxrsExtension.getResolver())
+                .setEntryType( OperationEntry.EntryType.PRIVATE)
+                .build();
+    private static final SimpleOperationDefinition REMOVE_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, JaxrsExtension.getResolver())
+                .setEntryType( OperationEntry.EntryType.PRIVATE)
+                .build();
 
     public static final String SHOW_RESOURCES = "show-resources";
     public static final AttributeDefinition CLASSNAME
@@ -78,16 +85,17 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
     public static final ObjectTypeAttributeDefinition JAXRS_RESOURCE
             = new ObjectTypeAttributeDefinition.Builder("jaxrs-resource", CLASSNAME, PATH, METHODS).setStorageRuntime().build();
 
-    private boolean showResources;
+    private final boolean showResources;
     private JaxrsDeploymentDefinition(boolean showResources) {
-         super(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver(), JaxrsSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+         super(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver());
          this.showResources = showResources;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+        resourceRegistration.registerOperationHandler(ADD_DEFINITION, JaxrsSubsystemAdd.INSTANCE);
+        resourceRegistration.registerOperationHandler(REMOVE_DEFINITION, ReloadRequiredRemoveStepHandler.INSTANCE);
         if(showResources) {
             resourceRegistration.registerOperationHandler(ShowJaxrsResourcesHandler.DEFINITION, new ShowJaxrsResourcesHandler());
         }
