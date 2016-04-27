@@ -129,7 +129,11 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
         private String formatMethod(ResourceMethodInvoker resource, String servletMapping, String path, String contextRootPath) {
             StringBuilder builder = new StringBuilder();
             builder.append("%1$s ");
-            builder.append(contextRootPath).append('/').append(servletMapping.replaceAll("\\*", "")).append(path);
+            String servletPath = servletMapping.replaceAll("\\*", "");
+            if(servletPath.charAt(0) == '/') {
+                servletPath = servletPath.substring(1);
+            }
+            builder.append(contextRootPath).append('/').append(servletPath).append(path);
             builder.append(" - ").append(resource.getResourceClass().getCanonicalName()).append('.').append(resource.getMethod().getName()).append('(');
             if (resource.getMethod().getParameterTypes().length > 0) {
                 builder.append("...");
