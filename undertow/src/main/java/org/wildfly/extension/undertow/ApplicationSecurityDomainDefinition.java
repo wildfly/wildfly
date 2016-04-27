@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
+import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -74,6 +77,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
+import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
@@ -322,11 +326,26 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
         private HttpHandler initialSecurityHandler(final DeploymentInfo deploymentInfo, HttpHandler toWrap, ScopeSessionListener scopeSessionListener) {
+            HashMap<Scope, Function<HttpServerExchange, HttpScope>> scopeResolvers = new HashMap<>();
+
+            scopeResolvers.put(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope);
+
             return ElytronContextAssociationHandler.builder()
                     .setNext(toWrap)
                     .setMechanismSupplier(() -> getAuthenticationMechanisms(() -> desiredMechanisms(deploymentInfo)))
-                    .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
-                    .setScopeSessionListener(scopeSessionListener)
+                    .setHttpExchangeSupplier(httpServerExchange -> new ElytronHttpExchange(httpServerExchange, scopeResolvers, scopeSessionListener) {
+                        @Override
+                        protected SessionManager getSessionManager() {
+                            ServletRequestContext servletRequestContext = httpServerExchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+                            return servletRequestContext.getDeployment().getSessionManager();
+                        }
+
+                        @Override
+                        protected SessionConfig getSessionConfig() {
+                            ServletRequestContext servletRequestContext = httpServerExchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+                            return servletRequestContext.getCurrentServletContext().getSessionConfig();
+                        }
+                    })
                     .build();
         }
 
