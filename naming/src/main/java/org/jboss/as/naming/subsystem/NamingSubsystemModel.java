@@ -44,6 +44,7 @@ public interface NamingSubsystemModel {
 
     String MODULE = "module";
 
+    String REBIND = "rebind";
     String REMOTE_NAMING = "remote-naming";
 
     String SIMPLE = "simple";
