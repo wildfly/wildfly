@@ -24,13 +24,11 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.wildfly.clustering.web.session.SessionMetaData;
-
 /**
  * Composite view of the meta data of a session, combining volatile and static aspects.
  * @author Paul Ferraro
  */
-public class SimpleSessionMetaData extends AbstractImmutableSessionMetaData implements SessionMetaData {
+public class SimpleSessionMetaData extends AbstractImmutableSessionMetaData implements InvalidatableSessionMetaData {
 
     private final SessionCreationMetaData creationMetaData;
     private final SessionAccessMetaData accessMetaData;
@@ -44,6 +42,16 @@ public class SimpleSessionMetaData extends AbstractImmutableSessionMetaData impl
     public boolean isNew() {
         // We can implement this more efficiently than the super implementation
         return this.accessMetaData.getLastAccessedDuration().isZero();
+    }
+
+    @Override
+    public boolean isValid() {
+        return this.creationMetaData.isValid();
+    }
+
+    @Override
+    public boolean invalidate() {
+        return this.creationMetaData.invalidate();
     }
 
     @Override
