@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,31 +30,36 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-public class CoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
-    private static final String DEPLOYMENT_NAME = "coarse-distributable.war";
+/**
+ * @author Radoslav Husar
+ * @version April 2012
+ */
+public class ConcurrentFineWebFailoverTestCase extends AbstractWebFailoverTestCase {
+    private static final String DEPLOYMENT_NAME = "fine-concurrent-distributable.war";
 
-    public CoarseWebFailoverTestCase() {
+    public ConcurrentFineWebFailoverTestCase() {
         super(DEPLOYMENT_NAME);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        return getDeployment();
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        return getDeployment();
+        return createDeployment();
     }
 
-    private static Archive<?> getDeployment() {
+    private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_concurrent_fine.xml", "jboss-web.xml");
         return war;
     }
 }

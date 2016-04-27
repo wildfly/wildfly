@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
@@ -76,6 +75,7 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
     @Override
     public void close() {
         if (this.metaData.isValid()) {
+            this.attributes.close();
             this.metaData.setLastAccessedTime(Instant.now());
         }
     }

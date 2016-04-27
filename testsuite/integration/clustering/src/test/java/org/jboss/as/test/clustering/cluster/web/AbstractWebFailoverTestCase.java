@@ -53,11 +53,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTestCase {
+public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCase {
 
     private final String deploymentName;
 
-    protected ClusteredWebFailoverAbstractCase(String deploymentName) {
+    protected AbstractWebFailoverTestCase(String deploymentName) {
         this.deploymentName = deploymentName;
     }
 

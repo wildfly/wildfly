@@ -22,13 +22,15 @@
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.infinispan.commons.marshall.NotSerializableException;
+import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
-import org.wildfly.clustering.web.session.SessionAttributes;
+import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
 
 /**
  * Exposes session attributes for a coarse granularity session.
@@ -36,6 +38,7 @@ import org.wildfly.clustering.web.session.SessionAttributes;
  */
 public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
     private final Map<String, Object> attributes;
+    private final Set<String> mutations;
     private final Mutator mutator;
     private final MarshallingContext context;
     private final CacheProperties properties;
@@ -43,6 +46,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context, CacheProperties properties) {
         super(attributes);
         this.attributes = attributes;
+        this.mutations = !properties.isTransactional() ? new ConcurrentHashSet<>() : null;
         this.mutator = mutator;
         this.context = context;
         this.properties = properties;
@@ -52,6 +56,9 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     public Object removeAttribute(String name) {
         Object value = this.attributes.remove(name);
         this.mutator.mutate();
+        if (this.mutations != null) {
+            this.mutations.remove(name);
+        }
         return value;
     }
 
@@ -65,15 +72,29 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
         }
         Object old = this.attributes.put(name, value);
         this.mutator.mutate();
+        if (this.mutations != null) {
+            this.mutations.remove(name);
+        }
         return old;
     }
 
     @Override
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
-        if (this.properties.isTransactional() && MutableDetector.isMutable(value)) {
-            this.mutator.mutate();
+        if (MutableDetector.isMutable(value)) {
+            if (this.mutations != null) {
+                this.mutations.add(name);
+            } else {
+                this.mutator.mutate();
+            }
         }
         return value;
+    }
+
+    @Override
+    public void close() {
+        if ((this.mutations != null) && !this.mutations.isEmpty()) {
+            this.mutator.mutate();
+        }
     }
 }

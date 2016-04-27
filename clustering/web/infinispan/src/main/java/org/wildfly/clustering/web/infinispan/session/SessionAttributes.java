@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,10 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.ee.infinispan.Creator;
-import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.Locator;
-import org.wildfly.clustering.ee.infinispan.Remover;
-import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
-
 /**
  * @author Paul Ferraro
  */
-public interface SessionAttributesFactory<V> extends Creator<String, V, Void>, Locator<String, V>, Remover<String>, Evictor<String> {
-    SessionAttributes createSessionAttributes(String id, V value);
-    ImmutableSessionAttributes createImmutableSessionAttributes(String id, V value);
+public interface SessionAttributes extends org.wildfly.clustering.web.session.SessionAttributes, AutoCloseable {
+    @Override
+    void close();
 }

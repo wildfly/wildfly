@@ -37,9 +37,9 @@ import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.web.session.SessionAttributes;
 
 /**
  * {@link SessionAttributesFactory} for coarse granularity sessions, where all session attributes are stored in a single cache entry.
