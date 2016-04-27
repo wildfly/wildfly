@@ -32,5 +32,6 @@ public interface POJOServiceMBean {
     boolean getCreateCalled();
     boolean getDestroyCalled();
     int getCount();
+    int getInjectedCount();
     
 }
