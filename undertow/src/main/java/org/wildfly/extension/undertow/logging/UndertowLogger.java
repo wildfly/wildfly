@@ -343,4 +343,13 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 80, value = "Valves are no longer supported, %s is not activated.")
     void unsupportedValveFeature(String valve);
 
+    @Message(id = 81, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
+    IllegalStateException noMechanismsAvailable();
+
+    @Message(id = 82, value = "The required mechanism '%s' is not available from the HttpAuthenticationFactory.")
+    IllegalStateException requiredMechanismNotAvailable(String mechanismName);
+
+    @Message(id = 83, value = "No authentication mechanisms have been selected.")
+    IllegalStateException noMechanismsSelected();
+
 }

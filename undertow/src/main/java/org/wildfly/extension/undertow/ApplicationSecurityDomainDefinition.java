@@ -22,12 +22,9 @@
 
 package org.wildfly.extension.undertow;
 
-import static io.undertow.UndertowLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,13 +36,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
-import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -89,6 +83,8 @@ import org.wildfly.security.http.Scope;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
+import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionManager;
 import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
@@ -288,17 +284,6 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return registration;
         }
 
-        private List<String> desiredMechanisms(DeploymentInfo deploymentInfo) {
-            if (overrideDeploymentConfig) {
-                return new ArrayList<>(httpAuthenticationFactory.getMechanismNames());
-            } else {
-                final LoginConfig loginConfig = deploymentInfo.getLoginConfig();
-                final List<AuthMethodConfig> authMethods = loginConfig == null ? Collections.<AuthMethodConfig>emptyList() : loginConfig.getAuthMethods();
-                return authMethods.stream().map(c -> c.getName())
-                        .collect(Collectors.toList());
-            }
-        }
-
         private HttpServerAuthenticationMechanism createMechanism(final String name) {
             try {
                 return httpAuthenticationFactory.createMechanism(name);
@@ -306,33 +291,41 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 throw new IllegalStateException(e);
             }
         }
-        private List<HttpServerAuthenticationMechanism> getAuthenticationMechanisms(Supplier<List<String>> mechanismNames) {
-            return mechanismNames.get().stream().map(this::createMechanism).collect(Collectors.toList());
-        }
-
-        private InputStream getResource(DeploymentInfo deploymentInfo, String path) {
-            try {
-                io.undertow.server.handlers.resource.Resource resource = deploymentInfo.getResourceManager().getResource(path);
-                if (resource != null) {
-                    File file = resource.getFile();
-                    if (file != null) {
-                        return new FileInputStream(file);
-                    }
-                }
-            } catch (IOException e) {
-                ROOT_LOGGER.debug(e);
-            }
-            return null;
+        private List<HttpServerAuthenticationMechanism> getAuthenticationMechanisms(List<String> mechanismNames) {
+            return mechanismNames.stream().map(this::createMechanism).filter(m -> m != null).collect(Collectors.toList());
         }
 
         private HttpHandler initialSecurityHandler(final DeploymentInfo deploymentInfo, HttpHandler toWrap, ScopeSessionListener scopeSessionListener) {
+            final Collection<String> availableMechanisms = httpAuthenticationFactory.getMechanismNames();
+            if (availableMechanisms.isEmpty()) {
+                throw ROOT_LOGGER.noMechanismsAvailable();
+            }
+
+            final List<String> selectedMechanisms;
+            if (overrideDeploymentConfig) {
+                selectedMechanisms = new ArrayList<>(availableMechanisms);
+            } else {
+                final LoginConfig loginConfig = deploymentInfo.getLoginConfig();
+                final List<AuthMethodConfig> authMethods = loginConfig == null ? Collections.<AuthMethodConfig> emptyList() : loginConfig.getAuthMethods();
+                if (authMethods.isEmpty()) {
+                    throw ROOT_LOGGER.noMechanismsSelected();
+                }
+                selectedMechanisms = authMethods.stream().map(c -> {
+                    String name = c.getName();
+                    if (availableMechanisms.contains(name) == false) {
+                        throw ROOT_LOGGER.requiredMechanismNotAvailable(name);
+                    }
+                    return name;
+                }).collect(Collectors.toList());
+            }
+
             HashMap<Scope, Function<HttpServerExchange, HttpScope>> scopeResolvers = new HashMap<>();
 
             scopeResolvers.put(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope);
 
             return ElytronContextAssociationHandler.builder()
                     .setNext(toWrap)
-                    .setMechanismSupplier(() -> getAuthenticationMechanisms(() -> desiredMechanisms(deploymentInfo)))
+                    .setMechanismSupplier(() -> getAuthenticationMechanisms(selectedMechanisms))
                     .setHttpExchangeSupplier(httpServerExchange -> new ElytronHttpExchange(httpServerExchange, scopeResolvers, scopeSessionListener) {
                         @Override
                         protected SessionManager getSessionManager() {
