@@ -23,13 +23,13 @@ package org.jboss.as.test.integration.web.suspend;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -42,8 +42,11 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests for suspend/resume functionality in the web subsystem
@@ -65,6 +68,12 @@ public class WebSuspendTestCase {
         war.addPackage(HttpRequest.class.getPackage());
         war.addClass(TestSuiteEnvironment.class);
         war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("management.address", "read"),
+                new PropertyPermission("node0", "read"),
+                // executorService.shutdown() needs the following permission
+                new RuntimePermission("modifyThread")),
+                "permissions.xml");
         return war;
     }
 
