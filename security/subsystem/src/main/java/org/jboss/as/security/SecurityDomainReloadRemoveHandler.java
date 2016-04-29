@@ -38,6 +38,14 @@ public class SecurityDomainReloadRemoveHandler extends RestartParentResourceRemo
     }
 
     @Override
+    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        // verify that the resource exist before removing it
+        context.readResource(PathAddress.EMPTY_ADDRESS, false);
+
+        super.updateModel(context, operation);
+    }
+
+    @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
         String domainName = parentAddress.getLastElement().getValue();
         SecurityDomainAdd.INSTANCE.launchServices(context, domainName, parentModel);
