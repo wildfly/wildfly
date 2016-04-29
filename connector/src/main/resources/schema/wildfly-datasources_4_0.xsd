@@ -1033,8 +1033,9 @@
       <xs:annotation>
         <xs:documentation>
           <![CDATA[[
-            Specifies the name of AS7 module providing this driver.
-            Thios tag is not used in IronJacamar standalone container.
+            Specifies the name of JBoss module providing this driver.
+            Module slot can be optionally specified by suffixing the module with ':' followed by the actual slot.
+            This tag is not used in IronJacamar standalone container.
            ]]>
         </xs:documentation>
       </xs:annotation>
