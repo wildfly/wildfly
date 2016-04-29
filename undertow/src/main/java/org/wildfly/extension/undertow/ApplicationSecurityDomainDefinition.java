@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
+import static org.wildfly.security.http.HttpConstants.CONFIG_LOGIN_PAGE;
+import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
+import static org.wildfly.security.http.HttpConstants.CONFIG_REALM;
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
@@ -32,7 +36,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -79,6 +85,7 @@ import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 import org.wildfly.security.http.Scope;
+import org.wildfly.security.http.util.PropertiesServerMechanismFactory;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -284,15 +291,18 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return registration;
         }
 
-        private HttpServerAuthenticationMechanism createMechanism(final String name) {
-            try {
-                return httpAuthenticationFactory.createMechanism(name);
-            } catch (HttpAuthenticationException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-        private List<HttpServerAuthenticationMechanism> getAuthenticationMechanisms(List<String> mechanismNames) {
-            return mechanismNames.stream().map(this::createMechanism).filter(m -> m != null).collect(Collectors.toList());
+        private List<HttpServerAuthenticationMechanism> getAuthenticationMechanisms(Map<String, Map<String, String>> selectedMechanisms) {
+            List<HttpServerAuthenticationMechanism> mechanisms = new ArrayList<>(selectedMechanisms.size());
+            selectedMechanisms.forEach((n, c) -> {
+                try {
+                    HttpServerAuthenticationMechanism mechanism =  httpAuthenticationFactory.createMechanism(n, (f) -> new PropertiesServerMechanismFactory(f, c));
+                    if (mechanism!= null) mechanisms.add(mechanism);
+                } catch (HttpAuthenticationException e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+
+            return mechanisms;
         }
 
         private HttpHandler initialSecurityHandler(final DeploymentInfo deploymentInfo, HttpHandler toWrap, ScopeSessionListener scopeSessionListener) {
@@ -301,22 +311,46 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 throw ROOT_LOGGER.noMechanismsAvailable();
             }
 
-            final List<String> selectedMechanisms;
+            Map<String, String> tempBaseConfiguration = new HashMap<>();
+            tempBaseConfiguration.put(CONFIG_CONTEXT_PATH, deploymentInfo.getContextPath());
+
+            LoginConfig loginConfig = deploymentInfo.getLoginConfig();
+            if (loginConfig != null) {
+                String realm = loginConfig.getRealmName();
+                if (realm != null) tempBaseConfiguration.put(CONFIG_REALM, realm);
+                String loginPage = loginConfig.getLoginPage();
+                if (loginPage != null) tempBaseConfiguration.put(CONFIG_LOGIN_PAGE, loginPage);
+                String errorPage = loginConfig.getErrorPage();
+                if (errorPage != null) tempBaseConfiguration.put(CONFIG_ERROR_PAGE, errorPage);
+            }
+            final Map<String, String> baseConfiguration = Collections.unmodifiableMap(tempBaseConfiguration);
+
+            final Map<String, Map<String, String>> selectedMechanisms = new LinkedHashMap<>();
             if (overrideDeploymentConfig) {
-                selectedMechanisms = new ArrayList<>(availableMechanisms);
+                final Map<String, String> mechanismConfiguration = baseConfiguration;
+                availableMechanisms.forEach(n -> selectedMechanisms.put(n, mechanismConfiguration));
             } else {
-                final LoginConfig loginConfig = deploymentInfo.getLoginConfig();
                 final List<AuthMethodConfig> authMethods = loginConfig == null ? Collections.<AuthMethodConfig> emptyList() : loginConfig.getAuthMethods();
                 if (authMethods.isEmpty()) {
                     throw ROOT_LOGGER.noMechanismsSelected();
                 }
-                selectedMechanisms = authMethods.stream().map(c -> {
+                authMethods.forEach(c -> {
                     String name = c.getName();
                     if (availableMechanisms.contains(name) == false) {
                         throw ROOT_LOGGER.requiredMechanismNotAvailable(name);
                     }
-                    return name;
-                }).collect(Collectors.toList());
+
+                    Map<String, String> mechanismConfiguration;
+                    Map<String, String> additionalProperties = c.getProperties();
+                    if (additionalProperties != null) {
+                        mechanismConfiguration = new HashMap<>(baseConfiguration);
+                        mechanismConfiguration.putAll(additionalProperties);
+                        mechanismConfiguration = Collections.unmodifiableMap(mechanismConfiguration);
+                    } else {
+                        mechanismConfiguration = baseConfiguration;
+                    }
+                    selectedMechanisms.put(name, mechanismConfiguration);
+                });
             }
 
             HashMap<Scope, Function<HttpServerExchange, HttpScope>> scopeResolvers = new HashMap<>();
