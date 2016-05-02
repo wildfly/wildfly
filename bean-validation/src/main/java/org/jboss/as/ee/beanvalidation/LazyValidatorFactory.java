@@ -123,6 +123,9 @@ public class LazyValidatorFactory implements ValidatorFactory {
 
     @Override
     public void close() {
-        getDelegate().close();
+        // Avoid initializing delegate if closing it
+        if (delegate != null) {
+            getDelegate().close();
+        }
     }
 }
