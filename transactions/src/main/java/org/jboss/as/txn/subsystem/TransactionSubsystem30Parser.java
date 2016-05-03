@@ -48,6 +48,10 @@ class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
         super(Namespace.TRANSACTIONS_3_0);
     }
 
+    TransactionSubsystem30Parser(Namespace namespace) {
+        super(namespace);
+    }
+
     @Override
     protected void readElement(final XMLExtendedStreamReader reader, final Element element, final List<ModelNode> operations, final ModelNode subsystemOperation, final ModelNode logStoreOperation) throws XMLStreamException {
         switch (element) {
