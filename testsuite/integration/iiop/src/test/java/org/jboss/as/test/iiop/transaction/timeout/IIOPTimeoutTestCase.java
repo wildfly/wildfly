@@ -42,6 +42,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,6 +82,7 @@ public class IIOPTimeoutTestCase {
     }
 
     @Test
+    @Ignore("JBEAP-4526")
     public void noTimeoutStateless() throws Exception {
         TestBeanRemote bean = lookupStateless();
 
@@ -99,6 +101,7 @@ public class IIOPTimeoutTestCase {
      * <a href="https://access.redhat.com/solutions/645963">https://access.redhat.com/solutions/645963</a>
      */
     @Test
+    @Ignore("JBEAP-4526")
     public void timeoutStateless() throws Exception {
         TestBeanRemote bean = lookupStateless();
 
@@ -126,6 +129,7 @@ public class IIOPTimeoutTestCase {
     }
 
     @Test
+    @Ignore("JBEAP-4526")
     public void noTimeoutStateful() throws Exception {
         TestBeanRemote bean = lookupStateful();
 
@@ -139,6 +143,7 @@ public class IIOPTimeoutTestCase {
     }
 
     @Test
+    @Ignore("JBEAP-4526")
     public void timeoutStateful() throws Exception {
         TestBeanRemote bean = lookupStateful();
         
