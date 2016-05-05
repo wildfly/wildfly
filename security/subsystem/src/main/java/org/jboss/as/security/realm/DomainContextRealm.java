@@ -32,6 +32,7 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.wildfly.security.auth.principal.NamePrincipal;
+import org.wildfly.security.auth.server.IdentityLocator;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityRealm;
@@ -83,9 +84,8 @@ public class DomainContextRealm implements SecurityRealm {
     }
 
     @Override
-    public RealmIdentity getRealmIdentity(String name, Principal principal, Evidence evidence)
-            throws RealmUnavailableException {
-        return new PicketBoxBasedIdentity(name);
+    public RealmIdentity getRealmIdentity(IdentityLocator locator) throws RealmUnavailableException {
+        return new PicketBoxBasedIdentity(locator.getName());
     }
 
     @Override
@@ -174,11 +174,5 @@ public class DomainContextRealm implements SecurityRealm {
                 attributes = Attributes.EMPTY;
             return AuthorizationIdentity.basicIdentity(attributes);
         }
-
-        @Override
-        public boolean createdBySecurityRealm(SecurityRealm securityRealm) {
-            return securityRealm == DomainContextRealm.this;
-        }
-
     }
 }
