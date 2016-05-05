@@ -109,7 +109,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     private boolean remove(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        if (this.properties.isLockOnWrite() && creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
+        if (!this.properties.isLockOnWrite() || creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
             creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(key);
             this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAccessMetaDataKey(id));
             return true;
