@@ -114,21 +114,19 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     public V get(K id) {
         Batcher<Batch> batcher = this.manager.getBatcher();
         boolean transactional = (this.tsr.getTransactionKey() != null);
+        // Batch may already be associated with this tx
+        Batch existingBatch = transactional ? (Batch) this.tsr.getResource(Batch.class) : null;
         // Batch is not closed here - it will be closed during release(...) or discard(...)
-        Batch batch = null;
-        if (transactional) {
-            // Batch may already be associated with this tx
-            batch = (Batch) this.tsr.getResource(Batch.class);
-        }
-        if (batch == null) {
-            batch = batcher.createBatch();
-            if (transactional) {
-                // Leverage TSR to propagate Batch reference across calls to Cache.get(...) by different threads for the same tx
-                this.tsr.putResource(Batch.class, batch);
-            }
+        Batch batch = (existingBatch == null) ? batcher.createBatch() : existingBatch;
+        if (transactional && (existingBatch == null)) {
+            // Leverage TSR to propagate Batch reference across calls to Cache.get(...) by different threads for the same tx
+            this.tsr.putResource(Batch.class, batch);
         }
         // Batch is not closed here - it will be closed during release(...) or discard(...)
         try (BatchContext context = transactional ? batcher.resumeBatch(batch) : null) {
+            if (existingBatch != null) {
+                batch = batcher.createBatch();
+            }
             Bean<K, V> bean = this.manager.findBean(id);
             if (bean == null) {
                 batch.close();
