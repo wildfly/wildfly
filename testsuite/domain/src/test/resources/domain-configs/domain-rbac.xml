@@ -44,6 +44,7 @@
         <extension module="org.jboss.as.weld"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
     </extensions>
 
@@ -117,6 +118,13 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
+                <deployment-permissions>
+                    <maximum-set>
+                        <permission class="java.security.AllPermission"/>
+                    </maximum-set>
+                </deployment-permissions>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
                     <security-domain name="other" cache-type="default">
@@ -209,6 +217,13 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
+                <deployment-permissions>
+                    <maximum-set>
+                        <permission class="java.security.AllPermission"/>
+                    </maximum-set>
+                </deployment-permissions>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
                     <security-domain name="other" cache-type="default">
@@ -301,6 +316,13 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
+                <deployment-permissions>
+                    <maximum-set>
+                        <permission class="java.security.AllPermission"/>
+                    </maximum-set>
+                </deployment-permissions>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
                     <security-domain name="other" cache-type="default">
