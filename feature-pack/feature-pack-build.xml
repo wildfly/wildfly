@@ -39,24 +39,28 @@
                 subsystems="configuration/standalone/subsystems-ha.xml"
                 output-file="standalone/configuration/standalone-ha.xml">
             <property name="jgroups.supplement" value="" />
+            <property name="mod_cluster.supplement" value="" />
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="standalone/configuration/standalone-full-ha.xml">
             <property name="jgroups.supplement" value="" />
+            <property name="mod_cluster.supplement" value="" />
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="docs/examples/configs/standalone-ec2-full-ha.xml">
             <property name="jgroups.supplement" value="ec2" />
+            <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-ha.xml"
                 output-file="docs/examples/configs/standalone-ec2-ha.xml">
             <property name="jgroups.supplement" value="ec2" />
+            <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
         <!-- azure.AZURE_PING -->
         <standalone
@@ -64,12 +68,14 @@
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="docs/examples/configs/standalone-azure-full-ha.xml">
             <property name="jgroups.supplement" value="azure"/>
+            <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-ha.xml"
                 output-file="docs/examples/configs/standalone-azure-ha.xml">
             <property name="jgroups.supplement" value="azure"/>
+            <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
         <!-- TCPGOSSIP -->
         <standalone
@@ -77,12 +83,14 @@
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="docs/examples/configs/standalone-gossip-full-ha.xml">
             <property name="jgroups.supplement" value="gossip" />
+            <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-ha.xml"
                 output-file="docs/examples/configs/standalone-gossip-ha.xml">
             <property name="jgroups.supplement" value="gossip" />
+            <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
