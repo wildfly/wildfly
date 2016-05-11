@@ -1,14 +1,6 @@
 #!/bin/bash
-### ====================================================================== ###
-##                                                                          ##
-##  This is the main entry point for the build system.                      ##
-##                                                                          ##
-##  Users should execute this file rather than 'mvn' to ensure              ##
-##  the correct version is being used with the correct configuration.       ##
-##                                                                          ##
-### ====================================================================== ###
 
-# $Id: build.sh 105735 2010-06-04 19:45:13Z pgier $
+# Shell script to run the integration tests
 
 PROGNAME=`basename $0`
 DIRNAME=`dirname $0`
