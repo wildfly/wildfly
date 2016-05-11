@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.messaging.activemq.deployment;
+package org.wildfly.extension.messaging.activemq.deployment.injection;
 
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
