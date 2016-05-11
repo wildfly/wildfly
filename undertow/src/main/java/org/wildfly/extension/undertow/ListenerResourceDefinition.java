@@ -32,12 +32,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import io.undertow.UndertowOptions;
+import io.undertow.server.ConnectorStatistics;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -52,11 +56,9 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.xnio.Options;
-
-import io.undertow.UndertowOptions;
-import io.undertow.server.ConnectorStatistics;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -228,7 +230,16 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
+        // DO NOT call super, as we need non-standard handling for enabled
+
+        Collection<AttributeDefinition> ads = getAttributes();
+        OperationStepHandler rrh = new ReloadRequiredWriteAttributeHandler(ads); // we include ENABLED in this set, but it doesn't matter we don't register rrh for it
+        OperationStepHandler enh = new EnabledAttributeHandler();
+        for (AttributeDefinition ad : ads) {
+            OperationStepHandler osh = ad == ENABLED ? enh : rrh;
+            resourceRegistration.registerReadWriteAttribute(ad, null, osh);
+        }
+
         for(ConnectorStat attr : ConnectorStat.values()) {
             resourceRegistration.registerMetric(attr.definition, ReadStatisticHandler.INSTANCE);
         }
@@ -292,5 +303,47 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerCapability(LISTENER_CAPABILITY);
+    }
+
+    private static class EnabledAttributeHandler extends AbstractWriteAttributeHandler<Boolean> {
+        @Override
+        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
+
+            final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
+
+            boolean enabled = resolvedValue.asBoolean();
+            // We don't try and analyze currentValue to see if we were already enabled, as the resolution result
+            // may be different now than it was before (different system props, or vault contents)
+            // Instead we consider the previous setting to be enabled if the service Mode != Mode.NEVER
+            final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
+            boolean currentEnabled = controller.getMode() != ServiceController.Mode.NEVER;
+
+            if (enabled) {
+                if (!currentEnabled) {
+                    // It's safe to enable
+                    controller.setMode(ServiceController.Mode.ACTIVE);
+                }
+                // Pass the current setting into the handback so it knows whether or not to revert anything
+                handbackHolder.setHandback(currentEnabled);
+                return false;
+            } else if (currentEnabled) {
+                // going from enabled to disabled requires reload
+                return true;
+            } else {
+                // tell revertUpdateToRuntime it doesn't need to revert anything since we did nothing
+                handbackHolder.setHandback(true);
+                return false;
+            }
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
+            if (handback != null && !handback) {
+                // applyUpdateToRuntime changed from disabled to enabled
+                final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
+                context.getServiceRegistry(true).getRequiredService(listenerServiceName).setMode(ServiceController.Mode.NEVER);
+            } // else applyUpdateToRuntime did nothing as the service was already in the desired state
+              // So we do nothing as well
+        }
     }
 }
