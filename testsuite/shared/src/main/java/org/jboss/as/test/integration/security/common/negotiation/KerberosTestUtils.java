@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.security.common.negotiation;
 
 import static org.jboss.as.test.integration.security.common.Utils.IBM_JDK;
-import static org.jboss.as.test.integration.security.common.Utils.OPEN_JDK;
 import static org.jboss.as.test.integration.security.common.Utils.ORACLE_JDK;
 
 import java.io.ByteArrayInputStream;
@@ -88,18 +87,8 @@ public final class KerberosTestUtils {
                     "Kerberos tests are not supported on IBM Java with IPv6. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1188632");
         }
         if (isIPv6Hostname(hostName)) {
-            if (IBM_JDK && SystemUtils.IS_JAVA_1_7) {
-                throw new AssumptionViolatedException(
-                        "Kerberos tests are not supported on IBM Java 7 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1185917");
-            }
-            if (IBM_JDK && SystemUtils.IS_JAVA_1_6) {
-                throw new AssumptionViolatedException(
-                        "Kerberos tests are not supported on IBM Java 6 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1186129");
-            }
-            if (OPEN_JDK && SystemUtils.IS_JAVA_1_6) {
-                throw new AssumptionViolatedException(
-                        "Kerberos tests are not supported on OpenJDK 6 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1186132");
-            }
+            throw new AssumptionViolatedException(
+                    "Kerberos tests are not supported when hostname is not available for tested IPv6 address. Find more info in https://issues.jboss.org/browse/WFLY-5409");
         }
     }
 
