@@ -30,7 +30,7 @@ import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpTrace;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -102,16 +102,16 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
         URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), "/" + this.deploymentName + "/"));
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpTrace(uri1));
+            HttpResponse response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpTrace(uri2));
+            response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -120,14 +120,14 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             Thread.sleep(DELAY);
 
-            response = client.execute(new HttpTrace(uri1));
+            response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpTrace(uri2));
+            response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
@@ -138,14 +138,14 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             Thread.sleep(DELAY);
 
-            response = client.execute(new HttpTrace(uri1));
+            response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpTrace(uri2));
+            response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
@@ -156,16 +156,16 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             Thread.sleep(DELAY);
 
-            response = client.execute(new HttpTrace(uri1));
+            response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpTrace(uri2));
+            response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -174,16 +174,16 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             Thread.sleep(DELAY);
 
-            response = client.execute(new HttpTrace(uri1));
+            response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpTrace(uri2));
+            response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_METHOD_NOT_ALLOWED, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

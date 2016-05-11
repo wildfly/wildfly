@@ -77,15 +77,6 @@
             <param name="cacheMode" value="SYNC" />
             <param name="stack" value="tcp"/>
         </antcall>
-        <antcall target="enable-http-trace">
-            <param name="cacheMode" value="SYNC" />
-            <param name="stack" value="tcp"/>
-        </antcall>
-    </target>
-
-    <target name="enable-http-trace">
-        <ts.config-as.enable-trace-http-method name="wildfly-${cacheMode}-${stack}-0"/>
-        <ts.config-as.enable-trace-http-method name="wildfly-${cacheMode}-${stack}-1"/>
     </target>
 
     <!-- Build remaining configs for extended tests -->
