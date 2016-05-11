@@ -47,8 +47,6 @@ import org.wildfly.clustering.web.session.SessionManager;
  * @author Paul Ferraro
  */
 public class DistributableSession implements io.undertow.server.session.Session {
-    // Undertow stores the authenticated session in the HttpSession using a special attribute with the following name
-    private static final String AUTHENTICATED_SESSION_ATTRIBUTE_NAME = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
     // These mechanisms can auto-reauthenticate and thus use local context (instead of replicating)
     private static final Set<String> AUTO_REAUTHENTICATING_MECHANISMS = new HashSet<>(Arrays.asList(HttpServletRequest.BASIC_AUTH, HttpServletRequest.DIGEST_AUTH, HttpServletRequest.CLIENT_CERT_AUTH));
 
@@ -125,7 +123,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public Object getAttribute(String name) {
         Session<LocalSessionContext> session = this.entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
+            if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().getAttribute(name);
                 return (auth != null) ? auth : session.getLocalContext().getAuthenticatedSession();
             }
@@ -140,7 +138,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         }
         Session<LocalSessionContext> session = this.entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
+            if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
                 return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
             }
@@ -158,7 +156,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public Object removeAttribute(String name) {
         Session<LocalSessionContext> session = this.entry.getKey();
         try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
+            if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().removeAttribute(name);
                 return (auth != null) ? auth : this.setLocalContext(null);
             }
