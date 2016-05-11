@@ -78,6 +78,7 @@ public class HibernateJarsInDeploymentTestCase {
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSB1.class, HibernateJarsInDeploymentTestCase.class);
         lib.addAsManifestResource(HibernateJarsInDeploymentTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        ear.addAsManifestResource(HibernateJarsInDeploymentTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
         ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jandex\n"), "MANIFEST.MF");
         ear.addAsModule(lib);
 
