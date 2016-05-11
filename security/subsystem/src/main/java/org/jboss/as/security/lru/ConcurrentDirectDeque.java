@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.jboss.as.security.org.jboss.as.security.lru;
+package org.jboss.as.security.lru;
 
 import java.lang.reflect.Constructor;
 import java.util.AbstractCollection;

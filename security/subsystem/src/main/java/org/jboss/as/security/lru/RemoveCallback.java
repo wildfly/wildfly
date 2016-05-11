@@ -1,4 +1,4 @@
-package org.jboss.as.security.org.jboss.as.security.lru;
+package org.jboss.as.security.lru;
 
 /**
  * Allows an LRU Cache to get a callback after a removal has occurred.
