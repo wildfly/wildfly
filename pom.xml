@@ -207,7 +207,7 @@
         <version.org.jboss.ws.common.tools>1.2.2.Final</version.org.jboss.ws.common.tools>
         <version.org.jboss.ws.cxf>5.1.4.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
-        <version.org.jgroups>3.6.8.Final</version.org.jgroups>
+        <version.org.jgroups>3.6.9.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.0.0.Final</version.org.jgroups.azure>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
