@@ -68,7 +68,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 public class BroadcastGroupDefinition extends PersistentResourceDefinition {
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CONNECTORS)
-            .setAllowNull(true)
+            .setAllowNull(false)
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)

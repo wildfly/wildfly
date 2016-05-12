@@ -37,8 +37,10 @@ import org.apache.activemq.artemis.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -47,6 +49,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Handler for adding a discovery group.
@@ -59,6 +62,25 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
     private DiscoveryGroupAdd() {
         super(DiscoveryGroupDefinition.ATTRIBUTES);
+    }
+
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                if (!operation.hasDefined(SOCKET_BINDING) && !operation.hasDefined(JGROUPS_CHANNEL.getName())) {
+                    throw MessagingLogger.ROOT_LOGGER.notSocektbindingAndJgroupschannel(name);
+                }
+
+            }
+
+        }, OperationContext.Stage.MODEL);
+
     }
 
     @Override
