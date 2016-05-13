@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -64,6 +65,10 @@ public class LoggingInterceptor implements Interceptor {
         try {
             // we just pass on the control and do our work only when an exception occurs
             return interceptorContext.proceed();
+        } catch ( EJBComponentUnavailableException ex) {
+            if ( EjbLogger.EJB3_INVOCATION_LOGGER.isTraceEnabled() )
+                EjbLogger.EJB3_INVOCATION_LOGGER.trace(ex.getMessage());
+            throw ex;
         } catch (Throwable t) {
             final Method invokedMethod = interceptorContext.getMethod();
             // check if it's an application exception. If yes, then *don't* log
