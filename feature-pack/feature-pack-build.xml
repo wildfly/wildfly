@@ -50,6 +50,10 @@
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
+                subsystems="configuration/examples/subsystems-activemq-colocated.xml"
+                output-file="docs/examples/configs/standalone-activemq-colocated.xml"/>
+        <standalone
+                template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="docs/examples/configs/standalone-ec2-full-ha.xml">
             <property name="jgroups.supplement" value="ec2" />

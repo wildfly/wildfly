@@ -127,6 +127,11 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testStandaloneActiveMQColocatedXml() throws Exception {
+        standaloneXmlTest(getDocsExampleConfigFile("standalone-activemq-colocated.xml"));
+    }
+
+    @Test
     public void testJBossASStandaloneXml() throws Exception {
         for (Version version : AS_VERSIONS) {
             ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, null));
