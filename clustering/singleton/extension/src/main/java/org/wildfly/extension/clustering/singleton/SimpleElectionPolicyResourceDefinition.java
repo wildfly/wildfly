@@ -75,7 +75,7 @@ public class SimpleElectionPolicyResourceDefinition extends ElectionPolicyResour
                 .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
                 .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new SimpleElectionPolicyBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new SimpleElectionPolicyBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }

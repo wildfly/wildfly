@@ -28,7 +28,7 @@ import org.wildfly.clustering.service.Requirement;
 import org.jboss.as.controller.OperationContext;
 
 /**
- * {@link CapabilityReferenceRecorder} that delegates to {@link Capability#getRuntimeCapability(org.jboss.as.controller.PathAddress)} to generate the name of the dependent capability.
+ * {@link CapabilityReferenceRecorder} that delegates to {@link Capability#resolve(org.jboss.as.controller.PathAddress)} to generate the name of the dependent capability.
  * @author Paul Ferraro
  */
 public class CapabilityReference implements CapabilityReferenceRecorder {
@@ -48,7 +48,7 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
 
     @Override
     public void addCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
-        String dependentName = this.capability.getRuntimeCapability(context.getCurrentAddress()).getName();
+        String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
         for (String attributeValue : attributeValues) {
             String requirementName = RuntimeCapability.buildDynamicCapabilityName(this.requirement.getName(), attributeValue);
             context.registerAdditionalCapabilityRequirement(requirementName, dependentName, attributeName);
@@ -57,7 +57,7 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
 
     @Override
     public void removeCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
-        String dependentName = this.capability.getRuntimeCapability(context.getCurrentAddress()).getName();
+        String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
         for (String attributeValue : attributeValues) {
             String requirementName = RuntimeCapability.buildDynamicCapabilityName(this.requirement.getName(), attributeValue);
             context.deregisterCapabilityRequirement(requirementName, dependentName);
@@ -76,6 +76,6 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
 
     @Override
     public boolean isDynamicDependent() {
-        return true;
+        return this.capability.getDefinition().isDynamicallyNamed();
     }
 }

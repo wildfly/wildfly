@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,30 @@
 
 package org.wildfly.clustering.singleton;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.DefaultableUnaryRequirement;
+import org.wildfly.clustering.service.Requirement;
 
 /**
- * Defines a singleton policy.
  * @author Paul Ferraro
  */
-public interface SingletonPolicy {
-    /**
-     * @deprecated Use {@link SingletonRequirement#SINGLETON_POLICY} instead.
-     */
-    @Deprecated String CAPABILITY_NAME = SingletonRequirement.SINGLETON_POLICY.getName();
+public enum SingletonRequirement implements DefaultableUnaryRequirement {
+    SINGLETON_POLICY("org.wildfly.clustering.singleton.policy", SingletonDefaultRequirement.SINGLETON_POLICY),
+    ;
+    private final String name;
+    private final Requirement defaultRequirement;
 
-    <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
+    SingletonRequirement(String name, Requirement defaultRequirement) {
+        this.name = name;
+        this.defaultRequirement = defaultRequirement;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Requirement getDefaultRequirement() {
+        return this.defaultRequirement;
+    }
 }

@@ -26,8 +26,8 @@ import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
@@ -57,7 +57,6 @@ import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -78,12 +77,12 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SOCKET_BINDING("org.wildfly.clustering.protocol.socket-binding", SocketBinding.class),
+        SOCKET_BINDING("org.wildfly.clustering.protocol.socket-binding"),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name, Class<?> serviceType) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).build();
         }
 
         @Override
@@ -92,14 +91,14 @@ public abstract class ProtocolResourceDefinition extends ChildResourceDefinition
         }
 
         @Override
-        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+        public RuntimeCapability<Void> resolve(PathAddress address) {
             PathAddress stackAddress = address.getParent();
             return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
         }
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.SOCKET_BINDING)),
+        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(CommonUnaryRequirement.SOCKET_BINDING, Capability.SOCKET_BINDING)),
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, new ModelNode(ProtocolConfiguration.DEFAULT_MODULE.getName()), new ModuleIdentifierValidatorBuilder()),
         PROPERTIES(ModelDescriptionConstants.PROPERTIES),
         ;

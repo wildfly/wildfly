@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
 
 /**
+ * Factory for generating a {@link ServiceName} for a requirement.
  * @author Paul Ferraro
  */
-public class RandomElectionPolicyBuilderFactory implements ResourceServiceBuilderFactory<SingletonElectionPolicy> {
+public interface ServiceNameFactory {
+    /**
+     * Creates a {@link ServiceName} appropriate for the specified name.
+     * @param context an operation context
+     * @param name a potentially null name
+     * @return a {@link ServiceName}
+     */
+    ServiceName getServiceName(OperationContext context);
 
-    @Override
-    public ResourceServiceBuilder<SingletonElectionPolicy> createBuilder(PathAddress address) {
-        return new RandomElectionPolicyBuilder(address.getParent().getLastElement().getValue());
-    }
+    /**
+     * Creates a {@link ServiceName} appropriate for the specified name.
+     * @param support support for capability services
+     * @param name a potentially null name
+     * @return a {@link ServiceName}
+     */
+    ServiceName getServiceName(CapabilityServiceSupport support);
 }

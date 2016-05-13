@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.singleton.RequiredCapability;
+import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 
 /**
@@ -42,7 +42,7 @@ public class MyServicePolicyActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
         try {
-            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(RequiredCapability.SINGLETON_POLICY.getName())).awaitValue();
+            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).awaitValue();
             InjectedValue<ServerEnvironment> env = new InjectedValue<>();
             MyService service = new MyService(env);
             policy.createSingletonServiceBuilder(SERVICE_NAME, service).build(context.getServiceTarget())

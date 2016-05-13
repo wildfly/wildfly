@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.msc.service.Service;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.Builder;
 
 /**
- * Defines a singleton policy.
+ * Provides a factory for generating a {@link ServiceName} for a unary requirement.
  * @author Paul Ferraro
  */
-public interface SingletonPolicy {
-    /**
-     * @deprecated Use {@link SingletonRequirement#SINGLETON_POLICY} instead.
-     */
-    @Deprecated String CAPABILITY_NAME = SingletonRequirement.SINGLETON_POLICY.getName();
+public interface UnaryServiceNameFactoryProvider extends UnaryServiceNameFactory {
 
-    <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
+    UnaryServiceNameFactory getServiceNameFactory();
+
+    @Override
+    default ServiceName getServiceName(OperationContext context, String name) {
+        return this.getServiceNameFactory().getServiceName(context, name);
+    }
+
+    @Override
+    default ServiceName getServiceName(CapabilityServiceSupport support, String name) {
+        return this.getServiceNameFactory().getServiceName(support, name);
+    }
 }

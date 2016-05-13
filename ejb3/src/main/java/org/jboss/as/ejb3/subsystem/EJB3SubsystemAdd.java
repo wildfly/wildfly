@@ -136,7 +136,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
-import org.wildfly.clustering.singleton.RequiredCapability;
+import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
@@ -485,10 +485,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
         target.addService(RegistryCollectorService.SERVICE_NAME, new RegistryCollectorService<>()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         target.addService(CacheFactoryBuilderRegistryService.SERVICE_NAME, new CacheFactoryBuilderRegistryService<>()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        if (context.hasOptionalCapability(RequiredCapability.SINGLETON_POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
+        if (context.hasOptionalCapability(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
             final ClusteredSingletonServiceCreator singletonBarrierCreator = new ClusteredSingletonServiceCreator();
             target.addService(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("creator"), singletonBarrierCreator)
-                    .addDependency(context.getCapabilityServiceName(RequiredCapability.SINGLETON_POLICY.getName(), SingletonPolicy.class),
+                    .addDependency(context.getCapabilityServiceName(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), SingletonDefaultRequirement.SINGLETON_POLICY.getType()),
                             SingletonPolicy.class, singletonBarrierCreator.getSingletonPolicy()).install();
         }
     }

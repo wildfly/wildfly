@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.Requirement;
 
 /**
  * @author Paul Ferraro
  */
-public class SimpleElectionPolicyBuilderFactory implements ResourceServiceBuilderFactory<SingletonElectionPolicy> {
+public class RequirementServiceNameFactory implements ServiceNameFactory {
+
+    private final Requirement requirement;
+
+    public RequirementServiceNameFactory(Requirement requirement) {
+        this.requirement = requirement;
+    }
 
     @Override
-    public ResourceServiceBuilder<SingletonElectionPolicy> createBuilder(PathAddress address) {
-        return new SimpleElectionPolicyBuilder(address.getParent().getLastElement().getValue());
+    public ServiceName getServiceName(OperationContext context) {
+        return context.getCapabilityServiceName(this.requirement.getName(), this.requirement.getType());
+    }
+
+    @Override
+    public ServiceName getServiceName(CapabilityServiceSupport support) {
+        return support.getCapabilityServiceName(this.requirement.getName());
     }
 }

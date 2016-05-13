@@ -30,8 +30,8 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
@@ -96,7 +96,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
+        return new AdditionalInitialization().require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
     }
 
     /**

@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
@@ -80,8 +80,8 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new InfinispanSubsystemInitialization()
-                .require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
-                .require(RequiredCapability.DATA_SOURCE, "ExampleDS")
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
+                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 ;
     }
 

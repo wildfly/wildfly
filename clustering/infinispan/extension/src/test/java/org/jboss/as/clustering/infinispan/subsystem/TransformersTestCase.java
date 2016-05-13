@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.controller.ModelVersion;
@@ -106,8 +106,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 super.initializeExtraSubystemsAndModel(registry, root, registration, capabilityRegistry);
             }
         }
-                .require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
-                .require(RequiredCapability.DATA_SOURCE, "ExampleDS")
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
+                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 ;
     }
 

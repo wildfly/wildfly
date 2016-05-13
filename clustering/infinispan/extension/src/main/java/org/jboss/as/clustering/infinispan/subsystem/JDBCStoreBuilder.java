@@ -32,8 +32,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
-import org.jboss.as.clustering.controller.CapabilityDependency;
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DataSourceConnectionFactoryConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -41,6 +40,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -65,7 +65,7 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
     @Override
     B createStore(OperationContext context, ModelNode model) throws OperationFailedException {
         String dataSource = DATA_SOURCE.getDefinition().resolveModelAttribute(context, model).asString();
-        this.dataSourceDepencency = new CapabilityDependency<>(context, RequiredCapability.DATA_SOURCE, dataSource, DataSource.class);
+        this.dataSourceDepencency = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
         B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass).dialect(ModelNodes.asEnum(DIALECT.getDefinition().resolveModelAttribute(context, model), DatabaseType.class));
         storeBuilder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
         return storeBuilder;
