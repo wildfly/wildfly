@@ -412,6 +412,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 // Already parsed
                 break;
             }
+            case DATA_SOURCE: {
+                readAttribute(reader, index, operation, ProtocolResourceDefinition.Attribute.DATA_SOURCE);
+                break;
+            }
             case SOCKET_BINDING: {
                 readAttribute(reader, index, operation, ProtocolResourceDefinition.Attribute.SOCKET_BINDING);
                 break;

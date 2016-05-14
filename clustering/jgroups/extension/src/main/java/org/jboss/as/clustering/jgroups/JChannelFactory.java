@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
@@ -244,12 +246,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         stack.add(protocol);
 
         final Class<? extends TP> transportClass = introspector.getProtocolClass().asSubclass(TP.class);
-        PrivilegedExceptionAction<TP> action = new PrivilegedExceptionAction<TP>() {
-            @Override
-            public TP run() throws InstantiationException, IllegalAccessException {
-                return transportClass.newInstance();
-            }
-        };
+        PrivilegedExceptionAction<TP> action = transportClass::newInstance;
 
         try {
             stack.addAll(createProtocols(this.configuration, WildFlySecurityManager.doUnchecked(action).isMulticastCapable()));
@@ -282,6 +279,11 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             if (!multicastCapable) {
                 setProperty(introspector, config, "use_mcast_xmit", String.valueOf(false));
                 setProperty(introspector, config, "use_mcast_xmit_req", String.valueOf(false));
+            }
+            DataSource dataSource = protocol.getDataSource();
+            if (dataSource != null) {
+                String jndiName = ((org.jboss.as.connector.subsystems.datasources.WildFlyDataSource) dataSource).getJndiName();
+                setProperty(introspector, config, "datasource_jndi_name", jndiName);
             }
             result.add(config);
         }
