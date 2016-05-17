@@ -44,8 +44,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.remoting.RemotingExtension;
-import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.as.test.integration.domain.mixed.LegacySubsystemConfigurationUtil;
+import org.jboss.as.test.integration.domain.mixed.eap700.DomainAdjuster700;
 import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.jberet.BatchSubsystemDefinition;
@@ -63,11 +63,11 @@ import org.wildfly.iiop.openjdk.IIOPExtension;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DomainAdjuster640 extends DomainAdjuster {
+public class DomainAdjuster640 extends DomainAdjuster700 {
 
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
-        final List<ModelNode> list = new ArrayList<>();
+        final List<ModelNode> list = super.adjustForVersion(client, profileAddress);
 
         list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
         list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemDefinition.NAME)));
