@@ -63,6 +63,7 @@ import org.jboss.as.test.integration.security.common.config.LoginModuleStack;
 import org.jboss.as.test.integration.security.common.config.SecureStore;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -108,6 +109,13 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             LOGGER.warn("Empty security domain configuration.");
             return;
         }
+
+        // TODO remove this once security domains expose their own capability
+        // Currently subsystem=security-domain exposes one, but the individual domains don't
+        // which with WFCORE-1106 has the effect that any individual sec-domain op that puts
+        // the server in reload-required means all ops for any sec-domain won't execute Stage.RUNTIME
+        // So, for now we preemptively reload if needed
+        ServerReload.BeforeSetupTask.INSTANCE.setup(managementClient, containerId);
 
         final List<ModelNode> updates = new LinkedList<ModelNode>();
         for (final SecurityDomain securityDomain : securityDomains) {
