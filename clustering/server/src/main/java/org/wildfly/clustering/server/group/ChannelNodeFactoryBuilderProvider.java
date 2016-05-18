@@ -24,7 +24,7 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
@@ -35,8 +35,8 @@ import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 public class ChannelNodeFactoryBuilderProvider implements DistributedGroupBuilderProvider {
 
     @Override
-    public Collection<Builder<?>> getBuilders(String group, ModuleIdentifier module) {
-        return Collections.<Builder<?>>singleton(new ChannelNodeFactoryBuilder(group));
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group) {
+        return Collections.singleton(new ChannelNodeFactoryBuilder(support, group));
     }
 
     @Override

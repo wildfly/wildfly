@@ -62,6 +62,6 @@ public class AliasServiceBuilder<T> implements Builder<T> {
     public ServiceBuilder<T> build(ServiceTarget target) {
         return target.addService(this.name, new ValueService<>(this.value))
                 .addDependency(this.targetName, this.targetClass, this.value)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+                .setInitialMode(ServiceController.Mode.PASSIVE);
     }
 }

@@ -24,11 +24,12 @@ package org.wildfly.clustering.spi;
 
 import java.util.Collection;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
 public interface GroupAliasBuilderProvider {
-    Collection<Builder<?>> getBuilders(String aliasGroup, String targetGroup);
+    Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String aliasGroup, String targetGroup);
 }

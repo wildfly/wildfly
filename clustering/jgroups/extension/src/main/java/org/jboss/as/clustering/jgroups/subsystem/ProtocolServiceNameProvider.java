@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,18 +22,29 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class JChannelFactoryBuilderFactory implements ResourceServiceBuilderFactory<ChannelFactory> {
+public class ProtocolServiceNameProvider implements ServiceNameProvider {
+
+    private final PathAddress stackAddress;
+    private final String name;
+
+    public ProtocolServiceNameProvider(PathAddress address) {
+        this(address.getParent(), address.getLastElement().getValue());
+    }
+
+    public ProtocolServiceNameProvider(PathAddress stackAddress, String name) {
+        this.stackAddress = stackAddress;
+        this.name = name;
+    }
 
     @Override
-    public ResourceServiceBuilder<ChannelFactory> createBuilder(PathAddress address) {
-        return new JChannelFactoryBuilder(address.getLastElement().getValue());
+    public ServiceName getServiceName() {
+        return StackResourceDefinition.Capability.JCHANNEL_FACTORY.getServiceName(this.stackAddress).append(this.name);
     }
 }

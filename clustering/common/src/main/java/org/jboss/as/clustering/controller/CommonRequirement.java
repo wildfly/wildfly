@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.jgroups.spi.service;
 
-import org.jboss.msc.service.ServiceName;
+package org.jboss.as.clustering.controller;
 
-public enum ProtocolStackServiceName implements ProtocolStackServiceNameFactory {
+import javax.management.MBeanServer;
 
-    CHANNEL_FACTORY {
-        @Override
-        public ServiceName getServiceName(String stack) {
-            return BASE_NAME.append("factory", stack);
-        }
-    },
+import org.wildfly.clustering.service.Requirement;
+
+/**
+ * @author Paul Ferraro
+ */
+public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {
+    MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
     ;
+    private final String name;
+    private final Class<?> type;
+    private final ServiceNameFactory factory = new RequirementServiceNameFactory(this);
 
-    static final ServiceName BASE_NAME = ServiceName.JBOSS.append("jgroups");
+    CommonRequirement(String name, Class<?> type) {
+        this.name = name;
+        this.type = type;
+    }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.getServiceName(DEFAULT_GROUP);
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return this.type;
+    }
+
+    @Override
+    public ServiceNameFactory getServiceNameFactory() {
+        return this.factory;
     }
 }

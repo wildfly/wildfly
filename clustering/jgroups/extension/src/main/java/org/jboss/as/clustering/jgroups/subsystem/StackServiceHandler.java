@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
  * @author Paul Ferraro
@@ -49,7 +49,7 @@ public class StackServiceHandler extends ParentResourceServiceHandler<ChannelFac
 
         ServiceTarget target = context.getServiceTarget();
 
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();
+        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
     }
 
     @Override

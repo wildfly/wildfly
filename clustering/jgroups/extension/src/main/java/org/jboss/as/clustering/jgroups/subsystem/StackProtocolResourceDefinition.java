@@ -110,7 +110,7 @@ public class StackProtocolResourceDefinition extends ProtocolResourceDefinition 
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ProtocolConfigurationBuilder(address));
         new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
 

@@ -24,10 +24,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
 
+import java.util.EnumSet;
+
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -45,8 +48,8 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
     private ValueDependency<SocketBinding> diagnosticsSocketBinding;
     private Topology topology = null;
 
-    public TransportConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
+    public TransportConfigurationBuilder(PathAddress address) {
+        super(address);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
             this.diagnosticsSocketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsBinding), SocketBinding.class);
         }
 
-        for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {
+        for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
             String prefix = pool.getPrefix();
             ModelNode model = transport.get(pool.getPathElement().getKeyValuePair());
 

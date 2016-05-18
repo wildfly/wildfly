@@ -72,7 +72,7 @@ public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ProtocolConfigurationBuilder(address));
         new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {

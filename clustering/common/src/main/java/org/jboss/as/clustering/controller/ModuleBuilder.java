@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,9 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.jgroups.spi.service;
 
-import org.jboss.logging.Logger;
+package org.jboss.as.clustering.controller;
+
+import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.Services;
+import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -31,64 +40,60 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Channel;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.service.Builder;
 
 /**
- * Provides a channel for use by dependent services.
- * Channels produced by this service are unconnected.
  * @author Paul Ferraro
  */
-public class ChannelBuilder implements Service<Channel>, Builder<Channel> {
+public class ModuleBuilder implements ResourceServiceBuilder<Module>, Service<Module> {
 
-    // No logger interface for this module and no reason to create one for only two classes
-    private static final Logger LOGGER = org.jboss.logging.Logger.getLogger(ChannelConnectorBuilder.class);
+    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
+    private final ServiceName name;
+    private final Attribute attribute;
 
-    private InjectedValue<ChannelFactory> factory = new InjectedValue<>();
-    private final String name;
+    private volatile ModuleIdentifier identifier;
+    private volatile Module module;
 
-    private volatile Channel channel;
-
-    public ChannelBuilder(String name) {
+    public ModuleBuilder(ServiceName name, Attribute attribute) {
         this.name = name;
+        this.attribute = attribute;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return ChannelServiceName.CHANNEL.getServiceName(this.name);
+        return this.name;
     }
 
     @Override
-    public ServiceBuilder<Channel> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this)
-                .addDependency(ChannelServiceName.FACTORY.getServiceName(this.name), ChannelFactory.class, this.factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+    public ServiceBuilder<Module> build(ServiceTarget target) {
+        return target.addService(this.name, this)
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                ;
     }
 
     @Override
-    public Channel getValue() {
-        return this.channel;
+    public Builder<Module> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.identifier = ModelNodes.asModuleIdentifier(this.attribute.getDefinition().resolveModelAttribute(context, model));
+        return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            this.channel = this.factory.getValue().createChannel(this.name);
-        } catch (Exception e) {
+            this.module = this.loader.getValue().loadModule(this.identifier);
+        } catch (ModuleLoadException e) {
             throw new StartException(e);
-        }
-
-        if (LOGGER.isTraceEnabled())  {
-            String output = this.channel.getProtocolStack().printProtocolSpec(true);
-            LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, output);
         }
     }
 
     @Override
     public void stop(StopContext context) {
-        this.channel.close();
-        this.channel = null;
+        this.module = null;
+    }
+
+    @Override
+    public Module getValue() {
+        return this.module;
     }
 }

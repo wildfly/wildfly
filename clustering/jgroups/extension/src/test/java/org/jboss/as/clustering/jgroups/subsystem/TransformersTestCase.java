@@ -36,6 +36,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
@@ -79,7 +80,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization().require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr");
+        return new AdditionalInitialization()
+                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
+                .require(CommonRequirement.MBEAN_SERVER)
+                ;
     }
 
     @Test

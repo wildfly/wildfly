@@ -23,11 +23,14 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,6 +41,9 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * Definition of a fork resource.
@@ -51,7 +57,26 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
         return PathElement.pathElement("fork", name);
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = new ForkChannelFactoryBuilderFactory();
+    enum Capability implements CapabilityProvider {
+        FORK_CHANNEL(JGroupsRequirement.CHANNEL, CommonRequirement.MBEAN_SERVER),
+        FORK_CHANNEL_CLUSTER(JGroupsRequirement.CHANNEL_CLUSTER),
+        FORK_CHANNEL_FACTORY(JGroupsRequirement.CHANNEL_FACTORY),
+        FORK_CHANNEL_MODULE(JGroupsRequirement.CHANNEL_MODULE),
+        FORK_CHANNEL_SOURCE(JGroupsRequirement.CHANNEL_SOURCE),
+        ;
+        private final org.jboss.as.clustering.controller.Capability capability;
+
+        Capability(UnaryRequirement requirement, Requirement... requirements) {
+            this.capability = new UnaryRequirementCapability(requirement, requirements);
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Capability getCapability() {
+            return this.capability;
+        }
+    }
+
+    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
     final boolean allowRuntimeOnlyRegistration;
 
     ForkResourceDefinition(boolean allowRuntimeOnlyRegistration) {
@@ -63,7 +88,9 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addCapabilities(Capability.class)
+                ;
         ResourceServiceHandler handler = new ForkServiceHandler(this.builderFactory);
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler) {

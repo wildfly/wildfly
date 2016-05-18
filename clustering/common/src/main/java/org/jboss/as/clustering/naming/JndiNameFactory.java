@@ -29,6 +29,7 @@ import org.jboss.as.naming.deployment.JndiName;
  */
 public class JndiNameFactory {
     public static final String DEFAULT_JNDI_NAMESPACE = "java:jboss";
+    public static final String DEFAULT_LOCAL_NAME = "default";
 
     public static JndiName parse(String value) {
         return value.startsWith("java:") ? JndiName.of(value) : createJndiName(DEFAULT_JNDI_NAMESPACE, value.startsWith("/") ? value.substring(1) : value);

@@ -110,8 +110,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
 
         @Override
         public RuntimeCapability<Void> resolve(PathAddress address) {
-            PathAddress stackAddress = address.getParent();
-            return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
+            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue() + "." + address.getLastElement().getValue());
         }
     }
 
@@ -292,7 +291,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                 .addCapabilities(ProtocolResourceDefinition.Capability.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
                 ;
-        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(new TransportConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(address -> new TransportConfigurationBuilder(address));
         new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
             @Override
             protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {

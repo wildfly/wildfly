@@ -117,7 +117,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.descriptionResolver).addAttributes(this.getAttributes());
-        ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = new TransportConfigurationBuilderFactory();
+        ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = address -> new TransportConfigurationBuilder(address);
         new RestartParentResourceAddStepHandler<>(transportBuilderFactory, descriptor).register(registration);
         new RestartParentResourceRemoveStepHandler<>(transportBuilderFactory, descriptor).register(registration);
     }
