@@ -139,7 +139,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
         UndertowLogger.ROOT_LOGGER.listenerSuspend("HTTP", getName());
         IoUtils.safeClose(server);
         server = null;
-        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getSocketAddress().getPort());
         httpListenerRegistry.getValue().removeListener(getName());
     }
 

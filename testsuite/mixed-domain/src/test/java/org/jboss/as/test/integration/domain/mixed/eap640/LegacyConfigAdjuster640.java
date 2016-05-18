@@ -25,7 +25,7 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
-import org.jboss.as.test.integration.domain.mixed.LegacyConfigAdjuster;
+import org.jboss.as.test.integration.domain.mixed.eap700.LegacyConfigAdjuster700;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 
@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry
  */
-public class LegacyConfigAdjuster640 extends LegacyConfigAdjuster {
+public class LegacyConfigAdjuster640 extends LegacyConfigAdjuster700 {
     @Override
     protected List<ModelNode> adjustForVersion(DomainClient client, PathAddress profileAddress) throws Exception {
         List<ModelNode> result = super.adjustForVersion(client, profileAddress);

@@ -23,14 +23,28 @@
 package org.jboss.as.test.integration.security.common.negotiation;
 
 import static org.jboss.as.test.integration.security.common.Utils.IBM_JDK;
-import static org.jboss.as.test.integration.security.common.Utils.OPEN_JDK;
 import static org.jboss.as.test.integration.security.common.Utils.ORACLE_JDK;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Base64;
+
 import org.apache.commons.lang.SystemUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Enumerated;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERApplicationSpecific;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.logging.Logger;
-import org.junit.internal.AssumptionViolatedException;
+import org.junit.AssumptionViolatedException;
 
 /**
  * Helper methods for JGSSAPI &amp; SPNEGO &amp; Kerberos testcases. It mainly helps to skip tests on configurations which
@@ -45,6 +59,12 @@ public final class KerberosTestUtils {
     public static final boolean PREFER_IPV4_STACK = Boolean
             .parseBoolean(System.getProperty("java.net.preferIPv4Stack", "true"));
     public static final boolean PREFER_IPV6_ADDR = Boolean.getBoolean("java.net.preferIPv6Addresses");
+
+    public static final String OID_KERBEROS_V5 = "1.2.840.113554.1.2.2";
+    public static final String OID_KERBEROS_V5_LEGACY = "1.2.840.48018.1.2.2";
+    public static final String OID_NTLM = "1.3.6.1.4.1.311.2.2.10";
+    public static final String OID_SPNEGO = "1.3.6.1.5.5.2";
+    public static final String OID_DUMMY = "1.1.2.5.6.7";
 
     /**
      * Just a private constructor.
@@ -67,18 +87,8 @@ public final class KerberosTestUtils {
                     "Kerberos tests are not supported on IBM Java with IPv6. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1188632");
         }
         if (isIPv6Hostname(hostName)) {
-            if (IBM_JDK && SystemUtils.IS_JAVA_1_7) {
-                throw new AssumptionViolatedException(
-                        "Kerberos tests are not supported on IBM Java 7 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1185917");
-            }
-            if (IBM_JDK && SystemUtils.IS_JAVA_1_6) {
-                throw new AssumptionViolatedException(
-                        "Kerberos tests are not supported on IBM Java 6 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1186129");
-            }
-            if (OPEN_JDK && SystemUtils.IS_JAVA_1_6) {
-                throw new AssumptionViolatedException(
-                        "Kerberos tests are not supported on OpenJDK 6 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1186132");
-            }
+            throw new AssumptionViolatedException(
+                    "Kerberos tests are not supported when hostname is not available for tested IPv6 address. Find more info in https://issues.jboss.org/browse/WFLY-5409");
         }
     }
 
@@ -153,4 +163,86 @@ public final class KerberosTestUtils {
         return !PREFER_IPV4_STACK && PREFER_IPV6_ADDR;
     }
 
+    /**
+     * Generates SPNEGO init token with given initial ticket and supported mechanisms.
+     *
+     * @param ticket initial ticket for the preferred (the first) mechanism.
+     * @param supMechOids object identifiers (OIDs) of supported mechanisms for the SPNEGO.
+     * @return ASN.1 encoded SPNEGO init token
+     */
+    public static byte[] generateSpnegoTokenInit(byte[] ticket, String... supMechOids) throws IOException {
+        DEROctetString ticketForPreferredMech = new DEROctetString(ticket);
+
+        ASN1EncodableVector mechSeq = new ASN1EncodableVector();
+        for (String mech : supMechOids) {
+            mechSeq.add(new ASN1ObjectIdentifier(mech));
+        }
+        DERTaggedObject taggedMechTypes = new DERTaggedObject(0, new DERSequence(mechSeq));
+        DERTaggedObject taggedMechToken = new DERTaggedObject(2, ticketForPreferredMech);
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(taggedMechTypes);
+        v.add(taggedMechToken);
+        DERSequence seqNegTokenInit = new DERSequence(v);
+        DERTaggedObject taggedSpnego = new DERTaggedObject(0, seqNegTokenInit);
+
+        ASN1EncodableVector appVec = new ASN1EncodableVector();
+        appVec.add(new ASN1ObjectIdentifier(OID_SPNEGO));
+        appVec.add(taggedSpnego);
+        DERApplicationSpecific app = new DERApplicationSpecific(0, appVec);
+        return app.getEncoded();
+    }
+
+    /**
+     * Generates SPNEGO response (to a "select mechanism challenge") with given bytes as the ticket for selected mechanism.
+     *
+     * @param ticket
+     * @return ASN.1 encoded SPNEGO response
+     */
+    public static byte[] generateSpnegoTokenResp(byte[] ticket) throws IOException {
+        DEROctetString ourKerberosTicket = new DEROctetString(ticket);
+
+        DERTaggedObject taggedNegState = new DERTaggedObject(0, new ASN1Enumerated(1)); // accept-incomplete
+        DERTaggedObject taggedResponseToken = new DERTaggedObject(2, ourKerberosTicket);
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(taggedNegState);
+        v.add(taggedResponseToken);
+        DERSequence seqNegTokenResp = new DERSequence(v);
+        DERTaggedObject taggedSpnego = new DERTaggedObject(1, seqNegTokenResp);
+        return taggedSpnego.getEncoded();
+    }
+
+    /**
+     * Dumps ASN.1 object as String from given byte array.
+     *
+     * @param data
+     */
+    public static String dumpAsn1Obj(byte[] data) throws IOException {
+        if (data == null)
+            return null;
+        try (ASN1InputStream bIn = new ASN1InputStream(new ByteArrayInputStream(data))) {
+            return ASN1Dump.dumpAsString(bIn.readObject(), true);
+        } catch (Exception e) {
+            LOGGER.debug("ASN1Dump failed", e);
+            return "[Unable to dump ASN.1: " + Base64.getEncoder().encodeToString(data) + " ]";
+        }
+    }
+
+    /**
+     * Dumps ASN.1 object as String from WWW-Authenticate/Negotiate HTTP header.
+     *
+     * @param response
+     */
+    public static String dumpNegotiateHeader(HttpResponse response) throws IOException {
+        if (response == null)
+            return null;
+        final String negotiatePrefix = "Negotiate ";
+        for (Header header : response.getHeaders("WWW-Authenticate")) {
+            final String value = header.getValue();
+            if (value.startsWith(negotiatePrefix)) {
+                byte[] token = Base64.getDecoder().decode(value.substring(negotiatePrefix.length()));
+                return dumpAsn1Obj(token);
+            }
+        }
+        return null;
+    }
 }

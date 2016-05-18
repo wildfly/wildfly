@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLONE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -38,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
@@ -55,6 +57,7 @@ import static org.junit.Assert.assertEquals;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
@@ -113,9 +116,12 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test00002_Versioning() throws Exception {
-        if (version == Version.AsVersion.EAP_6_2_0) {
-            //6.2.0 has the slave report back its own version, rather than the one from the DC,
-            //which is what happens in more recent slaves
+        if (version == Version.AsVersion.EAP_6_2_0
+                || version == Version.AsVersion.EAP_7_0_0) {
+            //6.2.0 (https://issues.jboss.org/browse/WFLY-3228) and
+            //7.0.0 (https://issues.jboss.org/browse/WFCORE-401)
+            // have the slave report back its own version, rather than the one from the DC,
+            //which is what should happen
             return;
         }
 
@@ -135,6 +141,7 @@ public abstract class SimpleMixedDomainTest  {
         }
 
         cleanupKnownDifferencesInModelsForVersioningCheck(masterModel, slaveModel);
+
         //The version fields should be the same
         assertEquals(masterModel, slaveModel);
     }
@@ -214,19 +221,30 @@ public abstract class SimpleMixedDomainTest  {
     //Do this one last since it changes the host model of the slaves
     @Test
     public void test99999_ProfileClone() throws Exception {
+        if (version.getMajor() == 6) {
+            //EAP 6 does not have the clone operation
+            profileCloneEap6x();
+        } else {
+            //EAP 7 does not have the clone operation
+            profileCloneEap7x();
+        }
+    }
+
+    private void profileCloneEap6x() throws Exception {
+        //EAP 6 does not have the clone operation
         //For an EAP 7 slave we will need another test since EAP 7 allows the clone operation.
         // However EAP 7 will need to take into account the ignore-unused-configuration
         // setting which does not exist in 6.x
         final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
         try {
-            final PathAddress fullHaAddress = PathAddress.pathAddress(PROFILE, "new-profile");
+            final PathAddress newProfileAddress = PathAddress.pathAddress(PROFILE, "new-profile");
 
             //Create a new profile (so that we can ignore it on the host later)
-            DomainTestUtils.executeForResult(Util.createAddOperation(fullHaAddress), masterClient);
+            DomainTestUtils.executeForResult(Util.createAddOperation(newProfileAddress), masterClient);
 
             //Attempt to clone it. It should fail since the transformers reject it.
-            final ModelNode clone = Util.createEmptyOperation(CLONE, fullHaAddress);
+            final ModelNode clone = Util.createEmptyOperation(CLONE, newProfileAddress);
             clone.get(TO_PROFILE).set("cloned");
             DomainTestUtils.executeForFailure(clone, masterClient);
 
@@ -257,6 +275,48 @@ public abstract class SimpleMixedDomainTest  {
         }
     }
 
+
+    private void profileCloneEap7x() throws Exception {
+        // EAP 7 allows the clone operation.
+        // However EAP 7 will need to take into account the ignore-unused-configuration
+        // setting which does not exist in 6.x
+        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+        final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
+        try {
+            final PathAddress newProfileAddress = PathAddress.pathAddress(PROFILE, "new-profile");
+
+            //Create a new profile (so that we can ignore it on the host later)
+            DomainTestUtils.executeForResult(Util.createAddOperation(newProfileAddress), masterClient);
+
+            //Attempt to clone it. It should work but not exist on the slave since unused configuration is ignored
+            final ModelNode clone = Util.createEmptyOperation(CLONE, newProfileAddress);
+            clone.get(TO_PROFILE).set("cloned");
+            DomainTestUtils.executeForResult(clone, masterClient);
+
+            //Check the new profile does not exist on the slave
+            final ModelNode readChildrenNames = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, PathAddress.EMPTY_ADDRESS);
+            readChildrenNames.get(CHILD_TYPE).set(PROFILE);
+            ModelNode result = DomainTestUtils.executeForResult(readChildrenNames, slaveClient);
+            List<ModelNode> list = result.asList();
+            Assert.assertEquals(1, list.size());
+            Assert.assertEquals(list.toString(), "full-ha", list.get(0).asString());
+
+            //Update the server group to use the new profile
+            DomainTestUtils.executeForResult(
+                    Util.getWriteAttributeOperation(PathAddress.pathAddress(SERVER_GROUP, "other-server-group"), PROFILE, "new-profile"),
+                    masterClient);
+
+            //Check the profiles
+            result = DomainTestUtils.executeForResult(readChildrenNames, slaveClient);
+            list = result.asList();
+            Assert.assertEquals(1, list.size());
+            Assert.assertEquals(list.toString(), "new-profile", list.get(0).asString());
+
+        } finally {
+            IoUtils.safeClose(slaveClient);
+            IoUtils.safeClose(masterClient);
+        }
+    }
     /*
         !!!!!!!!! ADD TESTS IN NUMERICAL ORDER !!!!!!!!!!
         Please observe the test<5 digits>_ pattern for the names to ensure the order

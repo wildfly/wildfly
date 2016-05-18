@@ -134,20 +134,20 @@ public class CalendarBasedTimeout {
         this.dayOfMonth = new DayOfMonth(schedule.getDayOfMonth());
         this.month = new Month(schedule.getMonth());
         this.year = new Year(schedule.getYear());
-        if (schedule.getTimezone() != null && schedule.getTimezone().trim().isEmpty() == false) {
+        String timezoneId = schedule.getTimezone();
+        if (timezoneId != null && !(timezoneId = timezoneId.trim()).isEmpty()) {
             // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
             // GMT, which may not always be desirable.
             // So we first check to see if the timezone id specified is available in
             // timezone ids in the system. If it's available then we log a WARN message
             // and fallback on the server's timezone.
-            String timezoneId = schedule.getTimezone();
             String[] availableTimeZoneIDs = TimeZone.getAvailableIDs();
             if (availableTimeZoneIDs != null && Arrays.asList(availableTimeZoneIDs).contains(timezoneId)) {
                 this.timezone = TimeZone.getTimeZone(timezoneId);
             } else {
-                ROOT_LOGGER.unknownTimezoneId(timezoneId, TimeZone.getDefault().getID());
                 // use server's timezone
                 this.timezone = TimeZone.getDefault();
+                ROOT_LOGGER.unknownTimezoneId(timezoneId, this.timezone.getID());
             }
         } else {
             this.timezone = TimeZone.getDefault();

@@ -30,10 +30,9 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  * Cache entry that store authentication data plus any local context.
  * @author Paul Ferraro
  * @param <A> the identity type
- * @param <D> the deployment identifier type
  * @param <L> the local context type
  */
-public class AuthenticationEntry<A, D, L> {
+public class AuthenticationEntry<A, L> {
 
     private final MarshalledValue<A, MarshallingContext> authentication;
     private final AtomicReference<L> localContext = new AtomicReference<>();

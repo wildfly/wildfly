@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+package org.jboss.as.test.iiopssl.basic;
+
+import javax.ejb.RemoteHome;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
 
 /**
- * Simple container for CoarseAuthenticationEntry and sessions map.
- * @author Paul Ferraro
+ * @author Bartosz Spyrko-Smietanko
  */
-public class CoarseSSOEntry<A, D, L> {
+@RemoteHome(IIOPSslStatelessHome.class)
+@Stateless
+public class IIOPSslStatelessBean {
 
-    private final A authentication;
-    private final AtomicReference<L> localContext;
-    private final Map<D, String> sessions;
-
-    public CoarseSSOEntry(A authentication, AtomicReference<L> localContext, Map<D, String> sessions) {
-        this.authentication = authentication;
-        this.localContext = localContext;
-        this.sessions = sessions;
+    public String hello() {
+        return "hello";
     }
 
-    public A getAuthentication() {
-        return this.authentication;
+    public void ejbCreate() {
+
     }
 
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
+    public void ejbActivate() {
+
     }
 
-    public Map<D, String> getSessions() {
-        return this.sessions;
+    public void ejbPassivate() {
+
+    }
+
+    public void ejbRemove() {
+
+    }
+
+    public void setSessionContext(SessionContext context) {
+
     }
 }

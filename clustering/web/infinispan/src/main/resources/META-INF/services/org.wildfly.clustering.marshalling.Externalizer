@@ -8,3 +8,5 @@ org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyFilterEx
 org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyExternalizer
 org.wildfly.clustering.web.infinispan.sso.AuthenticationEntryExternalizer
 org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyExternalizer
+org.wildfly.clustering.web.infinispan.sso.coarse.SessionFilterExternalizer
+org.wildfly.clustering.web.infinispan.sso.coarse.SessionsFilterExternalizer

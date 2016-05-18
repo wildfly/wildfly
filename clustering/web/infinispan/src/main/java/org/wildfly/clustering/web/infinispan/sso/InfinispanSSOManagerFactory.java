@@ -23,6 +23,8 @@ package org.wildfly.clustering.web.infinispan.sso;
 
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
@@ -50,8 +52,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
-import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOEntry;
-import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOFactory;
+import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
@@ -84,8 +85,9 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
         Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(marshalledValueFactory, marshallingContext);
         Cache<Key<String>, ?> cache = this.configuration.getCache();
         Configuration config = cache.getCacheConfiguration();
-        boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
-        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(cache, marshaller, localContextFactory, lockOnRead);
+        boolean lockOnRead = cache.getCacheConfiguration().transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;
+        SessionsFactory<Map<D, String>, D> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getCache());
+        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, String>, A, D, L> factory = new InfinispanSSOFactory<>(this.configuration.getCache(), marshaller, localContextFactory, sessionsFactory, lockOnRead);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, cache, this.configuration.getKeyAffinityServiceFactory());
         Batcher<TransactionBatch> batcher = new InfinispanBatcher(cache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);

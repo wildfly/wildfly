@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import io.undertow.Version;
-
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -142,8 +140,6 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
             }
         }, OperationContext.Stage.RUNTIME);
-
-        UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());
 
         DistributableSessionIdentifierCodecBuilder builder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
         if (builder != null) {

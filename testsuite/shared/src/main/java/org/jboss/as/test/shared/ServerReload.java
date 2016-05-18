@@ -22,11 +22,14 @@
 
 package org.jboss.as.test.shared;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -34,9 +37,12 @@ import java.net.UnknownHostException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.xnio.IoUtils;
 
@@ -44,6 +50,8 @@ import org.xnio.IoUtils;
  * @author Stuart Douglas
  */
 public class ServerReload {
+
+    private static final Logger log = Logger.getLogger(ServerReload.class);
 
     public static final int TIMEOUT = 100000;
 
@@ -118,5 +126,87 @@ public class ServerReload {
             }
         }
         fail("Live Server did not reload in the imparted time.");
+    }
+
+    public static String getContainerRunningState(ManagementClient managementClient) throws IOException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(NAME).set("server-state");
+        ModelNode rsp = managementClient.getControllerClient().execute(operation);
+        return SUCCESS.equals(rsp.get(OUTCOME).asString()) ? rsp.get(RESULT).asString() : FAILED;
+    }
+
+    /**
+     * {@link ServerSetupTask} that if necessary calls
+     * {@link #executeReloadAndWaitForCompletion(ModelControllerClient)} in the {@code setup} method
+     */
+    public static class BeforeSetupTask extends SetupTask {
+
+        public static final BeforeSetupTask INSTANCE = new BeforeSetupTask();
+
+        public BeforeSetupTask() {
+            super(true, false);
+        }
+    }
+
+    /**
+     * {@link ServerSetupTask} that if necessary calls
+     * {@link #executeReloadAndWaitForCompletion(ModelControllerClient)} in the {@code tearDown} method
+     */
+    public static class AfterSetupTask extends SetupTask {
+
+        public static final AfterSetupTask INSTANCE = new AfterSetupTask();
+
+        public AfterSetupTask() {
+            super(false, true);
+        }
+    }
+
+    private static class SetupTask implements ServerSetupTask {
+
+        private final boolean before;
+        private final boolean after;
+
+        private SetupTask(boolean before, boolean after) {
+            this.before = before;
+            this.after = after;
+        }
+
+        /**
+         * If required, calls {@link #executeReloadAndWaitForCompletion(ModelControllerClient)}.
+         *
+         * {@inheritDoc}
+         */
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            if (before) {
+                reloadIfRequired(managementClient);
+            }
+        }
+
+        /**
+         * If required, calls {@link #executeReloadAndWaitForCompletion(ModelControllerClient)}.
+         *
+         * {@inheritDoc}
+         */
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            if (after) {
+                reloadIfRequired(managementClient);
+            }
+        }
+
+        private void reloadIfRequired(final ManagementClient managementClient) throws Exception {
+            String runningState = getContainerRunningState(managementClient);
+            if ("reload-required".equalsIgnoreCase(runningState)) {
+                log.info("Reloading in tearDown");
+                executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            } else {
+                log.debugf("Not reloading in tearDown; server-state is %s", runningState);
+                Assert.assertEquals("running", runningState);
+            }
+
+        }
     }
 }

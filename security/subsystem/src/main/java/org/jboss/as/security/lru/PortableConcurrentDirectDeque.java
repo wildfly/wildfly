@@ -22,7 +22,7 @@
  * at http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package org.jboss.as.security.org.jboss.as.security.lru;
+package org.jboss.as.security.lru;
 
 import java.util.ArrayList;
 import java.util.Collection;
