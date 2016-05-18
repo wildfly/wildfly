@@ -42,6 +42,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -68,6 +69,11 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         return new String[] {
                 "/subsystem-templates/jca.xml"
         };
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
     }
 
     @Test

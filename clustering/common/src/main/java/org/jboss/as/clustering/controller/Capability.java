@@ -30,14 +30,14 @@ import org.jboss.msc.service.ServiceName;
  * Interface to be implemented by capability enumerations.
  * @author Paul Ferraro
  */
-public interface Capability extends Definable<RuntimeCapability<Void>>, ResourceServiceNameFactory {
+public interface Capability extends Definable<RuntimeCapability<?>>, ResourceServiceNameFactory {
     /**
      * Resolves this capability against the specified path address
      * @param address a path address
      * @return a resolved runtime capability
      */
-    default RuntimeCapability<Void> resolve(PathAddress address) {
-        RuntimeCapability<Void> definition = this.getDefinition();
+    default RuntimeCapability<?> resolve(PathAddress address) {
+        RuntimeCapability<?> definition = this.getDefinition();
         return definition.isDynamicallyNamed() ? definition.fromBaseCapability(address.getLastElement().getValue()) : definition;
     }
 

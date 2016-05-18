@@ -42,6 +42,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
@@ -52,6 +53,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
@@ -65,6 +67,16 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
 
     private BroadcastGroupAdd() {
         super(BroadcastGroupDefinition.ATTRIBUTES);
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        ModelNode model = resource.getModel();
+        if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
+            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), context.getCurrentAddressValue()), BroadcastGroupDefinition.JGROUPS_STACK.getName());
+        }
     }
 
     @Override

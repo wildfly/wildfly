@@ -57,10 +57,10 @@ import org.jgroups.Channel;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
 
 /**
  * @author Paul Ferraro
@@ -76,15 +76,17 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
     }
 
     @Override
-    public Protocol findProtocol(ServiceRegistry registry, PathAddress address) throws ClassNotFoundException, ModuleLoadException {
+    public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
+        PathAddress address = context.getCurrentAddress();
         String channelName = address.getElement(address.size() - 2).getValue();
         String protocolName = address.getElement(address.size() - 1).getValue();
 
-        ServiceController<?> controller = registry.getService(ChannelServiceName.CHANNEL.getServiceName(channelName));
+        ServiceRegistry registry = context.getServiceRegistry(false);
+        ServiceController<?> controller = registry.getService(JGroupsRequirement.CHANNEL.getServiceName(context, channelName));
         if (controller != null) {
             Channel channel = (Channel) controller.getValue();
             if (channel != null) {
-                controller = registry.getService(ChannelServiceName.FACTORY.getServiceName(channelName));
+                controller = registry.getService(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName));
                 ChannelFactory factory = (ChannelFactory) controller.getValue();
                 if (factory != null) {
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();

@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
@@ -29,8 +30,8 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  */
 public class ProtocolConfigurationBuilder extends AbstractProtocolConfigurationBuilder<ProtocolConfiguration> {
 
-    public ProtocolConfigurationBuilder(String stackName, String name) {
-        super(stackName, name);
+    public ProtocolConfigurationBuilder(PathAddress address) {
+        super(address);
     }
 
     @Override

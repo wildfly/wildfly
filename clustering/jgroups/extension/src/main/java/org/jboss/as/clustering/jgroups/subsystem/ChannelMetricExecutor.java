@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.JChannel;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
  * Handler for reading run-time only attributes from an underlying channel service.
@@ -42,7 +42,7 @@ public class ChannelMetricExecutor implements MetricExecutor<JChannel> {
     public ModelNode execute(OperationContext context, Metric<JChannel> metric) throws OperationFailedException {
         String channelName = context.getCurrentAddressValue();
 
-        JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), ChannelServiceName.CHANNEL.getServiceName(channelName));
+        JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), JGroupsRequirement.CHANNEL.getServiceName(context, channelName));
 
         return (channel != null) ? metric.execute(channel) : null;
     }

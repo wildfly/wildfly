@@ -10,21 +10,11 @@ import org.wildfly.clustering.service.GroupServiceNameFactory;
 public enum GroupServiceName implements GroupServiceNameFactory {
     COMMAND_DISPATCHER() {
         @Override
-        public ServiceName getServiceName(String group) {
-            return BASE_SERVICE_NAME.append(this.toString(), group);
-        }
-
-        @Override
         public String toString() {
             return "dispatcher";
         }
     },
     NODE_FACTORY() {
-        @Override
-        public ServiceName getServiceName(String group) {
-            return BASE_SERVICE_NAME.append(this.toString(), group);
-        }
-
         @Override
         public String toString() {
             return "nodes";
@@ -32,16 +22,16 @@ public enum GroupServiceName implements GroupServiceNameFactory {
     },
     GROUP() {
         @Override
-        public ServiceName getServiceName(String group) {
-            return BASE_SERVICE_NAME.append(this.toString(), group);
-        }
-
-        @Override
         public String toString() {
             return "group";
         }
     },
     ;
+
+    @Override
+    public ServiceName getServiceName(String group) {
+        return BASE_SERVICE_NAME.append(this.toString(), (group != null) ? group : GroupServiceNameFactory.DEFAULT_GROUP);
+    }
 
     public static final String BASE_NAME = "clustering";
     static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append(BASE_NAME);

@@ -22,15 +22,20 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.CommonRequirement;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,6 +43,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -45,10 +51,15 @@ import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DefaultDiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.DiscardPolicy;
+import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * Definition for /subsystem=jgroups/channel=* resources
@@ -63,26 +74,53 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         return PathElement.pathElement("channel", name);
     }
 
+    enum Capability implements CapabilityProvider {
+        JCHANNEL(JGroupsRequirement.CHANNEL, CommonRequirement.MBEAN_SERVER),
+        FORK_CHANNEL_FACTORY(JGroupsRequirement.CHANNEL_FACTORY),
+        JCHANNEL_FACTORY(JGroupsRequirement.CHANNEL_SOURCE),
+        JCHANNEL_MODULE(JGroupsRequirement.CHANNEL_MODULE),
+        JCHANNEL_CLUSTER(JGroupsRequirement.CHANNEL_CLUSTER),
+        ;
+        private org.jboss.as.clustering.controller.Capability capablity;
+
+        Capability(UnaryRequirement requirement, Requirement... requirements) {
+            this.capablity = new UnaryRequirementCapability(requirement, requirements);
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Capability getCapability() {
+            return this.capablity;
+        }
+    }
+
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STACK("stack", ModelType.STRING, false), // 'stack' is required since model 4.0.0
+        STACK("stack", ModelType.STRING, new CapabilityReference(Capability.JCHANNEL_FACTORY, JGroupsRequirement.CHANNEL_FACTORY)),
         MODULE("module", ModelType.STRING, new ModelNode("org.wildfly.clustering.server"), new ModuleIdentifierValidatorBuilder()),
-        CLUSTER("cluster", ModelType.STRING, true)
+        CLUSTER("cluster", ModelType.STRING)
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, boolean allowNull) {
-            this.definition = createBuilder(name, type, allowNull).build();
+        Attribute(String name, ModelType type) {
+            this.definition = createBuilder(name, type).build();
         }
 
         Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, true).setDefaultValue(defaultValue);
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type).setDefaultValue(defaultValue);
             this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean allowNull) {
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type)
+                    .setAllowExpression(false)
+                    .setAllowNull(false)
+                    .setCapabilityReference(reference)
+                    .build();
+        }
+
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(allowNull)
+                    .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
         }
@@ -94,22 +132,75 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        if (JGroupsModel.VERSION_4_0_0.requiresTransformation(version)) {
-            DiscardAttributeChecker discarder = new DefaultDiscardAttributeChecker(false, true) {
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            DynamicDiscardPolicy channelDiscardRejectPolicy = new DynamicDiscardPolicy() {
                 @Override
-                protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                    return !attributeValue.isDefined() || attributeValue.equals(new ModelNode(address.getLastElement().getValue()));
+                public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
+                    // Check whether all channel resources are used by the infinispan subsystem, and transformed
+                    // by its corresponding transformers; reject otherwise
+
+                    // n.b. we need to hard-code the values because otherwise we would end up with cyclical dependency
+
+                    String channelName = address.getLastElement().getValue();
+
+                    PathAddress rootAddress = address.subAddress(0, address.size() - 2);
+                    PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"));
+
+                    Resource infinispanResource;
+                    try {
+                        infinispanResource = context.readResourceFromRoot(subsystemAddress);
+                    } catch (Resource.NoSuchResourceException ex) {
+                        return DiscardPolicy.REJECT_AND_WARN;
+                    }
+                    ModelNode infinispanModel = Resource.Tools.readModel(infinispanResource);
+
+                    if (infinispanModel.hasDefined("cache-container")) {
+                        for (ModelNode container : infinispanModel.get("cache-container").asList()) {
+                            ModelNode cacheContainer = container.get(0);
+                            if (cacheContainer.hasDefined("transport")) {
+                                ModelNode transport = cacheContainer.get("transport").get("jgroups");
+                                if (transport.hasDefined("channel")) {
+                                    String channel = transport.get("channel").asString();
+                                    if (channel.equals(channelName)) {
+                                        return DiscardPolicy.SILENT;
+                                    }
+                                } else {
+                                    // In that case, if this were the default channel, it can be discarded too
+                                    ModelNode subsystem = context.readResourceFromRoot(address.subAddress(0, address.size() - 1)).getModel();
+                                    if (subsystem.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
+                                        if (subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName()).asString().equals(channelName)) {
+                                            return DiscardPolicy.SILENT;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // No references to this channel, we need to reject it.
+                    return DiscardPolicy.REJECT_AND_WARN;
                 }
             };
-            builder.getAttributeBuilder()
-                    .setDiscard(discarder, Attribute.CLUSTER.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLUSTER.getDefinition())
-                    ;
-        }
+            parent.addChildResource(WILDCARD_PATH, channelDiscardRejectPolicy);
+        } else {
+            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        ForkProtocolResourceDefinition.buildTransformation(version, builder);
+            if (JGroupsModel.VERSION_4_0_0.requiresTransformation(version)) {
+                DiscardAttributeChecker discarder = new DefaultDiscardAttributeChecker(false, true) {
+                    @Override
+                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return !attributeValue.isDefined() || attributeValue.equals(new ModelNode(address.getLastElement().getValue()));
+                    }
+                };
+                builder.getAttributeBuilder()
+                        .setDiscard(discarder, Attribute.CLUSTER.getDefinition())
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLUSTER.getDefinition())
+                        ;
+            }
+
+            ForkProtocolResourceDefinition.buildTransformation(version, builder);
+        }
     }
 
     final boolean allowRuntimeOnlyRegistration;
@@ -123,7 +214,10 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addCapabilities(Capability.class)
+                ;
         ResourceServiceHandler handler = new ChannelServiceHandler();
         new AddStepHandler(descriptor, handler) {
             @SuppressWarnings("deprecation")

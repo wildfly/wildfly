@@ -32,18 +32,17 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -51,23 +50,21 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolConfiguration> implements ResourceServiceBuilder<P>, Value<P>, ProtocolConfiguration {
+public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolConfiguration> extends ProtocolServiceNameProvider implements ResourceServiceBuilder<P>, Value<P>, ProtocolConfiguration {
 
-    private final String stackName;
     private final String name;
 
     private final Map<String, String> properties = new HashMap<>();
     private ModuleIdentifier module = ProtocolConfiguration.DEFAULT_MODULE;
     private ValueDependency<SocketBinding> socketBinding;
 
-    public AbstractProtocolConfigurationBuilder(String stackName, String name) {
-        this.stackName = stackName;
-        this.name = name;
+    public AbstractProtocolConfigurationBuilder(PathAddress address) {
+        this(address.getParent(), address.getLastElement().getValue());
     }
 
-    @Override
-    public ServiceName getServiceName() {
-        return ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(this.stackName).append(this.name);
+    private AbstractProtocolConfigurationBuilder(PathAddress stackAddress, String name) {
+        super(stackAddress, name);
+        this.name = name;
     }
 
     @Override
@@ -119,5 +116,10 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
     @Override
     public ModuleIdentifier getModule() {
         return this.module;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

@@ -23,6 +23,7 @@
 <subsystem xmlns="urn:jboss:domain:jgroups:4.0">
     <channels default="default">
         <channel name="default" stack="minimal"/>
+        <channel name="bridge" stack="default"/>
     </channels>
     <stacks default="maximal">
         <stack name="maximal">
@@ -75,12 +76,7 @@
             </relay>
         </stack>
         <stack name="minimal">
-            <transport type="UDP">
-                <default-thread-pool min-threads="11"/>
-                <internal-thread-pool queue-length="22"/>
-                <oob-thread-pool keepalive-time="34"/>
-                <timer-thread-pool max-threads="43"/>
-            </transport>
+            <transport type="UDP"/>
         </stack>
     </stacks>
 </subsystem>

@@ -58,7 +58,7 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
         // Install local group services
         for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
             InfinispanLogger.ROOT_LOGGER.debugf("Installing %s for %s group", provider.getClass().getSimpleName(), LocalGroupBuilderProvider.LOCAL);
-            for (Builder<?> builder : provider.getBuilders(LocalGroupBuilderProvider.LOCAL, null)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), LocalGroupBuilderProvider.LOCAL)) {
                 builder.build(context.getServiceTarget()).install();
             }
         }
@@ -67,7 +67,7 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(LocalGroupBuilderProvider.LOCAL, null)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), LocalGroupBuilderProvider.LOCAL)) {
                 context.removeService(builder.getServiceName());
             }
         }

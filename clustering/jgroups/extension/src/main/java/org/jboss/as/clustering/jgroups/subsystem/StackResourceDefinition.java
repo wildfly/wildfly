@@ -23,12 +23,14 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -49,6 +51,8 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * Resource description for the addressable resource /subsystem=jgroups/stack=X
@@ -62,6 +66,21 @@ public class StackResourceDefinition extends ChildResourceDefinition {
 
     public static PathElement pathElement(String name) {
         return PathElement.pathElement("stack", name);
+    }
+
+    enum Capability implements CapabilityProvider {
+        JCHANNEL_FACTORY(JGroupsRequirement.CHANNEL_FACTORY),
+        ;
+        private final org.jboss.as.clustering.controller.Capability capability;
+
+        Capability(UnaryRequirement requirement) {
+            this.capability = new UnaryRequirementCapability(requirement);
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Capability getCapability() {
+            return this.capability;
+        }
     }
 
     @Deprecated
@@ -110,7 +129,7 @@ public class StackResourceDefinition extends ChildResourceDefinition {
         StackProtocolResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = new JChannelFactoryBuilderFactory();
+    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new JChannelFactoryBuilder(address);
     private final boolean allowRuntimeOnlyRegistration;
 
     // registration
@@ -124,7 +143,10 @@ public class StackResourceDefinition extends ChildResourceDefinition {
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addExtraParameters(TRANSPORT, PROTOCOLS);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addExtraParameters(TRANSPORT, PROTOCOLS)
+                .addCapabilities(Capability.class)
+                ;
         ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);
         new AddStepHandler(descriptor, handler) {
             @Override
