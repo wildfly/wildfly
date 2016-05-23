@@ -31,6 +31,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 
 /**
@@ -75,6 +76,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         try {
             AuthenticatedSession session = new AuthenticatedSession(account, mechanism);
             SSO<AuthenticatedSession, String, Void> sso = this.manager.createSSO(id, session);
+            UndertowLogger.ROOT_LOGGER.tracef("Creating SSO ID %s for Principal %s and Roles %s", id, account.getPrincipal().getName(), account.getRoles().toString());
             return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -99,9 +101,11 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         try {
             SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
             if (sso == null) {
+                UndertowLogger.ROOT_LOGGER.tracef("SSO ID %s not found on the session manager.", id);
                 batch.close();
                 return null;
             }
+            UndertowLogger.ROOT_LOGGER.tracef("SSO ID %s found on the session manager.", id);
             return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -113,6 +117,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     @Override
     public void removeSingleSignOn(SingleSignOn sso) {
         if (sso instanceof InvalidatableSingleSignOn) {
+            UndertowLogger.ROOT_LOGGER.tracef("Removing SSO ID %s", sso.getId());
             ((InvalidatableSingleSignOn) sso).invalidate();
         }
     }

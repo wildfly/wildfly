@@ -40,6 +40,7 @@ import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Adapts an {@link SSO} to a {@link SingleSignOn}.
@@ -108,6 +109,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     @Override
     public void add(Session session) {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            UndertowLogger.ROOT_LOGGER.tracef("Adding Session ID %s to SSO session %s.", session.getId(), this.sso.getId());
             this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
         }
     }
@@ -115,6 +117,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     @Override
     public void remove(Session session) {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            UndertowLogger.ROOT_LOGGER.tracef("Removing SSO ID %s from deployment %s.", this.sso.getId(), session.getSessionManager().getDeploymentName());
             this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
         }
     }
@@ -141,6 +144,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         // The batch associated with this SSO might not be valid (e.g. in the case of logout).
         try (BatchContext context = this.closed.compareAndSet(false, true) ? this.batcher.resumeBatch(this.batch) : null) {
             try (Batch batch = (context != null) ? this.batch : this.batcher.createBatch()) {
+                UndertowLogger.ROOT_LOGGER.tracef("Invalidating SSO ID %s.", this.sso.getId());
                 this.sso.invalidate();
             }
         }
@@ -169,6 +173,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         public void invalidate(HttpServerExchange exchange) {
             Session session = this.manager.getSession(exchange, new SimpleSessionConfig(this.sessionId));
             if (session != null) {
+                UndertowLogger.ROOT_LOGGER.tracef("Invalidating Session ID %s.", session.getId());
                 session.invalidate(exchange);
             }
         }
