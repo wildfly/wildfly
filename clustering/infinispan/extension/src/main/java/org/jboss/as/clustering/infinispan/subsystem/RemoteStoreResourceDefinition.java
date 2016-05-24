@@ -110,7 +110,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
                     .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setCapabilityReference(new CapabilityReference(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, Capability.OUTBOUND_SOCKET_BINDING))
+                    .setCapabilityReference(new CapabilityReference(Capability.OUTBOUND_SOCKET_BINDING, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMinSize(1)
                     .build();

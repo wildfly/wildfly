@@ -68,7 +68,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT("default", ModelType.STRING, new CapabilityReference(SingletonRequirement.SINGLETON_POLICY, Capability.DEFAULT_POLICY)),
+        DEFAULT("default", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_POLICY, SingletonRequirement.SINGLETON_POLICY)),
         ;
         private final SimpleAttributeDefinition definition;
 

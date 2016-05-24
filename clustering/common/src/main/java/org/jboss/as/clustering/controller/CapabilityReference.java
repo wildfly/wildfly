@@ -22,10 +22,14 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import org.jboss.as.controller.CapabilityReferenceRecorder;
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.wildfly.clustering.service.Requirement;
 import org.jboss.as.controller.OperationContext;
+import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * {@link CapabilityReferenceRecorder} that delegates to {@link Capability#resolve(org.jboss.as.controller.PathAddress)} to generate the name of the dependent capability.
@@ -35,33 +39,33 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
 
     private final Requirement requirement;
     private final Capability capability;
+    private final Function<String, Optional<String>> requirementResolver;
 
     /**
      * Creates a new reference between the specified requirement and the specified capability
      * @param requirement the requirement of the specified capability
      * @param capability the capability referencing the specified requirement
      */
-    public CapabilityReference(Requirement requirement, Capability capability) {
-        this.requirement = requirement;
+    public CapabilityReference(Capability capability, UnaryRequirement requirement) {
+        this(capability, requirement, value -> (value != null) ? Optional.of(requirement.resolve(value)) : Optional.empty());
+    }
+
+    CapabilityReference(Capability capability, Requirement requirement, Function<String, Optional<String>> requirementResolver) {
         this.capability = capability;
+        this.requirement = requirement;
+        this.requirementResolver = requirementResolver;
     }
 
     @Override
-    public void addCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
+    public void addCapabilityRequirements(OperationContext context, String attributeName, String... values) {
         String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
-        for (String attributeValue : attributeValues) {
-            String requirementName = RuntimeCapability.buildDynamicCapabilityName(this.requirement.getName(), attributeValue);
-            context.registerAdditionalCapabilityRequirement(requirementName, dependentName, attributeName);
-        }
+        Stream.of(values).forEach(value -> this.requirementResolver.apply(value).ifPresent(requirementName -> context.registerAdditionalCapabilityRequirement(requirementName, dependentName, attributeName)));
     }
 
     @Override
-    public void removeCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
+    public void removeCapabilityRequirements(OperationContext context, String attributeName, String... values) {
         String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
-        for (String attributeValue : attributeValues) {
-            String requirementName = RuntimeCapability.buildDynamicCapabilityName(this.requirement.getName(), attributeValue);
-            context.deregisterCapabilityRequirement(requirementName, dependentName);
-        }
+        Stream.of(values).forEach(value -> this.requirementResolver.apply(value).ifPresent(requirementName -> context.deregisterCapabilityRequirement(requirementName, dependentName)));
     }
 
     @Override

@@ -67,7 +67,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         NAME_PREFERENCES("name-preferences", "socket-binding-preferences"),
-        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, Capability.SOCKET_BINDING_PREFERENCE)),
+        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(Capability.SOCKET_BINDING_PREFERENCE, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING)),
         ;
         private final AttributeDefinition definition;
 
