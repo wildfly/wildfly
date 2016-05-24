@@ -22,13 +22,12 @@ Key Features
 * Modular Design
 * Unified Configuration and Management
 * Distributed Domain Management
-* OSGi
 
 Release Notes
 -------------
-You can obtain the 10.0.0.Beta1 release notes here:
+You can obtain the 10.0.0.Final release notes here:
 
-https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12313721&version=12327160
+http://wildfly.org/news/2016/01/29/WildFly10-Released/
 
 Getting Started
 ---------------
