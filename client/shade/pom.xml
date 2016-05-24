@@ -78,6 +78,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <!-- Intentionally empty - can specify custom manifest entries here -->
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
                             <createSourcesJar>true</createSourcesJar>
                         </configuration>
                     </execution>
