@@ -153,6 +153,8 @@ public class ServiceBasedNamingStore implements NamingStore {
             NameNotFoundException n = new NameNotFoundException(name);
             n.initCause(e);
             throw n;
+        } catch (SecurityException ex) {
+            throw ex;
         } catch (Throwable t) {
             throw NamingLogger.ROOT_LOGGER.lookupError(t, name);
         }
