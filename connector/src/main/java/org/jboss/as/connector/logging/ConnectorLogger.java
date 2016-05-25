@@ -845,6 +845,12 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 97, value = "Exception while stopping resource adapter")
     void errorStoppingRA(@Cause Throwable cause);
+
+    @LogMessage(level = INFO)
+    @Message(id = 98, value = "Bound non-transactional data source: %s")
+    void boundNonJTADataSource(String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 99, value = "Unbound non-transactional data source: %s")
+    void unBoundNonJTADataSource(String jndiName);
 }
-
-

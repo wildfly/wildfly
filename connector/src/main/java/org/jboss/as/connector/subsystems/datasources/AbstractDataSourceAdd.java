@@ -197,7 +197,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final List<ServiceName> serviceNames = registry.getServiceNames();
 
 
+        final boolean jta;
         if (isXa) {
+            jta = true;
             final ModifiableXaDataSource dataSourceConfig;
             try {
                 dataSourceConfig = xaFrom(context, model, dsName);
@@ -255,6 +257,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             } catch (ValidateException e) {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToCreate("DataSource", operation, e.getLocalizedMessage()));
             }
+            jta = dataSourceConfig.isJTA();
             final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
             final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
 
@@ -326,11 +329,19 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                if (jta) {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                } else {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.boundNonJTADataSource(jndiName);
+                                }
                                 break;
                             }
                             case STOPPING_to_DOWN: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                if (jta) {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                } else {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.unBoundNonJTADataSource(jndiName);
+                                }
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
