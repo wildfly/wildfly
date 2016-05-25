@@ -427,7 +427,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
         @Override
         public SessionMetaData getMetaData() {
-            if (!this.isValid()) {
+            if (!this.session.isValid()) {
                 throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
             }
             return this.session.getMetaData();
@@ -440,12 +440,15 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
         @Override
         public void invalidate() {
+            if (!this.session.isValid()) {
+                throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+            }
             this.session.invalidate();
         }
 
         @Override
         public SessionAttributes getAttributes() {
-            if (!this.isValid()) {
+            if (!this.session.isValid()) {
                 throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
             }
             return this.session.getAttributes();

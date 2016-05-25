@@ -40,12 +40,6 @@ public interface ImmutableSession {
     ImmutableSessionMetaData getMetaData();
 
     /**
-     * Indicates whether or not this session was invalidated.
-     * @return true if this session is still valid, false otherwise.
-     */
-    boolean isValid();
-
-    /**
      * Returns this session's attributes.
      * @return this session's attributes
      * @throws IllegalStateException if this session is invalid

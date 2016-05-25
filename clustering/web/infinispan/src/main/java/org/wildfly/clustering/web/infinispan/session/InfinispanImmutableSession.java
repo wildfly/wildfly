@@ -52,11 +52,6 @@ public class InfinispanImmutableSession implements ImmutableSession {
     }
 
     @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
     public ImmutableSessionMetaData getMetaData() {
         return this.metaData;
     }

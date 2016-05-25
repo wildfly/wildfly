@@ -22,12 +22,10 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Instant;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionMetaData;
@@ -38,14 +36,13 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 public class InfinispanSession<L> extends InfinispanImmutableSession implements Session<L> {
 
-    private final SessionMetaData metaData;
+    private final InvalidatableSessionMetaData metaData;
     private final SessionAttributes attributes;
     private final AtomicReference<L> localContext;
     private final LocalContextFactory<L> localContextFactory;
     private final Remover<String> remover;
-    private final AtomicBoolean valid = new AtomicBoolean(true);
 
-    public InfinispanSession(String id, SessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
+    public InfinispanSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
         super(id, metaData, attributes);
         this.metaData = metaData;
         this.attributes = attributes;
@@ -61,15 +58,14 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
 
     @Override
     public void invalidate() {
-        if (!this.valid.compareAndSet(true, false)) {
-            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+        if (this.metaData.invalidate()) {
+            this.remover.remove(this.getId());
         }
-        this.remover.remove(this.getId());
     }
 
     @Override
     public boolean isValid() {
-        return this.valid.get();
+        return this.metaData.isValid();
     }
 
     @Override
@@ -79,7 +75,7 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
 
     @Override
     public void close() {
-        if (this.valid.get()) {
+        if (this.metaData.isValid()) {
             this.metaData.setLastAccessedTime(Instant.now());
         }
     }

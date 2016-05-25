@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,17 +22,21 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.time.Duration;
+import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
- * The more static aspects of a session's meta-data.
  * @author Paul Ferraro
  */
-public interface SessionCreationMetaData extends ImmutableSessionCreationMetaData {
-
-    void setMaxInactiveInterval(Duration duration);
-
+public interface InvalidatableSessionMetaData extends SessionMetaData {
+    /**
+     * Indicates whether or not this session is still valid.
+     * @return true, if this session is valid, false otherwise
+     */
     boolean isValid();
 
+    /**
+     * Invalidates the session.
+     * @return true, if session was invalidated, false if it was already invalid.
+     */
     boolean invalidate();
 }
