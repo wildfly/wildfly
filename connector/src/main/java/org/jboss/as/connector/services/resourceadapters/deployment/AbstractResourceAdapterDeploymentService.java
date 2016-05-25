@@ -38,6 +38,7 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.naming.Reference;
 import javax.resource.spi.ResourceAdapter;
+import javax.security.auth.Subject;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -52,6 +53,7 @@ import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.connector.util.JCAValidatorFactory;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
@@ -114,6 +116,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
 
     protected String raRepositoryRegistrationId;
     protected String connectorServicesRegistrationName;
@@ -263,6 +266,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<SubjectFactory> getSubjectFactoryInjector() {
         return subjectFactory;
+    }
+
+    public Injector<ServerSecurityManager> getServerSecurityManager() {
+        return secManager;
     }
 
     public Injector<CachedConnectionManager> getCcmInjector() {
@@ -607,7 +614,23 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
             } else {
-                return new PicketBoxSubjectFactory(subjectFactory.getValue());
+                return new PicketBoxSubjectFactory(subjectFactory.getValue()){
+
+                    @Override
+                    public Subject createSubject(final String sd) {
+                        ServerSecurityManager sm = secManager.getOptionalValue();
+                        if (sm != null) {
+                            sm.push(sd);
+                        }
+                        try {
+                            return super.createSubject(sd);
+                        } finally {
+                            if (sm != null) {
+                                sm.pop();
+                            }
+                        }
+                    }
+                };
             }
         }
 

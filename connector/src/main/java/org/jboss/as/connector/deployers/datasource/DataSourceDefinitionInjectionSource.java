@@ -31,6 +31,7 @@ import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
@@ -40,6 +41,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.deployment.SecurityAttachments;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -68,6 +70,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
 import javax.sql.XADataSource;
+
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.Iterator;
@@ -226,6 +229,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         dataSourceService.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
+                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager())
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())

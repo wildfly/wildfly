@@ -52,12 +52,14 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.deployment.SecurityAttachments;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
@@ -292,6 +294,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
+                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager())
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
