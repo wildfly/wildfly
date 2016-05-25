@@ -22,13 +22,15 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
-import static org.wildfly.security.http.HttpConstants.CONFIG_LOGIN_PAGE;
-import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
-import static org.wildfly.security.http.HttpConstants.CONFIG_REALM;
+import static io.undertow.util.StatusCodes.OK;
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
+import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
+import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
+import static org.wildfly.security.http.HttpConstants.CONFIG_LOGIN_PAGE;
+import static org.wildfly.security.http.HttpConstants.CONFIG_REALM;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +46,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -372,6 +380,28 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                             ServletRequestContext servletRequestContext = httpServerExchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
                             return servletRequestContext.getCurrentServletContext().getSessionConfig();
                         }
+
+                        @Override
+                        public int forward(String path) {
+                            final ServletRequestContext servletRequestContext = httpServerExchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+                            ServletRequest req = servletRequestContext.getServletRequest();
+                            ServletResponse resp = servletRequestContext.getServletResponse();
+                            RequestDispatcher disp = req.getRequestDispatcher(path);
+
+                            final FormResponseWrapper respWrapper = httpServerExchange.getStatusCode() != OK && resp instanceof HttpServletResponse
+                                    ? new FormResponseWrapper((HttpServletResponse) resp) : null;
+
+                            try {
+                                disp.forward(req, respWrapper != null ? respWrapper : resp);
+                            } catch (ServletException e) {
+                                throw new RuntimeException(e);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            return respWrapper != null ? respWrapper.getStatus() : httpServerExchange.getStatusCode();
+                        }
+
                     })
                     .build();
         }
@@ -450,6 +480,31 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
          * Cancel the registration.
          */
         void cancel();
+
+    }
+
+    private static class FormResponseWrapper extends HttpServletResponseWrapper {
+
+        private int status = OK;
+
+        private FormResponseWrapper(final HttpServletResponse wrapped) {
+            super(wrapped);
+        }
+
+        @Override
+        public void setStatus(int sc, String sm) {
+            status = sc;
+        }
+
+        @Override
+        public void setStatus(int sc) {
+            status = sc;
+        }
+
+        @Override
+        public int getStatus() {
+            return status;
+        }
 
     }
 }
