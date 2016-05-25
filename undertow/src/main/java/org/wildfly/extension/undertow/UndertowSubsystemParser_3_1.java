@@ -152,7 +152,7 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                         JspDefinition.TRIM_SPACES,
                                                         JspDefinition.TAG_POOLING,
                                                         JspDefinition.MAPPED_FILE,
-                                                        JspDefinition.CHECK_INTERVAL,
+                                                        //JspDefinition.CHECK_INTERVAL,
                                                         JspDefinition.MODIFICATION_TEST_INTERVAL,
                                                         JspDefinition.RECOMPILE_ON_FAIL,
                                                         JspDefinition.SMAP,

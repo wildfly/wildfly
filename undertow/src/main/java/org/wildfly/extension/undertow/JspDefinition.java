@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -83,11 +84,13 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
+    @Deprecated
     protected static final SimpleAttributeDefinition CHECK_INTERVAL =
             new SimpleAttributeDefinitionBuilder(Constants.CHECK_INTERVAL, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(0))
                     .setAllowExpression(true)
+                    .setDeprecated(ModelVersion.create(3, 1, 0), false)
                     .build();
     protected static final SimpleAttributeDefinition MODIFICATION_TEST_INTERVAL =
             new SimpleAttributeDefinitionBuilder(Constants.MODIFICATION_TEST_INTERVAL, ModelType.INT, true)
@@ -228,7 +231,6 @@ class JspDefinition extends PersistentResourceDefinition {
         boolean trimSpaces = TRIM_SPACES.resolveModelAttribute(context, model).asBoolean();
         boolean tagPooling = TAG_POOLING.resolveModelAttribute(context, model).asBoolean();
         boolean mappedFile = MAPPED_FILE.resolveModelAttribute(context, model).asBoolean();
-        int checkInterval = CHECK_INTERVAL.resolveModelAttribute(context, model).asInt();
         int modificationTestInterval = MODIFICATION_TEST_INTERVAL.resolveModelAttribute(context, model).asInt();
         boolean recompileOnFile = RECOMPILE_ON_FAIL.resolveModelAttribute(context, model).asBoolean();
         boolean snap = SMAP.resolveModelAttribute(context, model).asBoolean();
@@ -243,7 +245,7 @@ class JspDefinition extends PersistentResourceDefinition {
         boolean xPoweredBy = X_POWERED_BY.resolveModelAttribute(context, model).asBoolean();
         boolean displaySourceFragment = DISPLAY_SOURCE_FRAGMENT.resolveModelAttribute(context, model).asBoolean();
         boolean optimizeScriptlets = OPTIMIZE_SCRIPTLETS.resolveModelAttribute(context, model).asBoolean();
-        return new JSPConfig(development, disabled, keepGenerated, trimSpaces, tagPooling, mappedFile, checkInterval, modificationTestInterval,
+        return new JSPConfig(development, disabled, keepGenerated, trimSpaces, tagPooling, mappedFile, -1, modificationTestInterval,
                 recompileOnFile, snap, dumpSnap, generateStringsAsCharArrays, errorOnUseBeanInvalidClassAttribute, scratchDir,
                 sourceVm, targetVm, javaEncoding, xPoweredBy, displaySourceFragment, optimizeScriptlets);
     }
