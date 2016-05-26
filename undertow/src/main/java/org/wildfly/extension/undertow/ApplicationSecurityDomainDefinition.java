@@ -53,6 +53,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import javax.servlet.http.HttpSession;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -104,6 +105,7 @@ import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import io.undertow.servlet.util.SavedRequest;
 
 /**
  * A {@link ResourceDefinition} to define the mapping from a security domain as specified in a web application
@@ -400,6 +402,25 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                             }
 
                             return respWrapper != null ? respWrapper.getStatus() : httpServerExchange.getStatusCode();
+                        }
+
+                        @Override
+                        public boolean suspendRequest() {
+                            SavedRequest.trySaveRequest(httpServerExchange);
+
+                            return true;
+                        }
+
+                        @Override
+                        public boolean resumeRequest() {
+                            final ServletRequestContext servletRequestContext = httpServerExchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+
+                            HttpSession session = servletRequestContext.getCurrentServletContext().getSession(httpServerExchange, false);
+                            if (session != null) {
+                                SavedRequest.tryRestoreRequest(httpServerExchange, session);
+                            }
+
+                            return true;
                         }
 
                     })
