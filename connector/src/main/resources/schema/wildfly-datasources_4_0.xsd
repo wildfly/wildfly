@@ -487,7 +487,7 @@
               a SQLException isValidConnection(Connection e) method to validate is a connection
               is valid. An exception means the connection is destroyed. This overrides
               the check-valid-connection-sql when present. Ex:
-              <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.vendor.OracleValidConnectionChecker"/>
+              <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
              ]]>
           </xs:documentation>
         </xs:annotation>
