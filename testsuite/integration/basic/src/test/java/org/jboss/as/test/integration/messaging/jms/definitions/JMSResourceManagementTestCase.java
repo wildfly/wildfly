@@ -144,8 +144,8 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
         //System.out.println("result = " + result.toJSONString(false));
-        assertEquals(-1, result.get("min-pool-size").asInt());
-        assertEquals(-1, result.get("max-pool-size").asInt());
+        assertEquals(0, result.get("min-pool-size").asInt());
+        assertEquals(20, result.get("max-pool-size").asInt());
         assertFalse(result.toJSONString(false), result.hasDefined("user"));
         assertFalse(result.hasDefined("password"));
         assertFalse(result.hasDefined("client-id"));
