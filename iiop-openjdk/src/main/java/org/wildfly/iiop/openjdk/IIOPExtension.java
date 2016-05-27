@@ -48,6 +48,7 @@ public class IIOPExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "iiop-openjdk";
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+
     protected static final PathElement PATH_ORB = PathElement.pathElement(Constants.CONFIGURATION,
             Constants.ORB);
     protected static final PathElement PATH_TCP = PathElement.pathElement(Constants.SETTING,
@@ -74,6 +75,7 @@ public class IIOPExtension implements Extension {
 
     static final ModelVersion VERSION_1 = ModelVersion.create(1);
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3);
+
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(IIOPExtension.SUBSYSTEM_NAME);

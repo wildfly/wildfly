@@ -1,0 +1,10 @@
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.1">
+    <properties>
+        <property name="${test.exp:some_property}" value="${test.exp:some_value}"/>
+    </properties>
+    <orb giop-version="${test.exp:1.2}" socket-binding="iiop2" ssl-socket-binding="iiop-ssl2"/>
+    <tcp high-water-mark="${test.exp:100}" number-to-reclaim="${test.exp:30}"/>
+    <initializers security="${test.exp:off}" transactions="${test.exp:spec}"/>
+    <naming root-context="${test.exp:JBoss/Naming/root}" export-corbaloc="${test.exp:false}"/>
+    <security support-ssl="${test.exp:false}" client-requires="${test.exp:None}"/>
+</subsystem>

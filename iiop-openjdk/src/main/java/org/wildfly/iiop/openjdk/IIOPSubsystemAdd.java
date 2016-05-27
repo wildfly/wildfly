@@ -382,6 +382,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private void configureClientSecurity(final Properties props) {
         final SSLConfigValue clientRequiresSSL = SSLConfigValue
                 .fromValue(props.getProperty(Constants.SECURITY_CLIENT_REQUIRES));
-        CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientRequiresSSL);
+        CSIV2IORToSocketInfo.setClientRequiresSSL(clientRequiresSSL);
     }
 }
