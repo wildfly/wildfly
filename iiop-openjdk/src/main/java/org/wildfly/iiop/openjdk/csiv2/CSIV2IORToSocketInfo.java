@@ -74,7 +74,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
 
     private static SSLConfigValue clientRequiresSsl;
 
-    public static void setClientTransportConfigMetaData(final SSLConfigValue clientRequiresSSL) {
+    public static void setClientRequiresSSL(final SSLConfigValue clientRequiresSSL) {
         CSIV2IORToSocketInfo.clientRequiresSsl = clientRequiresSSL;
     }
 
