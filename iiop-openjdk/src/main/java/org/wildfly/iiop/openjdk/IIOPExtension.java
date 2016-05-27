@@ -48,6 +48,7 @@ public class IIOPExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "iiop-openjdk";
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+
     protected static final PathElement PATH_ORB = PathElement.pathElement(Constants.CONFIGURATION,
             Constants.ORB);
     protected static final PathElement PATH_TCP = PathElement.pathElement(Constants.SETTING,
@@ -72,7 +73,9 @@ public class IIOPExtension implements Extension {
 
     private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
+    public static final ModelVersion MODEL_VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
+
+    private static final ModelVersion CURRENT_MODEL_VERSION = MODEL_VERSION_1_1_0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(IIOPExtension.SUBSYSTEM_NAME);
@@ -94,5 +97,6 @@ public class IIOPExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_0.getUriString(), IIOPSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_1.getUriString(), IIOPSubsystemParser.INSTANCE);
     }
 }

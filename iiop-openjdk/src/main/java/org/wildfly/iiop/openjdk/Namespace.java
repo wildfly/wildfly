@@ -2,7 +2,7 @@ package org.wildfly.iiop.openjdk;
 
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -31,9 +31,9 @@ import java.util.Map;
 
 enum Namespace {
 
-    UNKNOWN(null), IIOP_OPENJDK_1_0("urn:jboss:domain:iiop-openjdk:1.0");
+    UNKNOWN(null), IIOP_OPENJDK_1_0("urn:jboss:domain:iiop-openjdk:1.0"),  IIOP_OPENJDK_1_1("urn:jboss:domain:iiop-openjdk:1.1");
 
-    static final Namespace CURRENT = IIOP_OPENJDK_1_0;
+    static final Namespace CURRENT = IIOP_OPENJDK_1_1;
 
     private final String namespaceURI;
 

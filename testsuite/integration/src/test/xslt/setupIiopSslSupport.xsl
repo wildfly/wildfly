@@ -55,7 +55,7 @@
                     <xsl:element name="security" namespace="{namespace-uri()}">
                         <xsl:attribute name="security-domain"><xsl:value-of select="$domainName"/></xsl:attribute>
                         <xsl:attribute name="support-ssl">true</xsl:attribute>
-                        <xsl:attribute name="client-supports">ServerAuth</xsl:attribute>
+                        <xsl:attribute name="client-requires">ServerAuth</xsl:attribute>
                     </xsl:element>
                 </xsl:when>
             </xsl:choose>

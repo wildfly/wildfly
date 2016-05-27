@@ -41,8 +41,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.iiop.openjdk.IIOPExtension;
-import org.wildfly.iiop.openjdk.Namespace;
 
 /**
  * <ṕ>
@@ -61,7 +59,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-1.0.xml");
+        return readResource("subsystem-1.1.xml");
     }
 
     @Override
@@ -71,12 +69,12 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("expressions-1.0.xml");
+        standardSubsystemTest("expressions-1.1.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-iiop-openjdk_1_0.xsd";
+        return "schema/wildfly-iiop-openjdk_1_1.xsd";
     }
 
     @Override
@@ -122,7 +120,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // now try parsing a valid element in an invalid position.
         subsystemXml =
-                "<subsystem xmlns=\"urn:jboss:domain:iiop-openjdk:1.0\">" +
+                "<subsystem xmlns=\"urn:jboss:domain:iiop-openjdk:1.1\">" +
                 "    <orb>" +
                 "        <poa/>" +
                 "    </orb>" +
@@ -190,12 +188,22 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testSubsystemWithSecurityIdentity() throws Exception {
-        super.standardSubsystemTest("subsystem-1.0-security-identity.xml");
+        super.standardSubsystemTest("subsystem-1.1-security-identity.xml");
     }
 
     @Test
     public void testSubsystemWithSecurityClient() throws Exception {
-        super.standardSubsystemTest("subsystem-1.0-security-client.xml");
+        super.standardSubsystemTest("subsystem-1.1-security-client.xml");
+    }
+
+    @Test
+    public void testSubsystem_1_0() throws Exception {
+        super.standardSubsystemTest("subsystem-1.0.xml", false);
+    }
+
+    @Test
+    public void testExpressions_1_0() throws Exception {
+        super.standardSubsystemTest("expressions-1.0.xml", false);
     }
 
 }

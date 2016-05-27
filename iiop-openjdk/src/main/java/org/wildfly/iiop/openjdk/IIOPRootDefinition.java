@@ -147,6 +147,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Deprecated
     public static final AttributeDefinition ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.BOOLEAN, true)
+            .setDeprecated(IIOPExtension.MODEL_VERSION_1_1_0)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode(true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -157,6 +158,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Deprecated
     public static final AttributeDefinition CLIENT_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_CLIENT_SUPPORTS, ModelType.STRING, true)
+            .setDeprecated(IIOPExtension.MODEL_VERSION_1_1_0)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
@@ -178,6 +180,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Deprecated
     public static final AttributeDefinition SERVER_SUPPORTS = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SERVER_SUPPORTS, ModelType.STRING, true)
+            .setDeprecated(IIOPExtension.MODEL_VERSION_1_1_0)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.MUTUALAUTH.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
@@ -189,6 +192,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Deprecated
     public static final AttributeDefinition SERVER_REQUIRES = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SERVER_REQUIRES, ModelType.STRING, true)
+            .setDeprecated(IIOPExtension.MODEL_VERSION_1_1_0)
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)

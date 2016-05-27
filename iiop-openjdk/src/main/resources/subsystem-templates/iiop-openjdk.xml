@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.wildfly.iiop-openjdk</extension-module>
-   <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
+   <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.1">
        <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
        <initializers transactions="spec" security="identity"/>
    </subsystem>
