@@ -68,7 +68,7 @@ the container.
 To select WildFly managed container, following dependency has to be added into the `<dependencies>` section of your pom.xml file:
 	
     <dependency>
-        <groupId>org.wildfly</groupId>
+        <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-container-managed</artifactId>
         <scope>test</scope>
     </dependency>
@@ -76,7 +76,7 @@ To select WildFly managed container, following dependency has to be added into t
 Or for WildFly remote container:
 
     <dependency>
-        <groupId>org.wildfly</groupId>
+        <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-container-remote</artifactId>
         <scope>test</scope>
     </dependency>
