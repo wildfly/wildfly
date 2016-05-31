@@ -49,28 +49,6 @@ public class IIOPExtension implements Extension {
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    protected static final PathElement PATH_ORB = PathElement.pathElement(Constants.CONFIGURATION,
-            Constants.ORB);
-    protected static final PathElement PATH_TCP = PathElement.pathElement(Constants.SETTING,
-            Constants.ORB_TCP);
-    protected static final PathElement PATH_INITIALIZERS = PathElement.pathElement(Constants.SETTING,
-            Constants.ORB_INIT);
-    protected static final PathElement PATH_NAMING = PathElement.pathElement(Constants.CONFIGURATION,
-            Constants.NAMING);
-    protected static final PathElement PATH_SECURITY = PathElement.pathElement(Constants.CONFIGURATION,
-            Constants.SECURITY);
-    protected static final PathElement PATH_IOR_SETTINGS = PathElement.pathElement(Constants.CONFIGURATION,
-            Constants.IOR_SETTINGS);
-    protected static final PathElement PATH_IOR_TRANSPORT = PathElement.pathElement(Constants.SETTING,
-            Constants.IOR_TRANSPORT_CONFIG);
-    protected static final PathElement PATH_IOR_AS = PathElement.pathElement(Constants.SETTING,
-            Constants.IOR_AS_CONTEXT);
-    protected static final PathElement PATH_IOR_SAS = PathElement.pathElement(Constants.SETTING,
-            Constants.IOR_SAS_CONTEXT);
-    protected static final PathElement PATH_PROPERTIES = PathElement.pathElement(Constants.CONFIGURATION,
-            Constants.PROPERTIES);
-    protected static final PathElement PATH_PROPERTY = PathElement.pathElement(Constants.PROPERTY);
-
     private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     static final ModelVersion VERSION_1 = ModelVersion.create(1);
