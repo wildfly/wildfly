@@ -200,16 +200,15 @@ public class CalendarBasedTimeout {
             return null;
         }
         Calendar nextCal = (Calendar) currentCal.clone();
-
         nextCal.setTimeZone(this.timezone);
-
         Date start = this.scheduleExpression.getStart();
         if (start != null && currentCal.getTime().before(start)) {
             nextCal.setTime(start);
-        }
-        if (increment) {
-            // increment the current second by 1
-            nextCal.add(Calendar.SECOND, 1);
+        } else {
+            if (increment) {
+                // increment the current second by 1
+                nextCal.add(Calendar.SECOND, 1);
+            }
         }
         nextCal.add(Calendar.MILLISECOND, -nextCal.get(Calendar.MILLISECOND));
         nextCal.setFirstDayOfWeek(Calendar.SUNDAY);
