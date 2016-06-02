@@ -32,7 +32,7 @@
         <http-listener name="second"  socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30" redirect-socket="https-non-default"/>
         <http-listener name="no-redirect" worker="non-default" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
         <https-listener name="https" disallowed-methods="" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true" max-connections="100"/>
-        <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1"/>
+        <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1" certificate-forwarding="true" proxy-address-forwarding="true"/>
 
         <host name="default-host" alias="localhost, some.host" default-web-module="something.war" default-response-code="503">
             <location name="/" handler="welcome-content">

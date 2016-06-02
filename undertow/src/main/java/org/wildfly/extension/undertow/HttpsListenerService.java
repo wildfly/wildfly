@@ -68,7 +68,11 @@ public class HttpsListenerService extends HttpListenerService {
     private final String cipherSuites;
 
     public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions) {
-        super(name, serverName, listenerOptions, socketOptions, false, false);
+        this(name, serverName, listenerOptions, cipherSuites, socketOptions, false, false);
+    }
+
+    HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
+        super(name, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding);
         this.cipherSuites = cipherSuites;
     }
 

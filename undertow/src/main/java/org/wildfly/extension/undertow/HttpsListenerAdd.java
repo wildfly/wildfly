@@ -22,7 +22,6 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.server.ListenerRegistry;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -55,7 +54,10 @@ public class HttpsListenerAdd extends ListenerAdd {
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model, listenerBuilder);
         HttpListenerAdd.handleHttp2Options(context, model, listenerBuilder);
-        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap());
+
+        final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
+        final boolean proxyAddressForwarding = HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
+        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap(), certificateForwarding, proxyAddressForwarding);
     }
 
     @Override

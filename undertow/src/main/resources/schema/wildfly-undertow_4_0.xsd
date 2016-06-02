@@ -112,7 +112,7 @@
     <xs:complexType name="http-listener-type">
         <xs:complexContent>
             <xs:extension base="listener-type">
-                <xs:attribute name="certificate-forwarding" use="optional" type="xs:string">
+               <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
@@ -132,7 +132,7 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="proxy-address-forwarding" use="optional" type="xs:string">
+                <xs:attribute name="proxy-address-forwarding" use="optional" type="xs:string" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
@@ -163,6 +163,25 @@
     <xs:complexType name="https-listener-type">
         <xs:complexContent>
             <xs:extension base="listener-type">
+                <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                                If certificate forwarding should be enabled. If this is enabled then the listener will take the certificate from the SSL_CLIENT_CERT
+                                                attribute. This should only be enabled if behind a proxy, and the proxy is configured to always set these headers.
+                                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="proxy-address-forwarding" use="optional" type="xs:string" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                              enables x-forwarded-host and similar headers and set a remote ip address and hostname
+                                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="security-realm" use="required" type="xs:string"/>
                 <xs:attribute name="verify-client" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-cipher-suites" use="optional" type="xs:string"/>
@@ -333,6 +352,7 @@
 
     <xs:complexType name="filterType">
         <xs:sequence>
+            <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="request-limit" type="request-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
