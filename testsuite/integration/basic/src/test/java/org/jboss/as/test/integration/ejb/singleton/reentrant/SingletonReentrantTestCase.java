@@ -43,6 +43,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * Testing reentrant calls on Singleton for container-managed concurrency (EJB3.1 4.8.5.1.1)
  *
@@ -61,6 +63,8 @@ public class SingletonReentrantTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(SingletonReentrantTestCase.class.getPackage());
+        // Needed for ThreadPoolExecutor.shutdown()
+        jar.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("modifyThread")), "permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }
