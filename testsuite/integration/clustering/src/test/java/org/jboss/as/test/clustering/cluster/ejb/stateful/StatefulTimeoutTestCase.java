@@ -104,14 +104,14 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
             assertEquals(3, queryCount(client, uri2));
             assertEquals(4, queryCount(client, uri2));
 
-            Thread.sleep(WAIT_FOR_TIMEOUT);
+            Thread.sleep(WAIT_FOR_TIMEOUT); //NOPMD
 
             // SFSB should have timed out
             assertEquals(0, queryCount(client, uri1));
             // Subsequent request will create it again
             assertEquals(1, queryCount(client, uri1));
 
-            Thread.sleep(WAIT_FOR_TIMEOUT);
+            Thread.sleep(WAIT_FOR_TIMEOUT); //NOPMD
 
             // Make sure SFSB times out on other node too
             assertEquals(0, queryCount(client, uri2));

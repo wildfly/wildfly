@@ -94,7 +94,7 @@ public class SendToJMSQueueTest {
             connection.close();
 
             try {
-                Thread.sleep(2000);
+                Thread.sleep(2000); //NOPMD
             } catch (InterruptedException ex) {
             }
 
@@ -243,7 +243,7 @@ public class SendToJMSQueueTest {
             logger.info("Receiving");
             receivedMessage = consumer.receive(5000);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1000); //NOPMD
             } catch (InterruptedException ex) {
             }
             consumerSession.recover();

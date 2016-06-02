@@ -137,7 +137,7 @@ public class ClusteredMessagingTestCase {
         String text = UUID.randomUUID().toString();
 
         // WIP test if the problem is that the view is not yet propagated
-        Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+        Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE); //NOPMD
 
         // send to the queue on server 0
         sendMessage(contextFromServer0, jmsQueueLookup, text);
@@ -167,7 +167,7 @@ public class ClusteredMessagingTestCase {
             String text = UUID.randomUUID().toString();
 
             // WIP test if the problem is that the view is not yet propagated
-            Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE); //NOPMD
 
             // send a message to the topic on server 0
             sendMessage(contextFromServer0, jmsTopicLookup, text);

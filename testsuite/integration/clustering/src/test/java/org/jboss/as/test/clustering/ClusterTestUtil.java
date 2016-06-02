@@ -44,7 +44,7 @@ public class ClusterTestUtil {
         }
         // TODO: Instead of dummy waiting, we could attach a listener and notify the test framework the replication has happened. millis value can be used as timeout in that case.
         try {
-            Thread.sleep(millis);
+            Thread.sleep(millis); //NOPMD
         } catch (InterruptedException iex) {
         }
     }
