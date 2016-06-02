@@ -71,6 +71,8 @@ public final class Constants {
     public static final String SECURITY_CLIENT_REQUIRES = "client-requires";
     public static final String SECURITY_SERVER_SUPPORTS = "server-supports";
     public static final String SECURITY_SERVER_REQUIRES = "server-requires";
+    public static final String SECURITY_CLIENT_REQUIRES_SSL = "client-requires-ssl";
+    public static final String SECURITY_SERVER_REQUIRES_SSL = "server-requires-ssl";
 
     public static final String IOR_SETTINGS = "ior-settings";
     public static final String IOR_TRANSPORT_CONFIG = "transport-config";
@@ -86,6 +88,10 @@ public final class Constants {
     public static final String IOR_AS_CONTEXT_REQUIRED = "required";
     public static final String IOR_SAS_CONTEXT = "sas-context";
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
+
+    public static final String IOR_SUPPORTED = "SUPPORTED";
+    public static final String IOR_REQUIRED = "REQUIRED";
+    public static final String IOR_NONE = "NONE";
 
     public static final String PROPERTIES = "properties";
     public static final String PROPERTY = "property";

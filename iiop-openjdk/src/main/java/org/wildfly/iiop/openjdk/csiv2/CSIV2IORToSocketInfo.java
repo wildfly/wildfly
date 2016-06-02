@@ -46,7 +46,6 @@ import org.omg.SSLIOP.SSL;
 import org.omg.SSLIOP.SSLHelper;
 import org.omg.SSLIOP.TAG_SSL_SEC_TRANS;
 import org.wildfly.iiop.openjdk.Constants;
-import org.wildfly.iiop.openjdk.SSLConfigValue;
 
 import com.sun.corba.se.impl.encoding.CDRInputStream;
 import com.sun.corba.se.impl.encoding.EncapsInputStream;
@@ -72,18 +71,10 @@ import static java.security.AccessController.doPrivileged;
 
 public class CSIV2IORToSocketInfo implements IORToSocketInfo {
 
-    private static SSLConfigValue clientRequiresSsl;
+    private static boolean clientRequiresSsl;
 
-    public static void setClientRequiresSSL(final SSLConfigValue clientRequiresSSL) {
+    public static void setClientRequiresSSL(final boolean clientRequiresSSL) {
         CSIV2IORToSocketInfo.clientRequiresSsl = clientRequiresSSL;
-    }
-
-    private static boolean checkClientRequiresSSL() {
-        if (clientRequiresSsl == SSLConfigValue.CLIENTAUTH || clientRequiresSsl == SSLConfigValue.MUTUALAUTH) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public List getSocketInfo(IOR ior) {
@@ -152,7 +143,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
                 }
                 boolean targetSupportsSsl = checkSSL(sslMech.target_supports);
                 boolean targetRequiresSsl = checkSSL(sslMech.target_requires);
-                if (targetSupportsSsl && (targetRequiresSsl || checkClientRequiresSSL())) {
+                if (targetSupportsSsl && (targetRequiresSsl || clientRequiresSsl)) {
                     return extractAddress(sslMech);
                 }
             }
