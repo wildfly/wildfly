@@ -172,6 +172,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    @Deprecated
     public static final AttributeDefinition CLIENT_REQUIRES = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_CLIENT_REQUIRES, ModelType.STRING, true)
             .setDeprecated(IIOPExtension.VERSION_1)
@@ -202,6 +203,24 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAttributeGroup(Constants.SECURITY)
             .setDefaultValue(new ModelNode().set(SSLConfigValue.NONE.toString()))
             .setValidator(SSL_CONFIG_VALIDATOR)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .build();
+
+    public static final AttributeDefinition CLIENT_REQUIRES_SSL = new SimpleAttributeDefinitionBuilder(
+            Constants.SECURITY_CLIENT_REQUIRES_SSL, ModelType.BOOLEAN, true)
+            .setAttributeGroup(Constants.SECURITY)
+            .setDefaultValue(new ModelNode().set(Boolean.FALSE))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .build();
+
+    public static final AttributeDefinition SERVER_REQUIRES_SSL = new SimpleAttributeDefinitionBuilder(
+            Constants.SECURITY_SERVER_REQUIRES_SSL, ModelType.BOOLEAN, true)
+            .setAttributeGroup(Constants.SECURITY)
+            .setDefaultValue(new ModelNode().set(Boolean.FALSE))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(IIOP_SECURITY_DEF)
@@ -316,8 +335,8 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC);
 
     // list that contains security attributes definitions
-    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN,
-            ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
+    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN, SERVER_REQUIRES_SSL,
+            CLIENT_REQUIRES_SSL, ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
 
     //list that contains tcp attributes definitions
     protected static final List<AttributeDefinition> TCP_ATTRIBUTES = Arrays.asList(HIGH_WATER_MARK,

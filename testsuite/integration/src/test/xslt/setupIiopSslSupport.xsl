@@ -45,7 +45,7 @@
         </xsl:choose>
     </xsl:template>
 
-    <!-- Enable SSL support in Jacorb configuration -->
+    <!-- Enable SSL support in iiop configuration -->
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jacorbNS)]">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
@@ -55,7 +55,7 @@
                     <xsl:element name="security" namespace="{namespace-uri()}">
                         <xsl:attribute name="security-domain"><xsl:value-of select="$domainName"/></xsl:attribute>
                         <xsl:attribute name="support-ssl">true</xsl:attribute>
-                        <xsl:attribute name="client-requires">ServerAuth</xsl:attribute>
+                        <!-- TODO client requires SSL -->
                     </xsl:element>
                 </xsl:when>
             </xsl:choose>

@@ -359,29 +359,26 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         asContextMetaData.setRequired(IIOPRootDefinition.REQUIRED.resolveModelAttribute(context, resourceModel).asBoolean());
         securityConfigMetaData.setAsContext(asContextMetaData);
 
-        final IORTransportConfigMetaData transportConfigMetaData = new IORTransportConfigMetaData();
-        transportConfigMetaData.setIntegrity(IIOPRootDefinition.INTEGRITY.resolveModelAttribute(context, resourceModel).asString());
-        transportConfigMetaData.setConfidentiality(IIOPRootDefinition.CONFIDENTIALITY.resolveModelAttribute(context, resourceModel).asString());
-        transportConfigMetaData.setEstablishTrustInTarget(IIOPRootDefinition.TRUST_IN_TARGET.resolveModelAttribute(context, resourceModel).asString());
-        transportConfigMetaData.setEstablishTrustInClient(IIOPRootDefinition.TRUST_IN_CLIENT.resolveModelAttribute(context, resourceModel).asString());
-        transportConfigMetaData.setDetectMisordering(IIOPRootDefinition.DETECT_MISORDERING.resolveModelAttribute(context, resourceModel).asString());
-        transportConfigMetaData.setDetectReplay(IIOPRootDefinition.DETECT_REPLAY.resolveModelAttribute(context, resourceModel).asString());
-        securityConfigMetaData.setTransportConfig(transportConfigMetaData);
+        final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
 
-        final boolean sslRequired = IORTransportConfigMetaData.INTEGRITY_REQUIRED.equals(transportConfigMetaData.getIntegrity())
-                || IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED.equals(transportConfigMetaData.getConfidentiality())
-                || IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED.equals(transportConfigMetaData.getEstablishTrustInClient());
-
-        if (sslRequired && !sslConfigured) {
+        if (serverRequiresSsl && !sslConfigured) {
             throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
         }
+
+        final IORTransportConfigMetaData transportConfigMetaData = new IORTransportConfigMetaData();
+        transportConfigMetaData.setIntegrity(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED) : Constants.NONE);
+        transportConfigMetaData.setConfidentiality(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED: Constants.IOR_SUPPORTED) : Constants.NONE);
+        transportConfigMetaData.setEstablishTrustInTarget(sslConfigured ? Constants.IOR_SUPPORTED : Constants.NONE);
+        transportConfigMetaData.setEstablishTrustInClient(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED) : Constants.NONE);
+        transportConfigMetaData.setDetectMisordering(Constants.IOR_SUPPORTED);
+        transportConfigMetaData.setDetectReplay(Constants.IOR_SUPPORTED);
+        securityConfigMetaData.setTransportConfig(transportConfigMetaData);
 
         return securityConfigMetaData;
     }
 
     private void configureClientSecurity(final Properties props) {
-        final SSLConfigValue clientRequiresSSL = SSLConfigValue
-                .fromValue(props.getProperty(Constants.SECURITY_CLIENT_REQUIRES));
+        final boolean clientRequiresSSL = Boolean.getBoolean(props.getProperty(Constants.SECURITY_CLIENT_REQUIRES_SSL));
         CSIV2IORToSocketInfo.setClientRequiresSSL(clientRequiresSSL);
     }
 }

@@ -142,24 +142,16 @@
                                    to establish SSL connections.
                 * add-component-via-interceptor: indicates whether SSL components should be added by an IOR interceptor
                                                  (true) or not (false).
-                * client-supports: value that indicates the client SSL supported parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
-                * client-requires: value that indicates the client SSL required parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
-                * server-supports: value that indicates the server SSL supported parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
-                * server-requires: value that indicates the server SSL required parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
+                * server-requires-ssl: indicates wheter IIOP connections to the server require SSL
+                * client-requires-ssl: indicates wheter IIOP connections from the server require SSL
                         ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="support-ssl" type="trueFalseType" use="optional" default="false"/>
         <xs:attribute name="security-domain" type="xs:string" use="optional"/>
         <xs:attribute name="add-component-via-interceptor" type="trueFalseType" use="optional" default="true"/>
-        <xs:attribute name="client-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
-        <xs:attribute name="client-requires" type="sslConfigType" use="optional" default="None"/>
-        <xs:attribute name="server-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
-        <xs:attribute name="server-requires" type="sslConfigType" use="optional" default="None"/>
+        <xs:attribute name="server-requires-ssl" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="client-requires-ssl" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="genericPropertiesType">

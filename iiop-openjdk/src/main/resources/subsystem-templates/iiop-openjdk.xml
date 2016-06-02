@@ -5,6 +5,7 @@
    <subsystem xmlns="urn:jboss:domain:iiop-openjdk:3.0">
        <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
        <initializers security="identity" transactions="spec"/>
+       <security server-requires-ssl="false" client-requires-ssl="true"/>
    </subsystem>
    <socket-binding name="iiop" interface="unsecure" port="3528"/>
    <socket-binding name="iiop-ssl" interface="unsecure" port="3529"/>

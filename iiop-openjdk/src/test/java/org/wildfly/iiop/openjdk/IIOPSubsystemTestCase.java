@@ -206,10 +206,4 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testSubsystem_1_0() throws Exception {
         super.standardSubsystemTest("subsystem-1.0.xml", false);
     }
-
-    @Test
-    public void testExpressions_1_0() throws Exception {
-        super.standardSubsystemTest("expressions-1.0.xml", false);
-    }
-
 }
