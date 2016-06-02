@@ -87,9 +87,9 @@
                 <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
                 <xs:attribute name="enabled" type="xs:boolean" default="true"/>
                 <xs:attribute name="resolve-peer-address" type="xs:boolean" default="false"/>
-                <xs:attribute name="max-post-size" type="xs:long" default="0"/>
+                <xs:attribute name="max-post-size" type="xs:long" default="10485760"/>
                 <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
-                <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
+                <xs:attribute name="max-header-size" type="xs:long" default="1048576"/>
                 <xs:attribute name="max-parameters" type="xs:long" default="1000"/>
                 <xs:attribute name="max-headers" type="xs:long" default="200"/>
                 <xs:attribute name="max-cookies" type="xs:long" default="200"/>
@@ -293,8 +293,8 @@
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="directory" use="optional" type="xs:string" default="${jboss.server.log.dir}"/>
         <xs:attribute name="relative-to" use="optional" type="xs:string" />
-        <xs:attribute name="prefix" use="optional" type="xs:string" default="access_log"/>
-        <xs:attribute name="suffix" use="optional" type="xs:string" default=".log"/>
+        <xs:attribute name="prefix" use="optional" type="xs:string" default="access_log."/>
+        <xs:attribute name="suffix" use="optional" type="xs:string" default="log"/>
         <xs:attribute name="rotate" use="optional" type="xs:string" default="true"/>
         <xs:attribute name="use-server-log" use="optional" type="xs:string" default="false"/>
     </xs:complexType>
