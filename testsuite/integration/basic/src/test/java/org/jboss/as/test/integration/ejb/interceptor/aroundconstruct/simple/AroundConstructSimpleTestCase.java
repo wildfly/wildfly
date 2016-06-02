@@ -57,4 +57,11 @@ public class AroundConstructSimpleTestCase {
         Assert.assertEquals("AroundConstructPostConstruct", bean.getMessage());
     }
 
+    @Test
+    public void testSimpleAroundConstructWhichReturnsObject() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        AroundConstructInterceptorWithObjectReturnTypeSLSB bean = (AroundConstructInterceptorWithObjectReturnTypeSLSB) ctx.lookup("java:module/" + AroundConstructInterceptorWithObjectReturnTypeSLSB.class.getSimpleName());
+        Assert.assertEquals("AroundConstructPostConstruct", bean.getMessage());
+    }
+
 }
