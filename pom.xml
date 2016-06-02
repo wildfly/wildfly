@@ -55,7 +55,7 @@
     <properties>
         <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
-        <jboss.as.release.codename>Kenny</jboss.as.release.codename>
+        <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
         <jboss.as.scm.connection>git@github.com:wildfly/wildfly.git</jboss.as.scm.connection>
 
