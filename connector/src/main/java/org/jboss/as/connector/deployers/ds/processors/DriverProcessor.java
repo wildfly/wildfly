@@ -86,7 +86,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                                     driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     DEPLOYER_JDBC_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
                 }
 
