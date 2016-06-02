@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,11 +43,14 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.util.Methods;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.deployment.GateHandlerWrapper;
 import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
@@ -66,6 +71,8 @@ public class Host implements Service<Host>, FilterLocation {
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
     private final HostRootHandler hostRootHandler = new HostRootHandler();
+    private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
+    private volatile GateHandlerWrapper gateHandlerWrapper;
 
     private final DefaultResponseCodeHandler defaultHandler;
     protected Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
@@ -95,6 +102,20 @@ public class Host implements Service<Host>, FilterLocation {
 
     @Override
     public void start(StartContext context) throws StartException {
+        ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceInjectedValue.getValue();
+        //may be null for tests
+        if(controlledProcessStateService != null && controlledProcessStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
+            gateHandlerWrapper = new GateHandlerWrapper();
+            controlledProcessStateService.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    controlledProcessStateService.removePropertyChangeListener(this);
+                    gateHandlerWrapper.open();
+                    gateHandlerWrapper = null;
+                    rootHandler = null;
+                }
+            });
+        }
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.hostStarting(name);
     }
@@ -114,13 +135,19 @@ public class Host implements Service<Host>, FilterLocation {
         //handle requests that use the Expect: 100-continue header
         rootHandler = Handlers.httpContinueRead(rootHandler);
 
-        return LocationService.configureHandlerChain(rootHandler,filters);
+        rootHandler = LocationService.configureHandlerChain(rootHandler, filters);
+        GateHandlerWrapper gateHandlerWrapper = this.gateHandlerWrapper;
+        if(gateHandlerWrapper != null) {
+            rootHandler = gateHandlerWrapper.wrap(rootHandler);
+        }
+        return rootHandler;
     }
 
     @Override
     public void stop(StopContext context) {
         server.getValue().unregisterHost(this);
         pathHandler.clearPaths();
+        gateHandlerWrapper = null;
         UndertowLogger.ROOT_LOGGER.hostStopping(name);
     }
 
@@ -256,6 +283,9 @@ public class Host implements Service<Host>, FilterLocation {
         }
     }
 
+    InjectedValue<ControlledProcessStateService> getControlledProcessStateServiceInjectedValue() {
+        return controlledProcessStateServiceInjectedValue;
+    }
 
     private static final class OptionsHandler implements HttpHandler {
 
