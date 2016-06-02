@@ -1043,7 +1043,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (predicatedHandlers != null && !predicatedHandlers.isEmpty()) {
-                d.addInitialHandlerChainWrapper(new HandlerWrapper() {
+                d.addOuterHandlerChainWrapper(new RewriteCorrectingHandlerWrappers.PostWrapper());
+                d.addOuterHandlerChainWrapper(new HandlerWrapper() {
                     @Override
                     public HttpHandler wrap(HttpHandler handler) {
                         if (predicatedHandlers.size() == 1) {
@@ -1054,6 +1055,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         }
                     }
                 });
+                d.addOuterHandlerChainWrapper(new RewriteCorrectingHandlerWrappers.PreWrapper());
             }
 
             if (mergedMetaData.getDefaultEncoding() != null) {
