@@ -65,7 +65,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
+public class DistributableTestCase extends ClusterAbstractTestCase {
 
     private static final int REQUEST_DURATION = 10000;
 
@@ -84,7 +84,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClasses(SimpleServlet.class, Mutable.class);
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         return war;
     }
 

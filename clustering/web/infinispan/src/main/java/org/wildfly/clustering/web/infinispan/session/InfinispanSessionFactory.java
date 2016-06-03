@@ -31,7 +31,6 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionAttributes;
 
 /**
  * @author Paul Ferraro

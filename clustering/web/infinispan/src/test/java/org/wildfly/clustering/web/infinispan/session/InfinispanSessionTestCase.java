@@ -31,8 +31,11 @@ import org.junit.Test;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionAttributes;
 
+/**
+ * Unit test for {@link InfinispanSession}.
+ * @author paul
+ */
 public class InfinispanSessionTestCase {
     private final String id = "session";
     private final InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
@@ -66,7 +69,6 @@ public class InfinispanSessionTestCase {
         this.session.invalidate();
         
         verify(this.remover).remove(this.id);
-        
         reset(this.remover);
         
         when(this.metaData.invalidate()).thenReturn(false);
@@ -93,15 +95,19 @@ public class InfinispanSessionTestCase {
         
         this.session.close();
         
+        verify(this.attributes).close();
         verify(this.metaData).setLastAccessedTime(any(Instant.class));
         
-        reset(this.metaData);
+        reset(this.metaData, this.attributes);
         
         // Verify that session is not mutated if invalid
         when(this.metaData.isValid()).thenReturn(false);
         
         this.session.close();
         
+        this.session.close();
+        
+        verify(this.attributes, never()).close();
         verify(this.metaData, never()).setLastAccessedTime(any(Instant.class));
     }
 

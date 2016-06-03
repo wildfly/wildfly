@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,36 +30,32 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-/**
- * @author Radoslav Husar
- * @version April 2012
- */
-public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
-    private static final String DEPLOYMENT_NAME = "granular-distributable.war";
+public class ConcurrentCoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
+    private static final String DEPLOYMENT_NAME = "coarse-concurrent-distributable.war";
 
-    public GranularWebFailoverTestCase() {
+    public ConcurrentCoarseWebFailoverTestCase() {
         super(DEPLOYMENT_NAME);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        return createDeployment();
+        return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        return createDeployment();
+        return getDeployment();
     }
 
-    private static Archive<?> createDeployment() {
+    private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_concurrent_coarse.xml", "jboss-web.xml");
         return war;
     }
 }

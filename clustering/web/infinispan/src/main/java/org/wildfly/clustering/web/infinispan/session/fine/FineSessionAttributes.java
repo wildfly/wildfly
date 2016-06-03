@@ -21,14 +21,18 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
-import org.wildfly.clustering.web.session.SessionAttributes;
+import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
 
 /**
  * Exposes session attributes for fine granularity sessions.
@@ -36,20 +40,26 @@ import org.wildfly.clustering.web.session.SessionAttributes;
  */
 public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> implements SessionAttributes {
     private final Cache<SessionAttributeKey, V> cache;
+    private final Map<SessionAttributeKey, V> mutations;
     private final Marshaller<Object, V, MarshallingContext> marshaller;
-    private final boolean requireMarshallable;
+    private final CacheProperties properties;
 
-    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller, boolean requireMarshallable) {
-        super(id, attributeCache, marshaller);
-        this.cache = attributeCache;
+    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> cache, Marshaller<Object, V, MarshallingContext> marshaller, CacheProperties properties) {
+        super(id, cache, marshaller);
+        this.cache = cache;
+        this.mutations = !properties.isTransactional() ? new ConcurrentHashMap<>() : null;
         this.marshaller = marshaller;
-        this.requireMarshallable = requireMarshallable;
+        this.properties = properties;
     }
 
     @Override
     public Object removeAttribute(String name) {
         SessionAttributeKey key = this.createKey(name);
-        return this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(key));
+        Object result = this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(key));
+        if (this.mutations != null) {
+            this.mutations.remove(key);
+        }
+        return result;
     }
 
     @Override
@@ -57,12 +67,16 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (attribute == null) {
             return this.removeAttribute(name);
         }
-        if (this.requireMarshallable && !this.marshaller.getContext().isMarshallable(attribute)) {
+        if (this.properties.isMarshalling() && !this.marshaller.getContext().isMarshallable(attribute)) {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
         SessionAttributeKey key = this.createKey(name);
         V value = this.marshaller.write(attribute);
-        return this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(key, value));
+        Object result = this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(key, value));
+        if (this.mutations != null) {
+            this.mutations.remove(key);
+        }
+        return result;
     }
 
     @Override
@@ -73,9 +87,20 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (attribute != null) {
             // If the object is mutable, we need to indicate that the attribute should be replicated
             if (MutableDetector.isMutable(attribute)) {
-                new CacheEntryMutator<>(this.cache, key, value).mutate();
+                if (this.mutations != null) {
+                    this.mutations.put(key, value);
+                } else {
+                    new CacheEntryMutator<>(this.cache, key, value).mutate();
+                }
             }
         }
         return attribute;
+    }
+
+    @Override
+    public void close() {
+        if (this.mutations != null) {
+            this.mutations.entrySet().forEach(entry -> new CacheEntryMutator<>(this.cache, entry).mutate());
+        }
     }
 }
