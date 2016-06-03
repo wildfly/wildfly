@@ -1107,7 +1107,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @return <code>true</code> if the timer is not persistent or the persistent timer should start
      */
     public boolean shouldRun(TimerImpl timer) {
-        return !timer.isPersistent() || timerPersistence.getValue().shouldRun(timer, this.transactionManager);
+        // check peristent without further check to prevent from Exception (WFLY-6152)
+        return !timer.isTimerPersistent() || timerPersistence.getValue().shouldRun(timer, this.transactionManager);
     }
 
     private class TimerCreationTransactionSynchronization implements Synchronization {
