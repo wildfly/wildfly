@@ -223,10 +223,12 @@ public class RequestDumpingHandlerTestCase {
                 .addPackage(WebSocketTestCase.class.getPackage())
                 .addClass(TestSuiteEnvironment.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
-                // Needed for the TestSuiteEnvironment.getServerAddress()
-                        new PropertyPermission("management.address", "read"), new PropertyPermission("node0", "read"),
+                        // Needed for the TestSuiteEnvironment.getServerAddress()
+                        new PropertyPermission("management.address", "read"),
+                        new PropertyPermission("node0", "read"),
+                        new PropertyPermission("jboss.http.port", "read"),
                         // Needed for the serverContainer.connectToServer()
-                        new SocketPermission("*:8080", "connect,resolve")), "permissions.xml")
+                        new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")), "permissions.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
                         "services/javax.websocket.ContainerProvider")
                 .addAsWebInfResource(RequestDumpingHandlerTestCase.class.getPackage(), "jboss-web-req-dump.xml",
@@ -272,7 +274,7 @@ public class RequestDumpingHandlerTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT_WS)
     public void testReqDumpHandlerOnWebsockets(@ArquillianResource URL url) throws Exception {
-        URI wsUri = new URI("ws", "", TestSuiteEnvironment.getServerAddress(), 8080, "/" + DEPLOYMENT_WS + "/websocket/Stuart",
+        URI wsUri = new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/" + DEPLOYMENT_WS + "/websocket/Stuart",
                 "", "");
         new RequestDumpingHandlerTestImpl.WsRequestDumpingHandlerTestImpl(wsUri, logFilePath, true);
     }
