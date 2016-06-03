@@ -23,11 +23,10 @@ package org.jboss.as.ejb3.timerservice;
 
 import java.util.Date;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -67,7 +66,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      */
     public TimerTask(T timer) {
         if (timer == null) {
-            throw EjbLogger.ROOT_LOGGER.timerIsNull();
+            throw EJB3_TIMER_LOGGER.timerIsNull();
         }
 
         this.timedObjectId = timer.getTimedObjectId();
@@ -94,17 +93,17 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             final TimerImpl timer = timerService.getTimer(timerId);
             try {
                 if (cancelled) {
-                    ROOT_LOGGER.debugf("Timer task was cancelled for %s", timer);
+                    EJB3_TIMER_LOGGER.debugf("Timer task was cancelled for %s", timer);
                     return;
                 }
 
                 Date now = new Date();
-                ROOT_LOGGER.debugf("Timer task invoked at: %s for timer %s", now, timer);
+                EJB3_TIMER_LOGGER.debugf("Timer task invoked at: %s for timer %s", now, timer);
 
                 // If a retry thread is in progress, we don't want to allow another
                 // interval to execute until the retry is complete. See JIRA-1926.
                 if (timer.isInRetry()) {
-                    ROOT_LOGGER.skipInvokeTimeoutDuringRetry(timer, now);
+                    EJB3_TIMER_LOGGER.skipInvokeTimeoutDuringRetry(timer, now);
                     // compute the next timeout, See JIRA AS7-2995.
                     timer.setNextTimeout(calculateNextTimeout(timer));
                     timerService.persistTimer(timer, false);
@@ -116,7 +115,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 // If the recurring timer running longer than the interval is, we don't want to allow another
                 // execution until it is complete. See JIRA AS7-3119
                 if (timer.getState() == TimerState.IN_TIMEOUT || timer.getState() == TimerState.RETRY_TIMEOUT) {
-                    ROOT_LOGGER.skipOverlappingInvokeTimeout(timer, now);
+                    EJB3_TIMER_LOGGER.skipOverlappingInvokeTimeout(timer, now);
                     timer.setNextTimeout(this.calculateNextTimeout(timer));
                     timerService.persistTimer(timer, false);
                     scheduleTimeoutIfRequired(timer);
@@ -125,7 +124,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
 
                 // Check whether we want to run the timer
                 if (!timerService.shouldRun(timer)) {
-                    ROOT_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node or the execution is suppressed by configuration", timer.getTimedObjectId());
+                    EJB3_TIMER_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node or the execution is suppressed by configuration", timer.getTimedObjectId());
                     timer.setNextTimeout(calculateNextTimeout(timer));
                     scheduleTimeoutIfRequired(timer);
                     return;
@@ -137,7 +136,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 timer.lock();
                 try {
                     if (!timer.isActive()) {
-                        ROOT_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now + "for " + timer);
+                        EJB3_TIMER_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now + "for " + timer);
                         return;
                     }
                     // set the current date as the "previous run" of the timer.
@@ -157,23 +156,23 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                     // invoke timeout
                     this.callTimeout(timer);
                 } catch (BeanRemovedException e) {
-                    ROOT_LOGGER.debugf("Removing timer %s as EJB has been removed ", timer);
+                    EJB3_TIMER_LOGGER.debugf("Removing timer %s as EJB has been removed ", timer);
                     timer.cancel();
                 } catch (Exception e) {
-                    ROOT_LOGGER.errorInvokeTimeout(timer, e);
+                    EJB3_TIMER_LOGGER.errorInvokeTimeout(timer, e);
                     try {
-                        ROOT_LOGGER.timerRetried(timer);
+                        EJB3_TIMER_LOGGER.timerRetried(timer);
                         retryTimeout(timer);
                     } catch (Exception retryException) {
                         // that's it, we can't do anything more. Let's just log the exception
                         // and return
-                        ROOT_LOGGER.errorDuringRetryTimeout(timer, retryException);
+                        EJB3_TIMER_LOGGER.errorDuringRetryTimeout(timer, retryException);
                     }
                 } finally {
                     this.postTimeoutProcessing(timer);
                 }
             } catch (Exception e) {
-                ROOT_LOGGER.exceptionRunningTimerTask(timer, timedObjectId, e);
+                EJB3_TIMER_LOGGER.exceptionRunningTimerTask(timer, timedObjectId, e);
             }
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
@@ -207,13 +206,13 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
 
     protected void retryTimeout(TimerImpl timer) throws Exception {
         if (timer.isActive()) {
-            ROOT_LOGGER.retryingTimeout(timer);
+            EJB3_TIMER_LOGGER.retryingTimeout(timer);
             timer.setTimerState(TimerState.RETRY_TIMEOUT);
             timerService.persistTimer(timer, false);
 
             this.callTimeout(timer);
         } else {
-            ROOT_LOGGER.timerNotActive(timer);
+            EJB3_TIMER_LOGGER.timerNotActive(timer);
         }
     }
 

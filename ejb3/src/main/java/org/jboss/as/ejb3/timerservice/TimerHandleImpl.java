@@ -70,13 +70,13 @@ public class TimerHandleImpl implements TimerHandle {
      */
     public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) throws IllegalArgumentException {
         if (id == null) {
-            throw EjbLogger.ROOT_LOGGER.idIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.idIsNull();
         }
         if (timedObjectId == null) {
-            throw EjbLogger.ROOT_LOGGER.timedObjectNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.timedObjectNull();
         }
         if (service == null) {
-            throw EjbLogger.ROOT_LOGGER.timerServiceIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerServiceIsNull();
         }
 
         this.timedObjectId = timedObjectId;
@@ -95,12 +95,12 @@ public class TimerHandleImpl implements TimerHandle {
             // get hold of the timer service through the use of timed object id
             service = (TimerServiceImpl) currentServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
             if (service == null) {
-                throw EjbLogger.ROOT_LOGGER.timerServiceWithIdNotRegistered(timedObjectId);
+                throw EjbLogger.EJB3_TIMER_LOGGER.timerServiceWithIdNotRegistered(timedObjectId);
             }
         }
         final TimerImpl timer = this.service.getTimer(this);
         if (timer == null || !timer.isActive()) {
-            throw EjbLogger.ROOT_LOGGER.timerHandleIsNotActive(this);
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerHandleIsNotActive(this);
         }
         return timer;
     }

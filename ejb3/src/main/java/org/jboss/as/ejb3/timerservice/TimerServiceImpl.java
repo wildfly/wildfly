@@ -74,7 +74,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.xnio.IoUtils;
 
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -179,15 +179,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        if (EjbLogger.ROOT_LOGGER.isDebugEnabled()) {
-            EjbLogger.ROOT_LOGGER.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
+        if (EJB3_TIMER_LOGGER.isDebugEnabled()) {
+            EJB3_TIMER_LOGGER.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
         }
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.transactionManager = component.getTransactionManager();
         this.tsr = component.getTransactionSynchronizationRegistry();
         final TimedObjectInvoker invoker = timedObjectInvoker.getValue();
         if (invoker == null) {
-            throw EjbLogger.ROOT_LOGGER.invokerIsNull();
+            throw EJB3_TIMER_LOGGER.invokerIsNull();
         }
 
         started = true;
@@ -263,13 +263,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         assertTimerServiceState();
         if (initialExpiration == null) {
-            throw EjbLogger.ROOT_LOGGER.initialExpirationIsNullCreatingTimer();
+            throw EJB3_TIMER_LOGGER.initialExpirationIsNullCreatingTimer();
         }
         if (initialExpiration.getTime() < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidInitialExpiration("initialExpiration.getTime()");
+            throw EJB3_TIMER_LOGGER.invalidInitialExpiration("initialExpiration.getTime()");
         }
         if (intervalDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidInitialExpiration("intervalDuration");
+            throw EJB3_TIMER_LOGGER.invalidInitialExpiration("intervalDuration");
         }
         return this.createTimer(initialExpiration, intervalDuration, timerConfig.getInfo(), timerConfig.isPersistent());
     }
@@ -282,10 +282,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         assertTimerServiceState();
         if (initialDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidInitialExpiration("intervalDuration");
+            throw EJB3_TIMER_LOGGER.invalidInitialExpiration("intervalDuration");
         }
         if (intervalDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidInitialExpiration("intervalDuration");
+            throw EJB3_TIMER_LOGGER.invalidInitialExpiration("intervalDuration");
         }
 
         return this.createIntervalTimer(new Date(System.currentTimeMillis() + initialDuration), intervalDuration, timerConfig);
@@ -299,10 +299,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             IllegalStateException, EJBException {
         assertTimerServiceState();
         if (expiration == null) {
-            throw EjbLogger.ROOT_LOGGER.expirationIsNull();
+            throw EJB3_TIMER_LOGGER.expirationIsNull();
         }
         if (expiration.getTime() < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidExpirationActionTimer();
+            throw EJB3_TIMER_LOGGER.invalidExpirationActionTimer();
         }
         return this.createTimer(expiration, 0, timerConfig.getInfo(), timerConfig.isPersistent());
     }
@@ -315,7 +315,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             IllegalStateException, EJBException {
         assertTimerServiceState();
         if (duration < 0)
-            throw EjbLogger.ROOT_LOGGER.invalidDurationActionTimer();
+            throw EJB3_TIMER_LOGGER.invalidDurationActionTimer();
 
         return createTimer(new Date(System.currentTimeMillis() + duration), 0, timerConfig.getInfo(), timerConfig
                 .isPersistent());
@@ -329,7 +329,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             EJBException {
         assertTimerServiceState();
         if (duration < 0)
-            throw EjbLogger.ROOT_LOGGER.invalidDurationTimer();
+            throw EJB3_TIMER_LOGGER.invalidDurationTimer();
         return createTimer(new Date(System.currentTimeMillis() + duration), 0, info, true);
     }
 
@@ -341,10 +341,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             EJBException {
         assertTimerServiceState();
         if (expiration == null) {
-            throw EjbLogger.ROOT_LOGGER.expirationDateIsNull();
+            throw EJB3_TIMER_LOGGER.expirationDateIsNull();
         }
         if (expiration.getTime() < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidExpirationTimer();
+            throw EJB3_TIMER_LOGGER.invalidExpirationTimer();
         }
         return this.createTimer(expiration, 0, info, true);
     }
@@ -357,10 +357,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         assertTimerServiceState();
         if (initialDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidInitialDurationTimer();
+            throw EJB3_TIMER_LOGGER.invalidInitialDurationTimer();
         }
         if (intervalDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidIntervalTimer();
+            throw EJB3_TIMER_LOGGER.invalidIntervalTimer();
         }
         return this.createTimer(new Date(System.currentTimeMillis() + initialDuration), intervalDuration, info, true);
 
@@ -374,13 +374,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         assertTimerServiceState();
         if (initialExpiration == null) {
-            throw EjbLogger.ROOT_LOGGER.initialExpirationDateIsNull();
+            throw EJB3_TIMER_LOGGER.initialExpirationDateIsNull();
         }
         if (initialExpiration.getTime() < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidExpirationTimer();
+            throw EJB3_TIMER_LOGGER.invalidExpirationTimer();
         }
         if (intervalDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidIntervalDurationTimer();
+            throw EJB3_TIMER_LOGGER.invalidIntervalDurationTimer();
         }
         return this.createTimer(initialExpiration, intervalDuration, info, true);
     }
@@ -450,13 +450,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw EjbLogger.ROOT_LOGGER.failToCreateTimerDoLifecycle();
+            throw EJB3_TIMER_LOGGER.failToCreateTimerDoLifecycle();
         }
         if (initialExpiration == null) {
-            throw EjbLogger.ROOT_LOGGER.initialExpirationIsNull();
+            throw EJB3_TIMER_LOGGER.initialExpirationIsNull();
         }
         if (intervalDuration < 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidIntervalDuration();
+            throw EJB3_TIMER_LOGGER.invalidIntervalDuration();
         }
 
         // create an id for the new timer instance
@@ -505,10 +505,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private TimerImpl createCalendarTimer(ScheduleExpression schedule,
                                           Serializable info, boolean persistent, Method timeoutMethod) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw EjbLogger.ROOT_LOGGER.failToCreateTimerDoLifecycle();
+            throw EJB3_TIMER_LOGGER.failToCreateTimerDoLifecycle();
         }
         if (schedule == null) {
-            throw EjbLogger.ROOT_LOGGER.scheduleIsNull();
+            throw EJB3_TIMER_LOGGER.scheduleIsNull();
         }
         // generate an id for the timer
         UUID uuid = UUID.randomUUID();
@@ -600,7 +600,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (timer.isTimerPersistent()) {
             try {
                 if (timerPersistence.getOptionalValue() == null) {
-                    ROOT_LOGGER.timerPersistenceNotEnable();
+                    EJB3_TIMER_LOGGER.timerPersistenceNotEnable();
                     return;
                 }
                 if (newTimer) {
@@ -694,8 +694,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         //timers are removed from the list as they are loaded
         final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
 
-        if (ROOT_LOGGER.isDebugEnabled()) {
-            ROOT_LOGGER.debug("Found " + restorableTimers.size() + " active persistentTimers for timedObjectId: "
+        if (EJB3_TIMER_LOGGER.isDebugEnabled()) {
+            EJB3_TIMER_LOGGER.debug("Found " + restorableTimers.size() + " active persistentTimers for timedObjectId: "
                     + getInvoker().getTimedObjectId());
         }
         // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
@@ -737,12 +737,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 this.persistTimer(activeTimer, false);
                 if (found) {
                     startTimer(activeTimer);
-                    ROOT_LOGGER.debugv("Started timer: {0}", activeTimer);
+                    EJB3_TIMER_LOGGER.debugv("Started timer: {0}", activeTimer);
                 }
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 startTimer(activeTimer);
             }
-            ROOT_LOGGER.debugv("Started timer: {0}",  activeTimer);
+            EJB3_TIMER_LOGGER.debugv("Started timer: {0}",  activeTimer);
         }
 
         for (ScheduleTimer timer : newAutoTimers) {
@@ -863,7 +863,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
             Date nextExpiration = timer.getNextExpiration();
             if (nextExpiration == null) {
-                ROOT_LOGGER.nextExpirationIsNull(timer);
+                EJB3_TIMER_LOGGER.nextExpirationIsNull(timer);
                 return;
             }
             // create the timer task
@@ -877,14 +877,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             long intervalDuration = timer.getInterval();
             final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
             if (intervalDuration > 0) {
-                ROOT_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
+                EJB3_TIMER_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
                         timer, delay, intervalDuration);
                 // schedule the task
                 this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
             } else {
-                ROOT_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
+                EJB3_TIMER_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
                 // schedule the task
                 this.timerInjectedValue.getValue().schedule(task, delay);
                 // maintain it in timerservice for future use (like cancellation)
@@ -1045,16 +1045,16 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 tx.setRollbackOnly();
             }
         } catch (IllegalStateException ise) {
-            ROOT_LOGGER.ignoringException(ise);
+            EJB3_TIMER_LOGGER.ignoringException(ise);
         } catch (SystemException se) {
-            ROOT_LOGGER.ignoringException(se);
+            EJB3_TIMER_LOGGER.ignoringException(se);
         }
     }
 
     private void assertTimerServiceState() {
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
         if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw EjbLogger.ROOT_LOGGER.failToInvokeTimerServiceDoLifecycle();
+            throw EJB3_TIMER_LOGGER.failToInvokeTimerServiceDoLifecycle();
         }
     }
 
@@ -1119,7 +1119,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         public TimerCreationTransactionSynchronization(TimerImpl timer) {
             if (timer == null) {
-                throw EjbLogger.ROOT_LOGGER.timerIsNull();
+                throw EJB3_TIMER_LOGGER.timerIsNull();
             }
             this.timer = timer;
         }
@@ -1134,7 +1134,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         @Override
         public void afterCompletion(int status) {
             if (status == Status.STATUS_COMMITTED) {
-                ROOT_LOGGER.debugv("commit timer creation: {0}", this.timer);
+                EJB3_TIMER_LOGGER.debugv("commit timer creation: {0}", this.timer);
                 timers.put(timer.getId(), timer);
 
                 registerTimerResource(timer.getId());
@@ -1149,7 +1149,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         break;
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
-                ROOT_LOGGER.debugv("Rolling back timer creation: {0}", this.timer);
+                EJB3_TIMER_LOGGER.debugv("Rolling back timer creation: {0}", this.timer);
                 this.timer.setTimerState(TimerState.CANCELED);
             }
         }

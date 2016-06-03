@@ -73,7 +73,7 @@ public class IncrementValue implements ScheduleValue {
         StringTokenizer tokenizer = new StringTokenizer(value, INCREMENT_SEPARATOR);
         int numberOfTokens = tokenizer.countTokens();
         if (numberOfTokens != 2) {
-            throw EjbLogger.ROOT_LOGGER.invalidIncrementValue(value);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidIncrementValue(value);
         }
 
         this.start = tokenizer.nextToken().trim();

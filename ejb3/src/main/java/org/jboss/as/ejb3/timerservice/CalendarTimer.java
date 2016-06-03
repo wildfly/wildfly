@@ -162,7 +162,7 @@ public class CalendarTimer extends TimerImpl {
 
     public Method getTimeoutMethod() {
         if (!this.autoTimer) {
-            throw EjbLogger.ROOT_LOGGER.failToInvokegetTimeoutMethod();
+            throw EjbLogger.EJB3_TIMER_LOGGER.failToInvokegetTimeoutMethod();
         }
         return this.timeoutMethod;
     }
@@ -296,7 +296,7 @@ public class CalendarTimer extends TimerImpl {
         try {
             timeoutMethodDeclaringClass = Class.forName(declaringClass, false, classLoader);
         } catch (ClassNotFoundException cnfe) {
-            throw EjbLogger.ROOT_LOGGER.failToLoadDeclaringClassOfTimeOut(declaringClass);
+            throw EjbLogger.EJB3_TIMER_LOGGER.failToLoadDeclaringClassOfTimeOut(declaringClass);
         }
 
         String timeoutMethodName = timeoutMethodInfo.getMethodName();
@@ -312,7 +312,7 @@ public class CalendarTimer extends TimerImpl {
                 try {
                     methodParamClass = Class.forName(paramClassName, false, classLoader);
                 } catch (ClassNotFoundException cnfe) {
-                    throw EjbLogger.ROOT_LOGGER.failedToLoadTimeoutMethodParamClass(cnfe, paramClassName);
+                    throw EjbLogger.EJB3_TIMER_LOGGER.failedToLoadTimeoutMethodParamClass(cnfe, paramClassName);
                 }
                 timeoutMethodParamTypes[i++] = methodParamClass;
             }

@@ -184,7 +184,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value != null && value == 0) {
-            throw EjbLogger.ROOT_LOGGER.invalidValueDayOfMonth(value);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidValueDayOfMonth(value);
         }
         super.assertValid(value);
     }
@@ -260,7 +260,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     private int getAbsoluteDayOfMonth(Calendar cal, String relativeDayOfMonth) {
         if (relativeDayOfMonth == null || relativeDayOfMonth.trim().isEmpty()) {
-            throw EjbLogger.ROOT_LOGGER.relativeDayOfMonthIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.relativeDayOfMonthIsNull();
         }
         String trimmedRelativeDayOfMonth = relativeDayOfMonth.trim();
         if (trimmedRelativeDayOfMonth.equalsIgnoreCase("last")) {
@@ -297,7 +297,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
             return date;
         }
-        throw EjbLogger.ROOT_LOGGER.invalidRelativeValue(relativeDayOfMonth);
+        throw EjbLogger.EJB3_TIMER_LOGGER.invalidRelativeValue(relativeDayOfMonth);
     }
 
     private boolean isValidNegativeDayOfMonth(String dayOfMonth) {
@@ -343,7 +343,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     public boolean isRelativeValue(String value) {
         if (value == null) {
-            throw EjbLogger.ROOT_LOGGER.relativeValueIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.relativeValueIsNull();
         }
         if (value.equalsIgnoreCase("last")) {
             return true;

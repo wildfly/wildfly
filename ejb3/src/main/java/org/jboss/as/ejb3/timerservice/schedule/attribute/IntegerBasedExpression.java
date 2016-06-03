@@ -67,7 +67,7 @@ public abstract class IntegerBasedExpression {
         // check the type of value
         this.scheduleExpressionType = ScheduleExpressionTypeUtil.getType(value);
         if (this.accepts(scheduleExpressionType) == false) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionType(value, this.getClass().getName(), this.scheduleExpressionType.toString());
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleExpressionType(value, this.getClass().getName(), this.scheduleExpressionType.toString());
         }
         switch (this.scheduleExpressionType) {
             case RANGE:
@@ -100,7 +100,7 @@ public abstract class IntegerBasedExpression {
                 break;
 
             default:
-                throw EjbLogger.ROOT_LOGGER.invalidValueForSecondInScheduleExpression(value);
+                throw EjbLogger.EJB3_TIMER_LOGGER.invalidValueForSecondInScheduleExpression(value);
         }
     }
 
@@ -125,7 +125,7 @@ public abstract class IntegerBasedExpression {
                 this.processRangeValue(range);
                 return;
             default:
-                throw EjbLogger.ROOT_LOGGER.invalidListValue(listItem);
+                throw EjbLogger.EJB3_TIMER_LOGGER.invalidListValue(listItem);
         }
     }
 
@@ -202,12 +202,12 @@ public abstract class IntegerBasedExpression {
 
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value == null) {
-            throw EjbLogger.ROOT_LOGGER.couldNotParseScheduleExpression(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.couldNotParseScheduleExpression(this.origValue);
         }
         int max = this.getMaxValue();
         int min = this.getMinValue();
         if (value > max || value < min) {
-            throw EjbLogger.ROOT_LOGGER.invalidValuesRange(value, min, max);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidValuesRange(value, min, max);
         }
     }
 
