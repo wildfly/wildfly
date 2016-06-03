@@ -36,8 +36,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.naming.java.permission.JndiPermission;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -50,6 +52,13 @@ public class DeploymentWithBindTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
         war.addClasses(HttpRequest.class, BeanWithBind.class, ServletWithBind.class);
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new JndiPermission("global", "listBindings"),
+                new JndiPermission("jboss", "listBindings"),
+                new JndiPermission("jboss/exported", "listBindings"),
+                new JndiPermission("/test", "bind"),
+                new JndiPermission("jboss/test", "bind")),
+                "permissions.xml");
         return war;
     }
 
