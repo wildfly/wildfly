@@ -32,10 +32,13 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.naming.java.permission.JndiPermission;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test case which verifies proper release of shared binds, i.e., automated unbind only after every deployment that shares the bind is undeployed.
@@ -56,6 +59,9 @@ public class SharedBindingTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, BEAN_ONE_JAR_NAME +".jar");
         jar.addClasses(BeanOne.class, TestResults.class);
         jar.addAsManifestResource(SharedBindingTestCase.class.getPackage(), "ejb-jar-one.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new JndiPermission("global/sharedbinds/two", "rebind")),
+                "permissions.xml");
         return jar;
     }
 
@@ -64,6 +70,9 @@ public class SharedBindingTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, BEAN_TWO_JAR_NAME +".jar");
         jar.addClasses(BeanTwo.class, TestResults.class);
         jar.addAsManifestResource(SharedBindingTestCase.class.getPackage(), "ejb-jar-two.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new JndiPermission("global/sharedbinds/two", "rebind")),
+                "permissions.xml");
         return jar;
     }
 
