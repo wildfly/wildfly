@@ -32,6 +32,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -45,8 +46,8 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
 
     private volatile ClusteringConfiguration clustering;
 
-    ClusteredCacheBuilder(String containerName, String cacheName, CacheMode mode) {
-        super(containerName, cacheName);
+    ClusteredCacheBuilder(PathAddress address, CacheMode mode) {
+        super(address);
         this.mode = mode;
     }
 

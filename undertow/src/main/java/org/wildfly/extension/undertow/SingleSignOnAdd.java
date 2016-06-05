@@ -76,7 +76,7 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         ServiceName managerServiceName = serviceName.append("manager");
         if (DistributableSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
             DistributableSingleSignOnManagerBuilder builder = DistributableSingleSignOnManagerBuilder.INSTANCE.get();
-            builder.build(target, managerServiceName, serverName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+            builder.build(target, managerServiceName, context.getCapabilityServiceSupport(), serverName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         } else {
             target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }
@@ -87,6 +87,5 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
                 .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
     }
 }

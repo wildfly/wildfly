@@ -24,6 +24,7 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.CacheBuilderFactory;
 import org.wildfly.clustering.service.Builder;
@@ -41,8 +42,8 @@ public class CacheGroupBuilderProvider implements org.wildfly.clustering.spi.Cac
     }
 
     @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
-        return Collections.<Builder<?>>singleton(this.factory.createBuilder(containerName, cacheName));
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
+        return Collections.<Builder<?>>singleton(this.factory.createBuilder(support, containerName, cacheName));
     }
 
     @Override

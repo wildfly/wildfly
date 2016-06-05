@@ -40,6 +40,7 @@ import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -50,7 +51,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class TransactionBuilder extends CacheComponentBuilder<TransactionConfiguration> implements ResourceServiceBuilder<TransactionConfiguration> {
+public class TransactionBuilder extends ComponentBuilder<TransactionConfiguration> implements ResourceServiceBuilder<TransactionConfiguration> {
 
     private final InjectedValue<TransactionManager> tm = new InjectedValue<>();
     private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<>();
@@ -59,8 +60,8 @@ public class TransactionBuilder extends CacheComponentBuilder<TransactionConfigu
 
     private volatile TransactionMode mode;
 
-    public TransactionBuilder(String containerName, String cacheName) {
-        super(CacheComponent.TRANSACTION, containerName, cacheName);
+    public TransactionBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.TRANSACTION, cacheAddress);
     }
 
     @Override

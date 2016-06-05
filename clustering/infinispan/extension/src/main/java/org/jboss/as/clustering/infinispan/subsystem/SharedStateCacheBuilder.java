@@ -30,6 +30,7 @@ import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -44,22 +45,20 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
     private final InjectedValue<BackupForConfiguration> backupFor = new InjectedValue<>();
     private final InjectedValue<SitesConfiguration> backups = new InjectedValue<>();
 
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress address;
 
-    SharedStateCacheBuilder(String containerName, String cacheName, CacheMode mode) {
-        super(containerName, cacheName, mode);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    SharedStateCacheBuilder(PathAddress address, CacheMode mode) {
+        super(address, mode);
+        this.address = address;
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         return super.build(target)
-                .addDependency(CacheComponent.PARTITION_HANDLING.getServiceName(this.containerName, this.cacheName), PartitionHandlingConfiguration.class, this.partitionHandling)
-                .addDependency(CacheComponent.STATE_TRANSFER.getServiceName(this.containerName, this.cacheName), StateTransferConfiguration.class, this.stateTransfer)
-                .addDependency(CacheComponent.BACKUPS.getServiceName(this.containerName, this.cacheName), SitesConfiguration.class, this.backups)
-                .addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.containerName, this.cacheName), BackupForConfiguration.class, this.backupFor)
+                .addDependency(CacheComponent.PARTITION_HANDLING.getServiceName(this.address), PartitionHandlingConfiguration.class, this.partitionHandling)
+                .addDependency(CacheComponent.STATE_TRANSFER.getServiceName(this.address), StateTransferConfiguration.class, this.stateTransfer)
+                .addDependency(CacheComponent.BACKUPS.getServiceName(this.address), SitesConfiguration.class, this.backups)
+                .addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.address), BackupForConfiguration.class, this.backupFor)
         ;
     }
 

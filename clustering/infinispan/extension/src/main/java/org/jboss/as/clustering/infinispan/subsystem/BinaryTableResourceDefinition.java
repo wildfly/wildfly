@@ -119,7 +119,7 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
                 .addAttributes(TableResourceDefinition.Attribute.class)
                 .addAttributes(TableResourceDefinition.ColumnAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryTableBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryTableBuilder(address.getParent().getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }

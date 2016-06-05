@@ -28,6 +28,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 public class DistributedCacheServiceHandler extends ClusteredCacheServiceHandler {
 
     DistributedCacheServiceHandler() {
-        super(new DistributedCacheBuilderFactory());
+        super(address -> new DistributedCacheBuilder(address));
     }
 }

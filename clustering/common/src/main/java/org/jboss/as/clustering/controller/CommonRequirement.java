@@ -27,6 +27,7 @@ import javax.management.MBeanServer;
 import org.wildfly.clustering.service.Requirement;
 
 /**
+ * Enumerates common requirements for clustering resources.
  * @author Paul Ferraro
  */
 public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {

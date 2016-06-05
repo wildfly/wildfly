@@ -26,7 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 
 /**
  * Handler for cache metrics.
@@ -43,7 +43,7 @@ public class CacheMetricExecutor implements MetricExecutor<Cache<?, ?>> {
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
 
-        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName));
         return (cache != null) ? metric.execute(cache) : null;
     }
 }

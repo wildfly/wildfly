@@ -32,18 +32,19 @@ import org.infinispan.configuration.cache.ExpirationConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class ExpirationBuilder extends CacheComponentBuilder<ExpirationConfiguration> implements ResourceServiceBuilder<ExpirationConfiguration> {
+public class ExpirationBuilder extends ComponentBuilder<ExpirationConfiguration> implements ResourceServiceBuilder<ExpirationConfiguration> {
 
     private final ExpirationConfigurationBuilder builder = new ConfigurationBuilder().expiration();
 
-    ExpirationBuilder(String containerName, String cacheName) {
-        super(CacheComponent.EXPIRATION, containerName, cacheName);
+    ExpirationBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.EXPIRATION, cacheAddress);
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -40,23 +41,18 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
     private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
     private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
 
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress address;
 
-    LocalCacheBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
-        if (InfinispanLogger.ROOT_LOGGER.isTraceEnabled()) {
-            InfinispanLogger.ROOT_LOGGER.tracef("LocalCacheBuilder will be configured for container '%s', cache '%s'", containerName, cacheName);
-        }
+    LocalCacheBuilder(PathAddress address) {
+        super(address);
+        this.address = address;
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         return super.build(target)
-                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
-                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.containerName, this.cacheName), PersistenceConfiguration.class, this.persistence)
+                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.address), TransactionConfiguration.class, this.transaction)
+                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.address), PersistenceConfiguration.class, this.persistence)
         ;
     }
 
@@ -72,7 +68,7 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
         // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
         builder.simpleCache(!transaction.transactionMode().isTransactional() && !persistence.usingStores());
         if (InfinispanLogger.ROOT_LOGGER.isTraceEnabled() && builder.simpleCache()) {
-            InfinispanLogger.ROOT_LOGGER.tracef("Configuration for container '%s', cache '%s' will use simple cache optimization", this.containerName, this.cacheName);
+            InfinispanLogger.ROOT_LOGGER.tracef("Simple cache optimization for %s = %b", this.address, builder.simpleCache());
         }
     }
 }

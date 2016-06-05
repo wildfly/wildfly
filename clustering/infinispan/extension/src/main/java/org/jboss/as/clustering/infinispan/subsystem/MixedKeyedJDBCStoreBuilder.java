@@ -28,6 +28,7 @@ import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfiguration
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -41,22 +42,20 @@ public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreC
     private final InjectedValue<TableManipulationConfiguration> binaryTable = new InjectedValue<>();
     private final InjectedValue<TableManipulationConfiguration> stringTable = new InjectedValue<>();
 
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress cacheAddress;
 
     private volatile JdbcMixedStoreConfigurationBuilder builder;
 
-    MixedKeyedJDBCStoreBuilder(String containerName, String cacheName) {
-        super(JdbcMixedStoreConfigurationBuilder.class, containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    MixedKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
+        super(JdbcMixedStoreConfigurationBuilder.class, cacheAddress);
+        this.cacheAddress = cacheAddress;
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
         return super.build(target)
-                .addDependency(CacheComponent.BINARY_TABLE.getServiceName(this.containerName, this.cacheName), TableManipulationConfiguration.class, this.binaryTable)
-                .addDependency(CacheComponent.STRING_TABLE.getServiceName(this.containerName, this.cacheName), TableManipulationConfiguration.class, this.stringTable)
+                .addDependency(CacheComponent.BINARY_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.binaryTable)
+                .addDependency(CacheComponent.STRING_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.stringTable)
         ;
     }
 

@@ -38,6 +38,7 @@ import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -50,7 +51,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 
 /**
  * Scheduled thread pool resource definitions for Infinispan subsystem.
@@ -103,14 +103,14 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
     public void register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ScheduledThreadPoolBuilderFactory(this));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ScheduledThreadPoolBuilder(this, address.getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override
-    public ServiceName getServiceName(String containerName) {
-        return CacheContainerServiceName.CONFIGURATION.getServiceName(containerName).append(this.getPathElement().getKeyValuePair());
+    public ServiceName getServiceName(PathAddress containerAddress) {
+        return CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(containerAddress).append(this.getPathElement().getKeyValuePair());
     }
 
     @Override

@@ -22,13 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.PathAddress;
 
 /**
  * @author Paul Ferraro
  */
 public class StringTableBuilder extends TableBuilder {
 
-    public StringTableBuilder(String containerName, String cacheName) {
-        super(StringTableResourceDefinition.Attribute.PREFIX, CacheComponent.STRING_TABLE, containerName, cacheName);
+    public StringTableBuilder(PathAddress cacheAddress) {
+        super(StringTableResourceDefinition.Attribute.PREFIX, CacheComponent.STRING_TABLE, cacheAddress);
     }
 }

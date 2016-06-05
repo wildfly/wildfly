@@ -80,6 +80,11 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         public RuntimeCapability<Void> getDefinition() {
             return this.definition;
         }
+
+        @Override
+        public RuntimeCapability<?> resolve(PathAddress address) {
+            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
+        }
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {

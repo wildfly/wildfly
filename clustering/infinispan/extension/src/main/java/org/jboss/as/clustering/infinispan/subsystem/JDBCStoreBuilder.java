@@ -37,6 +37,7 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DataSourceConnectionFactoryConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -52,8 +53,8 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
 
     private volatile ValueDependency<DataSource> dataSourceDepencency;
 
-    JDBCStoreBuilder(Class<B> builderClass, String containerName, String cacheName) {
-        super(containerName, cacheName);
+    JDBCStoreBuilder(Class<B> builderClass, PathAddress cacheAddress) {
+        super(cacheAddress);
         this.builderClass = builderClass;
     }
 

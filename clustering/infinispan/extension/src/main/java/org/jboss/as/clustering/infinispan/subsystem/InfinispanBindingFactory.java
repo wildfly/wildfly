@@ -38,6 +38,10 @@ public final class InfinispanBindingFactory {
         return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, InfinispanExtension.SUBSYSTEM_NAME, "cache", containerName, cacheName).getAbsoluteName());
     }
 
+    public static ContextNames.BindInfo createCacheConfigurationBinding(String containerName, String cacheName) {
+        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, InfinispanExtension.SUBSYSTEM_NAME, "configuration", containerName, cacheName).getAbsoluteName());
+    }
+
     private InfinispanBindingFactory() {
         // Hide
     }

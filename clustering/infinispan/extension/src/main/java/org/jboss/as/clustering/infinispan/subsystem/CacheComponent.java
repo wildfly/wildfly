@@ -22,17 +22,19 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.stream.Stream;
+
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Enumerates the configurable cache components
  * @author Paul Ferraro
  */
-public enum CacheComponent implements SubGroupServiceNameFactory {
+public enum CacheComponent implements ComponentServiceNameFactory {
 
+    MODULE("module"),
     EVICTION(EvictionResourceDefinition.PATH),
     EXPIRATION(ExpirationResourceDefinition.PATH),
     LOCKING(LockingResourceDefinition.PATH),
@@ -50,20 +52,15 @@ public enum CacheComponent implements SubGroupServiceNameFactory {
     private final String[] components;
 
     CacheComponent(PathElement... paths) {
-        this.components = new String[paths.length];
-        for (int i = 0; i < paths.length; ++i) {
-            PathElement path = paths[i];
-            this.components[i] = path.isWildcard() ? path.getKey() : path.getValue();
-        }
+        this(Stream.of(paths).map(path -> path.isWildcard() ? path.getKey() : path.getValue()).toArray(String[]::new));
+    }
+
+    CacheComponent(String... components) {
+        this.components = components;
     }
 
     @Override
-    public ServiceName getServiceName(String container) {
-        return this.getServiceName(container, DEFAULT_SUB_GROUP);
-    }
-
-    @Override
-    public ServiceName getServiceName(String container, String cache) {
-        return CacheServiceName.CONFIGURATION.getServiceName(container, cache).append(this.components);
+    public ServiceName getServiceName(PathAddress cacheAddress) {
+        return CacheResourceDefinition.Capability.CONFIGURATION.getServiceName(cacheAddress).append(this.components);
     }
 }

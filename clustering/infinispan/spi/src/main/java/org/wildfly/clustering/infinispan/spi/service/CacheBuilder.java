@@ -23,18 +23,25 @@ package org.wildfly.clustering.infinispan.spi.service;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.infinispan.spi.CacheContainer;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SimpleDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Service that provides a cache and handles its lifecycle
@@ -42,20 +49,31 @@ import org.wildfly.clustering.service.SuppliedValueService;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class CacheBuilder<K, V> implements Builder<Cache<K, V>> {
+public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>> {
 
-    private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
+    private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    public CacheBuilder(String containerName, String cacheName) {
+    private volatile ValueDependency<CacheContainer> container;
+    private volatile Dependency configuration;
+
+    public CacheBuilder(ServiceName name, String containerName, String cacheName) {
+        this.name = name;
         this.containerName = containerName;
         this.cacheName = cacheName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return CacheServiceName.CACHE.getServiceName(this.containerName, this.cacheName);
+        return this.name;
+    }
+
+    @Override
+    public Builder<Cache<K, V>> configure(CapabilityServiceSupport support) {
+        this.container = new InjectedValueDependency<>(InfinispanRequirement.CONTAINER.getServiceName(support, this.containerName), CacheContainer.class);
+        this.configuration = new SimpleDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.cacheName));
+        return this;
     }
 
     @Override
@@ -66,9 +84,8 @@ public class CacheBuilder<K, V> implements Builder<Cache<K, V>> {
             return cache;
         };
         Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Cache::stop);
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target)
-                .addDependency(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(this.containerName), EmbeddedCacheManager.class, this.container)
-                .addDependency(CacheServiceName.CONFIGURATION.getServiceName(this.containerName, this.cacheName))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        ServiceBuilder<Cache<K, V>> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target);
+        Stream.of(this.configuration, this.container).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 }

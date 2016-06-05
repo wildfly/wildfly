@@ -23,6 +23,7 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -33,15 +34,14 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 import org.wildfly.clustering.spi.GroupServiceName;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
@@ -50,15 +50,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
-    private static ServiceName getCacheServiceName(String cacheName) {
-        ServiceName baseServiceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName(DEFAULT_CACHE_CONTAINER).getParent();
-        ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
-        if (!baseServiceName.isParentOf(serviceName)) {
-            serviceName = baseServiceName.append(serviceName);
-        }
-        return (serviceName.length() < 4) ? serviceName.append(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP) : serviceName;
-    }
-
+    private final CapabilityServiceSupport support;
     private final SessionManagerFactoryConfiguration configuration;
 
     @SuppressWarnings("rawtypes")
@@ -68,7 +60,8 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
     @SuppressWarnings("rawtypes")
     private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
 
-    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration configuration) {
+    public InfinispanSessionManagerFactoryBuilder(CapabilityServiceSupport support, SessionManagerFactoryConfiguration configuration) {
+        this.support = support;
         this.configuration = configuration;
     }
 
@@ -79,14 +72,19 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
 
     @Override
     public ServiceBuilder<SessionManagerFactory<TransactionBatch>> build(ServiceTarget target) {
-        ServiceName templateCacheServiceName = getCacheServiceName(this.configuration.getCacheName());
-        String templateCacheName = templateCacheServiceName.getSimpleName();
-        String containerName = templateCacheServiceName.getParent().getSimpleName();
+        ServiceName baseServiceName = ServiceName.JBOSS.append("infinispan");
+        String configCacheName = this.configuration.getCacheName();
+        ServiceName configServiceName = ServiceName.parse((configCacheName != null) ? configCacheName : DEFAULT_CACHE_CONTAINER);
+        if (!baseServiceName.isParentOf(configServiceName)) {
+            configServiceName = baseServiceName.append(configServiceName);
+        }
+        String containerName = ((configServiceName.length() > 3) ? configServiceName.getParent() : configServiceName).getSimpleName();
+        String templateCacheName =  (configServiceName.length() > 3) ? configServiceName.getSimpleName() : null;
         String cacheName = this.configuration.getDeploymentName();
 
-        new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();
+        new TemplateConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(this.support, containerName, cacheName), containerName, cacheName, templateCacheName).configure(this.support).build(target).install();
 
-        new CacheBuilder<>(containerName, cacheName).build(target)
+        new CacheBuilder<>(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), containerName, cacheName).configure(this.support).build(target)
                 .addAliases(InfinispanRouteLocatorBuilder.getCacheServiceAlias(cacheName))
                 .install();
 
@@ -94,8 +92,8 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
         new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getRegistryServiceAlias(cacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), Registry.class).build(target).install();
 
         return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
-                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
+                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), Cache.class, this.cache)
+                .addDependency(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(this.support, containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addDependency(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), NodeFactory.class, this.nodeFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

@@ -32,19 +32,19 @@ public enum CacheGroupServiceName implements SubGroupServiceNameFactory {
     NODE_FACTORY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceName.NODE_FACTORY.getServiceName(container).append(cache);
+            return GroupServiceName.NODE_FACTORY.getServiceName(container).append((cache != null) ? cache : DEFAULT_SUB_GROUP);
         }
     },
     GROUP() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceName.GROUP.getServiceName(container).append(cache);
+            return GroupServiceName.GROUP.getServiceName(container).append((cache != null) ? cache : DEFAULT_SUB_GROUP);
         }
     },
     REGISTRY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, cache);
+            return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, (cache != null) ? cache : DEFAULT_SUB_GROUP);
         }
 
         @Override
@@ -67,7 +67,7 @@ public enum CacheGroupServiceName implements SubGroupServiceNameFactory {
     SERVICE_PROVIDER_REGISTRY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, cache);
+            return GroupServiceName.BASE_SERVICE_NAME.append(this.toString(), container, (cache != null) ? cache : DEFAULT_SUB_GROUP);
         }
 
         @Override
@@ -76,9 +76,5 @@ public enum CacheGroupServiceName implements SubGroupServiceNameFactory {
         }
     },
     ;
-
-    @Override
-    public ServiceName getServiceName(String group) {
-        return this.getServiceName(group, DEFAULT_SUB_GROUP);
-    }
+    private static final String DEFAULT_SUB_GROUP = GroupServiceName.DEFAULT_GROUP;
 }

@@ -38,7 +38,7 @@ public class JndiNameFactory {
     public static JndiName createJndiName(String namespace, String... contexts) {
         JndiName name = JndiName.of(namespace);
         for (String context: contexts) {
-            name = name.append(context);
+            name = name.append((context != null) ? context : DEFAULT_LOCAL_NAME);
         }
         return name;
     }

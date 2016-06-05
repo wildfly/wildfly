@@ -27,6 +27,7 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
@@ -42,7 +43,7 @@ import org.wildfly.clustering.spi.GroupServiceName;
 public class ServiceProviderRegistryAliasBuilderProvider implements CacheGroupAliasBuilderProvider {
 
     @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String aliasCacheName, String targetCacheName) {
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
         @SuppressWarnings("rawtypes")
         Builder<ServiceProviderRegistry> builder = new AliasServiceBuilder<>(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(containerName, targetCacheName), ServiceProviderRegistry.class);
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.toString(), containerName, aliasCacheName).getAbsoluteName());

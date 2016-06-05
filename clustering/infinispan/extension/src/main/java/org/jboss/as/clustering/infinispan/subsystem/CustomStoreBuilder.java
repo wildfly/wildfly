@@ -29,6 +29,7 @@ import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,8 +37,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class CustomStoreBuilder extends StoreBuilder {
 
-    CustomStoreBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    CustomStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress);
     }
 
     @Override

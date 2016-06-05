@@ -118,7 +118,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                 .addAttributes(TableResourceDefinition.Attribute.class)
                 .addAttributes(TableResourceDefinition.ColumnAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StringTableBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new StringTableBuilder(address.getParent().getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }

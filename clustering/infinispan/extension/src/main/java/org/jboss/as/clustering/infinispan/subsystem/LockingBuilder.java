@@ -35,18 +35,19 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class LockingBuilder extends CacheComponentBuilder<LockingConfiguration> implements ResourceServiceBuilder<LockingConfiguration> {
+public class LockingBuilder extends ComponentBuilder<LockingConfiguration> implements ResourceServiceBuilder<LockingConfiguration> {
 
     private final LockingConfigurationBuilder builder = new ConfigurationBuilder().locking();
 
-    LockingBuilder(String containerName, String cacheName) {
-        super(CacheComponent.LOCKING, containerName, cacheName);
+    LockingBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.LOCKING, cacheAddress);
     }
 
     @Override

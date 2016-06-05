@@ -145,15 +145,15 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new MixedKeyedJDBCStoreBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new MixedKeyedJDBCStoreBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 translateAddOperation(context, operation);
                 // Translate deprecated BINARY_TABLE attribute into separate add table operation
-                this.addTableStep(context, operation, DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH, new BinaryTableBuilderFactory());
+                this.addTableStep(context, operation, DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH, address -> new BinaryTableBuilder(address.getParent().getParent()));
                 // Translate deprecated STRING_TABLE attribute into separate add table operation
-                this.addTableStep(context, operation, DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH, new StringTableBuilderFactory());
+                this.addTableStep(context, operation, DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH, address -> new StringTableBuilder(address.getParent().getParent()));
                 super.populateModel(context, operation, resource);
             }
 

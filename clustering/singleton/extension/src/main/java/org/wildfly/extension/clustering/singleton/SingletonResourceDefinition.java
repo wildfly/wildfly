@@ -31,6 +31,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -39,6 +40,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
@@ -83,6 +87,14 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
         public SimpleAttributeDefinition getDefinition() {
             return this.definition;
         }
+    }
+
+    static TransformationDescription buildTransformers(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        SingletonPolicyResourceDefinition.buildTransformation(version, builder);
+
+        return builder.build();
     }
 
     SingletonResourceDefinition() {

@@ -34,18 +34,19 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class EvictionBuilder extends CacheComponentBuilder<EvictionConfiguration> implements ResourceServiceBuilder<EvictionConfiguration> {
+public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> implements ResourceServiceBuilder<EvictionConfiguration> {
 
     private final EvictionConfigurationBuilder builder = new ConfigurationBuilder().eviction();
 
-    EvictionBuilder(String containerName, String cacheName) {
-        super(CacheComponent.EVICTION, containerName, cacheName);
+    EvictionBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.EVICTION, cacheAddress);
     }
 
     @Override

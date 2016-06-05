@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.registry.Registry;
@@ -55,8 +56,8 @@ public class RegistryFactoryBuilderProvider implements CacheGroupBuilderProvider
      * {@inheritDoc}
      */
     @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
-        Builder<RegistryFactory<Object, Object>> builder = this.factory.createBuilder(containerName, cacheName);
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
+        Builder<RegistryFactory<Object, Object>> builder = this.factory.createBuilder(support, containerName, cacheName);
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, cacheName).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), RegistryFactory.class);
         Builder<Registry<Object, Object>> registryBuilder = new RegistryBuilder<>(containerName, cacheName);

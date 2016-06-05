@@ -36,6 +36,7 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -55,8 +56,8 @@ public class RemoteStoreBuilder extends StoreBuilder {
 
     private volatile RemoteStoreConfigurationBuilder storeBuilder;
 
-    public RemoteStoreBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    public RemoteStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress);
     }
 
     @Override

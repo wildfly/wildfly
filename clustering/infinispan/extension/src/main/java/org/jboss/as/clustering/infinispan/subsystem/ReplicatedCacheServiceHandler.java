@@ -22,12 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.configuration.cache.CacheMode;
+
 /**
  * @author Paul Ferraro
  */
 public class ReplicatedCacheServiceHandler extends ClusteredCacheServiceHandler {
 
     ReplicatedCacheServiceHandler() {
-        super(new ReplicatedCacheBuilderFactory());
+        super(address -> new SharedStateCacheBuilder(address, CacheMode.REPL_SYNC));
     }
 }
