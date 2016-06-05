@@ -32,8 +32,9 @@ import org.jboss.as.controller.ModelVersion;
 public enum SingletonModel implements Model {
 
     VERSION_1_0_0(1, 0, 0),
+    VERSION_2_0_0(2, 0, 0),
     ;
-    static final SingletonModel CURRENT = VERSION_1_0_0;
+    static final SingletonModel CURRENT = VERSION_2_0_0;
 
     private final ModelVersion version;
 

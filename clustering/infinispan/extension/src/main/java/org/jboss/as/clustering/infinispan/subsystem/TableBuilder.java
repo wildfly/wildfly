@@ -34,19 +34,20 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class TableBuilder extends CacheComponentBuilder<TableManipulationConfiguration> implements ResourceServiceBuilder<TableManipulationConfiguration> {
+public class TableBuilder extends ComponentBuilder<TableManipulationConfiguration> implements ResourceServiceBuilder<TableManipulationConfiguration> {
 
     private final Attribute prefixAttribute;
     private final TableManipulationConfigurationBuilder<JdbcStringBasedStoreConfigurationBuilder, StringTableManipulationConfigurationBuilder> builder = new ConfigurationBuilder().persistence().addStore(JdbcStringBasedStoreConfigurationBuilder.class).table();
 
-    public TableBuilder(Attribute prefixAttribute, CacheComponent component, String containerName, String cacheName) {
-        super(component, containerName, cacheName);
+    public TableBuilder(Attribute prefixAttribute, CacheComponent component, PathAddress cacheAddress) {
+        super(component, cacheAddress);
         this.prefixAttribute = prefixAttribute;
     }
 

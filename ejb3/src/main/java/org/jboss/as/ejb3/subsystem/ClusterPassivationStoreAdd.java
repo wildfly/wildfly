@@ -22,14 +22,10 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
@@ -42,11 +38,11 @@ public class ClusterPassivationStoreAdd extends PassivationStoreAdd {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws IllegalArgumentException, OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws IllegalArgumentException, OperationFailedException {
         int initialMaxSize = ClusterPassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
         String containerName = ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         ModelNode beanCacheNode = ClusterPassivationStoreResourceDefinition.BEAN_CACHE.resolveModelAttribute(context, model);
         String cacheName = beanCacheNode.isDefined() ? beanCacheNode.asString() : null;
-        this.install(context, operation, initialMaxSize, containerName, cacheName, verificationHandler, serviceControllers);
+        this.install(context, operation, initialMaxSize, containerName, cacheName);
     }
 }

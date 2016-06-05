@@ -34,6 +34,7 @@ import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
@@ -52,9 +53,9 @@ public class FileStoreBuilder extends StoreBuilder {
     private volatile String relativePath;
     private volatile String relativeTo;
 
-    FileStoreBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
-        this.relativePath = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
+    FileStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress);
+        this.relativePath = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + cacheAddress.getParent().getLastElement().getValue();
     }
 
     @Override

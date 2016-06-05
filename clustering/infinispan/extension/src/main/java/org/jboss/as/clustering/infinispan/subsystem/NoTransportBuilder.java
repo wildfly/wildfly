@@ -24,14 +24,15 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
+import org.jboss.as.controller.PathAddress;
 
 /**
  * @author Paul Ferraro
  */
-public class NoTransportBuilder extends CacheContainerComponentBuilder<TransportConfiguration> {
+public class NoTransportBuilder extends ComponentBuilder<TransportConfiguration> {
 
-    NoTransportBuilder(String containerName) {
-        super(CacheContainerComponent.TRANSPORT, containerName);
+    NoTransportBuilder(PathAddress containerAddress) {
+        super(CacheContainerComponent.TRANSPORT, containerAddress);
     }
 
     @Override

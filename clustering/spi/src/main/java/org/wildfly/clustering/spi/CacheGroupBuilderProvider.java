@@ -23,6 +23,7 @@ package org.wildfly.clustering.spi;
 
 import java.util.Collection;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -30,5 +31,5 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 public interface CacheGroupBuilderProvider {
-    Collection<Builder<?>> getBuilders(String containerName, String cacheName);
+    Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName);
 }

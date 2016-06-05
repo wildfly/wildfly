@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -40,8 +41,8 @@ import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 
 /**
@@ -80,6 +81,8 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public Wrapper startCache(Classification classification, Properties properties) throws Exception {
         String cache_type = properties.getProperty(CACHE_TYPE);
         String container = properties.getProperty(CONTAINER);
+        // TODO Figure out how to access CapabilityServiceSupport from here
+        ServiceName containerServiceName = ServiceName.parse(InfinispanRequirement.CONTAINER.resolve(container));
         EmbeddedCacheManager embeddedCacheManager;
         ServiceName serviceName;
         if (CACHE_PRIVATE.equals(cache_type)) {
@@ -89,14 +92,14 @@ public class InfinispanCacheDeploymentListener implements EventListener {
 
             ServiceContainer target = currentServiceContainer();
             // Create a mock service that represents this session factory instance
-            ServiceBuilder<EmbeddedCacheManager> builder = new AliasServiceBuilder<>(serviceName, CacheContainerServiceName.CACHE_CONTAINER.getServiceName(container), EmbeddedCacheManager.class).build(target)
+            ServiceBuilder<EmbeddedCacheManager> builder = new AliasServiceBuilder<>(serviceName, containerServiceName, EmbeddedCacheManager.class).build(target)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
             ;
             embeddedCacheManager = ServiceContainerHelper.getValue(builder.install());
 
         } else {
             // need a shared cache for jpa applications
-            serviceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName(container);
+            serviceName = containerServiceName;
             ServiceRegistry registry = currentServiceContainer();
             embeddedCacheManager = (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
         }
@@ -105,6 +108,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
 
     @Override
     public void addCacheDependencies(Classification classification, Properties properties) {
+        CapabilityServiceSupport support = CacheDeploymentListener.getInternalDeploymentCapablityServiceSupport();
         String container = properties.getProperty(CONTAINER);
         String entity = properties.getProperty(ENTITY);
         String immutableEntity = properties.getProperty(IMMUTABLE_ENTITY);
@@ -113,16 +117,16 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
         String pendingPuts = properties.getProperty(PENDING_PUTS);
-        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, entity));
-        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, immutableEntity));
-        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, collection));
-        addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, naturalId));
+        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, entity));
+        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, immutableEntity));
+        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, collection));
+        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, naturalId));
         if (pendingPuts != null) {
-            addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, pendingPuts));
+            addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, pendingPuts));
         }
         if (query != null) {
-            addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, timestamps));
-            addDependency(CacheServiceName.CONFIGURATION.getServiceName(container, query));
+            addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, timestamps));
+            addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, query));
         }
     }
 

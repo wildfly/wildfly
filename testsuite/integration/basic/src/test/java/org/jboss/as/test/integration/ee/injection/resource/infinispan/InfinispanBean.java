@@ -69,7 +69,7 @@ public class InfinispanBean {
         try {
             // Make sure we can also perform a vanilla java:comp/env jndi lookup of container
             Object result = new InitialContext().lookup(CONTAINER_JNDI_NAME);
-            Assert.assertSame(this.container, result);
+            Assert.assertEquals(this.container, result);
         } catch (NamingException e) {
             Assert.fail(e.getMessage());
         }

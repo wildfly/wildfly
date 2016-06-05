@@ -30,22 +30,23 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class StoreWriteBehindBuilder extends CacheComponentBuilder<AsyncStoreConfiguration> implements ResourceServiceBuilder<AsyncStoreConfiguration> {
+public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfiguration> implements ResourceServiceBuilder<AsyncStoreConfiguration> {
 
     private final AsyncStoreConfigurationBuilder<?> builder = new ConfigurationBuilder().persistence().addSingleFileStore().async();
 
-    StoreWriteBehindBuilder(String containerName, String cacheName) {
-        super(CacheComponent.STORE_WRITE, containerName, cacheName);
+    StoreWriteBehindBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.STORE_WRITE, cacheAddress);
     }
 
     @Override
-    public AsyncStoreConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
+    public AsyncStoreConfiguration getValue() {
         return this.builder.create();
     }
 

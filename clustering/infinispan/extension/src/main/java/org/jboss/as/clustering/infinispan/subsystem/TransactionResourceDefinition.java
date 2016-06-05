@@ -244,7 +244,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new TransactionBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new TransactionBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
 

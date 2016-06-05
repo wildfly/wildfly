@@ -21,9 +21,10 @@
  */
 package org.wildfly.clustering.web.sso;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
 
 public interface SSOManagerFactoryBuilderProvider<B extends Batch> {
-    <A, D> Builder<SSOManagerFactory<A, D, B>> getBuilder(String host);
+    <A, D> Builder<SSOManagerFactory<A, D, B>> getBuilder(CapabilityServiceSupport support, String host);
 }

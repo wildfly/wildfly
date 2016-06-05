@@ -37,6 +37,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -46,24 +47,22 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public abstract class StoreBuilder extends CacheComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration> {
+public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration> {
 
     private final InjectedValue<AsyncStoreConfiguration> async = new InjectedValue<>();
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress cacheAddress;
 
     private volatile StoreConfigurationBuilder<?, ?> storeBuilder;
 
-    StoreBuilder(String containerName, String cacheName) {
-        super(CacheComponent.PERSISTENCE, containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    StoreBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.PERSISTENCE, cacheAddress);
+        this.cacheAddress = cacheAddress;
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
         return super.build(target)
-                .addDependency(CacheComponent.STORE_WRITE.getServiceName(this.containerName, this.cacheName), AsyncStoreConfiguration.class, this.async)
+                .addDependency(CacheComponent.STORE_WRITE.getServiceName(this.cacheAddress), AsyncStoreConfiguration.class, this.async)
         ;
     }
 

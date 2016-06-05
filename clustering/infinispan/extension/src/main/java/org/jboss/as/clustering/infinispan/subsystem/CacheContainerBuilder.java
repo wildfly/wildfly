@@ -21,7 +21,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.ALIASES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -45,17 +48,18 @@ import org.jboss.as.clustering.infinispan.InfinispanBatcherFactory;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
@@ -63,26 +67,31 @@ import org.wildfly.clustering.service.SuppliedValueService;
 @Listener
 public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContainer> {
 
-    private final InjectedValue<GlobalConfiguration> configuration = new InjectedValue<>();
-    private final List<String> aliases = new LinkedList<>();
+    private final List<ServiceName> aliases = new LinkedList<>();
+    private final PathAddress address;
     private final String name;
     private final BatcherFactory batcherFactory = new InfinispanBatcherFactory();
 
     private volatile String defaultCache;
+    private volatile ValueDependency<GlobalConfiguration> configuration;
 
-    public CacheContainerBuilder(String name) {
-        this.name = name;
+    public CacheContainerBuilder(PathAddress address) {
+        this.address = address;
+        this.name = address.getLastElement().getValue();
     }
 
     @Override
     public ServiceName getServiceName() {
-        return CacheContainerServiceName.CACHE_CONTAINER.getServiceName(this.name);
+        return CONTAINER.getServiceName(this.address);
     }
 
     @Override
-    public Builder<CacheContainer> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public CacheContainerBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        List<String> aliases = ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(context, model));
         this.aliases.clear();
-        this.aliases.addAll(ModelNodes.asStringList(ALIASES.getDefinition().resolveModelAttribute(context, model)));
+        aliases.forEach(alias -> this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias)));
+        this.configuration = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.name), GlobalConfiguration.class);
+        this.defaultCache = ModelNodes.asString(DEFAULT_CACHE.getDefinition().resolveModelAttribute(context, model), BasicCacheContainer.DEFAULT_CACHE_NAME);
         return this;
     }
 
@@ -107,15 +116,14 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
         };
         Service<CacheContainer> service = new SuppliedValueService<>(mapper, supplier, destroyer);
         ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), service)
-                .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.name), GlobalConfiguration.class, this.configuration)
-        ;
-        this.aliases.forEach(alias -> builder.addAliases(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(alias)));
-        return builder.setInitialMode(ServiceController.Mode.PASSIVE);
+                .addAliases(this.aliases.stream().toArray(ServiceName[]::new))
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                ;
+        return this.configuration.register(builder);
     }
 
-    CacheContainerBuilder setDefaultCache(String defaultCache) {
-        this.defaultCache = defaultCache;
-        return this;
+    String getDefaultCache() {
+        return this.defaultCache;
     }
 
     @CacheStarted

@@ -33,12 +33,12 @@ public enum SingletonServiceName implements SubGroupServiceNameFactory {
     BUILDER {
         @Override
         public ServiceName getServiceName(String containerName, String cacheName) {
-            return ServiceName.JBOSS.append("clustering", "singleton", containerName, cacheName);
+            return ServiceName.JBOSS.append("clustering", "singleton", containerName, (cacheName != null) ? cacheName : "default");
         }
     };
 
     @Override
     public ServiceName getServiceName(String containerName) {
-        return this.getServiceName(containerName, DEFAULT_SUB_GROUP);
+        return this.getServiceName(containerName, null);
     }
 }

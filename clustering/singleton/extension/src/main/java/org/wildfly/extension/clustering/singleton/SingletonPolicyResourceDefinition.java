@@ -30,13 +30,16 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.singleton.SingletonRequirement;
 
@@ -68,23 +71,41 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CACHE_CONTAINER("cache-container", ModelType.STRING, null),
-        CACHE("cache", ModelType.STRING, new ModelNode(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)),
+        CACHE_CONTAINER("cache-container", ModelType.STRING, false),
+        CACHE("cache", ModelType.STRING, true),
         QUORUM("quorum", ModelType.INT, new ModelNode(1)),
         ;
         private final SimpleAttributeDefinition definition;
 
+        private Attribute(String name, ModelType type, boolean allowNull) {
+            this.definition = createBuilder(name, type).setAllowNull(allowNull).build();
+        }
+
         private Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = createBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(defaultValue != null)
+                    .setAllowNull(true)
                     .setDefaultValue(defaultValue)
                     .build();
+        }
+
+        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
+            return new SimpleAttributeDefinitionBuilder(name, type).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES);
         }
 
         @Override
         public SimpleAttributeDefinition getDefinition() {
             return this.definition;
+        }
+    }
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (SingletonModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.CACHE.getDefinition(), Attribute.CACHE_CONTAINER.getDefinition())
+                .end();
         }
     }
 

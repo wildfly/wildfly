@@ -165,7 +165,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {

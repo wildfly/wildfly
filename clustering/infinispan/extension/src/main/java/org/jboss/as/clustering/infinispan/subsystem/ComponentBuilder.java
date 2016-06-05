@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -29,7 +30,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
  * Builds a service that provides the configuration of a component.
@@ -37,15 +37,15 @@ import org.wildfly.clustering.service.ServiceNameProvider;
  */
 public abstract class ComponentBuilder<C> implements Builder<C>, Value<C> {
 
-    private final ServiceNameProvider provider;
+    private final ServiceName name;
 
-    ComponentBuilder(ServiceNameProvider provider) {
-        this.provider = provider;
+    ComponentBuilder(ComponentServiceNameFactory factory, PathAddress parentAddress) {
+        this.name = factory.getServiceName(parentAddress);
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.provider.getServiceName();
+        return this.name;
     }
 
     @Override

@@ -24,12 +24,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResourceDefinition.Attribute.*;
 
+import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -43,14 +45,14 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        String name = context.getCurrentAddress().getParent().getLastElement().getValue();
+        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        String name = containerAddress.getLastElement().getValue();
+        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
         ServiceTarget target = context.getServiceTarget();
 
-        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
+        new JGroupsTransportBuilder(containerAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
-        new JGroupsTransportBuilder(name).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-        new SiteBuilder(name).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new SiteBuilder(containerAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
@@ -61,8 +63,8 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        String name = context.getCurrentAddress().getParent().getLastElement().getValue();
-
+        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        String name = containerAddress.getLastElement().getValue();
         String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
@@ -71,8 +73,6 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        for (CacheContainerComponent factory : CacheContainerComponent.values()) {
-            context.removeService(factory.getServiceName(name));
-        }
+        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(containerAddress)).forEach(serviceName -> context.removeService(serviceName));
     }
 }

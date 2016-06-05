@@ -37,10 +37,10 @@ import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SuppliedValueService;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -57,11 +57,11 @@ import static java.security.AccessController.doPrivileged;
  */
 public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServiceFactory> {
 
-    private final String containerName;
+    private final PathAddress address;
     private volatile int bufferSize = 100;
 
-    public KeyAffinityServiceFactoryBuilder(String containerName) {
-        this.containerName = containerName;
+    public KeyAffinityServiceFactoryBuilder(PathAddress address) {
+        this.address = address;
     }
 
     public KeyAffinityServiceFactoryBuilder setBufferSize(int size) {
@@ -71,7 +71,7 @@ public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServ
 
     @Override
     public ServiceName getServiceName() {
-        return CacheContainerServiceName.AFFINITY.getServiceName(this.containerName);
+        return CacheContainerResourceDefinition.Capability.KEY_AFFINITY_FACTORY.getServiceName(this.address);
     }
 
     @Override

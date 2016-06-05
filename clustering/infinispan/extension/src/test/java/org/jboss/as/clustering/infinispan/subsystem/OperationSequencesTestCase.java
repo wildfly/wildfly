@@ -11,8 +11,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 
 /**
 * Test case for testing sequences of management operations.
@@ -113,10 +111,10 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), FAILED, result.get(OUTCOME).asString());
 
         // need to check that all services are correctly re-installed
-        ServiceName containerServiceName = CacheContainerServiceName.CACHE_CONTAINER.getServiceName("maximal2");
+        ServiceName containerServiceName = CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(getCacheContainerAddress("maximal2"));
 
-        ServiceName cacheConfigurationServiceName = CacheServiceName.CONFIGURATION.getServiceName("maximal2", "fred");
-        ServiceName cacheServiceName = CacheServiceName.CACHE.getServiceName("maximal2", "fred");
+        ServiceName cacheConfigurationServiceName = CacheResourceDefinition.Capability.CONFIGURATION.getServiceName(getCacheAddress("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred"));
+        ServiceName cacheServiceName = CacheResourceDefinition.Capability.CACHE.getServiceName(getCacheAddress("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred"));
 
         Assert.assertNotNull("cache container service not installed", servicesA.getContainer().getService(containerServiceName));
         Assert.assertNotNull("cache configuration service not installed", servicesA.getContainer().getService(cacheConfigurationServiceName));

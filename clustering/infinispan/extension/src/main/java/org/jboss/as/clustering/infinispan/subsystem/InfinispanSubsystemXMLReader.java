@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,11 +69,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
+        List<ModelNode> postOperations = new LinkedList<>();
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case CACHE_CONTAINER: {
-                    this.parseContainer(reader, address, operations);
+                    this.parseContainer(reader, address, operations, postOperations);
                     break;
                 }
                 default: {
@@ -81,10 +84,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
+        // Explicitly order operations such that capabilities are defined before they are referenced
+        // This circumvents capability reference integrity issues when operations are not batched
         result.addAll(operations.values());
+        result.addAll(postOperations);
     }
 
-    private void parseContainer(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseContainer(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations, List<ModelNode> postOperations) throws XMLStreamException {
 
         String name = require(reader, XMLAttribute.NAME);
         PathAddress address = subsystemAddress.append(CacheContainerResourceDefinition.pathElement(name));
@@ -100,7 +106,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case DEFAULT_CACHE: {
-                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE);
+                    ModelNode value = readAttribute(reader, i, CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE);
+                    postOperations.add(Operations.createWriteAttributeOperation(address, CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE, value));
                     break;
                 }
                 case JNDI_NAME: {

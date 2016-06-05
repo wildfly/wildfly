@@ -22,14 +22,10 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
@@ -42,9 +38,9 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws IllegalArgumentException, OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws IllegalArgumentException, OperationFailedException {
         int initialMaxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
         String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.getDefaultValue().asString();
-        this.install(context, operation, initialMaxSize, containerName, "passivation", verificationHandler, serviceControllers);
+        this.install(context, operation, initialMaxSize, containerName, "passivation");
     }
 }

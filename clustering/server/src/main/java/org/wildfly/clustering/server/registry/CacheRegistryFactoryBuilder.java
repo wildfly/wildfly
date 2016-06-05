@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -37,10 +38,9 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.InfinispanNodeFactory;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupServiceName;
 
@@ -54,17 +54,19 @@ public class CacheRegistryFactoryBuilder<K, V> extends RegistryFactoryServiceNam
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<InfinispanNodeFactory> factory = new InjectedValue<>();
+    private final CapabilityServiceSupport support;
 
-    public CacheRegistryFactoryBuilder(String containerName, String cacheName) {
+    public CacheRegistryFactoryBuilder(CapabilityServiceSupport support, String containerName, String cacheName) {
         super(containerName, cacheName);
+        this.support = support;
     }
 
     @Override
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target)
+        return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(this.containerName, this.cacheName), InfinispanNodeFactory.class, this.factory)
                 .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
-                .addDependency(CacheServiceName.CACHE.getServiceName(this.containerName, this.cacheName), Cache.class, this.cache)
+                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, this.containerName, this.cacheName), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 

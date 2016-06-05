@@ -150,6 +150,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeAttributes(writer, cache, EnumSet.allOf(CacheResourceDefinition.Attribute.class));
     }
 
+    @SuppressWarnings("deprecation")
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writeCacheAttributes(writer, name, cache);
         writeAttributes(writer, cache, ClusteredCacheResourceDefinition.Attribute.class);

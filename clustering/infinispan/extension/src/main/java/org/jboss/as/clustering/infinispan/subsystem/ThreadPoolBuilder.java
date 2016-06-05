@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.ClassLoaderThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -40,13 +41,13 @@ import org.wildfly.clustering.service.Builder;
  * @author Radoslav Husar
  * @version August 2015
  */
-public class ThreadPoolBuilder extends CacheContainerComponentBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
+public class ThreadPoolBuilder extends ComponentBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ThreadPoolDefinition definition;
 
-    ThreadPoolBuilder(ThreadPoolDefinition definition, String containerName) {
-        super(definition, containerName);
+    ThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress containerAddress) {
+        super(definition, containerAddress);
         this.definition = definition;
     }
 
