@@ -109,8 +109,6 @@ public class DomainAdjuster {
         //socket-binding-group = full-ha-sockets
         final List<String> allProfiles = getAllChildrenOfType(client, PathAddress.EMPTY_ADDRESS, PROFILE);
         final ModelNode serverGroup = removeServerGroups(client);
-        final String socketBindingGroup = serverGroup.get(SOCKET_BINDING_GROUP).asString();
-        removeUnusedSocketBindingGroups(client, socketBindingGroup);
 
         for (String profileName : allProfiles) {
             if (profileName.equals(FULL_HA)) {
@@ -118,6 +116,8 @@ public class DomainAdjuster {
             }
             removeProfile(client, profileName);
         }
+        final String socketBindingGroup = serverGroup.get(SOCKET_BINDING_GROUP).asString();
+        removeUnusedSocketBindingGroups(client, socketBindingGroup);
 
         removeIpv4SystemProperty(client);
 
