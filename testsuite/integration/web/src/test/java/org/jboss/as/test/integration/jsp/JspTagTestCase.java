@@ -28,7 +28,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,12 +43,12 @@ import java.util.concurrent.TimeUnit;
 @RunAsClient
 public class JspTagTestCase {
 
-    private static final String RESULT = "This is a header\n" +
-            "\n" +
-            "\n" +
-            "<div>tag</div>\n" +
-            "\n" +
-            "Static content\n";
+    private static final String RESULT = "This is a header" + System.getProperty("line.separator") +
+    		System.getProperty("line.separator") +
+    		System.getProperty("line.separator") +
+            "<div>tag</div>" + System.getProperty("line.separator") +
+            System.getProperty("line.separator") +
+            "Static content" + System.getProperty("line.separator");
 
     @Deployment
     public static WebArchive deploy() {
