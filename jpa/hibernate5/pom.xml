@@ -106,20 +106,6 @@
 
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>${version.org.hibernate}</version>
-            <scope>provided</scope>
-            <exclusions>
-              <exclusion>
-                 <groupId>org.hibernate.common</groupId>
-                 <artifactId>hibernate-commons-annotations</artifactId>
-              </exclusion>
-          </exclusions>
- 
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-infinispan</artifactId>
             <version>${version.org.hibernate}</version>
             <scope>provided</scope>
