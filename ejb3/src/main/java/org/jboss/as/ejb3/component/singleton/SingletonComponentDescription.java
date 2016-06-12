@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.singleton;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
@@ -63,6 +63,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
@@ -129,6 +130,15 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                     }
                 });
         }
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                if (isInitOnStartup()) {
+                    final StartupCountdown startupCountdown = context.getDeploymentUnit().getAttachment(Attachments.STARTUP_COUNTDOWN);
+                    configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new StartupCountDownInterceptor(startupCountdown)), InterceptorOrder.ComponentPostConstruct.STARTUP_COUNTDOWN_INTERCEPTOR);
+                }
+            }
+        });
         if (getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
             //we need to add the transaction interceptor to the lifecycle methods
             getConfigurators().add(new ComponentConfigurator() {
@@ -243,7 +253,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
                 ClassReflectionIndex classIndex = index.getClassIndex(WriteReplaceInterface.class);
-                for (Method method : (Collection<Method>)classIndex.getMethods()) {
+                for (Method method : classIndex.getMethods()) {
                     configuration.addClientInterceptor(method, StatelessWriteReplaceInterceptor.factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
                 }
             }

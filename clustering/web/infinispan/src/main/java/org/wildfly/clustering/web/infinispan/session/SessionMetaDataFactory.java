@@ -27,12 +27,11 @@ import org.wildfly.clustering.ee.infinispan.Evictor;
 import org.wildfly.clustering.ee.infinispan.Locator;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * @author Paul Ferraro
  */
 public interface SessionMetaDataFactory<V, L> extends Creator<String, V, Void>, Locator<String, V>, Remover<String>, Evictor<String> {
-    SessionMetaData createSessionMetaData(String id, V value);
+    InvalidatableSessionMetaData createSessionMetaData(String id, V value);
     ImmutableSessionMetaData createImmutableSessionMetaData(String id, V value);
 }

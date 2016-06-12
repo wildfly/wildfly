@@ -39,17 +39,18 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.cookie.CommonCookieAttributeHandler;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
 import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.cookie.MalformedCookieException;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.CookieSpecRegistries;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.cookie.BasicDomainHandler;
 import org.apache.http.impl.cookie.BasicExpiresHandler;
 import org.apache.http.impl.cookie.BasicMaxAgeHandler;
@@ -71,9 +72,6 @@ public class TestHttpClientUtils {
 
     /**
      * Returns https ready client.
-     *
-     * @param base
-     * @return
      */
     public static HttpClient wrapHttpsClient(HttpClient base) {
         try {
@@ -111,7 +109,6 @@ public class TestHttpClientUtils {
      * @see <a href="http://tools.ietf.org/html/rfc6265">RFC6265 -  HTTP State Management Mechanism</a>
      */
     public static CloseableHttpClient promiscuousCookieHttpClient() {
-
         return promiscuousCookieHttpClientBuilder().build();
     }
 
@@ -122,7 +119,6 @@ public class TestHttpClientUtils {
      * @see TestHttpClientUtils#promiscuousCookieHttpClient()
      */
     public static HttpClientBuilder promiscuousCookieHttpClientBuilder() {
-
         HttpClientBuilder builder = HttpClients.custom();
 
         RegistryBuilder<CookieSpecProvider> registryBuilder = CookieSpecRegistries.createDefaultBuilder();
@@ -132,12 +128,12 @@ public class TestHttpClientUtils {
         RequestConfig requestConfig = RequestConfig.custom().setCookieSpec("promiscuous").build();
         builder.setDefaultRequestConfig(requestConfig);
 
+        builder.setDefaultCookieStore(new PromiscuousCookieStore());
+
         return builder;
     }
 
-
     private static class PromiscuousCookieSpecProvider implements CookieSpecProvider {
-
         @Override
         public CookieSpec create(HttpContext context) {
             return new PromiscuousCookieSpec();
@@ -145,12 +141,10 @@ public class TestHttpClientUtils {
     }
 
     private static class PromiscuousCookieSpec extends RFC6265CookieSpec {
-
-        PromiscuousCookieSpec(CommonCookieAttributeHandler... handlers) {
+        private PromiscuousCookieSpec() {
             super(
                     new BasicPathHandler(),
                     new BasicDomainHandler() {
-
                         @Override
                         public boolean match(Cookie cookie, CookieOrigin origin) {
                             return true;
@@ -172,4 +166,11 @@ public class TestHttpClientUtils {
         }
     }
 
+    private static class PromiscuousCookieStore extends BasicCookieStore {
+        @Override
+        public synchronized void addCookie(Cookie cookie) {
+            ((BasicClientCookie) cookie).setDomain(null);
+            super.addCookie(cookie);
+        }
+    }
 }

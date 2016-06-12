@@ -346,7 +346,7 @@ public class PersistenceUnitServiceHandler {
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION));
 
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
@@ -585,7 +585,7 @@ public class PersistenceUnitServiceHandler {
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION));
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 

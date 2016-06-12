@@ -5,7 +5,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.cluster.web.ClusteredWebFailoverAbstractCase;
+import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @org.junit.Ignore("WFLY-2409")
-public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbstractCase {
+public class SessionClusterDbPersistenceTestCase extends AbstractWebFailoverTestCase {
     private static final String DEPLOYMENT_NAME = "session-db-cluster.war";
 
     public SessionClusterDbPersistenceTestCase() {

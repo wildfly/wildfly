@@ -160,7 +160,7 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                         }
                         timers.add(builder.build(timerService));
                     } catch (Exception e) {
-                        EjbLogger.ROOT_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
+                        EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
                     }
                     return;
                 }
@@ -282,13 +282,13 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                                 builder.setTimeoutMethod(timeoutMethod);
                                 timers.add(builder.build(timerService));
                             } else {
-                                EjbLogger.ROOT_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), null);
+                                EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), null);
                             }
                         } else {
                             timers.add(builder.build(timerService));
                         }
                     } catch (Exception e) {
-                        EjbLogger.ROOT_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
+                        EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
                     }
                     return;
                 }

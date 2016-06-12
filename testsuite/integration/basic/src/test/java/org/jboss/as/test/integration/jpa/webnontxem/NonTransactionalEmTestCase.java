@@ -55,7 +55,7 @@ public class NonTransactionalEmTestCase {
         war.addClasses(HttpRequest.class, SimpleServlet.class, Employee.class);
         // WEB-INF/classes is implied
         war.addAsResource(NonTransactionalEmTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
-
+        war.addAsWebInfResource(NonTransactionalEmTestCase.class.getPackage(), "web.xml", "web.xml");
         return war;
     }
 

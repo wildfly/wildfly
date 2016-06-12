@@ -49,7 +49,11 @@
         <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
         <xs:attribute name="advertise-socket" type="xs:string" use="optional"/>
         <xs:attribute name="proxy-list" type="xs:string" use="optional"/>
-        <xs:attribute name="proxy-url" type="xs:string" use="optional"/>
+        <xs:attribute name="proxy-url" type="xs:string" use="optional" default="/">
+            <xs:annotation>
+                <xs:documentation>Value which will be prepended to the URL of MCMP commands.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="balancer" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>The balancer name. All nodes of a cluster have to use the same value.</xs:documentation>

@@ -26,9 +26,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
@@ -70,18 +70,11 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
         Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
-        org.infinispan.configuration.cache.Configuration config = groupCache.getCacheConfiguration();
+        final CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
         final String beanName = this.configuration.getBeanContext().getBeanName();
-        // If cache is clustered or configured with a write-through cache store
-        // then we need to trigger any @PrePassivate/@PostActivate per request
-        // See EJB.4.2.1 Instance Passivation and Conversational State
-        final boolean evictionAllowed = config.persistence().usingStores();
-        final boolean passivationEnabled = evictionAllowed && config.persistence().passivation();
-        final boolean persistent = config.clustering().cacheMode().isClustered() || (evictionAllowed && !passivationEnabled);
-        boolean lockOnRead = config.transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && (config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ);
-        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, factory, context, lockOnRead);
+        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, factory, context, properties);
         Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
-        BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, lockOnRead, this.configuration.getBeanContext().getTimeout(), persistent ? passivationListener : null);
+        BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         final NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
         final Registry<String, ?> registry = this.configuration.getRegistry();
@@ -111,16 +104,6 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             @Override
             public PassivationListener<T> getPassivationListener() {
                 return passivationListener;
-            }
-
-            @Override
-            public boolean isEvictionAllowed() {
-                return evictionAllowed;
-            }
-
-            @Override
-            public boolean isPersistent() {
-                return persistent;
             }
 
             @Override
@@ -167,6 +150,11 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             @Override
             public PassivationConfiguration<T> getPassivationConfiguration() {
                 return passivation;
+            }
+
+            @Override
+            public CacheProperties getProperties() {
+                return properties;
             }
         };
         return new InfinispanBeanManager<>(configuration, identifierFactory, beanConfiguration, groupConfiguration);

@@ -30,7 +30,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
+public class CoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
     private static final String DEPLOYMENT_NAME = "coarse-distributable.war";
 
     public CoarseWebFailoverTestCase() {
@@ -54,7 +54,7 @@ public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase 
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         return war;
     }
 }

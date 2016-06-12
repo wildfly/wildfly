@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.ee.infinispan;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.Cache;
@@ -37,6 +38,10 @@ public class CacheEntryMutator<K, V> implements Mutator {
     private final K id;
     private final V value;
     private final AtomicBoolean mutated;
+
+    public CacheEntryMutator(Cache<K, V> cache, Map.Entry<K, V> entry) {
+        this(cache, entry.getKey(), entry.getValue());
+    }
 
     public CacheEntryMutator(Cache<K, V> cache, K id, V value) {
         this.cache = cache;

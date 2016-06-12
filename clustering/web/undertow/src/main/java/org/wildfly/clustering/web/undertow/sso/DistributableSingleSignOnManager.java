@@ -27,6 +27,7 @@ import io.undertow.security.impl.SingleSignOn;
 
 import java.util.Base64;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
@@ -38,6 +39,8 @@ import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
  * @author Paul Ferraro
  */
 public class DistributableSingleSignOnManager implements SingleSignOnManager {
+
+    private static final Logger log = Logger.getLogger(DistributableSingleSignOnManager.class);
 
     private final SSOManager<AuthenticatedSession, String, Void, Batch> manager;
     private final SessionManagerRegistry registry;
@@ -75,6 +78,9 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         try {
             AuthenticatedSession session = new AuthenticatedSession(account, mechanism);
             SSO<AuthenticatedSession, String, Void> sso = this.manager.createSSO(id, session);
+            if (log.isTraceEnabled()) {
+                log.tracef("Creating SSO ID %s for Principal %s and Roles %s", id, account.getPrincipal().getName(), account.getRoles().toString());
+            }
             return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -99,8 +105,14 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         try {
             SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
             if (sso == null) {
+                if (log.isTraceEnabled()) {
+                    log.tracef("SSO ID %s not found on the session manager.", id);
+                }
                 batch.close();
                 return null;
+            }
+            if (log.isTraceEnabled()) {
+                log.tracef("SSO ID %s found on the session manager.", id);
             }
             return new DistributableSingleSignOn(sso, this.registry, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
@@ -113,6 +125,9 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     @Override
     public void removeSingleSignOn(SingleSignOn sso) {
         if (sso instanceof InvalidatableSingleSignOn) {
+            if(log.isTraceEnabled()) {
+                log.tracef("Removing SSO ID %s", sso.getId());
+            }
             ((InvalidatableSingleSignOn) sso).invalidate();
         }
     }

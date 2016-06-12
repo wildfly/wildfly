@@ -121,26 +121,27 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
             final String path = DeploymentDefinition.CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
             final String server = DeploymentDefinition.SERVER.resolveModelAttribute(context, subModel).asString();
 
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-            final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
-            final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfoInjectedValue().getValue();
-            final UndertowMetricsCollector collector = (UndertowMetricsCollector)deploymentInfo.getMetricsCollector();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
-                    if (controller != null) {
-                        final String name = address.getLastElement().getValue();
-                        final ServletInfo servlet = deploymentInfo.getServlets().get(name);
-                        final ModelNode response = new ModelNode();
-                        MetricsHandler.MetricResult result = collector != null ? collector.getMetrics(name) : null;
-                        if (result == null) {
-                            response.set(0);
-                        } else {
-                            handle(response, name, result, servlet);
-                        }
-                        context.getResult().set(response);
+                    final ServiceController<?> deploymentServiceController = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
+                    if (deploymentServiceController == null) {
+                        return;
                     }
+                    final UndertowDeploymentService deploymentService = (UndertowDeploymentService) deploymentServiceController.getService();
+                    final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfoInjectedValue().getValue();
+                    final UndertowMetricsCollector collector = (UndertowMetricsCollector)deploymentInfo.getMetricsCollector();
+
+                    final String name = address.getLastElement().getValue();
+                    final ServletInfo servlet = deploymentInfo.getServlets().get(name);
+                    final ModelNode response = new ModelNode();
+                    MetricsHandler.MetricResult result = collector != null ? collector.getMetrics(name) : null;
+                    if (result == null) {
+                        response.set(0);
+                    } else {
+                        handle(response, name, result, servlet);
+                    }
+                    context.getResult().set(response);
                 }
             }, OperationContext.Stage.RUNTIME);
         }

@@ -47,6 +47,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
@@ -81,6 +82,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     private final String beanName;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
+    private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
     private final BeanGroupFactory<I, T> groupFactory;
     private final IdentifierFactory<I> identifierFactory;
@@ -105,6 +107,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.groupFactory = groupConfiguration.getFactory();
         this.beanFactory = beanConfiguration.getFactory();
         this.cache = beanConfiguration.getCache();
+        this.properties = configuration.getProperties();
         this.batcher = new InfinispanBatcher(this.cache);
         this.filter = new BeanFilter<>(this.beanName);
         Address address = this.cache.getCacheManager().getAddress();
@@ -142,7 +145,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
             }
         };
         Scheduler<I> beanScheduler = (timeout != null) && (timeout.getValue() >= 0) ? new BeanExpirationScheduler<>(this.batcher, new ExpiredBeanRemover<>(this.beanFactory), this.expiration) : noopScheduler;
-        Scheduler<I> groupScheduler = this.passivation.isEvictionAllowed() ? new BeanGroupEvictionScheduler<>(this.beanName + ".eviction", this.batcher, this.groupFactory, this.dispatcherFactory, this.passivation) : noopScheduler;
+        Scheduler<I> groupScheduler = (this.passivation.getConfiguration().getMaxSize() >= 0) ? new BeanGroupEvictionScheduler<>(this.beanName + ".eviction", this.batcher, this.groupFactory, this.dispatcherFactory, this.passivation) : noopScheduler;
         this.schedulerContext = new SchedulerContext<I>() {
             @Override
             public void close() {
@@ -233,7 +236,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Creating bean %s associated with group %s", id, groupId);
         BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, this.groupFactory.createValue(groupId, null));
         group.addBean(id, bean);
-        group.releaseBean(id, this.passivation.isPersistent() ? this.passivation.getPassivationListener() : null);
+        group.releaseBean(id, this.properties.isPersistent() ? this.passivation.getPassivationListener() : null);
         return new SchedulableBean(this.beanFactory.createBean(id, this.beanFactory.createValue(id, groupId)));
     }
 
@@ -281,7 +284,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     public void passivated(CacheEntryPassivatedEvent<BeanKey<I>, BeanEntry<I>> event) {
         if (event.isPre()) {
             this.passiveCount.incrementAndGet();
-            if (!this.passivation.isPersistent()) {
+            if (!this.properties.isPersistent()) {
                 this.executor.execute(() -> {
                     I groupId = event.getValue().getGroupId();
                     BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
@@ -297,7 +300,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     public void activated(CacheEntryActivatedEvent<BeanKey<I>, BeanEntry<I>> event) {
         if (!event.isPre()) {
             this.passiveCount.decrementAndGet();
-            if (!this.passivation.isPersistent()) {
+            if (!this.properties.isPersistent()) {
                 this.executor.execute(() -> {
                     I groupId = event.getValue().getGroupId();
                     BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);

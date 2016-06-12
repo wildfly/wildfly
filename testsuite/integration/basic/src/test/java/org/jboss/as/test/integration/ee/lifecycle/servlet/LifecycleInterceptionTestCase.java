@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ee.lifecycle.servlet;
 
 import java.io.IOException;
+import java.net.SocketPermission;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +34,8 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author Matus Abaffy
@@ -47,7 +50,11 @@ public abstract class LifecycleInterceptionTestCase {
         return ShrinkWrap.create(WebArchive.class, "remote.war")
                 .addClasses(LifecycleCallbackBinding.class, LifecycleCallbackInterceptor.class, InfoClient.class,
                         InitServlet.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, BEANS_XML);
+                .addAsWebInfResource(EmptyAsset.INSTANCE, BEANS_XML)
+                // InfoClient requires SocketPermission
+                .addAsManifestResource(
+                        createPermissionsXmlAsset(new SocketPermission("127.0.0.1:8080", "connect,resolve")),
+                        "permissions.xml");
     }
 
     protected static WebArchive createMainTestArchiveBase() {

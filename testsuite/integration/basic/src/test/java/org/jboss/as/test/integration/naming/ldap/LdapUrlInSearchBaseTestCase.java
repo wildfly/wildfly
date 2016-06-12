@@ -21,8 +21,10 @@
  */
 package org.jboss.as.test.integration.naming.ldap;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
+import java.net.SocketPermission;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
@@ -85,6 +87,8 @@ public class LdapUrlInSearchBaseTestCase {
         LOGGER.info("Creating deployment");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ldap-test.war");
         war.addClasses(LdapUrlTestServlet.class);
+
+        war.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:10389", "connect,resolve")), "permissions.xml");
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(war.toString(true));

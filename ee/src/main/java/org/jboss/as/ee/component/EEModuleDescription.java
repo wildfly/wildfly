@@ -80,6 +80,11 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     private String defaultSecurityDomain;
 
     /**
+     * The number of registered startup beans.
+     */
+    private int startupBeansCount;
+
+    /**
      * Construct a new instance.
      *
      * @param applicationName    the application name (which is same as the module name if the .ear is absent)
@@ -326,5 +331,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public void setDefaultSecurityDomain(String defaultSecurityDomain) {
         this.defaultSecurityDomain = defaultSecurityDomain;
+    }
+
+    public int getStartupBeansCount() {
+        return this.startupBeansCount;
+    }
+
+    public int registerStartupBean() {
+        return ++this.startupBeansCount;
     }
 }

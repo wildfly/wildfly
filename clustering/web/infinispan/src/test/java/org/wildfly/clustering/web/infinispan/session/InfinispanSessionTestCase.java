@@ -21,17 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,12 +31,14 @@ import org.junit.Test;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionMetaData;
 
+/**
+ * Unit test for {@link InfinispanSession}.
+ * @author paul
+ */
 public class InfinispanSessionTestCase {
     private final String id = "session";
-    private final SessionMetaData metaData = mock(SessionMetaData.class);
+    private final InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
     private final SessionAttributes attributes = mock(SessionAttributes.class);
     private final Remover<String> remover = mock(Remover.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
@@ -71,43 +64,50 @@ public class InfinispanSessionTestCase {
     @SuppressWarnings("unchecked")
     @Test
     public void invalidate() {
+        when(this.metaData.invalidate()).thenReturn(true);
+        
         this.session.invalidate();
         
         verify(this.remover).remove(this.id);
-        
         reset(this.remover);
         
-        IllegalStateException exception = null;
-        try {
-            this.session.invalidate();
-        } catch (IllegalStateException e) {
-            exception = e;
-        }
-        assertNotNull(exception);
+        when(this.metaData.invalidate()).thenReturn(false);
+        
+        this.session.invalidate();
         
         verify(this.remover, never()).remove(this.id);
     }
     
     @Test
     public void isValid() {
+        when(this.metaData.isValid()).thenReturn(true);
+        
         assertTrue(this.session.isValid());
         
-        this.session.invalidate();
+        when(this.metaData.isValid()).thenReturn(false);
         
         assertFalse(this.session.isValid());
     }
     
     @Test
     public void close() {
+        when(this.metaData.isValid()).thenReturn(true);
+        
         this.session.close();
         
+        verify(this.attributes).close();
         verify(this.metaData).setLastAccessedTime(any(Instant.class));
         
-        reset(this.metaData);
+        reset(this.metaData, this.attributes);
         
         // Verify that session is not mutated if invalid
-        this.session.invalidate();
+        when(this.metaData.isValid()).thenReturn(false);
         
+        this.session.close();
+        
+        this.session.close();
+        
+        verify(this.attributes, never()).close();
         verify(this.metaData, never()).setLastAccessedTime(any(Instant.class));
     }
 

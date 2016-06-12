@@ -50,6 +50,6 @@ public abstract class ComponentBuilder<C> implements Builder<C>, Value<C> {
 
     @Override
     public ServiceBuilder<C> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 }

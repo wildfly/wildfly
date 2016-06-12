@@ -55,7 +55,7 @@
     <properties>
         <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
-        <jboss.as.release.codename>Kenny</jboss.as.release.codename>
+        <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
         <jboss.as.scm.connection>git@github.com:wildfly/wildfly.git</jboss.as.scm.connection>
 
@@ -82,8 +82,8 @@
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
-        <version.com.fasterxml.classmate>1.1.0</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.5.4</version.com.fasterxml.jackson>
+        <version.com.fasterxml.classmate>1.3.1</version.com.fasterxml.classmate>
+        <version.com.fasterxml.jackson>2.7.3</version.com.fasterxml.jackson>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>18.0</version.com.google.guava>
         <version.com.h2database>1.3.173</version.com.h2database>
@@ -118,7 +118,7 @@
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>1.1.0.wildfly-016</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
-        <version.org.apache.cxf>3.1.5</version.org.apache.cxf>
+        <version.org.apache.cxf>3.1.6</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
@@ -129,9 +129,9 @@
         <version.org.eclipselink.version>2.6.0</version.org.eclipselink.version>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.8</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>2.0.5</version.org.apache.santuario>
+        <version.org.apache.santuario>2.0.6</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
-        <version.org.apache.ws.security>2.1.4</version.org.apache.ws.security>
+        <version.org.apache.ws.security>2.1.5</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.1</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-2</version.org.apache.xalan>
         <version.org.bouncycastle>1.52</version.org.bouncycastle>
@@ -148,7 +148,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.search>5.5.3.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>8.1.2.Final</version.org.infinispan>
+        <version.org.infinispan>8.2.2.Final</version.org.infinispan>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
         <version.org.jberet>1.2.0.Final</version.org.jberet>
@@ -160,16 +160,16 @@
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>1.0.7.Final</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.3.3.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.3.4.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>2.0.2.Final</version.org.jboss.jandex>
         <version.org.jboss.jboss-transaction-spi>7.3.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.metadata>10.0.0.Final</version.org.jboss.metadata>
-        <version.org.jboss.narayana>5.2.16.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.3.3.Final</version.org.jboss.narayana>
         <version.org.jboss.mod_cluster>1.3.2.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.0.6.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.remote-naming>2.0.4.Final</version.org.jboss.remote-naming>
-        <version.org.jboss.resteasy>3.0.16.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.2.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -212,8 +212,7 @@
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.5.SP1</version.org.picketlink>
-        <version.org.scannotation>1.0.3</version.org.scannotation>
+        <version.org.picketlink>2.5.5.SP2</version.org.picketlink>
         <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
@@ -1369,6 +1368,16 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
                 <version>${version.com.fasterxml.jackson}</version>
             </dependency>
 
@@ -4689,10 +4698,6 @@
                         <artifactId>httpclient</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.scannotation</groupId>
-                        <artifactId>scannotation</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>net.jcip</groupId>
                         <artifactId>jcip</artifactId>
                     </exclusion>
@@ -5959,19 +5964,6 @@
                 <artifactId>picketlink-wildfly8</artifactId>
                 <version>${version.org.picketlink}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.scannotation</groupId>
-                <artifactId>scannotation</artifactId>
-                <version>${version.org.scannotation}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javassist</groupId>
-                        <artifactId>javassist</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
 
             <dependency>
                 <groupId>org.slf4j</groupId>

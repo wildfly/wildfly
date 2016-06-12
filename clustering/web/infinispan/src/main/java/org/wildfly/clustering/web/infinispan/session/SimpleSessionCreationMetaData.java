@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Paul Ferraro
@@ -32,6 +33,7 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
 
     private final Instant creationTime;
     private volatile Duration maxInactiveInterval = Duration.ZERO;
+    private final AtomicBoolean valid = new AtomicBoolean(true);
 
     public SimpleSessionCreationMetaData() {
         this(Instant.now());
@@ -54,5 +56,15 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
     @Override
     public void setMaxInactiveInterval(Duration duration) {
         this.maxInactiveInterval = duration;
+    }
+
+    @Override
+    public boolean isValid() {
+        return this.valid.get();
+    }
+
+    @Override
+    public boolean invalidate() {
+        return this.valid.compareAndSet(true, false);
     }
 }

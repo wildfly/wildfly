@@ -10,11 +10,14 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.naming.java.permission.JndiPermission;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that MBean(s) binding to JNDI in their <code>start</code> lifecycle method do not hang up the deployment.
@@ -34,6 +37,7 @@ public class JNDIBindingMBeanTestCase {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "multiple-jndi-binding-mbeans.sar");
         sar.addClasses(JNDIBindingService.class, JNDIBindingMBeanTestCase.class, JNDIBindingServiceMBean.class);
         sar.addAsManifestResource(JNDIBindingMBeanTestCase.class.getPackage(), "multiple-jndi-binding-mbeans-jboss-service.xml", "jboss-service.xml");
+        sar.addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("global/env/foo/-", "bind")), "permissions.xml");
         return sar;
     }
 

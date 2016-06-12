@@ -81,7 +81,11 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                         inputFactory.setXMLResolver(NoopXMLResolver.create());
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
-                        webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit)));
+                        WebFragmentMetaData webFragmentMetaData = WebFragmentMetaDataParser.parse(xmlReader, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
+                        webFragments.put(resourceRoot.getRootName(), webFragmentMetaData);
+                        /*Log message to inform that distributable is not set in web-fragment.xml while it is set in web.xml*/
+                        if (warMetaData.getWebMetaData() != null && warMetaData.getWebMetaData().getDistributable()!= null && webFragmentMetaData.getDistributable() == null)
+                            UndertowLogger.ROOT_LOGGER.distributableDisabledInFragmentXml(deploymentUnit.getName(),resourceRoot.getRootName());
                     } catch (XMLStreamException e) {
                         throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment.toString(), e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
                     } catch (IOException e) {

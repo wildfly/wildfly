@@ -28,6 +28,7 @@ package org.jboss.as.test.integration.sar.injection.pojos;
 abstract class AbstractService {
     
     private A a;
+    private int injectedCount;
     
     public final void setA(final A a) {
         this.a = a;
@@ -35,6 +36,14 @@ abstract class AbstractService {
 
     public final int getCount() {
         return a.getCount();
+    }
+
+    public final int getInjectedCount() {
+        return injectedCount;
+    }
+
+    public void setInjectedCount(int injectedCount) {
+        this.injectedCount = injectedCount;
     }
 
     public final boolean getStartCalled() {

@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.websocket;
 
+import java.net.SocketPermission;
 import java.net.URI;
+import java.util.PropertyPermission;
 
 import javax.websocket.ContainerProvider;
 import javax.websocket.WebSocketContainer;
@@ -42,6 +44,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * @author Matus Abaffy
  */
@@ -57,7 +61,15 @@ public class WebSocketInjectionSupportTestCase {
                         ComponentInterceptor.class).addClasses(InjectionSupportTestCase.constructTestsHelperClasses)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
-                        "services/javax.websocket.ContainerProvider");
+                        "services/javax.websocket.ContainerProvider")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        // Needed for the TestSuiteEnvironment.getServerAddress() and TestSuiteEnvironment.getHttpPort()
+                        new PropertyPermission("management.address", "read"),
+                        new PropertyPermission("node0", "read"),
+                        new PropertyPermission("jboss.http.port", "read"),
+                        // Needed for the serverContainer.connectToServer()
+                        new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")),
+                        "permissions.xml");
     }
 
     @Test
@@ -67,7 +79,7 @@ public class WebSocketInjectionSupportTestCase {
         ComponentInterceptor.resetInterceptions();
 
         final WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
-        serverContainer.connectToServer(AnnotatedClient.class, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), 8080, "/websocket/websocket/cruel", "", ""));
+        serverContainer.connectToServer(AnnotatedClient.class, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/websocket/websocket/cruel", "", ""));
 
         Assert.assertEquals("Hello cruel World", AnnotatedClient.getMessage());
 

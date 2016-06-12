@@ -3,6 +3,7 @@ package org.jboss.as.test.integration.sar.context.classloader;
 import java.io.IOException;
 
 import javax.management.MBeanServerConnection;
+import javax.management.MBeanTrustPermission;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -24,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that the MBean instance lifecycle has the correct TCCL set. The TCCL is expected to be the classloader of the deployment through which the MBean was deployed.
@@ -83,6 +86,13 @@ public class MBeanTCCLTestCase {
         ear.addAsModule(jar);
         ear.addAsManifestResource(MBeanTCCLTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
 
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                // mbean [wildfly:name=tccl-test-mbean] needs the following permission
+                new MBeanTrustPermission("register"),
+                // MBeanInAModuleService#testClassLoadByTCCL() needs the following permission
+                new RuntimePermission("getClassLoader")),
+                "permissions.xml");
+        
         logger.info("created deployment: " + ear.toString(true));
         return ear;
     }

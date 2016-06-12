@@ -22,10 +22,14 @@
 package org.jboss.as.test.integration.deployment.jcedeployment;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
 import java.net.URL;
+import java.security.SecurityPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -41,6 +45,7 @@ import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,6 +86,18 @@ public class JCETestCase {
                 .addAsLibrary(signedJce)
                 .addAsModule(war)
                 .addAsManifestResource(JCETestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+
+        // ControllerServlet and DummyProvider need the following perms for their "dirty" game
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                new FilePermission("../jcetest.keystore", "read"),
+                new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks"),
+                new RuntimePermission("accessClassInPackage.sun.security.validator"),
+                new SecurityPermission("putProviderProperty.DP"),
+                new SecurityPermission("insertProvider"),
+                new RuntimePermission("getProtectionDomain")
+        ), "permissions.xml");
+
         return ear;
     }
 
@@ -89,12 +106,12 @@ public class JCETestCase {
 
     @Test
     public void testJCE() throws Exception {
-        if(isJCETestable()) {
-            String result = performCall(url, "controller");
-            assertEquals("ok", result);
-        } else {
-            log.info("Skipping test as 'javax.crypto.JarVerifier' does not contain a field called 'providerValidator'.");
-        }
+        Assume.assumeTrue(
+                "Skipping test as 'javax.crypto.JarVerifier' does not contain a field called 'providerValidator'.",
+                isJCETestable());
+
+        String result = performCall(url, "controller");
+        assertEquals("ok", result);
     }
 
     private String performCall(final URL url, final String urlPattern) throws Exception {
@@ -110,6 +127,5 @@ public class JCETestCase {
         }
 
         return true;
-
     }
 }

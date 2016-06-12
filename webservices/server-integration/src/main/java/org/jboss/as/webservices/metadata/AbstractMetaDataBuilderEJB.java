@@ -159,8 +159,8 @@ abstract class AbstractMetaDataBuilderEJB {
     }
 
     private static String getTransportGuarantee(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
-        if (ejbEndpoint.getTransportGuarantee() != null) return ejbEndpoint.getTransportGuarantee();
-        return portComponentMD != null ? portComponentMD.getTransportGuarantee() : null;
+        if (portComponentMD != null && portComponentMD.getTransportGuarantee() != null) return portComponentMD.getTransportGuarantee();
+        return ejbEndpoint != null ? ejbEndpoint.getTransportGuarantee() : null;
     }
 
     private static boolean isSecureWsdlAccess(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {

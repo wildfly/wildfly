@@ -84,7 +84,7 @@ public class TimerServiceBindingSource extends InjectionSource {
             final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
             final EJBComponent ejbComponent = (EJBComponent) currentInvocationContext.getPrivateData(Component.class);
             if (ejbComponent == null) {
-                throw EjbLogger.ROOT_LOGGER.failToGetEjbComponent(currentInvocationContext);
+                throw EjbLogger.EJB3_TIMER_LOGGER.failToGetEjbComponent(currentInvocationContext);
             }
             return ejbComponent.getTimerService();
         }

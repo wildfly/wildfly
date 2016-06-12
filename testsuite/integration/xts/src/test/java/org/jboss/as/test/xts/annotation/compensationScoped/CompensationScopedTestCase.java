@@ -24,7 +24,7 @@ package org.jboss.as.test.xts.annotation.compensationScoped;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.util.DeploymentHelper;
-import org.jboss.narayana.compensations.impl.BAControler;
+import org.jboss.narayana.compensations.impl.BAController;
 import org.jboss.narayana.compensations.impl.BAControllerFactory;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -44,7 +44,7 @@ public class CompensationScopedTestCase {
     @Inject
     private CompensationScopedData data;
 
-    private BAControler baController;
+    private BAController baController;
 
     @Deployment
     public static JavaArchive getDeployment() {

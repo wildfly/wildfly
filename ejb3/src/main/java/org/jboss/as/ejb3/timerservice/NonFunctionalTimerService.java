@@ -52,7 +52,7 @@ import java.util.Date;
  */
 public class NonFunctionalTimerService implements TimerService, Service<TimerService> {
 
-    public static final NonFunctionalTimerService DISABLED = new NonFunctionalTimerService(EjbLogger.ROOT_LOGGER.timerServiceIsNotActive(), null);
+    public static final NonFunctionalTimerService DISABLED = new NonFunctionalTimerService(EjbLogger.EJB3_TIMER_LOGGER.timerServiceIsNotActive(), null);
 
     private final String message;
     private final TimerServiceRegistry timerServiceRegistry;
@@ -149,7 +149,7 @@ public class NonFunctionalTimerService implements TimerService, Service<TimerSer
             // it's a lifecycle callback
             Component component = currentInvocationContext.getPrivateData(Component.class);
             if (!(component instanceof SingletonComponent)) {
-                throw EjbLogger.ROOT_LOGGER.failToInvokeTimerServiceDoLifecycle();
+                throw EjbLogger.EJB3_TIMER_LOGGER.failToInvokeTimerServiceDoLifecycle();
             }
         }
     }

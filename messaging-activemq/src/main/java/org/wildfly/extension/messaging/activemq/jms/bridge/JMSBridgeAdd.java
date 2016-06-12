@@ -152,7 +152,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
             // if a module is specified, use it to instantiate the JMSBridge to ensure its ExecutorService
             // will use the correct class loader to execute its threads
             if (moduleName != null) {
-                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
                 Module module = Module.getCallerModuleLoader().loadModule(moduleID);
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             }

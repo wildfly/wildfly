@@ -29,7 +29,6 @@ import java.util.TimeZone;
 
 import javax.ejb.ScheduleExpression;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfWeek;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Hour;
@@ -38,7 +37,7 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Month;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Second;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
 
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * CalendarBasedTimeout
@@ -114,7 +113,7 @@ public class CalendarBasedTimeout {
      */
     public CalendarBasedTimeout(ScheduleExpression schedule) {
         if (schedule == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpression(this.getClass().getName());
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpression(this.getClass().getName());
         }
         // make sure that the schedule doesn't have null values for its various attributes
         this.nullCheckScheduleAttributes(schedule);
@@ -147,7 +146,7 @@ public class CalendarBasedTimeout {
             } else {
                 // use server's timezone
                 this.timezone = TimeZone.getDefault();
-                ROOT_LOGGER.unknownTimezoneId(timezoneId, this.timezone.getID());
+                EJB3_TIMER_LOGGER.unknownTimezoneId(timezoneId, this.timezone.getID());
             }
         } else {
             this.timezone = TimeZone.getDefault();
@@ -522,25 +521,25 @@ public class CalendarBasedTimeout {
 
     private void nullCheckScheduleAttributes(ScheduleExpression schedule) {
         if (schedule.getSecond() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionSecond(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionSecond(schedule);
         }
         if (schedule.getMinute() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionMinute(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionMinute(schedule);
         }
         if (schedule.getHour() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionHour(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionHour(schedule);
         }
         if (schedule.getDayOfMonth() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionDayOfMonth(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionDayOfMonth(schedule);
         }
         if (schedule.getDayOfWeek() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionDayOfWeek(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionDayOfWeek(schedule);
         }
         if (schedule.getMonth() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionMonth(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionMonth(schedule);
         }
         if (schedule.getYear() == null) {
-            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionYear(schedule);
+            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionYear(schedule);
         }
     }
 

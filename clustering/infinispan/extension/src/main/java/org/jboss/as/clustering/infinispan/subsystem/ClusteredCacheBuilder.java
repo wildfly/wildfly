@@ -58,13 +58,7 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
         if (mode.isSynchronous()) {
             builder.sync().replTimeout(REMOTE_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
         } else {
-            int queueSize = QUEUE_SIZE.getDefinition().resolveModelAttribute(context, model).asInt();
-
-            builder.async()
-                    .useReplQueue(queueSize > 0)
-                    .replQueueInterval(QUEUE_FLUSH_INTERVAL.getDefinition().resolveModelAttribute(context, model).asLong())
-                    .replQueueMaxElements(queueSize)
-            ;
+            builder.async();
         }
         this.clustering = builder.create();
 

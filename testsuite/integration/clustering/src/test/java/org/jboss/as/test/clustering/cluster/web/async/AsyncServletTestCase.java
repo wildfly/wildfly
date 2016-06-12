@@ -39,7 +39,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
-import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
+import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.clustering.cluster.web.async.servlet.AsyncServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -76,7 +76,7 @@ public class AsyncServletTestCase extends ClusterAbstractTestCase {
         war.addPackage(AsyncServlet.class.getPackage());
         // Take web.xml from the managed test.
         war.setWebXML(SimpleServlet.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_fine.xml", "jboss-web.xml");
         return war;
     }
 

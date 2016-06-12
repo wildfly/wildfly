@@ -86,7 +86,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 5, value = "Could not find BeanManager for deployment %s")
     void couldNotFindBeanManagerForDeployment(String beanManager);
 
-    @LogMessage(level = Logger.Level.INFO)
+    @LogMessage(level = Logger.Level.DEBUG)
     @Message(id = 6, value = "Starting Services for CDI deployment: %s")
     void startingServicesForCDIDeployment(String deploymentName);
 
@@ -98,11 +98,11 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 8, value = "@Resource injection of type %s is not supported for non-ejb components. Injection point: %s")
     void injectionTypeNotValue(Class<?> type, Member injectionPoint);
 
-    @LogMessage(level = Logger.Level.INFO)
+    @LogMessage(level = Logger.Level.DEBUG)
     @Message(id = 9, value = "Starting weld service for deployment %s")
     void startingWeldService(String deploymentName);
 
-    @LogMessage(level = Logger.Level.INFO)
+    @LogMessage(level = Logger.Level.DEBUG)
     @Message(id = 10, value = "Stopping weld service for deployment %s")
     void stoppingWeldService(String deploymentName);
 
