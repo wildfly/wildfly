@@ -415,7 +415,7 @@ public class RemotingLoginModuleTestCase {
             v3CertGen.setIssuerDN(dn);
             v3CertGen.setSubjectDN(dn);
             v3CertGen.setPublicKey(keyPair.getPublic());
-            v3CertGen.setSignatureAlgorithm("MD5withRSA");
+            v3CertGen.setSignatureAlgorithm("SHA256withRSA");
             final SecureRandom sr = new SecureRandom();
             v3CertGen.setSerialNumber(BigInteger.ONE);
             X509Certificate certificate = v3CertGen.generate(keyPair.getPrivate(), sr);

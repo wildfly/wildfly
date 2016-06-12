@@ -36,12 +36,14 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpResponse;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
@@ -360,7 +362,7 @@ public class DomainDeploymentOverlayTestCase {
         ModelNode socketBinding = validateResponse(client.execute(op));
 
         URL url = new URL("http",
-                org.jboss.as.arquillian.container.NetworkUtils.formatPossibleIpv6Address(socketBinding.get("bound-address").asString()),
+                NetworkUtils.formatAddress(InetAddress.getByName(socketBinding.get("bound-address").asString())),
                 socketBinding.get("bound-port").asInt(),
                 "/" + deployment + "/SimpleServlet?env-entry=overlay-test");
         return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS).trim();

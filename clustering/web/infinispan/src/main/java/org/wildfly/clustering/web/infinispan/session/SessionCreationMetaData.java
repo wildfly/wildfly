@@ -31,4 +31,8 @@ import java.time.Duration;
 public interface SessionCreationMetaData extends ImmutableSessionCreationMetaData {
 
     void setMaxInactiveInterval(Duration duration);
+
+    boolean isValid();
+
+    boolean invalidate();
 }

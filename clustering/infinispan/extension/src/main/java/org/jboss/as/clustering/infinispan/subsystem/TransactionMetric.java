@@ -33,6 +33,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public enum TransactionMetric implements Metric<TxInterceptor<?, ?>> {
 
     COMMITS(MetricKeys.COMMITS, ModelType.LONG) {

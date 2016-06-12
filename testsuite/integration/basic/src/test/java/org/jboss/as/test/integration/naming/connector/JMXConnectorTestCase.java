@@ -35,9 +35,12 @@ import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.Context;
 import java.lang.management.ManagementFactory;
+import java.net.SocketPermission;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that JMX Connector work properly from container.
@@ -85,6 +88,7 @@ public class JMXConnectorTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
         archive.addClass(ConnectedBean.class);
         archive.addClass(ConnectedBeanInterface.class);
+        archive.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:*", "connect,resolve")), "permissions.xml");
         log.info(archive.toString(true));
         return archive;
     }

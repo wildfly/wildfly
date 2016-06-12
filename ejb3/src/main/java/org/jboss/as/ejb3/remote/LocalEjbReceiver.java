@@ -215,7 +215,12 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             if (ejbComponent instanceof SessionBeanComponent) {
                 final SessionBeanComponent component = (SessionBeanComponent) ejbComponent;
                 final CancellationFlag flag = new CancellationFlag();
-                final SecurityContext securityContext = SecurityContextAssociation.getSecurityContext();
+                final SecurityContext securityContext;
+                if (WildFlySecurityManager.isChecking()) {
+                    securityContext = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) SecurityContextAssociation::getSecurityContext);
+                } else {
+                    securityContext = SecurityContextAssociation.getSecurityContext();
+                }
                 final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
 
                     @Override

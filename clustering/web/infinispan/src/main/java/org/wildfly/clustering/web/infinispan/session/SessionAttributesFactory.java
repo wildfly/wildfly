@@ -27,7 +27,6 @@ import org.wildfly.clustering.ee.infinispan.Evictor;
 import org.wildfly.clustering.ee.infinispan.Locator;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.web.session.SessionAttributes;
 
 /**
  * @author Paul Ferraro

@@ -23,6 +23,8 @@
 package org.wildfly.clustering.web.undertow.sso;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.server.session.SessionIdGenerator;
+import io.undertow.server.session.SessionListener;
 
 import java.util.Arrays;
 import java.util.ServiceLoader;
@@ -36,8 +38,10 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
 
 
@@ -69,11 +73,16 @@ public class DistributableSingleSignOnManagerFactoryBuilder implements org.wildf
 
     @Override
     public ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, String serverName, String hostName) {
+        ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
+
         Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = this.provider.getBuilder(hostName);
-        Builder<SessionManagerRegistry> registryBuilder = new SessionManagerRegistryBuilder(serverName, hostName);
-        for (Builder<?> builder : Arrays.asList(factoryBuilder, registryBuilder)) {
-            builder.build(target).install();
-        }
+        Builder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(hostServiceName);
+        Builder<SSOManager<AuthenticatedSession, String, Void, Batch>> managerBuilder = new SSOManagerBuilder(factoryBuilder.getServiceName(), generatorBuilder.getServiceName());
+        Builder<SessionListener> listenerBuilder = new SessionListenerBuilder(managerBuilder.getServiceName());
+        Builder<SessionManagerRegistry> registryBuilder = new SessionManagerRegistryBuilder(hostServiceName, listenerBuilder.getServiceName());
+
+        Arrays.asList(factoryBuilder, generatorBuilder, managerBuilder, listenerBuilder, registryBuilder).forEach(builder -> builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+
         return target.addService(name, new ValueService<>(this))
                 .addDependency(factoryBuilder.getServiceName(), SSOManagerFactory.class, this.manager)
                 .addDependency(registryBuilder.getServiceName(), SessionManagerRegistry.class, this.registry)

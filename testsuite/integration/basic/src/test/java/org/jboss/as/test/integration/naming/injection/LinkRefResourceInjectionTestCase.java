@@ -35,6 +35,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.naming.java.permission.JndiPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test which enforces that
@@ -53,6 +56,11 @@ public class LinkRefResourceInjectionTestCase {
     public static Archive<?> deployBinder() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, BINDER_JAR_NAME+".jar");
         jar.addClasses(BinderBean.class, Binder.class, Injected.class);
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new JndiPermission("global/a", "bind"),
+                new JndiPermission("global/b", "bind"),
+                new JndiPermission("global/z", "bind")
+        ), "jboss-permissions.xml");
         return jar;
     }
 

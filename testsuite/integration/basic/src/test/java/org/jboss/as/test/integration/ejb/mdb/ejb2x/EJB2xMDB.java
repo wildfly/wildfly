@@ -21,21 +21,19 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
-import org.jboss.logging.Logger;
-
 import javax.ejb.EJBException;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.MessageDrivenContext;
-import javax.jms.JMSException;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSContext;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.logging.Logger;
 
 /**
  * A replying EJB 2.x MDB.
@@ -46,43 +44,30 @@ public class EJB2xMDB implements MessageDrivenBean, MessageListener {
 
     private static final Logger logger = Logger.getLogger(EJB2xMDB.class);
 
-    private MessageDrivenContext ctx = null;
-    private QueueConnection connection;
-    private QueueSession session;
+    private MessageDrivenContext mdbContext;
+
+    private ConnectionFactory cf;
 
     public EJB2xMDB() {
     }
 
-    @Override
-    public void setMessageDrivenContext(MessageDrivenContext ctx) {
-        this.ctx = ctx;
-    }
-
     public void ejbCreate() {
+        InitialContext iniCtx = null;
         try {
-            final InitialContext iniCtx = new InitialContext();
-            final QueueConnectionFactory factory = (QueueConnectionFactory) iniCtx.lookup("java:/ConnectionFactory");
-            connection = factory.createQueueConnection();
-            session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
-            connection.start();
-        } catch (Exception e) {
-            throw new EJBException("Failed to init EJB2xMDB", e);
+            iniCtx = new InitialContext();
+            cf = (ConnectionFactory) iniCtx.lookup("java:/ConnectionFactory");
+        } catch (NamingException e) {
+            throw new EJBException(e);
         }
     }
 
     @Override
-    public void ejbRemove() {
-        ctx = null;
-        try {
-            if (session != null) {
-                session.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (JMSException e) {
-            e.printStackTrace();
-        }
+    public void setMessageDrivenContext(MessageDrivenContext ctx) throws EJBException {
+        this.mdbContext = ctx;
+    }
+
+    @Override
+    public void ejbRemove() throws EJBException {
     }
 
     @Override
@@ -92,21 +77,27 @@ public class EJB2xMDB implements MessageDrivenBean, MessageListener {
             if (message.getStringProperty("MessageFormat") != null)
                 logger.info("MessageFormat property = " + message.getStringProperty("MessageFormat"));
 
-            Queue destination = (Queue) message.getJMSReplyTo();
-            if (destination == null) {
+            Destination replyTo = message.getJMSReplyTo();
+            if (replyTo == null) {
                 try {
-                    destination = (Queue) this.ctx.lookup("jms/replyQueue");
-                } catch (Throwable optional) {}
+                    System.out.println("mdbContext = " + mdbContext);
+                    replyTo = (Destination) mdbContext.lookup("jms/replyQueue");
+                } catch (Throwable e) {
+                    logger.warn(e);
+                }
+            } else {
+                logger.info("Using replyTo from message JMSReplyTo: " + replyTo);
             }
-            if (destination != null) {
-                logger.info("replying to " + destination);
-                final TextMessage tm = (TextMessage) message;
-                final String text = tm.getText() + "processed by: " + hashCode();
-                final QueueSender sender = session.createSender(destination);
-                final TextMessage reply = session.createTextMessage(text);
-                reply.setJMSCorrelationID(message.getJMSMessageID());
-                sender.send(reply);
-                sender.close();
+            if (replyTo == null) {
+                throw new EJBException("no replyTo Destination");
+            }
+
+            final TextMessage tm = (TextMessage) message;
+            final String reply = tm.getText() + "processed by: " + hashCode();
+            try (JMSContext context = cf.createContext()) {
+                context.createProducer()
+                        .setJMSCorrelationID(message.getJMSMessageID())
+                        .send(replyTo, reply);
             }
         } catch (Exception e) {
             logger.error(e);

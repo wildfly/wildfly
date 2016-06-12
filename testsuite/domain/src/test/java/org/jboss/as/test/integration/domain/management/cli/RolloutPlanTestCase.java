@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.domain.management.cli;
 
 import java.io.File;
+import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +37,7 @@ import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.RetryTaskExecutor;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
@@ -44,6 +46,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  *
@@ -62,6 +66,10 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         CLITestSuite.createSupport(RolloutPlanTestCase.class.getSimpleName());
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
         war.addClass(RolloutPlanTestServlet.class);
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("master")) + ":" + TEST_PORT, "listen,resolve"),           // main-one
+                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("master")) + ":" + (TEST_PORT + 350), "listen,resolve")),  // main-three
+                "permissions.xml");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
         new ZipExporterImpl(war).exportTo(warFile, true);

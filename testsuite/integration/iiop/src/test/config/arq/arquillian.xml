@@ -39,4 +39,50 @@
         </container>
     </group>
 
+    <!-- Servers for SSL enabled tests -->
+    <group qualifier="iiop-ssl">
+
+        <!-- The server than invokes the exposed EJB's -->
+        <container qualifier="iiop-client" default="true">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-client</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-iiop-ssl-client</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <!-- The server that expsoses EJB's via IIOP -->
+        <container qualifier="iiop-server" default="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-server</property>
+                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+                <property name="managementAddress">${node1}</property>
+                <property name="managementPort">10090</property>
+
+                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <!-- The server that expsoses EJB's via IIOP -->
+        <container qualifier="iiop-legacy-server" default="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-legacy-server</property>
+                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+                <property name="managementAddress">${node1}</property>
+                <property name="managementPort">10190</property>
+
+                <property name="waitForPorts">${as.debug.port.node1} 10190</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+    </group>
+
 </arquillian>

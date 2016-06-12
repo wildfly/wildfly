@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.registry.Registry;
@@ -40,4 +41,5 @@ public interface InfinispanBeanManagerConfiguration<T> {
     CommandDispatcherFactory getCommandDispatcherFactory();
     ExpirationConfiguration<T> getExpirationConfiguration();
     PassivationConfiguration<T> getPassivationConfiguration();
+    CacheProperties getProperties();
 }

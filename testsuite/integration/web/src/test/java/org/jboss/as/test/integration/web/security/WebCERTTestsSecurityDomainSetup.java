@@ -58,6 +58,7 @@ import org.jboss.as.test.integration.security.common.config.realm.Authentication
 import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -166,6 +167,9 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             applyUpdates(managementClient.getControllerClient(), updates);
 
             log.debug("end of the domain creation");
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+
         } catch (Exception e) {
             log.error("Failed to setup domain creation.",e);
         }

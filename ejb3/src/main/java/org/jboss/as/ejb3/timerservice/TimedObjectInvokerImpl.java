@@ -75,12 +75,12 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
         synchronized (this) {
             if (!started) {
                 //this can happen if an invocation has been triggered as the deployment is shutting down
-                throw EjbLogger.ROOT_LOGGER.timerInvocationFailedDueToInvokerNotBeingStarted();
+                throw EjbLogger.EJB3_TIMER_LOGGER.timerInvocationFailedDueToInvokerNotBeingStarted();
             }
             interceptor = timeoutInterceptors.get(timeoutMethod);
         }
         if(interceptor == null) {
-            throw EjbLogger.ROOT_LOGGER.failToInvokeTimeout(timeoutMethod);
+            throw EjbLogger.EJB3_TIMER_LOGGER.failToInvokeTimeout(timeoutMethod);
         }
         final InterceptorContext context = new InterceptorContext();
         context.setContextData(new HashMap<String, Object>());

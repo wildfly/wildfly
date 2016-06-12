@@ -96,20 +96,22 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
             return;
         }
 
-        final MethodIdentifier methodIdentifier;
-        if (args.length == 0) {
-            methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name());
-        } else {
-            methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name(), InvocationContext.class);
-        }
         final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder(classDescription.getInterceptorClassDescription());
         if (annotationType == POST_CONSTRUCT_ANNOTATION) {
-            builder.setPostConstruct(methodIdentifier);
+            builder.setPostConstruct(getMethodIdentifier(args, methodInfo));
         } else if (annotationType == PRE_DESTROY_ANNOTATION) {
-            builder.setPreDestroy(methodIdentifier);
-        } else {
-            builder.setAroundConstruct(methodIdentifier);
+            builder.setPreDestroy(getMethodIdentifier(args, methodInfo));
+        } else if(annotationType == AROUND_CONSTRUCT_ANNOTATION){
+            builder.setAroundConstruct(getMethodIdentifier(args, methodInfo));
         }
         classDescription.setInterceptorClassDescription(builder.build());
+    }
+
+    private MethodIdentifier getMethodIdentifier(Type[] args, MethodInfo methodInfo){
+        if (args.length == 0) {
+            return MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name());
+        } else {
+            return MethodIdentifier.getIdentifier(methodInfo.returnType().name().toString(), methodInfo.name(), InvocationContext.class.getName());
+        }
     }
 }

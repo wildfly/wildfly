@@ -78,6 +78,8 @@
                                                 value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1"
                                                 value="${node1}" />
+                                            <property name="keystore.file" value="${basedir}/target/iiop-test.keystore"/>
+                                            <property name="keystore.password" value="password"/>
                                             <target name="build-iiop" />
                                         </ant>
                                     </target>
@@ -128,8 +130,73 @@
                                 </configuration>
                             </execution>
 
+                            <!-- SSL transport tests -->
+                            <execution>
+                                <id>tests-iiop-ssl.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>-->
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/iiopssl/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>iiop-ssl</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                    </systemPropertyVariables>
+                                    <argLine>
+                                        -Djava.endorsed.dirs=${project.build.directory}/endorsed
+                                        -Dcom.sun.CORBA.ORBUseDynamicStub=true
+                                        -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml</argLine>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
+
+                    <!-- Generate keystore used in IIOP-SSL tests -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.4</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>keytool-api-1.7</artifactId>
+                                <version>1.4</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-jcetest-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genkey-jcetest-keystore</id>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <keystore>${basedir}/target/iiop-test.keystore</keystore>
+                            <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                            <keypass>password</keypass>
+                            <storepass>password</storepass>
+                            <alias>test</alias>
+                            <keyalg>RSA</keyalg>
+                            <keysize>2048</keysize>
+                            <validity>365</validity>
+                        </configuration>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>

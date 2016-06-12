@@ -57,12 +57,12 @@ public class LocationService implements Service<LocationService>, FilterLocation
     @Override
     public void start(StartContext context) throws StartException {
         UndertowLogger.ROOT_LOGGER.tracef("registering handler %s under path '%s'", httpHandler.getValue(), locationPath);
-        host.getValue().registerHandler(locationPath, locationHandler);
+        host.getValue().registerLocation(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        host.getValue().unregisterHandler(locationPath);
+        host.getValue().unregisterLocation(this);
     }
 
     @Override
@@ -76,6 +76,14 @@ public class LocationService implements Service<LocationService>, FilterLocation
 
     InjectedValue<HttpHandler> getHttpHandler() {
         return httpHandler;
+    }
+
+    String getLocationPath() {
+        return locationPath;
+    }
+
+    LocationHandler getLocationHandler() {
+        return locationHandler;
     }
 
     private HttpHandler configureHandler() {

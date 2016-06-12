@@ -23,6 +23,9 @@
                     <transaction mode="BATCH"/>
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
+                <local-cache name="concurrent">
+                    <file-store passivation="true" purge="false"/>
+                </local-cache>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
@@ -63,6 +66,9 @@
                 <distributed-cache name="dist" mode="ASYNC" l1-lifespan="0" owners="2">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
+                    <file-store/>
+                </distributed-cache>
+                <distributed-cache name="concurrent" mode="SYNC" l1-lifespan="0" owners="2">
                     <file-store/>
                 </distributed-cache>
             </cache-container>

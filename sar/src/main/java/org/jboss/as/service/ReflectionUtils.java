@@ -45,6 +45,23 @@ final class ReflectionUtils {
         // forbidden instantiation
     }
 
+    static Method getGetter(final Class<?> clazz, final String propertyName) {
+        final String getterName = "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        final String iserName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+
+        try {
+            return clazz.getMethod(getterName, new Class[]{});
+        } catch (NoSuchMethodException e) {
+            // ignore for now - might be a boolean property
+        }
+        try {
+            return clazz.getMethod(iserName, new Class[]{});
+        } catch (NoSuchMethodException e) {
+            final String className = clazz.getName();
+            throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Get", propertyName, className);
+        }
+    }
+
     static Method getGetter(final List<ClassReflectionIndex> classHierarchy, final String propertyName) {
         final String getterName = "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         final String iserName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
@@ -84,6 +101,14 @@ final class ReflectionUtils {
 
         final String className = classHierarchy.get(0).getIndexedClass().getName();
         throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Set", propertyName, className);
+    }
+
+    public static Method getMethod(Class<?> clazz, String methodName, Class<?>[] argumentList) {
+        try {
+            return clazz.getMethod(methodName, argumentList);
+        } catch (NoSuchMethodException e) {
+            throw SarLogger.ROOT_LOGGER.methodNotFound(methodName, parameterList(argumentList), clazz.getName());
+        }
     }
 
     static Method getMethod(final List<ClassReflectionIndex> classHierarchy, final String methodName, final Class<?>[] types, final boolean fail) {

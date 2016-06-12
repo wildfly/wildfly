@@ -21,14 +21,24 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
+import static org.jboss.as.test.integration.security.common.Utils.assertHttpHeader;
+import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_DUMMY;
+import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_KERBEROS_V5;
+import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_KERBEROS_V5_LEGACY;
+import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_NTLM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.SocketPermission;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivilegedActionException;
 import java.security.Security;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PropertyPermission;
@@ -54,7 +64,16 @@ import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -84,11 +103,23 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Basic Negotiation login module (SPNEGOLoginModule) tests.
+ * <p>
+ * Some of the tests check the negotiation workflow if it fits the following RFCs:
+ * </p>
+ * <ul>
+ * <li><a href="https://tools.ietf.org/html/rfc2743">RFC-2743 - GSS-API</a></li>
+ * <li><a href="https://tools.ietf.org/html/rfc4120">RFC-4120 The Kerberos Network Authentication Service (V5)</a></li>
+ * <li><a href="https://tools.ietf.org/html/rfc4121">RFC-4121 The Kerberos Version 5 GSS-API</a></li>
+ * <li><a href="https://tools.ietf.org/html/rfc4178">RFC-4178 SPNEGO</a></li>
+ * <li><a href="https://tools.ietf.org/html/rfc4559">RFC-4559 SPNEGO-based Kerberos and NTLM HTTP Authentication in Microsoft
+ * Windows</a></li>
+ * </ul>
  *
  * @author Josef Cacek
  */
@@ -106,6 +137,13 @@ public class SPNEGOLoginModuleTestCase {
     /** The WEBAPP_NAME */
     private static final String WEBAPP_NAME = "kerberos-login-module";
     private static final String WEBAPP_NAME_FALLBACK = "kerberos-test-form-fallback";
+
+    private static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
+    private static final String HEADER_AUTHORIZATION = "Authorization";
+
+    private static final String HEADER_VAL_SELECT_KERBEROS_MECH = "Negotiate oRQwEqADCgEBoQsGCSqGSIb3EgECAg==";
+
+    private static final byte[] DUMMY_TOKEN = "Ahoj, svete!".getBytes(StandardCharsets.UTF_8);
 
     /** The TRUE */
     private static final String TRUE = Boolean.TRUE.toString();
@@ -272,6 +310,115 @@ public class SPNEGOLoginModuleTestCase {
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
     }
 
+    /**
+     * SPNEGO simple scenario - only kerberos mechanism is provided with valid token.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testSimpleSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_KERBEROS_V5 };
+        assertSpnegoWorkflow(uri, mechTypes, createNewKerberosTicketForHttp(uri), null, false, true);
+    }
+
+    /**
+     * SPNEGO simple scenario - more mechanismTypes is provided but the Kerberos mechanism is most preferable one and it has a
+     * valid token.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testMoreMechTypesSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_KERBEROS_V5, OID_DUMMY, OID_KERBEROS_V5_LEGACY };
+        assertSpnegoWorkflow(uri, mechTypes, createNewKerberosTicketForHttp(uri), null, false, true);
+    }
+
+    /**
+     * SPNEGO continuation scenario - more mechanismTypes is provided and the Kerberos mechanism is not the most preferable one.
+     * Client provides valid token in the second round.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testContSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_DUMMY, OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5 };
+        assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, createNewKerberosTicketForHttp(uri), true, true);
+    }
+
+    /**
+     * SPNEGO continuation scenario - Kerberos mechanisms are provided as mechanismTypes. The Legacy (aka Microsoft) mechanism
+     * is provided as the first one and we expect the server will not accept it and it'll ask the token for the standard
+     * Kerberos mechanism OID. Client provides valid token in both rounds.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testLegacyKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5 };
+        final byte[] kerberosToken = createNewKerberosTicketForHttp(uri);
+        assertSpnegoWorkflow(uri, mechTypes, kerberosToken, kerberosToken, true, true);
+    }
+
+    /**
+     * SPNEGO simple scenario - more mechanismTypes is provided but the Kerberos mechanism is not listed as the supported one.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testNoKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_DUMMY, OID_NTLM };
+        assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, null, false, false);
+    }
+
+    /**
+     * SPNEGO continuation scenario - more mechanismTypes is provided and the Kerberos mechanism is not the most preferable one.
+     * Client provides invalid token in the second round.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testContInvalidKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_DUMMY, OID_KERBEROS_V5 };
+        assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, DUMMY_TOKEN, true, false);
+    }
+
+    /**
+     * SPNEGO simple scenario - more mechanismTypes is provided and the Kerberos mechanism is the most preferable one. Client
+     * provides invalid token in the first round.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    @Ignore("JBEAP-4114")
+    public void testInvalidKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final String[] mechTypes = new String[] { OID_KERBEROS_V5, OID_DUMMY };
+        assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, null, false, false);
+    }
+
+    /**
+     * Kerberos simple scenario. Client provides a valid Kerberos token (without SPNEGO envelope) in the first round. See
+     * <a href="https://tools.ietf.org/html/rfc4121">RFC-4121</a>.
+     */
+    @Test
+    @OperateOnDeployment("WEB")
+    public void testPlainKerberosWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
+        final byte[] kerberosToken = createNewKerberosTicketForHttp(uri);
+        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            final HttpGet httpGet = new HttpGet(uri);
+            HttpResponse response = httpClient.execute(httpGet);
+            assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+            assertHttpHeader(response, HEADER_WWW_AUTHENTICATE, "Negotiate");
+            EntityUtils.consume(response.getEntity());
+            httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(kerberosToken));
+            response = httpClient.execute(httpGet);
+            LOGGER.info("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY,
+                    EntityUtils.toString(response.getEntity()));
+        }
+    }
+
     // Private methods -------------------------------------------------------
 
     private static WebArchive createWebApp(final String webAppName, final String webXmlFilename, final String securityDomain) {
@@ -295,6 +442,73 @@ public class SPNEGOLoginModuleTestCase {
      */
     private URI getServletURI(final URL webAppURL, final String servletPath) throws URISyntaxException {
         return Utils.getServletURI(webAppURL, servletPath, mgmtClient, true);
+    }
+
+    /**
+     * Create a new Kerberos ticket for HTTP service. The ticket should be newly generated for every test to avoid the
+     * "ticket reply errors".
+     * 
+     * @param uri servlet URI (used to retrieve hostname)
+     * @return ASN.1 (DER) encoded Kerberos key for HTTP service
+     */
+    private byte[] createNewKerberosTicketForHttp(URI uri)
+            throws GSSException, MalformedURLException, LoginException, PrivilegedActionException {
+        final GSSName serverName = GSSManager.getInstance().createName("HTTP@" + uri.getHost(), GSSName.NT_HOSTBASED_SERVICE);
+        return Utils.createKerberosTicketForServer("jduke", "theduke", serverName);
+    }
+
+    /**
+     * Implements testing of SPNEGO authentication workflow with configurable parameters such supported mechanisms, tokens,
+     * expected continuation and checking responses.
+     * 
+     * @param uri test URI which is protected by SPNEGO/Kerberos authentication.
+     * @param mechTypesOids array of supported mechanisms by the client in decreasing preference order (favorite choice first)
+     * @param initMechToken initial token (optimistic mechanism token) - token for the first of supported mechanisms
+     * @param responseToken token which is used in the second round when the server requests using Kerberos as a mechanism for
+     *        authentication
+     * @param continuationExpected flag which says that we expect server to require the second round of authentication (i.e.
+     *        server asks to send Kerberos token)
+     * @param successExpected flag which says that we expect the authentication finishes with success (in the first or second
+     *        round - which depends on the continuationExpected param)
+     */
+    private void assertSpnegoWorkflow(URI uri, final String[] mechTypesOids, final byte[] initMechToken,
+            final byte[] responseToken, boolean continuationExpected, boolean successExpected)
+            throws IOException, ClientProtocolException {
+        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            final HttpGet httpGet = new HttpGet(uri);
+            HttpResponse response = httpClient.execute(httpGet);
+            assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+            assertHttpHeader(response, HEADER_WWW_AUTHENTICATE, "Negotiate");
+            EntityUtils.consume(response.getEntity());
+
+            byte[] spnegoInitToken = KerberosTestUtils.generateSpnegoTokenInit(initMechToken, mechTypesOids);
+            httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(spnegoInitToken));
+
+            response = httpClient.execute(httpGet);
+            LOGGER.info("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+
+            if (continuationExpected) {
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                // Assume that the server selects Kerberos v5 mechanism - OID: '1 2 840 113554 1 2 2'
+                assertHttpHeader(response, HEADER_WWW_AUTHENTICATE, HEADER_VAL_SELECT_KERBEROS_MECH);
+                EntityUtils.consume(response.getEntity());
+
+                byte[] spnegoRespToken = KerberosTestUtils.generateSpnegoTokenResp(responseToken);
+                httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(spnegoRespToken));
+                response = httpClient.execute(httpGet);
+                LOGGER.info("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            }
+            if (successExpected) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY,
+                        EntityUtils.toString(response.getEntity()));
+            } else {
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertHttpHeader(response, HEADER_WWW_AUTHENTICATE,
+                        // if this is the first round we expect the REJECTED response.
+                        "Negotiate" + (continuationExpected ? "" : " oQcwBaADCgEC"));
+            }
+        }
     }
 
     // Embedded classes ------------------------------------------------------

@@ -43,7 +43,6 @@
         <module name="org.apache.httpcomponents"/>
         <module name="org.apache.log4j"/>
         <module name="org.hibernate.validator" optional="true" services="import"/>
-        <module name="org.scannotation.scannotation" />
         <module name="org.slf4j" />
         <module name="javax.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-validator-provider-11" optional="true" services="export" export="true"/>

@@ -192,11 +192,11 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
                 final ValueFactory valueFactoryConfig = attributeConfig.getValueFactory();
 
                 if (injectConfig != null) {
-                    final Value<?> value = getValue(injectConfig, mBeanClassHierarchy);
+                    final Value<?> value = getValue(injectConfig);
                     final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassHierarchy, createDestroyService, value);
                     mBeanServices.addAttribute(injectConfig.getBeanName(), injector);
                 } else if (valueFactoryConfig != null) {
-                    final Value<?> value = getValue(valueFactoryConfig, mBeanClassHierarchy, classLoader);
+                    final Value<?> value = getValue(valueFactoryConfig, classLoader);
                     final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassHierarchy, createDestroyService, value);
                     mBeanServices.addAttribute(valueFactoryConfig.getBeanName(), injector);
                 } else {
@@ -220,18 +220,22 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         return getPropertyInjector(attributeName, mBeanClassHierarchy, service, Values.injectedValue());
     }
 
-    private static Value<?> getValue(final Inject injectConfig, final List<ClassReflectionIndex> mBeanClassHierarchy) {
+    private static Value<?> getValue(final Inject injectConfig) {
         final String propertyName = injectConfig.getPropertyName();
         Value<?> valueToInject = Values.injectedValue();
         if (propertyName != null) {
-            final Method getter = ReflectionUtils.getGetter(mBeanClassHierarchy, propertyName);
-            final Value<Method> getterValue = new ImmediateValue<Method>(getter);
-            valueToInject = cached(new MethodValue<Object>(getterValue, valueToInject, Values.<Object>emptyList()));
+            final Value<Method> methodValue = new InjectedBeanMethodValue(Values.injectedValue(), new InjectedBeanMethodValue.MethodFinder() {
+                @Override
+                public Method find(Class<?> clazz) {
+                    return ReflectionUtils.getGetter(clazz, propertyName);
+                }
+            });
+            valueToInject = cached(new MethodValue<Object>(methodValue, valueToInject, Values.<Object>emptyList()));
         }
         return valueToInject;
     }
 
-    private static Value<?> getValue(final ValueFactory valueFactory, final List<ClassReflectionIndex> mBeanClassHierarchy, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+    private static Value<?> getValue(final ValueFactory valueFactory, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
         final String methodName = valueFactory.getMethodName();
         final ValueFactoryParameter[] parameters = valueFactory.getParameters();
         final List<Class<?>> paramTypes = new ArrayList<Class<?>>(parameters.length);
@@ -241,7 +245,12 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
             paramTypes.add(attributeTypeValue);
             paramValues.add(new ImmediateValue<Object>(newValue(attributeTypeValue, parameter.getValue())));
         }
-        final Value<Method> methodValue = new ImmediateValue<Method>(ReflectionUtils.getMethod(mBeanClassHierarchy, methodName, paramTypes.toArray(new Class<?>[0]), true));
+        final Value<Method> methodValue = new InjectedBeanMethodValue(Values.injectedValue(), new InjectedBeanMethodValue.MethodFinder() {
+            @Override
+            public Method find(Class<?> clazz) {
+                return ReflectionUtils.getMethod(clazz, methodName, paramTypes.toArray(new Class<?>[0]));
+            }
+        });
         return cached(new MethodValue<Object>(methodValue, Values.injectedValue(), paramValues));
     }
 
