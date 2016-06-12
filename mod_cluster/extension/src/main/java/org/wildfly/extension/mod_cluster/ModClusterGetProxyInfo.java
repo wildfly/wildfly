@@ -69,7 +69,7 @@ public class ModClusterGetProxyInfo implements OperationStepHandler {
                         InetSocketAddress[] addr = map.keySet().toArray(new InetSocketAddress[map.size()]);
                         for (InetSocketAddress address : addr) {
                             result.add(address.getHostName() + ":" + address.getPort());
-                            result.add(map.get(address));
+                            result.add(map.get(address) != null ? map.get(address) : "proxy down");
                         }
                         context.getResult().set(result);
                     }
