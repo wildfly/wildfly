@@ -50,6 +50,10 @@
         </standalone>
         <standalone
                 template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-load-balancer.xml"
+                output-file="docs/examples/configs/standalone-load-balancer.xml"/>
+        <standalone
+                template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-activemq-colocated.xml"
                 output-file="docs/examples/configs/standalone-activemq-colocated.xml"/>
         <standalone
