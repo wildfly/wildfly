@@ -121,7 +121,6 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
             client1.saveData();
             client2.saveData(CANNOT_COMPLETE);
             client3.saveData();
-            uba.close();
             
             Assert.fail("Exception should have been thrown by now");
         } catch (javax.xml.ws.soap.SOAPFaultException sfe) {

@@ -99,9 +99,6 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
             }
         }
         
-        // calling a method on participant
-        participantBA.addValue(value);
-        
         if (ServiceCommand.isPresent(APPLICATION_EXCEPTION, serviceCommands)) {
             throw new TestApplicationException("Intentionally thrown Application Exception - service command set to: " + APPLICATION_EXCEPTION);
         }        
