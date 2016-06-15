@@ -24,7 +24,7 @@ package org.jboss.as.clustering.naming;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Builds a ManagedReferenceFactory JNDI binding.
  * @author Paul Ferraro
  */
-public class BinderServiceBuilder<T> implements ResourceServiceBuilder<ManagedReferenceFactory> {
+public class BinderServiceBuilder<T> implements CapabilityServiceBuilder<ManagedReferenceFactory> {
 
     private final ContextNames.BindInfo binding;
     private final ServiceName targetServiceName;

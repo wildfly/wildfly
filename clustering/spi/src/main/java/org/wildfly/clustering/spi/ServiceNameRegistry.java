@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.spi;
 
-import java.util.Collection;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.Builder;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.Requirement;
 
 /**
- * Installer for cache-based services.
  * @author Paul Ferraro
  */
-public interface CacheGroupBuilderProvider {
-    Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName);
+public interface ServiceNameRegistry<R extends Requirement> {
+    ServiceName getServiceName(R requirement);
 }

@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class DistributedRouteCacheGroupBuilderProvider extends RouteCacheGroupBuilderProvider implements DistributedCacheGroupBuilderProvider {
+public class DistributedRouteCacheGroupBuilderProvider extends RouteCacheGroupBuilderProvider implements DistributedCacheBuilderProvider {
 
     public DistributedRouteCacheGroupBuilderProvider() {
-        super(DistributedCacheGroupBuilderProvider.class);
+        super(DistributedCacheBuilderProvider.class);
     }
 }

@@ -22,33 +22,16 @@
 
 package org.wildfly.clustering.server.group;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class GroupAliasBuilderProvider implements org.wildfly.clustering.spi.GroupAliasBuilderProvider {
+public class GroupAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String aliasGroup, String targetGroup) {
-        Builder<?> builder = new AliasServiceBuilder<>(GroupServiceName.GROUP.getServiceName(aliasGroup), GroupServiceName.GROUP.getServiceName(targetGroup), Group.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.GROUP.toString(), aliasGroup).getAbsoluteName());
-        Builder<?> binderBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
-        return Arrays.asList(builder, binderBuilder);
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public GroupAliasBuilderProvider() {
+        super(ClusteringRequirement.GROUP, alias -> JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "group", alias));
     }
 }

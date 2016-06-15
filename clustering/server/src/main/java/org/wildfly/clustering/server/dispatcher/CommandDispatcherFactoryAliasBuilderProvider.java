@@ -22,34 +22,16 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.server.GroupJndiNameFactory;
+import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class CommandDispatcherFactoryAliasBuilderProvider implements GroupAliasBuilderProvider {
+public class CommandDispatcherFactoryAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String aliasGroup, String targetGroup) {
-        Builder<?> builder = new AliasServiceBuilder<>(GroupServiceName.COMMAND_DISPATCHER.getServiceName(aliasGroup), GroupServiceName.COMMAND_DISPATCHER.getServiceName(targetGroup), CommandDispatcherFactory.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), aliasGroup).getAbsoluteName());
-        Builder<?> binderBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
-        return Arrays.asList(builder, binderBuilder);
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public CommandDispatcherFactoryAliasBuilderProvider() {
+        super(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY, GroupJndiNameFactory.COMMAND_DISPATCHER_FACTORY);
     }
 }

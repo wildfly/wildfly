@@ -22,20 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResourceDefinition.*;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 
 /**
@@ -45,30 +45,33 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        PathAddress address = context.getCurrentAddress();
+        PathAddress containerAddress = address.getParent();
         String name = containerAddress.getLastElement().getValue();
-        String channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
         ServiceTarget target = context.getServiceTarget();
 
-        new JGroupsTransportBuilder(containerAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        JGroupsTransportBuilder transportBuilder = new JGroupsTransportBuilder(containerAddress).configure(context, model);
+        transportBuilder.build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         new SiteBuilder(containerAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
+        String channel = transportBuilder.getChannel();
+
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
-                builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {
+                builder.configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
         }
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        PathAddress address = context.getCurrentAddress();
+        PathAddress containerAddress = address.getParent();
         String name = containerAddress.getLastElement().getValue();
-        String channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
+            for (ServiceNameProvider builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, null)) {
                 context.removeService(builder.getServiceName());
             }
         }

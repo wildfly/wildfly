@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.server;
 
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import java.util.function.Function;
+
+import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.naming.deployment.JndiName;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.group.NodeFactory}.
  * @author Paul Ferraro
  */
-public class GroupNodeFactoryServiceNameProvider implements ServiceNameProvider {
+public enum GroupJndiNameFactory implements Function<String, JndiName> {
+    COMMAND_DISPATCHER_FACTORY("dispatcher"),
+    GROUP("group"),
+    ;
+    private final String component;
 
-    protected final String group;
-
-    public GroupNodeFactoryServiceNameProvider(String group) {
-        this.group = group;
+    GroupJndiNameFactory(String component) {
+        this.component = component;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public ServiceName getServiceName() {
-        return GroupServiceName.NODE_FACTORY.getServiceName(this.group);
+    public JndiName apply(String group) {
+        return JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", this.component, group);
     }
 }

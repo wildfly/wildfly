@@ -24,10 +24,12 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CAPABILITIES;
+import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.Attribute.*;
 
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -35,11 +37,14 @@ import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 
 /**
@@ -54,6 +59,20 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
         PathAddress address = context.getCurrentAddress();
 
+        // Handle case where JGroups subsystem is added to a running server
+        // In this case, the Infinispan subsystem may have already registered default group capabilities
+        if (context.getProcessType().isServer() && !context.isBooting()) {
+            Resource rootResource = context.readResourceFromRoot(address.getParent());
+            if (rootResource.hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"))) {
+                // Following restart, default group services will be installed by this handler, rather than the infinispan subsystem handler
+                context.addStep((ctx, operation) -> {
+                    ctx.reloadRequired();
+                    ctx.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
+                }, OperationContext.Stage.RUNTIME);
+                return;
+            }
+        }
+
         new ProtocolDefaultsBuilder().build(target).install();
 
         ModelNodes.optionalString(DEFAULT_CHANNEL.resolveModelAttribute(context, model)).ifPresent(defaultChannel -> {
@@ -62,11 +81,11 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
             if (!defaultChannel.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
                 new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(JndiNameFactory.DEFAULT_LOCAL_NAME), JGroupsRequirement.CHANNEL.getServiceName(context, defaultChannel), JGroupsRequirement.CHANNEL.getType()).build(target).install();
                 new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(JndiNameFactory.DEFAULT_LOCAL_NAME), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, defaultChannel), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
+            }
 
-                for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-                    for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), null, defaultChannel)) {
-                        builder.build(target).install();
-                    }
+            for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
+                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), null, defaultChannel)) {
+                    builder.configure(context).build(target).install();
                 }
             }
         });
@@ -77,7 +96,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
         PathAddress address = context.getCurrentAddress();
         ModelNodes.optionalString(DEFAULT_CHANNEL.resolveModelAttribute(context, model)).ifPresent(defaultChannel -> {
             for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), null, defaultChannel)) {
+                for (ServiceNameProvider builder : provider.getBuilders(requirement -> JGroupsSubsystemResourceDefinition.CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), null, defaultChannel)) {
                     context.removeService(builder.getServiceName());
                 }
             }

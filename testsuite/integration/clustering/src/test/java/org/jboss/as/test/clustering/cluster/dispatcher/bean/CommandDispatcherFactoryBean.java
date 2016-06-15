@@ -15,7 +15,7 @@ import org.wildfly.clustering.group.Group;
 @Local(CommandDispatcherFactory.class)
 public class CommandDispatcherFactoryBean implements CommandDispatcherFactory {
 
-    @Resource(lookup = "java:jboss/clustering/dispatcher/server")
+    @Resource(lookup = "java:jboss/clustering/dispatcher/default")
     private CommandDispatcherFactory factory;
 
     @Override

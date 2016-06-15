@@ -21,6 +21,10 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -59,6 +63,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Definition for /subsystem=jgroups/channel=* resources
@@ -90,6 +95,11 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         public org.jboss.as.clustering.controller.Capability getCapability() {
             return this.capablity;
         }
+    }
+
+    static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
+    static {
+        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement)));
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -216,6 +226,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler();
         new AddStepHandler(descriptor, handler) {

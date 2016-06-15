@@ -22,28 +22,23 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Service that provides the {@link RegistryEntryProvider} for the routing {@link org.wildfly.clustering.registry.Registry}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderBuilder implements Builder<RegistryEntryProvider<String, Void>>, Service<RegistryEntryProvider<String, Void>> {
+public class RouteRegistryEntryProviderBuilder implements Builder<RegistryEntryProvider<String, Void>> {
 
     private final Value<? extends Value<String>> route;
-
-    private volatile RegistryEntryProvider<String, Void> provider;
 
     public RouteRegistryEntryProviderBuilder(Value<? extends Value<String>> route) {
         this.route = route;
@@ -51,26 +46,12 @@ public class RouteRegistryEntryProviderBuilder implements Builder<RegistryEntryP
 
     @Override
     public ServiceName getServiceName() {
-        return CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, RouteCacheGroupBuilderProvider.CACHE_NAME);
+        return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, RouteCacheGroupBuilderProvider.CACHE_NAME));
     }
 
     @Override
     public ServiceBuilder<RegistryEntryProvider<String, Void>> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this).setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public RegistryEntryProvider<String, Void> getValue() {
-        return this.provider;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        this.provider = new RouteRegistryEntryProvider(this.route.getValue());
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.provider = null;
+        Value<RegistryEntryProvider<String, Void>> value = () -> new RouteRegistryEntryProvider(this.route.getValue());
+        return target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

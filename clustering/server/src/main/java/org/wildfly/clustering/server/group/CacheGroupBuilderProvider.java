@@ -21,33 +21,18 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.CacheBuilderFactory;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Provides the requisite builders for a cache-based {@link Group}.
  * @author Paul Ferraro
  */
-public class CacheGroupBuilderProvider implements org.wildfly.clustering.spi.CacheGroupBuilderProvider {
+public class CacheGroupBuilderProvider extends CacheRequirementBuilderProvider<Group> {
 
-    private CacheBuilderFactory<Group> factory;
-
-    public CacheGroupBuilderProvider(CacheBuilderFactory<Group> factory) {
-        this.factory = factory;
-    }
-
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
-        return Collections.<Builder<?>>singleton(this.factory.createBuilder(support, containerName, cacheName));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    protected CacheGroupBuilderProvider(CacheCapabilityServiceBuilderFactory<Group> factory) {
+        super(ClusteringCacheRequirement.GROUP, factory);
     }
 }

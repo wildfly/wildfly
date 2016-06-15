@@ -22,27 +22,15 @@
 
 package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheGroupAliasBuilderProvider implements org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider {
+public class CacheGroupAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
-        return Collections.<Builder<?>>singleton(new AliasServiceBuilder<>(CacheGroupServiceName.GROUP.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.GROUP.getServiceName(containerName, targetCacheName), Group.class));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public CacheGroupAliasBuilderProvider() {
+        super(ClusteringCacheRequirement.GROUP);
     }
 }

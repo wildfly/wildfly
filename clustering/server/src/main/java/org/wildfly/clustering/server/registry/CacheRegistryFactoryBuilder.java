@@ -22,15 +22,17 @@
 package org.wildfly.clustering.server.registry;
 
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -42,37 +44,50 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.InfinispanNodeFactory;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a clustered {@link RegistryFactory}.
  * @author Paul Ferraro
  */
-public class CacheRegistryFactoryBuilder<K, V> extends RegistryFactoryServiceNameProvider implements Builder<RegistryFactory<K, V>>, Value<RegistryFactory<K, V>>, CacheRegistryFactoryConfiguration<K, V> {
+public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuilder<RegistryFactory<K, V>>, CacheRegistryConfiguration<K, V> {
 
-    private final InjectedValue<Group> group = new InjectedValue<>();
+    private final ServiceName name;
+    private final String containerName;
+    private final String cacheName;
+
+    private volatile ValueDependency<Group> group;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<InfinispanNodeFactory> factory = new InjectedValue<>();
-    private final CapabilityServiceSupport support;
+    private volatile ValueDependency<Cache> cache;
+    private volatile ValueDependency<InfinispanNodeFactory> factory;
 
-    public CacheRegistryFactoryBuilder(CapabilityServiceSupport support, String containerName, String cacheName) {
-        super(containerName, cacheName);
-        this.support = support;
+    public CacheRegistryFactoryBuilder(ServiceName name, String containerName, String cacheName) {
+        this.name = name;
+        this.containerName = containerName;
+        this.cacheName = cacheName;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<RegistryFactory<K, V>> configure(CapabilityServiceSupport support) {
+        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), Cache.class);
+        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(support, this.containerName, this.cacheName), InfinispanNodeFactory.class);
+        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), Group.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(this.containerName, this.cacheName), InfinispanNodeFactory.class, this.factory)
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
-                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, this.containerName, this.cacheName), Cache.class, this.cache)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public RegistryFactory<K, V> getValue() {
-        return new CacheRegistryFactory<>(this);
+        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((provider, closeTask) -> new CacheRegistry<>(this, provider, closeTask));
+        ServiceBuilder<RegistryFactory<K, V>> builder = target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        Stream.of(this.cache, this.factory, this.group).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

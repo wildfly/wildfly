@@ -39,10 +39,12 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
 public class LocalRegistry<K, V> implements Registry<K, V> {
 
     private final Group group;
+    private final Runnable closeTask;
     private volatile Map.Entry<K, V> entry;
 
-    public LocalRegistry(Group group, RegistryEntryProvider<K, V> provider) {
+    public LocalRegistry(Group group, RegistryEntryProvider<K, V> provider, Runnable closeTask) {
         this.group = group;
+        this.closeTask = closeTask;
         this.entry = new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue());
     }
 
@@ -75,5 +77,6 @@ public class LocalRegistry<K, V> implements Registry<K, V> {
     @Override
     public void close() {
         this.entry = null;
+        this.closeTask.run();
     }
 }

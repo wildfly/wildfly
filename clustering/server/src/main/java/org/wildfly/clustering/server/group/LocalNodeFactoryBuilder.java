@@ -21,37 +21,43 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a non-clustered {@link JGroupsNodeFactory} service.
  * @author Paul Ferraro
  */
-public class LocalNodeFactoryBuilder extends GroupNodeFactoryServiceNameProvider implements Builder<JGroupsNodeFactory>, Value<JGroupsNodeFactory> {
+public class LocalNodeFactoryBuilder implements CapabilityServiceBuilder<JGroupsNodeFactory> {
 
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
+    private final ServiceName name;
+    private final String group;
 
-    public LocalNodeFactoryBuilder(String group) {
-        super(group);
+    public LocalNodeFactoryBuilder(ServiceName name, String group) {
+        this.name = name;
+        this.group = group;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
     }
 
     @Override
     public ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        Value<JGroupsNodeFactory> value = () -> new LocalNodeFactory(this.group, this.environment.getValue().getNodeName());
+        return target.addService(this.name, new ValueService<>(value))
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public JGroupsNodeFactory getValue() {
-        return new LocalNodeFactory(this.group, this.environment.getValue().getNodeName());
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                ;
     }
 }

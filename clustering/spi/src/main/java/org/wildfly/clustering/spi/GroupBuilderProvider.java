@@ -23,13 +23,12 @@ package org.wildfly.clustering.spi;
 
 import java.util.Collection;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.Builder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 
 /**
  * Installer for group-based services.
  * @author Paul Ferraro
  */
 public interface GroupBuilderProvider {
-    Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group);
+    Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringRequirement> registry, String group);
 }

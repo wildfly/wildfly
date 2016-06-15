@@ -21,9 +21,13 @@
  */
 package org.wildfly.clustering.spi;
 
+import java.util.Collection;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+
 /**
- * Installer for clustered cache-based services.
  * @author Paul Ferraro
  */
-public interface DistributedCacheGroupBuilderProvider extends CacheGroupBuilderProvider {
+public interface CacheAliasBuilderProvider {
+    Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName);
 }

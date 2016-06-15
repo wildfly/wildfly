@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 
 /**
@@ -31,6 +31,6 @@ import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 public class LocalCacheServiceHandler extends CacheServiceHandler {
 
     LocalCacheServiceHandler() {
-        super(address -> new LocalCacheBuilder(address), LocalCacheGroupBuilderProvider.class);
+        super(address -> new LocalCacheBuilder(address), LocalCacheBuilderProvider.class);
     }
 }

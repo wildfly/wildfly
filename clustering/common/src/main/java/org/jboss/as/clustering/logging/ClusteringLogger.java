@@ -22,9 +22,13 @@
 
 package org.jboss.as.clustering.logging;
 
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -43,4 +47,8 @@ public interface ClusteringLogger extends BasicLogger {
 
     @Message(id = 1, value = "%2$g is not a valid value for parameter %1$s. The value must be %3$s %4$g")
     OperationFailedException parameterValueOutOfBounds(String name, double value, String relationalOperator, double bound);
+
+    @Message(id = 2, value = "Failed to close %s")
+    @LogMessage(level = WARN)
+    void failedToClose(@Cause Throwable cause, Object value);
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.subsystem;
 
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,10 +56,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.jboss.tm.ExtendedJBossXATerminator;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.CacheBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 import org.xnio.Option;
 import org.xnio.OptionMap;
@@ -69,7 +69,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
-
 
 /**
  * A {@link AbstractAddStepHandler} to handle the add operation for the EJB
@@ -112,11 +111,11 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
         // Install the client-mapping service for the remoting connector
-        new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, clientMappingsClusterName, remotingServerInfoServiceName)
+        new EJBRemotingConnectorClientMappingsEntryProviderService(clientMappingsClusterName, remotingServerInfoServiceName).configure(context).build(target)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        new RegistryInstallerService(clientMappingsClusterName).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new RegistryInstallerService(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
@@ -125,13 +124,13 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
             // Install services that would normally be installed by this container/cache
             CapabilityServiceSupport support = context.getCapabilityServiceSupport();
             for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), clientMappingsClusterName)) {
-                    builder.build(target).install();
+                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> requirement.getServiceName(support, clientMappingsClusterName), clientMappingsClusterName)) {
+                    builder.configure(support).build(target).install();
                 }
             }
-            for (CacheGroupBuilderProvider provider : ServiceLoader.load(LocalCacheGroupBuilderProvider.class, LocalCacheGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(support, clientMappingsClusterName, null)) {
-                    builder.build(target).install();
+            for (CacheBuilderProvider provider : ServiceLoader.load(LocalCacheBuilderProvider.class, LocalCacheBuilderProvider.class.getClassLoader())) {
+                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> requirement.getServiceName(support, clientMappingsClusterName, null), clientMappingsClusterName, null)) {
+                    builder.configure(support).build(target).install();
                 }
             }
         }

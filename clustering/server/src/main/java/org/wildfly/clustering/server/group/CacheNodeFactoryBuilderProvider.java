@@ -24,20 +24,21 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Provides the requisite builders for both local and clustered service implementations of a {@link org.wildfly.clustering.group.NodeFactory} for a cache.
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryBuilderProvider implements LocalCacheGroupBuilderProvider, DistributedCacheGroupBuilderProvider {
+public class CacheNodeFactoryBuilderProvider implements LocalCacheBuilderProvider, DistributedCacheBuilderProvider {
 
     @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
-        return Collections.<Builder<?>>singleton(new CacheNodeFactoryBuilder(containerName, cacheName));
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
+        return Collections.singleton(new CacheNodeFactoryBuilder(registry, containerName));
     }
 
     @Override

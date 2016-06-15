@@ -48,8 +48,8 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Paul Ferraro
@@ -95,9 +95,9 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
                 .addDependency(deploymentUnitServiceName.append("marshalling"), MarshallingConfigurationRepository.class, this.repository)
                 .addDependency(deploymentUnitServiceName.append(this.name, "expiration"), ScheduledExecutorService.class, this.scheduler)
                 .addDependency(deploymentUnitServiceName.append(this.name, "eviction"), Executor.class, this.executor)
-                .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
-                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.nodeFactory)
+                .addDependency(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(this.support, containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
+                .addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
+                .addDependency(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.nodeFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }

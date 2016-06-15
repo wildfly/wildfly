@@ -22,15 +22,15 @@
 package org.wildfly.clustering.server.registry;
 
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link RegistryFactory}.
  * @author Paul Ferraro
  */
-public class LocalRegistryFactoryBuilderProvider extends RegistryFactoryBuilderProvider implements LocalCacheGroupBuilderProvider {
+public class LocalRegistryFactoryBuilderProvider extends RegistryFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalRegistryFactoryBuilderProvider() {
-        super((support, containerName, cacheName) -> new LocalRegistryFactoryBuilder<>(containerName, cacheName));
+        super((name, containerName, cacheName) -> new LocalRegistryFactoryBuilder<>(name, containerName, cacheName));
     }
 }

@@ -23,8 +23,13 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.function.Functions;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.Services;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
@@ -33,10 +38,8 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -51,13 +54,16 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFactoryServiceNameProvider implements Builder<CommandDispatcherFactory>, Service<CommandDispatcherFactory>, ChannelCommandDispatcherFactoryConfiguration, MarshallingConfigurationContext {
+public class ChannelCommandDispatcherFactoryBuilder implements CapabilityServiceBuilder<CommandDispatcherFactory>, ChannelCommandDispatcherFactoryConfiguration, MarshallingConfigurationContext {
 
     enum MarshallingVersion implements Function<MarshallingConfigurationContext, MarshallingConfiguration> {
         VERSION_1() {
@@ -83,56 +89,50 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
         static final MarshallingVersion CURRENT = VERSION_2;
     }
 
-    private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
-    private final InjectedValue<Channel> channel = new InjectedValue<>();
-    private final InjectedValue<JGroupsNodeFactory> nodeFactory = new InjectedValue<>();
-    private final InjectedValue<Module> module = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
-    private final CapabilityServiceSupport support;
+    private final ServiceName name;
+    private final String group;
 
-    private volatile MarshallingContext marshallingContext = null;
-    private volatile ChannelCommandDispatcherFactory factory = null;
+    private volatile ValueDependency<ChannelFactory> channelFactory;
+    private volatile ValueDependency<Channel> channel;
+    private volatile ValueDependency<JGroupsNodeFactory> nodeFactory;
+    private volatile ValueDependency<Module> module;
     private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
 
-    public ChannelCommandDispatcherFactoryBuilder(CapabilityServiceSupport support, String group) {
-        super(group);
-        this.support = support;
+    public ChannelCommandDispatcherFactoryBuilder(ServiceName name, String group) {
+        this.name = name;
+        this.group = group;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<CommandDispatcherFactory> configure(OperationContext context) {
+        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, this.group), Channel.class);
+        this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, this.group), ChannelFactory.class);
+        this.module = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_MODULE.getServiceName(context, this.group), Module.class);
+        this.nodeFactory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(context, this.group), JGroupsNodeFactory.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        ServiceBuilder<CommandDispatcherFactory> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
-                .addDependency(GroupServiceName.NODE_FACTORY.getServiceName(this.group), JGroupsNodeFactory.class, this.nodeFactory)
-                .addDependency(JGroupsRequirement.CHANNEL.getServiceName(this.support, this.group), Channel.class, this.channel)
-                .addDependency(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(this.support, this.group), ChannelFactory.class, this.channelFactory)
-                .addDependency(JGroupsRequirement.CHANNEL_MODULE.getServiceName(this.support, this.group), Module.class, this.module)
+        Supplier<ChannelCommandDispatcherFactory> supplier = () -> new ChannelCommandDispatcherFactory(this);
+        Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
+        ServiceBuilder<CommandDispatcherFactory> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
-        ;
+                ;
+        Stream.of(this.channel, this.channelFactory, this.module, this.nodeFactory).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 
     public ChannelCommandDispatcherFactoryBuilder timeout(long value, TimeUnit unit) {
         this.timeout = unit.toMillis(value);
         return this;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        this.marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.getModule().getClassLoader());
-        this.factory = new ChannelCommandDispatcherFactory(this);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.factory.close();
-        this.factory = null;
-        this.marshallingContext = null;
-    }
-
-    @Override
-    public CommandDispatcherFactory getValue() {
-        return this.factory;
     }
 
     @Override
@@ -157,7 +157,7 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
 
     @Override
     public MarshallingContext getMarshallingContext() {
-        return this.marshallingContext;
+        return new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.getModule().getClassLoader());
     }
 
     @Override

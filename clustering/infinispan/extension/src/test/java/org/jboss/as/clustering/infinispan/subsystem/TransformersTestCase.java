@@ -104,20 +104,27 @@ public class TransformersTestCase extends OperationTestCaseBase {
     private static String[] getDependencies(ModelTestControllerVersion version) {
         switch (version) {
             case EAP_6_2_0:
-                return new String[] {formatEAP6SubsystemArtifact(version),
+                return new String[] {
+                        formatEAP6SubsystemArtifact(version),
                         "org.infinispan:infinispan-core:5.2.7.Final-redhat-2",
-                        "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2"};
+                        "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2",
+                };
             case EAP_6_3_0:
-                return new String[] {formatEAP6SubsystemArtifact(version),
+                return new String[] {
+                        formatEAP6SubsystemArtifact(version),
                         "org.infinispan:infinispan-core:5.2.10.Final-redhat-1",
-                        "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1"};
+                        "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1",
+                };
             case EAP_6_4_0:
             case EAP_6_4_7:
-                return new String[] {formatEAP6SubsystemArtifact(version),
+                return new String[] {
+                        formatEAP6SubsystemArtifact(version),
                         "org.infinispan:infinispan-core:5.2.11.Final-redhat-2",
-                        "org.infinispan:infinispan-cachestore-jdbc:5.2.11.Final-redhat-2"};
+                        "org.infinispan:infinispan-cachestore-jdbc:5.2.11.Final-redhat-2",
+                };
             case EAP_7_0_0:
-                return new String[] {formatEAP7SubsystemArtifact(version),
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
                         "org.infinispan:infinispan-core:8.1.2.Final-redhat-1",
                         "org.infinispan:infinispan-cachestore-jdbc:8.1.2.Final-redhat-1",
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
@@ -126,10 +133,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
                         // Following are needed for LegacyControllerAdditionalInitialization
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version)};
-
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
+                };
+            default:
+                throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException();
     }
 
     @Override

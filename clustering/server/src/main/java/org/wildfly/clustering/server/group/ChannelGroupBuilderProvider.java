@@ -31,6 +31,6 @@ import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 public class ChannelGroupBuilderProvider extends GroupBuilderProvider implements DistributedGroupBuilderProvider {
 
     public ChannelGroupBuilderProvider() {
-        super((support, group) -> new ChannelGroupBuilder(group));
+        super((registry, group) -> new ChannelGroupBuilder(registry, group));
     }
 }

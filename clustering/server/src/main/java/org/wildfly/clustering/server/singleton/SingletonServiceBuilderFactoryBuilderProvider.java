@@ -22,36 +22,17 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.server.CacheBuilderFactory;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
- * @author paul
+ * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryBuilderProvider implements CacheGroupBuilderProvider {
+public class SingletonServiceBuilderFactoryBuilderProvider extends CacheRequirementBuilderProvider<SingletonServiceBuilderFactory> {
 
-    private final CacheBuilderFactory<SingletonServiceBuilderFactory> factory;
-
-    /**
-     * Constructs a new provider for {@link SingletonServiceBuilderFactory} service builders.
-     */
-    public SingletonServiceBuilderFactoryBuilderProvider(CacheBuilderFactory<SingletonServiceBuilderFactory> factory) {
-        this.factory = factory;
-    }
-
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
-        return Collections.singleton(this.factory.createBuilder(support, containerName, cacheName));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    protected SingletonServiceBuilderFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<SingletonServiceBuilderFactory> factory) {
+        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, factory);
     }
 }

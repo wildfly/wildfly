@@ -19,16 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.spi;
 
-import java.util.Collection;
+package org.wildfly.clustering.server;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.Builder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
+ * Builds a service for a cache.
  * @author Paul Ferraro
  */
-public interface CacheGroupAliasBuilderProvider {
-    Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName);
+public interface CacheCapabilityServiceBuilderFactory<T> {
+    CapabilityServiceBuilder<T> createBuilder(ServiceName name, String containerName, String cacheName);
 }

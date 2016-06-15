@@ -27,11 +27,11 @@ import java.util.ServiceLoader;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
-import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
@@ -45,11 +45,11 @@ public class ServiceLoaderTestCase {
         load(Externalizer.class);
         load(ClassTableContributor.class);
         load(GroupAliasBuilderProvider.class);
-        load(CacheGroupAliasBuilderProvider.class);
+        load(CacheAliasBuilderProvider.class);
         load(DistributedGroupBuilderProvider.class);
-        load(DistributedCacheGroupBuilderProvider.class);
+        load(DistributedCacheBuilderProvider.class);
         load(LocalGroupBuilderProvider.class);
-        load(LocalCacheGroupBuilderProvider.class);
+        load(LocalCacheBuilderProvider.class);
     }
 
     private static <T> void load(Class<T> targetClass) {

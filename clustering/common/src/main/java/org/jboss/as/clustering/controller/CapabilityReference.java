@@ -24,10 +24,12 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -57,7 +59,27 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      * @param requirement the requirement of the specified capability
      */
     public CapabilityReference(Capability capability, BinaryRequirement requirement) {
-        this(capability, requirement, (context, value) -> (value != null) ? Optional.of(requirement.resolve(context.getCurrentAddressValue(), value)) : Optional.empty());
+        this(capability, requirement, context -> context.getCurrentAddressValue());
+    }
+
+    /**
+     * Creates a new reference between the specified capability and the specified requirement
+     * @param capability the capability referencing the specified requirement
+     * @param requirement the requirement of the specified capability
+     * @param parentAttribute the attribute containing the value of the parent dynamic component of the requirement
+     */
+    public CapabilityReference(Capability capability, BinaryRequirement requirement, Attribute parentAttribute) {
+        this(capability, requirement, context -> context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel().get(parentAttribute.getName()).asString());
+    }
+
+    /**
+     * Creates a new reference between the specified capability and the specified requirement
+     * @param capability the capability referencing the specified requirement
+     * @param requirement the requirement of the specified capability
+     * @param parentResolver the resolver of the parent dynamic component of the requirement
+     */
+    public CapabilityReference(Capability capability, BinaryRequirement requirement, Function<OperationContext, String> parentResolver) {
+        this(capability, requirement, (context, value) -> (value != null) ? Optional.of(requirement.resolve(parentResolver.apply(context), value)) : Optional.empty());
     }
 
     CapabilityReference(Capability capability, Requirement requirement, BiFunction<OperationContext, String, Optional<String>> requirementResolver) {

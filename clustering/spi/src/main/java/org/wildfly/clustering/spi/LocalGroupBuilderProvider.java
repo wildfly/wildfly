@@ -27,7 +27,7 @@ package org.wildfly.clustering.spi;
  */
 public interface LocalGroupBuilderProvider extends GroupBuilderProvider {
     /**
-     * Identifies the name of the singleton local group.
+     * Identifies the name of the local group.
      */
     String LOCAL = "local";
 }

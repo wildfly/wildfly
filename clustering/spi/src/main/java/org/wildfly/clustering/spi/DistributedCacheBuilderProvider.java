@@ -19,23 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.wildfly.clustering.server.provider;
-
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+package org.wildfly.clustering.spi;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.provider.ServiceProviderRegistrationFactory}.
+ * Installer for clustered cache-based services.
  * @author Paul Ferraro
  */
-public class ServiceProviderRegistryServiceNameProvider extends CacheServiceNameProvider {
-
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public ServiceProviderRegistryServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY, containerName, cacheName);
-    }
+public interface DistributedCacheBuilderProvider extends CacheBuilderProvider {
 }

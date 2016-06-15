@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.registry;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 
 /**
- * Factory for creating a clustered {@link Registry}.
- * Only one registry can be created from this factory at a given time.
  * @author Paul Ferraro
- * @param <K> key type
- * @param <V> value type
  */
-public class CacheRegistryFactory<K, V> implements RegistryFactory<K, V> {
+public class FunctionalRegistryFactory<K, V> implements RegistryFactory<K, V> {
 
-    final AtomicReference<RegistryEntryProvider<K, V>> provider = new AtomicReference<>();
+    private final AtomicReference<RegistryEntryProvider<K, V>> provider = new AtomicReference<>();
+    private final BiFunction<RegistryEntryProvider<K, V>, Runnable, Registry<K, V>> factory;
 
-    private final CacheRegistryFactoryConfiguration<K, V> config;
-
-    public CacheRegistryFactory(CacheRegistryFactoryConfiguration<K, V> config) {
-        this.config = config;
+    public FunctionalRegistryFactory(BiFunction<RegistryEntryProvider<K, V>, Runnable, Registry<K, V>> factory) {
+        this.factory = factory;
     }
 
     @Override
@@ -50,12 +47,6 @@ public class CacheRegistryFactory<K, V> implements RegistryFactory<K, V> {
         if (!this.provider.compareAndSet(null, provider)) {
             throw new IllegalStateException();
         }
-        return new CacheRegistry<K, V>(this.config, provider) {
-            @Override
-            public void close() {
-                super.close();
-                CacheRegistryFactory.this.provider.set(null);
-            }
-        };
+        return this.factory.apply(provider, () -> this.provider.set(null));
     }
 }

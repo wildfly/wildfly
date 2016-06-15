@@ -22,41 +22,50 @@
 
 package org.wildfly.clustering.server.group;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a non-clustered cache-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class LocalCacheGroupBuilder extends CacheGroupServiceNameProvider implements Builder<Group>, Value<Group> {
+public class LocalCacheGroupBuilder implements CapabilityServiceBuilder<Group> {
 
-    private final InjectedValue<JGroupsNodeFactory> factory = new InjectedValue<>();
+    private final ServiceName name;
+    private final String containerName;
 
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public LocalCacheGroupBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    private volatile ValueDependency<JGroupsNodeFactory> factory;
+
+    public LocalCacheGroupBuilder(ServiceName name, String containerName) {
+        this.name = name;
+        this.containerName = containerName;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<Group> configure(CapabilityServiceSupport support) {
+        this.factory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(support, this.containerName), JGroupsNodeFactory.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<Group> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(GroupServiceName.NODE_FACTORY.getServiceName(this.containerName), JGroupsNodeFactory.class, this.factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public Group getValue() {
-        return new LocalGroup(this.containerName, this.factory.getValue().createNode(null));
+        Value<Group> value = () -> new LocalGroup(this.containerName, this.factory.getValue().createNode(null));
+        return this.factory.register(target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

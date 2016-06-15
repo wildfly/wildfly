@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.jboss.as.clustering.controller;
 
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.Builder;
 
 /**
- * Provides the service name for a cache-based {@link org.wildfly.clustering.group.Group}.
  * @author Paul Ferraro
  */
-public class CacheGroupServiceNameProvider extends CacheServiceNameProvider {
+public class BuilderAdapter<T> implements CapabilityServiceBuilder<T>, ResourceServiceBuilder<T> {
 
-    public CacheGroupServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.GROUP, containerName, cacheName);
+    private final Builder<T> builder;
+
+    public BuilderAdapter(Builder<T> builder) {
+        this.builder = builder;
+    }
+
+    @Override
+    public ServiceBuilder<T> build(ServiceTarget target) {
+        return this.builder.build(target);
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.builder.getServiceName();
     }
 }

@@ -28,47 +28,50 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
+import org.wildfly.clustering.spi.CacheBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Creates routing services.
  * @author Paul Ferraro
  */
-public class RouteCacheGroupBuilderProvider implements CacheGroupBuilderProvider, CacheGroupAliasBuilderProvider {
+public class RouteCacheGroupBuilderProvider implements CacheBuilderProvider, CacheAliasBuilderProvider {
 
     static final String CACHE_NAME = "routing";
 
-    private final Class<? extends CacheGroupBuilderProvider> providerClass;
+    private final Class<? extends CacheBuilderProvider> providerClass;
 
-    RouteCacheGroupBuilderProvider(Class<? extends CacheGroupBuilderProvider> providerClass) {
+    RouteCacheGroupBuilderProvider(Class<? extends CacheBuilderProvider> providerClass) {
         this.providerClass = providerClass;
     }
 
     @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
-        List<Builder<?>> builders = new LinkedList<>();
-        if (cacheName == null) {
-            builders.add(new TemplateConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, containerName, CACHE_NAME), containerName, CACHE_NAME, cacheName, builder -> {
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName) {
+        List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
+        if (aliasCacheName == null) {
+            builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, CACHE_NAME)), containerName, CACHE_NAME, aliasCacheName, builder -> {
                 CacheMode mode = builder.clustering().cacheMode();
                 builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
                 builder.persistence().clearStores();
-            }).configure(support));
-            builders.add(new CacheBuilder<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, CACHE_NAME), containerName, CACHE_NAME).configure(support));
-            for (CacheGroupBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-                builders.addAll(provider.getBuilders(support, containerName, CACHE_NAME));
+            }));
+            builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, CACHE_NAME)), containerName, CACHE_NAME));
+            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceName.parse(requirement.resolve(containerName, CACHE_NAME));
+            for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
+                builders.addAll(provider.getBuilders(routingRegistry, containerName, CACHE_NAME));
             }
         }
         return builders;
     }
 
     @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
-        return this.getBuilders(support, containerName, aliasCacheName);
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
+        return this.getBuilders(registry, containerName, aliasCacheName);
     }
 }

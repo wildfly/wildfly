@@ -70,14 +70,16 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     private final Batcher<? extends Batch> batcher;
     private final Group group;
     private final NodeFactory<Address> factory;
+    private final Runnable closeTask;
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map.Entry<K, V> registryEntry;
 
-    public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
+    public CacheRegistry(CacheRegistryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider, Runnable closeTask) {
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
         this.factory = config.getNodeFactory();
+        this.closeTask = closeTask;
         this.registryEntry = new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue());
         this.populateRegistry();
         this.cache.addListener(this, new CacheRegistryFilter());
@@ -104,6 +106,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                 // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
                 this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(node);
             }
+            this.closeTask.run();
         });
     }
 

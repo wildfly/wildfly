@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+package org.wildfly.clustering.singleton;
+
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Service for building {@link CacheSingletonServiceBuilder} instances.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
+public enum SingletonDefaultCacheRequirement implements UnaryRequirement {
 
-    final String containerName;
-    final String cacheName;
+    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
+    ;
+    private final String name;
+    private final Class<?> type;
 
-    public CacheSingletonServiceBuilderFactory(String containerName, String cacheName) {
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    SingletonDefaultCacheRequirement(String name, Class<?> type) {
+        this.name = name;
+        this.type = type;
     }
 
     @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, Service<T> service) {
-        return new CacheSingletonServiceBuilder<>(name, service, this.containerName, this.cacheName);
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return this.type;
     }
 }

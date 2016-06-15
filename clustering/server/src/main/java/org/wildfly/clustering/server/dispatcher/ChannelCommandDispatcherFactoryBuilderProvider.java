@@ -30,6 +30,6 @@ import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 public class ChannelCommandDispatcherFactoryBuilderProvider extends CommandDispatcherFactoryBuilderProvider implements DistributedGroupBuilderProvider {
 
     public ChannelCommandDispatcherFactoryBuilderProvider() {
-        super((support, group) -> new ChannelCommandDispatcherFactoryBuilder(support, group));
+        super((name, group) -> new ChannelCommandDispatcherFactoryBuilder(name, group));
     }
 }

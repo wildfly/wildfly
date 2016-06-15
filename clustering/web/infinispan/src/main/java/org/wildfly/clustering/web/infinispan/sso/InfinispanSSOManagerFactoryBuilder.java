@@ -27,6 +27,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,22 +38,29 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
-public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
+public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
-    private final CapabilityServiceSupport support;
     private final String host;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
 
-    public InfinispanSSOManagerFactoryBuilder(CapabilityServiceSupport support, String host) {
-        this.support = support;
+    private final CapabilityServiceBuilder<?> configurationBuilder;
+    private final CapabilityServiceBuilder<?> cacheBuilder;
+
+    private volatile ValueDependency<KeyAffinityServiceFactory> affinityFactory;
+
+    public InfinispanSSOManagerFactoryBuilder(String host) {
         this.host = host;
+
+        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, host)), DEFAULT_CACHE_CONTAINER, host, null);
+        this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, host)), DEFAULT_CACHE_CONTAINER, host);
     }
 
     @Override
@@ -61,20 +69,24 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOMana
     }
 
     @Override
+    public Builder<SSOManagerFactory<A, D, TransactionBatch>> configure(CapabilityServiceSupport support) {
+        this.configurationBuilder.configure(support);
+        this.cacheBuilder.configure(support);
+
+        this.affinityFactory = new InjectedValueDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, DEFAULT_CACHE_CONTAINER), KeyAffinityServiceFactory.class);
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
-        String containerName = DEFAULT_CACHE_CONTAINER;
-        String templateCacheName = null;
-        String cacheName = this.host;
+        this.configurationBuilder.build(target).install();
+        this.cacheBuilder.build(target).install();
 
-        new TemplateConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(this.support, containerName, cacheName), containerName, cacheName, templateCacheName).configure(this.support).build(target).install();
-
-        new CacheBuilder<>(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), containerName, cacheName).configure(this.support).build(target).install();
-
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), Cache.class, this.cache)
-                .addDependency(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(this.support, containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
+        ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(this))
+                .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
                 .addDependency(ServiceName.JBOSS.append("as", "service-module-loader"), ModuleLoader.class, this.loader)
         ;
+        return this.affinityFactory.register(builder);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
@@ -38,6 +39,7 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        final CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
         final ServiceTarget target = context.getServiceTarget();
         @SuppressWarnings("rawtypes")
         final InjectedValue<CacheFactoryBuilderRegistry> registry = new InjectedValue<>();
@@ -47,7 +49,7 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
                 // Install dependencies for each registered cache factory builder
                 Collection<CacheFactoryBuilder<?, ?>> builders = registry.getValue().getBuilders();
                 for (CacheFactoryBuilder<?, ?> builder: builders) {
-                    builder.installDeploymentUnitDependencies(target, name);
+                    builder.installDeploymentUnitDependencies(support, target, name);
                 }
             }
         };

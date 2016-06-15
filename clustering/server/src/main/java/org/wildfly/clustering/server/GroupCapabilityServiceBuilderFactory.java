@@ -19,34 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.server;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
-import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
- * Provides a service name for a cache-based service.
+ * Builds a group-based service.
  * @author Paul Ferraro
  */
-public class CacheServiceNameProvider implements ServiceNameProvider {
-
-    protected final String containerName;
-    protected final String cacheName;
-    private final SubGroupServiceNameFactory factory;
-
-    public CacheServiceNameProvider(SubGroupServiceNameFactory factory, String containerName, String cacheName) {
-        this.factory = factory;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceName getServiceName() {
-        return this.factory.getServiceName(this.containerName, this.cacheName);
-    }
+public interface GroupCapabilityServiceBuilderFactory<T> {
+    CapabilityServiceBuilder<T> createBuilder(ServiceName name, String group);
 }

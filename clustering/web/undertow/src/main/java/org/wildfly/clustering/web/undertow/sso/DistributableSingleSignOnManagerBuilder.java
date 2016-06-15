@@ -63,7 +63,7 @@ public class DistributableSingleSignOnManagerBuilder implements org.wildfly.exte
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String serverName, String hostName) {
         ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
 
-        Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = PROVIDER.getBuilder(support, hostName);
+        Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = PROVIDER.<AuthenticatedSession, String>getBuilder(hostName).configure(support);
         Builder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(hostServiceName);
         Builder<SSOManager<AuthenticatedSession, String, Void, Batch>> managerBuilder = new SSOManagerBuilder(factoryBuilder.getServiceName(), generatorBuilder.getServiceName());
         Builder<SessionListener> listenerBuilder = new SessionListenerBuilder(managerBuilder.getServiceName());
