@@ -63,7 +63,7 @@
             Build configuration.  Override JBoss Parent settings as necessary.
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
-        <maven.min.version>3.2.1</maven.min.version>
+        <maven.min.version>3.2.5</maven.min.version>
 
         <version.surefire.plugin>2.18</version.surefire.plugin>
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
@@ -242,7 +242,7 @@
         <!-- Surefire args -->
         <surefire.jpda.args/>
         <surefire.extra.args/>
-        <surefire.system.args>-Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args}</surefire.system.args>
+        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args}</surefire.system.args>
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
