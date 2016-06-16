@@ -33,4 +33,9 @@ public class AuthenticationKey extends Key<String> {
     public AuthenticationKey(String id) {
         super(id);
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "(authentication)";
+    }
 }

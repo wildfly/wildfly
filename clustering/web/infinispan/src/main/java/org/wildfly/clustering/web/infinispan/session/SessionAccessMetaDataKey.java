@@ -33,4 +33,9 @@ public class SessionAccessMetaDataKey extends Key<String> {
     public SessionAccessMetaDataKey(String id) {
         super(id);
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "(access-metadata)";
+    }
 }
