@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.concurrency;
 
+import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -47,10 +48,8 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     private final LockableComponent lockableComponent;
 
-    private final Map<Method, Method> viewMethodToComponentMethodMap;
 
-    public ContainerManagedConcurrencyInterceptor(LockableComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
-        this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
+    public ContainerManagedConcurrencyInterceptor(LockableComponent component) {
         if (component == null) {
             throw EjbLogger.ROOT_LOGGER.componentIsNull(LockableComponent.class.getName());
         }
@@ -70,7 +69,13 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         if (method == null) {
             throw EjbLogger.ROOT_LOGGER.invocationNotApplicableForMethodInvocation(invocationContext);
         }
-        Method invokedMethod = viewMethodToComponentMethodMap.get(method);
+        Method invokedMethod = null;
+        for (Map<Method, Method> methodMethodMap : ((SingletonComponent) lockableComponent).getViewMethodToComponentMethodMapList()) {
+            invokedMethod = methodMethodMap.get(method);
+            if ( invokedMethod != null ){
+                break;
+            }
+        }
         if(invokedMethod == null) {
             invokedMethod = method;
         }

@@ -69,6 +69,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private Interceptor interceptor;
 
+    private final List<Map<Method, Method>> viewMethodToComponentMethodMapList;
+
     /**
      * We can't lock on <code>this</code> because the {@link org.jboss.as.ee.component.BasicComponent#waitForComponentStart()}
      * also synchronizes on it, and calls {@link #wait()}.
@@ -91,6 +93,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = singletonComponentCreateService.getDefaultAccessTimeoutService();
+        this.viewMethodToComponentMethodMapList = singletonComponentCreateService.getViewMethodToComponentMethodMapList();
     }
 
     @Override
@@ -210,5 +213,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             return CurrentServiceContainer.getServiceContainer();
         }
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    }
+
+    public List<Map<Method, Method>> getViewMethodToComponentMethodMapList() {
+        return viewMethodToComponentMethodMapList;
     }
 }

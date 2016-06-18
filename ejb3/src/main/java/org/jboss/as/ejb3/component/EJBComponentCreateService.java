@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -110,6 +111,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
+    private final List<Map<Method, Method>> viewMethodToComponentMethodMapList;
+
     /**
      * Construct a new instance.
      *
@@ -150,6 +153,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             timeoutInterceptors = Collections.emptyMap();
         }
 
+        this.viewMethodToComponentMethodMapList = new ArrayList<>();
         List<ViewConfiguration> views = componentConfiguration.getViews();
         if (views != null) {
             for (ViewConfiguration view : views) {
@@ -167,6 +171,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                         this.processTxAttr(ejbComponentDescription, viewType, method);
                     }
                 }
+
+                this.viewMethodToComponentMethodMapList.add(view.getViewToComponentMethodMap());
             }
         }
 
@@ -416,5 +422,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
+    }
+
+    public List<Map<Method, Method>> getViewMethodToComponentMethodMapList() {
+        return viewMethodToComponentMethodMapList;
     }
 }

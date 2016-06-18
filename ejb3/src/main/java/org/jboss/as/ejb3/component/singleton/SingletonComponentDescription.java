@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.singleton;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -100,7 +99,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 configuration.addTimeoutViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
                 ConcurrencyManagementType concurrencyManagementType = getConcurrencyManagementType();
                 if (concurrencyManagementType == null || concurrencyManagementType == ConcurrencyManagementType.CONTAINER) {
-                    configuration.addTimeoutViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(Collections.emptyMap()), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
+                    configuration.addTimeoutViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
                 }
 
             }
@@ -277,7 +276,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 if (singletonComponentDescription.getConcurrencyManagementType() == ConcurrencyManagementType.BEAN) {
                     return;
                 }
-                configuration.addViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(configuration.getViewToComponentMethodMap()), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
+                configuration.addViewInterceptor(new ContainerManagedConcurrencyInterceptorFactory(), InterceptorOrder.View.SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR);
             }
         });
     }
