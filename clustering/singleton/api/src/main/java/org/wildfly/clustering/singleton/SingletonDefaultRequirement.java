@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.clustering.singleton;
 
-import org.jboss.as.controller.OperationContext;
-import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.Requirement;
 
 /**
- * Service dependency whose provided value is supplied by a {@link Capability}.
+ * Enumerates capability requirements for default singleton resources
  * @author Paul Ferraro
  */
-public class CapabilityDependency<T> extends InjectedValueDependency<T> {
+public enum SingletonDefaultRequirement implements Requirement {
+    SINGLETON_POLICY("org.wildfly.clustering.singleton.default-policy", SingletonPolicy.class),
+    ;
+    private final String name;
+    private final Class<?> type;
 
-    public CapabilityDependency(OperationContext context, Requirement requirement, String name, Class<T> targetClass) {
-        super(context.getCapabilityServiceName(requirement.getName(), name, targetClass), targetClass);
+    SingletonDefaultRequirement(String name, Class<?> type) {
+        this.name = name;
+        this.type = type;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return this.type;
     }
 }

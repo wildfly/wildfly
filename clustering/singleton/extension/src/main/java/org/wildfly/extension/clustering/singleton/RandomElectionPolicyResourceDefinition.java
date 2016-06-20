@@ -50,7 +50,7 @@ public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResour
                 .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
                 .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RandomElectionPolicyBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RandomElectionPolicyBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }

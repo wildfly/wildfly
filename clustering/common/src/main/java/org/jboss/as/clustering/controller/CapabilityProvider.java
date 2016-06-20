@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.singleton.SingletonPolicy;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.msc.service.ServiceName;
 
 /**
+ * Provides a capability instance.
+ * Additionally implements {@link Capability}, delegating all methods to the provided capability instance.
  * @author Paul Ferraro
  */
-public class SingletonPolicyBuilderFactory implements ResourceServiceBuilderFactory<SingletonPolicy> {
+public interface CapabilityProvider extends Capability {
+
+    Capability getCapability();
 
     @Override
-    public ResourceServiceBuilder<SingletonPolicy> createBuilder(PathAddress address) {
-        return new SingletonPolicyBuilder(address.getLastElement().getValue());
+    default RuntimeCapability<Void> getDefinition() {
+        return this.getCapability().getDefinition();
+    }
+
+    @Override
+    default RuntimeCapability<Void> resolve(PathAddress address) {
+        return this.getCapability().resolve(address);
+    }
+
+    @Override
+    default ServiceName getServiceName(PathAddress address) {
+        return this.getCapability().getServiceName(address);
     }
 }

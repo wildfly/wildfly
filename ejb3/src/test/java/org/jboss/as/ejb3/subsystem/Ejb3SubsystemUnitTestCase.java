@@ -27,7 +27,7 @@ import java.io.IOException;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;
-import org.wildfly.clustering.singleton.RequiredCapability;
+import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 
 /**
  * Test case for testing the integrity of the EJB3 subsystem.
@@ -44,7 +44,7 @@ import org.wildfly.clustering.singleton.RequiredCapability;
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
-            RequiredCapability.SINGLETON_POLICY.getName());
+            SingletonDefaultRequirement.SINGLETON_POLICY.getName());
 
     public Ejb3SubsystemUnitTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());

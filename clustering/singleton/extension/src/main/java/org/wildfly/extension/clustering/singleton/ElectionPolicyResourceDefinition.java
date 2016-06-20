@@ -24,7 +24,7 @@ package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathAddress;
@@ -32,7 +32,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.network.OutboundSocketBinding;
 
 /**
  * Definition of an election policy resource.
@@ -47,12 +46,12 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SOCKET_BINDING_PREFERENCE("org.wildfly.clustering.singleton.singleton-policy.election-policy.socket-binding-preference", OutboundSocketBinding.class),
+        SOCKET_BINDING_PREFERENCE("org.wildfly.clustering.singleton.singleton-policy.election-policy.socket-binding-preference"),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name, Class<?> serviceType) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).build();
         }
 
         @Override
@@ -61,14 +60,14 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         }
 
         @Override
-        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+        public RuntimeCapability<Void> resolve(PathAddress address) {
             return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
         }
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         NAME_PREFERENCES("name-preferences", "socket-binding-preferences"),
-        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(RequiredCapability.OUTBOUND_SOCKET_BINDING, Capability.SOCKET_BINDING_PREFERENCE)),
+        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(Capability.SOCKET_BINDING_PREFERENCE, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING)),
         ;
         private final AttributeDefinition definition;
 

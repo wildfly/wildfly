@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.RandomSingletonElectionPolicy;
 
@@ -30,8 +31,8 @@ import org.wildfly.clustering.singleton.election.RandomSingletonElectionPolicy;
  */
 public class RandomElectionPolicyBuilder extends ElectionPolicyBuilder {
 
-    public RandomElectionPolicyBuilder(String name) {
-        super(name);
+    public RandomElectionPolicyBuilder(PathAddress policyAddress) {
+        super(policyAddress);
     }
 
     @Override

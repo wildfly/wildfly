@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.msc.service.Service;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Defines a singleton policy.
+ * Factory for generating a {@link ServiceName} for a {@link UnaryRequirement}.
  * @author Paul Ferraro
  */
-public interface SingletonPolicy {
-    /**
-     * @deprecated Use {@link SingletonRequirement#SINGLETON_POLICY} instead.
-     */
-    @Deprecated String CAPABILITY_NAME = SingletonRequirement.SINGLETON_POLICY.getName();
+public class UnaryRequirementServiceNameFactory implements UnaryServiceNameFactory {
 
-    <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
+    private final UnaryRequirement requirement;
+
+    public UnaryRequirementServiceNameFactory(UnaryRequirement requirement) {
+        this.requirement = requirement;
+    }
+
+    @Override
+    public ServiceName getServiceName(OperationContext context, String name) {
+        return context.getCapabilityServiceName(this.requirement.resolve(name), this.requirement.getType());
+    }
+
+    @Override
+    public ServiceName getServiceName(CapabilityServiceSupport support, String name) {
+        return support.getCapabilityServiceName(this.requirement.resolve(name));
+    }
 }

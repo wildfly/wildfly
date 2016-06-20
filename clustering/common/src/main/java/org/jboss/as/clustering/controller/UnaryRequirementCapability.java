@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,27 +22,31 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.PathAddress;
+import java.util.stream.Stream;
+
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Interface to be implemented by capability enumerations.
+ * Provides a capability definition provider built from a unary requirement.
  * @author Paul Ferraro
  */
-public interface Capability extends Definable<RuntimeCapability<Void>>, ResourceServiceNameFactory {
+public class UnaryRequirementCapability implements Capability {
+
+    private final RuntimeCapability<Void> definition;
+
     /**
-     * Resolves this capability against the specified path address
-     * @param address a path address
-     * @return a resolved runtime capability
+     * Creates a new capability based on the specified unary requirement
+     * @param requirement the unary requirement basis
+     * @param requirements a list of requirements of this capability
      */
-    default RuntimeCapability<Void> resolve(PathAddress address) {
-        RuntimeCapability<Void> definition = this.getDefinition();
-        return definition.isDynamicallyNamed() ? definition.fromBaseCapability(address.getLastElement().getValue()) : definition;
+    public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
+        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(r -> r.getName()).toArray(String[]::new)).build();
     }
 
     @Override
-    default ServiceName getServiceName(PathAddress address) {
-        return this.resolve(address).getCapabilityServiceName();
+    public RuntimeCapability<Void> getDefinition() {
+        return this.definition;
     }
 }

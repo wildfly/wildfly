@@ -59,7 +59,7 @@ public class ChannelTransport extends JGroupsTransport {
         GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
         // WFLY-6685 Prevent Infinispan from registering channel mbeans
         // The JGroups subsystem already does this
-        builder.globalJmxStatistics().disable();
+        builder.globalJmxStatistics().read(config.globalJmxStatistics()).disable();
         // ISPN-4755 workaround
         TransportConfiguration transport = config.transport();
         builder.transport()

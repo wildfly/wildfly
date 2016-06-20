@@ -27,8 +27,7 @@ import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefiniti
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.CapabilityDependency;
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -46,6 +45,7 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -84,7 +84,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
         this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
         String binding = ModelNodes.asString(SOCKET_BINDING.getDefinition().resolveModelAttribute(context, model));
         if (binding != null) {
-            this.socketBinding = new CapabilityDependency<>(context, RequiredCapability.SOCKET_BINDING, binding, SocketBinding.class);
+            this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, binding), SocketBinding.class);
         }
         for (Property property : ModelNodes.asPropertyList(PROPERTIES.getDefinition().resolveModelAttribute(context, model))) {
             this.properties.put(property.getName(), property.getValue().asString());

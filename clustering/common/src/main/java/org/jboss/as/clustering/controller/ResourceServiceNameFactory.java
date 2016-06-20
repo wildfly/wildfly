@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.msc.service.Service;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.Builder;
 
 /**
- * Defines a singleton policy.
+ * Generates the {@link ServiceName} for a resource service.
  * @author Paul Ferraro
  */
-public interface SingletonPolicy {
+public interface ResourceServiceNameFactory {
     /**
-     * @deprecated Use {@link SingletonRequirement#SINGLETON_POLICY} instead.
+     * Returns {@link ServiceName} for the specified resource address.
+     * @param address a resource address
+     * @return a server name
      */
-    @Deprecated String CAPABILITY_NAME = SingletonRequirement.SINGLETON_POLICY.getName();
-
-    <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
+    ServiceName getServiceName(PathAddress address);
 }
