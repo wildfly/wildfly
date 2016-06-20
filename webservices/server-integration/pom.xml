@@ -123,10 +123,13 @@
 
     <dependency>
         <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-subsystem-test</artifactId>
-				<type>pom</type>
+        <artifactId>wildfly-subsystem-test</artifactId>
+        <type>pom</type>
         <scope>test</scope>
     </dependency>
-
+    <dependency>
+        <groupId>javax.jws</groupId>
+        <artifactId>jsr181-api</artifactId>
+    </dependency>
  </dependencies>
 </project>

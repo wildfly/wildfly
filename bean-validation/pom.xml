@@ -102,5 +102,10 @@
             <artifactId>jboss-el-api_3.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.xml.bind</groupId>
+            <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

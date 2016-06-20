@@ -77,6 +77,12 @@
             <groupId>org.jboss.byteman</groupId>
             <artifactId>byteman-install</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.byteman</groupId>
