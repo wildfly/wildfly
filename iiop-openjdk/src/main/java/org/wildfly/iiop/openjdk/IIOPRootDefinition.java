@@ -235,6 +235,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .build();
 
     //ior transport config attributes
+    @Deprecated
     protected static final AttributeDefinition REALM = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_AS_CONTEXT_REALM, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_AS_CONTEXT)
@@ -243,6 +244,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition REQUIRED = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_AS_CONTEXT_REQUIRED, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.IOR_AS_CONTEXT)
@@ -251,6 +253,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition INTEGRITY = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_TRANSPORT_INTEGRITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
@@ -260,6 +263,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition CONFIDENTIALITY = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_TRANSPORT_CONFIDENTIALITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
@@ -269,6 +273,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition TRUST_IN_TARGET = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
@@ -279,6 +284,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition TRUST_IN_CLIENT = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_TRANSPORT_TRUST_IN_CLIENT, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
@@ -288,6 +294,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition DETECT_REPLAY = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_TRANSPORT_DETECT_REPLAY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
@@ -297,6 +304,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     protected static final AttributeDefinition DETECT_MISORDERING = new SimpleAttributeDefinitionBuilder(
             Constants.IOR_TRANSPORT_DETECT_MISORDERING, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
