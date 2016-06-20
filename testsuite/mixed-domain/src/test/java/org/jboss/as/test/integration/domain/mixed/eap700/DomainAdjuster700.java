@@ -26,7 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
@@ -41,6 +44,25 @@ public class DomainAdjuster700 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
+        removeHTTPSListener(profileAddress, list);
+
         return list;
     }
+    /**
+     *  EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
+     *  for SSL by default, which automatically generates certs.
+     *
+     *  This could be removed if all hosts were configured to contain a security domain with SSL
+     *  enabled.
+     */
+    private void removeHTTPSListener(PathAddress profileAddress, List<ModelNode> ops) {
+
+        PathAddress undertow = profileAddress
+                .append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "undertow"))
+                .append(PathElement.pathElement("server", "default-server"))
+                .append(PathElement.pathElement("https-listener", "https"));
+        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, undertow.toModelNode());
+        ops.add(op);
+    }
+
 }

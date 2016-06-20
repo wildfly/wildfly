@@ -463,7 +463,7 @@ public class WSTrustTestCase {
             BusFactory.setThreadDefaultBus(bus);
 
             final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy", "HolderOfKeyService");
-            final URL wsdlURL = new URL("https", serviceURL.getHost(), serviceURL.getPort() - 8080 + 8443, "/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService?wsdl");
+            final URL wsdlURL = new URL("https", serviceURL.getHost(), serviceURL.getPort() - 8080 + 8444, "/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService?wsdl");
             Service service = Service.create(wsdlURL, serviceName);
             HolderOfKeyIface proxy = (HolderOfKeyIface) service.getPort(HolderOfKeyIface.class);
 
