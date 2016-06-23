@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -52,4 +53,10 @@ public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescr
      * @return a collection of resource paths
      */
     Set<PathElement> getRequiredSingletonChildren();
+
+    /**
+     * Returns a mapping of attribute alias definition -> target attribute
+     * @return an attribute alias mapping
+     */
+    Map<AttributeDefinition, Attribute> getAttributeAliases();
 }
