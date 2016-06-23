@@ -27,6 +27,7 @@ import com.arjuna.wst.FaultedException;
 import com.arjuna.wst.SystemException;
 import com.arjuna.wst.WrongStateException;
 import com.arjuna.wst11.ConfirmCompletedParticipant;
+import org.jboss.as.test.xts.base.BaseFunctionalTest;
 import org.jboss.as.test.xts.util.EventLog;
 import org.jboss.as.test.xts.util.EventLogEvent;
 import org.jboss.as.test.xts.util.ServiceCommand;
@@ -36,20 +37,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 /**
- * An adapter class that exposes the SetManager as a WS-BA participant using the 'Coordinator Completion' protocol.
- * <p/>
- * The Set Service can be invoked multiple times to add many items to the set within a single BA. The service waits for the
- * coordinator to tell it to complete. This has the advantage that the client can continue calling methods on the service right
- * up until it calls 'close'. However, any resources held by the service need to be held for this duration, unless the service
- * decides to autonomously cancel the BA.
  * 
- * @author Paul Robinson <paul.robinson@redhat.com>
- * @author Ondrej Chaloupka <ochaloup@redhat.com> 
+ * A coordinator completion participant which only logs invoked methods. The log {@link EventLog} is then checked at the end of every test. 
+ * @see BaseFunctionalTest#assertEventLog
+ * 
  */
 public class BACoordinationCompletionParticipant implements BusinessAgreementWithCoordinatorCompletionParticipant, ConfirmCompletedParticipant,
         Serializable {
@@ -57,9 +51,6 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     private static final long serialVersionUID = 1L;
     // The ID of the corresponding transaction
     private String txID;
-    // A list of values added to the set. These are removed from the set at
-    // compensation time.
-    private List<String> values = new LinkedList<String>();
     // table of currently active participants
     private static HashMap<String, Set<BACoordinationCompletionParticipant>> participants = new HashMap<String, Set<BACoordinationCompletionParticipant>>();
     
@@ -80,16 +71,6 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
         this.serviceCommands = serviceCommands;
         this.eventLog = eventLog;
         this.participantName = value;
-        addValue(value);
-    }
-
-    /**
-     * Notify the participant that another value is being added to the set. This is stored in case compensation is required.
-     * 
-     * @param value the value being added to the set
-     */
-    public void addValue(String value) {
-        values.add(value);
     }
 
     @Override
