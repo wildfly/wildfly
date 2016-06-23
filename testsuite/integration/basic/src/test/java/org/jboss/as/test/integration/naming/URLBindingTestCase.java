@@ -64,13 +64,13 @@ public class URLBindingTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
-    @EJB(mappedName = "java:global/URLBindingTestCaseBean/URLBindingTestCaseBean")
-    private URLBindingTestCaseBean bean;
+    @EJB(mappedName = "java:global/URLBindingTestCaseBean/BindingLookupBean")
+    private BindingLookupBean bean;
 
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "URLBindingTestCaseBean.jar");
-        jar.addClasses(URLBindingTestCase.class, URLBindingTestCaseBean.class);
+        jar.addClasses(URLBindingTestCase.class, BindingLookupBean.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller\n"), "MANIFEST.MF");
         return jar;
     }

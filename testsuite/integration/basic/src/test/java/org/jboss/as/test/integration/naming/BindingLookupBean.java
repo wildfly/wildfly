@@ -29,7 +29,7 @@ import javax.naming.NamingException;
  * @author Eduardo Martins
  */
 @Stateless
-public class URLBindingTestCaseBean {
+public class BindingLookupBean {
 
     public Object lookupBind(String name) throws NamingException {
         return new InitialContext().lookup(name);
