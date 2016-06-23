@@ -29,6 +29,7 @@ import java.util.LinkedList;
 
 import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -86,6 +87,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
 
     protected static final OptionAttributeDefinition ENABLE_SPDY = OptionAttributeDefinition.builder(Constants.ENABLE_SPDY, UndertowOptions.ENABLE_SPDY)
             .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(3, 1, 1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
