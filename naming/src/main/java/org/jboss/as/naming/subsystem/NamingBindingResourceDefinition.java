@@ -138,7 +138,8 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.VALUE.getName())) {
                 throw NamingLogger.ROOT_LOGGER.bindingTypeRequiresAttributeDefined(type, NamingBindingResourceDefinition.VALUE.getName());
             }
-            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())) {
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())
+                    && modelNode.get(NamingBindingResourceDefinition.CACHE.getName()).asBoolean()) {
                 throw NamingLogger.ROOT_LOGGER.cacheNotValidForBindingType(type);
             }
         } else if (type == BindingType.OBJECT_FACTORY) {
@@ -148,7 +149,8 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.CLASS.getName())) {
                 throw NamingLogger.ROOT_LOGGER.bindingTypeRequiresAttributeDefined(type, NamingBindingResourceDefinition.CLASS.getName());
             }
-            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())) {
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())
+                    && modelNode.get(NamingBindingResourceDefinition.CACHE.getName()).asBoolean()) {
                 throw NamingLogger.ROOT_LOGGER.cacheNotValidForBindingType(type);
             }
         } else if (type == BindingType.EXTERNAL_CONTEXT) {
@@ -162,7 +164,8 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.LOOKUP.getName())) {
                 throw NamingLogger.ROOT_LOGGER.bindingTypeRequiresAttributeDefined(type, NamingBindingResourceDefinition.LOOKUP.getName());
             }
-            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())) {
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())
+                    && modelNode.get(NamingBindingResourceDefinition.CACHE.getName()).asBoolean()) {
                 throw NamingLogger.ROOT_LOGGER.cacheNotValidForBindingType(type);
             }
         } else {
