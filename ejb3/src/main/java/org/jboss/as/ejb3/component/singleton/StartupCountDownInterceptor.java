@@ -25,7 +25,7 @@ public class StartupCountDownInterceptor implements Interceptor {
       return context.proceed();
     } finally {
       countdown.unmarkAsPrivileged();
-      countdown.countDown();
+      countdown.decrement();
     }
   }
 }

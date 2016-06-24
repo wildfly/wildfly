@@ -56,6 +56,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (isTopLevel(deploymentUnit)) deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, new StartupCountdown());
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
@@ -63,7 +64,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, new StartupCountdown(moduleDescription.getStartupBeansCount())); // now all startup beans are counted and we can initialize a CDL to be used by interceptors
+        getTopLevel(deploymentUnit).getAttachment(Attachments.STARTUP_COUNTDOWN).increment(moduleDescription.getStartupBeansCount());
 
         final Set<ServiceName> failed = new HashSet<ServiceName>();
 
@@ -104,6 +105,16 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCl);
         }
+    }
+
+    private static boolean isTopLevel(DeploymentUnit deploymentUnit) {
+        return deploymentUnit.getParent() == null;
+    }
+
+    private static DeploymentUnit getTopLevel(DeploymentUnit deploymentUnit) {
+        DeploymentUnit result = deploymentUnit;
+        while (!isTopLevel(result)) result = result.getParent();
+        return result;
     }
 
     public void undeploy(DeploymentUnit context) {
