@@ -33,10 +33,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.shared.ServerSuspend;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -106,7 +105,7 @@ public class MDBTestCase {
     public static Archive getDeployment() {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDBTestCase.jar");
-        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class);
+        ejbJar.addClasses(DDBasedMDB.class, BMTSLSB.class, JMSMessagingUtil.class, AnnoBasedMDB.class, ServerSuspend.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClass(JmsQueueSetup.class);
         ejbJar.addAsManifestResource(MDBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
@@ -145,12 +144,10 @@ public class MDBTestCase {
     @Test
     public void testSuspendResumeWithMDB() throws Exception {
         boolean resumed = false;
-        ModelNode op = new ModelNode();
         try {
 
             //suspend the server
-            op.get(ModelDescriptionConstants.OP).set("suspend");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.suspend(managementClient.getControllerClient());
 
 
             this.jmsUtil.sendTextMessage("Say hello to " + DDBasedMDB.class.getName(), this.queue, this.replyQueue);
@@ -158,9 +155,7 @@ public class MDBTestCase {
             Assert.assertNull("Reply message was not null on reply queue: " + this.replyQueue, reply);
 
             resumed = true;
-            op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("resume");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.resume(managementClient.getControllerClient());
 
 
             reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
@@ -168,9 +163,7 @@ public class MDBTestCase {
 
         } finally {
             if(!resumed) {
-                op = new ModelNode();
-                op.get(ModelDescriptionConstants.OP).set("resume");
-                managementClient.getControllerClient().execute(op);
+                ServerSuspend.resume(managementClient.getControllerClient());
             }
         }
     }

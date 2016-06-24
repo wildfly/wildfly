@@ -33,8 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.shared.ServerSuspend;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -83,9 +82,7 @@ public class EjbRemoteSuspendTestCase {
         Assert.assertEquals(message, echo);
 
 
-        ModelNode op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP).set("suspend");
-        managementClient.getControllerClient().execute(op);
+        ServerSuspend.suspend(managementClient.getControllerClient());
 
         try {
             echo = localEcho.echo(message);
@@ -93,9 +90,7 @@ public class EjbRemoteSuspendTestCase {
         } catch (IllegalStateException expected) {
 
         } finally {
-            op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("resume");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.resume(managementClient.getControllerClient());
             //we need to make sure the module availbility message has been recieved
             //(this is why we have InSequence, so avoid two sleep() calls)
             //otherwise the test might fail intermittently if the message has not been recieved when the
@@ -123,9 +118,7 @@ public class EjbRemoteSuspendTestCase {
     @InSequence(2)
     public void testStatefulEjbCreationRejected() throws Exception {
 
-        ModelNode op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP).set("suspend");
-        managementClient.getControllerClient().execute(op);
+        ServerSuspend.suspend(managementClient.getControllerClient());
 
         try {
             Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
@@ -133,9 +126,7 @@ public class EjbRemoteSuspendTestCase {
         } catch (NamingException expected) {
 
         } finally {
-            op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("resume");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.resume(managementClient.getControllerClient());
         }
     }
 }

@@ -42,6 +42,7 @@ import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
+import org.jboss.as.test.shared.ServerSuspend;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -66,7 +67,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
     public static WebArchive createDeployment() {
         return createDefaultWar("batch-chunk-partition.war", ChunkPartitionTestCase.class.getPackage(), "chunkPartition.xml", "chunk-suspend.xml")
                 .addPackage(ChunkPartitionTestCase.class.getPackage())
-                .addClass(Operations.class)
+                .addClasses(Operations.class, ServerSuspend.class)
                 .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
     }
 
@@ -118,7 +119,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             Assert.assertEquals(10, countingItemWriter.getWrittenItemSize());
 
             // Suspend the server
-            managementClient.getControllerClient().execute(Operations.createOperation("suspend"));
+            ServerSuspend.suspend(managementClient.getControllerClient());
 
             // Submit another job which should be queued, should be safe with an InMemoryJobRepository (the default)
             executionId = jobOperator.start("chunk-suspend", jobProperties);
@@ -131,7 +132,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             }
 
             // Resume the server which should kick of queued jobs
-            managementClient.getControllerClient().execute(Operations.createOperation("resume"));
+            ServerSuspend.resume(managementClient.getControllerClient());
 
             // Get the execution
             jobExecution = jobOperator.getJobExecution(executionId);
@@ -143,7 +144,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             // Check that count
             Assert.assertEquals(20, countingItemWriter.getWrittenItemSize());
         } finally {
-            managementClient.getControllerClient().execute(Operations.createOperation("resume"));
+            ServerSuspend.resume(managementClient.getControllerClient());
         }
     }
 

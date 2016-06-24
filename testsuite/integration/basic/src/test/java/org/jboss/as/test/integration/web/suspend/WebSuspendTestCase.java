@@ -34,10 +34,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.ServerSuspend;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -66,7 +65,7 @@ public class WebSuspendTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-suspend.war");
         war.addPackage(WebSuspendTestCase.class.getPackage());
         war.addPackage(HttpRequest.class.getPackage());
-        war.addClass(TestSuiteEnvironment.class);
+        war.addClasses(TestSuiteEnvironment.class, ServerSuspend.class);
         war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new PropertyPermission("management.address", "read"),
@@ -92,9 +91,7 @@ public class WebSuspendTestCase {
 
             Thread.sleep(1000); //nasty, but we need to make sure the HTTP request has started
 
-            ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("suspend");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.suspend(managementClient.getControllerClient());
 
             ShutdownServlet.requestLatch.countDown();
             Assert.assertEquals(ShutdownServlet.TEXT, result.get());
@@ -112,9 +109,7 @@ public class WebSuspendTestCase {
             ShutdownServlet.requestLatch.countDown();
             executorService.shutdown();
 
-            ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("resume");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.resume(managementClient.getControllerClient());
         }
 
 
