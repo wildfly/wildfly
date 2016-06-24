@@ -31,6 +31,7 @@
         <server name="default-server">
             <?AJP?>
             <http-listener name="default" socket-binding="http" redirect-socket="https" />
+            <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" />
             <host name="default-host" alias="localhost">
                 <location name="/" handler="welcome-content" />
                 <filter-ref name="server-header"/>
