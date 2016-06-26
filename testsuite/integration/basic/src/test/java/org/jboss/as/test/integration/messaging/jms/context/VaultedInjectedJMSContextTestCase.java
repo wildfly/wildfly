@@ -72,7 +72,7 @@ import org.junit.runner.RunWith;
 @ServerSetup(VaultedInjectedJMSContextTestCase.StoreVaultedPropertyTask.class)
 public class VaultedInjectedJMSContextTestCase {
 
-    static final String VAULT_LOCATION = VaultedInjectedJMSContextTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "security/jms-vault/";
+    static final String VAULT_LOCATION = VaultedInjectedJMSContextTestCase.class.getResource("/").getPath() + "security/jms-vault/";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
@@ -152,7 +152,7 @@ public class VaultedInjectedJMSContextTestCase {
                 .addClass(TimeoutUtil.class)
                 .addPackage(VaultedMessageProducer.class.getPackage())
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain"),
+                .addAsResource(createPermissionsXmlAsset(
                         new PropertyPermission("ts.timeout.factor", "read"),
                         // required because the VaultedMessageProducer uses the RemoteConnectionFactory
                         // (that requires auth with vaulted credentials)
