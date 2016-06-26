@@ -54,7 +54,6 @@ public class HttpsListenerAdd extends ListenerAdd {
 
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model, listenerBuilder);
-        HttpsListenerResourceDefinition.ENABLE_SPDY.resolveOption(context, model, listenerBuilder);
         HttpListenerAdd.handleHttp2Options(context, model, listenerBuilder);
         return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap());
     }
