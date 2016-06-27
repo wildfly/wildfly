@@ -50,6 +50,7 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
+        <surefire.excludeTests />
     </properties>
 
     <!--
@@ -82,12 +83,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>net.sourceforge.serp</groupId>
-            <artifactId>serp</artifactId>
-            <version>1.14.1</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
@@ -159,20 +154,6 @@
             </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-all</artifactId>
-                <version>2.2.2</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sourceforge.serp</groupId>
-                <artifactId>serp</artifactId>
-                <version>1.14.1</version>
-                <scope>test</scope>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -217,7 +198,9 @@
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
-
+                    <excludes>
+                        <exclude>${surefire.excludeTests}</exclude>
+                    </excludes>
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
                         <node0>${node0}</node0>
@@ -244,52 +227,16 @@
 
     <profiles>
         <profile>
-            <id>default</id>
+            <id>jdk9</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <jdk>9</jdk>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.wildfly.arquillian</groupId>
-                    <artifactId>wildfly-arquillian-container-managed</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>remote</id>
-            <activation>
-                <property>
-                    <name>remote</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.wildfly.arquillian</groupId>
-                    <artifactId>wildfly-arquillian-container-remote</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
+            <properties>
+                <!--WFLY-6777 We disable OpenJPA test on JDK9, as openjdk-s serp bytecode enhancer hangs deployment. -->
+                <surefire.excludeTests>**/OpenJPASharedModuleProviderTestCase.java</surefire.excludeTests>
+            </properties>
         </profile>
     </profiles>
 
-  <repositories>
-
-    <repository>
-      <id>jboss-public-repository-group</id>
-      <name>JBoss Public Repository Group</name>
-      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </snapshots>
-    </repository>
-  </repositories>
 
 </project>
