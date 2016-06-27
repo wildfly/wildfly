@@ -31,6 +31,13 @@
                    <policy-module code="Delegating" flag="required"/>
                </authorization>
            </security-domain>
+           <security-domain name="wise-security-domain" cache-type="default">
+               <authentication>
+                   <login-module code="RealmDirect" flag="required">
+                       <module-option name="realm" value="ManagementRealm"/>
+                   </login-module>
+               </authentication>
+           </security-domain>
            <security-domain name="jaspitest" cache-type="default">
                <authentication-jaspi>
                    <login-module-stack name="dummy">
