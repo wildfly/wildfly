@@ -144,7 +144,8 @@
         <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
-        <surefire.system.args> -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
+        <modular.jdk.testsuite.args />
+        <surefire.system.args> ${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
@@ -341,6 +342,7 @@
                        <additionalClasspathElements combine.children="append">
                            <additionalClasspathElement>${basedir}/src/test/config/arq</additionalClasspathElement>
                        </additionalClasspathElements>
+                       <argLine>${surefire.system.args}</argLine>
                    </configuration>
                </plugin>
 
@@ -1292,6 +1294,16 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <modular.jdk.testsuite.args>${modular.jdk.args} -XaddExports:java.base/sun.security.validator=ALL-UNNAMED
+                     -XaddExports:java.naming/com.sun.jndi.ldap=ALL-UNNAMED</modular.jdk.testsuite.args>
+            </properties>
         </profile>
 
     </profiles>

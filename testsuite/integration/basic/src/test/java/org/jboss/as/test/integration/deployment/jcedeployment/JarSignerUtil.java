@@ -25,23 +25,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import org.xnio.IoUtils;
 
 /**
  * Utility for signing jars.
  *
- * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
+ * @author Tomaz Cerar
  */
-public class JarSignerUtil {
+class JarSignerUtil {
     private File keystore;
     private String storePass;
     private String keyPass;
     private String alias;
 
-    public JarSignerUtil(final File keystore, final String storePass, final String keyPass, final String alias) {
+    JarSignerUtil(final File keystore, final String storePass, final String keyPass, final String alias) {
         this.keystore = keystore;
         this.storePass = storePass;
         this.keyPass = keyPass;
@@ -55,32 +53,26 @@ public class JarSignerUtil {
 
     private void run(String[] args) {
         try {
-            Class<?> jdk7JarSignerClass = this.getClass().getClassLoader().loadClass("sun.security.tools.JarSigner");
-            Object jdk7JarSigner = jdk7JarSignerClass.newInstance();
-            Method run = jdk7JarSigner.getClass().getDeclaredMethod("run", String[].class);
-            run.invoke(jdk7JarSigner, new Object[]{args});
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            //not jdk7, try jdk8
-            runJDK8(args);
-        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+            String home = System.getenv("JAVA_HOME");
+            if (home == null) {
+                home = System.getProperty("java.home");
+            }
+
+            String jarSigner = home + File.separator + "bin" + File.separator + "jarsigner";
+            StringBuilder command = new StringBuilder(jarSigner);
+            for (String a : args) {
+                command.append(" ").append(a);
+            }
+            System.out.println("command = " + command);
+            Process process = Runtime.getRuntime().exec(command.toString());
+            int result = process.waitFor();
+            System.out.println("result = " + result);
+        } catch (Exception e) {
             throw new RuntimeException("could not sign", e);
         }
     }
 
-    private void runJDK8(String[] args) {
-        try {
-            Class<?> jdk8JarSigner = this.getClass().getClassLoader().loadClass("sun.security.tools.jarsigner.Main");
-            Method run = jdk8JarSigner.getMethod("main", String[].class);
-            run.invoke(null, new Object[]{args});
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new RuntimeException("Could not find JarSigner to invoke", e);
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException("could not sign", e);
-        }
-
-    }
-
-    public void sign(final File jar, final File signedJar) throws IOException {
+    void sign(final File jar, final File signedJar) throws IOException {
         copyFile(jar, signedJar);
         try {
             sign(signedJar);
