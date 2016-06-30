@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -45,7 +46,6 @@ import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolAdd;
 import org.jboss.as.threads.UnboundedQueueThreadPoolMetricsHandler;
-import org.jboss.as.threads.UnboundedQueueThreadPoolRemove;
 import org.jboss.as.threads.UnboundedQueueThreadPoolWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -70,7 +70,7 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
 
     public BatchThreadPoolResourceDefinition(final boolean registerRuntimeOnly) {
         super(PATH, BatchThreadPoolDescriptionResolver.INSTANCE,
-                BatchThreadPoolAdd.INSTANCE, BatchThreadPoolRemove.INSTANCE);
+                BatchThreadPoolAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -107,21 +107,6 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
                     service);
             serviceBuilder.addDependency(serviceNameBase.append(name), ManagedJBossThreadPoolExecutorService.class, service.getThreadPoolInjector());
             serviceBuilder.install();
-        }
-    }
-
-    static class BatchThreadPoolRemove extends UnboundedQueueThreadPoolRemove {
-        static final BatchThreadPoolRemove INSTANCE = new BatchThreadPoolRemove();
-
-        public BatchThreadPoolRemove() {
-            super(BatchThreadPoolAdd.INSTANCE);
-        }
-
-        @Override
-        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            // First remove the JobExecutor service, then delegate
-            context.removeService(context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), context.getCurrentAddressValue(), null));
-            super.performRuntime(context, operation, model);
         }
     }
 
