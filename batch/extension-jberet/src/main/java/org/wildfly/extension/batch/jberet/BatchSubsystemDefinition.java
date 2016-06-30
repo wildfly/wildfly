@@ -96,7 +96,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
     BatchSubsystemDefinition(final boolean registerRuntimeOnly) {
         super(SUBSYSTEM_PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(), BatchSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                BatchSubsystemRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -201,6 +201,21 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                             JobExecutor.class,
                             service.getJobExecutorInjector()
                     ).install();
+        }
+    }
+
+    static class BatchSubsystemRemove extends ReloadRequiredRemoveStepHandler {
+        static final BatchSubsystemRemove INSTANCE = new BatchSubsystemRemove();
+
+        BatchSubsystemRemove() {
+            super(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
+        }
+
+        @Override
+        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+            // First remove the configuration service so child dependant child services can be removed
+            context.removeService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), null));
+            super.performRuntime(context, operation, model);
         }
     }
 }
