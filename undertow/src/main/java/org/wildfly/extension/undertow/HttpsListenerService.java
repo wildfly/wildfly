@@ -75,7 +75,13 @@ public class HttpsListenerService extends HttpListenerService {
     @Override
     protected OpenListener createOpenListener() {
         if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
+            try {
                 return createAlpnOpenListener();
+            } catch (Throwable e) {
+                UndertowLogger.ROOT_LOGGER.alpnNotFound();
+                UndertowLogger.ROOT_LOGGER.debug("Exception creating ALPN listener", e);
+                return super.createOpenListener();
+            }
         } else {
             return super.createOpenListener();
         }
