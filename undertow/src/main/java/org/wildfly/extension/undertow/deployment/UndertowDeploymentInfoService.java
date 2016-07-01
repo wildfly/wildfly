@@ -157,7 +157,6 @@ import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -995,12 +994,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 webSocketDeploymentInfo.setWorker(servletContainer.getWebsocketsWorker().getValue());
                 webSocketDeploymentInfo.setDispatchToWorkerThread(servletContainer.isDispatchWebsocketInvocationToWorker());
 
-                // Enables per-message deflate compression. This fixes JBEAP-5076.
-                // This is controlled by the system property "io.undertow.websockets.PER_MESSAGE_DEFLATE"
-                boolean enablePerMessageDeflate = Boolean.parseBoolean(
-                        WildFlySecurityManager.getPropertyPrivileged("io.undertow.websockets.PER_MESSAGE_DEFLATE", "false"));
-                if (enablePerMessageDeflate) {
-                    webSocketDeploymentInfo.addExtension(new PerMessageDeflateHandshake(false));
+                if(servletContainer.isPerMessageDeflate()) {
+                    PerMessageDeflateHandshake perMessageDeflate = new PerMessageDeflateHandshake(false, servletContainer.getDeflaterLevel());
+                    webSocketDeploymentInfo.addExtension(perMessageDeflate);
                 }
 
                 final AtomicReference<ServerActivity> serverActivity = new AtomicReference<>();
