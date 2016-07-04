@@ -178,6 +178,10 @@
             <groupId>com.io7m.xom</groupId>
             <artifactId>xom</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-asl</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -225,7 +229,8 @@
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
 
                     <systemPropertyVariables>
-                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <!-- Disabled assertions until new version of core with fix for WFCORE-1630 is used -->
+                        <!--<jboss.options>-ea</jboss.options>-->
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.home>${project.basedir}/target/jbossas</jboss.home>
                         <module.path>${jboss.dist}/modules</module.path>
@@ -282,8 +287,8 @@
                             <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
 
                             <systemPropertyVariables>
-                                <jboss.options>${surefire.system.args}</jboss.options>
                                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                <jboss.options>-ea</jboss.options>
                                 <jboss.home>${project.basedir}/target/jbossas</jboss.home>
                                 <module.path>${jboss.dist}/modules</module.path>
                                 <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
@@ -295,6 +300,7 @@
                             <includes>
                                 <include>org/jboss/as/test/integration/domain/rbac/RbacSoakTest.java</include>
                             </includes>
+                            <argLine />
                         </configuration>
                     </plugin>
                 </plugins>
