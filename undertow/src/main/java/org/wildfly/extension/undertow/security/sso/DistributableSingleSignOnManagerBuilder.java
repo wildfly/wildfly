@@ -19,19 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.extension.undertow.security.sso;
 
-import org.wildfly.extension.undertow.Host;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.stream.StreamSupport;
+
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+
+import io.undertow.security.impl.SingleSignOnManager;
 
 /**
- * Factory for creating a {@link SingleSignOnManager}.
+ * Builds a distrubutable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public interface SingleSignOnManagerFactory {
+public interface DistributableSingleSignOnManagerBuilder {
+
+    Optional<DistributableSingleSignOnManagerBuilder> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSingleSignOnManagerBuilder.class, DistributableSingleSignOnManagerBuilder.class.getClassLoader()).spliterator(), false).findFirst();
+
     /**
-     * Creates a single sign on manager for the specified host
-     * @param host a host
-     * @return a single sign on manager
+     * Builds a SingleSignOnManagerFactory service for a host.
+     * @param target the service target
+     * @param name the service name
+     * @param hostServiceName the service name of the host
+     * @return a service builder
      */
-    SingleSignOnManager createSingleSignOnManager(Host host);
+    ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, String serverName, String hostName);
 }

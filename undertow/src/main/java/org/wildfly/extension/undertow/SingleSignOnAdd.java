@@ -25,6 +25,8 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import io.undertow.security.impl.InMemorySingleSignOnManager;
 import io.undertow.security.impl.SingleSignOnManager;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -36,7 +38,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerService;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerBuilder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
@@ -70,9 +74,12 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        SingleSignOnManagerService.build(target, managerServiceName, serverName, hostName)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
+        if (DistributableSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
+            DistributableSingleSignOnManagerBuilder builder = DistributableSingleSignOnManagerBuilder.INSTANCE.get();
+            builder.build(target, managerServiceName, serverName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        } else {
+            target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
 
         final SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
         target.addService(serviceName, service)

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
+import io.undertow.security.impl.SingleSignOnManager;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,7 +38,6 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
-import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 
 /**
  * Unit test for {@link DistributableSingleSignOnManager}

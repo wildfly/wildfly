@@ -25,8 +25,7 @@ package org.wildfly.extension.undertow;
 import io.undertow.servlet.api.Deployment;
 
 /**
- * Implementers of {@link UndertowEventListener} should extend {@link AbstractUndertowEventListener} to maintai
- * backward compatibility.
+ * Server/deployment lifecycle event listener.
  * <p/>
  * TODO: implement commented out Undertow events
  *
@@ -34,13 +33,16 @@ import io.undertow.servlet.api.Deployment;
  * @author Radoslav Husar
  */
 public interface UndertowEventListener {
-    void onShutdown();
+    default void onShutdown() {
+    }
 
     //void onDeploymentAdd(DeploymentInfo deploymentInfo, Host host);
 
-    void onDeploymentStart(Deployment deployment, Host host);
+    default void onDeploymentStart(Deployment deployment, Host host) {
+    }
 
-    void onDeploymentStop(Deployment deployment, Host host);
+    default void onDeploymentStop(Deployment deployment, Host host) {
+    }
 
     //void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
 
@@ -48,15 +50,19 @@ public interface UndertowEventListener {
 
     //void onHostRemove(Host host);
 
-    void onHostStart(Host host);
+    default void onHostStart(Host host) {
+    }
 
-    void onHostStop(Host host);
+    default void onHostStop(Host host) {
+    }
 
     //void onServerAdd(Server server);
 
     //void onServerRemove(Server server);
 
-    void onServerStart(Server server);
+    default void onServerStart(Server server) {
+    }
 
-    void onServerStop(Server server);
+    default void onServerStop(Server server) {
+    }
 }
