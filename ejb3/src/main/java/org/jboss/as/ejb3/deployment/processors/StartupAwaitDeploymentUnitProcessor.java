@@ -39,7 +39,9 @@ public class StartupAwaitDeploymentUnitProcessor implements DeploymentUnitProces
         component.getConfigurators().add(new ComponentConfigurator() {
           @Override
           public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) {
-            StartupCountdown countdown = context.getDeploymentUnit().getAttachment(Attachments.STARTUP_COUNTDOWN);
+            DeploymentUnit top = context.getDeploymentUnit();
+            while (top.getParent() != null) top = top.getParent();
+            StartupCountdown countdown = top.getAttachment(Attachments.STARTUP_COUNTDOWN);
             for (ViewConfiguration view : configuration.getViews()) {
               EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
               if (INTFS.contains(ejbView.getMethodIntf())) {

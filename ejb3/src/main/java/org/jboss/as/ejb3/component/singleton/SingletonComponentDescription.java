@@ -58,6 +58,7 @@ import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -123,7 +124,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 if (isInitOnStartup()) {
-                    final StartupCountdown startupCountdown = context.getDeploymentUnit().getAttachment(Attachments.STARTUP_COUNTDOWN);
+                    DeploymentUnit top = context.getDeploymentUnit();
+                    while (top.getParent() != null) top = top.getParent();
+                    final StartupCountdown startupCountdown = top.getAttachment(Attachments.STARTUP_COUNTDOWN);
                     configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new StartupCountDownInterceptor(startupCountdown)), InterceptorOrder.ComponentPostConstruct.STARTUP_COUNTDOWN_INTERCEPTOR);
                 }
             }
