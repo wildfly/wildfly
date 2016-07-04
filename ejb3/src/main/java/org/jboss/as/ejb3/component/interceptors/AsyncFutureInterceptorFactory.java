@@ -26,6 +26,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.security.remoting.RemotingContext;
@@ -92,14 +93,17 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                     clonedSecurityContext = securityContext;
                 }
                 final Connection remoteConnection = getConnection();
+                final StartupCountdown.Frame frame = StartupCountdown.current();
                 final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
                     @Override
                     protected Object runInvocation() throws Exception {
                         setSecurityContextOnAssociation(clonedSecurityContext);
                         setConnection(remoteConnection);
+                        StartupCountdown.restore(frame);
                         try {
                             return asyncInterceptorContext.proceed();
                         } finally {
+                            StartupCountdown.restore(null);
                             try {
                                 clearSecurityContextOnAssociation();
                             } finally {

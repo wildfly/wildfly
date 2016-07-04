@@ -63,7 +63,15 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, new StartupCountdown(moduleDescription.getStartupBeansCount())); // now all startup beans are counted and we can initialize a CDL to be used by interceptors
+        final int startupBeansCount = moduleDescription.getStartupBeansCount();
+        if (deploymentUnit.getParent() == null) {
+            deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, new StartupCountdown(startupBeansCount));
+        } else {
+            final StartupCountdown countdown = deploymentUnit.getParent().getAttachment(Attachments.STARTUP_COUNTDOWN);
+            // copy ref to child deployment
+            deploymentUnit.putAttachment(Attachments.STARTUP_COUNTDOWN, countdown);
+            countdown.countUp(startupBeansCount);
+        }
 
         final Set<ServiceName> failed = new HashSet<ServiceName>();
 

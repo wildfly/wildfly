@@ -1,7 +1,5 @@
 package org.jboss.as.ee.component.deployers;
 
-import java.util.concurrent.CountDownLatch;
-
 /**
  * Countdown tracker with capabilities similar to SE CountDownLatch, but allowing threads
  * to mark and unmark themselves as privileged. Privileged threads, when entering await method,
@@ -10,28 +8,67 @@ import java.util.concurrent.CountDownLatch;
  * @author Fedor Gavrilov
  */
 public final class StartupCountdown {
-  private static final ThreadLocal<Boolean> isPrivileged = new ThreadLocal<Boolean>();
+  private static final ThreadLocal<Frame> frames = new ThreadLocal<>();
 
-  private final CountDownLatch latch;
+  private volatile int count;
 
   public StartupCountdown(int count) {
-    this.latch = new CountDownLatch(count);
+    this.count = count;
   }
 
   public void countDown() {
-    latch.countDown();
+    synchronized (this) {
+      if (-- count == 0) {
+        notifyAll();
+      }
+    }
+  }
+
+  public void countUp(final int count) {
+    synchronized (this) {
+      this.count += count;
+    }
   }
 
   public void await() throws InterruptedException {
-    if (Boolean.TRUE.equals(isPrivileged.get())) return;
-    latch.await();
+    if (isPrivileged()) return;
+    if (count != 0) {
+      synchronized (this) {
+        while (count != 0) wait();
+      }
+    }
   }
 
-  public void markAsPrivileged() {
-    isPrivileged.set(Boolean.TRUE);
+  public boolean isPrivileged() {
+    final Frame frame = frames.get();
+    return frame != null && frame.contains(this);
   }
 
-  public void unmarkAsPrivileged() {
-    isPrivileged.set(Boolean.FALSE);
+  public Frame enter() {
+    final Frame frame = frames.get();
+    frames.set(new Frame(frame, this));
+    return frame;
+  }
+
+  public static Frame current() {
+    return frames.get();
+  }
+
+  public static void restore(Frame frame) {
+    frames.set(frame);
+  }
+
+  public static final class Frame {
+    private final Frame prev;
+    private final StartupCountdown countdown;
+
+    Frame(final Frame prev, final StartupCountdown countdown) {
+      this.prev = prev;
+      this.countdown = countdown;
+    }
+
+    boolean contains(StartupCountdown countdown) {
+      return countdown == this.countdown || prev != null && prev.contains(countdown);
+    }
   }
 }
