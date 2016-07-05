@@ -138,7 +138,9 @@ public abstract class AsyncInvocationTask implements Runnable, Future<Object> {
     @Override
     public synchronized Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         if (!isDone()) {
-            wait(unit.toMillis(timeout));
+            if(timeout > 0) {
+                wait(unit.toMillis(timeout));
+            }
             if (!isDone()) {
                 throw EjbLogger.ROOT_LOGGER.failToCompleteTaskBeforeTimeOut(timeout, unit);
             }

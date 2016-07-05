@@ -55,6 +55,6 @@ public class Capabilities {
      * A capability for all job repositories. All job repositories should use this capability regardless of the
      * implementation of the repository.
      */
-    public static final RuntimeCapability<Void> JOB_REPOSITORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfy.batch.job.repository", true, JobRepository.class)
+    public static final RuntimeCapability<Void> JOB_REPOSITORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.job.repository", true, JobRepository.class)
             .build();
 }

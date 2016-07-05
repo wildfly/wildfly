@@ -21,9 +21,13 @@
  */
 package org.jboss.as.test.manualmode.web.ssl;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
 import static org.junit.Assert.assertEquals;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
@@ -85,6 +89,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
     protected static final String CONTAINER = "default-jbossas";
     protected static final String SECURED_SERVLET_WITH_SESSION = SimpleSecuredServlet.SERVLET_PATH + "?"
             + SimpleSecuredServlet.CREATE_SESSION_PARAM + "=true";
+
+    private static final int HTTPS_PORT = 8444;
 
     /**
      * Testing access to HTTPS connector which have configured truststore with
@@ -196,8 +202,14 @@ public abstract class AbstractCertificateLoginModuleTestCase {
 
             executeReloadAndWaitForCompletion(client, 100000);
 
-            operation = createOpNode("subsystem=undertow/server=default-server/https-listener=https", ModelDescriptionConstants.ADD);
-            operation.get("socket-binding").set("https");
+            operation = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2" , ADD);
+            operation.get(PORT).set(Integer.toString(HTTPS_PORT));
+            operation.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            operation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode("subsystem=undertow/server=default-server/https-listener=https2", ModelDescriptionConstants.ADD);
+            operation.get("socket-binding").set("https2");
             operation.get("security-realm").set(HTTPS_REALM);
             Utils.applyUpdate(operation, client);
         }
@@ -205,7 +217,12 @@ public abstract class AbstractCertificateLoginModuleTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
 
-            ModelNode operation = createOpNode("subsystem=undertow/server=default-server/https-listener=https",
+            ModelNode operation = createOpNode("subsystem=undertow/server=default-server/https-listener=https2",
+                    ModelDescriptionConstants.REMOVE);
+            operation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            Utils.applyUpdate(operation, managementClient.getControllerClient());
+
+            operation = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2",
                     ModelDescriptionConstants.REMOVE);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 

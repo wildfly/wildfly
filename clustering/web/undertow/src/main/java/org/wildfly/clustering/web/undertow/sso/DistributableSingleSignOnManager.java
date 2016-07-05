@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.sso;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
+import io.undertow.security.impl.SingleSignOnManager;
 
 import java.util.Base64;
 
@@ -32,7 +33,6 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
-import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 
 /**
  * Adapts an {@link SSOManager} to a {@link SingleSignOnManager}.
@@ -44,28 +44,10 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     private final SSOManager<AuthenticatedSession, String, Void, Batch> manager;
     private final SessionManagerRegistry registry;
-    private volatile boolean started = false;
 
     public DistributableSingleSignOnManager(SSOManager<AuthenticatedSession, String, Void, Batch> manager, SessionManagerRegistry registry) {
         this.manager = manager;
         this.registry = registry;
-    }
-
-    @Override
-    public boolean isStarted() {
-        return this.started;
-    }
-
-    @Override
-    public void start() {
-        this.manager.start();
-        this.started = true;
-    }
-
-    @Override
-    public void stop() {
-        this.started = false;
-        this.manager.stop();
     }
 
     @Override

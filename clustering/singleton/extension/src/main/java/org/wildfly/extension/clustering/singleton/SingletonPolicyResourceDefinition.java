@@ -23,21 +23,22 @@
 package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.SubGroupServiceNameFactory;
-import org.wildfly.clustering.singleton.RequiredCapability;
-import org.wildfly.clustering.singleton.SingletonPolicy;
+import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.singleton.SingletonRequirement;
 
 /**
  * Definition of a singleton policy resource.
@@ -51,18 +52,18 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
         return PathElement.pathElement("singleton-policy", value);
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        POLICY(RequiredCapability.SINGLETON_POLICY.getName(), SingletonPolicy.class),
+    enum Capability implements CapabilityProvider {
+        POLICY(SingletonRequirement.SINGLETON_POLICY),
         ;
-        private final RuntimeCapability<Void> definition;
+        private final org.jboss.as.clustering.controller.Capability capability;
 
-        Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).build();
+        Capability(UnaryRequirement requirement) {
+            this.capability = new UnaryRequirementCapability(requirement);
         }
 
         @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
+        public org.jboss.as.clustering.controller.Capability getCapability() {
+            return this.capability;
         }
     }
 
@@ -99,7 +100,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new SingletonPolicyBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new SingletonPolicyBuilder(address));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
 

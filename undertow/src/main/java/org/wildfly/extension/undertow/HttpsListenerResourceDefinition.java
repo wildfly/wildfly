@@ -102,6 +102,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
 
     protected static final OptionAttributeDefinition ENABLE_SPDY = OptionAttributeDefinition.builder(Constants.ENABLE_SPDY, UndertowOptions.ENABLE_SPDY)
             .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(3, 1, 1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))

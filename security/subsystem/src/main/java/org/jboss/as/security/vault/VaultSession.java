@@ -115,7 +115,9 @@ public final class VaultSession {
 
         File f = new File(keystoreURL);
         if (!f.exists()) {
-            throw SecurityLogger.ROOT_LOGGER.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
+            if (!createKeystore) {
+                throw SecurityLogger.ROOT_LOGGER.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
+            }
         } else if (!f.canWrite() || !f.isFile()) {
             throw SecurityLogger.ROOT_LOGGER.keyStoreNotWritable(keystoreURL);
         }
@@ -218,7 +220,7 @@ public final class VaultSession {
         options.put(PicketBoxSecurityVault.SALT, salt);
         options.put(PicketBoxSecurityVault.ITERATION_COUNT, Integer.toString(iterationCount));
         options.put(PicketBoxSecurityVault.ENC_FILE_DIR, encryptionDirectory);
-        if (createKeystore) {
+        if (createKeystore && !new File(keystoreURL).exists()) {
             options.put(PicketBoxSecurityVault.CREATE_KEYSTORE, Boolean.toString(createKeystore));
         }
         return options;

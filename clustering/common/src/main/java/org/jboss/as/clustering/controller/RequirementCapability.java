@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
+import java.util.stream.Stream;
+
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.wildfly.clustering.service.Requirement;
 
 /**
- * Enumerates capability requirements for singleton resources
+ * Provides a capability definition provider built from a requirement.
  * @author Paul Ferraro
  */
-public enum RequiredCapability implements Requirement {
-    SINGLETON_POLICY("org.wildfly.clustering.singleton.policy"),
-    ;
-    private final String name;
+public class RequirementCapability implements Capability {
 
-    RequiredCapability(String name) {
-        this.name = name;
+    private final RuntimeCapability<Void> definition;
+
+    /**
+     * Creates a new capability based on the specified requirement
+     * @param requirement the requirement basis
+     * @param requirements a list of requirements of this capability
+     */
+    public RequirementCapability(Requirement requirement, Requirement... requirements) {
+        this.definition = RuntimeCapability.Builder.of(requirement.getName(), requirement.getType()).addRequirements(Stream.of(requirements).map(r -> r.getName()).toArray(String[]::new)).build();
     }
 
     @Override
-    public String getName() {
-        return this.name;
+    public RuntimeCapability<Void> getDefinition() {
+        return this.definition;
     }
 }

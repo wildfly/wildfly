@@ -36,6 +36,9 @@
         <profile name="full-ha">
             <?SUBSYSTEMS socket-binding-group="full-ha-sockets"?>
         </profile>
+        <profile name="load-balancer">
+            <?SUBSYSTEMS socket-binding-group="load-balancer-sockets"?>
+        </profile>
     </profiles>
 
     <!--
@@ -66,6 +69,10 @@
         </socket-binding-group>
         <socket-binding-group name="full-ha-sockets" default-interface="public">
             <!-- Needed for server groups using the 'full-ha' profile  -->
+            <?SOCKET-BINDINGS?>
+        </socket-binding-group>
+        <socket-binding-group name="load-balancer-sockets" default-interface="public">
+            <!-- Needed for server groups using the 'load-balancer' profile  -->
             <?SOCKET-BINDINGS?>
         </socket-binding-group>
     </socket-binding-groups>

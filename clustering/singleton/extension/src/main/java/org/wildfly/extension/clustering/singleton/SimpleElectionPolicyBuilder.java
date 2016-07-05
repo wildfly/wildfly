@@ -22,8 +22,11 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import static org.wildfly.extension.clustering.singleton.SimpleElectionPolicyResourceDefinition.Attribute.*;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
@@ -37,8 +40,8 @@ public class SimpleElectionPolicyBuilder extends ElectionPolicyBuilder {
 
     private volatile int position;
 
-    public SimpleElectionPolicyBuilder(String name) {
-        super(name);
+    public SimpleElectionPolicyBuilder(PathAddress policyAddress) {
+        super(policyAddress);
     }
 
     @Override
@@ -48,7 +51,7 @@ public class SimpleElectionPolicyBuilder extends ElectionPolicyBuilder {
 
     @Override
     public Builder<SingletonElectionPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.position = SimpleElectionPolicyResourceDefinition.Attribute.POSITION.getDefinition().resolveModelAttribute(context, model).asInt();
+        this.position = POSITION.getDefinition().resolveModelAttribute(context, model).asInt();
         return super.configure(context, model);
     }
 }

@@ -53,6 +53,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap620.DomainAdjuster620;
 import org.jboss.as.test.integration.domain.mixed.eap630.DomainAdjuster630;
 import org.jboss.as.test.integration.domain.mixed.eap640.DomainAdjuster640;
+import org.jboss.as.test.integration.domain.mixed.eap700.DomainAdjuster700;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -95,6 +96,9 @@ public class DomainAdjuster {
             case EAP_6_4_0:
                 adjuster = new DomainAdjuster640();
                 break;
+            case EAP_7_0_0:
+                adjuster = new DomainAdjuster700();
+                break;
             default:
                 adjuster = new DomainAdjuster();
         }
@@ -109,8 +113,6 @@ public class DomainAdjuster {
         //socket-binding-group = full-ha-sockets
         final List<String> allProfiles = getAllChildrenOfType(client, PathAddress.EMPTY_ADDRESS, PROFILE);
         final ModelNode serverGroup = removeServerGroups(client);
-        final String socketBindingGroup = serverGroup.get(SOCKET_BINDING_GROUP).asString();
-        removeUnusedSocketBindingGroups(client, socketBindingGroup);
 
         for (String profileName : allProfiles) {
             if (profileName.equals(FULL_HA)) {
@@ -118,6 +120,8 @@ public class DomainAdjuster {
             }
             removeProfile(client, profileName);
         }
+        final String socketBindingGroup = serverGroup.get(SOCKET_BINDING_GROUP).asString();
+        removeUnusedSocketBindingGroups(client, socketBindingGroup);
 
         removeIpv4SystemProperty(client);
 

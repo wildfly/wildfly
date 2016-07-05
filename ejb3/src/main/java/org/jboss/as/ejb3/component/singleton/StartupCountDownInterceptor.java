@@ -20,11 +20,11 @@ public class StartupCountDownInterceptor implements Interceptor {
 
   @Override
   public Object processInvocation(final InterceptorContext context) throws Exception {
-    countdown.markAsPrivileged();
+    final StartupCountdown.Frame frame = countdown.enter();
     try {
       return context.proceed();
     } finally {
-      countdown.unmarkAsPrivileged();
+      StartupCountdown.restore(frame);
       countdown.countDown();
     }
   }

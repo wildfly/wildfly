@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,44 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow;
+package org.jboss.as.clustering.controller;
 
-import io.undertow.servlet.api.Deployment;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Implementers of the listener API through {@link UndertowEventListener} should extend this class to maintain
- * backward compatibility.
- *
- * @author Radoslav Husar
- * @since 8.0
+ * Generates the {@link ServiceName} for a resource service.
+ * @author Paul Ferraro
  */
-public abstract class AbstractUndertowEventListener implements UndertowEventListener {
-
-    @Override
-    public void onShutdown() {
-    }
-
-    @Override
-    public void onDeploymentStart(Deployment deployment, Host host) {
-    }
-
-    @Override
-    public void onDeploymentStop(Deployment deployment, Host host) {
-    }
-
-    @Override
-    public void onHostStart(Host host) {
-    }
-
-    @Override
-    public void onHostStop(Host host) {
-    }
-
-    @Override
-    public void onServerStart(Server server) {
-    }
-
-    @Override
-    public void onServerStop(Server server) {
-    }
+public interface ResourceServiceNameFactory {
+    /**
+     * Returns {@link ServiceName} for the specified resource address.
+     * @param address a resource address
+     * @return a server name
+     */
+    ServiceName getServiceName(PathAddress address);
 }

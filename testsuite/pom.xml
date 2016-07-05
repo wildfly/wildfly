@@ -144,7 +144,8 @@
         <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
-        <surefire.system.args> -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
+        <modular.jdk.testsuite.args />
+        <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
@@ -172,35 +173,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Needed for @Resource(lookup=). -->
-        <dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-initialcontext</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-arquillian-container-managed</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -357,7 +329,6 @@
                        <failIfNoTests>false</failIfNoTests>
                        <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                        <systemPropertyVariables>
-                           <jboss.options>${surefire.system.args} ${jvm.args.jacoco}</jboss.options>
                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                            <jboss.dist>${jboss.dist}</jboss.dist>
                            <jboss.home>${basedir}/target/jbossas</jboss.home>
@@ -370,6 +341,7 @@
                        <additionalClasspathElements combine.children="append">
                            <additionalClasspathElement>${basedir}/src/test/config/arq</additionalClasspathElement>
                        </additionalClasspathElements>
+                       <argLine>${surefire.system.args}</argLine>
                    </configuration>
                </plugin>
 
@@ -423,7 +395,7 @@
                 <dependency>
                     <groupId>com.sun</groupId>
                     <artifactId>tools</artifactId>
-                    <version>1.7</version>
+                    <version>1.8</version>
                     <scope>system</scope>
                     <systemPath>${java.home}/../lib/tools.jar</systemPath>
                 </dependency>
@@ -1321,6 +1293,16 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <modular.jdk.testsuite.args>${modular.jdk.args} -XaddExports:java.base/sun.security.validator=ALL-UNNAMED
+                     -XaddExports:java.naming/com.sun.jndi.ldap=ALL-UNNAMED</modular.jdk.testsuite.args>
+            </properties>
         </profile>
 
     </profiles>

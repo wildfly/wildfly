@@ -64,10 +64,15 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
                                    String jbossHome, boolean adjustDomain, boolean legacyConfig)
             throws Exception {
-        super(testClass, domainConfig, masterConfig, slaveConfig, new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
+        super(testClass, domainConfig, masterConfig, slaveConfig, configWithDisabledAsserts(null), configWithDisabledAsserts(jbossHome));
         this.version = version;
         this.adjustDomain = adjustDomain;
         this.legacyConfig = legacyConfig;
+    }
+    private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome){
+        WildFlyManagedConfiguration config = new WildFlyManagedConfiguration(jbossHome);
+        config.setEnableAssertions(false);
+        return config;
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {

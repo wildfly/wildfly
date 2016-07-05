@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <subsystems>
+        <subsystem>logging.xml</subsystem>
+        <subsystem>io.xml</subsystem>
+        <subsystem>undertow-load-balancer.xml</subsystem>
+    </subsystems>
+</config>

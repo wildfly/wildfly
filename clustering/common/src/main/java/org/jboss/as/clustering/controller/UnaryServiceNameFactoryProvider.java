@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.security.sso;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Builds a distrubutable {@link SingleSignOnManagerFactory} service.
+ * Provides a factory for generating a {@link ServiceName} for a unary requirement.
  * @author Paul Ferraro
  */
-public interface DistributableSingleSignOnManagerFactoryBuilder {
-    /**
-     * Builds a SingleSignOnManagerFactory service for a host.
-     * @param target the service target
-     * @param name the service name
-     * @param hostServiceName the service name of the host
-     * @return a service builder
-     */
-    ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, String serverName, String hostName);
+public interface UnaryServiceNameFactoryProvider extends UnaryServiceNameFactory {
+
+    UnaryServiceNameFactory getServiceNameFactory();
+
+    @Override
+    default ServiceName getServiceName(OperationContext context, String name) {
+        return this.getServiceNameFactory().getServiceName(context, name);
+    }
+
+    @Override
+    default ServiceName getServiceName(CapabilityServiceSupport support, String name) {
+        return this.getServiceNameFactory().getServiceName(support, name);
+    }
 }

@@ -27,7 +27,10 @@
     <config>
         <standalone template="configuration/standalone/template.xml" subsystems="configuration/standalone/subsystems.xml" output-file="standalone/configuration/standalone.xml" />
         <standalone template="configuration/standalone/template-elytron.xml" subsystems="configuration/standalone/subsystems-elytron.xml" output-file="standalone/configuration/standalone-elytron.xml" />
-        
+        <standalone
+                template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-load-balancer.xml"
+                output-file="standalone/configuration/standalone-load-balancer.xml"/>
         <domain template="configuration/domain/template.xml" subsystems="configuration/domain/subsystems.xml" output-file="domain/configuration/domain.xml" />
         <domain template="configuration/domain/template.xml" subsystems="configuration/domain/subsystems-elytron.xml" output-file="domain/configuration/domain-elytron.xml" />
 

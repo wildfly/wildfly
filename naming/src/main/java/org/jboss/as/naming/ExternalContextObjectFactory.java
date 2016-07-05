@@ -119,6 +119,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
         config.setClassLoader(loader);
         config.setSuperClass(initialContextClass);
         config.setProxyName(initialContextClassName + "$$$$Proxy" + PROXY_ID.incrementAndGet());
+        config.setProtectionDomain(context.getClass().getProtectionDomain());
         ProxyFactory<?> factory = new ProxyFactory<Object>(config);
         return (Context) factory.newInstance(new CachedContext(context));
     }
