@@ -43,22 +43,23 @@ import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
+import org.jberet.spi.BatchEnvironment;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A delegating {@linkplain javax.batch.operations.JobOperator job operator} to interact with the batch environment on
  * deployments.
- *
  * <p>
  * Note that for each method the job name, or derived job name, must exist for the deployment. The allowed job names and
  * job XML files are determined at deployment time.
  * </p>
- *
  * <p>
  * This implementation does change some of the API's contracts however it's only intended to be used by management
  * resources and operations. Limits the interaction with the jobs to the scope of the deployments jobs. Any behavioral
@@ -69,6 +70,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class JobOperatorService implements JobOperator, Service<JobOperator> {
 
+    private final InjectedValue<BatchEnvironment> batchEnvironmentInjector = new InjectedValue<>();
+
     private ClassLoader classLoader;
     private JobOperator delegate;
     // Guarded by this
@@ -76,8 +79,7 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     // Guarded by this
     private final Set<String> allowedJobXmlNames;
 
-    public JobOperatorService(final ClassLoader classLoader) {
-        this.classLoader = classLoader;
+    public JobOperatorService() {
         allowedJobNames = new LinkedHashSet<>();
         allowedJobXmlNames = new LinkedHashSet<>();
     }
@@ -86,6 +88,8 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     public synchronized void start(final StartContext context) throws StartException {
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
+            // Get the class loader from the environment
+            classLoader = batchEnvironmentInjector.getValue().getClassLoader();
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             delegate = BatchRuntime.getJobOperator();
         } finally {
@@ -97,8 +101,6 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     public synchronized void stop(final StopContext context) {
         delegate = null;
         classLoader = null;
-        allowedJobXmlNames.clear();
-        allowedJobNames.clear();
     }
 
     @Override
@@ -328,6 +330,15 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     protected synchronized void addAllowedJob(final String jobXml, final String jobName) {
         allowedJobXmlNames.add(jobXml);
         allowedJobNames.add(jobName);
+    }
+
+    /**
+     * Set the batch environment to use for setting up the correct class loader for delegating executions.
+     *
+     * @return the injector used to inject the value in
+     */
+    Injector<BatchEnvironment> getBatchEnvironmentInjector() {
+        return batchEnvironmentInjector;
     }
 
     private void checkState() {
