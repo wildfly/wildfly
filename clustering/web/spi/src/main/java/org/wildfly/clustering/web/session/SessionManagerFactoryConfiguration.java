@@ -34,6 +34,8 @@ public interface SessionManagerFactoryConfiguration {
 
     SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 
+    String getServerName();
+
     String getDeploymentName();
 
     Module getModule();

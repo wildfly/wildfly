@@ -43,7 +43,7 @@ import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
 import org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler;
 
 /**
- * {@link DeploymentUnitProcessor} which adds a dependency on {@link UndertowEventHandlerAdapterBuilder} to web
+ * {@link DeploymentUnitProcessor} which adds a dependency on {@link UndertowEventHandlerAdapterBuilderProvider} to web
  * dependencies (see <a href="https://issues.jboss.org/browse/WFLY-3942">WFLY-3942</a>) and registers metrics on
  * deployment if mod_cluster module is loaded.
  * <p/>

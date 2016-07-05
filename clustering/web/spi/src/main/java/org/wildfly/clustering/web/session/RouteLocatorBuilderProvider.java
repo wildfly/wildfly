@@ -21,7 +21,9 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.msc.value.Value;
+import java.util.Collection;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -41,5 +43,5 @@ public interface RouteLocatorBuilderProvider {
      * @param route the injected route source
      * @return a service builder
      */
-    Builder<?> getRouteLocatorConfigurationBuilder(Value<? extends Value<String>> route);
+    Collection<CapabilityServiceBuilder<?>> getRouteLocatorConfigurationBuilders(String serverName);
 }

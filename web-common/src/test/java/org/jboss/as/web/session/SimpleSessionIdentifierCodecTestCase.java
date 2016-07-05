@@ -26,7 +26,6 @@ import static org.junit.Assert.*;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-import org.jboss.msc.value.Value;
 import org.junit.Test;
 
 /**
@@ -35,56 +34,55 @@ import org.junit.Test;
  */
 public class SimpleSessionIdentifierCodecTestCase {
 
-    private final Value<String> route = mock(Value.class);
-    private final RoutingSupport routing = mock(RoutingSupport.class);
-
-    private final SessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(this.routing, this.route);
-
     @Test
     public void encode() {
-        String result = this.codec.encode(null);
+        RoutingSupport routing = mock(RoutingSupport.class);
+        SessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(routing, null);
+        String sessionId = "session";
+
+        String result = codec.encode(sessionId);
+
+        assertNull(sessionId, null);
+
+        String route = "route";
+        codec = new SimpleSessionIdentifierCodec(routing, route);
+
+        result = codec.encode(null);
 
         assertNull(result);
 
-        String sessionId = "session";
-
-        when(this.route.getValue()).thenReturn(null);
-
-        result = this.codec.encode(sessionId);
-
-        assertSame(sessionId, result);
-
-        String route = "route";
         String encodedSessionId = "session.route";
 
-        when(this.route.getValue()).thenReturn(route);
-        when(this.routing.format(sessionId, route)).thenReturn(encodedSessionId);
+        when(routing.format(sessionId, route)).thenReturn(encodedSessionId);
 
-        result = this.codec.encode(sessionId);
+        result = codec.encode(sessionId);
 
         assertSame(encodedSessionId, result);
     }
 
     @Test
     public void decode() {
-        String result = this.codec.decode(null);
+        RoutingSupport routing = mock(RoutingSupport.class);
+        String route = "route";
+        SessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(routing, route);
+
+        String result = codec.decode(null);
 
         assertNull(result);
 
         String sessionId = "session";
 
-        when(this.routing.parse(sessionId)).thenReturn(new SimpleImmutableEntry<String, String>(sessionId, null));
+        when(routing.parse(sessionId)).thenReturn(new SimpleImmutableEntry<String, String>(sessionId, null));
 
-        result = this.codec.decode(sessionId);
+        result = codec.decode(sessionId);
 
         assertSame(sessionId, result);
 
-        String route = "route";
         String encodedSessionId = "session.route";
 
-        when(this.routing.parse(encodedSessionId)).thenReturn(new SimpleImmutableEntry<>(sessionId, route));
+        when(routing.parse(encodedSessionId)).thenReturn(new SimpleImmutableEntry<>(sessionId, route));
 
-        result = this.codec.decode(encodedSessionId);
+        result = codec.decode(encodedSessionId);
 
         assertSame(sessionId, result);
     }

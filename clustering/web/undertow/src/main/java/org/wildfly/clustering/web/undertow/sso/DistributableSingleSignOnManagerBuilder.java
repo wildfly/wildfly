@@ -23,11 +23,13 @@
 package org.wildfly.clustering.web.undertow.sso;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.security.impl.InMemorySingleSignOnManager;
 import io.undertow.security.impl.SingleSignOnManager;
 import io.undertow.server.session.SessionIdGenerator;
 import io.undertow.server.session.SessionListener;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
@@ -36,6 +38,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
@@ -52,7 +55,8 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 public class DistributableSingleSignOnManagerBuilder implements org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerBuilder, Value<SingleSignOnManager> {
 
-    private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst().get();
+    @SuppressWarnings("rawtypes")
+    private static final Optional<SSOManagerFactoryBuilderProvider> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     @SuppressWarnings("rawtypes")
     private final InjectedValue<SSOManager> manager = new InjectedValue<>();
@@ -60,9 +64,14 @@ public class DistributableSingleSignOnManagerBuilder implements org.wildfly.exte
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, String serverName, String hostName) {
+        if (!PROVIDER.isPresent()) {
+            return target.addService(name, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager())));
+        }
+
         ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
 
-        Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = PROVIDER.getBuilder(hostName);
+        SSOManagerFactoryBuilderProvider<Batch> provider = PROVIDER.get();
+        Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = provider.getBuilder(hostName);
         Builder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(hostServiceName);
         Builder<SSOManager<AuthenticatedSession, String, Void, Batch>> managerBuilder = new SSOManagerBuilder(factoryBuilder.getServiceName(), generatorBuilder.getServiceName());
         Builder<SessionListener> listenerBuilder = new SessionListenerBuilder(managerBuilder.getServiceName());

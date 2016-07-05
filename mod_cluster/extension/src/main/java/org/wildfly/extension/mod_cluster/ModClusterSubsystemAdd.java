@@ -59,6 +59,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.
 import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.PASSWORD;
 import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -159,8 +160,8 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         builder.install();
 
         // Install services for web container integration
-        for (ContainerEventHandlerAdapterBuilder adapterBuilder: ServiceLoader.load(ContainerEventHandlerAdapterBuilder.class, ContainerEventHandlerAdapterBuilder.class.getClassLoader())) {
-            adapterBuilder.build(target, connector, statusInterval).setInitialMode(Mode.PASSIVE).install();
+        for (ContainerEventHandlerAdapterBuilderProvider factory: ServiceLoader.load(ContainerEventHandlerAdapterBuilderProvider.class, ContainerEventHandlerAdapterBuilderProvider.class.getClassLoader())) {
+            factory.getBuilder(connector, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
         }
     }
 
