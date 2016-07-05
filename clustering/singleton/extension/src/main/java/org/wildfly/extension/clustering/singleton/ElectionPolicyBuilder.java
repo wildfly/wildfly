@@ -27,12 +27,12 @@ import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceD
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.jboss.as.clustering.controller.CapabilityDependency;
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -42,6 +42,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.Preference;
@@ -57,8 +58,8 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
     private final List<Preference> preferences = new CopyOnWriteArrayList<>();
     private final List<Dependency> dependencies = new CopyOnWriteArrayList<>();
 
-    protected ElectionPolicyBuilder(String name) {
-        super(name);
+    protected ElectionPolicyBuilder(PathAddress policyAddress) {
+        super(policyAddress);
     }
 
     @Override
@@ -83,7 +84,7 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
         this.preferences.clear();
         this.dependencies.clear();
         for (String bindingName : ModelNodes.asStringList(SOCKET_BINDING_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
-            CapabilityDependency<OutboundSocketBinding> binding = new CapabilityDependency<>(context, RequiredCapability.OUTBOUND_SOCKET_BINDING, bindingName, OutboundSocketBinding.class);
+            InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, bindingName), OutboundSocketBinding.class);
             this.preferences.add(new OutboundSocketBindingPreference(binding));
             this.dependencies.add(binding);
         }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.security.sso;
 
-import org.wildfly.extension.undertow.Host;
+package org.jboss.as.clustering.controller;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Factory for creating a {@link SingleSignOnManager}.
+ * Provides a capability instance.
+ * Additionally implements {@link Capability}, delegating all methods to the provided capability instance.
  * @author Paul Ferraro
  */
-public interface SingleSignOnManagerFactory {
-    /**
-     * Creates a single sign on manager for the specified host
-     * @param host a host
-     * @return a single sign on manager
-     */
-    SingleSignOnManager createSingleSignOnManager(Host host);
+public interface CapabilityProvider extends Capability {
+
+    Capability getCapability();
+
+    @Override
+    default RuntimeCapability<Void> getDefinition() {
+        return this.getCapability().getDefinition();
+    }
+
+    @Override
+    default RuntimeCapability<Void> resolve(PathAddress address) {
+        return this.getCapability().resolve(address);
+    }
+
+    @Override
+    default ServiceName getServiceName(PathAddress address) {
+        return this.getCapability().getServiceName(address);
+    }
 }

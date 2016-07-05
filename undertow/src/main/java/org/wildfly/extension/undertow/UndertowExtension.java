@@ -74,7 +74,7 @@ public class UndertowExtension implements Extension {
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
-    static final ModelVersion MODEL_VERSION_3_1_0 = ModelVersion.create(3, 1);
+    static final ModelVersion MODEL_VERSION_3_2_0 = ModelVersion.create(3, 2);
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {

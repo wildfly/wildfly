@@ -32,8 +32,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
-import org.jboss.as.clustering.controller.CapabilityDependency;
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,6 +43,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -89,7 +89,7 @@ public class RemoteStoreBuilder extends StoreBuilder {
                 .tcpNoDelay(TCP_NO_DELAY.getDefinition().resolveModelAttribute(context, model).asBoolean())
         ;
         for (String binding : StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.getDefinition().resolveModelAttribute(context, model))) {
-            this.bindings.add(new CapabilityDependency<>(context, RequiredCapability.OUTBOUND_SOCKET_BINDING, binding, OutboundSocketBinding.class));
+            this.bindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class));
         }
         return this.storeBuilder;
     }

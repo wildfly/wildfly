@@ -53,6 +53,7 @@ import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -171,6 +172,7 @@ public class LdapExtPasswordCachingTestCase {
      */
     @Test
     @OperateOnDeployment(DEP3)
+    @Ignore("WFLY-6770")
     public void test3(@ArquillianResource URL webAppURL) throws Exception {
 
     	passwordProvider.resetFileCounter();

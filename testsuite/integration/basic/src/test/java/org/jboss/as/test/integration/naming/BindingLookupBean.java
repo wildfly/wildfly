@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.security.sso;
+package org.jboss.as.test.integration.naming;
 
-import io.undertow.servlet.core.Lifecycle;
+import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
- * Adds {@link Lifecycle} support for a {@link SingleSignOnManager}.
- * @author Paul Ferraro
+ * @author Eduardo Martins
  */
-public interface SingleSignOnManager extends io.undertow.security.impl.SingleSignOnManager, Lifecycle {
-    @Override
-    void start();
+@Stateless
+public class BindingLookupBean {
 
-    @Override
-    void stop();
+    public Object lookupBind(String name) throws NamingException {
+        return new InitialContext().lookup(name);
+    }
+
 }

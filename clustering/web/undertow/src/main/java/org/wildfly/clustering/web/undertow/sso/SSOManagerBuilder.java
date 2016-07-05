@@ -22,12 +22,14 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -41,13 +43,15 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSession, String, Void, Batch>>, Value<SSOManager<AuthenticatedSession, String, Void, Batch>>, LocalContextFactory<Void> {
+public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSession, String, Void, Batch>>, Service<SSOManager<AuthenticatedSession, String, Void, Batch>>, LocalContextFactory<Void> {
 
     private final InjectedValue<SessionIdGenerator> generator = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<SSOManagerFactory> factory = new InjectedValue<>();
     private final ServiceName factoryServiceName;
     private final ServiceName generatorServiceName;
+
+    private volatile SSOManager<AuthenticatedSession, String, Void, Batch> manager;
 
     public SSOManagerBuilder(ServiceName factoryServiceName, ServiceName generatorServiceName) {
         this.factoryServiceName = factoryServiceName;
@@ -61,16 +65,28 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
 
     @Override
     public ServiceBuilder<SSOManager<AuthenticatedSession, String, Void, Batch>> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        return target.addService(this.getServiceName(), this)
                 .addDependency(this.factoryServiceName, SSOManagerFactory.class, this.factory)
                 .addDependency(this.generatorServiceName, SessionIdGenerator.class, this.generator)
                 ;
     }
 
     @Override
-    public SSOManager<AuthenticatedSession, String, Void, Batch> getValue() {
+    public void start(StartContext context) throws StartException {
         SSOManagerFactory<AuthenticatedSession, String, Batch> factory = this.factory.getValue();
-        return factory.createSSOManager(new IdentifierFactoryAdapter(this.generator.getValue()), this);
+        this.manager = factory.createSSOManager(new IdentifierFactoryAdapter(this.generator.getValue()), this);
+        this.manager.start();
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        this.manager.stop();
+        this.manager = null;
+    }
+
+    @Override
+    public SSOManager<AuthenticatedSession, String, Void, Batch> getValue() {
+        return this.manager;
     }
 
     @Override

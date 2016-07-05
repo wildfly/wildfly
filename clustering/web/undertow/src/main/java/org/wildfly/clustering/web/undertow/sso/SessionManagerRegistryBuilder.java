@@ -34,8 +34,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.extension.undertow.AbstractUndertowEventListener;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 import io.undertow.server.session.SessionListener;
@@ -46,7 +46,7 @@ import io.undertow.servlet.api.Deployment;
  * Service providing a {@link SessionManagerRegistry} for a host.
  * @author Paul Ferraro
  */
-public class SessionManagerRegistryBuilder extends AbstractUndertowEventListener implements Builder<SessionManagerRegistry>, Service<SessionManagerRegistry>, SessionManagerRegistry {
+public class SessionManagerRegistryBuilder implements Builder<SessionManagerRegistry>, Service<SessionManagerRegistry>, SessionManagerRegistry, UndertowEventListener {
 
     private final ServiceName hostServiceName;
     private final InjectedValue<UndertowService> service = new InjectedValue<>();

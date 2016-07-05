@@ -94,12 +94,12 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
-                        <version>1.4</version>
+                        <version>1.5</version>
                         <dependencies>
                             <dependency>
                                 <groupId>org.codehaus.mojo</groupId>
                                 <artifactId>keytool-api-1.7</artifactId>
-                                <version>1.4</version>
+                                <version>1.5</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -246,7 +246,6 @@
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
-
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>

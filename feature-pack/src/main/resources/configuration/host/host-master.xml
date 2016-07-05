@@ -4,7 +4,7 @@
    A simple configuration for a Host Controller that only acts as the master domain controller
    and does not itself directly control any servers.
 -->
-<host name="master" xmlns="urn:jboss:domain:4.1">
+<host name="master" xmlns="urn:jboss:domain:4.2">
     <extensions>
         <?EXTENSIONS?>
     </extensions>
@@ -21,6 +21,11 @@
                 </authorization>
             </security-realm>
             <security-realm name="ApplicationRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="application.keystore" relative-to="jboss.domain.config.dir" keystore-password="password" alias="server" key-password="password" generate-self-signed-certificate-host="localhost"/>
+                    </ssl>
+                </server-identities>
                 <authentication>
                     <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
                     <properties path="application-users.properties" relative-to="jboss.domain.config.dir"/>

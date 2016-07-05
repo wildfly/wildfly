@@ -70,16 +70,12 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
      * 4/ Query second container verifying sessions got replicated.
      * 5/ Bring up the first container.
      * 6/ Query first container verifying that updated sessions replicated back.
-     *
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws URISyntaxException
      */
     @Test
     public void testGracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws Exception {
         testFailover(new RestartLifecycle(), baseURL1, baseURL2);
     }
 
@@ -91,19 +87,16 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
      * 4/ Query second container verifying sessions got replicated.
      * 5/ Redeploy application to the first container.
      * 6/ Query first container verifying that updated sessions replicated back.
-     *
-     * @throws IOException
-     * @throws URISyntaxException
      */
     @Test
     public void testGracefulUndeployFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
         testFailover(new RedeployLifecycle(), baseURL1, baseURL2);
     }
 
-    private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
+    private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws Exception {
         HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
         URI uri1 = SimpleServlet.createURI(baseURL1);
@@ -134,7 +127,7 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Gracefully shutdown the 1st container.
+            // Gracefully undeploy from/shutdown the 1st container.
             lifecycle.stop(NODE_1);
 
             this.establishTopology(baseURL2, NODE_2);
@@ -191,7 +184,12 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Gracefully shutdown the 1st container.
+            // Until graceful undeploy is supported, we need to wait for replication to complete before undeploy (WFLY-6769).
+            if (lifecycle instanceof RedeployLifecycle) {
+                Thread.sleep(GRACE_TIME_TO_REPLICATE);
+            }
+
+            // Gracefully undeploy from/shutdown the 1st container.
             lifecycle.stop(NODE_2);
 
             this.establishTopology(baseURL1, NODE_1);

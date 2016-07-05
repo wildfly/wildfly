@@ -70,7 +70,7 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        this.descriptor.getCapabilities().forEach(capability -> context.deregisterCapability(capability.getRuntimeCapability(address).getName()));
+        this.descriptor.getCapabilities().forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
 
         ModelNode model = resource.getModel();
         ImmutableManagementResourceRegistration registration = context.getResourceRegistration();

@@ -24,18 +24,25 @@ package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Interface to be implemented by capability enumerations.
  * @author Paul Ferraro
  */
-public interface Capability extends Definable<RuntimeCapability<Void>> {
+public interface Capability extends Definable<RuntimeCapability<Void>>, ResourceServiceNameFactory {
     /**
-     * Resolves this dynamic capability against the specified path address
+     * Resolves this capability against the specified path address
      * @param address a path address
      * @return a resolved runtime capability
      */
-    default RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
-        return this.getDefinition().fromBaseCapability(address.getLastElement().getValue());
+    default RuntimeCapability<Void> resolve(PathAddress address) {
+        RuntimeCapability<Void> definition = this.getDefinition();
+        return definition.isDynamicallyNamed() ? definition.fromBaseCapability(address.getLastElement().getValue()) : definition;
+    }
+
+    @Override
+    default ServiceName getServiceName(PathAddress address) {
+        return this.resolve(address).getCapabilityServiceName();
     }
 }

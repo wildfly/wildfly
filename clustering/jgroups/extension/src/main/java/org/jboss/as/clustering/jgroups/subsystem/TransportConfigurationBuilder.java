@@ -24,8 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
 
-import org.jboss.as.clustering.controller.CapabilityDependency;
-import org.jboss.as.clustering.controller.RequiredCapability;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,6 +34,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -89,7 +89,7 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
 
         String diagnosticsBinding = ModelNodes.asString(DIAGNOSTICS_SOCKET_BINDING.getDefinition().resolveModelAttribute(context, transport));
         if (diagnosticsBinding != null) {
-            this.diagnosticsSocketBinding = new CapabilityDependency<>(context, RequiredCapability.SOCKET_BINDING, diagnosticsBinding, SocketBinding.class);
+            this.diagnosticsSocketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsBinding), SocketBinding.class);
         }
 
         for (ThreadPoolResourceDefinition pool : ThreadPoolResourceDefinition.values()) {

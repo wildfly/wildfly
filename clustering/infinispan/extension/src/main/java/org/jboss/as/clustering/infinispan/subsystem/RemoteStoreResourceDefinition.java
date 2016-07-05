@@ -28,8 +28,8 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -51,7 +51,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -69,12 +68,12 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement PATH = pathElement("remote");
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        OUTBOUND_SOCKET_BINDING("org.wildfly.clustering.infinispan.cache-container.cache.store.remote.outbound-socket-binding", OutboundSocketBinding.class),
+        OUTBOUND_SOCKET_BINDING("org.wildfly.clustering.infinispan.cache-container.cache.store.remote.outbound-socket-binding"),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name, Class<?> serviceType) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).build();
         }
 
         @Override
@@ -83,7 +82,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         }
 
         @Override
-        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+        public RuntimeCapability<Void> resolve(PathAddress address) {
             PathAddress cacheAddress = address.getParent();
             PathAddress containerAddress = cacheAddress.getParent();
             return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue() + "." + cacheAddress.getLastElement().getValue());
@@ -111,7 +110,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
                     .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setCapabilityReference(new CapabilityReference(RequiredCapability.OUTBOUND_SOCKET_BINDING, Capability.OUTBOUND_SOCKET_BINDING))
+                    .setCapabilityReference(new CapabilityReference(Capability.OUTBOUND_SOCKET_BINDING, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMinSize(1)
                     .build();

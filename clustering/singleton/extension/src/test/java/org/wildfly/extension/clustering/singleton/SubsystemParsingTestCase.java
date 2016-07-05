@@ -27,8 +27,8 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
@@ -80,7 +80,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization().require(RequiredCapability.OUTBOUND_SOCKET_BINDING, "binding0", "binding1");
+        return new AdditionalInitialization().require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1");
     }
 
     /**

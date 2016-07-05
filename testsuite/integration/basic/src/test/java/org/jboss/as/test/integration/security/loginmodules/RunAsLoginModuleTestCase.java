@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -69,6 +70,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import javax.security.auth.AuthPermission;
 
 /**
  * This is a test case for RunAsLoginModule
@@ -138,6 +141,7 @@ public class RunAsLoginModuleTestCase {
         war.addAsWebInfResource(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/jboss-web.xml"), "jboss-web.xml");
 
         war.addClasses(SimpleSecuredEJB.class, SimpleSecuredEJBImpl.class, CustomEjbAccessingLoginModule.class);
+        war.addAsManifestResource(createPermissionsXmlAsset(new AuthPermission("modifyPrincipals")), "permissions.xml");
 
         log.debug(war.toString(true));
 

@@ -46,6 +46,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -139,6 +140,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setValidator(new LongRangeValidator(0,Long.MAX_VALUE,true,true))
             .setRestartAllServices()
             .build();
     // no default values, depends on whether NIO or AIO is used.

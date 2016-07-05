@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.UndertowExtension.MODEL_VERSION_3_1_0;
+import static org.wildfly.extension.undertow.UndertowExtension.MODEL_VERSION_3_2_0;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -113,13 +113,13 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     }
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        registerTransformers_3_1_0(subsystemRegistration);
+        registerTransformers_3_2_0(subsystemRegistration);
     }
 
-    private static void registerTransformers_3_1_0(SubsystemRegistration subsystemRegistration) {
+    private static void registerTransformers_3_2_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_1_0);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_2_0);
     }
 
 }

@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceNameProvider;
 
@@ -31,14 +32,14 @@ import org.wildfly.clustering.service.ServiceNameProvider;
  */
 public class ElectionPolicyServiceNameProvider implements ServiceNameProvider {
 
-    private final String name;
+    private final PathAddress policyAddress;
 
-    public ElectionPolicyServiceNameProvider(String name) {
-        this.name = name;
+    public ElectionPolicyServiceNameProvider(PathAddress policyAddress) {
+        this.policyAddress = policyAddress;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return new SingletonPolicyBuilder(this.name).getServiceName().append("election-policy");
+        return SingletonPolicyResourceDefinition.Capability.POLICY.getServiceName(this.policyAddress).append("election-policy");
     }
 }

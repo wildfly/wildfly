@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.naming;
 
-import javax.ejb.Stateless;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+package org.jboss.as.clustering.controller;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.Requirement;
 
 /**
- * @author Eduardo Martins
+ * @author Paul Ferraro
  */
-@Stateless
-public class URLBindingTestCaseBean {
+public class RequirementServiceNameFactory implements ServiceNameFactory {
 
-    public Object lookupBind(String name) throws NamingException {
-        return new InitialContext().lookup(name);
+    private final Requirement requirement;
+
+    public RequirementServiceNameFactory(Requirement requirement) {
+        this.requirement = requirement;
     }
 
+    @Override
+    public ServiceName getServiceName(OperationContext context) {
+        return context.getCapabilityServiceName(this.requirement.getName(), this.requirement.getType());
+    }
+
+    @Override
+    public ServiceName getServiceName(CapabilityServiceSupport support) {
+        return support.getCapabilityServiceName(this.requirement.getName());
+    }
 }
