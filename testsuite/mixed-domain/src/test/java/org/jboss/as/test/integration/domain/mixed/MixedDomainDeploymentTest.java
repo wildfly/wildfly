@@ -21,21 +21,25 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EMPTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TARGET_PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createEmptyOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateFailedResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -211,6 +215,63 @@ public abstract class MixedDomainDeploymentTest {
         performHttpCall(DomainTestSupport.slaveAddress, 8080);
     }
 
+    protected boolean supportManagedExplodedDeployment() {
+        return true;
+    }
+
+    @Test
+    public void testExplodedEmptyDeployment() throws Exception {
+        ModelNode empty = new ModelNode();
+        empty.get(EMPTY).set(true);
+        ModelNode composite = createDeploymentOperation(empty, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        if (supportManagedExplodedDeployment()) {
+            executeOnMaster(composite);
+        } else {
+            ModelNode failure = executeForFailureOnMaster(composite);
+            assertTrue(failure.toJSONString(true), failure.toJSONString(true).contains("WFLYCTL0421:"));
+        }
+    }
+
+    @Test
+    public void testExplodedDeployment() throws Exception {
+        ModelNode composite = createEmptyOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        ModelNode steps = composite.get(STEPS);
+        ModelNode op = createAddOperation(ROOT_DEPLOYMENT_ADDRESS);
+        op.get(CONTENT).setEmptyList();
+        ModelNode empty = new ModelNode();
+        empty.get(EMPTY).set(true);
+        op.get(CONTENT).add(empty);
+        steps.add(op);
+        op = createEmptyOperation(ADD_CONTENT, ROOT_DEPLOYMENT_ADDRESS);
+        op.get(CONTENT).setEmptyList();
+        ModelNode file = new ModelNode();
+        file.get(TARGET_PATH).set("index.html");
+        file.get(INPUT_STREAM_INDEX).set(0);
+        op.get(CONTENT).add(file);
+        file = new ModelNode();
+        file.get(TARGET_PATH).set("index2.html");
+        file.get(INPUT_STREAM_INDEX).set(1);
+        op.get(CONTENT).add(file);
+        steps.add(op);
+        ModelNode sg = steps.add();
+        sg.set(createAddOperation(OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS));
+        sg.get(ENABLED).set(true);
+        sg = steps.add();
+        sg.set(createAddOperation(MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS));
+        sg.get(ENABLED).set(true);
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        OperationBuilder builder = new OperationBuilder(composite);
+        builder.addInputStream(tccl.getResourceAsStream("helloWorld/index.html"));
+        builder.addInputStream(tccl.getResourceAsStream("helloWorld/index2.html"));
+        if (supportManagedExplodedDeployment()) {
+            executeOnMaster(builder.build());
+            performHttpCall(DomainTestSupport.slaveAddress, 8080);
+        } else {
+            ModelNode failure = executeForFailureOnMaster(builder.build());
+            assertTrue(failure.toJSONString(true), failure.toJSONString(true).contains("WFLYCTL0421:"));
+        }
+    }
+
     @Test
     public void testUndeploy() throws Exception {
         // Establish the deployment
@@ -337,6 +398,14 @@ public abstract class MixedDomainDeploymentTest {
 
     private ModelNode executeOnMaster(Operation op) throws IOException {
         return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    }
+
+    private ModelNode executeForFailureOnMaster(ModelNode op) throws IOException {
+        return validateFailedResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    }
+
+    private ModelNode executeForFailureOnMaster(Operation op) throws IOException {
+        return validateFailedResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
     }
 
     private ModelNode createDeploymentOperation(ModelNode content, PathAddress... serverGroupAddressses) {
