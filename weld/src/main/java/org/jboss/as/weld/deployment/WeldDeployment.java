@@ -202,7 +202,13 @@ public class WeldDeployment implements CDI11Deployment {
         // make the top-level deployment BDAs visible from the additional archive
         newBda.addBeanDeploymentArchives(rootBeanDeploymentModule.getBeanDeploymentArchives());
 
-        additionalBeanDeploymentArchivesByClassloader.put(beanClass.getClassLoader(), newBda);
+        // Ignore beans loaded by the bootstrap class loader. This should only be JDK classes in most cases.
+        // See getBeanDeploymentArchive(final Class<?> beanClass), per the JavaDoc this is mean to archive which
+        // contains the bean class.
+        final ClassLoader cl = beanClass.getClassLoader();
+        if (cl != null) {
+            additionalBeanDeploymentArchivesByClassloader.put(cl, newBda);
+        }
         beanDeploymentArchives.add(newBda);
         return newBda;
     }
