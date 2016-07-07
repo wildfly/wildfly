@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import javax.transaction.Status;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.cache.Cache;
@@ -137,6 +138,11 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
             }
             V result = bean.acquire();
             result.setCacheContext(batch);
+            // store the first SFSB instance accessed by a transaction in the TSR to manage delayed call to release() performed by a synchronization, if any
+            // used to keep the Batch reference in the session instance until this delayed call to release() is performed
+            if (transactional && (this.tsr.getResource(Object.class) == null)) {
+                this.tsr.putResource(Object.class, result);
+            }
             return result;
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -150,8 +156,10 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void release(V value) {
+        Object tsrInstance = getSessionInstanceInTSR();
+        boolean valueMatchesInstanceInTSR = (tsrInstance != null) ? (tsrInstance == value) : false ;
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
-            try (Batch batch = value.removeCacheContext()) {
+            try (Batch batch = valueMatchesInstanceInTSR ? value.getCacheContext() : value.removeCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
                     if (bean != null) {
@@ -184,8 +192,10 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void discard(V value) {
+        Object tsrInstance = getSessionInstanceInTSR();
+        boolean valueMatchesInstanceInTSR = (tsrInstance != null) ? (tsrInstance == value) : false ;
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
-            try (Batch batch = value.removeCacheContext()) {
+            try (Batch batch = valueMatchesInstanceInTSR ? value.getCacheContext() : value.removeCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
                     if (bean != null) {
@@ -234,5 +244,21 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     @Override
     public boolean isRemotable(Throwable throwable) {
         return this.manager.isRemotable(throwable);
+    }
+
+    /**
+     * The StatefulSessionSynchronizationInterceptor delays the call to release for the first method invocation
+     * until afterCompletion of the enclosing transaction, if any. This means that for that first invocation,
+     * we cannot allow release() to clear the cacheContext holding a reference to the current Batch.
+     *
+     * THis method retrieves the stored SFSB instance.
+     *
+     * @return  the SFSB instance associated with the first invocation in a (user) transaction
+     */
+    private Object getSessionInstanceInTSR() {
+        if (this.tsr.getTransactionStatus() == Status.STATUS_ACTIVE) {
+            return this.tsr.getResource(Object.class);
+        }
+        return null;
     }
 }
