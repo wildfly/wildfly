@@ -53,7 +53,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     private static void validate(Session<LocalSessionContext> session) {
         if (!session.isValid()) {
-            throw UndertowMessages.MESSAGES.sessionNotFound(session.getId());
+            throw UndertowMessages.MESSAGES.sessionAlreadyInvalidated();
         }
     }
 
