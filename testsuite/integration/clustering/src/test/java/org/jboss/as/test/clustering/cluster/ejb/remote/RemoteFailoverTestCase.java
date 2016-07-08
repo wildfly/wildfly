@@ -23,10 +23,12 @@
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import static org.junit.Assert.*;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.PropertyPermission;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -37,7 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ejb.EJBException;
 import javax.naming.NamingException;
-import javax.validation.constraints.AssertTrue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -101,6 +102,9 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         jar.addPackage(Incrementor.class.getPackage());
         jar.addPackage(EJBDirectory.class.getPackage());
         jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(NODE_NAME_PROPERTY, "read")
+        ), "permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }
