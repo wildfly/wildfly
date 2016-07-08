@@ -1,0 +1,239 @@
+<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+    <datasources>
+        <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false"
+                    use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
+
+            <driver-class>
+                org.hsqldb.jdbcDriver
+            </driver-class>
+            <datasource-class>
+                org.jboss.as.connector.subsystems.datasources.ModifiableDataSource
+            </datasource-class>
+            <connection-property name="char.encoding">
+                UTF-8
+            </connection-property>
+            <driver>
+                h2
+            </driver>
+            <new-connection-sql>
+                select 1
+            </new-connection-sql>
+            <transaction-isolation>
+                TRANSACTION_READ_COMMITTED
+            </transaction-isolation>
+            <url-delimiter>
+                :
+            </url-delimiter>
+            <url-selector-strategy-class-name>
+                someClass
+            </url-selector-strategy-class-name>
+            <pool>
+                <min-pool-size>1</min-pool-size>
+                <max-pool-size>5</max-pool-size>
+                <prefill>true</prefill>
+                <use-strict-min>true</use-strict-min>
+                <flush-strategy>EntirePool</flush-strategy>
+                <allow-multiple-users>true</allow-multiple-users>
+            </pool>
+            <security>
+                <user-name>
+                    sa
+                </user-name>
+                <password>
+                    sa
+                </password>
+                <reauth-plugin class-name="someClass1">
+                    <config-property name="name">Property1</config-property>
+                </reauth-plugin>
+            </security>
+            <validation>
+                <valid-connection-checker class-name="someClass2">
+                    <config-property name="name">Property2</config-property>
+                </valid-connection-checker>
+                <check-valid-connection-sql>
+                    select 1
+                </check-valid-connection-sql>
+                <validate-on-match>
+                    true
+                </validate-on-match>
+                <background-validation>
+                    true
+                </background-validation>
+                <background-validation-millis>
+                    2000
+                </background-validation-millis>
+                <use-fast-fail>
+                    true
+                </use-fast-fail>
+                <stale-connection-checker class-name="someClass3">
+                    <config-property name="name">Property3</config-property>
+                </stale-connection-checker>
+                <exception-sorter class-name="someClass4">
+                    <config-property name="name">Property4</config-property>
+                </exception-sorter>
+            </validation>
+            <timeout>
+                <set-tx-query-timeout>true</set-tx-query-timeout>
+                <blocking-timeout-millis>20000</blocking-timeout-millis>
+                <idle-timeout-minutes>4</idle-timeout-minutes>
+                <query-timeout>
+                    120
+                </query-timeout>
+                <use-try-lock>
+                    100
+                </use-try-lock>
+                <allocation-retry>
+                    2
+                </allocation-retry>
+                <allocation-retry-wait-millis>
+                    3000
+                </allocation-retry-wait-millis>
+            </timeout>
+            <statement>
+                <track-statements>nowarn</track-statements>
+                <prepared-statement-cache-size>30</prepared-statement-cache-size>
+                <share-prepared-statements>true</share-prepared-statements>
+
+            </statement>
+        </datasource>
+        <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool"
+                       use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
+            <xa-datasource-property name="URL">
+                jdbc:h2:mem:test
+            </xa-datasource-property>
+            <xa-datasource-class>
+                org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource
+            </xa-datasource-class>
+            <driver>
+                h2
+            </driver>
+            <url-delimiter>
+                :
+            </url-delimiter>
+            <url-selector-strategy-class-name>
+                someClass
+            </url-selector-strategy-class-name>
+            <new-connection-sql>
+                select 1
+            </new-connection-sql>
+            <transaction-isolation>
+                TRANSACTION_READ_COMMITTED
+            </transaction-isolation>
+            <xa-pool>
+                <min-pool-size>
+                    1
+                </min-pool-size>
+                <max-pool-size>
+                    5
+                </max-pool-size>
+                <prefill>
+                    true
+                </prefill>
+                <use-strict-min>
+                    true
+                </use-strict-min>
+                <flush-strategy>
+                    EntirePool
+                </flush-strategy>
+                <allow-multiple-users>true</allow-multiple-users>
+                <is-same-rm-override>
+                    true
+                </is-same-rm-override>
+                <interleaving>true</interleaving>
+                <no-tx-separate-pools>true</no-tx-separate-pools>
+                <pad-xid>
+                    true
+                </pad-xid>
+                <wrap-xa-resource>
+                    true
+                </wrap-xa-resource>
+
+            </xa-pool>
+            <security>
+                <user-name>
+                    sa
+                </user-name>
+                <password>
+                    sa
+                </password>
+                <reauth-plugin class-name="someClass1">
+                    <config-property name="name">Property1</config-property>
+                </reauth-plugin>
+            </security>
+            <recovery no-recovery="false">
+                <recover-credential>
+                    <user-name>
+                        sa
+                    </user-name>
+                    <password>
+                        sa
+                    </password>
+                </recover-credential>
+                <recover-plugin class-name="someClass5">
+                    <config-property name="name">Property5</config-property>
+                    <config-property name="name1">Property6</config-property>
+                </recover-plugin>
+            </recovery>
+            <validation>
+                <valid-connection-checker class-name="someClass2">
+                    <config-property name="name">Property2</config-property>
+                </valid-connection-checker>
+                <check-valid-connection-sql>
+                    select 1
+                </check-valid-connection-sql>
+                <validate-on-match>
+                    true
+                </validate-on-match>
+                <background-validation>
+                    true
+                </background-validation>
+                <background-validation-millis>
+                    2000
+                </background-validation-millis>
+                <use-fast-fail>
+                    true
+                </use-fast-fail>
+                <stale-connection-checker class-name="someClass3">
+                    <config-property name="name">Property3</config-property>
+                </stale-connection-checker>
+                <exception-sorter class-name="someClass4">
+                    <config-property name="name">Property4</config-property>
+                </exception-sorter>
+            </validation>
+            <timeout>
+                <set-tx-query-timeout>true</set-tx-query-timeout>
+                <blocking-timeout-millis>30000</blocking-timeout-millis>
+                <idle-timeout-minutes>5</idle-timeout-minutes>
+                <query-timeout>
+                    120
+                </query-timeout>
+                <use-try-lock>
+                    100
+                </use-try-lock>
+                <allocation-retry>
+                    2
+                </allocation-retry>
+                <allocation-retry-wait-millis>
+                    3000
+                </allocation-retry-wait-millis>
+                <xa-resource-timeout>
+                    120
+                </xa-resource-timeout>
+            </timeout>
+            <statement>
+                <track-statements>nowarn</track-statements>
+                <prepared-statement-cache-size>30</prepared-statement-cache-size>
+                <share-prepared-statements>true</share-prepared-statements>
+            </statement>
+        </xa-datasource>
+        <drivers>
+            <driver major-version="3" minor-version="3" module="com.h2database.h2" name="h2">
+                <driver-class>token</driver-class>
+                <xa-datasource-class>
+                    org.h2.jdbcx.JdbcDataSource
+                </xa-datasource-class>
+                <datasource-class>token</datasource-class>
+            </driver>
+        </drivers>
+    </datasources>
+</subsystem>

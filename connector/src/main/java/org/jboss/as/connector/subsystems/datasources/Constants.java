@@ -246,7 +246,7 @@ public class Constants {
     public static final String STATISTICS = "statistics";
 
 
-    static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, false)
+    static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(DataSource.Tag.CONNECTION_URL.getLocalName())
             .build();
