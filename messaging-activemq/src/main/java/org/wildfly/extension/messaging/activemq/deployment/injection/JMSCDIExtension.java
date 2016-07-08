@@ -20,53 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.messaging.activemq.deployment;
+package org.wildfly.extension.messaging.activemq.deployment.injection;
 
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
 
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.weld.injection.ForwardingInjectionTarget;
 
 /**
  * CDI extension to provide injection of JMSContext resources.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-public class JMSCDIExtension implements Extension {
+class JMSCDIExtension implements Extension {
 
-    private final PropertyReplacer propertyReplacer;
+    static PropertyReplacer propertyReplacer;
 
-    public JMSCDIExtension(PropertyReplacer propertyReplacer) {
-        this.propertyReplacer = propertyReplacer;
+    JMSCDIExtension(PropertyReplacer propertyReplacer) {
+        // store the propertyReplacer in a static field so that it can be used in JMSInfo by beans instantiated by CDI
+        JMSCDIExtension.propertyReplacer = propertyReplacer;
     }
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        AnnotatedType<JMSContextProducer> producer = bm.createAnnotatedType(JMSContextProducer.class);
-        bbd.addAnnotatedType(producer);
-    }
-
-    public void wrapInjectionTarget(@Observes ProcessInjectionTarget<JMSContextProducer> event)
-    {
-        final InjectionTarget<JMSContextProducer> injectionTarget = event.getInjectionTarget();
-        event.setInjectionTarget(new ForwardingInjectionTarget<JMSContextProducer>() {
-
-            @Override
-            public void inject(JMSContextProducer instance, CreationalContext<JMSContextProducer> ctx) {
-                super.inject(instance, ctx);
-                instance.setPropertyReplacer(propertyReplacer);
-            }
-
-            @Override
-            protected InjectionTarget<JMSContextProducer> delegate() {
-                return injectionTarget;
-            }
-        });
+    private void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
+        AnnotatedType<RequestedJMSContext> requestedContextBean = bm.createAnnotatedType(RequestedJMSContext.class);
+        bbd.addAnnotatedType(requestedContextBean);
+        AnnotatedType<TransactedJMSContext> transactedContextBean = bm.createAnnotatedType(TransactedJMSContext.class);
+        bbd.addAnnotatedType(transactedContextBean);
+        AnnotatedType<InjectedJMSContext> contextBean = bm.createAnnotatedType(InjectedJMSContext.class);
+        bbd.addAnnotatedType(contextBean);
     }
 }
