@@ -7,9 +7,8 @@
     <tcp high-water-mark="500" number-to-reclaim="30"/>
     <initializers security="client" transactions="spec"/>
     <naming root-context="JBoss/Naming/root2" export-corbaloc="false"/>
-    <security support-ssl="true" add-component-via-interceptor="false" client-supports="None"
-              client-requires="MutualAuth"
-              server-supports="None" server-requires="MutualAuth"/>
+    <security support-ssl="true" security-domain="security-domain" add-component-via-interceptor="false"
+              client-supports="None" client-requires="MutualAuth" server-supports="None" server-requires="MutualAuth"/>
     <transport-config integrity="required" confidentiality="required" detect-replay="supported"
                       detect-misordering="supported"
                       trust-in-client="supported" trust-in-target="supported"/>
