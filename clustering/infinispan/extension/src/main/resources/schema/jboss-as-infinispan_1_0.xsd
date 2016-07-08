@@ -262,7 +262,7 @@
                 <xs:documentation>Sets the cache transaction mode to one of NONE, NON_XA, NON_DURABLE_XA, FULL_XA.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="stop-timeout" type="xs:long" default="30000">
+        <xs:attribute name="stop-timeout" type="xs:long" default="10000">
             <xs:annotation>
                 <xs:documentation>If there are any ongoing transactions when a cache is stopped, Infinispan waits for ongoing remote and local transactions to finish. The amount of time to wait for is defined by the cache stop timeout.</xs:documentation>
             </xs:annotation>
