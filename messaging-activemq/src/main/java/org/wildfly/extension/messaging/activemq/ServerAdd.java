@@ -167,22 +167,20 @@ class ServerAdd extends AbstractAddStepHandler {
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
 
-        if (context.isNormalServer()) {
-            // add an operation to create all the messaging paths resources that have not been already been created
-            // prior to adding the ActiveMQ server
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ModelNode model = Resource.Tools.readModel(resource);
-                    for (String path : PathDefinition.PATHS.keySet()) {
-                        if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
-                            PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
-                            context.createResource(pathAddress);
-                        }
+        // add an operation to create all the messaging paths resources that have not been already been created
+        // prior to adding the ActiveMQ server
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final ModelNode model = Resource.Tools.readModel(resource);
+                for (String path : PathDefinition.PATHS.keySet()) {
+                    if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
+                        PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
+                        context.createResource(pathAddress);
                     }
                 }
-            }, OperationContext.Stage.MODEL);
-        }
+            }
+        }, OperationContext.Stage.MODEL);
     }
 
     @Override
