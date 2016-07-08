@@ -381,10 +381,6 @@
                                   <value>org.jboss.logmanager.LogManager</value>
                               </property>
                               <property>
-                                  <name>jboss.remoting.leakdebugging</name>
-                                  <value>false</value>
-                              </property>
-                              <property>
                                   <name>test.level</name>
                                   <value>${test.level}</value>
                               </property>
