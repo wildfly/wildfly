@@ -36,7 +36,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionList;
 import org.xnio.OptionMap;
@@ -81,6 +80,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
                 }
             });
         }
+        service.setEnabled(enabled);
         if(secure) {
             service.addWrapperHandler(MarkSecureHandler.WRAPPER);
         }
@@ -108,8 +108,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);
-        serviceBuilder.setInitialMode(enabled ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER)
-                .install();
+        serviceBuilder.install();
 
     }
 

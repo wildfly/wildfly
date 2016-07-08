@@ -36,6 +36,7 @@ import io.undertow.UndertowOptions;
 import io.undertow.server.ConnectorStatistics;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -97,6 +98,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .build();
     protected static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
             .setAllowNull(true)
+            .setDeprecated(ModelVersion.create(3, 2))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
@@ -316,34 +318,22 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             // may be different now than it was before (different system props, or vault contents)
             // Instead we consider the previous setting to be enabled if the service Mode != Mode.NEVER
             final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-            boolean currentEnabled = controller.getMode() != ServiceController.Mode.NEVER;
-
-            if (enabled) {
-                if (!currentEnabled) {
-                    // It's safe to enable
-                    controller.setMode(ServiceController.Mode.ACTIVE);
-                }
-                // Pass the current setting into the handback so it knows whether or not to revert anything
-                handbackHolder.setHandback(currentEnabled);
-                return false;
-            } else if (currentEnabled) {
-                // going from enabled to disabled requires reload
-                return true;
-            } else {
-                // tell revertUpdateToRuntime it doesn't need to revert anything since we did nothing
-                handbackHolder.setHandback(true);
-                return false;
-            }
+            ListenerService<?> listenerService = (ListenerService<?>) controller.getService();
+            boolean currentEnabled = listenerService.isEnabled();
+            handbackHolder.setHandback(currentEnabled);
+            listenerService.setEnabled(enabled);
+            return false;
         }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
-            if (handback != null && !handback) {
-                // applyUpdateToRuntime changed from disabled to enabled
+            if (handback != null) {
+
                 final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
-                context.getServiceRegistry(true).getRequiredService(listenerServiceName).setMode(ServiceController.Mode.NEVER);
-            } // else applyUpdateToRuntime did nothing as the service was already in the desired state
-              // So we do nothing as well
+                final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
+                ListenerService<?> listenerService = (ListenerService<?>) controller.getService();
+                listenerService.setEnabled(handback);
+            }
         }
     }
 }
