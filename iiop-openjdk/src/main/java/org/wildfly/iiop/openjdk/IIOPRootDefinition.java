@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -52,6 +52,7 @@ import org.jboss.dmr.ModelType;
 class IIOPRootDefinition extends PersistentResourceDefinition {
 
     static final ModelNode NONE = new ModelNode("none");
+    static final ModelNode SUPPORTED = new ModelNode("supported");
 
     static final ParameterValidator SSL_CONFIG_VALIDATOR = new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
 
@@ -256,7 +257,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_INTEGRITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -266,7 +266,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_CONFIDENTIALITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -276,7 +275,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(NONE)
             .setValidator(new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class, true, true,
                     IORTransportConfigValues.NONE, IORTransportConfigValues.SUPPORTED))
             .setAllowExpression(true)
@@ -287,7 +285,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_TRUST_IN_CLIENT, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -297,7 +294,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_DETECT_REPLAY, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();
@@ -307,7 +303,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_DETECT_MISORDERING, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(NONE)
             .setValidator(VALIDATOR)
             .setAllowExpression(true)
             .build();

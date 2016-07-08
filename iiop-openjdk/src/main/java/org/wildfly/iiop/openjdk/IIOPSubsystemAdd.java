@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -87,11 +87,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
  */
 public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-//    static final IIOPSubsystemAdd INSTANCE = new IIOPSubsystemAdd();
-//
-//    protected IIOPSubsystemAdd() {
-//    }
-
     public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
         super(attributes);
     }
@@ -115,8 +110,14 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
     }
 
-    protected void launchServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        final ModelNode model = resource.getModel();
+        ConfigValidator.validateConfig(context, model);
+    }
 
+    protected void launchServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
         IIOPLogger.ROOT_LOGGER.activatingSubsystem();
 
@@ -157,8 +158,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean sslConfigured = this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
-
-
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
         org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector(), false);
@@ -325,22 +324,17 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
      *         security domain has been specified).
      */
     private boolean setupSSLFactories(final Properties props) throws OperationFailedException {
-        boolean supportSSL = "true".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
+        final boolean supportSSL = "true".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
 
         if (supportSSL) {
             // if SSL is to be used, check if a security domain has been specified.
-            String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
-            if (securityDomain == null || securityDomain.isEmpty())
-                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainSpecified();
-
+            final String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
             // add the domain socket factories.
             SocketFactory.setSecurityDomain(securityDomain);
             props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SocketFactory.class.getName());
-
-            return true;
         }
 
-        return false;
+        return supportSSL;
     }
 
     private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured)
@@ -359,19 +353,49 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         asContextMetaData.setRequired(IIOPRootDefinition.REQUIRED.resolveModelAttribute(context, resourceModel).asBoolean());
         securityConfigMetaData.setAsContext(asContextMetaData);
 
-        final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
+        final ModelNode serverRequiresSslNode = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel);
+        final boolean serverRequiresSsl = serverRequiresSslNode.isDefined() ? serverRequiresSslNode.asBoolean() : false;
 
         if (serverRequiresSsl && !sslConfigured) {
             throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
         }
 
         final IORTransportConfigMetaData transportConfigMetaData = new IORTransportConfigMetaData();
-        transportConfigMetaData.setIntegrity(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED) : Constants.NONE);
-        transportConfigMetaData.setConfidentiality(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED: Constants.IOR_SUPPORTED) : Constants.NONE);
-        transportConfigMetaData.setEstablishTrustInTarget(sslConfigured ? Constants.IOR_SUPPORTED : Constants.NONE);
-        transportConfigMetaData.setEstablishTrustInClient(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED) : Constants.NONE);
+
+        final ModelNode integrityNode = IIOPRootDefinition.INTEGRITY.resolveModelAttribute(context, resourceModel);
+        if(integrityNode.isDefined()){
+            transportConfigMetaData.setIntegrity(integrityNode.asString());
+        } else {
+            transportConfigMetaData.setIntegrity(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED) : Constants.NONE);
+        }
+
+        final ModelNode confidentialityNode = IIOPRootDefinition.CONFIDENTIALITY.resolveModelAttribute(context, resourceModel);
+        if(confidentialityNode.isDefined()){
+            transportConfigMetaData.setConfidentiality(confidentialityNode.asString());
+        } else {
+            transportConfigMetaData.setConfidentiality(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED: Constants.IOR_SUPPORTED) : Constants.IOR_NONE);
+        }
+
+        final ModelNode establishTrustInTargetNode = IIOPRootDefinition.TRUST_IN_TARGET.resolveModelAttribute(context, resourceModel);
+        if (establishTrustInTargetNode.isDefined()) {
+            transportConfigMetaData.setConfidentiality(confidentialityNode.asString());
+        } else {
+            transportConfigMetaData.setEstablishTrustInTarget(sslConfigured ? Constants.IOR_SUPPORTED : Constants.NONE);
+        }
+
+        final ModelNode establishTrustInClientNode = IIOPRootDefinition.TRUST_IN_CLIENT.resolveModelAttribute(context, resourceModel);
+        if(establishTrustInClientNode.isDefined()){
+            final String establishTrustInClient = establishTrustInClientNode.asString();
+            if(sslConfigured && establishTrustInClient.equals(Constants.IOR_NONE)){
+                throw IIOPLogger.ROOT_LOGGER.inconsistentTransportConfig(Constants.IOR_TRANSPORT_TRUST_IN_TARGET+" is supported but it is configured with NONE value");
+            }
+        } else {
+            transportConfigMetaData.setEstablishTrustInClient(sslConfigured ? (serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED) : Constants.NONE);
+        }
+
         transportConfigMetaData.setDetectMisordering(Constants.IOR_SUPPORTED);
         transportConfigMetaData.setDetectReplay(Constants.IOR_SUPPORTED);
+
         securityConfigMetaData.setTransportConfig(transportConfigMetaData);
 
         return securityConfigMetaData;
