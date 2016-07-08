@@ -516,6 +516,122 @@
     </macrodef>
 
     <!--
+        Change the name used by an Infinispan cache container.
+    -->
+    <macrodef name="ts.config-as.change-cache-container-name" description="Change the name associated with the cache container">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container" default="ejb"/>
+        <attribute name="newName" default="ejb"/>
+
+        <sequential>
+            <echo message="Changing name to @{cluster} for the container @{container} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="changeCacheContainerName.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container" expression="@{container}"/>
+                    <param name="newName" expression="@{newName}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+       Change the name used by an Infinispan cache container in a passivation store.
+   -->
+    <macrodef name="ts.config-as.change-passivation-store-cache-container-name" description="Change the cache container name associated with the passivation store">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="storeName" default="infinispan"/>
+        <attribute name="newContainerName" default="ejb"/>
+
+        <sequential>
+            <echo message="Changing cache container name to @{newContainerName} for the passivation store @{storeName} in EJB3 subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="changePassivationStoreCacheContainerName.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="storeName" expression="@{storeName}"/>
+                    <param name="newContainerName" expression="@{newContainerName}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+         Change the cluster name for the channel used by an Infinispan cache container.
+     -->
+    <macrodef name="ts.config-as.change-cache-container-channel-name" description="Change the channel name associated with the cache container">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="container" default="ejb"/>
+        <attribute name="channel" default="ee"/>
+
+        <sequential>
+            <echo message="Changing cluster name to @{cluster} for the container @{container} in Infinispan subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="changeCacheContainerChannelName.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="container" expression="@{container}"/>
+                    <param name="channel" expression="@{channel}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+         Change the cluster name for the remote connector used by the EJB subsystem.
+     -->
+    <macrodef name="ts.config-as.change-ejb-remote-connector-cluster-name" description="Change the cluster name associated with the EJB remote connector">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="cluster" default="ejb"/>
+
+        <sequential>
+            <echo message="Changing cluster name to @{cluster} for the remote connector in the EJB subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="changeEJBRemoteConnectorClusterName.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="cluster" expression="@{cluster}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
+        Change the cluster name for the channel used by an Infinispan cache container.
+    -->
+    <macrodef name="ts.config-as.add-channel" description="Add a channel to the set of JGroups channel instances">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="channel" default="ee"/>
+
+        <sequential>
+            <echo message="Add channel named @{channel} for the set of channels in JGroups subsystem for config @{name}"/>
+
+            <execute-xslt-transform transform="addChannel.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params>
+                    <param name="channel" expression="@{channel}"/>
+                </transform-params>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!--
         Execute an XSLT transform in place.
     -->
     <macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">
