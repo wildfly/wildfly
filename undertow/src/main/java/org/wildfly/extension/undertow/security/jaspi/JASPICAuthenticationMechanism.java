@@ -31,6 +31,8 @@ import io.undertow.util.AttachmentKey;
 
 import io.undertow.util.StatusCodes;
 import org.jboss.security.SecurityConstants;
+import org.jboss.security.SimpleGroup;
+import org.jboss.security.SimplePrincipal;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.identity.plugins.SimpleRole;
@@ -45,7 +47,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.jboss.security.SecurityConstants.ROLES_IDENTIFIER;
+
 import java.security.Principal;
+import java.security.acl.Group;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -121,6 +127,7 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
             // The CBH filled in the JBOSS SecurityContext, we need to create an Undertow account based on that
             org.jboss.security.SecurityContext jbossSct = SecurityActions.getSecurityContext();
             authenticatedAccount = createAccount(cachedAccount, jbossSct);
+            updateSubjectRoles(jbossSct);
         }
 
         // authType resolution (check message info first, then check for the configured auth method, then use mech-specific name).
@@ -187,6 +194,43 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
         messageInfo.getMap().put(HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY, exchange);
 
         return messageInfo;
+    }
+
+    private void updateSubjectRoles(final org.jboss.security.SecurityContext jbossSct){
+        if (jbossSct == null) {
+            throw UndertowLogger.ROOT_LOGGER.nullParamter("org.jboss.security.SecurityContext");
+        }
+
+        RoleGroup contextRoleGroup = jbossSct.getUtil().getRoles();
+
+        if(contextRoleGroup == null){
+            return;
+        }
+
+        Collection<Role> contextRoles = contextRoleGroup.getRoles();
+
+        if(contextRoles.isEmpty()){
+            return;
+        }
+
+        Subject subject = jbossSct.getUtil().getSubject();
+        Set<Group> groupPrincipals = subject.getPrincipals(Group.class);
+        Group subjectRoleGroup = null;
+
+        for (Group candidate : groupPrincipals) {
+            if (candidate.getName().equals(ROLES_IDENTIFIER)) {
+                subjectRoleGroup = candidate;
+                break;
+            }
+        }
+        if (subjectRoleGroup == null) {
+            subjectRoleGroup = new SimpleGroup(ROLES_IDENTIFIER);
+            subject.getPrincipals().add(subjectRoleGroup);
+        }
+        for (Role role : contextRoles) {
+            Principal rolePrincipal = new SimplePrincipal(role.getRoleName());
+            subjectRoleGroup.addMember(rolePrincipal);
+        }
     }
 
     private Account createAccount(final Account cachedAccount, final org.jboss.security.SecurityContext jbossSct) {
