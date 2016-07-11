@@ -27,11 +27,11 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
@@ -39,6 +39,7 @@ import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
+import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
 import org.wildfly.extension.undertow.filters.RewriteFilterDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandler;
@@ -64,47 +65,44 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                 .addChild(builder(ServerDefinition.INSTANCE)
                                 .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                                 .addChild(
-                                        builder(AjpListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
+                                        listenerBuilder(AjpListenerResourceDefinition.INSTANCE)
+                                                // xsd ajp-listener-type
+                                                .addAttributes(AjpListenerResourceDefinition.SCHEME,
+                                                        ListenerResourceDefinition.REDIRECT_SOCKET,
+                                                        AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE)
                                 )
                                 .addChild(
-                                        builder(HttpListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
-                                                .addAttribute(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
+                                        listenerBuilder(HttpListenerResourceDefinition.INSTANCE)
+                                                // xsd http-listener-type
+                                                .addAttributes(
+                                                        HttpListenerResourceDefinition.CERTIFICATE_FORWARDING,
+                                                        ListenerResourceDefinition.REDIRECT_SOCKET,
+                                                        HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
+                                                        HttpListenerResourceDefinition.ENABLE_HTTP2,
+                                                        HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH,
+                                                        HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                                 ).addChild(
-                                        builder(HttpsListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
-                                                .addAttribute(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES, HttpsListenerResourceDefinition.ENABLED_PROTOCOLS, HttpsListenerResourceDefinition.ENABLE_HTTP2, HttpsListenerResourceDefinition.ENABLE_SPDY, HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE, HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT)
-                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
+                                        listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
+                                                // xsd https-listener-type
+                                                .addAttributes(
+                                                        HttpsListenerResourceDefinition.SECURITY_REALM,
+                                                        HttpsListenerResourceDefinition.VERIFY_CLIENT,
+                                                        HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES,
+                                                        HttpsListenerResourceDefinition.ENABLED_PROTOCOLS,
+                                                        HttpsListenerResourceDefinition.ENABLE_HTTP2,
+                                                        HttpsListenerResourceDefinition.ENABLE_SPDY,
+                                                        HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE,
+                                                        HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT,
+                                                        HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH,
+                                                        HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
@@ -308,5 +306,43 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
         public PersistentResourceXMLDescription getParserDescription() {
                 return xmlDescription;
         }
+
+    /** Registers attributes common across listener types */
+    private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder listenerBuilder(PersistentResourceDefinition resource) {
+        return builder(resource)
+                // xsd socket-optionsType
+                .addAttributes(
+                        ListenerResourceDefinition.RECEIVE_BUFFER,
+                        ListenerResourceDefinition.SEND_BUFFER,
+                        ListenerResourceDefinition.BACKLOG,
+                        ListenerResourceDefinition.KEEP_ALIVE,
+                        ListenerResourceDefinition.READ_TIMEOUT,
+                        ListenerResourceDefinition.WRITE_TIMEOUT,
+                        ListenerResourceDefinition.MAX_CONNECTIONS)
+                // xsd listener-type
+                .addAttributes(
+                        ListenerResourceDefinition.SOCKET_BINDING,
+                        ListenerResourceDefinition.WORKER,
+                        ListenerResourceDefinition.BUFFER_POOL,
+                        ListenerResourceDefinition.ENABLED,
+                        ListenerResourceDefinition.RESOLVE_PEER_ADDRESS,
+                        ListenerResourceDefinition.MAX_ENTITY_SIZE,
+                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA,
+                        ListenerResourceDefinition.MAX_HEADER_SIZE,
+                        ListenerResourceDefinition.MAX_PARAMETERS,
+                        ListenerResourceDefinition.MAX_HEADERS,
+                        ListenerResourceDefinition.MAX_COOKIES,
+                        ListenerResourceDefinition.ALLOW_ENCODED_SLASH,
+                        ListenerResourceDefinition.DECODE_URL,
+                        ListenerResourceDefinition.URL_CHARSET,
+                        ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE,
+                        ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE,
+                        ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
+                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE,
+                        ListenerResourceDefinition.NO_REQUEST_TIMEOUT,
+                        ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT,
+                        ListenerResourceDefinition.DISALLOWED_METHODS,
+                        ListenerResourceDefinition.SECURE);
+    }
 }
 
