@@ -288,8 +288,8 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.HTTP2_HEADER_TABLE_SIZE,
                                         ModClusterDefinition.HTTP2_INITIAL_WINDOW_SIZE,
                                         ModClusterDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
-                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
-                                        ModClusterDefinition.HTTP2_MAX_FRAME_SIZE)
+                                        ModClusterDefinition.HTTP2_MAX_FRAME_SIZE,
+                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
