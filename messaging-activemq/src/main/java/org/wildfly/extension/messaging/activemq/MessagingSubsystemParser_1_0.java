@@ -346,9 +346,9 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(DiscoveryGroupDefinition.INSTANCE)
                                                 .addAttributes(
+                                                        CommonAttributes.SOCKET_BINDING,
                                                         CommonAttributes.JGROUPS_STACK,
                                                         CommonAttributes.JGROUPS_CHANNEL,
-                                                        CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
                                 .addChild(
