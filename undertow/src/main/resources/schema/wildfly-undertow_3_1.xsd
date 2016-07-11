@@ -268,8 +268,8 @@
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
-        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 
