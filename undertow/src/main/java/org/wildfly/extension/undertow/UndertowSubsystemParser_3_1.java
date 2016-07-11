@@ -114,10 +114,7 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE)
                                                                 .addAttributes(LocationDefinition.HANDLER)
-                                                                .addChild(
-                                                                        builder(FilterRefDefinition.INSTANCE)
-                                                                                .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
-                                                                )
+                                                                .addChild(filterRefBuilder())
                                                 ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
                                                         .addAttributes(
@@ -131,11 +128,9 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                                 AccessLogDefinition.USE_SERVER_LOG,
                                                                 AccessLogDefinition.EXTENDED,
                                                                 AccessLogDefinition.PREDICATE)
-                                        ).addChild(
-                                                builder(FilterRefDefinition.INSTANCE)
-                                                        .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
-                                        ).addChild(
-                                                builder(SingleSignOnDefinition.INSTANCE)
+                                        ).addChild(filterRefBuilder())
+                                                .addChild(
+                                                    builder(SingleSignOnDefinition.INSTANCE)
                                                         .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
                                         )
                                 )
@@ -314,7 +309,7 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                 .build();
     }
 
-        private UndertowSubsystemParser_3_1() {
+    private UndertowSubsystemParser_3_1() {
         }
 
         @Override
@@ -358,6 +353,11 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                         ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT,
                         ListenerResourceDefinition.DISALLOWED_METHODS,
                         ListenerResourceDefinition.SECURE);
+    }
+
+    private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {
+        return builder(FilterRefDefinition.INSTANCE)
+                .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY);
     }
 }
 
