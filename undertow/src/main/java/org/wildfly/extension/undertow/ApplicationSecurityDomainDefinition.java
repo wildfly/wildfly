@@ -121,9 +121,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, Function.class)
             .build();
 
-    private static final String HTTP_AUTHENITCATION_FACTORY_CAPABILITY = "org.wildfly.security.http-server-authentication";
+    private static final String HTTP_AUTHENITCATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
 
-    static SimpleAttributeDefinition HTTP_SERVER_MECHANISM_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, false)
+    static SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setCapabilityReference(HTTP_AUTHENITCATION_FACTORY_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
@@ -138,7 +138,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .setStorageRuntime()
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { HTTP_SERVER_MECHANISM_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG };
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { HTTP_AUTHENTICATION_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG };
 
     static final ApplicationSecurityDomainDefinition INSTANCE = new ApplicationSecurityDomainDefinition();
 
@@ -202,7 +202,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-            String httpServerMechanismFactory = HTTP_SERVER_MECHANISM_FACTORY.resolveModelAttribute(context, model).asString();
+            String httpServerMechanismFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model).asString();
             boolean overrideDeploymentConfig = OVERRIDE_DEPLOYMENT_CONFIG.resolveModelAttribute(context, model).asBoolean();
 
             RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());

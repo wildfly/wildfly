@@ -156,7 +156,7 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
                 capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry),
                         SocketBinding.class);
             }
-            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.http-server-authentication", "elytron-factory"), HttpAuthenticationFactory.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.http-authentication-factory", "elytron-factory"), HttpAuthenticationFactory.class);
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "TestContext"), SSLContext.class);
             registerServiceCapabilities(capabilityRegistry, capabilities);
 
