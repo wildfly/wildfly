@@ -310,10 +310,10 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
     }
 
     private UndertowSubsystemParser_3_1() {
-        }
+    }
 
-        @Override
-        public PersistentResourceXMLDescription getParserDescription() {
+    @Override
+    public PersistentResourceXMLDescription getParserDescription() {
                 return xmlDescription;
         }
 
