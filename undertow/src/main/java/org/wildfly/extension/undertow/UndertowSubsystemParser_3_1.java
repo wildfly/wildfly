@@ -242,7 +242,7 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                 .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                 builder(ResponseHeaderFilter.INSTANCE)
-                                        .addAttributes(ResponseHeaderFilter.VALUE, ResponseHeaderFilter.NAME)
+                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
                         ).addChild(
                                 builder(GzipFilter.INSTANCE)
                         ).addChild(
