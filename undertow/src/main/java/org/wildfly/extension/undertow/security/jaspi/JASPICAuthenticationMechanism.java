@@ -203,7 +203,7 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
         // SAM handled the same principal found in the cached account: indicates we must use the cached account.
         if (cachedAccount != null && cachedAccount.getPrincipal() == userPrincipal) {
             // populate the security context using the cached account data.
-            jbossSct.getUtil().createSubjectInfo(userPrincipal, ((AccountImpl) cachedAccount).getCredential(), null);
+            jbossSct.getUtil().createSubjectInfo(userPrincipal, ((AccountImpl) cachedAccount).getCredential(), jbossSct.getUtil().getSubject());
             RoleGroup roleGroup = new SimpleRoleGroup(SecurityConstants.ROLES_IDENTIFIER);
             for (String role : cachedAccount.getRoles())
                 roleGroup.addRole(new SimpleRole(role));
