@@ -172,10 +172,6 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-
-    /**
-     * Attributes are defined in the <em>same order than in the XSD schema</em>
-     */
     static final AttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] {
             DEAD_LETTER_ADDRESS,
             EXPIRY_ADDRESS,

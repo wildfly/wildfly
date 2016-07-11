@@ -55,6 +55,7 @@ public class IIOPSubsystemParser implements XMLStreamConstants, XMLElementReader
 
     static {
         xmlDescription = builder(IIOPRootDefinition.INSTANCE)
+                .setMarshallDefaultValues(true)
                 .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
                 .build();
     }

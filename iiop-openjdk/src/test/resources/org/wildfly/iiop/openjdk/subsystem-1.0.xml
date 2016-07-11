@@ -1,8 +1,9 @@
 <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
-   <properties>
+    <properties>
         <property name="some_property" value="some_value"/>
     </properties>
-   <orb persistent-server-id="wildfly" giop-version="1.1" socket-binding="iiop2" ssl-socket-binding="iiop-ssl2" />
+    <!-- test both values being default because there is a bug that nothing gets persisted -->
+    <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
     <tcp high-water-mark="500" number-to-reclaim="30"/>
     <initializers security="client" transactions="spec"/>
     <naming root-context="JBoss/Naming/root2" export-corbaloc="false"/>

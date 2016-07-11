@@ -261,41 +261,43 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                 .addChild(
                                                         builder(SecurityRoleDefinition.INSTANCE)
                                                                 .addAttributes(
-                                                                        SecurityRoleDefinition.SEND,
-                                                                        SecurityRoleDefinition.CONSUME,
-                                                                        SecurityRoleDefinition.CREATE_DURABLE_QUEUE,
-                                                                        SecurityRoleDefinition.DELETE_DURABLE_QUEUE,
-                                                                        SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE,
+                                                                        SecurityRoleDefinition.MANAGE,
                                                                         SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE,
-                                                                        SecurityRoleDefinition.MANAGE)))
+                                                                        SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE,
+                                                                        SecurityRoleDefinition.DELETE_DURABLE_QUEUE,
+                                                                        SecurityRoleDefinition.CREATE_DURABLE_QUEUE,
+                                                                        SecurityRoleDefinition.CONSUME,
+                                                                        SecurityRoleDefinition.SEND
+                                                                )))
                                 .addChild(
                                         builder(AddressSettingDefinition.INSTANCE)
                                                 .addAttributes(
-                                                        CommonAttributes.DEAD_LETTER_ADDRESS,
-                                                        CommonAttributes.EXPIRY_ADDRESS,
-                                                        AddressSettingDefinition.EXPIRY_DELAY,
-                                                        AddressSettingDefinition.REDELIVERY_DELAY,
-                                                        AddressSettingDefinition.REDELIVERY_MULTIPLIER,
-                                                        AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS,
-                                                        AddressSettingDefinition.MAX_REDELIVERY_DELAY,
-                                                        AddressSettingDefinition.MAX_SIZE_BYTES,
-                                                        AddressSettingDefinition.PAGE_SIZE_BYTES,
-                                                        AddressSettingDefinition.PAGE_MAX_CACHE_SIZE,
-                                                        AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY,
-                                                        AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
-                                                        AddressSettingDefinition.LAST_VALUE_QUEUE,
-                                                        AddressSettingDefinition.REDISTRIBUTION_DELAY,
-                                                        AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE,
-                                                        AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD,
-                                                        AddressSettingDefinition.SLOW_CONSUMER_POLICY,
-                                                        AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
+                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES,
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
-                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
+                                                        AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
+                                                        AddressSettingDefinition.SLOW_CONSUMER_POLICY,
+                                                        AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD,
+                                                        AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE,
+                                                        AddressSettingDefinition.REDISTRIBUTION_DELAY,
+                                                        AddressSettingDefinition.LAST_VALUE_QUEUE,
+                                                        AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
+                                                        AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY,
+                                                        AddressSettingDefinition.PAGE_MAX_CACHE_SIZE,
+                                                        AddressSettingDefinition.PAGE_SIZE_BYTES,
+                                                        AddressSettingDefinition.MAX_SIZE_BYTES,
+                                                        AddressSettingDefinition.MAX_REDELIVERY_DELAY,
+                                                        AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS,
+                                                        AddressSettingDefinition.REDELIVERY_MULTIPLIER,
+                                                        AddressSettingDefinition.REDELIVERY_DELAY,
+                                                        AddressSettingDefinition.EXPIRY_DELAY,
+                                                        CommonAttributes.EXPIRY_ADDRESS,
+                                                        CommonAttributes.DEAD_LETTER_ADDRESS
+                                                ))
                                 .addChild(
                                         builder(HTTPConnectorDefinition.INSTANCE)
                                                 .addAttributes(
-                                                        HTTPConnectorDefinition.SOCKET_BINDING,
                                                         HTTPConnectorDefinition.ENDPOINT,
+                                                        HTTPConnectorDefinition.SOCKET_BINDING,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
                                         builder(RemoteTransportDefinition.CONNECTOR_INSTANCE)
@@ -354,27 +356,28 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(ClusterConnectionDefinition.INSTANCE)
                                                 .addAttributes(
-                                                        ClusterConnectionDefinition.ADDRESS,
-                                                        ClusterConnectionDefinition.CONNECTOR_NAME,
-                                                        ClusterConnectionDefinition.CHECK_PERIOD,
-                                                        ClusterConnectionDefinition.CONNECTION_TTL,
-                                                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
-                                                        CommonAttributes.CALL_TIMEOUT,
-                                                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
-                                                        ClusterConnectionDefinition.RETRY_INTERVAL,
-                                                        ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER,
-                                                        ClusterConnectionDefinition.MAX_RETRY_INTERVAL,
+                                                        ClusterConnectionDefinition.DISCOVERY_GROUP_NAME,
+                                                        ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY,
+                                                        ClusterConnectionDefinition.CONNECTOR_REFS,
+                                                        ClusterConnectionDefinition.NOTIFICATION_INTERVAL,
+                                                        ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS,
+                                                        CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
+                                                        ClusterConnectionDefinition.MAX_HOPS,
+                                                        ClusterConnectionDefinition.MESSAGE_LOAD_BALANCING_TYPE,
+                                                        ClusterConnectionDefinition.USE_DUPLICATE_DETECTION,
                                                         ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS,
                                                         ClusterConnectionDefinition.RECONNECT_ATTEMPTS,
-                                                        ClusterConnectionDefinition.USE_DUPLICATE_DETECTION,
-                                                        ClusterConnectionDefinition.MESSAGE_LOAD_BALANCING_TYPE,
-                                                        ClusterConnectionDefinition.MAX_HOPS,
-                                                        CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-                                                        ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS,
-                                                        ClusterConnectionDefinition.NOTIFICATION_INTERVAL,
-                                                        ClusterConnectionDefinition.CONNECTOR_REFS,
-                                                        ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY,
-                                                        ClusterConnectionDefinition.DISCOVERY_GROUP_NAME))
+                                                        ClusterConnectionDefinition.MAX_RETRY_INTERVAL,
+                                                        ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER,
+                                                        ClusterConnectionDefinition.RETRY_INTERVAL,
+                                                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                                                        CommonAttributes.CALL_TIMEOUT,
+                                                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+                                                        ClusterConnectionDefinition.CONNECTION_TTL,
+                                                        ClusterConnectionDefinition.CHECK_PERIOD,
+                                                        ClusterConnectionDefinition.CONNECTOR_NAME,
+                                                        ClusterConnectionDefinition.ADDRESS
+                                                        ))
                                 .addChild(
                                         builder(GroupingHandlerDefinition.INSTANCE)
                                                 .addAttributes(
@@ -435,44 +438,46 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(ConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(
+                                                        // regular
+                                                        ConnectionFactoryAttributes.Regular.FACTORY_TYPE,
                                                         // common
-                                                        ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
-                                                        ConnectionFactoryAttributes.Common.CONNECTORS,
-                                                        ConnectionFactoryAttributes.Common.ENTRIES,
-                                                        CommonAttributes.HA,
-                                                        ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
-                                                        ConnectionFactoryAttributes.Common.CONNECTION_TTL,
-                                                        CommonAttributes.CALL_TIMEOUT,
-                                                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
-                                                        ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE,
-                                                        ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE,
-                                                        ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE,
-                                                        ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE,
-                                                        ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE,
-                                                        ConnectionFactoryAttributes.Common.PROTOCOL_MANAGER_FACTORY,
-                                                        ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES,
-                                                        ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT,
-                                                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
-                                                        CommonAttributes.CLIENT_ID,
-                                                        ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
-                                                        ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
-                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
+                                                        ConnectionFactoryAttributes.Common.GROUP_ID,
+                                                        ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
+                                                        ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                        ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
+                                                        ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
+                                                        ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION,
+                                                        ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS,
+                                                        CommonAttributes.MAX_RETRY_INTERVAL,
+                                                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER,
+                                                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
+                                                        ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
+                                                        ConnectionFactoryAttributes.Common.AUTO_GROUP,
                                                         ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
                                                         ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
-                                                        ConnectionFactoryAttributes.Common.AUTO_GROUP,
-                                                        ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
-                                                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
-                                                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER,
-                                                        CommonAttributes.MAX_RETRY_INTERVAL,
-                                                        ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS,
-                                                        ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION,
-                                                        ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
-                                                        ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
-                                                        ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                        ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
-                                                        ConnectionFactoryAttributes.Common.GROUP_ID,
+                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
+                                                        ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
+                                                        ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
+                                                        CommonAttributes.CLIENT_ID,
+                                                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+                                                        ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT,
+                                                        ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES,
+                                                        ConnectionFactoryAttributes.Common.PROTOCOL_MANAGER_FACTORY,
+                                                        ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE,
+                                                        ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE,
+                                                        ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE,
+                                                        ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE,
+                                                        ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE,
+                                                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                                                        CommonAttributes.CALL_TIMEOUT,
+                                                        ConnectionFactoryAttributes.Common.CONNECTION_TTL,
+                                                        ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
+                                                        CommonAttributes.HA,
+                                                        ConnectionFactoryAttributes.Common.CONNECTORS,
+                                                        ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
                                                         // regular
-                                                        ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
+                                                        ConnectionFactoryAttributes.Common.ENTRIES
+                                                        ))
                                 .addChild(
                                         builder(LegacyConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(
@@ -517,6 +522,22 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(PooledConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(
+                                                        // pooled
+                                                        ConnectionFactoryAttributes.Pooled.USE_JNDI,
+                                                        ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,
+                                                        ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX,
+                                                        ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS,
+                                                        ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL,
+                                                        ConnectionFactoryAttributes.Pooled.TRANSACTION,
+                                                        ConnectionFactoryAttributes.Pooled.USER,
+                                                        ConnectionFactoryAttributes.Pooled.PASSWORD,
+                                                        ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
+                                                        ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
+                                                        ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
+                                                        ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
+                                                        ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
+                                                        ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
+                                                        ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
                                                         // common
                                                         ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
                                                         ConnectionFactoryAttributes.Common.CONNECTORS,
@@ -552,23 +573,8 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
                                                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
-                                                        ConnectionFactoryAttributes.Common.GROUP_ID,
-                                                        // pooled
-                                                        ConnectionFactoryAttributes.Pooled.USE_JNDI,
-                                                        ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,
-                                                        ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX,
-                                                        ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS,
-                                                        ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL,
-                                                        ConnectionFactoryAttributes.Pooled.TRANSACTION,
-                                                        ConnectionFactoryAttributes.Pooled.USER,
-                                                        ConnectionFactoryAttributes.Pooled.PASSWORD,
-                                                        ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
-                                                        ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
-                                                        ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)))
+                                                        ConnectionFactoryAttributes.Common.GROUP_ID
+                                                )))
                 .addChild(
                         builder(JMSBridgeDefinition.INSTANCE)
                                 .addAttributes(
