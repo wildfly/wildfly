@@ -40,8 +40,8 @@
                             server-id="0"/>
 
             <broadcast-group name="bg-group1"
-                             connectors="http-connector"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-channel="activemq-cluster"
+                             connectors="http-connector"/>
 
             <discovery-group name="dg-group1"
                              jgroups-channel="activemq-cluster"/>
@@ -93,8 +93,8 @@
                            http-listener="default" />
 
             <broadcast-group name="bg-group1"
-                             connectors="http-connector-backup"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-channel="activemq-cluster"
+                             connectors="http-connector-backup"/>
 
             <discovery-group name="dg-group1"
                              jgroups-channel="activemq-cluster"/>

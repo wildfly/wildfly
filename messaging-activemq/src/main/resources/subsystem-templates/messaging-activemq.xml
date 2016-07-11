@@ -89,8 +89,8 @@
         </replacement>
         <replacement placeholder="BROADCAST-GROUPS">
             <broadcast-group name="bg-group1"
-                             connectors="http-connector"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-channel="activemq-cluster"
+                             connectors="http-connector"/>
         </replacement>
         <replacement placeholder="DISCOVERY-GROUPS">
             <discovery-group name="dg-group1"
