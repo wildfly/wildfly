@@ -61,16 +61,16 @@
                        entries="topic/test java:jboss/exported/jms/topic/test" />
 
             <connection-factory name="InVmConnectionFactory"
-                                connectors="in-vm"
-                                entries="java:/ConnectionFactory" />
+                                entries="java:/ConnectionFactory"
+                                connectors="in-vm" />
             <connection-factory name="RemoteConnectionFactory"
-                                connectors="http-connector"
-                                entries="java:jboss/exported/jms/RemoteConnectionFactory" />
+                                entries="java:jboss/exported/jms/RemoteConnectionFactory"
+                                connectors="http-connector" />
 
             <pooled-connection-factory name="activemq-ra"
-                                       transaction="xa"
+                                       entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory"
                                        connectors="in-vm"
-                                       entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory"/>
+                                       transaction="xa"/>
         </server>
         <server name="backuper-server"
                 persistence-enabled="true">

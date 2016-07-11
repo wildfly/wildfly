@@ -435,10 +435,10 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(ConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(
+                                                        ConnectionFactoryAttributes.Common.ENTRIES,
                                                         // common
                                                         ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
                                                         ConnectionFactoryAttributes.Common.CONNECTORS,
-                                                        ConnectionFactoryAttributes.Common.ENTRIES,
                                                         CommonAttributes.HA,
                                                         ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
                                                         ConnectionFactoryAttributes.Common.CONNECTION_TTL,
@@ -457,8 +457,8 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
                                                         ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
                                                         ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
-                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
                                                         ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
+                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
                                                         ConnectionFactoryAttributes.Common.AUTO_GROUP,
                                                         ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
                                                         ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
@@ -517,10 +517,10 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                 .addChild(
                                         builder(PooledConnectionFactoryDefinition.INSTANCE)
                                                 .addAttributes(
+                                                        ConnectionFactoryAttributes.Common.ENTRIES,
                                                         // common
                                                         ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
                                                         ConnectionFactoryAttributes.Common.CONNECTORS,
-                                                        ConnectionFactoryAttributes.Common.ENTRIES,
                                                         CommonAttributes.HA,
                                                         ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
                                                         ConnectionFactoryAttributes.Common.CONNECTION_TTL,
@@ -539,8 +539,8 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
                                                         ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
                                                         ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
-                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
                                                         ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
+                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
                                                         ConnectionFactoryAttributes.Common.AUTO_GROUP,
                                                         ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
                                                         ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
@@ -563,10 +563,10 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Pooled.USER,
                                                         ConnectionFactoryAttributes.Pooled.PASSWORD,
                                                         ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
+                                                        ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
                                                         ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)))
                 .addChild(
