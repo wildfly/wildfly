@@ -138,7 +138,15 @@
         <vault-option name="abc" value="def"/>
     </vault>
     <elytron-integration>
-        <elytron-realm name="LegacyRealm1" legacy-domain-name="other"/>
-        <elytron-realm name="LegacyRealm2" legacy-domain-name="other2"/>
+        <security-realms>
+            <elytron-realm name="LegacyRealm1" legacy-jaas-config="other"/>
+            <elytron-realm name="LegacyRealm2" legacy-jaas-config="other2"/>
+        </security-realms>
+        <tls>
+            <elytron-key-store name="LegacyKeyStore" legacy-jsse-config="other"/>
+            <elytron-trust-store name="LegacyTrustStore" legacy-jsse-config="other"/>
+            <elytron-key-manager name="LegacyKeyManager" legacy-jsse-config="other"/>
+            <elytron-trust-manager name="LegacyTrustManager" legacy-jsse-config="other"/>
+        </tls>
     </elytron-integration>
 </subsystem>

@@ -53,7 +53,9 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
  *             ...
  *         &lt;/security-domains&gt;
  *         &lt;elytron-integration&gt;
- *             &lt;elytron-realm name="LegacyRealm" legacy-domain-name="mydomain"/&gt;
+ *             &lt;security-realms&gt;
+ *                 &lt;elytron-realm name="LegacyRealm" legacy-jaas-config="mydomain"/&gt;
+ *             &lt;security-realms/&gt;
  *         &lt;/elytron-integration&gt;
  *         ...
  *     &lt;/subsystem&gt;
@@ -75,9 +77,9 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
  * </pre>
  * <p/>
  * The above Elytron security domain can then be used anywhere in the Elytron subsystem (for example, to setup a
- * http-server-authentication).
+ * http-authentication-factory).
  * </p>
- * The {@code legacy-domain-name} attribute MUST reference a valid legacy security domain. Failure to do so will result
+ * The {@code legacy-jaas-config} attribute MUST reference a valid legacy JAAS security domain. Failure to do so will result
  * in a dependency resolution error that will prevent the realm from being created.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>

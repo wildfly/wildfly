@@ -16,20 +16,9 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
-import static org.jboss.as.security.Constants.ACL;
-import static org.jboss.as.security.Constants.AUDIT;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.AUTHORIZATION;
-import static org.jboss.as.security.Constants.CACHE_TYPE;
-import static org.jboss.as.security.Constants.CLASSIC;
-import static org.jboss.as.security.Constants.ELYTRON_REALM;
-import static org.jboss.as.security.Constants.IDENTITY_TRUST;
-import static org.jboss.as.security.Constants.JASPI;
-import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
-import static org.jboss.as.security.Constants.MAPPING;
-import static org.jboss.as.security.Constants.NAME;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.*;
+import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.LEGACY_JAAS_CONFIG;
+import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.LEGACY_JSSE_CONFIG;
 
 import java.util.List;
 import java.util.Set;
@@ -37,7 +26,6 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.security.elytron.ElytronRealmResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -96,18 +84,7 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
             writer.writeEndElement();
         }
 
-        if (node.hasDefined(ELYTRON_REALM)) {
-            writer.writeStartElement(Element.ELYTRON_INTEGRATION.getLocalName());
-            ModelNode elytronRealms = node.get(ELYTRON_REALM);
-            for (String realmName : elytronRealms.keys()) {
-                writer.writeStartElement(Element.ElYTRON_REALM.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), realmName);
-                ElytronRealmResourceDefinition.LEGACY_DOMAIN_NAME.marshallAsAttribute(elytronRealms.get(realmName), writer);
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-
+        writeElytronIntegration(writer, node);
         writer.writeEndElement();
     }
 
@@ -261,7 +238,6 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
         }
     }
 
-
     private void writeJSSE(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.JSSE.getLocalName());
@@ -280,5 +256,64 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
         }
     }
 
+    private void writeElytronIntegration(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+        boolean integrationStarted = false;
+        integrationStarted = integrationStarted | writeSecurityRealms(writer, modelNode, integrationStarted);
+        integrationStarted = integrationStarted | writeTLS(writer, modelNode, integrationStarted);
 
+        if (integrationStarted) {
+            writer.writeEndElement();
+        }
+    }
+
+    private boolean writeSecurityRealms(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
+                                       final boolean integrationStarted) throws XMLStreamException {
+        if (modelNode.hasDefined(ELYTRON_REALM)) {
+            if (integrationStarted == false) {
+                writer.writeStartElement(ELYTRON_INTEGRATION);
+            }
+            writer.writeStartElement(SECURITY_REALMS);
+            ModelNode elytronRealms = modelNode.require(ELYTRON_REALM);
+            for (String realmName : elytronRealms.keys()) {
+                writer.writeStartElement(ELYTRON_REALM);
+                writer.writeAttribute(NAME, realmName);
+                LEGACY_JAAS_CONFIG.marshallAsAttribute(elytronRealms.require(realmName), writer);
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean writeTLS(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
+                                            final boolean integrationStarted) throws XMLStreamException {
+        if (modelNode.hasDefined(ELYTRON_KEY_STORE) || modelNode.hasDefined(ELYTRON_TRUST_STORE) ||
+                modelNode.hasDefined(ELYTRON_KEY_MANAGER) || modelNode.hasDefined(ELYTRON_TRUST_MANAGER)) {
+            if (integrationStarted == false) {
+                writer.writeStartElement(ELYTRON_INTEGRATION);
+            }
+            writer.writeStartElement(TLS);
+            writeTLSEntity(writer, modelNode, ELYTRON_KEY_STORE);
+            writeTLSEntity(writer, modelNode, ELYTRON_TRUST_STORE);
+            writeTLSEntity(writer, modelNode, ELYTRON_KEY_MANAGER);
+            writeTLSEntity(writer, modelNode, ELYTRON_TRUST_MANAGER);
+            writer.writeEndElement();
+            return true;
+        }
+        return false;
+    }
+
+    private void writeTLSEntity(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
+                                          final String tlsEntityName) throws XMLStreamException {
+        if (modelNode.hasDefined(tlsEntityName)) {
+            ModelNode tlsEntities = modelNode.require(tlsEntityName);
+            for (String entityName : tlsEntities.keys()) {
+                writer.writeStartElement(tlsEntityName);
+                writer.writeAttribute(NAME, entityName);
+                LEGACY_JSSE_CONFIG.marshallAsAttribute(tlsEntities.require(entityName), writer);
+                writer.writeEndElement();
+            }
+        }
+    }
 }

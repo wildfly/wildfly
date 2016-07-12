@@ -60,8 +60,15 @@ enum Element {
     TRUST_MODULE("trust-module"),
     VAULT("vault"),
     VAULT_OPTION("vault-option"),
-    ELYTRON_INTEGRATION("elytron-integration"),
-    ElYTRON_REALM("elytron-realm");
+    // ELYTRON INTEGRATION ELEMENTS
+    ELYTRON_INTEGRATION(Constants.ELYTRON_INTEGRATION),
+    SECURITY_REALMS(Constants.SECURITY_REALMS),
+    ELYTRON_REALM(Constants.ELYTRON_REALM),
+    TLS(Constants.TLS),
+    ELYTRON_KEY_STORE(Constants.ELYTRON_KEY_STORE),
+    ELYTRON_TRUST_STORE(Constants.ELYTRON_TRUST_STORE),
+    ELYTRON_KEY_MANAGER(Constants.ELYTRON_KEY_MANAGER),
+    ELYTRON_TRUST_MANAGER(Constants.ELYTRON_TRUST_MANAGER);
 
     private final String name;
 

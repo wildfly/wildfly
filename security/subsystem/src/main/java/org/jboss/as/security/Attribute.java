@@ -71,7 +71,9 @@ public enum Attribute {
     TRUSTSTORE_URL("truststore-url"),
     TYPE("type"),
     VALUE("value"),
-    LEGACY_DOMAIN_NAME("legacy-domain-name");
+    // ELYTRON INTEGRATION ATTRIBUTES
+    LEGACY_JAAS_CONFIG(Constants.LEGACY_JAAS_CONFIG),
+    LEGACY_JSSE_CONFIG(Constants.LEGACY_JSSE_CONFIG);
 
     private final String name;
 

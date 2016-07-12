@@ -35,7 +35,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.security.elytron.ElytronRealmResourceDefinition;
+import org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -105,7 +105,13 @@ import org.jboss.msc.service.ServiceName;
         securityDomain.registerSubModel(IdentityTrustResourceDefinition.INSTANCE);
         securityDomain.registerSubModel(JSSEResourceDefinition.INSTANCE);
         registration.registerSubModel(VaultResourceDefinition.INSTANCE);
-        registration.registerSubModel(ElytronRealmResourceDefinition.INSTANCE);
+        // register the elytron integration resources.
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronRealmResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronKeyStoreResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronTrustStoreResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronKeyManagersResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronTrustManagersResourceDefinition());
+        // register the subsystem XML persister.
         subsystem.registerXMLElementWriter(SecuritySubsystemPersister.INSTANCE);
 
         if (context.isRegisterTransformers()) {
@@ -128,7 +134,11 @@ import org.jboss.msc.service.ServiceName;
 
     private void registerTransformers_1_3_0(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.rejectChildResource(ElytronRealmResourceDefinition.ELYTRON_REALM_PATH);
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_REALM));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_STORE));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_STORE));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_MANAGER));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER));
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 3, 0));
     }
 }
