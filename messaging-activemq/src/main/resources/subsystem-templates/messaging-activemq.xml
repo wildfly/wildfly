@@ -50,13 +50,13 @@
                        entries="java:/jms/queue/DLQ" />
 
             <connection-factory name="InVmConnectionFactory"
-                                connectors="in-vm"
-                                entries="java:/ConnectionFactory" />
+                                entries="java:/ConnectionFactory"
+                                connectors="in-vm" />
             <?REMOTE-CONNECTION-FACTORY?>
             <pooled-connection-factory name="activemq-ra"
-                                       transaction="xa"
+                                       entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory"
                                        connectors="in-vm"
-                                       entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory"/>
+                                       transaction="xa"/>
         </server>
     </subsystem>
     <supplement name="default">
@@ -89,8 +89,8 @@
         </replacement>
         <replacement placeholder="BROADCAST-GROUPS">
             <broadcast-group name="bg-group1"
-                             connectors="http-connector"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-channel="activemq-cluster"
+                             connectors="http-connector"/>
         </replacement>
         <replacement placeholder="DISCOVERY-GROUPS">
             <discovery-group name="dg-group1"
@@ -104,11 +104,11 @@
         </replacement>
         <replacement placeholder="REMOTE-CONNECTION-FACTORY">
             <connection-factory name="RemoteConnectionFactory"
+                                entries="java:jboss/exported/jms/RemoteConnectionFactory"
+                                connectors="http-connector"
                                 ha="true"
                                 block-on-acknowledge="true"
-                                reconnect-attempts="-1"
-                                connectors="http-connector"
-                                entries="java:jboss/exported/jms/RemoteConnectionFactory" />
+                                reconnect-attempts="-1" />
         </replacement>
     </supplement>
 </config>
