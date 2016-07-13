@@ -79,14 +79,7 @@ public class ChannelTransport extends JGroupsTransport {
 
     @Override
     protected void initRPCDispatcher() {
-        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.getTimeoutExecutor(), this.timeService) {
-            /* Workaround for ISPN-6768 */
-            @Override
-            public void stop() {
-                super.stop();
-                this.channel.removeChannelListener(this);
-            }
-        };
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.getTimeoutExecutor(), this.timeService);
         MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
             @Override
             public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
