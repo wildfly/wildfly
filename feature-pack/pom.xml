@@ -2763,10 +2763,13 @@
 
     <profiles>
         <profile>
-            <id>release</id>
+            <!-- This profile should only be activated to download licenses from remote URLs
+                 instead of copying the license files from the src/main/resources/content/docs/licences
+                 directory -->
+            <id>download-licenses</id>
             <activation>
                 <property>
-                    <name>release</name>
+                    <name>download-licenses</name>
                 </property>
             </activation>
             <build>
