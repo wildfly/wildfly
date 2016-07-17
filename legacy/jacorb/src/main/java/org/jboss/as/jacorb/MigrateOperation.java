@@ -60,6 +60,7 @@ import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.wildfly.iiop.openjdk.ConfigValidator;
 
 /**
  * Operation to migrate from the legacy JacORB subsystem to new IIOP-OpenJDK subsystem.
@@ -142,7 +143,7 @@ public class MigrateOperation implements OperationStepHandler {
 
                 final List<String> warnings = new LinkedList<>();
 
-                List<String> unsupportedProperties = TransformUtils.checkLegacyModel(jacorbModel);
+                List<String> unsupportedProperties = TransformUtils.validateDeprecatedProperites(jacorbModel);
                 if (!unsupportedProperties.isEmpty()) {
                     warnings.add(JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperties));
                     for(String unsupportedProperty : unsupportedProperties){
@@ -153,6 +154,7 @@ public class MigrateOperation implements OperationStepHandler {
                 checkPropertiesWithExpression(jacorbModel, warnings);
 
                 final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
+                ConfigValidator.validateConfig(context, openjdkModel);
 
                 final PathAddress openjdkAddress = subsystemsAddress.append(OPENJDK_SUBSYSTEM_ELEMENT);
                 addOpenjdkSubsystem(openjdkAddress, openjdkModel, migrateOperations);
