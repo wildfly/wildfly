@@ -31,7 +31,7 @@ import org.jgroups.Address;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Infinispan externalizer for an {@link AddressableNode}.
+ * Marshalling externalizer for an {@link AddressableNode}.
  * @author Paul Ferraro
  */
 public class AddressableNodeExternalizer implements Externalizer<AddressableNode> {

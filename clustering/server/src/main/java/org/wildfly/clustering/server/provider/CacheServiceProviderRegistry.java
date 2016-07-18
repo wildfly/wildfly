@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.provider;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.util.CloseableIterator;
@@ -36,7 +38,6 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -50,7 +51,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 
 /**
- * Infinispan {@link Cache} based {@link ServiceProviderRegistrationFactory}.
+ * Infinispan {@link Cache} based {@link ServiceProviderRegistry}.
  * This factory can create multiple {@link ServiceProviderRegistration} instance,
  * all of which share the same {@link Cache} instance.
  * @author Paul Ferraro
@@ -120,7 +121,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     void register(Node node, T service) {
-        Set<Node> nodes = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(service, key -> new CopyOnWriteArraySet<>(Collections.singleton(node)));
+        Set<Node> nodes = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.FORCE_WRITE_LOCK).computeIfAbsent(service, key -> new CopyOnWriteArraySet<>(Collections.singleton(node)));
         if (nodes.add(node)) {
             this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, nodes);
         }
@@ -159,10 +160,17 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                     }
                 }
                 if (merged) {
+                    // Re-assert services for new members following merge since these may have been lost following split
                     try (Batch batch = this.batcher.createBatch()) {
                         for (Node node: newNodes) {
-                            // Re-assert services for new members following merge since these may have been lost following split
-                            CacheServiceProviderRegistry.this.getServices(node).forEach(service -> this.register(node, service));
+                            try {
+                                Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), node).get();
+                                services.forEach(service -> this.register(node, service));
+                            } catch (ExecutionException e) {
+                                ClusteringServerLogger.ROOT_LOGGER.warn(e.getCause().getLocalizedMessage(), e.getCause());
+                            } catch (Exception e) {
+                                ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                            }
                         }
                     }
                 }
@@ -172,7 +180,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @CacheEntryCreated
     @CacheEntryModified
-    public void modified(CacheEntryEvent<ServiceName, Set<Node>> event) {
+    public void modified(CacheEntryEvent<T, Set<Node>> event) {
         if (event.isPre()) return;
         this.executor.execute(() -> {
             Listener listener = this.listeners.get(event.getKey());
@@ -184,13 +192,5 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 }
             }
         });
-    }
-
-    List<T> getServices(Node node) {
-        try {
-            return this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), node).get();
-        } catch (Exception e) {
-            return Collections.emptyList();
-        }
     }
 }

@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.singleton.election.NamePreference;
@@ -36,16 +37,13 @@ import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
-
 /**
  * @author Paul Ferraro
  */
-public class MyServiceActivator implements ServiceActivator {
+public class NodeServiceActivator implements ServiceActivator {
 
-    public static final ServiceName DEFAULT_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "default");
-    public static final ServiceName QUORUM_SERVICE_NAME = ServiceName.JBOSS.append("test", "myservice", "quorum");
+    public static final ServiceName DEFAULT_SERVICE_NAME = ServiceName.JBOSS.append("test", "service", "default");
+    public static final ServiceName QUORUM_SERVICE_NAME = ServiceName.JBOSS.append("test", "service", "quorum");
 
     private static final String CONTAINER_NAME = "server";
     public static final String PREFERRED_NODE = NODE_2;
@@ -63,13 +61,13 @@ public class MyServiceActivator implements ServiceActivator {
     }
 
     private static void install(ServiceTarget target, SingletonServiceBuilderFactory factory, ServiceName name, int quorum) {
-        InjectedValue<ServerEnvironment> env = new InjectedValue<>();
-        MyService service = new MyService(env);
+        InjectedValue<Group> group = new InjectedValue<>();
+        NodeService service = new NodeService(group);
         factory.createSingletonServiceBuilder(name, service)
             .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE)))
             .requireQuorum(quorum)
             .build(target)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)
+                .addDependency(ServiceName.parse("org.wildfly.clustering.default-group"), Group.class, group)
                 .install();
     }
 }
