@@ -49,6 +49,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -63,7 +64,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
 
-    private static AttributeDefinition FILE = SimpleAttributeDefinitionBuilder.create("file", ModelType.STRING)
+    private static AttributeDefinition FILE = SimpleAttributeDefinitionBuilder.create("file", PathResourceDefinition.PATH)
             .setAllowExpression(false)
             .setAllowNull(false)
             .build();
