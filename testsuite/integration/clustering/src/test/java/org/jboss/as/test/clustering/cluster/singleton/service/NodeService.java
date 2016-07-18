@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
-import java.io.Serializable;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
 
-/**
- * @author Paul Ferraro
- */
-public class Environment implements Serializable {
-    private static final long serialVersionUID = -7845251073515304583L;
+public class NodeService implements Service<Node> {
 
-    private final String nodeName;
+    private final Value<Group> group;
+    private volatile boolean started = false;
 
-    public Environment(String nodeName) {
-        this.nodeName = nodeName;
+    public NodeService(Value<Group> group) {
+        this.group = group;
     }
 
-    public String getNodeName() {
-        return this.nodeName;
+    @Override
+    public Node getValue() {
+        if (!this.started) {
+            throw new IllegalStateException();
+        }
+        return this.group.getValue().getLocalNode();
+    }
+
+    @Override
+    public void start(StartContext context) {
+        this.started = true;
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        this.started = false;
     }
 }

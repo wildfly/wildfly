@@ -22,13 +22,14 @@
 
 package org.jboss.as.test.clustering.tunnel.singleton;
 
-import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.singleton.SingletonServiceName;
 import org.wildfly.clustering.singleton.election.NamePreference;
@@ -38,17 +39,14 @@ import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
-
 /**
  * @author Tomas Hofman
  */
 public class SingletonServiceActivator implements ServiceActivator {
 
     private static final String CONTAINER_NAME = "server";
-    public static final ServiceName SERVICE_A_NAME = ServiceName.JBOSS.append("test1", "myservice", "default");
-    public static final ServiceName SERVICE_B_NAME = ServiceName.JBOSS.append("test2", "myservice", "default");
+    public static final ServiceName SERVICE_A_NAME = ServiceName.JBOSS.append("test1", "service", "default");
+    public static final ServiceName SERVICE_B_NAME = ServiceName.JBOSS.append("test2", "service", "default");
     public static final String SERVICE_A_PREFERRED_NODE = NODE_2;
     public static final String SERVICE_B_PREFERRED_NODE = NODE_1;
 
@@ -65,13 +63,12 @@ public class SingletonServiceActivator implements ServiceActivator {
     }
 
     private static void install(ServiceTarget target, SingletonServiceBuilderFactory factory, ServiceName name, String preferredNode) {
-        InjectedValue<ServerEnvironment> env = new InjectedValue<>();
-        MyService service = new MyService(env);
+        InjectedValue<Group> group = new InjectedValue<>();
+        NodeService service = new NodeService(group);
         factory.createSingletonServiceBuilder(name, service)
             .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(preferredNode)))
             .build(target)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)
+                .addDependency(ServiceName.JBOSS.append("clustering", "group", "default"), Group.class, group)
                 .install();
     }
-
 }

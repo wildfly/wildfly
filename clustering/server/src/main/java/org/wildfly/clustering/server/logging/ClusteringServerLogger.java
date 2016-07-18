@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.notifications.cachelistener.event.Event;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -45,7 +46,7 @@ import org.wildfly.clustering.group.Node;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 @MessageLogger(projectCode = "WFLYCLSV", length = 4)
-public interface ClusteringServerLogger {
+public interface ClusteringServerLogger extends BasicLogger {
     String ROOT_LOGGER_CATEGORY = "org.wildfly.clustering.server";
 
     /**

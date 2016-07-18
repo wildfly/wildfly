@@ -41,9 +41,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceActivator;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -71,177 +71,177 @@ public class SingletonServiceTestCase extends ClusterAbstractTestCase {
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
-        war.addPackage(MyService.class.getPackage());
+        war.addPackage(NodeService.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
                 new ServerPermission("useServiceRegistry"), // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
                 new ServerPermission("getCurrentServiceContainer")
         ), "permissions.xml");
-        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServiceActivator.class);
+        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServiceActivator.class);
         return war;
     }
 
     @Test
     public void testSingletonService(
-            @ArquillianResource(MyServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(MyServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
         // Needed to be able to inject ArquillianResource
         stop(CONTAINER_2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
+            HttpResponse response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
+                Assert.assertNull(response.getFirstHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             start(CONTAINER_2);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             stop(CONTAINER_2);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
+                Assert.assertNull(response.getFirstHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             start(CONTAINER_2);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             stop(CONTAINER_1);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.QUORUM_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader("node"));
+                Assert.assertNull(response.getFirstHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             start(CONTAINER_1);
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL1, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(MyServiceServlet.createURI(baseURL2, MyServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_2, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

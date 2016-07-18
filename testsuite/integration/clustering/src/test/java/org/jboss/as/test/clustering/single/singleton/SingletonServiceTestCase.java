@@ -41,9 +41,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyService;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceActivator;
-import org.jboss.as.test.clustering.cluster.singleton.service.MyServiceServlet;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
+import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -64,23 +64,23 @@ public class SingletonServiceTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
-        war.addPackage(MyService.class.getPackage());
+        war.addPackage(NodeService.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
                 new ServerPermission("useServiceRegistry"), // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
                 new ServerPermission("getCurrentServiceContainer")
         ), "permissions.xml");
-        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServiceActivator.class);
+        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServiceActivator.class);
         return war;
     }
 
     @Test
-    public void testSingletonService(@ArquillianResource(MyServiceServlet.class) URL baseURL) throws IOException, URISyntaxException {
+    public void testSingletonService(@ArquillianResource(NodeServiceServlet.class) URL baseURL) throws IOException, URISyntaxException {
 
         // URLs look like "http://IP:PORT/singleton/service"
-        URI defaultURI = MyServiceServlet.createURI(baseURL, MyServiceActivator.DEFAULT_SERVICE_NAME);
-        URI quorumURI = MyServiceServlet.createURI(baseURL, MyServiceActivator.QUORUM_SERVICE_NAME);
+        URI defaultURI = NodeServiceServlet.createURI(baseURL, NodeServiceActivator.DEFAULT_SERVICE_NAME);
+        URI quorumURI = NodeServiceServlet.createURI(baseURL, NodeServiceActivator.QUORUM_SERVICE_NAME);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(defaultURI));

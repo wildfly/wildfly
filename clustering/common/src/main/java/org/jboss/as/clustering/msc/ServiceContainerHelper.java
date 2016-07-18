@@ -110,6 +110,11 @@ public class ServiceContainerHelper {
      */
     public static <T> void start(final ServiceController<T> controller) throws StartException {
         transition(controller, State.UP);
+
+        StartException exception = controller.getStartException();
+        if (exception != null) {
+            throw exception;
+        }
     }
 
     /**
@@ -117,12 +122,7 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      */
     public static <T> void stop(ServiceController<T> controller) {
-        try {
-            transition(controller, State.DOWN);
-        } catch (StartException e) {
-            // This can't happen
-            throw new IllegalStateException(e);
-        }
+        transition(controller, State.DOWN);
     }
 
     /**
@@ -130,15 +130,10 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      */
     public static <T> void remove(ServiceController<T> controller) {
-        try {
-            transition(controller, State.REMOVED);
-        } catch (StartException e) {
-            // This can't happen
-            throw new IllegalStateException(e);
-        }
+        transition(controller, State.REMOVED);
     }
 
-    private static <T> void transition(final ServiceController<T> targetController, final State targetState) throws StartException {
+    private static <T> void transition(final ServiceController<T> targetController, final State targetState) {
         // Short-circuit if the service is already at the target state
         if (targetController.getState() == targetState) return;
 
@@ -156,13 +151,6 @@ public class ServiceContainerHelper {
             Thread.currentThread().interrupt();
         } finally {
             monitor.removeController(targetController);
-        }
-
-        if (targetState == State.UP) {
-            StartException exception = targetController.getStartException();
-            if (exception != null) {
-                throw exception;
-            }
         }
     }
 
