@@ -51,9 +51,7 @@ public class WeldPortableExtensions {
         }
         try {
             extensions.put(extensionClass, new MetadataImpl<>((Extension) extensionClass.newInstance(), deploymentUnit.getName()));
-        } catch (InstantiationException e) {
-            WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(extensionClass.getName(), e);
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(extensionClass.getName(), e);
         }
 
