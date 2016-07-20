@@ -38,6 +38,9 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
+import java.util.Queue;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
@@ -71,7 +74,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         final StatefulSessionComponentInstance instance = getComponentInstance(context);
 
         final OwnableReentrantLock lock = instance.getLock();
-        final Object threadLock = instance.getThreadLock();
+        final ReentrantLock threadLock = instance.getThreadLock();
+        final ReentrantLock invocationLock = instance.getInvocationLock();
 
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
         final Object lockOwner = getLockOwner(transactionSynchronizationRegistry);
@@ -85,27 +89,36 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         if (!acquired) {
             throw EjbLogger.ROOT_LOGGER.failToObtainLock(component.getComponentName(), timeout.getValue(), timeout.getTimeUnit());
         }
-        synchronized (threadLock) {
+
+        Object currentTransactionKey = null;
+        invocationLock.lock();
+        threadLock.lock();
+        try {
             if (ROOT_LOGGER.isTraceEnabled()) {
                 ROOT_LOGGER.trace("Acquired lock: " + lock + " for stateful component instance: " + instance + " during invocation: " + context);
             }
 
-            Object currentTransactionKey = null;
             boolean wasTxSyncRegistered = false;
             try {
                 //we never register a sync for bean managed transactions
                 //the inner BMT interceptor is going to setup the correct transaction anyway
                 //so enrolling in an existing transaction is not correct
                 if (containerManagedTransactions) {
+                    final int status = transactionSynchronizationRegistry.getTransactionStatus();
+
+                    // If no synch has been registered yet, then afterCompletion is never called
+                    // Regardless, if Tx has rolledback at this stage, throw EJBRolledbackException
+                    if (status == Status.STATUS_ROLLEDBACK) {
+                        throw ROOT_LOGGER.transactionNoLongerActive(status);
+                    }
                     if (!instance.isSynchronizationRegistered()) {
                         // get the key to current transaction associated with this thread
                         currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
-                        final int status = transactionSynchronizationRegistry.getTransactionStatus();
                         // if this SFSB instance is already associated with a different transaction, then it's an error
                         // if the thread is currently associated with a tx, then register a tx synchronization
                         if (currentTransactionKey != null && status != Status.STATUS_COMMITTED && status != Status.STATUS_ROLLEDBACK) {
                             // register a tx synchronization for this SFSB instance
-                            final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance, lockOwner);
+                            final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance);
                             transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
                             wasTxSyncRegistered = true;
                             if (ROOT_LOGGER.isTraceEnabled()) {
@@ -139,6 +152,13 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                         instance.getComponent().getCache().release(instance);
                     }
                 }
+            }
+        } finally {
+            try {
+                invocationLock.unlock();
+                checkForDelayedAfterCompletion(instance, invocationLock, currentTransactionKey);
+            } finally {
+                threadLock.unlock();
             }
         }
     }
@@ -184,6 +204,66 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         }
     }
 
+    private void checkForDelayedAfterCompletion(final StatefulSessionComponentInstance statefulSessionComponentInstance,
+            final ReentrantLock invocationLock, final Object currentTransactionKey) {
+        if (containerManagedTransactions && invocationLock.getHoldCount() == 0) {
+            Integer callbackStatus = statefulSessionComponentInstance.getCallbackQueue().poll();
+            if (callbackStatus != null) {
+                try {
+                    executeAfterCompletion(statefulSessionComponentInstance, callbackStatus);
+                } catch (Throwable t) {
+                    // We do not return this exception to the client, as this would not occur if executed by the Tx reaper thread
+                    ROOT_LOGGER.exceptionThrownInDelayedAfterCompletion(t, currentTransactionKey);
+                }
+            }
+        }
+    }
+
+    private void executeAfterCompletion(final StatefulSessionComponentInstance statefulSessionComponentInstance, final int status) {
+        boolean committed = status == Status.STATUS_COMMITTED;
+        try {
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.trace("After completion callback invoked on Transaction synchronization: " + this +
+                        " of stateful component instance: " + statefulSessionComponentInstance);
+            }
+            if (!statefulSessionComponentInstance.isDiscarded()) {
+                statefulSessionComponentInstance.afterCompletion(committed);
+            }
+        } catch (Throwable t) {
+            handleThrowable(statefulSessionComponentInstance, t);
+        }
+        if (statefulSessionComponentInstance.isRemoved() && !statefulSessionComponentInstance.isDiscarded()) {
+            try {
+                statefulSessionComponentInstance.destroy();
+            } catch (Throwable t) {
+                handleThrowable(statefulSessionComponentInstance, t);
+            }
+        }
+
+        // tx has completed, so mark the SFSB instance as no longer in use
+        releaseInstance(statefulSessionComponentInstance);
+    }
+
+    private void handleThrowable(final StatefulSessionComponentInstance statefulSessionComponentInstance, final Throwable t) {
+        ROOT_LOGGER.discardingStatefulComponent(statefulSessionComponentInstance, t);
+        try {
+            // discard the SFSB instance
+            statefulSessionComponentInstance.discard();
+        } catch (Exception e) {
+            e.addSuppressed(t);
+            throw e;
+        } finally {
+            // release the lock associated with the SFSB instance
+            releaseLock(statefulSessionComponentInstance);
+        }
+        // throw back an appropriate exception
+        if (t instanceof RuntimeException)
+            throw (RuntimeException) t;
+        if (t instanceof Error)
+            throw (Error) t;
+        throw (EJBException) new EJBException().initCause(t);
+    }
+
     private static class Factory extends ComponentInstanceInterceptorFactory {
 
         private final TransactionManagementType type;
@@ -202,11 +282,9 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     private class StatefulSessionSynchronization implements Synchronization {
 
         private final StatefulSessionComponentInstance statefulSessionComponentInstance;
-        private final Object lockOwner;
 
-        StatefulSessionSynchronization(StatefulSessionComponentInstance statefulSessionComponentInstance, final Object lockOwner) {
+        StatefulSessionSynchronization(StatefulSessionComponentInstance statefulSessionComponentInstance) {
             this.statefulSessionComponentInstance = statefulSessionComponentInstance;
-            this.lockOwner = lockOwner;
         }
 
         @Override
@@ -220,51 +298,30 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     statefulSessionComponentInstance.beforeCompletion();
                 }
             } catch (Throwable t) {
-                handleThrowable(t);
+                handleThrowable(statefulSessionComponentInstance, t);
             }
         }
 
         @Override
         public void afterCompletion(int status) {
-            boolean committed = status == Status.STATUS_COMMITTED;
-            try {
-                if (ROOT_LOGGER.isTraceEnabled()) {
-                    ROOT_LOGGER.trace("After completion callback invoked on Transaction synchronization: " + this +
-                            " of stateful component instance: " + statefulSessionComponentInstance);
-                }
-                if (!statefulSessionComponentInstance.isDiscarded()) {
-                    statefulSessionComponentInstance.afterCompletion(committed);
-                }
-            } catch (Throwable t) {
-                handleThrowable(t);
-            }
-            if(statefulSessionComponentInstance.isRemoved() && !statefulSessionComponentInstance.isDiscarded()) {
-                try {
-                    statefulSessionComponentInstance.destroy();
-                } catch (Throwable t) {
-                    handleThrowable(t);
-                }
-            }
+            Queue<Integer> invocationQueue = statefulSessionComponentInstance.getCallbackQueue();
+            ReentrantLock threadLock = statefulSessionComponentInstance.getThreadLock();
+            ReentrantLock invocationLock = statefulSessionComponentInstance.getInvocationLock();
 
-            // tx has completed, so mark the SFSB instance as no longer in use
-            releaseInstance(statefulSessionComponentInstance);
-        }
+            invocationQueue.add(status);
+            if (!invocationLock.tryLock())
+                return;
 
-        private void handleThrowable(Throwable t) {
-            ROOT_LOGGER.discardingStatefulComponent(statefulSessionComponentInstance, t);
+            threadLock.lock();
             try {
-                // discard the SFSB instance
-                statefulSessionComponentInstance.discard();
+                Integer callbackStatus = statefulSessionComponentInstance.getCallbackQueue().poll();
+                if (callbackStatus != null) {
+                    executeAfterCompletion(statefulSessionComponentInstance, callbackStatus);
+                }
             } finally {
-                // release the lock associated with the SFSB instance
-                releaseLock(statefulSessionComponentInstance);
+                threadLock.unlock();
+                invocationLock.unlock();
             }
-            // throw back an appropriate exception
-            if (t instanceof RuntimeException)
-                throw (RuntimeException) t;
-            if (t instanceof Error)
-                throw (Error) t;
-            throw (EJBException) new EJBException().initCause(t);
         }
     }
 
