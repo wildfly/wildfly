@@ -202,14 +202,17 @@ public class CalendarBasedTimeout {
         nextCal.setTimeZone(this.timezone);
         Date start = this.scheduleExpression.getStart();
         if (start != null && currentCal.getTime().before(start)) {
+            //this may result in a millisecond component, however that is ok
+            //otherwise WFLY-6561 will rear its only head
+            //also as the start time may include milliseconds this is technically correct
             nextCal.setTime(start);
         } else {
             if (increment) {
                 // increment the current second by 1
                 nextCal.add(Calendar.SECOND, 1);
             }
+            nextCal.add(Calendar.MILLISECOND, -nextCal.get(Calendar.MILLISECOND));
         }
-        nextCal.add(Calendar.MILLISECOND, -nextCal.get(Calendar.MILLISECOND));
         nextCal.setFirstDayOfWeek(Calendar.SUNDAY);
 
         nextCal = this.computeNextTime(nextCal);
