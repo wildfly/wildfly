@@ -42,10 +42,29 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 abstract class JobOperationStepHandler implements OperationStepHandler {
+    private final boolean modify;
+
+    /**
+     * Creates a new step handler with a modifiable {@link JobOperator}.
+     */
+    protected JobOperationStepHandler() {
+        this(true);
+    }
+
+    /**
+     * Creates a new step handler.
+     *
+     * @param modify {@code true} if the {@link #execute(OperationContext, ModelNode, JobOperator)} will modify a job
+     *               repository, {@code false} for a read-only service
+     */
+    protected JobOperationStepHandler(final boolean modify) {
+        this.modify = modify;
+    }
+
     @Override
     public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(BatchServiceNames.jobOperatorServiceName(address));
+        final ServiceController<?> controller = context.getServiceRegistry(modify).getService(BatchServiceNames.jobOperatorServiceName(address));
         final JobOperator jobOperator = (JobOperator) controller.getService();
         execute(context, operation, jobOperator);
     }

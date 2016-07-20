@@ -33,7 +33,15 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-abstract class JobOperationUpdateStepHandler extends JobOperationStepHandler {
+abstract class JobOperationReadOnlyStepHandler extends JobOperationStepHandler {
+
+    /**
+     * Creates a step handler with a read-only {@link JobOperator}.
+     */
+    protected JobOperationReadOnlyStepHandler() {
+        super(false);
+    }
+
     @Override
     protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
         updateModel(context, context.getResult(), jobOperator, context.getCurrentAddressValue());
