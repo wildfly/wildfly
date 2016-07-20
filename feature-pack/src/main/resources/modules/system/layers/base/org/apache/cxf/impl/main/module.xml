@@ -35,6 +35,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-bindings-xml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-aegis}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-jaxb}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-features-clustering}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxws}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
