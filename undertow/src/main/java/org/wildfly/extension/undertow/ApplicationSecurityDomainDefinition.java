@@ -488,15 +488,6 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                         return servletRequest.getAttribute(key);
                     }
 
-                    @Override
-                    public boolean supportsResources() {
-                        return false;
-                    }
-
-                    @Override
-                    public InputStream getResource(String path) {
-                        return null;
-                    }
                 };
             }
 
