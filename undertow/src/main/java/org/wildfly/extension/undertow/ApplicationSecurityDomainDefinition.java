@@ -366,6 +366,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             HashMap<Scope, Function<HttpServerExchange, HttpScope>> scopeResolvers = new HashMap<>();
 
             scopeResolvers.put(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope);
+            scopeResolvers.put(Scope.EXCHANGE, ApplicationSecurityDomainService::requestScope);
 
             return ElytronContextAssociationHandler.builder()
                     .setNext(toWrap)
@@ -460,6 +461,42 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                     }
 
 
+                };
+            }
+
+            return null;
+        }
+
+        private static HttpScope requestScope(HttpServerExchange exchange) {
+            ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+
+            if (servletRequestContext != null) {
+                final ServletRequest servletRequest = servletRequestContext.getServletRequest();
+                return new HttpScope() {
+                    @Override
+                    public boolean supportsAttachments() {
+                        return true;
+                    }
+
+                    @Override
+                    public void setAttachment(String key, Object value) {
+                        servletRequest.setAttribute(key, value);
+                    }
+
+                    @Override
+                    public Object getAttachment(String key) {
+                        return servletRequest.getAttribute(key);
+                    }
+
+                    @Override
+                    public boolean supportsResources() {
+                        return false;
+                    }
+
+                    @Override
+                    public InputStream getResource(String path) {
+                        return null;
+                    }
                 };
             }
 
