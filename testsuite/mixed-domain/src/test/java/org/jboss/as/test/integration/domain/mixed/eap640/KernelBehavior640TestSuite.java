@@ -33,7 +33,7 @@ import org.junit.runners.Suite;
  * @author Brian Stansberry
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(value= {WildcardReads640TestCase.class})
+@Suite.SuiteClasses(value= {RBACConfig640TestCase.class, WildcardReads640TestCase.class})
 @Version(Version.AsVersion.EAP_6_4_0)
 public class KernelBehavior640TestSuite extends KernelBehaviorTestSuite {
 
