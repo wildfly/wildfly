@@ -63,6 +63,6 @@ public enum InfinispanSchema implements Schema<InfinispanSchema> {
 
     @Override
     public String getNamespaceUri() {
-        return String.format(Locale.ENGLISH, "urn:jboss:domain:infinispan:%d.%d", this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:jboss:domain:infinispan:%d.%d", this.major, this.minor);
     }
 }
