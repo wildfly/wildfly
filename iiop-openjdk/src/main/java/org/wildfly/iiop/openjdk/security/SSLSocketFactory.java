@@ -54,10 +54,16 @@ import com.sun.corba.se.spi.orb.ORB;
 public class SSLSocketFactory extends SocketFactoryBase {
 
     private static String securityDomain = null;
+    private static String[] enabledProtocols = null;
 
     public static void setSecurityDomain(final String securityDomain) {
         SSLSocketFactory.securityDomain = securityDomain;
     }
+
+    public static void setEnabledProtocols(final String[] enabledProtocols){
+        SSLSocketFactory.enabledProtocols = enabledProtocols;
+    }
+
 
     private ORB orb;
 
@@ -111,11 +117,14 @@ public class SSLSocketFactory extends SocketFactoryBase {
 
         javax.net.ssl.SSLSocketFactory socketFactory = this.sslContext.getSocketFactory();
         SSLSocket socket = (SSLSocket) socketFactory.createSocket(address, port);
-        if (this.jsseSecurityDomain.getProtocols() != null)
+        if (this.jsseSecurityDomain.getProtocols() != null){
             socket.setEnabledProtocols(this.jsseSecurityDomain.getProtocols());
-        if (this.jsseSecurityDomain.getCipherSuites() != null)
+        }
+        if (this.jsseSecurityDomain.getCipherSuites() != null) {
             socket.setEnabledCipherSuites(this.jsseSecurityDomain.getCipherSuites());
+        }
         socket.setNeedClientAuth(this.jsseSecurityDomain.isClientAuth());
+        socket.setEnabledProtocols(enabledProtocols);
         return socket;
     }
 
@@ -123,22 +132,25 @@ public class SSLSocketFactory extends SocketFactoryBase {
         this.initSSLContext();
         SSLServerSocketFactory serverSocketFactory = this.sslContext.getServerSocketFactory();
         SSLServerSocket serverSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port, backlog, inetAddress);
-        if (this.jsseSecurityDomain.getProtocols() != null)
+        if (this.jsseSecurityDomain.getProtocols() != null){
             serverSocket.setEnabledProtocols(this.jsseSecurityDomain.getProtocols());
-        if (this.jsseSecurityDomain.getCipherSuites() != null)
+        }
+        if (this.jsseSecurityDomain.getCipherSuites() != null){
             serverSocket.setEnabledCipherSuites(this.jsseSecurityDomain.getCipherSuites());
-
-        if (this.jsseSecurityDomain.isClientAuth() || this.require_mutual_auth)
+        }
+        if (this.jsseSecurityDomain.isClientAuth() || this.require_mutual_auth){
             serverSocket.setNeedClientAuth(true);
-        else
+        } else {
             serverSocket.setWantClientAuth(this.request_mutual_auth);
-
+        }
+        serverSocket.setEnabledProtocols(enabledProtocols);
         return serverSocket;
     }
 
     private void initSSLContext() throws IOException {
-        if (this.sslContext != null)
+        if (this.sslContext != null) {
             return;
+        }
         this.sslContext = Util.forDomain(this.jsseSecurityDomain);
     }
 }

@@ -65,6 +65,7 @@ public final class Constants {
     public static final String SPEC = "spec";
     public static final String FULL = "full";
     public static final String SECURITY_SUPPORT_SSL = "support-ssl";
+    public static final String SECURITY_SSL_ENABLED_PROTOCOLS = "ssl-enabled-protocols";
     public static final String SECURITY_SECURITY_DOMAIN = "security-domain";
     public static final String SECURITY_ADD_COMP_VIA_INTERCEPTOR = "add-component-via-interceptor";
     public static final String SECURITY_CLIENT_SUPPORTS = "client-supports";

@@ -149,6 +149,15 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    public static final AttributeDefinition SECURITY_ENABLED_PROTOCOLS = new SimpleAttributeDefinitionBuilder(
+            Constants.SECURITY_SSL_ENABLED_PROTOCOLS, ModelType.STRING, true)
+            .setAttributeGroup(Constants.SECURITY)
+            .setDefaultValue(new ModelNode("TLSv1,TLSv1.1,TLSv1.2"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .build();
+
     @Deprecated
     public static final AttributeDefinition ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.BOOLEAN, true)
@@ -313,7 +322,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC);
 
     // list that contains security attributes definitions
-    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN,
+    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN, SECURITY_ENABLED_PROTOCOLS,
             ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
 
     //list that contains tcp attributes definitions

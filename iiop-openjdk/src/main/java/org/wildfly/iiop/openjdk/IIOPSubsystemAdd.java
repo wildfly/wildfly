@@ -341,6 +341,10 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
             // add the domain socket factories.
             SSLSocketFactory.setSecurityDomain(securityDomain);
+
+            String enabledProtocols = props.getProperty(Constants.SECURITY_SSL_ENABLED_PROTOCOLS);
+            SSLSocketFactory.setEnabledProtocols(enabledProtocols.split(","));
+
             props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SSLSocketFactory.class.getName());
 
             sslConfigured = true;
