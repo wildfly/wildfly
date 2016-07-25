@@ -33,6 +33,7 @@
         <module name="org.jboss.jts" />
         <module name="javax.xml.ws.api" />
         <module name="org.jboss.weld.api" />
+        <module name="org.jboss.weld.spi" />
         <module name="org.jboss.weld.core" />
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.xts" />
