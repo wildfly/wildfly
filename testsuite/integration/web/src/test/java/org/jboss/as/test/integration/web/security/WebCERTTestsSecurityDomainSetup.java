@@ -207,6 +207,9 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             updates.add(op);
 
             applyUpdates(managementClient.getControllerClient(), updates);
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+
             super.tearDown(managementClient, containerId);
         } catch (Exception e) {
             log.error("Failed to clean domain setup.", e);
