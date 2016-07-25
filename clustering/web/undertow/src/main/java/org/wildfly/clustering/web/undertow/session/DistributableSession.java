@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import io.undertow.UndertowLogger;
-import io.undertow.UndertowMessages;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
@@ -42,6 +40,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 
 /**
  * Adapts a distributable {@link Session} to an Undertow {@link io.undertow.server.session.Session}.
@@ -53,7 +52,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     private static void validate(Session<LocalSessionContext> session) {
         if (!session.isValid()) {
-            throw UndertowMessages.MESSAGES.sessionNotFound(session.getId());
+            throw UndertowClusteringLogger.ROOT_LOGGER.sessionIsInvalid(session.getId());
         }
     }
 
@@ -82,7 +81,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 this.batch.close();
             } catch (Throwable e) {
                 // Don't propagate exceptions at the stage, since response was already committed
-                UndertowLogger.REQUEST_LOGGER.warn(e.getLocalizedMessage(), e);
+                UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
     }
