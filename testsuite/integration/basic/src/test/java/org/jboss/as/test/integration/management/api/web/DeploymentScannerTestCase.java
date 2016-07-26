@@ -98,8 +98,9 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
     }
 
     /**
-     * Adds a deployment scanner (let's say "foo") which points to a non-existing deployment directory. This operation is expected to fail and the test asserts it.
-     * Later it adds a deployment scanner with the same name, but this time points to a correct/existing deployment directory. This operation is then expected to pass.
+     * Adds a deployment scanner (let's say "foo") which points to a non-existing deployment directory.
+     *
+     * Since WFCORE-1579, this operation is expected to succeed.
      *
      * @throws Exception
      */
@@ -111,13 +112,10 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
         addScannerForNonExistentPath.get("scan-interval").set(1000);
         addScannerForNonExistentPath.get("path").set("/tmp/DeploymentScannerTestCase/nonExistingPath");
 
-        final ModelNode result = executeOperation(addScannerForNonExistentPath, false);
-        // check that it failed
-        assertEquals("Adding a deployment scanner for a non-existent path was expected to fail but it passed", "failed", result.get("outcome").asString());
-
-        // check that rollback was success and we can create proper deployment scanner with the same name that failed
-        addDeploymentScanner();
         try {
+            final ModelNode result = executeOperation(addScannerForNonExistentPath, false);
+            // check that it failed
+            assertEquals("Adding a deployment scanner for a non-existent path was expected to succeed but it failed", "success", result.get("outcome").asString());
             assertTestDeploymentScannerResourceExists();
         } finally {
             // now clean up
