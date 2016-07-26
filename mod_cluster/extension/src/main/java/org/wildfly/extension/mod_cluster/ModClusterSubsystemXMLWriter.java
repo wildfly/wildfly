@@ -76,6 +76,9 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     static void writeConfiguration(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
+            if (def.getName().equals(ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.getName())){
+                continue;
+            }
             def.getAttributeMarshaller().marshallAsAttribute(def, config, true, writer);
         }
     }

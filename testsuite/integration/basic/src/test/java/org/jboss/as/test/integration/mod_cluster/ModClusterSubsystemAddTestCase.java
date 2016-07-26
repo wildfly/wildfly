@@ -52,7 +52,7 @@ public class ModClusterSubsystemAddTestCase {
 
     @Test
     @InSequence(1)
-    public void testModClusterAdd() throws Exception {
+    public void testModClusterAddFail() throws Exception {
         final CommandContext ctx = CLITestUtil.getCommandContext();
         final ModelControllerClient controllerClient = managementClient.getControllerClient();
 
@@ -70,14 +70,15 @@ public class ModClusterSubsystemAddTestCase {
             Batch b = ctx.getBatchManager().getActiveBatch();
             b.add(ctx.toBatchedCommand("/socket-binding-group=standard-sockets/socket-binding=modcluster:add(multicast-port=23364, multicast-address=224.0.1.105)"));
             b.add(ctx.toBatchedCommand("/subsystem=modcluster:add"));
-            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=http,advertise-socket=modcluster)"));
+            // The Undertow http listener is named "default", so this should fail
+            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=http, advertise-socket=modcluster)"));
             request = b.toRequest();
             b.clear();
             ctx.getBatchManager().discardActiveBatch();
 
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Adding mod_cluster subsystem failed! " + request.toJSONString(false), "success", outcome);
+            Assert.assertEquals("Adding mod_cluster subsystem failed! " + request.toJSONString(false), "failed", outcome);
         } finally {
             ctx.terminateSession();
         }
@@ -85,6 +86,36 @@ public class ModClusterSubsystemAddTestCase {
 
     @Test
     @InSequence(2)
+    public void testModClusterAddSuccess() throws Exception {
+        final CommandContext ctx = CLITestUtil.getCommandContext();
+        final ModelControllerClient controllerClient = managementClient.getControllerClient();
+
+        try {
+            ctx.connectController();
+
+            ModelNode request;
+            ModelNode response;
+
+            // We now need to add the proper configuration
+            ctx.getBatchManager().activateNewBatch();
+            Batch b = ctx.getBatchManager().getActiveBatch();
+            b.add(ctx.toBatchedCommand("/socket-binding-group=standard-sockets/socket-binding=modcluster:add(multicast-port=23364, multicast-address=224.0.1.105)"));
+            b.add(ctx.toBatchedCommand("/subsystem=modcluster:add"));
+            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=default, advertise-socket=modcluster)"));
+            request = b.toRequest();
+            b.clear();
+            ctx.getBatchManager().discardActiveBatch();
+
+            response = controllerClient.execute(request);
+            String outcome = response.get("outcome").asString();
+            Assert.assertEquals("Adding mod_cluster configuration failed! " + request.toJSONString(false), "success", outcome);
+        } finally {
+            ctx.terminateSession();
+        }
+    }
+
+    @Test
+    @InSequence(3)
     public void testModClusterRemove() throws Exception {
         final CommandContext ctx = CLITestUtil.getCommandContext();
         final ModelControllerClient controllerClient = managementClient.getControllerClient();
