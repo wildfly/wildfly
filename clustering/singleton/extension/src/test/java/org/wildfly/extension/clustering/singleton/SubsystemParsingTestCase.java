@@ -21,6 +21,7 @@
 */
 package org.wildfly.extension.clustering.singleton;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -47,10 +48,12 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
+    private final SingletonSchema schema;
     private final int expectedOperationCount;
 
     public SubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
         super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), String.format("subsystem-singleton-%d_%d.xml", schema.major(), schema.minor()));
+        this.schema = schema;
         this.expectedOperationCount = expectedOperationCount;
     }
 
@@ -81,6 +84,24 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization().require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format("schema/wildfly-singleton_%d_%d.xsd", schema.major(), schema.minor());
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/singleton.xml"
+        };
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        if (schema != SingletonSchema.CURRENT) return;
+        super.testSchemaOfSubsystemTemplates();
     }
 
     /**
