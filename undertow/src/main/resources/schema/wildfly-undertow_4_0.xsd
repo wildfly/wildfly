@@ -268,8 +268,8 @@
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
-        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 
@@ -333,7 +333,6 @@
 
     <xs:complexType name="filterType">
         <xs:sequence>
-            <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="request-limit" type="request-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
