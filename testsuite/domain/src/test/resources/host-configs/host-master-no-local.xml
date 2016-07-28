@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:4.2"
+<host xmlns="urn:jboss:domain:5.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:4.2 wildfly-config_4_2.xsd"
+      xsi:schemaLocation="urn:jboss:domain:5.0 wildfly-config_5_0.xsd"
       name="master">
 
     <management>

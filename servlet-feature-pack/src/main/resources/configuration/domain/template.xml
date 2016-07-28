@@ -24,7 +24,7 @@
   ~
   -->
 
-<domain xmlns="urn:jboss:domain:4.2">
+<domain xmlns="urn:jboss:domain:5.0">
 
     <extensions>
         <?EXTENSIONS?>
