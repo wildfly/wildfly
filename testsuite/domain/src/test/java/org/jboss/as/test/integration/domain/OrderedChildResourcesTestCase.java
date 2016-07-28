@@ -22,17 +22,7 @@
 
 package org.jboss.as.test.integration.domain;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -122,6 +112,12 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             reloadMaster(masterUtils, false);
             ModelNode slaveStack = readResource(slaveUtils.getDomainClient(), jgroupsTcpAddr);
             Assert.assertEquals(originalMasterStack, slaveStack);
+
+            //Check that :read-operation-description has add-index defined; WFLY-6782
+            ModelNode rodOp = Util.createOperation(READ_OPERATION_DESCRIPTION_OPERATION, jgroupsTcpAddr.append(PROTOCOL, protocolName));
+            rodOp.get(NAME).set(ADD);
+            ModelNode result = DomainTestUtils.executeForResult(rodOp, masterUtils.getDomainClient());
+            Assert.assertTrue(result.get(REQUEST_PROPERTIES).hasDefined(ADD_INDEX));
         } finally {
             try {
                 slaveUtils.stop();

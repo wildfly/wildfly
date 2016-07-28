@@ -346,4 +346,7 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 81, value = "The deployment %s will not be distributable because this feature is disabled in web-fragment.xml of the module %s.")
     void distributableDisabledInFragmentXml(String deployment, String module);
+
+    @Message(id = 82, value = "Could not start '%s' listener.")
+    StartException couldNotStartListener(String name, @Cause IOException e);
 }

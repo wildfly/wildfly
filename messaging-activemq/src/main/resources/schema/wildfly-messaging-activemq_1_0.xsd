@@ -376,6 +376,7 @@
                     <xs:attribute name="retry-interval" type="xs:long" use="optional" />
                     <xs:attribute name="retry-interval-multiplier" type="xs:double" use="optional" />
                     <xs:attribute name="max-retry-interval" type="xs:long" use="optional" />
+                    <xs:attribute name="initial-connect-attempts" type="xs:int" use="optional" />
                     <xs:attribute name="reconnect-attempts" type="xs:int" use="optional" />
                     <xs:attribute name="use-duplicate-detection" type="xs:boolean" use="optional" />
                     <xs:attribute name="message-load-balancing-type" use="optional">

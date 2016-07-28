@@ -62,7 +62,11 @@ public class JACCContextIdHandler implements HttpHandler {
         }
         finally {
             // restore the previous JACC contextID.
-            setContextID(new SetContextIDAction(previousContextID));
+            if(WildFlySecurityManager.isChecking()) {
+                setContextID(new SetContextIDAction(previousContextID));
+            } else {
+                PolicyContext.setContextID(previousContextID);
+            }
         }
     }
 

@@ -108,6 +108,8 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLUSTER.getDefinition())
                     ;
         }
+
+        ForkProtocolResourceDefinition.buildTransformation(version, builder);
     }
 
     final boolean allowRuntimeOnlyRegistration;

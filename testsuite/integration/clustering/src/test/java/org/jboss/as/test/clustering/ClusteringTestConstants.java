@@ -65,6 +65,8 @@ public interface ClusteringTestConstants {
     String NODE_2 = "node-1";
     String[] NODES = new String[] { NODE_1, NODE_2 };
 
+    String NODE_NAME_PROPERTY = "jboss.node.name";
+
     /**
      * Name of cluster for remote client.
      */

@@ -81,9 +81,9 @@
                     <xs:documentation>Defines a thread pool used for asynchronous transport communication.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="expiration-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+            <xs:element name="expiration-thread-pool" type="tns:scheduled-thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for expiration.</xs:documentation>
+                    <xs:documentation>Defines a scheduled thread pool used for expiration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:choice maxOccurs="unbounded">
@@ -290,10 +290,10 @@
     <xs:complexType name="transaction">
         <xs:attribute name="mode" type="tns:transaction-mode" default="NONE">
             <xs:annotation>
-                <xs:documentation>Sets the cache transaction mode to one of NONE, NON_XA, NON_DURABLE_XA, FULL_XA.</xs:documentation>
+                <xs:documentation>Defines the transaction mode of the cache.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="stop-timeout" type="xs:long" default="30000">
+        <xs:attribute name="stop-timeout" type="xs:long" default="10000">
             <xs:annotation>
                 <xs:documentation>If there are any ongoing transactions when a cache is stopped, Infinispan waits for ongoing remote and local transactions to finish. The amount of time to wait for is defined by the cache stop timeout.</xs:documentation>
             </xs:annotation>
@@ -1073,6 +1073,19 @@
         <xs:attribute name="keepalive-time" type="xs:long" use="optional">
             <xs:annotation>
                 <xs:documentation>Timeout in milliseconds to remove idle thread from the pool.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="scheduled-thread-pool">
+        <xs:attribute name="max-threads" type="xs:int" use="optional">
+            <xs:annotation>
+                <xs:documentation>Fixed thread pool size for the scheduled thread pool.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="keepalive-time" type="xs:long" use="optional">
+            <xs:annotation>
+                <xs:documentation>Timeout in milliseconds to remove idle thread from the scheduled thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

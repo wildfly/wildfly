@@ -27,11 +27,11 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
@@ -39,6 +39,7 @@ import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
+import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
 import org.wildfly.extension.undertow.filters.RewriteFilterDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandler;
@@ -55,8 +56,13 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
 
     static {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_3_1.getUriString())
-                .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID, UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN)
-                .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
+                .addAttributes(
+                        UndertowRootDefinition.DEFAULT_SERVER,
+                        UndertowRootDefinition.DEFAULT_VIRTUAL_HOST,
+                        UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER,
+                        UndertowRootDefinition.INSTANCE_ID,
+                        UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN,
+                        UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
                         builder(BufferCacheDefinition.INSTANCE)
                                 .addAttributes(BufferCacheDefinition.BUFFER_SIZE, BufferCacheDefinition.BUFFERS_PER_REGION, BufferCacheDefinition.MAX_REGIONS)
@@ -64,65 +70,67 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                 .addChild(builder(ServerDefinition.INSTANCE)
                                 .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                                 .addChild(
-                                        builder(AjpListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
+                                        listenerBuilder(AjpListenerResourceDefinition.INSTANCE)
+                                                // xsd ajp-listener-type
+                                                .addAttributes(AjpListenerResourceDefinition.SCHEME,
+                                                        ListenerResourceDefinition.REDIRECT_SOCKET,
+                                                        AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE)
                                 )
                                 .addChild(
-                                        builder(HttpListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING, HttpListenerResourceDefinition.ENABLE_HTTP2)
-                                                .addAttribute(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
+                                        listenerBuilder(HttpListenerResourceDefinition.INSTANCE)
+                                                // xsd http-listener-type
+                                                .addAttributes(
+                                                        HttpListenerResourceDefinition.CERTIFICATE_FORWARDING,
+                                                        ListenerResourceDefinition.REDIRECT_SOCKET,
+                                                        HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
+                                                        HttpListenerResourceDefinition.ENABLE_HTTP2,
+                                                        HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH,
+                                                        HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                                 ).addChild(
-                                        builder(HttpsListenerResourceDefinition.INSTANCE)
-                                                .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
-                                                .addAttribute(HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
-                                                .addAttributes(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttribute(ListenerResourceDefinition.RESOLVE_PEER_ADDRESS)
-                                                .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES, HttpsListenerResourceDefinition.ENABLED_PROTOCOLS, HttpsListenerResourceDefinition.ENABLE_HTTP2, HttpsListenerResourceDefinition.ENABLE_SPDY, HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE, HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT)
-                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE, ListenerResourceDefinition.NO_REQUEST_TIMEOUT, ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT, ListenerResourceDefinition.DISALLOWED_METHODS)
-                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE, ListenerResourceDefinition.READ_TIMEOUT, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.MAX_CONNECTIONS, ListenerResourceDefinition.SECURE)
+                                        listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
+                                                // xsd https-listener-type
+                                                .addAttributes(
+                                                        HttpsListenerResourceDefinition.SECURITY_REALM,
+                                                        HttpsListenerResourceDefinition.VERIFY_CLIENT,
+                                                        HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES,
+                                                        HttpsListenerResourceDefinition.ENABLED_PROTOCOLS,
+                                                        HttpsListenerResourceDefinition.ENABLE_HTTP2,
+                                                        HttpsListenerResourceDefinition.ENABLE_SPDY,
+                                                        HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE,
+                                                        HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT,
+                                                        HttpListenerResourceDefinition.HTTP2_ENABLE_PUSH,
+                                                        HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
+                                                        HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE)
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE)
                                                                 .addAttributes(LocationDefinition.HANDLER)
-                                                                .addChild(
-                                                                        builder(FilterRefDefinition.INSTANCE)
-                                                                                .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
-                                                                )
+                                                                .addChild(filterRefBuilder())
                                                 ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
-                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.RELATIVE_TO, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE, AccessLogDefinition.USE_SERVER_LOG, AccessLogDefinition.EXTENDED, AccessLogDefinition.PREDICATE)
-                                        ).addChild(
-                                                builder(FilterRefDefinition.INSTANCE)
-                                                        .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
-                                        ).addChild(
-                                                builder(SingleSignOnDefinition.INSTANCE)
+                                                        .addAttributes(
+                                                                AccessLogDefinition.PATTERN,
+                                                                AccessLogDefinition.WORKER,
+                                                                AccessLogDefinition.DIRECTORY,
+                                                                AccessLogDefinition.RELATIVE_TO,
+                                                                AccessLogDefinition.PREFIX,
+                                                                AccessLogDefinition.SUFFIX,
+                                                                AccessLogDefinition.ROTATE,
+                                                                AccessLogDefinition.USE_SERVER_LOG,
+                                                                AccessLogDefinition.EXTENDED,
+                                                                AccessLogDefinition.PREDICATE)
+                                        ).addChild(filterRefBuilder())
+                                                .addChild(
+                                                    builder(SingleSignOnDefinition.INSTANCE)
                                                         .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
                                         )
                                 )
@@ -132,8 +140,8 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
                                 .addAttribute(ServletContainerDefinition.STACK_TRACE_ON_ERROR)
-                                .addAttribute(ServletContainerDefinition.USE_LISTENER_ENCODING)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_ENCODING)
+                                .addAttribute(ServletContainerDefinition.USE_LISTENER_ENCODING)
                                 .addAttribute(ServletContainerDefinition.IGNORE_FLUSH)
                                 .addAttribute(ServletContainerDefinition.EAGER_FILTER_INIT)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT)
@@ -230,7 +238,12 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                         ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
                                                         .setXmlElementName(Constants.HOST)
-                                                        .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID, ReverseProxyHandlerHost.PATH, ReverseProxyHandlerHost.SCHEME, ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING, ReverseProxyHandlerHost.SECURITY_REALM))
+                                                        .addAttributes(
+                                                                ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING,
+                                                                ReverseProxyHandlerHost.SCHEME,
+                                                                ReverseProxyHandlerHost.PATH,
+                                                                ReverseProxyHandlerHost.INSTANCE_ID,
+                                                                ReverseProxyHandlerHost.SECURITY_REALM))
                                 )
 
 
@@ -244,7 +257,7 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                 .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                 builder(ResponseHeaderFilter.INSTANCE)
-                                        .addAttributes(ResponseHeaderFilter.VALUE, ResponseHeaderFilter.NAME)
+                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
                         ).addChild(
                                 builder(GzipFilter.INSTANCE)
                         ).addChild(
@@ -275,8 +288,8 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.HTTP2_HEADER_TABLE_SIZE,
                                         ModClusterDefinition.HTTP2_INITIAL_WINDOW_SIZE,
                                         ModClusterDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
-                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
-                                        ModClusterDefinition.HTTP2_MAX_FRAME_SIZE)
+                                        ModClusterDefinition.HTTP2_MAX_FRAME_SIZE,
+                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
@@ -301,12 +314,55 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                 .build();
     }
 
-        private UndertowSubsystemParser_3_1() {
-        }
+    private UndertowSubsystemParser_3_1() {
+    }
 
-        @Override
-        public PersistentResourceXMLDescription getParserDescription() {
+    @Override
+    public PersistentResourceXMLDescription getParserDescription() {
                 return xmlDescription;
         }
+
+    /** Registers attributes common across listener types */
+    private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder listenerBuilder(PersistentResourceDefinition resource) {
+        return builder(resource)
+                // xsd socket-optionsType
+                .addAttributes(
+                        ListenerResourceDefinition.RECEIVE_BUFFER,
+                        ListenerResourceDefinition.SEND_BUFFER,
+                        ListenerResourceDefinition.BACKLOG,
+                        ListenerResourceDefinition.KEEP_ALIVE,
+                        ListenerResourceDefinition.READ_TIMEOUT,
+                        ListenerResourceDefinition.WRITE_TIMEOUT,
+                        ListenerResourceDefinition.MAX_CONNECTIONS)
+                // xsd listener-type
+                .addAttributes(
+                        ListenerResourceDefinition.SOCKET_BINDING,
+                        ListenerResourceDefinition.WORKER,
+                        ListenerResourceDefinition.BUFFER_POOL,
+                        ListenerResourceDefinition.ENABLED,
+                        ListenerResourceDefinition.RESOLVE_PEER_ADDRESS,
+                        ListenerResourceDefinition.MAX_ENTITY_SIZE,
+                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA,
+                        ListenerResourceDefinition.MAX_HEADER_SIZE,
+                        ListenerResourceDefinition.MAX_PARAMETERS,
+                        ListenerResourceDefinition.MAX_HEADERS,
+                        ListenerResourceDefinition.MAX_COOKIES,
+                        ListenerResourceDefinition.ALLOW_ENCODED_SLASH,
+                        ListenerResourceDefinition.DECODE_URL,
+                        ListenerResourceDefinition.URL_CHARSET,
+                        ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE,
+                        ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE,
+                        ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
+                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE,
+                        ListenerResourceDefinition.NO_REQUEST_TIMEOUT,
+                        ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT,
+                        ListenerResourceDefinition.DISALLOWED_METHODS,
+                        ListenerResourceDefinition.SECURE);
+    }
+
+    private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {
+        return builder(FilterRefDefinition.INSTANCE)
+                .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY);
+    }
 }
 

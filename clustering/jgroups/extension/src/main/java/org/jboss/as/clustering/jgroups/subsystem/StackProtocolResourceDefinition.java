@@ -22,13 +22,25 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
+import org.jboss.as.clustering.controller.transform.OperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
@@ -36,6 +48,53 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  * @author Paul Ferraro
  */
 public class StackProtocolResourceDefinition extends ProtocolResourceDefinition {
+
+    @SuppressWarnings("deprecation")
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        ProtocolResourceDefinition.addTransformations(version, builder);
+
+        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+            // See WFLY-6782, add-index parameter was missing from add operation definition
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, ModelDescriptionConstants.ADD_INDEX);
+        }
+
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            // Translate /subsystem=jgroups/stack=*/protocol=*:add() -> /subsystem=jgroups/stack=*:add-protocol()
+            OperationTransformer addTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    PathAddress address = Operations.getPathAddress(operation);
+                    PathAddress stackAddress = address.subAddress(0, address.size() - 1);
+                    ModelNode addProtocolOp = operation.clone();
+                    addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
+                    addProtocolOp.get(ModelDescriptionConstants.OP).set("add-protocol");
+
+                    addProtocolOp = new LegacyPropertyAddOperationTransformer().transformOperation(addProtocolOp);
+
+                    return addProtocolOp;
+                }
+            };
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(addTransformer)).inheritResourceAttributeDefinitions();
+
+            // Translate /subsystem=jgroups/stack=*/protocol=*:remove() -> /subsystem=jgroups/stack=*:remove-protocol()
+            OperationTransformer removeTransformer = new OperationTransformer() {
+                @Override
+                public ModelNode transformOperation(ModelNode operation) {
+                    PathAddress address = Operations.getPathAddress(operation);
+                    String protocol = address.getLastElement().getValue();
+                    PathAddress stackAddress = address.subAddress(0, address.size() - 1);
+                    ModelNode legacyOperation = Util.createOperation("remove-protocol", stackAddress);
+                    legacyOperation.get(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().getName()).set(protocol);
+                    return legacyOperation;
+                }
+            };
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
+        }
+    }
 
     StackProtocolResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> stackBuilderFactory) {
         super(stackBuilderFactory);

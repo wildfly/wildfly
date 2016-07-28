@@ -113,7 +113,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
         final ClassLoader originalClassLoader;
         final ClassLoader jaccClassLoader;
         if (module != null) {
-            jaccClassLoader = SecurityActions.getModuleClassLoader(JACC_MODULE);
+            jaccClassLoader = SecurityActions.getModuleClassLoader(module);
             originalClassLoader = SecurityActions.setThreadContextClassLoader(jaccClassLoader);
         } else {
             jaccClassLoader = null;

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -48,6 +49,10 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
         final ServiceName weldStartService = topLevelDeployment.getServiceName().append(WeldStartService.SERVICE_NAME);
 
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+            return;
+        }
+
+        if(!deploymentUnit.hasAttachment(BeanValidationAttachments.VALIDATOR_FACTORY)) {
             return;
         }
 

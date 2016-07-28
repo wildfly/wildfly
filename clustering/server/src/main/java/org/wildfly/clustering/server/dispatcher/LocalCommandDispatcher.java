@@ -40,6 +40,7 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Non-clustered {@link CommandDispatcher} implementation
@@ -114,6 +115,9 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     @Override
     public void close() {
-        this.executor.shutdown();
+        WildFlySecurityManager.doUnchecked((PrivilegedAction<Void>) () -> {
+            this.executor.shutdown();
+            return null;
+        });
     }
 }

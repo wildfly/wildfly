@@ -46,6 +46,7 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
      */
     public static final ModuleIdentifier AS_MESSAGING = ModuleIdentifier.create("org.wildfly.extension.messaging-activemq");
     public static final ModuleIdentifier JMS_API = ModuleIdentifier.create("javax.jms.api");
+    public static final ModuleIdentifier JTS = ModuleIdentifier.create("org.jboss.jts");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -57,6 +58,11 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             addDependency(moduleSpecification, moduleLoader, AS_MESSAGING);
+            // The messaging-activemq subsystem provides support for injected JMSContext.
+            // one of the beans has a @TransactionScoped scope which requires the CDI context
+            // provided by Narayana in the org.jboss.jts module.
+            // @see CDIDeploymentProcessor
+            addDependency(moduleSpecification, moduleLoader, JTS);
         }
 
     }

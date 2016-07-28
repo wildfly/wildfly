@@ -23,9 +23,9 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.commons.marshall.NotSerializableException;
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
@@ -46,7 +46,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context, CacheProperties properties) {
         super(attributes);
         this.attributes = attributes;
-        this.mutations = !properties.isTransactional() ? new ConcurrentHashSet<>() : null;
+        this.mutations = !properties.isTransactional() ? ConcurrentHashMap.newKeySet() : null;
         this.mutator = mutator;
         this.context = context;
         this.properties = properties;

@@ -110,7 +110,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(INSTANCE_ID, new JobOperationUpdateStepHandler() {
+        resourceRegistration.registerReadOnlyAttribute(INSTANCE_ID, new JobOperationReadOnlyStepHandler() {
             @Override
             protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
                 final JobInstance jobInstance = jobOperator.getJobInstance(Long.parseLong(context.getCurrentAddressValue()));
@@ -195,7 +195,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
         });
     }
 
-    abstract static class JobExecutionOperationStepHandler extends JobOperationUpdateStepHandler {
+    abstract static class JobExecutionOperationStepHandler extends JobOperationReadOnlyStepHandler {
         @Override
         protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
             final JobExecution jobExecution = jobOperator.getJobExecution(Long.parseLong(context.getCurrentAddressValue()));

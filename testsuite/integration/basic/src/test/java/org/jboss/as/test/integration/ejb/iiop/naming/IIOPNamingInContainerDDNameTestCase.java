@@ -34,7 +34,8 @@ public class IIOPNamingInContainerDDNameTestCase {
     public static Archive<?> descriptorOverrideDeploy() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(IIOPNamingInContainerDDNameTestCase.class.getPackage())
-                .addAsManifestResource(IIOPNamingInContainerDDNameTestCase.class.getPackage(), "jboss-ejb3-naming.xml", "jboss-ejb3.xml");
+                .addAsManifestResource(IIOPNamingInContainerDDNameTestCase.class.getPackage(), "jboss-ejb3-naming.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(IIOPNamingInContainerDDNameTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
     }
 
     /**
