@@ -290,4 +290,72 @@
                                                  router-inet-address="${node0}"/>
     </target>
 
+    <!-- two cluster test deployment:
+         4 nodes: ${node0}, ${node1}, ${node2}, ${node3}
+         clusters: clusterA (node0, node1), clusterB (node2, node3)
+     -->
+    <target name="build-clustering-two-clusters" description="Builds server configurations for EJBClient testing on two clusters">
+
+        <echo>Building two cluster configs with clusters clusterA, clusterB</echo>
+
+        <!-- clusterA, node 0, mcast 0 -->
+        <echo message="Building config clustering-two-clusters clusterA-node0"/>
+        <copy todir="target/wildfly-clusterA-node0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clusterA-node0"
+                                                 managementIPAddress="${node0}" publicIPAddress="${node0}"
+                                                 udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
+        <ts.config-as.add-port-offset name="wildfly-clusterA-node0"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-clusterA-node0" mcast.ttl="${mcast.ttl}"/>
+        <!--ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="http-remoting"/-->
+        <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="http-remoting" securityRealm="PasswordRealm" userName="remoteejbuser"/>
+        <ts.config-as.add-identity-realm name="wildfly-clusterA-node0" realmName="PasswordRealm" secret="cmVtQHRlZWpicGFzc3dkMQ=="/>
+
+        <ts.config-as.change-cache-container-name name="wildfly-clusterA-node0" container="ejb" newName="ejb-forwarder"/>
+        <ts.config-as.change-passivation-store-cache-container-name name="wildfly-clusterA-node0" storeName="infinispan" newContainerName="ejb-forwarder"/>
+        <ts.config-as.change-ejb-remote-connector-cluster-name name="wildfly-clusterA-node0" cluster="ejb-forwarder"/>
+
+        <!-- clusterA, node 1, mcast 0 -->
+        <echo message="Building config clustering-two-clusters clusterA-node1"/>
+        <copy todir="target/wildfly-clusterA-node1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clusterA-node1"
+                                                 managementIPAddress="${node1}" publicIPAddress="${node1}"
+                                                 udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
+        <ts.config-as.add-port-offset name="wildfly-clusterA-node1" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-clusterA-node1" mcast.ttl="${mcast.ttl}"/>
+        <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node1" node="${node2}" remotePort="8280" protocol="http-remoting" securityRealm="PasswordRealm" userName="remoteejbuser" />
+        <ts.config-as.add-identity-realm name="wildfly-clusterA-node1" realmName="PasswordRealm" secret="cmVtQHRlZWpicGFzc3dkMQ=="/>
+
+        <ts.config-as.change-cache-container-name name="wildfly-clusterA-node1" container="ejb" newName="ejb-forwarder"/>
+        <ts.config-as.change-passivation-store-cache-container-name name="wildfly-clusterA-node1" storeName="infinispan" newContainerName="ejb-forwarder"/>
+        <ts.config-as.change-ejb-remote-connector-cluster-name name="wildfly-clusterA-node1" cluster="ejb-forwarder"/>
+
+
+        <!-- clusterB, node 2, mcast 1 -->
+        <echo message="Building config clustering-two-clusters clusterB-node0"/>
+        <copy todir="target/wildfly-clusterB-node0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clusterB-node0"
+                                                 managementIPAddress="${node2}" publicIPAddress="${node2}"
+                                                 udpMcastAddress="${mcast-clusterB}" diagnosticsMcastAddress="${mcast-clusterB}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterB}"/>
+        <ts.config-as.add-port-offset name="wildfly-clusterB-node0" offset="200" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-clusterB-node0" mcast.ttl="${mcast.ttl}"/>
+
+        <!-- clusterB, node 3, mcast 1 -->
+        <echo message="Building config clustering-two-clusters-clusterB-node1"/>
+        <copy todir="target/wildfly-clusterB-node1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clusterB-node1"
+                                                 managementIPAddress="${node3}" publicIPAddress="${node3}"
+                                                 udpMcastAddress="${mcast-clusterB}" diagnosticsMcastAddress="${mcast-clusterB}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterB}"/>
+        <ts.config-as.add-port-offset name="wildfly-clusterB-node1" offset="300" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-clusterB-node1" mcast.ttl="${mcast.ttl}"/>
+
+    </target>
+
 </project>

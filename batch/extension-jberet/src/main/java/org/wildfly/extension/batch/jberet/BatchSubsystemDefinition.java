@@ -50,6 +50,7 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.as.threads.ThreadFactoryResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
@@ -200,7 +201,11 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                             context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), defaultThreadPool.asString(), JobExecutor.class),
                             JobExecutor.class,
                             service.getJobExecutorInjector()
-                    ).install();
+                    )
+                    // Only start this service if there are deployments present, allow it to be stopped as deployments
+                    // are removed.
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install();
         }
     }
 }

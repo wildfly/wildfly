@@ -149,8 +149,31 @@ public class DeployWithRuntimeNameTestCase {
         checkURL("OtherSimpleServlet/page.html", "Version2",false);
     }
 
+    @Test
+    public void testUndeployWithDisabledSameRuntimeName() throws Exception {
+        warFile = createWarFile("Version1");
+        ctx.handle(buildDeployCommand(RUNTIME_NAME, APP_NAME));
+        checkURL("SimpleServlet/hello", "SimpleHelloWorldServlet", false);
+        checkURL("SimpleServlet/page.html", "Version1", false);
+        warFile = createWarFile("Version2");
+        ctx.handle(buildDisabledDeployCommand(RUNTIME_NAME, OTHER_APP_NAME));
+        checkURL("SimpleServlet/hello", "SimpleHelloWorldServlet", false);
+        checkURL("SimpleServlet/page.html", "Version1", false);
+        ctx.handle(buildUndeployCommand(OTHER_APP_NAME));
+        checkURL("SimpleServlet/hello", "SimpleHelloWorldServlet", false);
+        checkURL("SimpleServlet/page.html", "Version1", false);
+    }
+
     private String buildDeployCommand(String runtimeName, String name) {
         return "deploy " + warFile.getAbsolutePath() + " --runtime-name=" + runtimeName + " --name=" + name;
+    }
+
+    private String buildDisabledDeployCommand(String runtimeName, String name) {
+        return "deploy " + warFile.getAbsolutePath() + " --runtime-name=" + runtimeName + " --name=" + name + " --disabled";
+    }
+
+    private String buildUndeployCommand(String name) {
+        return "/deployment=" + name + ":undeploy()";
     }
 
     private void checkURL(String path, String content, boolean shouldFail) throws Exception {

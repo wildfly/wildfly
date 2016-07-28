@@ -22,8 +22,12 @@
 
 package org.jboss.as.test.integration.ws.serviceref;
 
+import java.io.File;
+import java.io.FilePermission;
+import java.net.SocketPermission;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.PropertyPermission;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -42,6 +46,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Serviceref through ejb3 deployment descriptor.
@@ -72,15 +78,28 @@ public class ServiceRefTestCase {
 
         final Properties properties = new Properties();
         properties.putAll(System.getProperties());
+        final String node0 = NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0"));
         if(properties.containsKey("node0")) {
-            properties.put("node0", NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0")));
+            properties.put("node0", node0);
         }
         return ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
                 .addClasses(EJB3Bean.class, EndpointInterface.class, EndpointService.class, StatelessBean.class, StatelessRemote.class, CdiBean.class)
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(ServiceRefTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                // all the following permissions are needed because EndpointService directly extends javax.xml.ws.Service class
+                // and CXF guys are not willing to add more privileged blocks into their code, thus deployments need to have
+                // the following permissions (note that the wsdl.properties permission is needed by wsdl4j)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read"),
+                        new PropertyPermission("user.dir", "read"),
+                        new RuntimePermission("getClassLoader"),
+                        new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
+                        new RuntimePermission("createClassLoader"),
+                        new RuntimePermission("accessDeclaredMembers"),
+                        new SocketPermission(node0 + ":8080", "connect,resolve")
+                ), "jboss-permissions.xml");
     }
 
     @Test

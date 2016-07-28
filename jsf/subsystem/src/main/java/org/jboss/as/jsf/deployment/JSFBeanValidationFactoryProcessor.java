@@ -46,9 +46,10 @@ public class JSFBeanValidationFactoryProcessor implements DeploymentUnitProcesso
 
         // Get the CDI-enabled ValidatorFactory and add it to the servlet context
         ValidatorFactory validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-
-        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY,
-                new ServletContextAttribute(VALIDATOR_FACTORY_KEY, validatorFactory));
+        if(validatorFactory != null) {
+            deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY,
+                    new ServletContextAttribute(VALIDATOR_FACTORY_KEY, validatorFactory));
+        }
     }
 
     @Override

@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -39,6 +40,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import org.wildfly.extension.undertow.logging.UndertowLogger;
+
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.OptionMap;
@@ -139,7 +143,15 @@ public abstract class ListenerService<T> implements Service<T> {
             registerBinding();
         } catch (IOException e) {
             cleanFailedStart();
-            throw new StartException("Could not start http listener", e);
+            if (e instanceof BindException) {
+                final StringBuilder sb = new StringBuilder().append(e.getLocalizedMessage());
+                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                if (socketAddress != null)
+                    sb.append(" ").append(socketAddress);
+                throw new StartException(sb.toString());
+            } else {
+                throw UndertowLogger.ROOT_LOGGER.couldNotStartListener(name, e);
+            }
         }
     }
 

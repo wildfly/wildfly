@@ -21,12 +21,6 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.RemoveException;
-
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
@@ -64,19 +58,9 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             context.putPrivateData(ComponentInstance.class, instance);
             return context.proceed();
         } catch (Exception ex) {
-            // Detect app exception
-            if (component.getApplicationException(ex.getClass(), context.getMethod()) != null) {
-                // it's an application exception, just throw it back.
-                throw ex;
-            }
-            if (ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
-                throw ex;
-            }
-            if (!(ex instanceof RemoveException)) {
-                if (ex instanceof RuntimeException || ex instanceof RemoteException) {
-                    ROOT_LOGGER.tracef(ex, "Removing bean %s because of exception", sessionId);
-                    instance.discard();
-                }
+            if(component.shouldDiscard(ex, context.getMethod())) {
+                ROOT_LOGGER.tracef(ex, "Removing bean %s because of exception", sessionId);
+                instance.discard();
             }
             throw ex;
         } catch (final Error e) {

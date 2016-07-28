@@ -35,8 +35,9 @@ public enum JGroupsModel implements Model {
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
     VERSION_4_0_0(4, 0, 0),
+    VERSION_4_1_0(4, 1, 0),
     ;
-    static final JGroupsModel CURRENT = VERSION_4_0_0;
+    static final JGroupsModel CURRENT = VERSION_4_1_0;
 
     private final ModelVersion version;
 

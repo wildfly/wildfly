@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>10.1.0.Final-SNAPSHOT</version>
+        <version>11.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-feature-pack</artifactId>
@@ -491,7 +491,6 @@
                                 </goals>
                                 <phase>validate</phase>
                                 <configuration>
-                                    <debug>true</debug>
                                     <verbose>true</verbose>
                                     <maxmemory>2400m</maxmemory>
                                     <!-- To prevent problems with author names written in non-UTF-8:

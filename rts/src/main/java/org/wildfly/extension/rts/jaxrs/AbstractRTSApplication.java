@@ -28,7 +28,6 @@ import javax.ws.rs.core.Application;
 
 import org.jboss.resteasy.core.AcceptHeaderByFileSuffixFilter;
 import org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPFilter;
-import org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPInterceptor;
 import org.jboss.resteasy.plugins.interceptors.encoding.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.encoding.GZIPEncodingInterceptor;
 import org.jboss.resteasy.plugins.providers.DataSourceProvider;
@@ -91,7 +90,6 @@ public abstract class AbstractRTSApplication extends Application {
         providers.add(AcceptHeaderByFileSuffixFilter.class);
         providers.add(AcceptEncodingGZIPFilter.class);
         providers.add(GZIPEncodingInterceptor.class);
-        providers.add(AcceptEncodingGZIPInterceptor.class);
         providers.add(GZIPDecodingInterceptor.class);
 
         return providers;

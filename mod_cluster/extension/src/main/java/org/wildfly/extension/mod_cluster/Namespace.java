@@ -25,6 +25,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Jean-Frederic Clere
@@ -60,7 +61,7 @@ public enum Namespace {
      * @return the URI
      */
     public String getUri() {
-        return String.format("urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
     }
 
     public XMLElementReader<List<ModelNode>> getXMLReader() {

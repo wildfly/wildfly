@@ -174,7 +174,6 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         }
     }
 
-    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
@@ -221,8 +220,6 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         } else {
             EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.buildTransformation(version, parent));
         }
-
-        PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
     // Transform /subsystem=jgroups/stack=*/transport=* -> /subsystem=jgroups/stack=*/transport=TRANSPORT

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
+    <client-context>
+        <ejb-receivers>
+            <remoting-ejb-receiver outbound-connection-ref="remote-ejb-connection"/>
+        </ejb-receivers>
+        <clusters>
+            <cluster name="ejb" max-allowed-connected-nodes="20" security-realm="PasswordRealm" username="remoteejbuser">
+                <connection-creation-options>
+                    <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
+                    <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="true"/>
+                </connection-creation-options>
+            </cluster>
+            <cluster name="ejb-forwarder" max-allowed-connected-nodes="20" security-realm="PasswordRealm" username="remoteejbuser">
+                <connection-creation-options>
+                    <property name="org.xnio.Options.SSL_ENABLED" value="false"/>
+                    <property name="org.xnio.Options.SASL_POLICY_NOANONYMOUS" value="true"/>
+                </connection-creation-options>
+            </cluster>
+        </clusters>
+   </client-context>
+</jboss-ejb-client>

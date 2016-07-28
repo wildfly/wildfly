@@ -29,7 +29,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.messaging.activemq.deployment.CDIDeploymentProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBindingProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryResourceReferenceProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionAnnotationProcessor;
@@ -39,6 +38,7 @@ import org.wildfly.extension.messaging.activemq.deployment.JMSDestinationDefinit
 import org.wildfly.extension.messaging.activemq.deployment.MessagingDependencyProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlParsingDeploymentUnitProcessor;
+import org.wildfly.extension.messaging.activemq.deployment.injection.CDIDeploymentProcessor;
 
 /**
  * Add handler for the messaging subsystem.
