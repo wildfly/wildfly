@@ -31,6 +31,7 @@ import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -72,6 +73,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import javax.security.auth.AuthPermission;
 
 /**
  * Unit test for custom login modules in authentication.
@@ -138,6 +141,7 @@ public class CustomLoginModuleTestCase {
         war.addAsWebInfResource(CustomLoginModuleTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.setWebXML(CustomLoginModuleTestCase.class.getPackage(), "web.xml");
         war.addClass(CustomTestLoginModule.class);
+        war.addAsManifestResource(createPermissionsXmlAsset(new AuthPermission("modifyPrincipals")), "permissions.xml");
         return war;
     }
 

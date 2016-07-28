@@ -170,6 +170,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         configuration.setLargeMessagesDirectory(pathConfig.resolveLargeMessagePath(pathManager));
         configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager));
         configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager));
+        pathConfig.registerCallbacks(pathManager);
 
         try {
             // Update the acceptor/connector port/host values from the

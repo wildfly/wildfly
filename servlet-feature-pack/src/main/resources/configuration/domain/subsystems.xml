@@ -11,4 +11,9 @@
         <subsystem supplement="web-build">security.xml</subsystem>
         <subsystem>undertow.xml</subsystem>
     </subsystems>
+    <subsystems name="load-balancer">
+        <subsystem>logging.xml</subsystem>
+        <subsystem>io.xml</subsystem>
+        <subsystem>undertow-load-balancer.xml</subsystem>
+    </subsystems>
 </config>

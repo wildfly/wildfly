@@ -22,9 +22,13 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Attribute.*;
+import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability.*;
+
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -38,7 +42,6 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.singleton.SingletonServiceName;
-import org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability;
 
 /**
  * Builds a service that provides a {@link SingletonPolicy}.
@@ -49,34 +52,34 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
     private final InjectedValue<SingletonServiceBuilderFactory> factory = new InjectedValue<>();
     private final InjectedValue<SingletonElectionPolicy> policy = new InjectedValue<>();
 
-    private final String name;
+    private final PathAddress address;
 
     private volatile String containerName;
     private volatile String cacheName;
     private volatile int quorum;
 
-    public SingletonPolicyBuilder(String name) {
-        this.name = name;
+    public SingletonPolicyBuilder(PathAddress address) {
+        this.address = address;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return (this.name != null) ? Capability.POLICY.getDefinition().getCapabilityServiceName(this.name) : Capability.POLICY.getDefinition().getCapabilityServiceName();
+        return POLICY.getServiceName(this.address);
     }
 
     @Override
     public ServiceBuilder<SingletonPolicy> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<SingletonPolicy>(this)))
                 .addDependency(SingletonServiceName.BUILDER.getServiceName(this.containerName, this.cacheName), SingletonServiceBuilderFactory.class, this.factory)
-                .addDependency(new ElectionPolicyServiceNameProvider(this.name).getServiceName(), SingletonElectionPolicy.class, this.policy)
+                .addDependency(new ElectionPolicyServiceNameProvider(this.address).getServiceName(), SingletonElectionPolicy.class, this.policy)
         ;
     }
 
     @Override
     public Builder<SingletonPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.containerName = SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER.getDefinition().resolveModelAttribute(context, model).asString();
-        this.cacheName = SingletonPolicyResourceDefinition.Attribute.CACHE.getDefinition().resolveModelAttribute(context, model).asString();
-        this.quorum = SingletonPolicyResourceDefinition.Attribute.QUORUM.getDefinition().resolveModelAttribute(context, model).asInt();
+        this.containerName = CACHE_CONTAINER.getDefinition().resolveModelAttribute(context, model).asString();
+        this.cacheName = CACHE.getDefinition().resolveModelAttribute(context, model).asString();
+        this.quorum = QUORUM.getDefinition().resolveModelAttribute(context, model).asInt();
         return this;
     }
 

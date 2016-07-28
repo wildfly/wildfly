@@ -31,6 +31,10 @@
        <attribute name="a">
           <inject bean="jboss:name=A"/>
        </attribute>
+
+        <attribute name="injectedCount">
+            <inject bean="jboss:name=A" property="count"/>
+        </attribute>
     </mbean>
 
 </server>

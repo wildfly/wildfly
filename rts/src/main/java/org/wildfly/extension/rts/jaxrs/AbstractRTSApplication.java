@@ -28,7 +28,6 @@ import javax.ws.rs.core.Application;
 
 import org.jboss.resteasy.core.AcceptHeaderByFileSuffixFilter;
 import org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPFilter;
-import org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPInterceptor;
 import org.jboss.resteasy.plugins.interceptors.encoding.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.encoding.GZIPEncodingInterceptor;
 import org.jboss.resteasy.plugins.providers.DataSourceProvider;
@@ -48,13 +47,6 @@ import org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlSeeAlsoProvider;
 import org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlTypeProvider;
 import org.jboss.resteasy.plugins.providers.jaxb.MapProvider;
 import org.jboss.resteasy.plugins.providers.jaxb.XmlJAXBContextFinder;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JettisonElementProvider;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JettisonXmlRootElementProvider;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JettisonXmlSeeAlsoProvider;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JettisonXmlTypeProvider;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JsonCollectionProvider;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JsonJAXBContextFinder;
-import org.jboss.resteasy.plugins.providers.jaxb.json.JsonMapProvider;
 
 /**
  *
@@ -69,7 +61,6 @@ public abstract class AbstractRTSApplication extends Application {
 
         classes.addAll(getDefaultProviders());
         classes.addAll(getJaxbProviders());
-        classes.addAll(getJettisonProviders());
         classes.addAll(getDefaultInterceptors());
 
         return classes;
@@ -99,7 +90,6 @@ public abstract class AbstractRTSApplication extends Application {
         providers.add(AcceptHeaderByFileSuffixFilter.class);
         providers.add(AcceptEncodingGZIPFilter.class);
         providers.add(GZIPEncodingInterceptor.class);
-        providers.add(AcceptEncodingGZIPInterceptor.class);
         providers.add(GZIPDecodingInterceptor.class);
 
         return providers;
@@ -118,20 +108,6 @@ public abstract class AbstractRTSApplication extends Application {
 
         // Context resolvers
         providers.add(XmlJAXBContextFinder.class);
-
-        return providers;
-    }
-
-    private Set<Class<?>> getJettisonProviders() {
-        Set<Class<?>> providers = new HashSet<>();
-
-        providers.add(JettisonElementProvider.class);
-        providers.add(JettisonXmlTypeProvider.class);
-        providers.add(JsonMapProvider.class);
-        providers.add(JettisonXmlRootElementProvider.class);
-        providers.add(JettisonXmlSeeAlsoProvider.class);
-        providers.add(JsonCollectionProvider.class);
-        providers.add(JsonJAXBContextFinder.class);
 
         return providers;
     }

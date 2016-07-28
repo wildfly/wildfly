@@ -25,8 +25,8 @@ package org.jboss.as.clustering.controller;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
-import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -34,15 +34,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.TransformerOperationAttachment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Generic add operation step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
@@ -59,22 +59,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        this(descriptor, handler, new ReloadRequiredWriteAttributeHandler(descriptor.getAttributes()) {
-            @Override
-            protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
-                super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
-
-                if (!context.isBooting()) {
-                    TransformerOperationAttachment attachment = TransformerOperationAttachment.getOrCreate(context);
-                    InitialAttributeValueOperationContextAttachment valuesAttachment = attachment.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
-                    if (valuesAttachment == null) {
-                        valuesAttachment = new InitialAttributeValueOperationContextAttachment();
-                        attachment.attach(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT, valuesAttachment);
-                    }
-                    valuesAttachment.putIfAbsentInitialValue(Operations.getPathAddress(operation), attributeName, oldValue);
-                }
-            }
-        });
+        this(descriptor, handler, new ReloadRequiredWriteAttributeHandler(descriptor));
     }
 
     AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, OperationStepHandler writeAttributeHandler) {
@@ -137,9 +122,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     private static void addRequiredChildren(OperationContext context, Collection<PathElement> paths, BiPredicate<Resource, PathElement> present) {
-        for (PathElement path : paths) {
-            context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL);
-        }
+        paths.forEach(path -> context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL));
     }
 
     @Override
@@ -164,7 +147,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        this.descriptor.getCapabilities().forEach(capability -> context.registerCapability(capability.getRuntimeCapability(address)));
+        this.descriptor.getCapabilities().forEach(capability -> context.registerCapability(capability.resolve(address)));
 
         ModelNode model = resource.getModel();
         this.attributes.stream()
@@ -175,8 +158,10 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     @Override
     public void register(ManagementResourceRegistration registration) {
         SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_NONE);
-        this.descriptor.getAttributes().forEach(attribute -> builder.addParameter(attribute));
-        this.descriptor.getExtraParameters().forEach(attribute -> builder.addParameter(attribute));
+        if (registration.isOrderedChildResource()) {
+            builder.addParameter(SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ADD_INDEX, ModelType.INT, true).build());
+        }
+        Stream.concat(this.descriptor.getAttributes().stream(), this.descriptor.getExtraParameters().stream()).forEach(attribute -> builder.addParameter(attribute));
         registration.registerOperationHandler(builder.build(), this);
 
         this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this.writeAttributeHandler));

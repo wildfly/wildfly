@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.Bean;
@@ -54,11 +55,11 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
     private final Time timeout;
     private final PassivationListener<T> listener;
 
-    public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, boolean lockOnRead, Time timeout, PassivationListener<T> listener) {
+    public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, CacheProperties properties, Time timeout, PassivationListener<T> listener) {
         this.beanName = beanName;
         this.groupFactory = groupFactory;
         this.cache = cache;
-        this.findCache = lockOnRead ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
+        this.findCache = properties.isLockOnRead() ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
         this.timeout = timeout;
         this.listener = listener;
     }

@@ -815,4 +815,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 86, value = "Unable to load module %s")
     OperationFailedException unableToLoadModule(String moduleName, @Cause ModuleLoadException cause);
+
+    @Message(id = 87, value = "Unable to load connector service factory class: %s")
+    OperationFailedException unableToLoadConnectorServiceFactoryClass(String factroyClass);
+
 }

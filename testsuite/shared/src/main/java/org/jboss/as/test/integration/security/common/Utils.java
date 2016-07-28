@@ -21,15 +21,18 @@
  */
 package org.jboss.as.test.integration.security.common;
 
+import static org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils.OID_KERBEROS_V5;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -77,6 +81,10 @@ import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -1043,5 +1051,58 @@ public class Utils extends CoreUtils {
         }
         lc.login();
         return lc;
+    }
+
+    /**
+     * Creates Kerberos TGS ticket for given user to access given server.
+     *
+     * @param user
+     * @param pass
+     * @param serverName
+     * @return
+     */
+    public static byte[] createKerberosTicketForServer(final String user, final String pass, final GSSName serverName)
+            throws MalformedURLException, LoginException, PrivilegedActionException {
+        Objects.requireNonNull(serverName);
+        final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
+        try {
+            Configuration.setConfiguration(krb5Configuration);
+            final LoginContext lc = loginWithKerberos(krb5Configuration, user, pass);
+            try {
+                return Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<byte[]>() {
+                    public byte[] run() throws Exception {
+                        final GSSManager manager = GSSManager.getInstance();
+                        final Oid oid = new Oid(OID_KERBEROS_V5);
+                        final GSSContext gssContext = manager.createContext(serverName.canonicalize(oid), oid, null, 60);
+                        gssContext.requestMutualAuth(true);
+                        gssContext.requestCredDeleg(true);
+                        return gssContext.initSecContext(new byte[0], 0, 0);
+                    }
+                });
+            } finally {
+                lc.logout();
+            }
+        } finally {
+            krb5Configuration.resetConfiguration();
+        }
+    }
+
+    /**
+     * Asserts that the given HttpResponse contains header with given name and value.
+     *
+     * @param resp HttpResponse (from Apache HttpClient)
+     * @param headerName name of HTTP header
+     * @param expectedVal expected HTTP header value
+     */
+    public static void assertHttpHeader(HttpResponse resp, String headerName, String expectedVal) {
+        final Header[] authnHeaders = resp.getHeaders(headerName);
+        assertTrue("Header " + headerName + " should be present in the HTTP response",
+                authnHeaders != null && authnHeaders.length > 0);
+        for (final Header header : authnHeaders) {
+            if (expectedVal.equals(header.getValue())) {
+                return;
+            }
+        }
+        fail("HTTP Header not found '" + headerName + ": " + expectedVal + "'");
     }
 }

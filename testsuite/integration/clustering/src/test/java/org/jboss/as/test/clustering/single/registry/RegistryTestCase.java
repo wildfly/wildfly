@@ -21,10 +21,12 @@
  */
 package org.jboss.as.test.clustering.single.registry;
 
-import static org.junit.Assert.*;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -58,6 +60,9 @@ public class RegistryTestCase {
     public static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(RegistryRetriever.class.getPackage());
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission(NODE_NAME_PROPERTY, "read")
+        ), "permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }

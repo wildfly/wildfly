@@ -30,6 +30,7 @@ import org.jboss.dmr.ModelType;
  * Enumeration of management metrics for cache eviction
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public enum EvictionMetric implements Metric<Cache<?, ?>> {
 
     EVICTIONS(MetricKeys.EVICTIONS, ModelType.LONG) {

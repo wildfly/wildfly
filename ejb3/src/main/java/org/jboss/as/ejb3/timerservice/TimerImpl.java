@@ -188,7 +188,7 @@ public class TimerImpl implements Timer {
 
         // for non-persistent timers throws an exception (mandated by EJB3 spec)
         if (this.persistent == false) {
-            throw EjbLogger.ROOT_LOGGER.invalidTimerHandlersForPersistentTimers("EJB3.1 Spec 18.2.6");
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("EJB3.1 Spec 18.2.6");
         }
         return this.handle;
     }
@@ -253,7 +253,7 @@ public class TimerImpl implements Timer {
         // first check the validity of the timer state
         this.assertTimerState();
         if (this.nextExpiration == null) {
-            throw EjbLogger.ROOT_LOGGER.noMoreTimeoutForTimer(this);
+            throw EjbLogger.EJB3_TIMER_LOGGER.noMoreTimeoutForTimer(this);
         }
         return this.nextExpiration;
     }
@@ -287,7 +287,7 @@ public class TimerImpl implements Timer {
     @Override
     public ScheduleExpression getSchedule() throws IllegalStateException, EJBException {
         this.assertTimerState();
-        throw EjbLogger.ROOT_LOGGER.invalidTimerNotCalendarBaseTimer(this);
+        throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerNotCalendarBaseTimer(this);
     }
 
     /**
@@ -300,7 +300,7 @@ public class TimerImpl implements Timer {
         // first check the validity of the timer state
         this.assertTimerState();
         if (this.nextExpiration == null) {
-            throw EjbLogger.ROOT_LOGGER.noMoreTimeoutForTimer(this);
+            throw EjbLogger.EJB3_TIMER_LOGGER.noMoreTimeoutForTimer(this);
         }
         long currentTimeInMillis = System.currentTimeMillis();
         long nextTimeoutInMillis = this.nextExpiration.getTime();
@@ -454,9 +454,9 @@ public class TimerImpl implements Timer {
      */
     protected void assertTimerState() {
         if (timerState == TimerState.EXPIRED)
-            throw EjbLogger.ROOT_LOGGER.timerHasExpired();
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerHasExpired();
         if (timerState == TimerState.CANCELED)
-            throw EjbLogger.ROOT_LOGGER.timerWasCanceled();
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerWasCanceled();
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
     }
 

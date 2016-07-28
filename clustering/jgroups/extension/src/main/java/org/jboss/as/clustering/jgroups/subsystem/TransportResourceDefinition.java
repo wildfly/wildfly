@@ -30,10 +30,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -75,7 +75,6 @@ import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -96,12 +95,12 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding", SocketBinding.class),
+        DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding"),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name, Class<?> serviceType) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(serviceType).build();
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).build();
         }
 
         @Override
@@ -110,7 +109,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         }
 
         @Override
-        public RuntimeCapability<Void> getRuntimeCapability(PathAddress address) {
+        public RuntimeCapability<Void> resolve(PathAddress address) {
             PathAddress stackAddress = address.getParent();
             return this.definition.fromBaseCapability(stackAddress.getLastElement().getValue() + "." + address.getLastElement().getValue());
         }
@@ -118,7 +117,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         @Deprecated SHARED("shared", ModelType.BOOLEAN, new ModelNode(false), JGroupsModel.VERSION_4_0_0),
-        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(RequiredCapability.SOCKET_BINDING, Capability.DIAGNOSTICS_SOCKET_BINDING)),
+        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(Capability.DIAGNOSTICS_SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING)),
         SITE("site", ModelType.STRING),
         RACK("rack", ModelType.STRING),
         MACHINE("machine", ModelType.STRING),
@@ -175,7 +174,6 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         }
     }
 
-    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
@@ -222,8 +220,6 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         } else {
             EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.buildTransformation(version, parent));
         }
-
-        PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
     // Transform /subsystem=jgroups/stack=*/transport=* -> /subsystem=jgroups/stack=*/transport=TRANSPORT

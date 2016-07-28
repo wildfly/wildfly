@@ -33,8 +33,10 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
@@ -172,6 +174,8 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                             activator.getSubjectFactoryInjector())
+                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
+                            ServerSecurityManager.class, activator.getServerSecurityManager())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)

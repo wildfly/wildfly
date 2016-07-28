@@ -59,8 +59,6 @@ public class RemoteNamingTestCase {
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addClasses(BindingEjb.class)
-                // dependency to org.jboss.as.naming module is used to grant JndiPermission
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming\n"), "MANIFEST.MF")
                 // BindingEjb binds java:jboss/exported/test and java:jboss/exported/context/test
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new JndiPermission("java:jboss/exported/test", "bind"),

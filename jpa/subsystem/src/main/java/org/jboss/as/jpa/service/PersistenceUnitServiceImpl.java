@@ -25,6 +25,7 @@ package org.jboss.as.jpa.service;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -41,6 +42,7 @@ import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -85,6 +87,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
+    private final SetupAction javaNamespaceSetup;
 
     public PersistenceUnitServiceImpl(
             final ClassLoader classLoader,
@@ -93,7 +96,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final PersistenceProvider persistenceProvider,
             final PersistenceUnitRegistryImpl persistenceUnitRegistry,
             final ServiceName deploymentUnitServiceName,
-            final ValidatorFactory validatorFactory) {
+            final ValidatorFactory validatorFactory, SetupAction javaNamespaceSetup) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
@@ -101,6 +104,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.persistenceUnitRegistry = persistenceUnitRegistry;
         this.deploymentUnitServiceName = deploymentUnitServiceName;
         this.validatorFactory = validatorFactory;
+        this.javaNamespaceSetup = javaNamespaceSetup;
     }
 
     @Override
@@ -121,6 +125,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
                                 ClassLoader old = Thread.currentThread().getContextClassLoader();
                                 Thread.currentThread().setContextClassLoader(classLoader);
+                                if(javaNamespaceSetup != null) {
+                                    javaNamespaceSetup.setup(Collections.<String, Object>emptyMap());
+                                }
 
                                 try {
                                     PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
@@ -174,6 +181,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     Thread.currentThread().setContextClassLoader(old);
                                     pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
                                     WritableServiceBasedNamingStore.popOwner();
+
+                                    if (javaNamespaceSetup != null) {
+                                        javaNamespaceSetup.teardown(Collections.<String, Object>emptyMap());
+                                    }
                                 }
                                 return null;
                             }
@@ -213,19 +224,31 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 } else {
                                     ROOT_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                 }
-                                if (entityManagerFactory != null) {
-                                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                                    try {
-                                        if (entityManagerFactory.isOpen()) {
-                                            entityManagerFactory.close();
+                                ClassLoader old = Thread.currentThread().getContextClassLoader();
+                                Thread.currentThread().setContextClassLoader(classLoader);
+                                if(javaNamespaceSetup != null) {
+                                    javaNamespaceSetup.setup(Collections.<String, Object>emptyMap());
+                                }
+                                try {
+                                    if (entityManagerFactory != null) {
+                                        WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                                        try {
+                                            if (entityManagerFactory.isOpen()) {
+                                                entityManagerFactory.close();
+                                            }
+                                        } catch (Throwable t) {
+                                            ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                                        } finally {
+                                            entityManagerFactory = null;
+                                            pu.setTempClassLoaderFactory(null);
+                                            WritableServiceBasedNamingStore.popOwner();
+                                            persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
                                         }
-                                    } catch (Throwable t) {
-                                        ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
-                                    } finally {
-                                        entityManagerFactory = null;
-                                        pu.setTempClassLoaderFactory(null);
-                                        WritableServiceBasedNamingStore.popOwner();
-                                        persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
+                                    }
+                                } finally {
+                                    Thread.currentThread().setContextClassLoader(old);
+                                    if (javaNamespaceSetup != null) {
+                                        javaNamespaceSetup.teardown(Collections.<String, Object>emptyMap());
                                     }
                                 }
                                 if (proxyBeanManager != null) {

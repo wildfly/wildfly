@@ -23,6 +23,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.Schema;
 
+import java.util.Locale;
+
 /**
  * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
@@ -61,6 +63,6 @@ public enum InfinispanSchema implements Schema<InfinispanSchema> {
 
     @Override
     public String getNamespaceUri() {
-        return String.format("urn:jboss:domain:infinispan:%d.%d", this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:jboss:domain:infinispan:%d.%d", this.major, this.minor);
     }
 }

@@ -173,7 +173,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                     Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.SCOPED);
 
                     response.putHeader(FORK.ID, message.getHeader(FORK.ID));
-                    response.putHeader(this.id, new Header(Header.RSP, 0, header.corrId));
+                    response.putHeader(this.id, new Header(Header.RSP, header.req_id, header.corrId));
                     response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
                     channel.down(new Event(Event.MSG, response));

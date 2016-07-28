@@ -109,7 +109,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.flush();
                 info = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
-                EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
+                EjbLogger.EJB3_TIMER_LOGGER.failedToPersistTimer(timer, e);
                 return;
             }
         }
@@ -123,7 +123,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.flush();
                 primaryKey = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
-                EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
+                EjbLogger.EJB3_TIMER_LOGGER.failedToPersistTimer(timer, e);
                 return;
             }
         }
@@ -192,7 +192,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.flush();
                 info = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
-                EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
+                EjbLogger.EJB3_TIMER_LOGGER.failedToPersistTimer(timer, e);
                 return;
             }
         }
@@ -206,7 +206,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
                 marshaller.flush();
                 primaryKey = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
-                EjbLogger.ROOT_LOGGER.failedToPersistTimer(timer, e);
+                EjbLogger.EJB3_TIMER_LOGGER.failedToPersistTimer(timer, e);
                 return;
             }
         }

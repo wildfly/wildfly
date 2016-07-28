@@ -49,6 +49,9 @@ import org.picketlink.idm.model.basic.User;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import java.io.FilePermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -66,7 +69,11 @@ public class PartitionManagerProducerTestCase {
                    .create(WebArchive.class, "test.war")
                    .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                    .addAsManifestResource(new StringAsset("Dependencies: org.picketlink.core meta-inf,org.picketlink.core.api meta-inf, org.picketlink.idm meta-inf\n"), "MANIFEST.MF")
-                   .addClass(PartitionManagerProducerTestCase.class);
+                   .addClass(PartitionManagerProducerTestCase.class)
+                    .addAsManifestResource(createPermissionsXmlAsset(
+                            new FilePermission("/tmp/pl-idm", "read,write,delete"),
+                            new FilePermission("/tmp/pl-idm/-", "read,write,delete")),
+                            "permissions.xml");
     }
 
     @Inject

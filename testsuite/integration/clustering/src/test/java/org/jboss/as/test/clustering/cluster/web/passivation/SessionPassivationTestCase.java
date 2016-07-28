@@ -45,7 +45,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
-import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
+import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -60,7 +60,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
         WebArchive war = ShrinkWrap.create(WebArchive.class, "passivation.war");
         war.addClasses(SessionOperationServlet.class);
         // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         return war;
     }
 

@@ -89,6 +89,7 @@ public class InterceptorOrder {
 
     public static final class ComponentPostConstruct {
 
+        public static final int STARTUP_COUNTDOWN_INTERCEPTOR = 0x050;
         public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int CONCURRENT_CONTEXT = 0x180;
@@ -173,6 +174,7 @@ public class InterceptorOrder {
         public static final int GRACEFUL_SHUTDOWN = 0x218;
         public static final int SHUTDOWN_INTERCEPTOR = 0x220;
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
+        public static final int STARTUP_AWAIT_INTERCEPTOR = 0x248;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x240;
         // Allows users to specify user application specific "container interceptors" which run before the
         // other JBoss specific container interceptors like the security interceptor

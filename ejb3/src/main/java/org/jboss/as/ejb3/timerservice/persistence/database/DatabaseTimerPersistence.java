@@ -203,21 +203,21 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 database = identifyDialect(dbProduct);
 
                 if (database == null) {
-                    EjbLogger.ROOT_LOGGER.debug("Attempting to guess on driver name.");
+                    EjbLogger.EJB3_TIMER_LOGGER.debug("Attempting to guess on driver name.");
                     database = identifyDialect(metaData.getDriverName());
                 }
             } catch (Exception e) {
-                EjbLogger.ROOT_LOGGER.debug("Unable to read JDBC metadata.", e);
+                EjbLogger.EJB3_TIMER_LOGGER.debug("Unable to read JDBC metadata.", e);
             } finally {
                 safeClose(connection);
             }
             if (database == null) {
-                EjbLogger.ROOT_LOGGER.jdbcDatabaseDialectDetectionFailed(databaseDialects.toString());
+                EjbLogger.EJB3_TIMER_LOGGER.jdbcDatabaseDialectDetectionFailed(databaseDialects.toString());
             } else {
-                EjbLogger.ROOT_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.  Supported database dialect strings are %s", database, databaseDialects);
+                EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.  Supported database dialect strings are %s", database, databaseDialects);
             }
         } else {
-            EjbLogger.ROOT_LOGGER.debugf("Database dialect '%s' read from configuration", database);
+            EjbLogger.EJB3_TIMER_LOGGER.debugf("Database dialect '%s' read from configuration", database);
         }
     }
 
@@ -249,7 +249,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = "sybase";
             }
          }
-        EjbLogger.ROOT_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
+        EjbLogger.EJB3_TIMER_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
         return unified;
     }
 
@@ -267,7 +267,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             //test for the existence of the table by running the load timer query
             connection = dataSource.getConnection();
             if (connection.getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED) {
-                EjbLogger.ROOT_LOGGER.wrongTransactionIsolationConfiguredForTimer();
+                EjbLogger.EJB3_TIMER_LOGGER.wrongTransactionIsolationConfiguredForTimer();
             }
             preparedStatement = connection.prepareStatement(loadTimer);
             preparedStatement.setString(1, "NON-EXISTENT");
@@ -289,10 +289,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         }
                     }
                 } catch (SQLException e1) {
-                    EjbLogger.ROOT_LOGGER.couldNotCreateTable(e1);
+                    EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e1);
                 }
             } else {
-                EjbLogger.ROOT_LOGGER.couldNotCreateTable(e);
+                EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e);
             }
         } finally {
             safeClose(resultSet);
@@ -416,14 +416,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             try {
                 tm.rollback();
             } catch (IllegalStateException | SecurityException | SystemException rbe) {
-                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+                EjbLogger.EJB3_TIMER_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
             }
             throw new RuntimeException(e);
         }catch (SystemException | SecurityException | IllegalStateException | RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
             try {
                 tm.rollback();
             } catch (IllegalStateException | SecurityException | SystemException rbe) {
-                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+                EjbLogger.EJB3_TIMER_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
             }
             throw new RuntimeException(e);
         } catch (NotSupportedException e) {
@@ -460,7 +460,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         timers.add(timerImpl);
                     }
                 } catch (Exception e) {
-                    EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
+                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
                 }
             }
             synchronized (this) {
@@ -542,7 +542,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 final String[] params = paramString == null || paramString.isEmpty() ? new String[0] : paramString.split(";");
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
                 if (timeoutMethod == null) {
-                    EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), new NoSuchMethodException());
+                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), new NoSuchMethodException());
                     return null;
                 }
                 cb.setTimeoutMethod(timeoutMethod);
@@ -716,7 +716,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -726,7 +726,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -736,7 +736,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -746,7 +746,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -794,7 +794,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                         }
                                     }
                                 } catch (Exception e) {
-                                    EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
+                                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
                                 }
                             }
 
@@ -806,7 +806,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                 }
                             }
                         } catch (SQLException e) {
-                            EjbLogger.ROOT_LOGGER.failedToRefreshTimers(timedObjectId);
+                            EjbLogger.EJB3_TIMER_LOGGER.failedToRefreshTimers(timedObjectId);
                         } finally {
                             safeClose(resultSet);
                             safeClose(statement);

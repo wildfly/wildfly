@@ -36,13 +36,13 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.impl.client.HttpClients;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Assert;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -139,11 +139,11 @@ public class ReadEnvironmentVariablesTestCase {
         ModelNode socketBinding = validateResponse(client.execute(op));
 
         URL url = new URL("http",
-                NetworkUtils.formatPossibleIpv6Address(socketBinding.get("bound-address").asString()),
+                TestSuiteEnvironment.formatPossibleIpv6Address(socketBinding.get("bound-address").asString()),
                 socketBinding.get("bound-port").asInt(),
                 "/env-test/env");
         HttpGet get = new HttpGet(url.toURI());
-        HttpClient httpClient = new DefaultHttpClient();
+        HttpClient httpClient = HttpClients.createDefault();
         HttpResponse response = httpClient.execute(get);
         ModelNode env = ModelNode.fromJSONStream(response.getEntity().getContent());
         Map<String, String> environment = new HashMap<String, String>();

@@ -82,7 +82,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         final ModuleIdentifier moduleId;
         final Module module;
         try {
-            moduleId = ModuleIdentifier.create(moduleName);
+            moduleId = ModuleIdentifier.fromString(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
             context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName));

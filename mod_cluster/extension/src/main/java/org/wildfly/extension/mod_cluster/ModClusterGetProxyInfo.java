@@ -66,10 +66,13 @@ public class ModClusterGetProxyInfo implements OperationStepHandler {
                     ROOT_LOGGER.debugf("Mod_cluster ProxyInfo %s", map);
                     if (!map.isEmpty()) {
                         final ModelNode result = new ModelNode();
-                        InetSocketAddress[] addr = map.keySet().toArray(new InetSocketAddress[map.size()]);
-                        for (InetSocketAddress address : addr) {
-                            result.add(address.getHostName() + ":" + address.getPort());
-                            result.add(map.get(address));
+                        for (Map.Entry<InetSocketAddress, String> entry : map.entrySet()) {
+                            result.add(entry.getKey().getHostName() + ":" + entry.getKey().getPort());
+                            if (entry.getValue() == null) {
+                                result.add();
+                            } else {
+                                result.add(entry.getValue());
+                            }
                         }
                         context.getResult().set(result);
                     }

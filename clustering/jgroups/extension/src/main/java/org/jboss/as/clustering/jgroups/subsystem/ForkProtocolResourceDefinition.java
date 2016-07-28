@@ -28,11 +28,15 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
@@ -42,6 +46,15 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  * @author Paul Ferraro
  */
 public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+            // See WFLY-6782, add-index parameter was missing from add operation definition
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, ModelDescriptionConstants.ADD_INDEX);
+        }
+    }
 
     final boolean allowRuntimeOnlyRegistration;
 

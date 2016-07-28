@@ -36,26 +36,26 @@ public interface ExtendedClusteringTestConstants extends ClusteringTestConstants
      */
     String CONTAINER_3 = "container-2";
     String CONTAINER_4 = "container-3";
-    String[] XSITE_CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4 };
+    String[] EXTENDED_CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4 };
 
     /**
      * Deployment names.
      */
     String DEPLOYMENT_3 = "deployment-2";
     String DEPLOYMENT_4 = "deployment-3";
-    String[] XSITE_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
+    String[] EXTENDED_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
 
     /**
      * Some helper deployment names.
      */
     String DEPLOYMENT_HELPER_3 = "deployment-helper-2";
     String DEPLOYMENT_HELPER_4 = "deployment-helper-3";
-    String[] XSITE_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
+    String[] EXTENDED_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
 
     /**
      * Node names passed in arquillian.xml via -Djboss.node.name property.
      */
     String NODE_3 = "node-2";
     String NODE_4 = "node-3";
-    String[] XSITE_NODES = new String[] { NODE_1, NODE_2 , NODE_3, NODE_4};
+    String[] EXTENDED_NODES = new String[] { NODE_1, NODE_2 , NODE_3, NODE_4};
 }

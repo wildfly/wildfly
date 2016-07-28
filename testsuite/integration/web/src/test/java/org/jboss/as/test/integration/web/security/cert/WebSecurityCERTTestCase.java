@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
+
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;

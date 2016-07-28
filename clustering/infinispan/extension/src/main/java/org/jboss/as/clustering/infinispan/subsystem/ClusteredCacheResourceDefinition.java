@@ -46,8 +46,6 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODE("mode", ModelType.STRING, null, new EnumValidatorBuilder<>(Mode.class)),
-        QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L)),
-        QUEUE_SIZE("queue-size", ModelType.INT, new ModelNode(0)),
         REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(17500L)),
         ;
         private final AttributeDefinition definition;
@@ -70,6 +68,8 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
         ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false), InfinispanModel.VERSION_4_0_0),
+        QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L), InfinispanModel.VERSION_4_1_0),
+        QUEUE_SIZE("queue-size", ModelType.INT, new ModelNode(0), InfinispanModel.VERSION_4_1_0),
         ;
         private final AttributeDefinition definition;
 

@@ -24,6 +24,7 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -97,7 +98,7 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        this.descriptor.getCapabilities().forEach(capability -> context.registerCapability(capability.getRuntimeCapability(address)));
+        this.descriptor.getCapabilities().forEach(capability -> context.registerCapability(capability.resolve(address)));
 
         ModelNode model = resource.getModel();
         this.attributes.stream()
@@ -108,12 +109,7 @@ public class BoottimeAddStepHandler extends AbstractBoottimeAddStepHandler imple
     @Override
     public void register(ManagementResourceRegistration registration) {
         SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_NONE);
-        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
-            builder.addParameter(attribute);
-        }
-        for (AttributeDefinition parameter : this.descriptor.getExtraParameters()) {
-            builder.addParameter(parameter);
-        }
+        Stream.concat(this.descriptor.getAttributes().stream(), this.descriptor.getExtraParameters().stream()).forEach(attribute -> builder.addParameter(attribute));
         registration.registerOperationHandler(builder.build(), this);
 
         OperationStepHandler writeAttributeHandler = new ReloadRequiredWriteAttributeHandler(this.descriptor.getAttributes());

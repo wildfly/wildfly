@@ -22,6 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.PropertyPermission;
+
+import javax.ejb.NoSuchEJBException;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -34,14 +41,9 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.NoSuchEJBException;
-import javax.naming.InitialContext;
-import java.util.PropertyPermission;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests various scenarios for stateful bean passivation
@@ -74,6 +76,7 @@ public class PassivationTestCase {
     }
 
     @Test
+    @Ignore("WFLY-6743")
     public void testPassivationMaxSize() throws Exception {
         PassivationInterceptor.reset();
         try (TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {

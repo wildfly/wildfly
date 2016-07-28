@@ -24,10 +24,10 @@ package org.jboss.as.weld.deployment;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.inject.spi.Extension;
 
@@ -92,10 +92,11 @@ public class WeldDeployment implements CDI11Deployment {
             Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit, BeanDeploymentModule rootBeanDeploymentModule,
             Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors) {
         this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
-        this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
+        this.beanDeploymentArchives = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        this.beanDeploymentArchives.addAll(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
-        this.additionalBeanDeploymentArchivesByClassloader = new HashMap<ClassLoader, BeanDeploymentArchiveImpl>();
+        this.additionalBeanDeploymentArchivesByClassloader = new ConcurrentHashMap<>();
         this.module = module;
         this.rootBeanDeploymentModule = rootBeanDeploymentModule;
         this.eeModuleDescriptors = eeModuleDescriptors;
@@ -201,7 +202,13 @@ public class WeldDeployment implements CDI11Deployment {
         // make the top-level deployment BDAs visible from the additional archive
         newBda.addBeanDeploymentArchives(rootBeanDeploymentModule.getBeanDeploymentArchives());
 
-        additionalBeanDeploymentArchivesByClassloader.put(beanClass.getClassLoader(), newBda);
+        // Ignore beans loaded by the bootstrap class loader. This should only be JDK classes in most cases.
+        // See getBeanDeploymentArchive(final Class<?> beanClass), per the JavaDoc this is mean to archive which
+        // contains the bean class.
+        final ClassLoader cl = beanClass.getClassLoader();
+        if (cl != null) {
+            additionalBeanDeploymentArchivesByClassloader.put(cl, newBda);
+        }
         beanDeploymentArchives.add(newBda);
         return newBda;
     }
@@ -222,7 +229,7 @@ public class WeldDeployment implements CDI11Deployment {
     }
 
     @Override
-    public synchronized BeanDeploymentArchive getBeanDeploymentArchive(final Class<?> beanClass) {
+    public BeanDeploymentArchive getBeanDeploymentArchive(final Class<?> beanClass) {
         ClassLoader moduleClassLoader = WildFlySecurityManager.getClassLoaderPrivileged(beanClass);
         if (moduleClassLoader != null) {
             for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
@@ -236,7 +243,7 @@ public class WeldDeployment implements CDI11Deployment {
          * not come from a BDA. Let's try to find an existing BDA that uses the same classloader
          * (and thus has the required accessibility to other BDAs)
          */
-        if (additionalBeanDeploymentArchivesByClassloader.containsKey(moduleClassLoader)) {
+        if (moduleClassLoader != null && additionalBeanDeploymentArchivesByClassloader.containsKey(moduleClassLoader)) {
             return additionalBeanDeploymentArchivesByClassloader.get(moduleClassLoader);
         }
         return null;

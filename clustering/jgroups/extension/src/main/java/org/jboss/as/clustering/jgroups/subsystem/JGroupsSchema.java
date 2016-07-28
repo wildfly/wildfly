@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Locale;
+
 import org.jboss.as.clustering.controller.Schema;
 
 /**
@@ -57,6 +59,6 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
 
     @Override
     public String getNamespaceUri() {
-        return String.format("urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:jboss:domain:jgroups:%d.%d", this.major, this.minor);
     }
 }

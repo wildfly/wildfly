@@ -25,8 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.io.IOException;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RequiredCapability;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
@@ -275,7 +275,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected KernelServices buildKernelServices() throws Exception {
-        return createKernelServicesBuilder(new AdditionalInitialization().require(RequiredCapability.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
+        return createKernelServicesBuilder(new AdditionalInitialization().require(CommonUnaryRequirement.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
     }
 
 }

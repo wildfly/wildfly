@@ -80,18 +80,25 @@ public class VaultToolTestCase {
 
   @Test
   public void testVaultTool() throws Exception {
-    doTestVaultTool(false);
+    doTestVaultTool(true, false);
   }
 
   @Test
   @Ignore
   public void testVaultFallback() throws Exception {
-    doTestVaultTool(true);
+    doTestVaultTool(true, true);
   }
 
-  private void doTestVaultTool(boolean testFallbackFromIncorrectPasswordValue) throws Exception {
+  @Test
+  public void testNoKeyStoreFile() throws Exception {
+    doTestVaultTool(false, false);
+  }
 
-    createAndFillKeystore(KEYSTORE_URL_VALUE);
+  private void doTestVaultTool(boolean prepareKeystore, boolean testFallbackFromIncorrectPasswordValue) throws Exception {
+
+    if (prepareKeystore) {
+        createAndFillKeystore(KEYSTORE_URL_VALUE);
+    }
 
     // Replaces standard output with a ByteArrayOutputStream to parse the output later.
     System.setOut(new PrintStream(SYSTEM_OUT));
@@ -156,9 +163,7 @@ public class VaultToolTestCase {
     addAll(args, "-b", BLOCK_NAME);
     addAll(args, "-a", ATTRIBUTE_NAME);
     addAll(args, "-x", VALUE_TO_STORE);
-    /* removed as temporary workaround until PB 4.9.0.Beta2 is pulled to WF-CORE
     addAll(args, "-t");
-    */
     return args.toArray(new String[0]);
   }
 
@@ -200,6 +205,10 @@ public class VaultToolTestCase {
   public void tearDown() throws Exception {
     System.setSecurityManager(null); // or save and restore original
     cleanDirectory(ENC_FILE_DIR_VALUE);
+    File keyStoreFile = new File(KEYSTORE_URL_VALUE);
+    if (keyStoreFile.exists()) {
+        keyStoreFile.delete();
+    }
   }
 
   /**

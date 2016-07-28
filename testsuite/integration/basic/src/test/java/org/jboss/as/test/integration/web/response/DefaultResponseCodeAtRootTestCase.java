@@ -107,9 +107,9 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
         operation.get("value").set(506);
         cob.addStep(operation);
         // if location service is removed, if no deployment == no virtual host.
-//        operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
-//        operation.get("address").add("location","/");
-//        cob.addStep(operation);
+        operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
+        operation.get("address").add("location","/");
+        cob.addStep(operation);
         executeOperation(cob.build().getOperation());
         executeReloadAndWaitForCompletion(getModelControllerClient());
         deployer.deploy("test");
@@ -128,10 +128,10 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
             operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "undefine-attribute");
             operation.get("name").set("default-response-code");
             cob.addStep(operation);
-//            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "add");
-//            operation.get("address").add("location","/");
-//            operation.get("handler").set("welcome-content");
-//            cob.addStep(operation);
+            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "add");
+            operation.get("address").add("location","/");
+            operation.get("handler").set("welcome-content");
+            cob.addStep(operation);
             executeOperation(cob.build().getOperation());
             executeReloadAndWaitForCompletion(getModelControllerClient());
         }

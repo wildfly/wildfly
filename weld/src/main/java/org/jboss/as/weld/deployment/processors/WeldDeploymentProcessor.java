@@ -180,7 +180,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         getJpaDependencies(deploymentUnit, jpaServices);
 
         for (DeploymentUnit subDeployment : subDeployments) {
-            getJpaDependencies(deploymentUnit, jpaServices);
+            getJpaDependencies(subDeployment, jpaServices);
             final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
             if (subDeploymentModule == null) {
                 continue;

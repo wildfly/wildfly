@@ -22,9 +22,8 @@
 
 package org.jboss.as.test.integration.security.jacc.context;
 
-import java.io.InputStream;
-import java.lang.System;
 import java.net.URL;
+import java.security.SecurityPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
@@ -58,6 +58,8 @@ public class PolicyContextTestCase {
         final WebArchive war = createWar(earName);
         ear.addAsModule(war);
         ear.addAsModule(jar);
+
+        ear.addAsManifestResource(createPermissionsXmlAsset(new SecurityPermission("getPolicy")), "permissions.xml");
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(ear.toString(true));

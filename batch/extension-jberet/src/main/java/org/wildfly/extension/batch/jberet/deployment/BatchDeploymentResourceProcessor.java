@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import org.jberet.spi.BatchEnvironment;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -57,7 +58,7 @@ public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor
             final ClassLoader moduleClassLoader = module.getClassLoader();
             final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
             // Add the job operator service used interact with a deployments batch job
-            final JobOperatorService jobOperatorService = new JobOperatorService(moduleClassLoader);
+            final JobOperatorService jobOperatorService = new JobOperatorService();
 
             // Get all the job XML service
             final WildFlyJobXmlResolver jobXmlResolver = deploymentUnit.getAttachment(WildFlyJobXmlResolver.JOB_XML_RESOLVER);
@@ -80,8 +81,11 @@ public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor
                     BatchLogger.LOGGER.debugf(e, "Could not parse the XML file %s. The job will not be registered for runtime views on the deployment (%s).", jobXml, deploymentUnit.getName());
                 }
             }
+            // Adding a dependency to the BatchEnvironment may seem odd here, but it's used to get the class loader for
+            // the deployment. This allows the deployment resources to still work if removal of the batch subsystem
+            // fails.
             phaseContext.getServiceTarget().addService(BatchServiceNames.jobOperatorServiceName(deploymentUnit), jobOperatorService)
-                    .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit))
+                    .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), BatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector())
                     .install();
         }
     }

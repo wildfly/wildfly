@@ -293,7 +293,7 @@ public class EJB3Subsystem30Parser extends EJB3Subsystem20Parser {
                     RemotingEjbReceiverDefinition.CONNECT_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         if (!required.isEmpty()) {
@@ -310,7 +310,7 @@ public class EJB3Subsystem30Parser extends EJB3Subsystem20Parser {
                     parseChannelCreationOptions(reader, receiverAddress, operations);
                     break;
                 default:
-                    unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
     }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.sar.servicembean;
 
+import javax.management.MBeanPermission;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
@@ -41,6 +42,9 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.naming.java.permission.JndiPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Test MBeans which implement {@link ServiceMBean} and extend {@link ServiceMBeanSupport}.
@@ -64,6 +68,12 @@ public class ServiceMBeanSupportTestCase {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "service-mbean-support-test.sar");
         sar.addClasses(TestServiceMBean.class, TestService.class);
         sar.addAsManifestResource(ServiceMBeanSupportTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
+        sar.addAsManifestResource(createPermissionsXmlAsset(
+                new JndiPermission("global/env/foo/legacy", "bind,unbind"),
+                new MBeanPermission(TestResultService.class.getPackage().getName() + ".*", "*")),
+                "permissions.xml");
+
+
         return sar;
     }
 

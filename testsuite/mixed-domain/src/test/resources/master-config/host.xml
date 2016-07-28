@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host name="master" xmlns="urn:jboss:domain:4.1">
+<host name="master" xmlns="urn:jboss:domain:4.2">
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -10,6 +10,11 @@
                 </authentication>
             </security-realm>
             <security-realm name="ApplicationRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="application.keystore" relative-to="jboss.domain.config.dir" keystore-password="password" alias="server" key-password="password" generate-self-signed-certificate-host="localhost"/>
+                    </ssl>
+                </server-identities>
                 <!-- These are updated to come from the actual built AS -->
                 <authentication>
                      <local default-user="$local" allowed-users="*" skip-group-loading="true"/>

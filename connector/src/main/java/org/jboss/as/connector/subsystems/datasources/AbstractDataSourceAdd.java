@@ -34,6 +34,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.sql.DataSource;
+
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,12 +53,14 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
@@ -157,6 +160,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         dataSourceService.getSubjectFactoryInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector())
+                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager())
                 .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
@@ -197,7 +201,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final List<ServiceName> serviceNames = registry.getServiceNames();
 
 
+        final boolean jta;
         if (isXa) {
+            jta = true;
             final ModifiableXaDataSource dataSourceConfig;
             try {
                 dataSourceConfig = xaFrom(context, model, dsName);
@@ -255,6 +261,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             } catch (ValidateException e) {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToCreate("DataSource", operation, e.getLocalizedMessage()));
             }
+            jta = dataSourceConfig.isJTA();
             final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
             final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
 
@@ -326,11 +333,19 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                if (jta) {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                } else {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.boundNonJTADataSource(jndiName);
+                                }
                                 break;
                             }
                             case STOPPING_to_DOWN: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                if (jta) {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                } else {
+                                    SUBSYSTEM_DATASOURCES_LOGGER.unBoundNonJTADataSource(jndiName);
+                                }
                                 break;
                             }
                             case REMOVING_to_REMOVED: {

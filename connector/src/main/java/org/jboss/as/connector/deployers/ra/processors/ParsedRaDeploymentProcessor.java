@@ -42,7 +42,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
@@ -202,6 +204,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
+                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector())
                     .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                     .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)

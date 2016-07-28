@@ -39,6 +39,9 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.naming.management.JndiViewOperation;
 
 /**
@@ -57,7 +60,7 @@ public class NamingExtension implements Extension {
     private static final String NAMESPACE_1_4 = "urn:jboss:domain:naming:1.4";
     static final String NAMESPACE_2_0 = "urn:jboss:domain:naming:2.0";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 1, 0);
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
@@ -95,7 +98,23 @@ public class NamingExtension implements Extension {
         }
 
         subsystem.registerXMLElementWriter(NamingSubsystemXMLPersister.INSTANCE);
-        //no need to register transformers as EAP 6.2 is already on model 1.3.0 == current
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
+    }
+
+    private void registerTransformers(SubsystemRegistration subsystem) {
+        final ModelVersion v2_0_0 = ModelVersion.create(2, 0, 0);
+
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
+        ResourceTransformationDescriptionBuilder builder_2_0 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), v2_0_0);
+
+        NamingBindingResourceDefinition.INSTANCE.registerTransformers_2_0(builder_2_0);
+
+        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[] {
+                v2_0_0,
+        });
+
     }
 
     /**

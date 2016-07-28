@@ -13,7 +13,6 @@
        <?MDB?>
        <pools>
            <bean-instance-pools>
-               <!-- Automatically configure pools. Alternatively, max-pool-size can be set to a specific value -->
                <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
            </bean-instance-pools>

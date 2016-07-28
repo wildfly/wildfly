@@ -55,4 +55,14 @@ public class MutableSessionCreationMetaData implements SessionCreationMetaData {
         this.metaData.setMaxInactiveInterval(duration);
         this.mutator.mutate();
     }
+
+    @Override
+    public boolean isValid() {
+        return this.metaData.isValid();
+    }
+
+    @Override
+    public boolean invalidate() {
+        return this.metaData.invalidate();
+    }
 }

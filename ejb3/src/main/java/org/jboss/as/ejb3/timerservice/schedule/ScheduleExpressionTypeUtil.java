@@ -40,7 +40,7 @@ public class ScheduleExpressionTypeUtil {
      */
     public static ScheduleExpressionType getType(String value) {
         if (value == null) {
-            throw EjbLogger.ROOT_LOGGER.valueIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.valueIsNull();
         }
         // Order of check is important.
         // TODO: Explain why this order is important

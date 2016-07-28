@@ -460,7 +460,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         if (moduleNode.isDefined()) {
             ModuleLoader moduleLoader = Module.getBootModuleLoader();
             try {
-                module = moduleLoader.loadModule(ModuleIdentifier.create(moduleNode.asString()));
+                module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleNode.asString()));
             } catch (ModuleLoadException e) {
                 throw ROOT_LOGGER.moduleCouldNotLoad(moduleNode.asString(), e);
             }
