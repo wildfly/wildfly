@@ -74,7 +74,7 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public boolean isResourceChangeListenerSupported() {
-        return explodedDeployment;
+        return explodedDeployment && deploymentResourceManager.isResourceChangeListenerSupported();
     }
 
     @Override

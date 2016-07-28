@@ -29,10 +29,6 @@ import org.jboss.msc.service.ServiceName;
  * @author Paul Ferraro
  */
 public interface SingletonServiceBuilderFactory extends SingletonPolicy {
-    /** Use {@link org.wildfly.clustering.singleton.spi.SingletonServiceName} to generate an appropriate {@link ServiceName}.
-    @Deprecated
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering", "singleton", "builder");
-
     /**
      * Creates a singleton service builder.
      * @param name the name of the service

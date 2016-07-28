@@ -71,8 +71,6 @@
     <!-- create the openjpa module to test with -->
     <copy file="${org.apache.openjpa:openjpa-all:jar}"         tofile="${tests.output.dir}/modules/org/apache/openjpa/test/openjpa-all.jar"/>
     <copy file="${org.wildfly:jipijapa-openjpa:jar}"      tofile="${tests.output.dir}/modules/org/apache/openjpa/test/jipijapa-openjpa.jar"/>
-    <copy file="${net.sourceforge.serp:serp:jar}"      tofile="${tests.output.dir}/modules/org/apache/openjpa/test/serp.jar"/>
-
     <echo file="${tests.output.dir}/modules/org/apache/openjpa/test/module.xml" append="false">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;module xmlns="urn:jboss:module:1.1" name="org.apache.openjpa" slot="test"&gt;
 &lt;resources&gt;
@@ -84,7 +82,6 @@
 &lt;/resource-root&gt;
 
 &lt;resource-root path="jipijapa-openjpa.jar"/&gt;
-&lt;resource-root path="serp.jar"/&gt;
 &lt;/resources&gt;
 
 &lt;dependencies&gt;

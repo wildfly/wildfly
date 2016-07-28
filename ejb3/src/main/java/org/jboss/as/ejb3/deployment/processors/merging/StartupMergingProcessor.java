@@ -51,6 +51,7 @@ public class StartupMergingProcessor extends AbstractMergingProcessor<SingletonC
             if (data != null) {
                 if (!data.getClassLevelAnnotations().isEmpty()) {
                     description.initOnStartup();
+                    description.getModuleDescription().registerStartupBean();
                 }
             }
         }
@@ -64,6 +65,7 @@ public class StartupMergingProcessor extends AbstractMergingProcessor<SingletonC
             Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
             if (initOnStartup != null && initOnStartup) {
                 description.initOnStartup();
+                description.getModuleDescription().registerStartupBean();
             }
         }
     }

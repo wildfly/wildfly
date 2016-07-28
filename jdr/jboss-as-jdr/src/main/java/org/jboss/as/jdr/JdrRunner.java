@@ -47,8 +47,7 @@ import java.util.List;
 import java.util.Properties;
 import org.jboss.as.cli.CommandContextFactory;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UUID;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 public class JdrRunner implements JdrReportCollector {
@@ -79,6 +78,9 @@ public class JdrRunner implements JdrReportCollector {
 
     @Override
     public JdrReport collect() throws OperationFailedException {
+
+        this.env.setProductName(obtainProductName());
+        this.env.setProductVersion(obtainProductVersion());
 
         try {
             this.env.setZip(new JdrZipFile(new JdrEnvironment(this.env)));
@@ -201,5 +203,53 @@ public class JdrRunner implements JdrReportCollector {
         URI uri = new URI(protocol, null, host, port, null, null, null);
         // String the leading '//' if there is no protocol.
         return protocol == null ? uri.toString().substring(2) : uri.toString();
+    }
+
+    private String obtainProductName() {
+        try {
+            ModelNode operation = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), PRODUCT_NAME);
+            operation.get(INCLUDE_RUNTIME).set(false);
+            ModelControllerClient client = env.getClient();
+
+            if (client == null) {
+                client = env.getCli().getCommandContext().getModelControllerClient();
+            }
+
+            ModelNode result = client.execute(operation);
+
+            if (Operations.isSuccessfulOutcome(result)) {
+                return Operations.readResult(result).asString();
+            }
+
+            return "undefined";
+        } catch (IOException e) {
+            // This should not be needed since a product name is always returned, even if it doesn't exist.
+            // In that case "undefined" is returned
+            return "undefined";
+        }
+    }
+
+    private String obtainProductVersion() {
+        try {
+            ModelNode operation = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), PRODUCT_VERSION);
+            operation.get(INCLUDE_RUNTIME).set(false);
+            ModelControllerClient client = env.getClient();
+
+            if (client == null) {
+                client = env.getCli().getCommandContext().getModelControllerClient();
+            }
+
+            ModelNode result = client.execute(operation);
+
+            if (Operations.isSuccessfulOutcome(result)) {
+                return Operations.readResult(result).asString();
+            }
+
+            return "undefined";
+        } catch (IOException e) {
+            // This should not be needed since a product version is always returned, even if it doesn't exist.
+            // In that case "undefined" is returned
+            return "undefined";
+        }
     }
 }

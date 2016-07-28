@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.deployment.jcedeployment.provider;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.Provider;
 
 /**
@@ -38,12 +36,7 @@ public final class DummyProvider extends Provider {
     public DummyProvider() {
         super(PROVIDER_NAME, 0.1, "Dummy Provider v0.1");
 
-        AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                put("Cipher.DummyAlg/DummyMode/DummyPadding", DummyCipherSpi.class.getName());
-                return null;
-            }
-        });
+        put("Cipher.DummyAlg/DummyMode/DummyPadding", DummyCipherSpi.class.getName());
     }
 
 }

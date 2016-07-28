@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.ConnectorServiceConfiguration;
+import org.apache.activemq.artemis.utils.ClassloadingUtil;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,6 +42,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Connector service resource definition
@@ -58,7 +60,7 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
     private ConnectorServiceDefinition() {
         super(MessagingExtension.CONNECTOR_SERVICE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
-                new ActiveMQReloadRequiredHandlers.AddStepHandler(ATTRIBUTES),
+                new ConnectorServiceAddHandler(ATTRIBUTES),
                 new ActiveMQReloadRequiredHandlers.RemoveStepHandler());
     }
 
@@ -89,11 +91,50 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ConnectorServiceWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (!attr.getFlags().contains(STORAGE_RUNTIME)) {
                 registry.registerReadWriteAttribute(attr, null, writeHandler);
             }
         }
+    }
+
+    private static void checkFactoryClass(final String factoryClass) throws OperationFailedException {
+        try {
+            ClassloadingUtil.newInstanceFromClassLoader(factoryClass);
+        } catch (Throwable t) {
+            throw MessagingLogger.ROOT_LOGGER.unableToLoadConnectorServiceFactoryClass(factoryClass);
+        }
+    }
+
+    static class ConnectorServiceWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+        ConnectorServiceWriteAttributeHandler(AttributeDefinition... attributes) {
+            super(attributes);
+        }
+        @Override
+        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                ModelNode resolvedValue, ModelNode currentValue,
+                org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> voidHandback)
+                throws OperationFailedException {
+            if (CommonAttributes.FACTORY_CLASS.getName().equals(attributeName)) {
+                checkFactoryClass(resolvedValue.asString());
+            }
+            return super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, voidHandback);
+        }
+    }
+
+    static class ConnectorServiceAddHandler extends ActiveMQReloadRequiredHandlers.AddStepHandler {
+        ConnectorServiceAddHandler(AttributeDefinition... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
+                throws OperationFailedException {
+            final String factoryClass = CommonAttributes.FACTORY_CLASS.resolveModelAttribute(context, model).asString();
+            checkFactoryClass(factoryClass);
+            super.performRuntime(context, operation, model);
+        }
+
     }
 }

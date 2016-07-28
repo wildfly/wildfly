@@ -80,7 +80,7 @@ public class Minute extends IntegerBasedExpression {
         }
         SortedSet<Integer> eligibleMinutes = this.getEligibleMinutes();
         if (eligibleMinutes.isEmpty()) {
-            throw EjbLogger.ROOT_LOGGER.invalidExpressionMinutes(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidExpressionMinutes(this.origValue);
         }
         return eligibleMinutes.first();
     }

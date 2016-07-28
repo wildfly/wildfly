@@ -64,7 +64,7 @@ public class JPAStoreSubsystemConfiguration extends JPAIdentityStoreConfiguratio
             ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
             try {
-                this.entityModule = moduleLoader.loadModule(ModuleIdentifier.create(entityModuleName));
+                this.entityModule = moduleLoader.loadModule(ModuleIdentifier.fromString(entityModuleName));
             } catch (ModuleLoadException e) {
                 throw PicketLinkLogger.ROOT_LOGGER.idmJpaEntityModuleNotFound(entityModuleName);
             }

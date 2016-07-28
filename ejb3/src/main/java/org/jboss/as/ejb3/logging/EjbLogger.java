@@ -146,6 +146,11 @@ public interface EjbLogger extends BasicLogger {
     EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
 
     /**
+     * logger use to log EJB timer messages
+     */
+    EjbLogger EJB3_TIMER_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.timer");
+
+    /**
      * Logs an error message indicating an exception occurred while removing an inactive bean.
      *
      * @param id the session id that could not be removed
@@ -3114,4 +3119,8 @@ public interface EjbLogger extends BasicLogger {
             "As a result the 'default-sfsb-cache' attribute has been set to '%s' and the " +
             "'default-sfsb-passivation-disabled-cache' attribute has been set to '%s'.")
     void remappingCacheAttributes(String address, ModelNode defClustered, ModelNode passivationDisabled);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 487, value = "Unexpected invocation state %s")
+    void unexpectedInvocationState(int state);
 }

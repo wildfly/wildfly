@@ -35,24 +35,24 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalize
  * @param <A>
  * @param <D>
  */
-public class AuthenticationEntryExternalizer<A, D, L> implements Externalizer<AuthenticationEntry<A, D, L>> {
+public class AuthenticationEntryExternalizer<A, L> implements Externalizer<AuthenticationEntry<A, L>> {
 
     private final Externalizer<SimpleMarshalledValue<A>> externalizer = new SimpleMarshalledValueExternalizer<>();
 
     @Override
-    public void writeObject(ObjectOutput output, AuthenticationEntry<A, D, L> entry) throws IOException {
+    public void writeObject(ObjectOutput output, AuthenticationEntry<A, L> entry) throws IOException {
         SimpleMarshalledValue<A> value = (SimpleMarshalledValue<A>) entry.getAuthentication();
         this.externalizer.writeObject(output, value);
     }
 
     @Override
-    public AuthenticationEntry<A, D, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public AuthenticationEntry<A, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         return new AuthenticationEntry<>(this.externalizer.readObject(input));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Class<AuthenticationEntry<A, D, L>> getTargetClass() {
+    public Class<AuthenticationEntry<A, L>> getTargetClass() {
         Class targetClass = AuthenticationEntry.class;
         return targetClass;
     }

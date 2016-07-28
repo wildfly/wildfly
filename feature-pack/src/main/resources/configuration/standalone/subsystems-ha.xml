@@ -19,7 +19,7 @@
         <subsystem>jpa.xml</subsystem>
         <subsystem>jsf.xml</subsystem>
         <subsystem>mail.xml</subsystem>
-        <subsystem>mod_cluster.xml</subsystem>
+        <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>

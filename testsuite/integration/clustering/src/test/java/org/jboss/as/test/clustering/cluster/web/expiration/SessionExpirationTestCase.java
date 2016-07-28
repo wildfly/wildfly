@@ -34,7 +34,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
-import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
+import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -52,7 +52,7 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "expiration.war");
         war.addClasses(SessionOperationServlet.class, RecordingWebListener.class);
         // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         return war;
     }
 

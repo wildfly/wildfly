@@ -111,6 +111,23 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     void installSimpleBinding(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
+        Object bindValue = createSimpleBinding(context, model);
+
+        ValueManagedReferenceFactory referenceFactory = new ValueManagedReferenceFactory(new ImmediateValue<Object>(bindValue));
+
+
+        final BinderService binderService = new BinderService(name, bindValue);
+        binderService.getManagedObjectInjector().inject(new MutableManagedReferenceFactory(referenceFactory));
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
+
+        builder.install();
+    }
+
+    private Object createSimpleBinding(OperationContext context, ModelNode model) throws OperationFailedException {
         final String value = NamingBindingResourceDefinition.VALUE.resolveModelAttribute(context, model).asString();
         final String type;
         if (model.hasDefined(TYPE)) {
@@ -119,23 +136,30 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             type = null;
         }
 
-        Object bindValue = coerceToType(value, type);
-
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
-
-        final BinderService binderService = new BinderService(name, bindValue);
-        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(bindValue)));
-
-        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
-
-        builder.install();
+        return coerceToType(value, type);
     }
 
 
     void installObjectFactory(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
+        final ObjectFactory objectFactoryClassInstance = createObjectFactory(context, model);
+
+        final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
+        ContextListAndJndiViewManagedReferenceFactory factory = new ObjectFactoryManagedReference(objectFactoryClassInstance, name, environment);
+
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+
+
+        final BinderService binderService = new BinderService(name, objectFactoryClassInstance);
+        binderService.getManagedObjectInjector().inject(new MutableManagedReferenceFactory(factory));
+
+        serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                .install();
+    }
+
+    private ObjectFactory createObjectFactory(OperationContext context, ModelNode model) throws OperationFailedException {
         final ModuleIdentifier moduleID = ModuleIdentifier.fromString(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
         final Module module;
@@ -163,51 +187,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
-
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
-
-        final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
-
-        final BinderService binderService = new BinderService(name, objectFactoryClassInstance);
-        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
-            @Override
-            public ManagedReference getReference() {
-                try {
-                    final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
-                    return new ImmediateManagedReference(value);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public String getInstanceClassName() {
-                final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                try {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
-                    final Object value = getReference().getInstance();
-                    return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
-                } finally {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
-                }
-            }
-
-            @Override
-            public String getJndiViewInstanceValue() {
-                final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                try {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
-                    return String.valueOf(getReference().getInstance());
-                } finally {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
-                }
-            }
-        });
-
-        serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .install();
+        return objectFactoryClassInstance;
     }
 
 
@@ -279,28 +259,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);
-        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
-            @Override
-            public ManagedReference getReference() {
-                try {
-                    final Object value = new InitialContext().lookup(lookup);
-                    return new ImmediateManagedReference(value);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public String getInstanceClassName() {
-                final Object value = getReference().getInstance();
-                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
-            }
-
-            @Override
-            public String getJndiViewInstanceValue() {
-                return String.valueOf(getReference().getInstance());
-            }
-        });
+        binderService.getManagedObjectInjector().inject(new MutableManagedReferenceFactory(new LookupManagedReferenceFactory(lookup)));
 
         serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
@@ -343,6 +302,148 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         for (AttributeDefinition attr : NamingBindingResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
-        NamingBindingResourceDefinition.validateResourceModel(model);
+        NamingBindingResourceDefinition.validateResourceModel(model, true);
+    }
+
+    void doRebind(OperationContext context, ModelNode model, BinderService service) throws OperationFailedException {
+        ManagedReferenceFactory ref = service.getManagedObjectInjector().getValue();
+        if(ref instanceof MutableManagedReferenceFactory) {
+            MutableManagedReferenceFactory factory = (MutableManagedReferenceFactory) ref;
+            final BindingType type = BindingType.forName(NamingBindingResourceDefinition.BINDING_TYPE.resolveModelAttribute(context, model).asString());
+            if (type == BindingType.SIMPLE) {
+                Object bindValue = createSimpleBinding(context, model);
+                factory.setFactory(new ValueManagedReferenceFactory(new ImmediateValue<Object>(bindValue)));
+                service.setSource(bindValue);
+            } else if (type == BindingType.OBJECT_FACTORY) {
+                final ObjectFactory objectFactoryClassInstance = createObjectFactory(context, model);
+                final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
+                factory.setFactory(new ObjectFactoryManagedReference(objectFactoryClassInstance, service.getName(), environment));
+                service.setSource(objectFactoryClassInstance);
+            } else if (type == BindingType.LOOKUP) {
+                final String lookup = NamingBindingResourceDefinition.LOOKUP.resolveModelAttribute(context, model).asString();
+                factory.setFactory(new LookupManagedReferenceFactory(lookup));
+                service.setSource(null);
+            } else if (type == BindingType.EXTERNAL_CONTEXT) {
+                throw NamingLogger.ROOT_LOGGER.cannotRebindExternalContext();
+            } else {
+                throw NamingLogger.ROOT_LOGGER.unknownBindingType(type.toString());
+            }
+        } else {
+            throw NamingLogger.ROOT_LOGGER.cannotRebindExternalContext();
+        }
+
+    }
+
+
+    static class MutableManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
+
+        MutableManagedReferenceFactory(ManagedReferenceFactory factory) {
+            this.factory = factory;
+        }
+
+        private volatile ManagedReferenceFactory factory;
+
+        @Override
+        public ManagedReference getReference() {
+            return factory.getReference();
+        }
+
+        public ManagedReferenceFactory getFactory() {
+            return factory;
+        }
+
+        public void setFactory(ManagedReferenceFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public String getInstanceClassName() {
+            if(factory instanceof ContextListManagedReferenceFactory) {
+                return ((ContextListManagedReferenceFactory) factory).getInstanceClassName();
+            }
+            ManagedReference ref = getReference();
+            try {
+                final Object value = ref.getInstance();
+                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+            } finally {
+                ref.release();
+            }
+        }
+
+        @Override
+        public String getJndiViewInstanceValue() {
+            if(factory instanceof ContextListAndJndiViewManagedReferenceFactory) {
+                return ((ContextListAndJndiViewManagedReferenceFactory) factory).getJndiViewInstanceValue();
+            }
+            ManagedReference reference = getReference();
+            try {
+                return String.valueOf(reference.getInstance());
+            } finally {
+                reference.release();
+            }
+        }
+    }
+
+    private static class ObjectFactoryManagedReference implements ContextListAndJndiViewManagedReferenceFactory {
+        private final ObjectFactory objectFactoryClassInstance;
+        private final String name;
+        private final Hashtable<String, String> environment;
+
+        public ObjectFactoryManagedReference(ObjectFactory objectFactoryClassInstance, String name, Hashtable<String, String> environment) {
+            this.objectFactoryClassInstance = objectFactoryClassInstance;
+            this.name = name;
+            this.environment = environment;
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            try {
+                final Object value = objectFactoryClassInstance.getObjectInstance(name, null, null, environment);
+                return new ImmediateManagedReference(value);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public String getInstanceClassName() {
+            final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
+                final Object value = getReference().getInstance();
+                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
+            }
+        }
+
+        @Override
+        public String getJndiViewInstanceValue() {
+            final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(objectFactoryClassInstance.getClass().getClassLoader());
+                return String.valueOf(getReference().getInstance());
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
+            }
+        }
+    }
+
+    private static class LookupManagedReferenceFactory implements ManagedReferenceFactory {
+        private final String lookup;
+
+        public LookupManagedReferenceFactory(String lookup) {
+            this.lookup = lookup;
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            try {
+                final Object value = new InitialContext().lookup(lookup);
+                return new ImmediateManagedReference(value);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

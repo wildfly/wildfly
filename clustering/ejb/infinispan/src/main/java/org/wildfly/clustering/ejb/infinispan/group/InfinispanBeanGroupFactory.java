@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
@@ -55,10 +56,10 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     private final MarshalledValueFactory<MarshallingContext> factory;
     private final MarshallingContext context;
 
-    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context, boolean lockOnRead) {
+    public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context, CacheProperties properties) {
         this.cache = cache;
-        this.findCache = lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
-        this.beanCache = lockOnRead ? beanCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : beanCache;
+        this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
+        this.beanCache = properties.isLockOnRead() ? beanCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : beanCache;
         this.factory = factory;
         this.context = context;
     }

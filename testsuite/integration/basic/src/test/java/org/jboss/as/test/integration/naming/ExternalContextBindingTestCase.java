@@ -39,6 +39,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -78,6 +79,7 @@ import org.junit.runner.RunWith;
 
 import com.sun.jndi.ldap.LdapCtx;
 import com.sun.jndi.ldap.LdapCtxFactory;
+import org.wildfly.naming.java.permission.JndiPermission;
 
 /**
  * Test for external context binding. There are tests which use a usual InitialContext and treat it
@@ -312,7 +314,8 @@ public class ExternalContextBindingTestCase {
     @Deployment
     public static JavaArchive deploy() {
         return ShrinkWrap.create(JavaArchive.class, "externalContextBindingTest.jar")
-                .addClasses(ExternalContextBindingTestCase.class, LookupEjb.class);
+                .addClasses(ExternalContextBindingTestCase.class, LookupEjb.class)
+                .addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("*", "lookup")), "jboss-permissions.xml");
     }
 
     @Test

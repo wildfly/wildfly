@@ -27,7 +27,6 @@ import io.undertow.security.impl.SingleSignOn;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionManager;
 
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
@@ -48,11 +48,12 @@ import org.wildfly.clustering.web.sso.Sessions;
  */
 public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
 
+    static final Logger LOGGER = Logger.getLogger(DistributableSingleSignOn.class);
+
     private final SSO<AuthenticatedSession, String, Void> sso;
     private final SessionManagerRegistry registry;
     private final Batcher<Batch> batcher;
     private final Batch batch;
-    private final SessionListener listener;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batcher<Batch> batcher, Batch batch) {
@@ -60,7 +61,6 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         this.registry = registry;
         this.batcher = batcher;
         this.batch = batch;
-        this.listener = new SessionIdChangeListener(sso, batcher, batch, this.closed);
     }
 
     @Override
@@ -111,17 +111,21 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     @Override
     public void add(Session session) {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.tracef("Adding Session ID %s to SSO session %s.", session.getId(), this.sso.getId());
+            }
             this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
         }
-        session.getSessionManager().registerSessionListener(this.listener);
     }
 
     @Override
     public void remove(Session session) {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.tracef("Removing SSO ID %s from deployment %s.", this.sso.getId(), session.getSessionManager().getDeploymentName());
+            }
             this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
         }
-        session.getSessionManager().removeSessionListener(this.listener);
     }
 
     @Override
@@ -146,6 +150,9 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         // The batch associated with this SSO might not be valid (e.g. in the case of logout).
         try (BatchContext context = this.closed.compareAndSet(false, true) ? this.batcher.resumeBatch(this.batch) : null) {
             try (Batch batch = (context != null) ? this.batch : this.batcher.createBatch()) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.tracef("Invalidating SSO ID %s.", this.sso.getId());
+                }
                 this.sso.invalidate();
             }
         }
@@ -174,6 +181,9 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         public void invalidate(HttpServerExchange exchange) {
             Session session = this.manager.getSession(exchange, new SimpleSessionConfig(this.sessionId));
             if (session != null) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.tracef("Invalidating Session ID %s.", session.getId());
+                }
                 session.invalidate(exchange);
             }
         }
@@ -259,53 +269,6 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
         @Override
         public String rewriteUrl(String originalUrl, String sessionId) {
             throw new UnsupportedOperationException();
-        }
-    }
-
-    private static class SessionIdChangeListener implements SessionListener {
-        private final SSO<AuthenticatedSession, String, Void> sso;
-        private final Batcher<Batch> batcher;
-        private final Batch batch;
-        private final AtomicBoolean closed;
-
-        SessionIdChangeListener(SSO<AuthenticatedSession, String, Void> sso, Batcher<Batch> batcher, Batch batch, AtomicBoolean closed) {
-            this.sso = sso;
-            this.batcher = batcher;
-            this.batch = batch;
-            this.closed = closed;
-        }
-
-        @Override
-        public void sessionIdChanged(Session session, String oldSessionId) {
-            // The batch associated with this SSO might not be valid in this context.
-            try (BatchContext context = this.closed.compareAndSet(false, true) ? this.batcher.resumeBatch(this.batch) : null) {
-                try (Batch batch = (context != null) ? this.batch : this.batcher.createBatch()) {
-                    String deployment = session.getSessionManager().getDeploymentName();
-                    Sessions<String> sessions = this.sso.getSessions();
-                    sessions.removeSession(deployment);
-                    sessions.addSession(deployment, session.getId());
-                }
-            }
-        }
-
-        @Override
-        public void attributeAdded(Session session, String name, Object value) {
-        }
-
-        @Override
-        public void attributeRemoved(Session session, String name, Object value) {
-        }
-
-        @Override
-        public void attributeUpdated(Session session, String name, Object newValue, Object oldValue) {
-        }
-
-        @Override
-        public void sessionCreated(Session session, HttpServerExchange exchange) {
-        }
-
-        @Override
-        public void sessionDestroyed(Session session, HttpServerExchange exchange, SessionDestroyedReason reason) {
         }
     }
 }

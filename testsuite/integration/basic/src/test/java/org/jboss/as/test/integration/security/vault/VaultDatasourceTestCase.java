@@ -32,9 +32,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.net.SocketPermission;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -201,7 +203,7 @@ public class VaultDatasourceTestCase {
         }
     }
 
-    static final String RESOURCE_LOCATION = VaultDatasourceTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile()
+    static final String RESOURCE_LOCATION = VaultDatasourceTestCase.class.getResource("/").getPath()
             + "security/ds-vault/";
     static final String VAULT_BLOCK = "ds_TestDS";
     static final String VAULT_BLOCK_WRONG = VAULT_BLOCK + "Wrong";
@@ -248,6 +250,7 @@ public class VaultDatasourceTestCase {
     @Deployment
     public static WebArchive deployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
+        war.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:9092", "connect,resolve")), "permissions.xml");
         return war;
     }
 

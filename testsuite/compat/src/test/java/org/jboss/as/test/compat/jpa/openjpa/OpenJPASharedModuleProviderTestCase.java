@@ -56,7 +56,8 @@ public class OpenJPASharedModuleProviderTestCase {
         "       <properties>" +
         "           <property name=\"openjpa.jdbc.SynchronizeMappings\" value=\"buildSchema(SchemaAction='drop,add')\"/>" +
         "           <property name=\"openjpa.InitializeEagerly\" value=\"true\"/>" +
-        "           <property name=\"openjpa.RuntimeUnenhancedClasses\" value=\"supported\"/>" +
+        "           <property name=\"openjpa.RuntimeUnenhancedClasses\" value=\"unsupported\"/>" +
+        "           <property name=\"openjpa.DynamicEnhancementAgent\" value=\"false\"/>" +
         "           <property name=\"jboss.as.jpa.providerModule\" value=\"org.apache.openjpa:test\"/>" +
         "       </properties>" +
         "  </persistence-unit>" +

@@ -51,7 +51,7 @@ public class ConsistentHashLocality implements Locality {
     @Override
     public boolean isLocal(Object key) {
         if (this.localAddress == null) return true;
-        if (this.hash == null) return false;
+        if (this.hash == null) return true;
         return this.localAddress.equals(this.hash.locatePrimaryOwner(key));
     }
 }

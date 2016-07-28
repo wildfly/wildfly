@@ -23,7 +23,12 @@
 package org.jboss.as.clustering.infinispan;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.global.TransportConfiguration;
+import org.infinispan.factories.annotations.Inject;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
@@ -48,9 +53,33 @@ public class ChannelTransport extends JGroupsTransport {
         this.closeChannel = false;
     }
 
+    @Inject
+    @Override
+    public void setConfiguration(GlobalConfiguration config) {
+        GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
+        // WFLY-6685 Prevent Infinispan from registering channel mbeans
+        // The JGroups subsystem already does this
+        builder.globalJmxStatistics().read(config.globalJmxStatistics()).disable();
+        // ISPN-4755 workaround
+        TransportConfiguration transport = config.transport();
+        builder.transport()
+                .clusterName(transport.clusterName())
+                .distributedSyncTimeout(transport.distributedSyncTimeout())
+                .initialClusterSize(transport.initialClusterSize())
+                .initialClusterTimeout(transport.initialClusterTimeout(), TimeUnit.MILLISECONDS)
+                .machineId(transport.machineId())
+                .nodeName(transport.nodeName())
+                .rackId(transport.rackId())
+                .siteId(transport.siteId())
+                .transport(transport.transport())
+                .withProperties(transport.properties())
+                ;
+        super.setConfiguration(builder.build());
+    }
+
     @Override
     protected void initRPCDispatcher() {
-        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.getTimeoutExecutor());
+        this.dispatcher = new CommandAwareRpcDispatcher(this.channel, this, this.globalHandler, this.getTimeoutExecutor(), this.timeService);
         MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
             @Override
             public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {

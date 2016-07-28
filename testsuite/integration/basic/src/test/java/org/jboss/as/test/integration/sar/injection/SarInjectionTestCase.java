@@ -68,6 +68,7 @@ public final class SarInjectionTestCase {
             final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
             final ObjectName objectName = new ObjectName("jboss:name=POJOService");
             Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
+            Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "InjectedCount"));
             Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
             Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
             Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));

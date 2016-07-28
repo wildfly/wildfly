@@ -66,8 +66,6 @@ public class NestedRemoteContextTestCase {
         return ShrinkWrap.create(WebArchive.class, "binder.war")
                 .addClasses(BindRmiServlet.class, MyObject.class)
                 .setWebXML(MultipleClientRemoteJndiTestCase.class.getPackage(), "web.xml")
-                // dependency to org.jboss.as.naming module is used to grant JndiPermission
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming\n"), "MANIFEST.MF")
                 // BindRmiServlet binds java:jboss/exported/loc/stub
                 .addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("java:jboss/exported/loc/stub", "bind")),
                         "permissions.xml");

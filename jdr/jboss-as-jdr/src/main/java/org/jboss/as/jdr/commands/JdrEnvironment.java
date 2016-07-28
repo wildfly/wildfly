@@ -41,6 +41,8 @@ public class JdrEnvironment {
     private String hostControllerName;
     private String serverName;
     private ModelControllerClient client;
+    private String productName;
+    private String productVersion;
 
     public CLI getCli() {
         return cli;
@@ -68,6 +70,8 @@ public class JdrEnvironment {
         this.setCli(copy.getCli());
         this.setZip(copy.getZip());
         this.setServerRunning(copy.isServerRunning());
+        this.setProductName(copy.getProductName());
+        this.setProductVersion(copy.getProductVersion());
     }
 
     public String getJbossHome() {
@@ -156,5 +160,21 @@ public class JdrEnvironment {
 
     public void setServerRunning(boolean isServerRunning) {
         this.isServerRunning = isServerRunning;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductVersion() {
+        return productVersion;
+    }
+
+    public void setProductVersion(String productVersion) {
+        this.productVersion = productVersion;
     }
 }

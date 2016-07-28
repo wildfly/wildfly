@@ -23,14 +23,16 @@ package org.jboss.as.test.clustering;
 
 import javax.naming.NamingException;
 
+import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 
 /**
- * Utility class for cluster test.
+ * Utility class for clustering tests.
  *
  * @author Radoslav Husar
  * @version September 2012
@@ -49,9 +51,22 @@ public class ClusterTestUtil {
         }
     }
 
+    /**
+     * <em>Note that should you need to manually add an extra set of permissions, the following permission is required for this utility to work within
+     * security manager:</em>
+     *
+     * <pre>{@code
+     * war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+     *     new ServerPermission("getCurrentServiceContainer")
+     * ), "permissions.xml");
+     * }</pre>
+     */
     public static <A extends Archive<A> & ClassContainer<A> & ManifestContainer<A>> A addTopologyListenerDependencies(A archive) {
         archive.addClasses(TopologyChangeListener.class, TopologyChangeListenerBean.class, TopologyChangeListenerServlet.class);
         archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.jboss.as.server, org.infinispan\n"));
+        archive.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new ServerPermission("getCurrentServiceContainer")
+        ), "permissions.xml");
         return archive;
     }
 

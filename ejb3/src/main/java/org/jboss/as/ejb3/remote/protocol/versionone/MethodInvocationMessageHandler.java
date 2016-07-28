@@ -124,6 +124,7 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
             this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, null);
             return;
         }
+        EjbLogger.REMOTE_LOGGER.tracef("Incoming Remote EJB Message from: %s to EJB Path: %s/%s/%s/%s method: %s", channelAssociation.getChannel(), appName, moduleName, distinctName, beanName, methodName);
         final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         Runnable runnable = null;
         try {

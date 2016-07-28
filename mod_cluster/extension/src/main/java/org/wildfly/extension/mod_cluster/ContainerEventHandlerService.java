@@ -83,8 +83,6 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
     public void start(StartContext context) {
         ROOT_LOGGER.debugf("Starting mod_cluster extension");
 
-        boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
-
         // Resolve and configure proxies
         if (outboundSocketBindings.size() > 0) {
             List<ProxyConfiguration> proxies = new LinkedList<>();
@@ -115,11 +113,6 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
             config.setProxyConfigurations(proxies);
         }
 
-        // Set advertise if no proxies are configured
-        if (config.getProxyConfigurations().isEmpty()) {
-            config.setAdvertise(isMulticast);
-        }
-
         // Read node to set configuration.
         if (config.getAdvertise()) {
             // There should be a socket-binding.... Well no it needs an advertise socket :-(
@@ -127,7 +120,7 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
             if (binding != null) {
                 config.setAdvertiseSocketAddress(binding.getMulticastSocketAddress());
                 config.setAdvertiseInterface(binding.getSocketAddress().getAddress());
-                if (!isMulticast) {
+                if (!isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces())) {
                     ROOT_LOGGER.multicastInterfaceNotAvailable();
                 }
             }

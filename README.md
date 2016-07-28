@@ -53,6 +53,18 @@ Contributing
 ------------------
 https://developer.jboss.org/wiki/HackingOnWildFly
 
+Build vs. Dist directories
+--------------------------
+
+After running `mvn install`, WildFly will be available in two distinct directories, `build` and `dist`.
+
+* The `build` directory contains a build of WildFly that is based on Maven artifact resolution for module configuration
+* The `dist` directory, on the other hand, contains a full distributable build of WildFly
+
+Using the `build` directory makes iterating with subsystem or module development easier since there is no need to rebuild the whole of WildFly or copy JAR files around on every change.
+
+The `dist` directory is better suited when a full build of WildFly is needed for development or test purposes.
+
 Running the Testsuite
 --------------------
 The testsuite module contains several submodules including the following:

@@ -52,7 +52,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
-import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
+import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -86,7 +86,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "numberguess-jsf.war");
         war.addClasses(Game.class, Generator.class, MaxNumber.class, Random.class);
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         war.addAsWebResource(JSFFailoverTestCase.class.getPackage(), "home.xhtml", "home.xhtml");
         war.addAsWebInfResource(JSFFailoverTestCase.class.getPackage(), "faces-config.xml", "faces-config.xml");
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");

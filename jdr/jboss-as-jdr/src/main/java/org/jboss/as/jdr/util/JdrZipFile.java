@@ -135,8 +135,15 @@ public class JdrZipFile {
      * @throws Exception
      */
     public void add(String content, String path) throws Exception {
-        String name = "sos_strings/as7/" + path;
-        this.add(new ByteArrayInputStream(content.getBytes()), name);
+        StringBuilder name = new StringBuilder("sos_strings/");
+
+        name.append(this.env.getProductName().replace(" ", "_").toLowerCase());
+        name.append("-");
+        name.append(this.env.getProductVersion().split("\\.")[0]);
+        name.append("/");
+        name.append(path);
+
+        this.add(new ByteArrayInputStream(content.getBytes()), name.toString());
     }
 
 

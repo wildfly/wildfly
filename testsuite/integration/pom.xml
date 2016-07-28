@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-testsuite</artifactId>
-        <version>10.1.0.Final-SNAPSHOT</version>
+        <version>11.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly Test Suite: Integration</name>
+    <name>WildFly Test Suite: Integration (parent)</name>
 
     <properties>
         <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
@@ -272,7 +272,7 @@
                     <workingDirectory>${basedir}/target/workdir</workingDirectory> <!-- Work in submodule's own dir. -->
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
-                    <argLine>${surefire.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
+                    <argLine>${surefire.system.args} ${surefire.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
 
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
@@ -325,6 +325,31 @@
             <type>pom</type>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.testenricher</groupId>
+            <artifactId>arquillian-testenricher-initialcontext</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

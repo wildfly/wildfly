@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ import org.junit.runner.RunWith;
 @ServerSetup(JMSResourceDefinitionsTestCase.StoreVaultedPropertyTask.class)
 public class JMSResourceDefinitionsTestCase {
 
-    static final String VAULT_LOCATION = JMSResourceDefinitionsTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "security/jms-vault/";
+    static final String VAULT_LOCATION = JMSResourceDefinitionsTestCase.class.getResource("/").getPath() + "security/jms-vault/";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
@@ -144,8 +143,7 @@ public class JMSResourceDefinitionsTestCase {
                         MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
-                        create("beans.xml"))
-                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
+                        create("beans.xml"));
         System.out.println("archive = " + archive.toString(true));
         return archive;
     }

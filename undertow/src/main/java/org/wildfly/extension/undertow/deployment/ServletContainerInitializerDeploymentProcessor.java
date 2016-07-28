@@ -93,6 +93,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             deploymentUnit.putAttachment(ScisMetaData.ATTACHMENT_KEY, scisMetaData);
         }
         Set<ServletContainerInitializer> scis = scisMetaData.getScis();
+        Set<Class<? extends ServletContainerInitializer>> sciClasses = new HashSet<>();
         if (scis == null) {
             scis = new HashSet<ServletContainerInitializer>();
             scisMetaData.setScis(scis);
@@ -108,7 +109,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 Module depModule = loader.loadModule(dependency.getIdentifier());
                 ServiceLoader<ServletContainerInitializer> serviceLoader = depModule.loadService(ServletContainerInitializer.class);
                 for (ServletContainerInitializer service : serviceLoader) {
-                    scis.add(service);
+                    if(sciClasses.add(service.getClass())) {
+                        scis.add(service);
+                    }
                 }
             } catch (ModuleLoadException e) {
                 if (dependency.isOptional() == false) {
@@ -123,7 +126,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             for (String jar : order) {
                 VirtualFile sci = localScis.get(jar);
                 if (sci != null) {
-                    scis.addAll(loadSci(classLoader, sci, jar, true));
+                    scis.addAll(loadSci(classLoader, sci, jar, true, sciClasses));
                 }
             }
         }
@@ -175,7 +178,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         context.removeAttachment(ScisMetaData.ATTACHMENT_KEY);
     }
 
-    private List<ServletContainerInitializer> loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {
+    private List<ServletContainerInitializer> loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error, Set<Class<? extends ServletContainerInitializer>> sciClasses) throws DeploymentUnitProcessingException {
         final List<ServletContainerInitializer> scis = new ArrayList<ServletContainerInitializer>();
         InputStream is = null;
         try {
@@ -194,7 +197,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                         // Instantiate the ServletContainerInitializer
                         ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
                         if (service != null) {
-                            scis.add(service);
+                            if(sciClasses.add(service.getClass())) {
+                                scis.add(service);
+                            }
                         }
                     }
                     servletContainerInitializerClassName = reader.readLine();

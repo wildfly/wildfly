@@ -190,6 +190,9 @@ public final class ViewService implements Service<ComponentView> {
 
         @Override
         public Object invoke(InterceptorContext interceptorContext) throws Exception {
+            if(component instanceof BasicComponent) {
+                ((BasicComponent) component).waitForComponentStart();
+            }
             final Method method = interceptorContext.getMethod();
             final Interceptor interceptor = viewInterceptors.get(method);
             return interceptor.processInvocation(interceptorContext);

@@ -77,6 +77,8 @@ public class DomainAdjuster620 extends DomainAdjuster630 {
         list.add(setStatisticsEnabledTrue(
                 subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
         list.add(setStatisticsEnabledTrue(
+                subsystem.append("cache-container", "web").append("distributed-cache", "concurrent")));
+        list.add(setStatisticsEnabledTrue(
                 subsystem.append("cache-container", "ejb")));
         list.add(setStatisticsEnabledTrue(
                 subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));

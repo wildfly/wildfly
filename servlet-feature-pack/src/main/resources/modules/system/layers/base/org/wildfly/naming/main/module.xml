@@ -28,7 +28,7 @@
     </properties>
 
     <dependencies>
-        <module name="org.jboss.as.naming">
+        <module name="org.jboss.as.naming" export="true">
             <imports>
                 <include-set>
                     <path name="org/wildfly/naming/java/permission"/>

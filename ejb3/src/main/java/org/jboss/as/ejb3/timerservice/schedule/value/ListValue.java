@@ -67,7 +67,7 @@ public class ListValue implements ScheduleValue {
      */
     public ListValue(String list) {
         if (list == null || list.isEmpty()) {
-            throw EjbLogger.ROOT_LOGGER.invalidListExpression(list);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidListExpression(list);
         }
         StringTokenizer tokenizer = new StringTokenizer(list, LIST_SEPARATOR);
         while (tokenizer.hasMoreTokens()) {
@@ -77,7 +77,7 @@ public class ListValue implements ScheduleValue {
         // a list MUST minimally contain 2 elements
         // Ex: "," "1," ", 2" are all invalid
         if (this.values.size() < 2) {
-            throw EjbLogger.ROOT_LOGGER.invalidListExpression(list);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidListExpression(list);
         }
     }
 

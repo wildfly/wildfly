@@ -55,6 +55,7 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch._private.Capabilities;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
@@ -201,6 +202,9 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                             ManagedJBossThreadPoolExecutorService.class,
                             service.getThreadPoolInjector()
                     )
+                    // Only start this service if there are deployments present, allow it to be stopped as deployments
+                    // are removed.
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
 
             // Determine the repository type
@@ -210,6 +214,9 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             final DefaultConfigurationService configurationService = new DefaultConfigurationService();
             target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), configurationService)
                     .addDependency(BatchServiceNames.BATCH_JOB_EXECUTOR_NAME, JobExecutor.class, configurationService.getJobExecutorInjector())
+                    // Only start this service if there are deployments present, allow it to be stopped as deployments
+                    // are removed.
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
 
         }

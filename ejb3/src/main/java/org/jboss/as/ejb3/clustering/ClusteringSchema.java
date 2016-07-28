@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.clustering;
 
+import java.util.Locale;
+
 import org.jboss.as.clustering.controller.Schema;
 
 /**
@@ -54,6 +56,6 @@ public enum ClusteringSchema implements Schema<ClusteringSchema> {
 
     @Override
     public String getNamespaceUri() {
-        return String.format("urn:clustering:%d.%d", this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:clustering:%d.%d", this.major, this.minor);
     }
 }

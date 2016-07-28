@@ -44,8 +44,9 @@ public class WebSocketSecurityTestCase {
                                 // Needed for the TestSuiteEnvironment.getServerAddress()
                                 new PropertyPermission("management.address", "read"),
                                 new PropertyPermission("node0", "read"),
+                                new PropertyPermission("jboss.http.port", "read"),
                                 // Needed for the serverContainer.connectToServer()
-                                new SocketPermission("*:8080", "connect,resolve")
+                                new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                         ), "permissions.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
                         "services/javax.websocket.ContainerProvider");
@@ -55,7 +56,7 @@ public class WebSocketSecurityTestCase {
     public void testWebSocket() throws Exception {
         AnnotatedClient endpoint = new AnnotatedClient();
         WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
-        Session session = serverContainer.connectToServer(endpoint, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), 8080, "/websocket/websocket", "", ""));
+        Session session = serverContainer.connectToServer(endpoint, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/websocket/websocket", "", ""));
         Assert.assertEquals("Hello anil", endpoint.getMessage());
     }
 }

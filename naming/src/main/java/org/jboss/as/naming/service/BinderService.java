@@ -48,7 +48,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     private final InjectedValue<ServiceBasedNamingStore> namingStoreValue = new InjectedValue<ServiceBasedNamingStore>();
     private final String name;
     private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
-    private final Object source;
+    private volatile Object source;
     private final AtomicInteger refcnt;
     private volatile ServiceController<?> controller;
 
@@ -85,6 +85,10 @@ public class BinderService implements Service<ManagedReferenceFactory> {
 
     public Object getSource() {
         return source;
+    }
+
+    public void setSource(Object source) {
+        this.source = source;
     }
 
     public void acquire() {
@@ -161,4 +165,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
         return "BinderService[name=" + name + ", source=" + source + ", refcnt=" + (refcnt != null ? refcnt.get() : "n/a") +"]";
     }
 
+    public String getName() {
+        return name;
+    }
 }

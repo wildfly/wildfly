@@ -27,10 +27,12 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-6624")
 public class CoarseSessionPassivationTestCase extends SessionPassivationTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

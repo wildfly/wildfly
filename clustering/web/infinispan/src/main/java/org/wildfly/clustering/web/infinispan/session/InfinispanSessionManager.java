@@ -38,7 +38,6 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
@@ -58,6 +57,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.Recordable;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.Node;
@@ -89,15 +89,16 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private final SessionExpirationListener expirationListener;
     private final Batcher<TransactionBatch> batcher;
     private final Cache<? extends Key<String>, ?> cache;
+    private final CacheProperties properties;
     private final SessionFactory<MV, AV, L> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final CommandDispatcherFactory dispatcherFactory;
     private final NodeFactory<Address> nodeFactory;
     private final int maxActiveSessions;
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
-    private final boolean persistent;
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final SessionCreationMetaDataKeyFilter filter = new SessionCreationMetaDataKeyFilter();
+    private final Locality locality;
     private final Recordable<ImmutableSession> recorder;
     private final ServletContext context;
 
@@ -108,6 +109,8 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     public InfinispanSessionManager(SessionFactory<MV, AV, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
         this.cache = configuration.getCache();
+        this.locality = new ConsistentHashLocality(this.cache);
+        this.properties = configuration.getProperties();
         this.expirationListener = configuration.getExpirationListener();
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
@@ -116,11 +119,6 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         this.maxActiveSessions = configuration.getMaxActiveSessions();
         this.recorder = configuration.getInactiveSessionRecorder();
         this.context = configuration.getServletContext();
-        Configuration config = this.cache.getCacheConfiguration();
-        // If cache is clustered or configured with a write-through cache store
-        // then we need to trigger any HttpSessionActivationListeners per request
-        // See SRV.7.7.2 Distributed Environments
-        this.persistent = config.clustering().cacheMode().needsStateTransfer() || (config.persistence().usingStores() && !config.persistence().passivation());
     }
 
     @Override
@@ -158,7 +156,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         };
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.cache.getName() + ".schedulers", this.scheduler);
         this.cache.addListener(this, this.filter);
-        this.schedule(this.cache, new SimpleLocality(false), new ConsistentHashLocality(this.cache));
+        this.schedule(this.cache, new SimpleLocality(false), this.locality);
     }
 
     @Override
@@ -172,7 +170,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     }
 
     boolean isPersistent() {
-        return this.persistent;
+        return this.properties.isPersistent();
     }
 
     private void cancel(String sessionId) {
@@ -245,7 +243,10 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
             return null;
         }
         this.cancel(id);
-        if (this.persistent) {
+        if (this.properties.isPersistent()) {
+            // If cache is clustered or configured with a write-through cache store
+            // then we need to trigger any HttpSessionActivationListeners per request
+            // See SRV.7.7.2 Distributed Environments
             this.triggerPostActivationEvents(session);
         }
         return new SchedulableSession(this.factory.createSession(id, value), session);
@@ -278,7 +279,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
     private Set<String> getSessions(Flag... flags) {
         try (Stream<? extends Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return keys.filter(this.filter).map(key -> key.getValue()).collect(Collectors.toSet());
+            return keys.filter(this.filter.and(key -> this.locality.isLocal(key))).map(key -> key.getValue()).collect(Collectors.toSet());
         }
     }
 
@@ -294,7 +295,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (!event.isPre() && !this.persistent) {
+        if (!event.isPre() && !this.properties.isPersistent()) {
             this.executor.execute(() -> {
                 String id = event.getKey().getValue();
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
@@ -309,7 +310,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && !this.persistent) {
+        if (event.isPre() && !this.properties.isPersistent()) {
             this.executor.execute(() -> {
                 String id = event.getKey().getValue();
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
@@ -356,11 +357,11 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         this.executor.execute(() -> {
             Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
             Address localAddress = cache.getCacheManager().getAddress();
-            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
             Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
             if (event.isPre()) {
                 this.scheduler.cancel(newLocality);
             } else {
+                Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
                 this.schedule(cache, oldLocality, newLocality);
             }
         });
@@ -425,7 +426,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
         @Override
         public SessionMetaData getMetaData() {
-            if (!this.isValid()) {
+            if (!this.session.isValid()) {
                 throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
             }
             return this.session.getMetaData();
@@ -438,12 +439,15 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
         @Override
         public void invalidate() {
+            if (!this.session.isValid()) {
+                throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
+            }
             this.session.invalidate();
         }
 
         @Override
         public SessionAttributes getAttributes() {
-            if (!this.isValid()) {
+            if (!this.session.isValid()) {
                 throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
             }
             return this.session.getAttributes();

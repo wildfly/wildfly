@@ -33,6 +33,9 @@ import org.jboss.dmr.ModelNode;
 
 public class RemotingProfileChildResourceRemoveHandler extends RemotingProfileChildResourceHandlerBase{
     protected void updateModel(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        // verify that the resource exist before removing it
+        context.readResource(PathAddress.EMPTY_ADDRESS, false);
+
         context.removeResource(PathAddress.EMPTY_ADDRESS);
     }
 }

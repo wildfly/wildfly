@@ -535,11 +535,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case QUEUE_SIZE: {
-                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.QUEUE_SIZE);
+                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.DeprecatedAttribute.QUEUE_SIZE);
                 break;
             }
             case QUEUE_FLUSH_INTERVAL: {
-                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.QUEUE_FLUSH_INTERVAL);
+                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.DeprecatedAttribute.QUEUE_FLUSH_INTERVAL);
                 break;
             }
             case REMOTE_TIMEOUT: {

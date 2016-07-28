@@ -34,7 +34,6 @@ import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.http.AlpnOpenListener;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import io.undertow.server.protocol.http2.Http2OpenListener;
-import io.undertow.server.protocol.spdy.SpdyOpenListener;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkUtils;
@@ -75,12 +74,12 @@ public class HttpsListenerService extends HttpListenerService {
 
     @Override
     protected OpenListener createOpenListener() {
-        if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false) || listenerOptions.get(UndertowOptions.ENABLE_SPDY, false)) {
+        if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
             try {
-                getClass().getClassLoader().loadClass("org.eclipse.jetty.alpn.ALPN");
                 return createAlpnOpenListener();
-            } catch (ClassNotFoundException e) {
+            } catch (Throwable e) {
                 UndertowLogger.ROOT_LOGGER.alpnNotFound();
+                UndertowLogger.ROOT_LOGGER.debug("Exception creating ALPN listener", e);
                 return super.createOpenListener();
             }
         } else {
@@ -98,12 +97,6 @@ public class HttpsListenerService extends HttpListenerService {
             alpn.addProtocol(Http2OpenListener.HTTP2, http2, 10);
             Http2OpenListener http2_14 = new Http2OpenListener(bufferPool, undertowOptions, "h2-14");
             alpn.addProtocol(Http2OpenListener.HTTP2_14, http2_14, 9);
-        }
-        if(listenerOptions.get(UndertowOptions.ENABLE_SPDY, false)) {
-            //if you want to use spdy you need to configure heap buffers
-            //we may fix this in future, but spdy is going away anyway
-            SpdyOpenListener spdyOpenListener = new SpdyOpenListener(bufferPool, bufferPool, undertowOptions);
-            alpn.addProtocol(SpdyOpenListener.SPDY_3_1, spdyOpenListener, 5);
         }
         return alpn;
     }
@@ -146,7 +139,7 @@ public class HttpsListenerService extends HttpListenerService {
         UndertowLogger.ROOT_LOGGER.listenerSuspend("HTTPS", getName());
         IoUtils.safeClose(sslServer);
         sslServer = null;
-        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getPort());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getSocketAddress().getPort());
         httpListenerRegistry.getValue().removeListener(getName());
     }
 

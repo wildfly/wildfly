@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.clustering.singleton.deployment;
 
+import java.util.Locale;
+
 import javax.xml.namespace.QName;
 
 import org.jboss.as.clustering.controller.Schema;
@@ -59,7 +61,7 @@ public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchem
 
     @Override
     public String getNamespaceUri() {
-        return String.format(NAMESPACE_URI_PATTERN, this.root, this.major, this.minor);
+        return String.format(Locale.ROOT, NAMESPACE_URI_PATTERN, this.root, this.major, this.minor);
     }
 
     public QName getRoot() {

@@ -31,13 +31,13 @@ import java.time.Instant;
 public interface ImmutableSessionMetaData {
     /**
      * Indicates whether or not this session was created by the current thread.
-     * @return true if this session is new, false otherwise
+     * @return true, if this session is new, false otherwise
      */
     boolean isNew();
 
     /**
      * Indicates whether or not this session was previously idle for longer than the maximum inactive interval.
-     * @return true if this session is expired, false otherwise
+     * @return true, if this session is expired, false otherwise
      */
     boolean isExpired();
 

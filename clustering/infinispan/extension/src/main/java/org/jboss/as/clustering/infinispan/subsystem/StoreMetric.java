@@ -33,6 +33,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public enum StoreMetric implements Metric<ActivationInterceptor> {
 
     CACHE_LOADER_LOADS(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG) {

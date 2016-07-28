@@ -21,9 +21,6 @@
  */
 package org.wildfly.clustering.web.undertow.sso;
 
-import io.undertow.server.session.SessionManager;
-import io.undertow.servlet.api.Deployment;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,38 +34,43 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.extension.undertow.AbstractUndertowEventListener;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
+
+import io.undertow.server.session.SessionListener;
+import io.undertow.server.session.SessionManager;
+import io.undertow.servlet.api.Deployment;
 
 /**
  * Service providing a {@link SessionManagerRegistry} for a host.
  * @author Paul Ferraro
  */
-public class SessionManagerRegistryBuilder extends AbstractUndertowEventListener implements Builder<SessionManagerRegistry>, Service<SessionManagerRegistry>, SessionManagerRegistry {
+public class SessionManagerRegistryBuilder implements Builder<SessionManagerRegistry>, Service<SessionManagerRegistry>, SessionManagerRegistry, UndertowEventListener {
 
-    private final String serverName;
-    private final String hostName;
+    private final ServiceName hostServiceName;
     private final InjectedValue<UndertowService> service = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
-
+    private final InjectedValue<SessionListener> listener = new InjectedValue<>();
     private final ConcurrentMap<String, SessionManager> managers = new ConcurrentHashMap<>();
+    private final ServiceName listenerServiceName;
 
-    public SessionManagerRegistryBuilder(String serverName, String hostName) {
-        this.serverName = serverName;
-        this.hostName = hostName;
+    public SessionManagerRegistryBuilder(ServiceName hostServiceName, ServiceName listenerServiceName) {
+        this.hostServiceName = hostServiceName;
+        this.listenerServiceName = listenerServiceName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return UndertowService.virtualHostName(this.serverName, this.hostName).append("managers");
+        return this.hostServiceName.append("managers");
     }
 
     @Override
     public ServiceBuilder<SessionManagerRegistry> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), this)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, this.service)
-                .addDependency(UndertowService.virtualHostName(this.serverName, this.hostName), Host.class, this.host)
+                .addDependency(this.hostServiceName, Host.class, this.host)
+                .addDependency(this.listenerServiceName, SessionListener.class, this.listener)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
@@ -79,30 +81,40 @@ public class SessionManagerRegistryBuilder extends AbstractUndertowEventListener
 
     @Override
     public void start(StartContext context) throws StartException {
-        UndertowService service = this.service.getValue();
-        service.registerListener(this);
-        for (Deployment deployment: this.host.getValue().getDeployments()) {
-            this.managers.putIfAbsent(deployment.getDeploymentInfo().getDeploymentName(), deployment.getSessionManager());
-        }
+        this.service.getValue().registerListener(this);
+        this.host.getValue().getDeployments().forEach(deployment -> this.addDeployment(deployment));
     }
 
     @Override
     public void stop(StopContext context) {
+        this.host.getValue().getDeployments().forEach(deployment -> this.removeDeployment(deployment));
         this.service.getValue().unregisterListener(this);
-        this.managers.clear();
+    }
+
+    private void addDeployment(Deployment deployment) {
+        SessionManager manager = deployment.getSessionManager();
+        if (this.managers.putIfAbsent(deployment.getDeploymentInfo().getDeploymentName(), deployment.getSessionManager()) == null) {
+            manager.registerSessionListener(this.listener.getValue());
+        }
+    }
+
+    private void removeDeployment(Deployment deployment) {
+        if (this.managers.remove(deployment.getDeploymentInfo().getDeploymentName()) != null) {
+            deployment.getSessionManager().removeSessionListener(this.listener.getValue());
+        }
     }
 
     @Override
     public void onDeploymentStart(Deployment deployment, Host host) {
         if (this.host.getValue().getName().equals(host.getName())) {
-            this.managers.putIfAbsent(deployment.getDeploymentInfo().getDeploymentName(), deployment.getSessionManager());
+            this.addDeployment(deployment);
         }
     }
 
     @Override
     public void onDeploymentStop(Deployment deployment, Host host) {
         if (this.host.getValue().getName().equals(host.getName())) {
-            this.managers.remove(deployment.getDeploymentInfo().getDeploymentName());
+            this.removeDeployment(deployment);
         }
     }
 

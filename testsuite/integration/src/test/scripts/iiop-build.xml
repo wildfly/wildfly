@@ -6,6 +6,8 @@
 
     <target name="build-iiop" description="Builds server configurations for IIOP tests">
 
+        <basename property="keystore.filename" file="${keystore.file}"/>
+
         <echo message="Building config jbossas-iiop-client"/>
         <copy todir="target/jbossas-iiop-client">
             <fileset dir="target/jbossas"/>
@@ -25,6 +27,58 @@
             mcast="${mcast}"
         />
         <ts.config-as.add-port-offset name="jbossas-iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
+
+        <!-- Build configs for SSL tests -->
+
+        <!-- SSL Client w Sec Domain -->
+        <echo message="Building config jbossas-iiop-ssl-client"/>
+        <copy todir="target/jbossas-iiop-ssl-client">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-client"
+                                        node="${node0}"
+                                        mcast="${mcast}"
+        />
+        <copy todir="target/jbossas-iiop-ssl-client/standalone/configuration">
+            <fileset file="${keystore.file}"/>
+        </copy>
+        <ts.config-as.setup-ssl-support-for-iiop name="jbossas-iiop-ssl-client"
+                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                 password="${keystore.password}"/>
+
+        <!-- SSL Server with ior-settings transport config -->
+        <echo message="Building config jbossas-iiop-ssl-server"/>
+        <copy todir="target/jbossas-iiop-ssl-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-server"
+                                        node="${node1}"
+                                        mcast="${mcast}"
+        />
+        <copy todir="target/jbossas-iiop-ssl-server/standalone/configuration">
+            <fileset file="${keystore.file}"/>
+        </copy>
+        <ts.config-as.add-port-offset name="jbossas-iiop-ssl-server" offset="100" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.setup-ssl-support-for-iiop name="jbossas-iiop-ssl-server"
+                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                 password="${keystore.password}"/>
+
+        <!-- SSL Server with server-requires -->
+        <echo message="Building config jbossas-iiop-ssl-legacy-server"/>
+        <copy todir="target/jbossas-iiop-ssl-legacy-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-legacy-server"
+                                        node="${node1}"
+                                        mcast="${mcast}"
+        />
+        <copy todir="target/jbossas-iiop-ssl-legacy-server/standalone/configuration">
+            <fileset file="${keystore.file}"/>
+        </copy>
+        <ts.config-as.add-port-offset name="jbossas-iiop-ssl-legacy-server" offset="200" nativePort="9999" httpPort="9990"/>
+        <ts.config-as.setup-legacy-ssl-support-for-iiop name="jbossas-iiop-ssl-legacy-server"
+                                                        keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                        password="${keystore.password}"/>
 
     </target>
 

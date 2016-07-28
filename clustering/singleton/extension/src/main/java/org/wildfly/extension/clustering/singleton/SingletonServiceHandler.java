@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import static org.wildfly.extension.clustering.singleton.SingletonResourceDefinition.Attribute.*;
+import static org.wildfly.extension.clustering.singleton.SingletonResourceDefinition.Capability.*;
+
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,7 +37,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonPolicy;
-import org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentDependencyProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentParsingProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentProcessor;
@@ -62,14 +64,14 @@ public class SingletonServiceHandler implements ResourceServiceHandler {
         };
         context.addStep(step, OperationContext.Stage.RUNTIME);
 
-        String defaultPolicy = SingletonResourceDefinition.Attribute.DEFAULT.getDefinition().resolveModelAttribute(context, model).asString();
-        ServiceName serviceName = Capability.POLICY.getDefinition().getCapabilityServiceName();
-        ServiceName targetServiceName = Capability.POLICY.getDefinition().getCapabilityServiceName(defaultPolicy);
+        String defaultPolicy = DEFAULT.getDefinition().resolveModelAttribute(context, model).asString();
+        ServiceName serviceName = DEFAULT_POLICY.getServiceName(context.getCurrentAddress());
+        ServiceName targetServiceName = SingletonServiceNameFactory.SINGLETON_POLICY.getServiceName(context, defaultPolicy);
         new AliasServiceBuilder<>(serviceName, targetServiceName, SingletonPolicy.class).build(context.getServiceTarget()).install();
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) {
-        context.removeService(Capability.POLICY.getDefinition().getCapabilityServiceName());
+        context.removeService(DEFAULT_POLICY.getServiceName(context.getCurrentAddress()));
     }
 }

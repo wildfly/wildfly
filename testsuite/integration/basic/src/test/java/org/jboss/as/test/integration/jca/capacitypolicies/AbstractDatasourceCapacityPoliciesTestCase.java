@@ -127,7 +127,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
 
         // sometimes InUseCount is 2 and AvailableCount is 3 when statistics are checked right after
         // ds.getConnection, hence this sleep. I guess it's caused by CapacityFiller
-        Thread.sleep(50);
+        Thread.sleep(500);
 
         checkStatistics(4, 1, 5, 0);
 

@@ -39,11 +39,14 @@ import org.junit.runner.RunWith;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests for suspend/resume functionality with EE concurrency
@@ -68,13 +71,19 @@ public class EEConcurrencySuspendTestCase {
         war.addPackage(HttpRequest.class.getPackage());
         war.addClass(TestSuiteEnvironment.class);
         war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new RuntimePermission("modifyThread"),
+                new PropertyPermission("management.address", "read"),
+                new PropertyPermission("node0", "read"),
+                new PropertyPermission("jboss.http.port", "read")),
+                "permissions.xml");
         return war;
     }
 
     @Test
     public void testRequestInShutdown() throws Exception {
 
-        final String address = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/ee-suspend/ShutdownServlet";
+        final String address = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/ee-suspend/ShutdownServlet";
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
             Future<Object> result = executorService.submit(new Callable<Object>() {

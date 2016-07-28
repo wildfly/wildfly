@@ -107,7 +107,7 @@ public class StackResourceDefinition extends ChildResourceDefinition {
         }
 
         TransportResourceDefinition.buildTransformation(version, builder);
-        ProtocolResourceDefinition.buildTransformation(version, builder);
+        StackProtocolResourceDefinition.buildTransformation(version, builder);
     }
 
     private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = new JChannelFactoryBuilderFactory();

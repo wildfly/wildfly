@@ -68,7 +68,7 @@ public class VaultInteractiveSession {
 
             String ic = console.readLine(SecurityLogger.ROOT_LOGGER.enterIterationCount() + " ");
             iterationCount = Integer.parseInt(ic);
-            vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount);
+            vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount, true);
 
             while (keystoreAlias == null || keystoreAlias.length() == 0) {
                 keystoreAlias = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreAlias() + " ");

@@ -25,8 +25,8 @@ package org.jboss.as.security.plugins;
 import java.security.Principal;
 import java.util.concurrent.ConcurrentMap;
 
-import org.jboss.as.security.org.jboss.as.security.lru.LRUCache;
-import org.jboss.as.security.org.jboss.as.security.lru.RemoveCallback;
+import org.jboss.as.security.lru.LRUCache;
+import org.jboss.as.security.lru.RemoveCallback;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**

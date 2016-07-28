@@ -32,10 +32,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.net.SocketPermission;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -175,7 +177,7 @@ public class PasswordMaskingInContainerTestCase {
 
     }
 
-    static final String RESOURCE_LOCATION = PasswordMaskingInContainerTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile()
+    static final String RESOURCE_LOCATION = PasswordMaskingInContainerTestCase.class.getResource("/").getPath()
             + "security/pwdmsk-vault/";
     static final String VAULT_BLOCK = "MaskedDS";
     static final String DS_CLEAR_TEXT_PASSWORD = "sa";
@@ -185,6 +187,7 @@ public class PasswordMaskingInContainerTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "passwordMasking" + ".war");
         war.addClass(PasswordMaskingTestServlet.class);
         war.setWebXML(PasswordMaskingInContainerTestCase.class.getPackage(), "web.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:9092", "connect,resolve")), "permissions.xml");
         return war;
     }
 

@@ -591,4 +591,6 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 63, value = "%s service not started")
     IllegalStateException serviceNotStarted(ServiceName serviceName);
 
+    @Message(id = 64, value = "Cannot rebind external context lookup")
+    OperationFailedException cannotRebindExternalContext();
 }

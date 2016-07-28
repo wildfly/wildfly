@@ -44,7 +44,6 @@
         <module name="org.apache.xerces" services="import"/>
         <module name="org.codehaus.woodstox" services="import"/>
         <module name="org.jboss.as.server" export="true"/>
-        <module name="javax.api"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.ejb-client"/>
         <module name="org.jboss.invocation"/>

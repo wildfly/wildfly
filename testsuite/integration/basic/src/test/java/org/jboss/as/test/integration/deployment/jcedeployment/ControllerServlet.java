@@ -37,10 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.KeyStore;
-import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.security.Provider;
 import java.security.Security;
@@ -96,12 +94,6 @@ public class ControllerServlet extends HttpServlet {
         return type.cast(field.get(null));
     }
 
-    private static void set(final Object obj, final String fieldName, final Object value) throws NoSuchFieldException, IllegalAccessException {
-        final Field field = obj.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(obj, value);
-    }
-
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             Provider[] providers = Security.getProviders();
@@ -114,19 +106,14 @@ public class ControllerServlet extends HttpServlet {
                 log.debug("Provider information: " + provider.getInfo());
                 log.debug("Provider version: " + provider.getVersion());
 
-                URL url = AccessController.doPrivileged(new PrivilegedAction<URL>() {
-                    public URL run() {
-                        URL url = null;
-                        ProtectionDomain pd = provider.getClass().getProtectionDomain();
-                        if (pd != null) {
-                            CodeSource cs = pd.getCodeSource();
-                            if (cs != null) {
-                                url = cs.getLocation();
-                            }
-                        }
-                        return url;
+                URL url = null;
+                ProtectionDomain pd = provider.getClass().getProtectionDomain();
+                if (pd != null) {
+                    CodeSource cs = pd.getCodeSource();
+                    if (cs != null) {
+                        url = cs.getLocation();
                     }
-                });
+                }
                 log.debug("Provider code base: " + url);
             }
 

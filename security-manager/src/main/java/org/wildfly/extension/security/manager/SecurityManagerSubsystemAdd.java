@@ -169,7 +169,7 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
                 ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
                 if(moduleName != null) {
                     try {
-                        cl = Module.getBootModuleLoader().loadModule(ModuleIdentifier.create(moduleName)).getClassLoader();
+                        cl = Module.getBootModuleLoader().loadModule(ModuleIdentifier.fromString(moduleName)).getClassLoader();
                     } catch (ModuleLoadException e) {
                         throw new OperationFailedException(e);
                     }

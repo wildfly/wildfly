@@ -26,7 +26,6 @@ import io.undertow.Handlers;
 import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.security.api.AuthenticationMechanism;
-import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -61,6 +60,7 @@ import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+import io.undertow.websockets.extensions.PerMessageDeflateHandshake;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 
@@ -139,6 +139,7 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
+import org.wildfly.extension.undertow.SingleSignOnService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
@@ -155,6 +156,7 @@ import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -179,7 +181,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -414,8 +415,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.addInitialHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint));
             }
 
-            container.getValue().getAuthenticationMechanisms().entrySet().forEach(
-                            (Entry<String, AuthenticationMechanismFactory> e) -> deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue()));
+            container.getValue().getAuthenticationMechanisms().entrySet().forEach(e -> deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue()));
+            deploymentInfo.setUseCachedAuthenticationMechanism(!deploymentInfo.getAuthenticationMechanisms().containsKey(SingleSignOnService.AUTHENTICATION_MECHANISM_NAME));
 
             this.deploymentInfo = deploymentInfo;
         } finally {
@@ -983,6 +984,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 webSocketDeploymentInfo.setBuffers(servletContainer.getWebsocketsBufferPool().getValue());
                 webSocketDeploymentInfo.setWorker(servletContainer.getWebsocketsWorker().getValue());
                 webSocketDeploymentInfo.setDispatchToWorkerThread(servletContainer.isDispatchWebsocketInvocationToWorker());
+
+                // Enables per-message deflate compression. This fixes JBEAP-5076.
+                // This is controlled by the system property "io.undertow.websockets.PER_MESSAGE_DEFLATE"
+                boolean enablePerMessageDeflate = Boolean.parseBoolean(
+                        WildFlySecurityManager.getPropertyPrivileged("io.undertow.websockets.PER_MESSAGE_DEFLATE", "false"));
+                if (enablePerMessageDeflate) {
+                    webSocketDeploymentInfo.addExtension(new PerMessageDeflateHandshake(false));
+                }
+
                 final AtomicReference<ServerActivity> serverActivity = new AtomicReference<>();
                 webSocketDeploymentInfo.addListener(wsc -> {
                     serverActivity.set(new ServerActivity() {
@@ -1044,7 +1054,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (predicatedHandlers != null && !predicatedHandlers.isEmpty()) {
-                d.addInitialHandlerChainWrapper(new HandlerWrapper() {
+                d.addOuterHandlerChainWrapper(new RewriteCorrectingHandlerWrappers.PostWrapper());
+                d.addOuterHandlerChainWrapper(new HandlerWrapper() {
                     @Override
                     public HttpHandler wrap(HttpHandler handler) {
                         if (predicatedHandlers.size() == 1) {
@@ -1055,6 +1066,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         }
                     }
                 });
+                d.addOuterHandlerChainWrapper(new RewriteCorrectingHandlerWrappers.PreWrapper());
             }
 
             if (mergedMetaData.getDefaultEncoding() != null) {

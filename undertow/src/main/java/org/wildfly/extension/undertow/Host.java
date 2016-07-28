@@ -40,6 +40,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.util.CopyOnWriteMap;
 import io.undertow.util.Methods;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -64,6 +65,7 @@ public class Host implements Service<Host>, FilterLocation {
     private volatile AccessLogService  accessLogService;
     private final List<FilterRef> filters = new CopyOnWriteArrayList<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
+    private final Map<String, LocationService> locations = new CopyOnWriteMap<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
     private final HostRootHandler hostRootHandler = new HostRootHandler();
 
@@ -213,9 +215,25 @@ public class Host implements Service<Host>, FilterLocation {
 
     public void unregisterHandler(String path) {
         pathHandler.removePrefixPath(path);
-        if(path.equals("/")){
+        // if there is registered location for given path, serve it from now on
+        LocationService location = locations.get(path);
+        if (location != null) {
+            pathHandler.addPrefixPath(location.getLocationPath(), location.getLocationHandler());
+        }
+        // else serve the default response code
+        else if (path.equals("/")) {
             this.setupDefaultResponseCodeHandler();
         }
+    }
+
+    void registerLocation(LocationService location) {
+        locations.put(location.getLocationPath(), location);
+        registerHandler(location.getLocationPath(), location.getLocationHandler());
+    }
+
+    void unregisterLocation(LocationService location) {
+        locations.remove(location.getLocationPath());
+        unregisterHandler(location.getLocationPath());
     }
 
     /**

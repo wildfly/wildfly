@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:4.1">
+<server xmlns="urn:jboss:domain:4.2">
 
     <extensions>
         <?EXTENSIONS?>
@@ -18,6 +18,11 @@
                 </authorization>
             </security-realm>
             <security-realm name="ApplicationRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="application.keystore" relative-to="jboss.server.config.dir" keystore-password="password" alias="server" key-password="password" generate-self-signed-certificate-host="localhost"/>
+                    </ssl>
+                </server-identities>
                 <authentication>
                     <local default-user="$local" allowed-users="*" />
                     <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
@@ -69,6 +74,8 @@
         <interface name="public">
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
+
+        <?INTERFACES?>
     </interfaces>
 
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">

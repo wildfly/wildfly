@@ -159,7 +159,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
 
     @Override
     public TransactionBatch suspendBatch() {
-        if (this.tm == null) return null;
+        if (this.tm == null) return NON_TX_BATCH;
         TransactionBatch batch = CURRENT_BATCH.get();
         if (batch != null) {
             try {
