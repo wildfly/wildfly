@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:4.2"
+<host xmlns="urn:jboss:domain:5.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:4.2 wildfly-config_4_2.xsd"
+      xsi:schemaLocation="urn:jboss:domain:5.0 wildfly-config_5_0.xsd"
       name="slave">
 
     <paths>
@@ -70,7 +70,8 @@
             <native-interface security-realm="ManagementRealm">
                 <socket interface="management" port="19999"/>
             </native-interface>
-            <http-interface security-realm="ManagementRealm" console-enabled="false"  http-upgrade-enabled="true">
+            <http-interface security-realm="ManagementRealm" console-enabled="false">
+                <http-upgrade enabled="true" />
                 <socket interface="management" port="19990"/>
             </http-interface>
         </management-interfaces>

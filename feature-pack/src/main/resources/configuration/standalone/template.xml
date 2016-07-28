@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:4.2">
+<server xmlns="urn:jboss:domain:5.0">
 
     <extensions>
         <?EXTENSIONS?>
@@ -46,7 +46,8 @@
             </logger>
         </audit-log>
         <management-interfaces>
-            <http-interface security-realm="ManagementRealm" http-upgrade-enabled="true">
+            <http-interface security-realm="ManagementRealm">
+                <http-upgrade enabled="true" />
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:4.2">
+<server xmlns="urn:jboss:domain:5.0">
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -14,7 +14,8 @@
             <native-interface security-realm="ManagementRealm">
                 <socket-binding native="management-native"/>
             </native-interface>
-            <http-interface console-enabled="false" security-realm="ManagementRealm" http-upgrade-enabled="true">
+            <http-interface console-enabled="false" security-realm="ManagementRealm">
+                <http-upgrade enabled="true" />
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
