@@ -32,4 +32,9 @@ public class RBACConfig630TestCase extends RBACConfigTestCase {
     public static void beforeClass() {
         KernelBehavior630TestSuite.initializeDomain();
     }
+
+    @Override
+    protected boolean getSupportsServerSSL() {
+        return false;
+    }
 }

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
@@ -131,7 +132,7 @@ public class RBACConfigTestCase {
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, SENSITIVITY_CLASSIFICATION)
                 .append(TYPE, CORE)
                 .append(CLASSIFICATION, "socket-config");
-        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true));
+        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true), true);
     }
 
     @Test
@@ -140,7 +141,7 @@ public class RBACConfigTestCase {
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, SENSITIVITY_CLASSIFICATION)
                 .append(TYPE, CORE)
                 .append(CLASSIFICATION, "server-ssl");
-        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true));
+        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true), getSupportsServerSSL());
     }
 
     @Test
@@ -149,14 +150,19 @@ public class RBACConfigTestCase {
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, APPLICATION_CLASSIFICATION)
                 .append(TYPE, CORE)
                 .append(CLASSIFICATION, "deployment");
-        modifyTest(mapping, CONFIGURED_APPLICATION, new ModelNode(true));
+        modifyTest(mapping, CONFIGURED_APPLICATION, new ModelNode(true), true);
     }
 
     @Test
     public void testModifySensitiveExpressionsConstraint() throws IOException {
 
         PathAddress mapping = RBAC_BASE.append(CONSTRAINT, VAULT_EXPRESSION);
-        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true));
+        modifyTest(mapping, CONFIGURED_REQUIRES_WRITE, new ModelNode(true), true);
+    }
+
+    /** Override this to return false in subclasses that test EAP < 6.4.7 */
+    protected boolean getSupportsServerSSL() {
+        return true;
     }
 
     private void modifyTest(PathAddress base, String attribute) throws IOException {
@@ -177,12 +183,17 @@ public class RBACConfigTestCase {
         assertEquals(masterValue, serverValue);
     }
 
-    private void modifyTest(PathAddress base, String attribute, ModelNode newValue) throws IOException {
+    private void modifyTest(PathAddress base, String attribute, ModelNode newValue, boolean expectSlaveEffect) throws IOException {
         ModelNode masterValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
-        ModelNode slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
-        assertEquals(masterValue, slaveValue);
-        ModelNode serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
-        assertEquals(masterValue, serverValue);
+        if (expectSlaveEffect) {
+            ModelNode slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
+            assertEquals(masterValue, slaveValue);
+            ModelNode serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
+            assertEquals(masterValue, serverValue);
+        } else {
+            executeForFailure(Util.getReadAttributeOperation(base, attribute), slaveClient);
+            executeForFailure(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
+        }
 
         // Write the same value, so we don't need to clean up.
         Throwable caught = null;
@@ -190,10 +201,15 @@ public class RBACConfigTestCase {
         try {
             ModelNode newMasterValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
             assertEquals(newValue, newMasterValue);
-            slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
-            assertEquals(newValue, slaveValue);
-            serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
-            assertEquals(newValue, serverValue);
+            if (expectSlaveEffect) {
+                ModelNode slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
+                assertEquals(newValue, slaveValue);
+                ModelNode serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
+                assertEquals(newValue, serverValue);
+            } else {
+                executeForFailure(Util.getReadAttributeOperation(base, attribute), slaveClient);
+                executeForFailure(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
+            }
         } catch (Exception | Error e) {
             caught = e;
             throw e;
@@ -244,6 +260,16 @@ public class RBACConfigTestCase {
             ModelNode response = client.execute(op);
             assertEquals(op.toString() + '\n' + response.toString(), SUCCESS, response.get(OUTCOME).asString());
             return response.get(RESULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ModelNode executeForFailure(ModelNode op, ModelControllerClient client) {
+        try {
+            ModelNode response = client.execute(op);
+            assertEquals(op.toString() + '\n' + response.toString(), FAILED, response.get(OUTCOME).asString());
+            return response;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
