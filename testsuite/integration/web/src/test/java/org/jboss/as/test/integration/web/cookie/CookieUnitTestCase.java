@@ -58,7 +58,7 @@ public class CookieUnitTestCase {
 
     protected static Logger log = Logger.getLogger(CookieUnitTestCase.class);
 
-    protected static String[] cookieNames = { "simpleCookie", "withSpace", "commented", "expired" };
+    protected static String[] cookieNames = {"simpleCookie", "withSpace", "commented", "expired"};
 
     protected static final long fiveSeconds = 5000;
 
@@ -67,7 +67,7 @@ public class CookieUnitTestCase {
 
     @ArquillianResource(CookieReadServlet.class)
     protected URL cookieReadURL;
-    
+
     @Deployment(testable = false)
     public static WebArchive deployment() {
 
@@ -84,8 +84,7 @@ public class CookieUnitTestCase {
         log.debug("testCookieSetCorrectly()");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(cookieReadURL.toURI() + "CookieReadServlet"));
-        if (response.getEntity() != null)
-            response.getEntity().getContent().close();
+        if (response.getEntity() != null) { response.getEntity().getContent().close(); }
 
         log.debug("Sending request with cookie");
         response = httpclient.execute(new HttpPost(cookieReadURL.toURI() + "CookieReadServlet"));
@@ -137,9 +136,7 @@ public class CookieUnitTestCase {
     }
 
     protected boolean checkNoExpiredCookie(List<Cookie> cookies) {
-        for (Cookie cookie : cookies)
-            if (cookie.getName().equals("expired"))
-                return false;
+        for (Cookie cookie : cookies) { if (cookie.getName().equals("expired")) { return false; } }
         return true;
     }
 }

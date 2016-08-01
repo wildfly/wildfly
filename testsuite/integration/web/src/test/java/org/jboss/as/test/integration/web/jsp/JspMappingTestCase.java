@@ -56,7 +56,7 @@ public class JspMappingTestCase {
     @ArquillianResource
     protected URL webappUrl;
 
-    private final static String JSP_CONTENT = "<%@page contentType=\"text/html\" pageEncoding=\"UTF-8\"%>\n"
+    private static final String JSP_CONTENT = "<%@page contentType=\"text/html\" pageEncoding=\"UTF-8\"%>\n"
             + "<!DOCTYPE html>\n"
             + "<html>\n"
             + "    <body>\n"
@@ -126,7 +126,7 @@ public class JspMappingTestCase {
         }
 
     }
-    
+
     private String getContent(InputStream content) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(content, "UTF-8"));
         StringBuilder out = new StringBuilder();

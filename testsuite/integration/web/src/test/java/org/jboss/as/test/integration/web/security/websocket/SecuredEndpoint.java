@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.web.security.websocket;
 
 import javax.websocket.OnMessage;
 import javax.websocket.Session;
-import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 /**
