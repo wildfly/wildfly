@@ -35,80 +35,71 @@ import org.jboss.vfs.VirtualFile;
  * @author Steve Ebersole
  */
 public class VirtualFileAdaptor {
-	private static final long serialVersionUID = -4509594124653184347L;
+    private static final long serialVersionUID = -4509594124653184347L;
 
-	private static final ObjectStreamField[] serialPersistentFields = {
-			new ObjectStreamField("path", String.class)
-	};
+    private static final ObjectStreamField[] serialPersistentFields = {
+            new ObjectStreamField("path", String.class)
+    };
 
-	/** Minimal info to get full vfs file structure */
-	private String path;
-	/** The virtual file */
-	private transient VirtualFile file;
+    /**
+     * Minimal info to get full vfs file structure
+     */
+    private String path;
+    /**
+     * The virtual file
+     */
+    private transient VirtualFile file;
 
-	public VirtualFileAdaptor(VirtualFile file)
-	{
-		this.file = file;
-	}
+    public VirtualFileAdaptor(VirtualFile file) {
+        this.file = file;
+    }
 
-	public VirtualFileAdaptor(String path)
-	{
-		if (path == null)
-			throw new IllegalArgumentException("Null path");
+    public VirtualFileAdaptor(String path) {
+        if (path == null) { throw new IllegalArgumentException("Null path"); }
 
-		this.path = path;
-	}
+        this.path = path;
+    }
 
-	/**
-	 * Get the virtual file.
-	 * Create file from root url and path if it doesn't exist yet.
-	 *
-	 * @return virtual file root
-	 * @throws IOException for any error
-	 */
-	@SuppressWarnings("deprecation")
-	protected VirtualFile getFile() throws IOException
-	{
-		if (file == null)
-		{
-			file = VFS.getChild( path );
-		}
-		return file;
-	}
+    /**
+     * Get the virtual file.
+     * Create file from root url and path if it doesn't exist yet.
+     *
+     * @return virtual file root
+     * @throws IOException for any error
+     */
+    @SuppressWarnings("deprecation")
+    protected VirtualFile getFile() throws IOException {
+        if (file == null) {
+            file = VFS.getChild(path);
+        }
+        return file;
+    }
 
-	@SuppressWarnings("deprecation")
-	public VirtualFileAdaptor findChild(String child) throws IOException
-	{
-		VirtualFile vf = getFile().getChild(child);
-		return new VirtualFileAdaptor(vf);
-	}
+    @SuppressWarnings("deprecation")
+    public VirtualFileAdaptor findChild(String child) throws IOException {
+        VirtualFile vf = getFile().getChild(child);
+        return new VirtualFileAdaptor(vf);
+    }
 
-	public URL toURL()
-	{
-		try
-		{
-			return getFile().toURL();
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
-	}
+    public URL toURL() {
+        try {
+            return getFile().toURL();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-	private void writeObject(ObjectOutputStream out) throws IOException, URISyntaxException
-	{
-		String pathName = path;
-		if (pathName == null)
-			pathName = getFile().getPathName();
+    private void writeObject(ObjectOutputStream out) throws IOException, URISyntaxException {
+        String pathName = path;
+        if (pathName == null) { pathName = getFile().getPathName(); }
 
-		ObjectOutputStream.PutField fields = out.putFields();
-		fields.put("path", pathName);
-		out.writeFields();
-	}
+        ObjectOutputStream.PutField fields = out.putFields();
+        fields.put("path", pathName);
+        out.writeFields();
+    }
 
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
-	{
-		ObjectInputStream.GetField fields = in.readFields();
-		path = (String) fields.get("path", null);
-	}
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        ObjectInputStream.GetField fields = in.readFields();
+        path = (String) fields.get("path", null);
+    }
 }
