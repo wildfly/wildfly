@@ -21,9 +21,10 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.multiobjectpartialactivation;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -49,8 +50,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertNotNull;
-
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
@@ -63,10 +62,10 @@ public class MultipleObjectPartialActivationTestCase extends ContainerResourceMg
     static class MultipleObjectPartialActivationTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void doSetup(final ManagementClient managementClient) throws Exception{
-                String xml = FileUtils.readFile(MultipleObjectPartialActivationTestCase.class, "multiple_part.xml");
-                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
-                executeOperation(operationListToCompositeOperation(operations));
+        public void doSetup(final ManagementClient managementClient) throws Exception {
+            String xml = FileUtils.readFile(MultipleObjectPartialActivationTestCase.class, "multiple_part.xml");
+            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
+            executeOperation(operationListToCompositeOperation(operations));
         }
 
         @Override
@@ -93,7 +92,7 @@ public class MultipleObjectPartialActivationTestCase extends ContainerResourceMg
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(MultipleObjectPartialActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, MultipleObjectPartialActivationTestCaseSetup.class, AbstractMgmtServerSetupTask.class );
+                addClasses(MultipleObjectPartialActivationTestCase.class, AbstractMgmtTestBase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, MultipleObjectPartialActivationTestCaseSetup.class, AbstractMgmtServerSetupTask.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);

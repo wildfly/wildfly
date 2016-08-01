@@ -53,10 +53,11 @@ public class AddMySqlDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
-				File jdbcJar = new File( System.getProperty("jbossas.ts.integ.dir", "."),
-                                 "/smoke/src/test/resources/mysql-connector-java-5.1.15.jar");
-        if( ! jdbcJar.exists() )
-            throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.integ.dir} == " + System.getProperty("jbossas.ts.integ.dir") );
+        File jdbcJar = new File(System.getProperty("jbossas.ts.integ.dir", "."),
+                "/smoke/src/test/resources/mysql-connector-java-5.1.15.jar");
+        if (!jdbcJar.exists()) {
+            throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.integ.dir} == " + System.getProperty("jbossas.ts.integ.dir"));
+        }
         Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, jdbcJar);
         return archive;
     }

@@ -30,20 +30,20 @@
            http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
            version="1.6">
 
-   <vendor-name>Red Hat Middleware LLC</vendor-name>
-   <eis-type>Test RA</eis-type>
-   <resourceadapter-version>0.1</resourceadapter-version>
-   <resourceadapter>
-      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter</resourceadapter-class>
-      <inbound-resourceadapter>
-         <messageadapter>
-            <messagelistener>
-               <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
-               <activationspec>
-                  <activationspec-class>org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowActivationSpec</activationspec-class>
-               </activationspec>
-            </messagelistener>
-         </messageadapter>
-      </inbound-resourceadapter>
-   </resourceadapter>
+    <vendor-name>Red Hat Middleware LLC</vendor-name>
+    <eis-type>Test RA</eis-type>
+    <resourceadapter-version>0.1</resourceadapter-version>
+    <resourceadapter>
+        <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter</resourceadapter-class>
+        <inbound-resourceadapter>
+            <messageadapter>
+                <messagelistener>
+                    <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+                    <activationspec>
+                        <activationspec-class>org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowActivationSpec</activationspec-class>
+                    </activationspec>
+                </messagelistener>
+            </messageadapter>
+        </inbound-resourceadapter>
+    </resourceadapter>
 </connector>
