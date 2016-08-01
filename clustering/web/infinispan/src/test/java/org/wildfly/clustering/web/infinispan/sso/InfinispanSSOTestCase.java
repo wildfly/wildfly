@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -42,7 +41,7 @@ public class InfinispanSSOTestCase {
     private final Remover<String> remover = mock(Remover.class);
 
     private final SSO<String, String, Object> sso = new InfinispanSSO<>(this.id, this.authentication, this.sessions, this.localContext, this.localContextFactory, this.remover);
-    
+
     @Test
     public void getId() {
         assertSame(this.id, this.sso.getId());
@@ -52,35 +51,35 @@ public class InfinispanSSOTestCase {
     public void getAuthentication() {
         assertSame(this.authentication, this.sso.getAuthentication());
     }
-    
+
     @Test
     public void getSessions() {
         assertSame(this.sessions, this.sso.getSessions());
     }
-    
+
     @Test
     public void invalidate() {
         this.sso.invalidate();
-        
+
         verify(this.remover).remove(this.id);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void getLocalContext() {
         Object expected = new Object();
         when(this.localContextFactory.createLocalContext()).thenReturn(expected);
-        
+
         Object result = this.sso.getLocalContext();
-        
+
         assertSame(expected, result);
-        
+
         reset(this.localContextFactory);
-        
+
         result = this.sso.getLocalContext();
-        
+
         verifyZeroInteractions(this.localContextFactory);
-        
+
         assertSame(expected, result);
     }
 }

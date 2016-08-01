@@ -21,8 +21,8 @@
  */
 package org.wildfly.mod_cluster.undertow;
 
-import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Server;
 
 public class TestServer extends Server {

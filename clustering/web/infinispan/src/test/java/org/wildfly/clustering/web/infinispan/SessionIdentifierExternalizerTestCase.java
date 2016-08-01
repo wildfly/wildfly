@@ -38,6 +38,7 @@ import io.undertow.server.session.SessionIdGenerator;
 
 /**
  * Unit test for {@link SessionIdentifierExternalizer}.
+ *
  * @author Paul Ferraro
  */
 public class SessionIdentifierExternalizerTestCase {

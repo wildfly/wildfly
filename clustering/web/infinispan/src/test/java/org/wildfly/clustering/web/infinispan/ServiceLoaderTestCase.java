@@ -35,9 +35,15 @@ import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 
 /**
  * Validates loading of services.
+ *
  * @author Paul Ferraro
  */
 public class ServiceLoaderTestCase {
+
+    private static <T> void load(Class<T> targetClass) {
+        System.out.println(targetClass.getName() + ":");
+        ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader()).forEach(object -> System.out.println("\t" + object.getClass().getName()));
+    }
 
     @Test
     public void load() {
@@ -48,10 +54,5 @@ public class ServiceLoaderTestCase {
         load(DistributedCacheGroupBuilderProvider.class);
         load(LocalCacheGroupBuilderProvider.class);
         load(CacheGroupAliasBuilderProvider.class);
-    }
-
-    private static <T> void load(Class<T> targetClass) {
-        System.out.println(targetClass.getName() + ":");
-        ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader()).forEach(object -> System.out.println("\t" + object.getClass().getName()));
     }
 }

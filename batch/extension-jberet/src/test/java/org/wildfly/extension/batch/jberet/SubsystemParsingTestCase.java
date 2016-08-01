@@ -23,8 +23,6 @@
 package org.wildfly.extension.batch.jberet;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
 
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;

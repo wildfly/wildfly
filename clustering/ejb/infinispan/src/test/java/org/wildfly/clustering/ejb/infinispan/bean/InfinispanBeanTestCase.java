@@ -21,7 +21,12 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -92,7 +97,7 @@ public class InfinispanBeanTestCase {
         long now = System.currentTimeMillis();
         when(this.entry.getLastAccessedTime()).thenReturn(new Date(now));
         Assert.assertFalse(this.bean.isExpired());
-        
+
         when(this.entry.getLastAccessedTime()).thenReturn(new Date(now - this.timeout.convert(TimeUnit.MILLISECONDS) - 1));
         Assert.assertTrue(this.bean.isExpired());
     }
@@ -116,9 +121,9 @@ public class InfinispanBeanTestCase {
     public void close() {
         when(this.entry.getLastAccessedTime()).thenReturn(null);
         when(this.group.isCloseable()).thenReturn(false);
-        
+
         this.bean.close();
-        
+
         verify(this.entry).setLastAccessedTime(Matchers.<Date>any());
         verify(this.mutator, never()).mutate();
         verify(this.group, never()).close();
@@ -127,7 +132,7 @@ public class InfinispanBeanTestCase {
 
         when(this.entry.getLastAccessedTime()).thenReturn(new Date());
         when(this.group.isCloseable()).thenReturn(true);
-        
+
         this.bean.close();
 
         verify(this.entry).setLastAccessedTime(Matchers.<Date>any());

@@ -22,8 +22,9 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -31,10 +32,10 @@ import java.time.Instant;
 import org.junit.Test;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.undertow.session.RecordableInactiveSessionStatistics;
 
 /**
  * Unit test for {@link RecordableInactiveSessionStatistics}.
+ *
  * @author Paul Ferraro
  */
 public class RecordableInactiveSessionStatisticsTestCase {

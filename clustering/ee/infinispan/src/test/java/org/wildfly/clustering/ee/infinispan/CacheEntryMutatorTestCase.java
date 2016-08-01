@@ -21,8 +21,11 @@
  */
 package org.wildfly.clustering.ee.infinispan;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.Configuration;
@@ -33,6 +36,7 @@ import org.junit.Test;
 
 /**
  * Unit test for {@link CacheEntryMutator}.
+ *
  * @author Paul Ferraro
  */
 public class CacheEntryMutatorTestCase {
@@ -47,20 +51,20 @@ public class CacheEntryMutatorTestCase {
         when(cache.getCacheConfiguration()).thenReturn(config);
 
         Mutator mutator = new CacheEntryMutator<>(cache, id, value);
-        
+
         when(cache.getAdvancedCache()).thenReturn(cache);
         when(cache.withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY)).thenReturn(cache);
-        
+
         mutator.mutate();
-        
+
         verify(cache).put(same(id), same(value));
-        
+
         mutator.mutate();
-        
+
         verify(cache, times(1)).put(same(id), same(value));
-        
+
         mutator.mutate();
-        
+
         verify(cache, times(1)).put(same(id), same(value));
     }
 
@@ -74,20 +78,20 @@ public class CacheEntryMutatorTestCase {
         when(cache.getCacheConfiguration()).thenReturn(config);
 
         Mutator mutator = new CacheEntryMutator<>(cache, id, value);
-        
+
         when(cache.getAdvancedCache()).thenReturn(cache);
         when(cache.withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY)).thenReturn(cache);
-        
+
         mutator.mutate();
-        
+
         verify(cache).put(same(id), same(value));
-        
+
         mutator.mutate();
-        
+
         verify(cache, times(2)).put(same(id), same(value));
-        
+
         mutator.mutate();
-        
+
         verify(cache, times(3)).put(same(id), same(value));
     }
 }

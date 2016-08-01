@@ -27,7 +27,6 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.Test;
-import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 import static org.junit.Assert.*;

@@ -21,15 +21,17 @@
  */
 package org.wildfly.clustering.web.undertow;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import io.undertow.server.session.SessionIdGenerator;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import io.undertow.server.session.SessionIdGenerator;
 import org.junit.Test;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
  * Unit test for {@link IdentifierFactoryAdapter}
+ *
  * @author Paul Ferraro
  */
 public class IdentifierFactoryAdapterTestCase {
@@ -40,9 +42,9 @@ public class IdentifierFactoryAdapterTestCase {
     public void test() {
         String expected = "expected";
         when(this.generator.createSessionId()).thenReturn(expected);
-        
+
         String result = this.factory.createIdentifier();
-        
+
         assertSame(expected, result);
     }
 }

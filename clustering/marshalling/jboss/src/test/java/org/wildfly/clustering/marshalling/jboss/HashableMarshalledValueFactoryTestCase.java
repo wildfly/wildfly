@@ -22,18 +22,14 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.wildfly.clustering.marshalling.jboss.HashableMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 
 /**
  * @author Paul Ferraro
  */
 public class HashableMarshalledValueFactoryTestCase extends SimpleMarshalledValueFactoryTestCase {
-    
+
     @Override
     SimpleMarshalledValueFactory createFactory(MarshallingContext context) {
         return new HashableMarshalledValueFactory(context);

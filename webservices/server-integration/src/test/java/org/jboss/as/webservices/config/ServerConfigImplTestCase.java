@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-
 import javax.management.MBeanServer;
 
 import org.jboss.msc.value.ImmediateValue;
@@ -39,8 +38,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * 
- *
  * @author <a href="mailto:alessio.soldano@jboss.com>Alessio Soldano</a>
  */
 public class ServerConfigImplTestCase {
@@ -65,7 +62,7 @@ public class ServerConfigImplTestCase {
         sc.create();
         assertTrue(sc.isModifiable());
     }
-    
+
     @Test
     public void testSingleAttributeUpdate() throws Exception {
         internalTestSingleAttributeUpdate(new Callback() {
@@ -99,7 +96,7 @@ public class ServerConfigImplTestCase {
             }
         });
     }
-    
+
     @Test
     public void testMultipleAttributesUpdate() throws Exception {
         Callback cbA = new Callback() {
@@ -138,7 +135,7 @@ public class ServerConfigImplTestCase {
         internalTestMultipleAttributeUpdate(cbD, new Callback[]{cbA, cbB, cbC, cbE});
         internalTestMultipleAttributeUpdate(cbE, new Callback[]{cbA, cbB, cbC, cbD});
     }
-    
+
     protected void internalTestSingleAttributeUpdate(Callback cb) throws Exception {
         ServerConfigImpl sc = newServerConfigImpl();
         sc.create();
@@ -159,14 +156,14 @@ public class ServerConfigImplTestCase {
             cb.setAttribute(sc);
             fail();
         } catch (DisabledOperationException e) {
-            //check the error message says the operation can't be done because of pending former model update(s) requiring reload 
+            //check the error message says the operation can't be done because of pending former model update(s) requiring reload
             assertTrue("Expected WFLYWS0063 message, but got " + e.getMessage(), e.getMessage().contains("WFLYWS0063"));
         }
         sc.create();
         assertTrue(sc.isModifiable());
         cb.setAttribute(sc);
     }
-    
+
     protected void internalTestMultipleAttributeUpdate(Callback cb1, Callback[] otherCbs) throws Exception {
         ServerConfigImpl sc = newServerConfigImpl();
         sc.create();
@@ -187,7 +184,7 @@ public class ServerConfigImplTestCase {
             cb1.setAttribute(sc);
             fail();
         } catch (DisabledOperationException e) {
-            //check the error message says the operation can't be done because of pending former model update(s) requiring reload 
+            //check the error message says the operation can't be done because of pending former model update(s) requiring reload
             assertTrue("Expected WFLYWS0063 message, but got " + e.getMessage(), e.getMessage().contains("WFLYWS0063"));
         }
         //other attributes are still modified properly as they're still in synch
@@ -195,30 +192,30 @@ public class ServerConfigImplTestCase {
             cb.setAttribute(sc);
         }
     }
-    
+
     private static ServerConfigImpl newServerConfigImpl() {
         ServerConfigImpl sc = ServerConfigImpl.newInstance();
         sc.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
         return sc;
     }
-    
+
     @BeforeClass
     public static void setStackConfigFactory() throws Exception {
         URL url = ServerConfigImplTestCase.class.getResource("util/");
         origTCCL = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[] {url}));
+        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[]{url}));
     }
-    
+
     @AfterClass
     public static void restoreStackConfigFactory() {
         Thread.currentThread().setContextClassLoader(origTCCL);
         origTCCL = null;
     }
-    
-    public static interface Callback {
-        public void setAttribute(ServerConfig sc) throws Exception;
+
+    public interface Callback {
+        void setAttribute(ServerConfig sc) throws Exception;
     }
-    
+
     public static class TestStackConfigFactory extends StackConfigFactory {
         @Override
         public StackConfig getStackConfig() {
