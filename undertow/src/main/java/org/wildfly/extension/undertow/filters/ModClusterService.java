@@ -148,7 +148,7 @@ public class ModClusterService extends FilterService {
                     .setProtocol(advertiseProtocol)
                     .setSecurityKey(securityKey);
         }
-        builder.setManagementHost(managementSocketBinding.getValue().getSocketAddress().getHostName());
+        builder.setManagementHost(managementSocketBinding.getValue().getSocketAddress().getHostString());
         builder.setManagementPort(managementSocketBinding.getValue().getSocketAddress().getPort());
 
         config = builder.build();
