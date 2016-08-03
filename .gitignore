@@ -50,7 +50,8 @@ PutObjectStoreDirHere
 /.m2
 # ignore eap repo
 local-repo-eap
-
+# ignore the build metadata created by the build metadata plugin
+build.metadata
 #These keep hanging around
 arquillian/*/server.log*
 client/shade/dependency-reduced-pom.xml
