@@ -37,13 +37,11 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 import org.jboss.as.core.security.RealmUser;
-import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.security.UserInfo;
-import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.callback.ObjectCallback;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * A simple LoginModule to take the UserPrincipal from the inbound Remoting connection and to use it as an already authenticated
@@ -91,23 +89,9 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
             Connection con = ((RemotingConnectionCredential) credential).getConnection();
             Principal up = null;
 
-            UserInfo userInfo = con.getUserInfo();
-            if (userInfo instanceof SubjectUserInfo) {
-                for (Principal current : ((SubjectUserInfo) userInfo).getPrincipals()) {
-                    if (current instanceof RealmUser) {
-                        up = current;
-                        break;
-                    }
-                }
-            }
-
-            if (up == null) {
-                for (Principal current : con.getPrincipals()) {
-                    if (current instanceof UserPrincipal) {
-                        up = current;
-                        break;
-                    }
-                }
+            SecurityIdentity localIdentity = con.getLocalIdentity();
+            if (localIdentity != null) {
+                up = new RealmUser(localIdentity.getPrincipal().getName());
             }
 
             // If we found a principal from the connection then authentication succeeded.

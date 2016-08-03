@@ -22,6 +22,8 @@
 
 package org.jboss.as.appclient.service;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,9 +38,10 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
+import org.wildfly.security.auth.client.AuthenticationConfiguration;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.AuthenticationContextConfigurationClient;
+import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoFuture;
 import org.xnio.IoUtils;
@@ -53,6 +56,8 @@ import org.xnio.Options;
  * @author Stuart Douglas
  */
 public class LazyConnectionContextSelector implements ContextSelector<EJBClientContext> {
+
+    private static final AuthenticationContextConfigurationClient AUTH_CONFIGURATION_CLIENT = doPrivileged(AuthenticationContextConfigurationClient.ACTION);
 
     private final String hostUrl;
     private final CallbackHandler callbackHandler;
@@ -73,13 +78,15 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
 
     private synchronized void createConnection() {
         try {
-            endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
-            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            endpoint.addConnectionProvider("http-remoting", new HttpUpgradeConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            endpoint.addConnectionProvider("https-remoting", new HttpUpgradeConnectionProviderFactory(),  OptionMap.create(Options.SSL_ENABLED, Boolean.TRUE));
+            final URI uri = new URI(hostUrl);
+            AuthenticationContext captured = AuthenticationContext.captureCurrent();
+            AuthenticationConfiguration mergedConfiguration = AUTH_CONFIGURATION_CLIENT.getAuthenticationConfiguration(uri, captured);
+            if (callbackHandler != null) mergedConfiguration = mergedConfiguration.useCallbackHandler(callbackHandler);
+            final AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, mergedConfiguration);
 
             // open a connection
-            final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE, Options.SASL_POLICY_NOPLAINTEXT, Boolean.FALSE), callbackHandler);
+            endpoint = Endpoint.getCurrent();
+            final IoFuture<Connection> futureConnection = endpoint.connect(uri, OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE, Options.SASL_POLICY_NOPLAINTEXT, Boolean.FALSE), context);
             connection = IoFutureHelper.get(futureConnection, 30L, TimeUnit.SECONDS);
 
             final EJBClientContext ejbClientContext = EJBClientContext.create(classLoader);
