@@ -30,15 +30,14 @@ import java.security.Principal;
 import java.util.Map;
 
 import org.jboss.as.core.security.RealmUser;
-import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SimplePrincipal;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * The server side security interceptor responsible for handling any security identity propagated from the client.
@@ -64,15 +63,9 @@ public class ServerSecurityInterceptor {
             Connection con = RemotingContext.getConnection();
 
             if (con != null) {
-                UserInfo userInfo = con.getUserInfo();
-                if (userInfo instanceof SubjectUserInfo) {
-                    SubjectUserInfo sinfo = (SubjectUserInfo) userInfo;
-                    for (Principal current : sinfo.getPrincipals()) {
-                        if (current instanceof RealmUser) {
-                            connectionUser = (RealmUser) current;
-                            break;
-                        }
-                    }
+                SecurityIdentity localIdentity = con.getLocalIdentity();
+                if (localIdentity != null) {
+                    connectionUser = new RealmUser(localIdentity.getPrincipal().getName());
                 }
 
             } else {

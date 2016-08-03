@@ -25,16 +25,20 @@ package org.jboss.as.security.api;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.stream.StreamSupport;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.core.security.RealmGroup;
+import org.jboss.as.core.security.RealmRole;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * Utility class to allow inspection and replacement of identity associated with the Connection.
@@ -63,10 +67,15 @@ public class ConnectionSecurityContext {
         Connection con = RemotingContext.getConnection();
 
         if (con != null) {
-            UserInfo userInfo = con.getUserInfo();
-            if (userInfo instanceof SubjectUserInfo) {
-                SubjectUserInfo sinfo = (SubjectUserInfo) userInfo;
-                return sinfo.getPrincipals();
+            Collection<Principal> principals = new HashSet<>();
+            SecurityIdentity localIdentity = con.getLocalIdentity();
+            if (localIdentity != null) {
+                principals.add(new RealmUser(localIdentity.getPrincipal().getName()));
+                StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+                    principals.add(new RealmGroup(role));
+                    principals.add(new RealmRole(role));
+                });
+                return principals;
             } else {
                 return Collections.emptySet();
             }

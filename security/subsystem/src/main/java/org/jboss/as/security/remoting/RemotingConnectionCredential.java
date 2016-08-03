@@ -24,11 +24,17 @@
 
 package org.jboss.as.security.remoting;
 
+import java.security.Principal;
+import java.util.Set;
+import java.util.stream.StreamSupport;
+
 import javax.security.auth.Subject;
 
-import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.core.security.RealmGroup;
+import org.jboss.as.core.security.RealmRole;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.security.UserInfo;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * A Credential wrapping a Remoting {@link Connection}.
@@ -42,10 +48,15 @@ public final class RemotingConnectionCredential {
 
     public RemotingConnectionCredential(final Connection connection) {
         this.connection = connection;
-        Subject subject = null;
-        UserInfo userInfo = connection.getUserInfo();
-        if (userInfo instanceof SubjectUserInfo) {
-            subject = ((SubjectUserInfo) userInfo).getSubject();
+        Subject subject = new Subject();
+        SecurityIdentity localIdentity = connection.getLocalIdentity();
+        if (localIdentity != null) {
+            Set<Principal> principals = subject.getPrincipals();
+            principals.add(new RealmUser(localIdentity.getPrincipal().getName()));
+            StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+                principals.add(new RealmGroup(role));
+                principals.add(new RealmRole(role));
+            });
         }
         this.subject = subject;
     }
