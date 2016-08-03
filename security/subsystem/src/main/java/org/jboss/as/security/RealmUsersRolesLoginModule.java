@@ -29,8 +29,8 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.wildfly.security.sasl.util.UsernamePasswordHashUtil;
 
 /**
  * @author Jason T. Greene

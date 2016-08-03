@@ -25,6 +25,7 @@ package org.jboss.as.security;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
+import static org.wildfly.security.password.interfaces.DigestPassword.ALGORITHM_DIGEST_MD5;
 
 import java.io.IOException;
 import java.security.AccessController;
@@ -55,12 +56,16 @@ import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.sasl.callback.DigestHashCallback;
-import org.jboss.sasl.callback.VerifyPasswordCallback;
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.callback.ObjectCallback;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
+import org.wildfly.security.auth.callback.CredentialCallback;
+import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.password.interfaces.DigestPassword;
+import org.wildfly.security.sasl.util.UsernamePasswordHashUtil;
+import org.wildfly.security.util.ByteIterator;
 
 /**
  * A login module implementation to interface directly with the security realm.
@@ -172,9 +177,11 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         String password = null;
         switch (validationMode) {
             case DIGEST:
-                DigestHashCallback dhc = new DigestHashCallback("Digest");
-                handle(new Callback[]{rcb, ncb, dhc});
-                password = dhc.getHexHash();
+                CredentialCallback cc = new CredentialCallback(PasswordCredential.class, ALGORITHM_DIGEST_MD5);
+                handle(new Callback[]{rcb, ncb, cc});
+                PasswordCredential passwordCredential = (PasswordCredential) cc.getCredential();
+                DigestPassword digestPassword =  passwordCredential.getPassword(DigestPassword.class);
+                password = ByteIterator.ofBytes(digestPassword.getDigest()).hexEncode().drainToString();
 
                 break;
             case PASSWORD:
@@ -223,11 +230,11 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
             case VALIDATION:
                 RealmCallback rcb = new RealmCallback("Realm", securityRealm.getName());
                 NameCallback ncb = new NameCallback("User Name", getUsername());
-                VerifyPasswordCallback vpc = new VerifyPasswordCallback(inputPassword);
+                EvidenceVerifyCallback evc = new EvidenceVerifyCallback(new PasswordGuessEvidence(inputPassword.toCharArray()));
 
                 try {
-                    handle(new Callback[]{rcb, ncb, vpc});
-                    return vpc.isVerified();
+                    handle(new Callback[]{rcb, ncb, evc});
+                    return evc.isVerified();
                 } catch (LoginException e) {
                     return false;
                 }
