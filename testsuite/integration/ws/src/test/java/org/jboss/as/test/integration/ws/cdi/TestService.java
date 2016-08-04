@@ -28,6 +28,7 @@ import javax.jws.WebService;
 
 /**
  * Simple web service
+ *
  * @author Stuart Douglas
  */
 @WebService

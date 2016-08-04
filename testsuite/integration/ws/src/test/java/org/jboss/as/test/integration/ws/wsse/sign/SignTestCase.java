@@ -26,6 +26,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+
 import org.junit.Assert;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -45,7 +46,7 @@ import org.jboss.as.test.integration.ws.wsse.POJOServiceImpl;
 
 /**
  * Test WS sign capability
- * 
+ * <p>
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
  * Public key can be imported using keytool -import
@@ -60,7 +61,7 @@ public class SignTestCase {
     private static Logger log = Logger.getLogger(SignTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
-    
+
     @Deployment
     public static Archive<?> deployment() {
 
@@ -79,11 +80,11 @@ public class SignTestCase {
     public void signedRequest() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
         URL wsdlURL = new URL(baseUrl.toString() + "SecurityService?wsdl");
-        
+
         Service service = Service.create(wsdlURL, serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy);
-        
+
         Assert.assertEquals("Secure Hello World!", proxy.sayHello());
     }
 

@@ -28,5 +28,5 @@ package org.jboss.as.test.integration.ws.injection.ejb.as1675.shared;
  * @author <a href="mailto:richard.opalka@jboss.org">Richard Opalka</a>
  */
 public interface BeanIface {
-   String printString();
+    String printString();
 }

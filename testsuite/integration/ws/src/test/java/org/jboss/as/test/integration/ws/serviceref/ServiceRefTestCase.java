@@ -78,8 +78,8 @@ public class ServiceRefTestCase {
 
         final Properties properties = new Properties();
         properties.putAll(System.getProperties());
-        final String node0 = NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0"));
-        if(properties.containsKey("node0")) {
+        final String node0 = NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0"));
+        if (properties.containsKey("node0")) {
             properties.put("node0", node0);
         }
         return ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")

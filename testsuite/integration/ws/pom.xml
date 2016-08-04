@@ -27,6 +27,7 @@
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <checkstyle.skip>false</checkstyle.skip>
     </properties>
 
     <profiles>

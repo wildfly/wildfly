@@ -40,7 +40,7 @@ import java.util.List;
         portName = "UT_Port",
         targetNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
         wsdlLocation = "WEB-INF/wsdl/bearer-ws-trust-1.4-service.wsdl")
-//be sure to have dependency on org.apache.cxf module when on AS7, otherwise Apache CXF annotations are ignored 
+//be sure to have dependency on org.apache.cxf module when on AS7, otherwise Apache CXF annotations are ignored
 @EndpointProperties(value = {
         @EndpointProperty(key = "ws-security.signature.username", value = "mystskey"),
         @EndpointProperty(key = "ws-security.signature.properties", value = "stsKeystore.properties"),

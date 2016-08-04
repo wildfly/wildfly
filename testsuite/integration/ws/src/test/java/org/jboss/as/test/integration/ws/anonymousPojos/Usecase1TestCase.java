@@ -57,7 +57,7 @@ public class Usecase1TestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "anonymous-pojo-usecase1.war");
         war.addPackage(AnonymousPOJO.class.getPackage());
         war.addClass(AnonymousPOJO.class);
-        war.addAsWebInfResource(AnonymousPOJO.class.getPackage(),"web.xml","web.xml");
+        war.addAsWebInfResource(AnonymousPOJO.class.getPackage(), "web.xml", "web.xml");
         return war;
     }
 

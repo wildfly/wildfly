@@ -41,7 +41,7 @@ import javax.xml.ws.WebServiceProvider;
  */
 @WebServiceProvider(serviceName = "PicketLinkSTS", portName = "PicketLinkSTSPort", targetNamespace = "urn:picketlink:identity-federation:sts", wsdlLocation = "WEB-INF/wsdl/PicketLinkSTS.wsdl")
 @ServiceMode(value = Service.Mode.MESSAGE)
-//be sure to have dependency on org.apache.cxf module when on AS7, otherwise Apache CXF annotations are ignored 
+//be sure to have dependency on org.apache.cxf module when on AS7, otherwise Apache CXF annotations are ignored
 @EndpointProperties(value = {
         @EndpointProperty(key = "ws-security.signature.username", value = "mystskey"),
         @EndpointProperty(key = "ws-security.signature.properties", value = "stsKeystore.properties"),

@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <jboss:jboss
-  xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
-  xmlns="http://java.sun.com/xml/ns/javaee"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss_5_0.xsd
+        xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss_5_0.xsd
                       http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"
-  version="3.1"
-  impl-version="2.0">
+        version="3.1"
+        impl-version="2.0">
 
-  <enterprise-beans>
-    <session>
-      <ejb-name>StatelessBean</ejb-name>
-      <service-ref>
-        <service-ref-name>service/Endpoint3</service-ref-name>
-        <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
-      </service-ref>
-      <service-ref>
-        <service-ref-name>service/Endpoint4</service-ref-name>
-        <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
-        <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
-      </service-ref>
-    </session>
-    <session>
-      <ejb-name>StatelessBean2</ejb-name>
-      <service-ref>
-        <service-ref-name>service/Endpoint3</service-ref-name>
-        <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
-      </service-ref>
-      <service-ref>
-        <service-ref-name>service/Endpoint4</service-ref-name>
-        <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
-        <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
-      </service-ref>
-    </session>
-  </enterprise-beans>
+    <enterprise-beans>
+        <session>
+            <ejb-name>StatelessBean</ejb-name>
+            <service-ref>
+                <service-ref-name>service/Endpoint3</service-ref-name>
+                <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
+            </service-ref>
+            <service-ref>
+                <service-ref-name>service/Endpoint4</service-ref-name>
+                <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
+                <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
+            </service-ref>
+        </session>
+        <session>
+            <ejb-name>StatelessBean2</ejb-name>
+            <service-ref>
+                <service-ref-name>service/Endpoint3</service-ref-name>
+                <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
+            </service-ref>
+            <service-ref>
+                <service-ref-name>service/Endpoint4</service-ref-name>
+                <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
+                <wsdl-override>META-INF/wsdl/TestService.wsdl</wsdl-override>
+            </service-ref>
+        </session>
+    </enterprise-beans>
 
 </jboss:jboss>

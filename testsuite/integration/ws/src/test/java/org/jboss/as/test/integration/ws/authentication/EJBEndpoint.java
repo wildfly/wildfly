@@ -27,6 +27,7 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.jws.WebService;
+
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.ws.api.annotation.TransportGuarantee;
 import org.jboss.ws.api.annotation.AuthMethod;
@@ -58,7 +59,7 @@ public class EJBEndpoint implements EJBEndpointIface {
     public String hello(String input) {
         return "Hello " + input + "!";
     }
-    
+
     @PermitAll
     public String helloForAll(String input) {
         return "Hello " + input + "!";
@@ -78,5 +79,5 @@ public class EJBEndpoint implements EJBEndpointIface {
     public String helloForRoles(String input) {
         return "Hello " + input + "!";
     }
-    
+
 }

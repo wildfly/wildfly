@@ -1,132 +1,133 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
              name="HolderOfKeyService"
-		xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
-		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-		xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-		xmlns="http://schemas.xmlsoap.org/wsdl/"
-		xmlns:wsp="http://www.w3.org/ns/ws-policy"
-		xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
-    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-    xmlns:wsaws="http://www.w3.org/2005/08/addressing"
-    xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
-    xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
-    xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
+             xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:wsp="http://www.w3.org/ns/ws-policy"
+             xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+             xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+             xmlns:wsaws="http://www.w3.org/2005/08/addressing"
+             xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+             xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
+             xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
 
-  <types>
-    <xsd:schema>
-      <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
-                  schemaLocation="HolderOfKeyService_schema1.xsd"/>
-    </xsd:schema>
-  </types>
-  <message name="sayHello">
-    <part name="parameters" element="tns:sayHello"/>
-  </message>
-  <message name="sayHelloResponse">
-    <part name="parameters" element="tns:sayHelloResponse"/>
-  </message>
-  <portType name="HolderOfKeyIface">
-    <operation name="sayHello">
-      <input message="tns:sayHello"/>
-      <output message="tns:sayHelloResponse"/>
-    </operation>
-  </portType>
-  <binding name="HolderOfKeyServicePortBinding" type="tns:HolderOfKeyIface">
-    <wsp:PolicyReference URI="#TransportSAML2HolderOfKeyPolicy" />
-    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-    <operation name="sayHello">
-      <soap:operation soapAction=""/>
-      <input>
-        <soap:body use="literal"/>
-      </input>
-      <output>
-        <soap:body use="literal"/>
-      </output>
-    </operation>
-  </binding>
-  <service name="HolderOfKeyService">
-    <port name="HolderOfKeyServicePort" binding="tns:HolderOfKeyServicePortBinding">
-      <soap:address location="https://@node0@:8443/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService"/>
-    </port>
-  </service>
+    <types>
+        <xsd:schema>
+            <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
+                        schemaLocation="HolderOfKeyService_schema1.xsd"/>
+        </xsd:schema>
+    </types>
+    <message name="sayHello">
+        <part name="parameters" element="tns:sayHello"/>
+    </message>
+    <message name="sayHelloResponse">
+        <part name="parameters" element="tns:sayHelloResponse"/>
+    </message>
+    <portType name="HolderOfKeyIface">
+        <operation name="sayHello">
+            <input message="tns:sayHello"/>
+            <output message="tns:sayHelloResponse"/>
+        </operation>
+    </portType>
+    <binding name="HolderOfKeyServicePortBinding" type="tns:HolderOfKeyIface">
+        <wsp:PolicyReference URI="#TransportSAML2HolderOfKeyPolicy"/>
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <operation name="sayHello">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="HolderOfKeyService">
+        <port name="HolderOfKeyServicePort" binding="tns:HolderOfKeyServicePortBinding">
+            <soap:address location="https://@node0@:8443/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService"/>
+        </port>
+    </service>
 
 
-  <wsp:Policy wsu:Id="TransportSAML2HolderOfKeyPolicy">
-    <wsp:ExactlyOne>
-      <wsp:All>
-        <wsam:Addressing wsp:Optional="false">
-          <wsp:Policy />
-        </wsam:Addressing>
-
-          <sp:TransportBinding
-            xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
-            <wsp:Policy>
-              <sp:TransportToken>
-                <wsp:Policy>
-                  <sp:HttpsToken>
+    <wsp:Policy wsu:Id="TransportSAML2HolderOfKeyPolicy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <wsam:Addressing wsp:Optional="false">
                     <wsp:Policy/>
-                  </sp:HttpsToken>
-                </wsp:Policy>
-              </sp:TransportToken>
-              <sp:AlgorithmSuite>
-                <wsp:Policy>
-                  <sp:TripleDes />
-                </wsp:Policy>
-              </sp:AlgorithmSuite>
-              <sp:Layout>
-                <wsp:Policy>
-                  <sp:Lax />
-                </wsp:Policy>
-              </sp:Layout>
-              <sp:IncludeTimestamp />
-            </wsp:Policy>
-          </sp:TransportBinding>
+                </wsam:Addressing>
 
-        <sp:SignedEndorsingSupportingTokens
-          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
-          <wsp:Policy>
-            <sp:IssuedToken
-              sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
-              <sp:RequestSecurityTokenTemplate>
-                <t:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</t:TokenType>
-                <t:KeyType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/SymmetricKey</t:KeyType>
-              </sp:RequestSecurityTokenTemplate>
-              <wsp:Policy>
-                <sp:RequireInternalReference />
-              </wsp:Policy>
+                <sp:TransportBinding
+                        xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+                    <wsp:Policy>
+                        <sp:TransportToken>
+                            <wsp:Policy>
+                                <sp:HttpsToken>
+                                    <wsp:Policy/>
+                                </sp:HttpsToken>
+                            </wsp:Policy>
+                        </sp:TransportToken>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:TripleDes/>
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                        <sp:Layout>
+                            <wsp:Policy>
+                                <sp:Lax/>
+                            </wsp:Policy>
+                        </sp:Layout>
+                        <sp:IncludeTimestamp/>
+                    </wsp:Policy>
+                </sp:TransportBinding>
 
-              <sp:Issuer>
-                <wsaws:Address>http://@node0@:8080/jaxws-samples-wsse-policy-trust-sts-holderofkey/SecurityTokenService</wsaws:Address>
-                <wsaws:Metadata
-                  xmlns:wsdli="http://www.w3.org/2006/01/wsdl-instance"
-                  wsdli:wsdlLocation="http://@node0@:8080/jaxws-samples-wsse-policy-trust-sts-holderofkey/SecurityTokenService?wsdl">
-                  <wsaw:ServiceName
-                    xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
-                    xmlns:stsns="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
-                    EndpointName="UT_Port">stsns:SecurityTokenService</wsaw:ServiceName>
-                </wsaws:Metadata>
-              </sp:Issuer>
+                <sp:SignedEndorsingSupportingTokens
+                        xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+                    <wsp:Policy>
+                        <sp:IssuedToken
+                                sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                            <sp:RequestSecurityTokenTemplate>
+                                <t:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</t:TokenType>
+                                <t:KeyType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/SymmetricKey</t:KeyType>
+                            </sp:RequestSecurityTokenTemplate>
+                            <wsp:Policy>
+                                <sp:RequireInternalReference/>
+                            </wsp:Policy>
 
-            </sp:IssuedToken>
-          </wsp:Policy>
-        </sp:SignedEndorsingSupportingTokens>
+                            <sp:Issuer>
+                                <wsaws:Address>http://@node0@:8080/jaxws-samples-wsse-policy-trust-sts-holderofkey/SecurityTokenService</wsaws:Address>
+                                <wsaws:Metadata
+                                        xmlns:wsdli="http://www.w3.org/2006/01/wsdl-instance"
+                                        wsdli:wsdlLocation="http://@node0@:8080/jaxws-samples-wsse-policy-trust-sts-holderofkey/SecurityTokenService?wsdl">
+                                    <wsaw:ServiceName
+                                            xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+                                            xmlns:stsns="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+                                            EndpointName="UT_Port">stsns:SecurityTokenService
+                                    </wsaw:ServiceName>
+                                </wsaws:Metadata>
+                            </sp:Issuer>
 
-        <sp:Wss11>
-          <wsp:Policy>
-            <sp:MustSupportRefIssuerSerial />
-            <sp:MustSupportRefThumbprint />
-            <sp:MustSupportRefEncryptedKey />
-          </wsp:Policy>
-        </sp:Wss11>
-        <sp:Trust13>
-          <wsp:Policy>
-            <sp:MustSupportIssuedTokens />
-            <sp:RequireClientEntropy />
-            <sp:RequireServerEntropy />
-          </wsp:Policy>
-        </sp:Trust13>
-      </wsp:All>
-    </wsp:ExactlyOne>
-  </wsp:Policy>
+                        </sp:IssuedToken>
+                    </wsp:Policy>
+                </sp:SignedEndorsingSupportingTokens>
+
+                <sp:Wss11>
+                    <wsp:Policy>
+                        <sp:MustSupportRefIssuerSerial/>
+                        <sp:MustSupportRefThumbprint/>
+                        <sp:MustSupportRefEncryptedKey/>
+                    </wsp:Policy>
+                </sp:Wss11>
+                <sp:Trust13>
+                    <wsp:Policy>
+                        <sp:MustSupportIssuedTokens/>
+                        <sp:RequireClientEntropy/>
+                        <sp:RequireServerEntropy/>
+                    </wsp:Policy>
+                </sp:Trust13>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
 
 </definitions>

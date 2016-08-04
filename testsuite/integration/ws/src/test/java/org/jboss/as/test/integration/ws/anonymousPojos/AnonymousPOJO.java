@@ -28,9 +28,9 @@ import javax.jws.WebService;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @WebService(
-    endpointInterface = "org.jboss.as.test.integration.ws.anonymousPojos.POJOIface",
-    targetNamespace = "org.jboss.as.test.integration.ws.anonymousPojos",
-    serviceName = "AnonymousPOJOService"
+        endpointInterface = "org.jboss.as.test.integration.ws.anonymousPojos.POJOIface",
+        targetNamespace = "org.jboss.as.test.integration.ws.anonymousPojos",
+        serviceName = "AnonymousPOJOService"
 )
 public class AnonymousPOJO {
 

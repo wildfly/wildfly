@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.soap.SOAPFaultException;
+
 import org.junit.Assert;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -47,12 +48,12 @@ import org.jboss.as.test.integration.ws.wsse.ServiceIface;
 
 /**
  * Test WS sign + encrypt capability for multiple clients (alice and john)
- * 
+ * <p>
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
  * Public key can be imported using keytool -import
  * Keystore can be listed using keytool -list -v
- * 
+ *
  * @author Rostislav Svoboda
  */
 @RunWith(Arquillian.class)
@@ -124,10 +125,10 @@ public class SignEncryptMultipleClientsTestCase {
     }
 
     private void setupWsse(ServiceIface proxy, String clientId) throws MalformedURLException {
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER,      new KeystorePasswordCallback());
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES,  "org/jboss/as/test/integration/ws/wsse/" + clientId + ".properties");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES,    "org/jboss/as/test/integration/ws/wsse/" + clientId + ".properties");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME,    clientId);
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME,      "bob");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER, new KeystorePasswordCallback());
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES, "org/jboss/as/test/integration/ws/wsse/" + clientId + ".properties");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES, "org/jboss/as/test/integration/ws/wsse/" + clientId + ".properties");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME, clientId);
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME, "bob");
     }
 }

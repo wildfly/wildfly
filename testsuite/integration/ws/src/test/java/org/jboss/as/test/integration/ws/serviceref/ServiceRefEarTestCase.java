@@ -61,29 +61,29 @@ public class ServiceRefEarTestCase {
 
     private static final Logger log = Logger.getLogger(ServiceRefEarTestCase.class);
 
-    @Deployment (testable=false)
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
-            .addClasses(EJB3Bean.class, EndpointInterface.class);
+                .addClasses(EJB3Bean.class, EndpointInterface.class);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-serviceref-example-servlet-client.war")
-            .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
-            .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "web.xml", "web.xml")
-            .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+                .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
+                .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "web.xml", "web.xml")
+                .addAsWebInfResource(ServiceRefEarTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         String wsdl = FileUtils.readFile(ServiceRefEarTestCase.class, "TestService.wsdl");
         final Properties properties = new Properties();
         properties.putAll(System.getProperties());
-        final String node0 = NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0"));
-        if(properties.containsKey("node0")) {
+        final String node0 = NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0"));
+        if (properties.containsKey("node0")) {
             properties.put("node0", node0);
         }
         war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "ws-serviceref-example.ear")
-            .addAsModule(jar)
-            .addAsModule(war);
+                .addAsModule(jar)
+                .addAsModule(war);
         // all the following permissions are needed because EndpointService directly extends javax.xml.ws.Service class
         // and CXF guys are not willing to add more privileged blocks into their code, thus deployments need to have
         // the following permissions (note that the wsdl.properties permission is needed by wsdl4j)
@@ -102,7 +102,7 @@ public class ServiceRefEarTestCase {
     @ArquillianResource(ServletClient.class)
     URL baseUrl;
 
-        @Test
+    @Test
     public void testServletClientEcho1() throws Exception {
         String retStr = receiveFirstLineFromUrl(new URL(baseUrl.toString() + "?echo=HelloWorld&type=echo1"));
         Assert.assertEquals("Unexpected output - " + retStr, "HelloWorld", retStr);

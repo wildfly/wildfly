@@ -50,7 +50,6 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @RunWith(Arquillian.class)
@@ -59,26 +58,26 @@ public class ServiceRefSevletTestCase {
 
     private static final Logger log = Logger.getLogger(ServiceRefSevletTestCase.class);
 
-    @Deployment (name="main", testable=false)
+    @Deployment(name = "main", testable = false)
     public static JavaArchive mainDeployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
-            .addClasses(EJB3Bean.class, EndpointInterface.class);
+                .addClasses(EJB3Bean.class, EndpointInterface.class);
         log.info(jar.toString(true));
         return jar;
     }
 
-    @Deployment (name="servletClient", testable=false)
+    @Deployment(name = "servletClient", testable = false)
     public static WebArchive clientDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-serviceref-example-servlet-client.war")
-            .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
+                .addClasses(EndpointInterface.class, EndpointService.class, ServletClient.class)
                 .addAsWebInfResource(ServiceRefSevletTestCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsWebInfResource(ServiceRefSevletTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         String wsdl = FileUtils.readFile(ServiceRefSevletTestCase.class, "TestService.wsdl");
         final Properties properties = new Properties();
         properties.putAll(System.getProperties());
-        final String node0 = NetworkUtils.formatPossibleIpv6Address((String)properties.get("node0"));
-        if(properties.containsKey("node0")) {
+        final String node0 = NetworkUtils.formatPossibleIpv6Address((String) properties.get("node0"));
+        if (properties.containsKey("node0")) {
             properties.put("node0", node0);
         }
         war.addAsWebInfResource(new StringAsset(PropertiesValueResolver.replaceProperties(wsdl, properties)), "wsdl/TestService.wsdl");

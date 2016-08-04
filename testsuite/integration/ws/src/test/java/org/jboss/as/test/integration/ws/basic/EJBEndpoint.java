@@ -30,6 +30,7 @@ import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.soap.SOAPFaultException;
+
 import org.jboss.ws.api.annotation.WebContext;
 
 /**
@@ -66,7 +67,7 @@ public class EJBEndpoint implements EndpointIface {
         return reply;
     }
 
-     public String helloError(String input) {
+    public String helloError(String input) {
         try {
             SOAPFault fault = SOAPFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL).createFault(input,
                     SOAPConstants.SOAP_VERSIONMISMATCH_FAULT);
