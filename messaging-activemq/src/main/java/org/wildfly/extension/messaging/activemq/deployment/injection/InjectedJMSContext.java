@@ -27,8 +27,6 @@ import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.R
 import java.io.Serializable;
 import java.util.UUID;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
@@ -77,22 +75,6 @@ class InjectedJMSContext extends JMSContextWrapper implements Serializable {
 
         this.info = new JMSInfo(connectionFactory, credential, sessionMode);
     }
-
-    @PreDestroy
-    private void cleanUp() {
-        ROOT_LOGGER.debugf("Cleaning up injected JMSContext %s", id);
-        cleanUpContext(requestedJMSContext);
-        cleanUpContext(transactedJMSContext.get());
-    }
-
-    private void cleanUpContext(AbstractJMSContext context) {
-        try {
-            context.cleanUp();
-        } catch (ContextNotActiveException e) {
-            // ignore this exception as the bean can be destroyed when its context is no longer active.
-        }
-    }
-
 
     /**
      * Return the actual JMSContext used by this injection.
