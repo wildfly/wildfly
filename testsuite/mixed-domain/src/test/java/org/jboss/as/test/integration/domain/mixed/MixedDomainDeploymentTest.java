@@ -131,7 +131,7 @@ public abstract class MixedDomainDeploymentTest {
     }
 
     @AfterClass
-    public synchronized static void afterClass() {
+    public static synchronized void afterClass() {
         MixedDomainTestSuite.afterClass();
     }
 

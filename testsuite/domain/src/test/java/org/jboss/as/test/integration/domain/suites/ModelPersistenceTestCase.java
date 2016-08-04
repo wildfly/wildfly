@@ -66,7 +66,7 @@ public class ModelPersistenceTestCase {
 
     private class CfgFileDescription {
 
-        public CfgFileDescription(int version, File file, long hash) {
+        CfgFileDescription(int version, File file, long hash) {
             this.version = version;
             this.file = file;
             this.hash = hash;

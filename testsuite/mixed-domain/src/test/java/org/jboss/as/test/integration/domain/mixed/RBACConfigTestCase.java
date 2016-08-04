@@ -81,7 +81,7 @@ public class RBACConfigTestCase {
     }
 
     @AfterClass
-    public synchronized static void afterClass() {
+    public static synchronized void afterClass() {
         KernelBehaviorTestSuite.afterClass();
         masterClient = slaveClient = null;
     }

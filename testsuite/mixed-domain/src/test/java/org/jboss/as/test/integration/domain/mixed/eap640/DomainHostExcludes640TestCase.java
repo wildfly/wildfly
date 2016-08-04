@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.domain.mixed.eap630.MixedDomain630TestSuite;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.BeforeClass;
 

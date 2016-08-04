@@ -36,9 +36,9 @@ public @interface Version {
 
     AsVersion value();
 
-    final String AS = "jboss-as-";
-    final String WILDFLY = "wildfly";
-    final String EAP = "jboss-eap-";
+    String AS = "jboss-as-";
+    String WILDFLY = "wildfly";
+    String EAP = "jboss-eap-";
 
     enum AsVersion {
         EAP_6_2_0(EAP, 6, 2, 0),
