@@ -32,7 +32,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly-javaee7</artifactId>
-    <version>10.0.2.Final-SNAPSHOT</version>
+    <version>10.1.0.CR1</version>
 
     <packaging>pom</packaging>
 
@@ -65,7 +65,7 @@
     <scm>
         <connection>scm:git:https://github.com/wildfly/boms.git</connection>
         <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>10.1.0.CR1</tag>
         <url>http://github.com/wildfly/boms</url>
     </scm>
     <issueManagement>
