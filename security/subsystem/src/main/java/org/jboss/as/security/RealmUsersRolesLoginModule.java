@@ -36,6 +36,7 @@ import org.jboss.security.auth.spi.UsersRolesLoginModule;
  * @author Jason T. Greene
  */
 public class RealmUsersRolesLoginModule extends UsersRolesLoginModule {
+    private static final String DEFAULT_REALM = "ApplicationRealm";
     private static final String REALM_OPTION = "realm";
 
     private static final String[] ALL_VALID_OPTIONS = {
@@ -58,7 +59,7 @@ public class RealmUsersRolesLoginModule extends UsersRolesLoginModule {
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         addValidOptions(ALL_VALID_OPTIONS);
 
-        this.realm = (String) options.get(REALM_OPTION);
+        this.realm = options.containsKey(REALM_OPTION) ? (String) options.get(REALM_OPTION) : DEFAULT_REALM;
         HashMap map = new HashMap(options);
         map.putAll(options);
         map.put("hashAlgorithm", "REALM");
