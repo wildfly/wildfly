@@ -34,7 +34,11 @@ import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.*;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 import java.io.IOException;
 
 /**
