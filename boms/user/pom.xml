@@ -27,7 +27,7 @@
     <parent>
         <artifactId>jboss-parent</artifactId>
         <groupId>org.jboss</groupId>
-        <version>20</version>
+        <version>21</version>
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
@@ -81,6 +81,7 @@
         <version.junit>4.12</version.junit>
         <version.log4j>1.2.17</version.log4j>
 
+        <version.org.apache.cxf>3.1.6</version.org.apache.cxf>
         <!-- Version of Hibernate projects -->
         <version.org.hibernate>5.0.7.Final</version.org.hibernate>
         <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
@@ -177,6 +178,33 @@
                 <version>${version.org.hibernate}</version>
                 <scope>provided</scope>
             </dependency>
+
+            <!--Apache CXF -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-core</artifactId>
+                <version>${version.org.apache.cxf}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.ws.xmlschema</groupId>
+                        <artifactId>xmlschema-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
 
             <!-- Hibernate ORM sub-modules -->
             <dependency>
