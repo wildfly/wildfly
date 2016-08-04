@@ -28,11 +28,11 @@ import org.jboss.as.test.xts.base.TestApplicationException;
 import org.jboss.as.test.xts.util.ServiceCommand;
 
 /**
- *  WS-AT simple web service interface
+ * WS-AT simple web service interface
  */
 public interface AT {
 
     @WebMethod
-    public void invoke(ServiceCommand... serviceCommands) throws TestApplicationException;
-    
+    void invoke(ServiceCommand... serviceCommands) throws TestApplicationException;
+
 }

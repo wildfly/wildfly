@@ -29,15 +29,14 @@ public enum EventLogEvent {
 
     // XTS AT callbacks events
     BEFORE_PREPARE, // volatile participant
-    PREPARE, // durable participant   
-    ERROR, 
+    PREPARE, // durable participant
+    ERROR,
     ROLLBACK, // durable participant
     VOLATILE_ROLLBACK, // volatile participant
     COMMIT, // durable participant
     VOLATILE_COMMIT, // volatile participant
     @Deprecated UNKNOWN,
-    
-    
+
     // XTS BA callbacks events
     COMPLETE,
     CONFIRM_COMPLETED,

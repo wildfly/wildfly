@@ -35,10 +35,10 @@ import javax.servlet.annotation.WebServlet;
 @WebService(serviceName = "ATService2", portName = "AT", name = "AT", targetNamespace = "http://www.jboss.com/jbossas/test/xts/wsat/at/")
 @SOAPBinding(style = SOAPBinding.Style.RPC)
 @HandlerChain(file = "/context-handlers.xml")
-@WebServlet(name="ATService2", urlPatterns={"/ATService2"})
+@WebServlet(name = "ATService2", urlPatterns = {"/ATService2"})
 public class ATService2 extends ATSuperService {
     public static final String LOG_NAME = "service2";
-    
+
     @WebMethod
     public void invoke(ServiceCommand... serviceCommands) throws TestApplicationException {
         super.invokeWithCallName(LOG_NAME, serviceCommands);

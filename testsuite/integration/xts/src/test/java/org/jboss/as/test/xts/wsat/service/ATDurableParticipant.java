@@ -22,8 +22,13 @@
 
 package org.jboss.as.test.xts.wsat.service;
 
-import com.arjuna.wst.*;
-
+import com.arjuna.wst.Aborted;
+import com.arjuna.wst.Durable2PCParticipant;
+import com.arjuna.wst.ReadOnly;
+import com.arjuna.wst.SystemException;
+import com.arjuna.wst.Vote;
+import com.arjuna.wst.WrongStateException;
+import com.arjuna.wst.Prepared;
 import org.jboss.as.test.xts.util.EventLog;
 import org.jboss.as.test.xts.util.EventLogEvent;
 import org.jboss.as.test.xts.util.ServiceCommand;
@@ -41,7 +46,7 @@ import java.util.Map;
 public class ATDurableParticipant implements  Durable2PCParticipant, Serializable {
     private static final Logger log = Logger.getLogger(ATDurableParticipant.class);
     private static final long serialVersionUID = 1L;
-    
+
     // Is participant already enlisted to transaction?
     private static Map<String, List<ATDurableParticipant>> activeParticipants = new HashMap<String, List<ATDurableParticipant>>();
     private String transactionId;
@@ -51,11 +56,11 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     private ServiceCommand[] serviceCommands;
     // Where to log participant activity
     private EventLog eventLog;
-  
+
 
     /**
      * Creates a new participant for this transaction. Participants and transaction instances have a one-to-one mapping.
-     * 
+     *
      * @param serviceCommands  service commands for interrupting of the processing
      * @param eventLogName name for event log - differentiate calls on the same web service/creating participant
      * @param eventLog  event log that info about processing will be put into
@@ -65,14 +70,14 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
         this.serviceCommands = serviceCommands;
         this.eventLog = eventLog;
         this.eventLogName = eventLogName;
-        
+
         addParticipant(transactionId);
     }
 
-   
+
     /**
      * Invokes the volatile prepare step of the business logic.
-     * 
+     *
      * @return in dependence of command passed to constructor @see{ServiceCommand}
      * @throws com.arjuna.wst.WrongStateException
      * @throws com.arjuna.wst.SystemException
@@ -98,7 +103,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     /**
      * Invokes the volatile commit step of the business logic.
      * All participants voted 'prepared', so coordinator tells the volatile participant that commit has been done.
-     * 
+     *
      * @throws com.arjuna.wst.WrongStateException
      * @throws com.arjuna.wst.SystemException
      */
@@ -112,7 +117,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     /**
      * Invokes the volatile rollback operation on the business logic.
      * One or more participants voted 'aborted' or a failure occurred, so coordinator tells the volatile participant that rollback has been done.
-     * 
+     *
      * @throws com.arjuna.wst.WrongStateException
      * @throws com.arjuna.wst.SystemException
      */
@@ -133,14 +138,13 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     /**
      * This should not happen for volatile participant.
      */
-    @Override    
+    @Override
     public void error() throws SystemException {
         eventLog.addEvent(eventLogName, EventLogEvent.ERROR);
         log.info("[AT SERVICE] Durable participant error() - logged: " + EventLogEvent.ERROR);
     }
-    
-    
-    // --- helper methods ---    
+
+    // --- helper methods ---
     private void addParticipant(String transactionId) {
         if(activeParticipants.containsKey(transactionId)) {
             if(activeParticipants.get(transactionId).contains(this)) {

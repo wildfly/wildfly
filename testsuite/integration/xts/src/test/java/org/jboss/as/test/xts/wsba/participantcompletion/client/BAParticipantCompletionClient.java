@@ -37,17 +37,17 @@ import java.net.URL;
  */
 public class BAParticipantCompletionClient {
     private static final Logger log = Logger.getLogger(BAParticipantCompletionClient.class);
-    
+
     private static final String NODE0_ADDR = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost"));
     private static final int NODE0_PORT = 8080;
-    
+
     private static final String TARGET_NAMESPACE = "http://www.jboss.com/jbossas/test/xts/ba/participantcompletion/";
     private static final String DEFAULT_PORT_NAME = "BAParticipantCompletion";
-    
+
     public static BAParticipantCompletion newInstance(String serviceNamespaceName) throws Exception {
         return BAParticipantCompletionClient.newInstance(serviceNamespaceName, serviceNamespaceName);
     }
-    
+
     public static BAParticipantCompletion newInstance(String serviceUrl, String serviceNamespaceName) throws Exception {
         URL wsdlLocation = new URL("http://" + NODE0_ADDR + ":" + NODE0_PORT + "/" + BAParticipantCompletionTestCase.ARCHIVE_NAME + "/" + serviceUrl + "?wsdl");
         log.info("wsdlLocation for service: " + wsdlLocation);
@@ -55,7 +55,7 @@ public class BAParticipantCompletionClient {
         QName portName = new QName(TARGET_NAMESPACE, DEFAULT_PORT_NAME);
 
         Service service = Service.create(wsdlLocation, serviceName);
-        
+
         BAParticipantCompletion client = service.getPort(portName, BAParticipantCompletion.class);
 
         return client;

@@ -40,28 +40,28 @@ import org.apache.log4j.Logger;
 public class EventLog implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EventLog.class);
-    
+
     // Event logs for a name
     private volatile Map<String, List<EventLogEvent>> eventLog = new HashMap<String, List<EventLogEvent>>();
-    
+
     private static final String GENERAL_EVENTLOG_NAME = "general";
 
     /**
      * Method checks whether the eventLogName exists in the datastore.
      * In case that it exists - do nothing.
      * In case that it does not exists - it creates the key with empty list of logged events.
-     * 
-     * @param eventLogName  name of key for events
+     *
+     * @param eventLogName name of key for events
      */
     public void foundEventLogName(String eventLogName) {
         getListToModify(eventLogName, eventLog);
     }
-          
+
     public void addEvent(String eventLogName, EventLogEvent event) {
         log.debug("Adding event " + event + " to logger " + this);
         getListToModify(eventLogName, eventLog).add(event);
     }
-    
+
     public List<EventLogEvent> getEventLog(String eventLogName) {
         eventLogName = eventLogName == null ? GENERAL_EVENTLOG_NAME : eventLogName;
         return eventLog.get(eventLogName);
@@ -79,12 +79,12 @@ public class EventLog implements Serializable {
         }
         return result;
     }
-    
+
     // --- helper method
     private <T> List<T> getListToModify(String eventLogName, Map<String, List<T>> map) {
         eventLogName = eventLogName == null ? GENERAL_EVENTLOG_NAME : eventLogName;
-        
-        if(map.containsKey(eventLogName)) {
+
+        if (map.containsKey(eventLogName)) {
             return map.get(eventLogName);
         } else {
             List<T> newList = new ArrayList<T>();
