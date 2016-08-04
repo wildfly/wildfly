@@ -26,6 +26,5 @@ package org.jboss.as.test.manualmode.ejb.client.cluster;
  * @author Jaikiran Pai
  */
 public interface NodeNameEcho {
-    
     String getNodeName(boolean preferOtherNode);
 }
