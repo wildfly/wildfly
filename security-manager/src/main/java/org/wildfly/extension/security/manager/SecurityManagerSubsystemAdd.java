@@ -23,15 +23,10 @@
 
 package org.wildfly.extension.security.manager;
 
-import static org.wildfly.extension.security.manager.Constants.DEFAULT_VALUE;
-import static org.wildfly.extension.security.manager.Constants.DEPLOYMENT_PERMISSIONS;
-import static org.wildfly.extension.security.manager.Constants.MAXIMUM_PERMISSIONS;
-import static org.wildfly.extension.security.manager.Constants.MINIMUM_PERMISSIONS;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_ACTIONS;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_MODULE;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
 
-import java.security.AllPermission;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +45,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.security.FactoryPermissionCollection;
-import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 import org.wildfly.extension.security.manager.deployment.PermissionsParserProcessor;
@@ -105,18 +99,16 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
             throws OperationFailedException {
 
         // get the minimum set of deployment permissions.
-        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context,
-                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MINIMUM_PERMISSIONS));
+        final ModelNode minimumPermissionsNode = DeploymentPermissionsResourceDefinition.MINIMUM_PERMISSIONS.
+                resolveModelAttribute(context, node.get(DeploymentPermissionsResourceDefinition.DEPLOYMENT_PERMISSIONS_PATH.getKeyValuePair()));
+        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context, minimumPermissionsNode);
 
         // get the maximum set of deployment permissions.
-        final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context,
-                this.peek(node, DEPLOYMENT_PERMISSIONS, DEFAULT_VALUE, MAXIMUM_PERMISSIONS));
+        final ModelNode maximumPermissionsNode = DeploymentPermissionsResourceDefinition.MAXIMUM_PERMISSIONS.
+                resolveModelAttribute(context, node.get(DeploymentPermissionsResourceDefinition.DEPLOYMENT_PERMISSIONS_PATH.getKeyValuePair()));
+        final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context, maximumPermissionsNode);
 
-        if (maximumSet.isEmpty()) {
-            maximumSet.add(new ImmediatePermissionFactory(new AllPermission()));
-        }
-
-        // validate the configured permissions - the mininum set must be implid by the maximum set.
+        // validate the configured permissions - the mininum set must be implied by the maximum set.
         final FactoryPermissionCollection maxPermissionCollection = new FactoryPermissionCollection(maximumSet.toArray(new PermissionFactory[maximumSet.size()]));
         final StringBuilder failedPermissions = new StringBuilder();
         for (PermissionFactory factory : minimumSet) {
@@ -180,25 +172,5 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
             }
         }
         return permissions;
-    }
-
-
-    /**
-     * Utility method that traverses a {@link ModelNode} according to the provided path. If a valid node is reached, it is
-     * returned.
-     *
-     * @param node the node to be traversed.
-     * @param args a {@code String[]} that forms the path to be traversed.
-     * @return a reference to the {@link ModelNode} that was reached at the end of the path, or {@code null} if path doesn't
-     * lead to a defined node.
-     */
-    protected ModelNode peek(ModelNode node, String... args) {
-        for (String arg : args) {
-            if (!node.hasDefined(arg)) {
-                return null;
-            }
-            node = node.get(arg);
-        }
-        return node;
     }
 }

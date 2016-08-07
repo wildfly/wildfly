@@ -44,6 +44,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -79,9 +80,16 @@ class DeploymentPermissionsResourceDefinition extends PersistentResourceDefiniti
     private static final ObjectTypeAttributeDefinition PERMISSIONS_VALUE_TYPE =
             ObjectTypeAttributeDefinition.Builder.of(PERMISSION, CLASS, NAME, ACTIONS, MODULE).build();
 
+    private static final ModelNode DEFAULT_MAXIMUM_SET;
+    static {
+        DEFAULT_MAXIMUM_SET = new ModelNode();
+        DEFAULT_MAXIMUM_SET.add(new ModelNode().set(PERMISSION_CLASS, "java.security.AllPermission"));
+    };
+
     static final AttributeDefinition MAXIMUM_PERMISSIONS =
             ObjectListAttributeDefinition.Builder.of(Constants.MAXIMUM_PERMISSIONS, PERMISSIONS_VALUE_TYPE)
                     .setAllowNull(true)
+                    .setDefaultValue(DEFAULT_MAXIMUM_SET)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setXmlName(MAXIMUM_SET)
                     .build();
@@ -89,6 +97,7 @@ class DeploymentPermissionsResourceDefinition extends PersistentResourceDefiniti
     static final AttributeDefinition MINIMUM_PERMISSIONS =
             ObjectListAttributeDefinition.Builder.of(Constants.MINIMUM_PERMISSIONS, PERMISSIONS_VALUE_TYPE)
                     .setAllowNull(true)
+                    .setDefaultValue(new ModelNode().setEmptyList())
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setXmlName(MINIMUM_SET)
                     .build();
