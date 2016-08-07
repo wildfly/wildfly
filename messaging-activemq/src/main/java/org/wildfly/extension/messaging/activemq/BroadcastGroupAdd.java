@@ -80,6 +80,18 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
                 }
             }, OperationContext.Stage.MODEL);
         }
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                if (!operation.hasDefined(SOCKET_BINDING) && !operation.hasDefined(JGROUPS_CHANNEL.getName())) {
+                    throw MessagingLogger.ROOT_LOGGER.notSocektbindingAndJgroupschannel(name);
+                }
+
+            }
+
+        }, OperationContext.Stage.MODEL);
     }
 
     @Override

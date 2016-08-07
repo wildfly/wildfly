@@ -819,4 +819,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 87, value = "Unable to load connector service factory class: %s")
     OperationFailedException unableToLoadConnectorServiceFactoryClass(String factroyClass);
 
+    @Message(id = 88, value = "neither socket-binding nor jgroups-channel are defined in %s")
+    OperationFailedException notSocektbindingAndJgroupschannel(String name);
 }
