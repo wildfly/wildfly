@@ -78,9 +78,10 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
 
                 String moduleName = resolveAttribute(JMSBridgeDefinition.MODULE, context, model);
-                final JMSBridge bridge = createJMSBridge(context, model);
 
                 final String bridgeName = address.getLastElement().getValue();
+                final JMSBridge bridge = createJMSBridge(context, model,bridgeName);
+
                 final JMSBridgeService bridgeService = new JMSBridgeService(moduleName, bridgeName, bridge);
                 final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
 
@@ -117,7 +118,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
         builder.addDependency(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
     }
 
-    private JMSBridge createJMSBridge(OperationContext context, ModelNode model) throws OperationFailedException {
+    private JMSBridge createJMSBridge(OperationContext context, ModelNode model,String bridgeName) throws OperationFailedException {
         final Properties sourceContextProperties = resolveContextProperties(JMSBridgeDefinition.SOURCE_CONTEXT, context, model);
         final String sourceConnectionFactoryName = JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY.resolveModelAttribute(context, model).asString();
         final ConnectionFactoryFactory sourceCff = new JNDIConnectionFactoryFactory(sourceContextProperties , sourceConnectionFactoryName);
@@ -156,7 +157,8 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 Module module = Module.getCallerModuleLoader().loadModule(moduleID);
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             }
-            return new JMSBridgeImpl(sourceCff,
+            return new JMSBridgeImpl(bridgeName,
+                    sourceCff,
                     targetCff,
                     sourceDestinationFactory,
                     targetDestinationFactory,
