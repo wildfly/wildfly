@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.ejb.packaging.war.namingcontext;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
@@ -33,6 +35,7 @@ import javax.transaction.UserTransaction;
  */
 @Stateless
 @LocalBean
+@TransactionManagement(value = TransactionManagementType.BEAN)
 public class War2Ejb implements EjbInterface {
 
     @Resource

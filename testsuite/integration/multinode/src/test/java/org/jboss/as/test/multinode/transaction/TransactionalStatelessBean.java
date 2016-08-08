@@ -22,9 +22,11 @@
 package org.jboss.as.test.multinode.transaction;
 
 import javax.annotation.Resource;
-import javax.ejb.*;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * @author Stuart Douglas
@@ -35,15 +37,11 @@ import javax.transaction.UserTransaction;
 public class TransactionalStatelessBean implements TransactionalRemote {
 
     @Resource
-    private UserTransaction userTransaction;
+    private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int transactionStatus() {
-        try {
-            return userTransaction.getStatus();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
+        return transactionSynchronizationRegistry.getTransactionStatus();
     }
 
 }

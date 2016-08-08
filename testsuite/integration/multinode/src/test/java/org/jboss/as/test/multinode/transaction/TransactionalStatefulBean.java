@@ -22,10 +22,14 @@
 package org.jboss.as.test.multinode.transaction;
 
 import javax.annotation.Resource;
-import javax.ejb.*;
-import javax.transaction.SystemException;
+import javax.ejb.EJBException;
+import javax.ejb.Remote;
+import javax.ejb.SessionContext;
+import javax.ejb.SessionSynchronization;
+import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 import java.rmi.RemoteException;
 
 /**
@@ -42,19 +46,14 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
     private boolean rollbackOnlyBeforeCompletion = false;
 
     @Resource
-    private UserTransaction userTransaction;
-
-    @Resource
     private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
+    @Resource
+    private SessionContext sessionContext;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int transactionStatus() {
-        try {
-            return userTransaction.getStatus();
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
+        return transactionSynchronizationRegistry.getTransactionStatus();
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -82,11 +81,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
 
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void rollbackOnly() throws RemoteException {
-        try {
-            userTransaction.setRollbackOnly();
-        } catch (SystemException e) {
-            throw new RemoteException("SystemException during setRollbackOnly", e);
-        }
+        this.sessionContext.setRollbackOnly();
     }
 
     public void ejbCreate() {
@@ -101,11 +96,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
         beforeCompletion = true;
 
         if (rollbackOnlyBeforeCompletion) {
-            try {
-                userTransaction.setRollbackOnly();
-            } catch (SystemException e) {
-                throw new RemoteException("SystemException during setRollbackOnly", e);
-            }
+            this.sessionContext.setRollbackOnly();
         }
     }
 

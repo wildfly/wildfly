@@ -22,10 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import java.util.List;
-
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jts.common.jtsPropertyManager;
@@ -36,8 +32,10 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.jacorb.service.CorbaNamingService;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -45,6 +43,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.txn.TransactionMessages;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
@@ -54,6 +53,8 @@ import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.as.txn.service.UserTransactionAccessRightService;
+import org.jboss.as.txn.service.UserTransactionBindingService;
 import org.jboss.as.txn.service.UserTransactionRegistryService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.as.txn.service.XATerminatorService;
@@ -64,11 +65,16 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
+
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+import java.util.List;
 
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
@@ -245,14 +251,23 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tsrBuilder.addListener(verificationHandler);
         controllers.add(tsrBuilder.install());
 
+        // Install the UserTransactionAccessRightService
+        final UserTransactionAccessRightService userTransactionAccessRightService = new UserTransactionAccessRightService();
+        final ServiceController userTxAccessRightServiceController = context.getServiceTarget().addService(UserTransactionAccessRightService.SERVICE_NAME, userTransactionAccessRightService).install();
+        controllers.add(userTxAccessRightServiceController);
+
         // Bind the UserTransaction into JNDI
-        final BinderService utBinderService = new BinderService("UserTransaction");
+        final UserTransactionBindingService utBinderService = new UserTransactionBindingService("UserTransaction");
         final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), utBinderService);
         utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, utBinderService.getNamingStoreInjector());
+        // add a dependency on the UserTransactionAccessRightService which is used to check the permission required to
+        // access the UserTransaction
+        utBuilder.addDependency(UserTransactionAccessRightService.SERVICE_NAME, UserTransactionAccessRightService.class, utBinderService.getUserTransactionAccessRightServiceInjector());
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         utBuilder.addDependency(UserTransactionService.SERVICE_NAME, javax.transaction.UserTransaction.class, new Injector<javax.transaction.UserTransaction>() {
             @Override
-            public void inject(final javax.transaction.UserTransaction value) throws InjectionException {
-                utBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
+            public void inject(final javax.transaction.UserTransaction userTransaction) throws InjectionException {
+                utBinderService.getManagedObjectInjector().inject(new UserTransactionManagedReferenceFactory(serviceRegistry, userTransaction));
             }
 
             @Override
@@ -397,5 +412,37 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
+    /**
+     * A special type of {@link ManagedReferenceFactory} which checks the
+     * {@link org.jboss.as.txn.service.UserTransactionAccessRightService#isUserTransactionAccessDisAllowed() permission to access the UserTransaction}
+     * before handing out the {@link javax.transaction.UserTransaction} instance from its {@link #getReference()} method.
+     * If the caller is {@link org.jboss.as.txn.service.UserTransactionAccessRightService.UserTransactionAccessPermission#DISALLOWED}
+     * access to the {@link javax.transaction.UserTransaction} when {@link #getReference()} is called, then this {@link ManagedReferenceFactory}
+     * throws an exception.
+     */
+    private class UserTransactionManagedReferenceFactory implements ManagedReferenceFactory {
+
+        private final ServiceRegistry serviceRegistry;
+        private final ManagedReference userTransactionManagedReference;
+
+        UserTransactionManagedReferenceFactory(final ServiceRegistry serviceRegistry, final UserTransaction userTransaction) {
+            this.serviceRegistry = serviceRegistry;
+            this.userTransactionManagedReference = new ValueManagedReference(new ImmediateValue<Object>(userTransaction));
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            final ServiceController<UserTransactionAccessRightService> userTxAccessRightServiceController = (ServiceController<UserTransactionAccessRightService>) serviceRegistry.getService(UserTransactionAccessRightService.SERVICE_NAME);
+            if (userTxAccessRightServiceController == null) {
+                return this.userTransactionManagedReference;
+            }
+            // see if UserTransaction access is allowed. If not, throw an exception
+            final UserTransactionAccessRightService userTxAccessRightService = userTxAccessRightServiceController.getValue();
+            if (userTxAccessRightService.isUserTransactionAccessDisAllowed()) {
+                throw TransactionMessages.MESSAGES.userTransactionAccessNotAllowed();
+            }
+            return this.userTransactionManagedReference;
+        }
+    }
 
 }
