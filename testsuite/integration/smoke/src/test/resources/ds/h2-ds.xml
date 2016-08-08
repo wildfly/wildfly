@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<datasources>
+  <datasource jndi-name="java:jboss/datasources/DDs" pool-name="DPool" >
+    
+    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+   <!--   <datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</datasource-class>-->
+    <driver>h2</driver>
+    <security>
+    <user-name>sa</user-name>
+    <password>sa</password>
+    </security>
+    <pool>
+    <min-pool-size>1</min-pool-size>
+    <max-pool-size>5</max-pool-size>
+    </pool>
+  </datasource>
+</datasources>
+
