@@ -21,29 +21,29 @@
  */
 package org.jboss.as.naming.deployment;
 
-import java.util.List;
-
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Adds a service that depends on all JNDI bindings from the deployment to be up.
  * <p/>
- * As binding services are not children of the root deployment unit service this service
- * is necessary to ensure the deployment is not considered complete until add bindings are up
+ * As shareable binding services are not children of the root deployment unit service this processor also installs a
+ * service necessary to manage references to such bindings.
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ServiceName JNDI_DEPENDENCY_SERVICE = ServiceName.of("jndiDependencyService");
-
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -51,15 +51,18 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
         //this will always be up but we need to make sure the naming service is
         //not shut down before the deployment is undeployed when the container is shut down
         phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, NamingService.SERVICE_NAME);
-
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        // install shared bindings service
+        final ServiceName sharedBindingsReferencesServiceName = SharedBindingReferencesService.install(deploymentUnit, serviceTarget).getName();
+        // install jndi deps service
         final ServiceName serviceName = serviceName(deploymentUnit.getServiceName());
-        final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, new RuntimeBindReleaseService());
-        serviceBuilder.addDependencies(dependencies);
+        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, Service.NULL);
+        serviceBuilder.addDependencies(deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES));
         if(deploymentUnit.getParent() != null) {
             serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
         }
+        serviceBuilder.addDependency(sharedBindingsReferencesServiceName);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME);
         serviceBuilder.install();
     }
