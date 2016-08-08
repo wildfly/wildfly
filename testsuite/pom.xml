@@ -159,9 +159,6 @@
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
-        <!-- skip checkstyle in test suite -->
-        <checkstyle.skip>true</checkstyle.skip>
-
     </properties>
 
     <dependencyManagement>
