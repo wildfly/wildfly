@@ -396,14 +396,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
         assertTimerServiceState();
-        Object pk = currentPrimaryKey();
+        final Object pk = currentPrimaryKey();
+        final String timedObjectId = this.getInvoker().getTimedObjectId();
         final Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active timers for this timerservice
         synchronized (this.timers) {
             for (final TimerImpl timer : this.timers.values()) {
-                if (timer.isActive()) {
+                if (timer.getTimedObjectId().equals(timedObjectId) && timer.isActive()) {
                     if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
-                        activeTimers.add(timer);
+                       activeTimers.add(timer);
                     }
                 }
             }
@@ -411,7 +412,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // get all active timers which are persistent, but haven't yet been
         // persisted (waiting for tx to complete) that are in the current transaction
         for (final TimerImpl timer : getWaitingOnTxCompletionTimers().values()) {
-            if (timer.isActive()) {
+            if (timer.getTimedObjectId().equals(timedObjectId) && timer.isActive()) {
                 if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
                     activeTimers.add(timer);
                 }
