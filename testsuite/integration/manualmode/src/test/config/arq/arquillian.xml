@@ -89,7 +89,7 @@
         <container qualifier="jbossas-messaging-ha-server1" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-messaging-ha-server1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server1 -Djboss.node.name=default-jbossas-messaging-ha-server1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server1 -Djboss.node.name=default-jbossas-messaging-ha-server1  -Djboss.messaging.cluster.password=pwd</property>
                 <property name="serverConfig">standalone-full-ha.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
@@ -105,7 +105,7 @@
         <container qualifier="jbossas-messaging-ha-server2" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-messaging-ha-server2</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server2 -Djboss.node.name=default-jbossas-messaging-ha-server2</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-messaging-ha-server2 -Djboss.node.name=default-jbossas-messaging-ha-server2 -Djboss.messaging.cluster.password=pwd</property>
                 <property name="serverConfig">standalone-full-ha.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
