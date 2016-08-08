@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss PUBLIC "-//JBoss//DTD JBOSS 4.0//EN" "http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd">
+<jboss>
+    <enterprise-beans>
+        <session>
+            <ejb-name>SecuredEJB</ejb-name>
+            <jndi-name>jbosstest/ejbs/SecuredEJB</jndi-name>
+            <local-jndi-name>jbosstest/ejbs/local/SecuredEJB</local-jndi-name>
+            <configuration-name>Secure Stateless SessionBean</configuration-name>
+        </session>
+        <session>
+            <ejb-name>UnsecuredEJB</ejb-name>
+            <jndi-name>jbosstest/ejbs/UnsecuredEJB</jndi-name>
+            <ejb-ref>
+                <ejb-ref-name>ejb/Session</ejb-ref-name>
+                <jndi-name>jbosstest/ejbs/SecuredEJB</jndi-name>
+            </ejb-ref>
+        </session>
+    </enterprise-beans>
+    <container-configurations>
+        <container-configuration extends="Standard Stateless SessionBean">
+            <container-name>Secure Stateless SessionBean</container-name>
+            <security-domain>java:/jaas/jbosstest-web</security-domain>
+        </container-configuration>
+    </container-configurations>
+</jboss>
