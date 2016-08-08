@@ -29,6 +29,7 @@ import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.junit.Assert;
 
 /**
@@ -85,5 +86,15 @@ public class JSSEExpressionsUnitTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(ModelType.OBJECT, trustManager.getType());
         Assert.assertEquals(ModelType.EXPRESSION, trustManager.get(Constants.ALGORITHM).getType());
         Assert.assertEquals(ModelType.EXPRESSION, trustManager.get(Constants.PROVIDER).getType());
+
+        // check if the module-option values have been created as expression nodes.
+        ModelNode auth = model.get("subsystem", "security", "security-domain", "other", "authentication", "classic");
+        Assert.assertEquals(ModelType.OBJECT, auth.getType());
+        ModelNode loginModules = auth.get(Constants.LOGIN_MODULES);
+        Assert.assertEquals(ModelType.LIST, loginModules.getType());
+        ModelNode loginModule = loginModules.asList().get(0);
+        Assert.assertEquals(ModelType.OBJECT, auth.getType());
+        for (Property prop : loginModule.get(Constants.MODULE_OPTIONS).asPropertyList())
+            Assert.assertEquals(ModelType.EXPRESSION, prop.getValue().getType());
     }
 }

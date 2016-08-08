@@ -43,6 +43,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -741,7 +742,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
     private void parsePropertyElement(XMLExtendedStreamReader reader, ModelNode properties) throws XMLStreamException {
         String name = null;
-        String val = null;
+        ModelNode val = null;
         EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.VALUE);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -757,7 +758,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     break;
                 }
                 case VALUE: {
-                    val = value != null ? value.trim() : value;
+                    String propValue = value != null ? value.trim() : value;
+                    if (propValue != null)
+                        val = new ModelNode().set(ParseUtils.parsePossibleExpression(propValue));
+                    else
+                        val = new ModelNode();
                     break;
                 }
                 default:
