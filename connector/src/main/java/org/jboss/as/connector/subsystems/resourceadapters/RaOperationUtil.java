@@ -354,4 +354,22 @@ public class RaOperationUtil {
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                 .addListener(verificationHandler).install();
     }
+
+    public static void installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter) {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+
+        final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
+                ConnectorServices.RESOURCEADAPTERS_SERVICE);
+        ServiceController<?> controller = null;
+        if (resourceAdaptersService == null) {
+            controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
+                    new ResourceAdaptersService()).setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
+        }
+        ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
+
+        ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
+        serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                .addListener(verificationHandler).install();
+    }
 }
