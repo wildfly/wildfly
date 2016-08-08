@@ -31,8 +31,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleActivator;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleService;
-import org.jboss.as.test.osgi.OSGiFrameworkUtils;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.as.test.osgi.FrameworkUtils;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -62,10 +62,13 @@ public class BundleDeploymentCaseTwoTestCase {
     @Inject
     public BundleContext context;
 
+    @Inject
+    public PackageAdmin packageAdmin;
+
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bundle-deployment-casetwo");
-        archive.addClass(OSGiFrameworkUtils.class);
+        archive.addClass(FrameworkUtils.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -84,7 +87,7 @@ public class BundleDeploymentCaseTwoTestCase {
         deployer.deploy(BUNDLE_DEPLOYMENT_NAME);
 
         // Find the deployed bundle
-        Bundle bundle = OSGiFrameworkUtils.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
+        Bundle bundle = packageAdmin.getBundles(BUNDLE_DEPLOYMENT_NAME, null)[0];
 
         // Start the bundle. Note, it may have started already
         bundle.start();

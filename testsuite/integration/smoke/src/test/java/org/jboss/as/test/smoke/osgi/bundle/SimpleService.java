@@ -21,22 +21,19 @@
  */
 package org.jboss.as.test.smoke.osgi.bundle;
 
-
-
 /**
  * A SimpleService
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Apr-2009
  */
-public class SimpleService
-{
-   public Integer sum(Integer... values)
-   {
-      int result = 0;
-      for (int val : values)
-         result += val;
+public class SimpleService {
 
-      return result;
-   }
+    public Integer sum(Integer... values) {
+        int result = 0;
+        for (int val : values)
+            result += val;
+
+        return result;
+    }
 }

@@ -79,7 +79,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
         ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
-        builder.addDependency(DependencyType.OPTIONAL, Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
+        builder.addDependency(DependencyType.OPTIONAL, Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
         builder.addDependency(depController.getName());
         return builder;
     }

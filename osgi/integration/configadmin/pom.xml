@@ -27,11 +27,10 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-osgi</artifactId>
+        <artifactId>jboss-as-osgi-integration</artifactId>
         <version>7.1.4.Final-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-osgi-configadmin</artifactId>
     <packaging>bundle</packaging>
 

@@ -72,7 +72,7 @@ public class ClientModuleTwoActivator implements ServiceActivator
       {
          EchoInvokerService service = new EchoInvokerService();
          ServiceBuilder<?> serviceBuilder = serviceTarget.addService(INVOKER_SERVICE_NAME, service);
-         serviceBuilder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
+         serviceBuilder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedBundleContext);
          serviceBuilder.setInitialMode(Mode.ACTIVE);
          serviceBuilder.install();
          log.infof("Service added: %s", INVOKER_SERVICE_NAME);

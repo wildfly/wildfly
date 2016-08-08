@@ -33,7 +33,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.spi.BundleManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 

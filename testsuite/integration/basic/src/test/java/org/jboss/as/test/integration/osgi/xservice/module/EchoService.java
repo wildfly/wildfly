@@ -32,6 +32,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * A simple MSC service that provides an echo method
@@ -39,42 +42,43 @@ import org.jboss.msc.service.StopContext;
  * @author Thomas.Diesler@jboss.org
  * @since 09-Nov-2010
  */
-public class EchoService implements Echo, Service<Echo>
-{
-   private static final Logger log = Logger.getLogger(EchoService.class);
-   public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "target", "service");
+public class EchoService implements Echo, Service<Echo> {
+    private static final Logger log = Logger.getLogger(EchoService.class);
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "example", "target", "service");
 
-   public static void addService(ServiceTarget serviceTarget)
-   {
-      // Add the service with an alias that the OSGi layer can use to lookup the service
-      ServiceBuilder<Echo> serviceBuilder = serviceTarget.addService(SERVICE_NAME, new EchoService());
-      serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", Echo.class.getName()));
-      serviceBuilder.setInitialMode(Mode.ACTIVE);
-      serviceBuilder.install();
-      log.infof("Service added: %s", SERVICE_NAME);
-      log.infof("Echo Loader: %s", Echo.class.getClassLoader());
-   }
+    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private ServiceRegistration registration;
 
-   @Override
-   public String echo(String message)
-   {
-      log.infof("Echo: %s", message);
-      return message;
-   }
+    public static void addService(ServiceTarget serviceTarget) {
+        EchoService service = new EchoService();
+        ServiceBuilder<Echo> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);
+        serviceBuilder.addDependency(ServiceName.parse("jbosgi.framework.ACTIVE"), BundleContext.class, service.injectedBundleContext);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
+        serviceBuilder.install();
+        log.infof("Service added: %s", SERVICE_NAME);
+        log.infof("Echo Loader: %s", Echo.class.getClassLoader());
+    }
 
-   @Override
-   public void start(StartContext context) throws StartException
-   {
-   }
+    @Override
+    public String echo(String message) {
+        log.infof("Echo: %s", message);
+        return message;
+    }
 
-   @Override
-   public void stop(StopContext context)
-   {
-   }
+    @Override
+    public void start(StartContext context) throws StartException {
+        BundleContext syscontext = injectedBundleContext.getValue();
+        registration = syscontext.registerService(Echo.class.getName(), this, null);
+    }
 
-   @Override
-   public Echo getValue() throws IllegalStateException
-   {
-      return this;
-   }
+    @Override
+    public void stop(StopContext context) {
+        if (registration != null)
+            registration.unregister();
+    }
+
+    @Override
+    public Echo getValue() throws IllegalStateException {
+        return this;
+    }
 }
