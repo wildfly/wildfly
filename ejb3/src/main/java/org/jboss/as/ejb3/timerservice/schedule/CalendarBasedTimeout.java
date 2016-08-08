@@ -36,6 +36,7 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Minute;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Month;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Second;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
+import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
@@ -156,7 +157,7 @@ public class CalendarBasedTimeout {
         // determine and set the first timeout (relative to the current time)
         // of this CalendarBasedTimeout
         setFirstTimeout();
-        }
+    }
 
     public Calendar getNextTimeout() {
         return getNextTimeout(new GregorianCalendar(this.timezone), true);
@@ -194,6 +195,11 @@ public class CalendarBasedTimeout {
         return getNextTimeout(currentCal, true);
     }
 
+    /**
+     * @param currentCal
+     * @param increment if true then current cal is not an acceptable next timeout
+     * @return
+     */
     private Calendar getNextTimeout(Calendar currentCal, boolean increment) {
         if (this.noMoreTimeouts(currentCal)) {
             return null;
@@ -214,7 +220,17 @@ public class CalendarBasedTimeout {
             nextCal.add(Calendar.MILLISECOND, -nextCal.get(Calendar.MILLISECOND));
         }
         nextCal.setFirstDayOfWeek(Calendar.SUNDAY);
+        nextCal = computeNextTimeout(nextCal);
+        nextCal = processDstRollback(currentCal, nextCal);
+        return nextCal;
+    }
 
+    /**
+     * Computes the next timeout.
+     * @param nextCal
+     * @return
+     */
+    private Calendar computeNextTimeout(Calendar nextCal) {
         nextCal = this.computeNextTime(nextCal);
         if (nextCal == null) {
             return null;
@@ -419,8 +435,6 @@ public class CalendarBasedTimeout {
         } else {
             // since the next day is before the current day we need to shift to the next month
             nextCal.add(Calendar.MONTH, 1);
-            // also we need to reset the time
-            resetTimeToFirstValues(nextCal);
             nextCal = this.computeNextMonth(nextCal);
             if (nextCal == null) {
                 return null;
@@ -471,8 +485,6 @@ public class CalendarBasedTimeout {
     }
 
     private Calendar advanceTillMonthHasDate(Calendar cal, Integer date) {
-        resetTimeToFirstValues(cal);
-
         // make sure the month can handle the date
         while (monthHasDate(cal, date) == false) {
             if (cal.get(Calendar.YEAR) > Year.MAX_YEAR) {
@@ -491,6 +503,7 @@ public class CalendarBasedTimeout {
             }
         }
         cal.set(Calendar.DAY_OF_MONTH, date);
+        resetTimeToFirstValues(cal);
         return cal;
     }
 
@@ -564,7 +577,7 @@ public class CalendarBasedTimeout {
     }
 
     /**
-     *
+     * Resets the time fields of the specified calendar to the first values that match the schedule expression.
      * @param calendar
      */
     private void resetTimeToFirstValues(Calendar calendar) {
@@ -579,13 +592,78 @@ public class CalendarBasedTimeout {
         }
     }
 
+    /**
+     * Sets the time fields of the specified calendar. In case the time does not exists, due to a DST forward, the calendar is automatically adjusted to the 1st timeout since DST begins.
+     * @param calendar
+     * @param hour
+     * @param minute
+     * @param second
+     */
     private void setTime(Calendar calendar, int hour, int minute, int second) {
+        calendar.clear(Calendar.DST_OFFSET);
         calendar.clear(Calendar.HOUR_OF_DAY);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.clear(Calendar.MINUTE);
         calendar.set(Calendar.MINUTE, minute);
         calendar.clear(Calendar.SECOND);
         calendar.set(Calendar.SECOND, second);
+        // process STD -> DST transitions
+        if (timezone.useDaylightTime()) {
+            if (calendar.get(Calendar.SECOND) != second || calendar.get(Calendar.MINUTE) != minute || calendar.get(Calendar.HOUR_OF_DAY) != hour) {
+                // new calendar time is not the expected, this happens when the time to set does not exists
+                // the JDK Calendar time adjustment may be problematic, it may go over other timeout since DST begins, so:
+                // 1. find 1st minute on DST
+                calendar.add(Calendar.MILLISECOND, -timezone.getDSTSavings());
+                CalendarUtil.advanceCalendarTillDST(calendar);
+                // 2. recompute calendar
+                computeNextTimeout(calendar);
+            }
+        }
+    }
+
+    /**
+     * Logic that handles the specifics of DST rollback wrt JDK Calendar:
+     * 1. when setting time Calendar opts for STD version of repeated times, which would result in skipped timeouts, this method detects such cases and opts instead for DST
+     * 2. when timeouts adjusted by 1. ends then time must be reverted to beginning of STD repeated period
+     *
+     * @param currentCal
+     * @param nextCal
+     * @return
+     */
+    private Calendar processDstRollback(Calendar currentCal, Calendar nextCal) {
+        if (timezone.useDaylightTime()) {
+            // case 1
+            if (nextCal != null && !timezone.inDaylightTime(nextCal.getTime())) {
+                // next cal is on STD
+                Calendar nextCalClone = (Calendar) nextCal.clone();
+                nextCalClone.add(Calendar.MILLISECOND, -timezone.getDSTSavings());
+                if (timezone.inDaylightTime(nextCalClone.getTime())) {
+                    // removing DST savings puts it in DST, i.e. next cal is in DST rollback ambiguous period
+                    if (currentCal == null || nextCalClone.after(currentCal)) {
+                        // DST version is after current cal, opt for it
+                        return nextCalClone;
+                    }
+                }
+            }
+            // case 2
+            // if current cal is dst version of a repeated time, and next cal is after repeated period then it's time to rollback time to beginning of std repeated period
+            if (currentCal != null && timezone.inDaylightTime(currentCal.getTime())) {
+                // current cal is on DST
+                Calendar currentCalClone = (Calendar) currentCal.clone();
+                currentCalClone.add(Calendar.MILLISECOND, timezone.getDSTSavings());
+                if (!timezone.inDaylightTime(currentCalClone.getTime())) {
+                    // adding DST savings puts it on STD, i.e. current cal is in the DST rollback ambiguous period
+                    // compute beginning of STD
+                    currentCalClone.add(Calendar.MILLISECOND, -timezone.getDSTSavings());
+                    CalendarUtil.advanceCalendarTillSTD(currentCalClone);
+                    // if next cal is after it, recompute timeout since such time
+                    if (nextCal == null || nextCal.after(currentCalClone)) {
+                        return computeNextTimeout(currentCalClone);
+                    }
+                }
+            }
+        }
+        return nextCal;
     }
 
 }

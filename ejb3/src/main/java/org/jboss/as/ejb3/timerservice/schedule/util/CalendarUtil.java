@@ -22,7 +22,9 @@
 package org.jboss.as.ejb3.timerservice.schedule.util;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 /**
  * CalendarUtil
@@ -98,6 +100,58 @@ public class CalendarUtil {
             day = tmpCal.get(Calendar.DAY_OF_WEEK);
         }
         return tmpCal.get(Calendar.DATE);
+    }
+
+    /**
+     * Advances the specified calendar to 1st minute on DST
+     * @param calendar
+     */
+    public static void advanceCalendarTillDST(Calendar calendar) {
+        TimeZone timeZone = calendar.getTimeZone();
+        // find out a DST savings sized time window where 'start' in STD and 'end' in DST
+        long start = calendar.getTimeInMillis();
+        long end = start;
+        while (!timeZone.inDaylightTime(new Date(end))) {
+            start = end;
+            end += timeZone.getDSTSavings();
+        }
+        // now divide & conquer to find out 1st minute on DST
+        while (end - start > 60000) {
+            long mid = (end + start) / 2;
+            if (timeZone.inDaylightTime(new Date(mid))) {
+                end = mid;
+            } else {
+                start = mid;
+            }
+        }
+        calendar.setTimeInMillis(end);
+        calendar.set(Calendar.SECOND, 0);
+    }
+
+    /**
+     * Advances the specified calendar to 1st minute on STD
+     * @param calendar
+     */
+    public static void advanceCalendarTillSTD(Calendar calendar) {
+        TimeZone timeZone = calendar.getTimeZone();
+        // find out a DST savings sized time window where 'start' in DST and 'end' in STD
+        long start = calendar.getTimeInMillis();
+        long end = start;
+        while (timeZone.inDaylightTime(new Date(end))) {
+            start = end;
+            end += timeZone.getDSTSavings();
+        }
+        // now divide & conquer to find out 1st minute on STD
+        while (end - start > 60000) {
+            long mid = (end + start) / 2;
+            if (!timeZone.inDaylightTime(new Date(mid))) {
+                end = mid;
+            } else {
+                start = mid;
+            }
+        }
+        calendar.setTimeInMillis(end);
+        calendar.set(Calendar.SECOND, 0);
     }
 
 }
