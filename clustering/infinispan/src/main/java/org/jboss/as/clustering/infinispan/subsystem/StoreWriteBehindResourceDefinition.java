@@ -52,7 +52,7 @@ public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition
             .setXmlName(Attribute.FLUSH_LOCK_TIMEOUT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1))
+            .setDefaultValue(new ModelNode().set(5000))
             .build()
     ;
     static final SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODIFICATION_QUEUE_SIZE, ModelType.INT, true)
