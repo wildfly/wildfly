@@ -22,7 +22,10 @@
 
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -33,7 +36,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Stream;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.Header;
@@ -67,7 +69,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
     @Test
     @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
-                             throws IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         String session1 = null;
         String session2 = null;
@@ -113,7 +115,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
 
             now = System.currentTimeMillis();
             start = now;
-            
+
             // This should trigger activation of session1 and passivation of session2
             response = client1.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
             try {
@@ -125,7 +127,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // Verify session2 was passivated
             while (events.get(session2).isEmpty() && ((now - start) < MAX_PASSIVATION_WAIT)) {
                 response = client1.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
@@ -142,10 +144,10 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
 
             assertFalse(events.get(session2).isEmpty());
             validateEvents(session2, events, expectedEvents);
-            
+
             now = System.currentTimeMillis();
             start = now;
-            
+
             // This should trigger activation of session2 and passivation of session1
             response = client2.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
             try {
@@ -157,7 +159,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            
+
             // Verify session1 was passivated
             while (!events.get(session1).isEmpty() && ((now - start) < MAX_PASSIVATION_WAIT)) {
                 response = client2.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
@@ -171,7 +173,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
                 Thread.yield();
                 now = System.currentTimeMillis();
             }
-            
+
             assertFalse(events.get(session1).isEmpty());
             validateEvents(session1, events, expectedEvents);
 
