@@ -118,6 +118,8 @@ public class PersistenceUnitSearch {
 
         ambiguousPUError(unit, persistenceUnitName, holder);
 
+        ambiguousPUError(unit, persistenceUnitName, holder);
+
         for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
             if (traceEnabled) {
                 ROOT_LOGGER.tracef("findWithinLibraryJar check '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
