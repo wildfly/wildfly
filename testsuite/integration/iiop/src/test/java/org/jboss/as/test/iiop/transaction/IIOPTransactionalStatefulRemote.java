@@ -11,16 +11,16 @@ public interface IIOPTransactionalStatefulRemote extends EJBObject {
 
     int transactionStatus() throws RemoteException;
 
-    public Boolean getCommitSucceeded() throws RemoteException;
+    Boolean getCommitSucceeded() throws RemoteException;
 
-    public boolean isBeforeCompletion() throws RemoteException;
+    boolean isBeforeCompletion() throws RemoteException;
 
-    public void resetStatus() throws RemoteException;
+    void resetStatus() throws RemoteException;
 
-    public void sameTransaction(boolean first) throws RemoteException;
+    void sameTransaction(boolean first) throws RemoteException;
 
     void rollbackOnly() throws RemoteException;
 
-    public void setRollbackOnlyBeforeCompletion(boolean rollbackOnlyInBeforeCompletion) throws RemoteException;
+    void setRollbackOnlyBeforeCompletion(boolean rollbackOnlyInBeforeCompletion) throws RemoteException;
 
 }

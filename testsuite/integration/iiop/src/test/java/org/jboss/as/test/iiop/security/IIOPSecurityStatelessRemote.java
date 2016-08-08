@@ -1,6 +1,5 @@
 package org.jboss.as.test.iiop.security;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJBObject;
 import java.rmi.RemoteException;
 
