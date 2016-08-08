@@ -33,8 +33,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
-import org.jboss.as.test.osgi.OSGiFrameworkUtils;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -66,6 +65,9 @@ public class SimpleServerDeploymentTestCase {
     public StartLevel startLevel;
 
     @Inject
+    public PackageAdmin packageAdmin;
+
+    @Inject
     public BundleContext context;
 
     @Inject
@@ -74,7 +76,7 @@ public class SimpleServerDeploymentTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-bundle");
-        archive.addClasses(ServerDeploymentHelper.class, OSGiFrameworkUtils.class);
+        archive.addClasses(ServerDeploymentHelper.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -98,7 +100,7 @@ public class SimpleServerDeploymentTestCase {
         String runtimeName = server.deploy("auto-start", input);
 
         // Find the deployed bundle
-        Bundle bundle = OSGiFrameworkUtils.getDeployedBundle(context, GOOD_BUNDLE, null);
+        Bundle bundle = packageAdmin.getBundles(GOOD_BUNDLE, null)[0];
         assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
 
         server.undeploy(runtimeName);

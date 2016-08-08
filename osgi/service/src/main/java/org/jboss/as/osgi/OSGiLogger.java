@@ -26,6 +26,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.util.Collection;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -36,6 +38,7 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
+import org.osgi.resource.Requirement;
 
 /**
  * Logging Id ranges: 11900-11949
@@ -54,17 +57,17 @@ public interface OSGiLogger extends BasicLogger {
     @Message(id = 11900, value = "Cannot start bundle: %s")
     void errorCannotStartBundle(@Cause Throwable cause, Bundle bundle);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11901, value = "Problem adding module: %s")
-    void errorAddingModule(@Cause Throwable cause, String moduleId);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11901, value = "Problem adding module: %s")
+    //void errorAddingModule(@Cause Throwable cause, String moduleId);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11902, value = "Failed to uninstall deployment: %s")
-    void errorFailedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11902, value = "Failed to uninstall deployment: %s")
+    //void errorFailedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11903, value = "Cannot add module as it was not found: %s")
-    void errorModuleNotFound(String moduleId);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11903, value = "Cannot add module as it was not found: %s")
+    //void errorModuleNotFound(String moduleId);
 
     @LogMessage(level = WARN)
     @Message(id = 11904, value = "Cannot find composite annotation index in: %s")
@@ -72,7 +75,7 @@ public interface OSGiLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 11905, value = "Cannot undeploy bundle: %s")
-    void warnCannotUndeployBundle(@Cause Throwable cause, Deployment deployment);
+    void warnCannotUndeployBundle(@Cause Throwable cause, Bundle bundle);
 
     @LogMessage(level = INFO)
     @Message(id = 11906, value = "Activating OSGi Subsystem")
@@ -80,17 +83,45 @@ public interface OSGiLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 11907, value = "Register module: %s")
-    void infoRegisterModule(ModuleIdentifier identifier);
+    void infoRegisterModule(ModuleIdentifier moduleId);
 
     @LogMessage(level = INFO)
     @Message(id = 11908, value = "Unregister module: %s")
-    void infoUnregisterModule(ModuleIdentifier identifier);
+    void infoUnregisterModule(ModuleIdentifier moduleId);
 
     @LogMessage(level = ERROR)
     @Message(id = 11909, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11910, value = "Cannot stop bundle: %s")
-    void errorCannotStopBundle(@Cause Throwable cause, Bundle bundle);
+    @LogMessage(level = WARN)
+    @Message(id = 11910, value = "Cannot resolve requirements: %s")
+    void warnCannotResolve(Collection<Requirement> requirements);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11911, value = "Bound system context: %s")
+    void infoBoundSystemContext(String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11912, value = "Unbound system context: %s")
+    void infoUnboundSystemContext(String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11913, value = "Register HttpService alias: %s")
+    void infoRegisterHttpServiceAlias(String alias);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11914, value = "Unregister HttpService alias: %s")
+    void infoUnregisterHttpServiceAlias(String alias);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11915, value = "Cannot deploy from management operation, bypassing deployment unit processors: %s")
+    void warnCannotDeployBundleFromManagementOperation(Deployment dep);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11916, value = "Activate deferred module phase for: %s")
+    void infoActivateDeferredModulePhase(Bundle bundle);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11917, value = "Deactivate deferred module phase for: %s")
+    void warnDeactivateDeferredModulePhase(Bundle bundle);
 }

@@ -34,6 +34,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
 /**
@@ -70,8 +71,8 @@ public interface OSGiMessages {
     @Message(id = 11956, value = "Failed to create Framework services")
     StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
 
-    @Message(id = 11957, value = "Failed to install deployment: %s")
-    StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
+    //@Message(id = 11957, value = "Failed to install deployment: %s")
+    //StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
 
     @Message(id = 11958, value = "Failed to register module: %s")
     IllegalStateException illegalStateFailedToRegisterModule(@Cause Throwable th, Module module);
@@ -83,8 +84,35 @@ public interface OSGiMessages {
     IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);
 
     @Message(id = 11961, value = "Cannot resolve capability: %s")
-    StartException startFailedCannotResolveInitialCapability(@Cause Throwable th, String identifier);
+    StartException cannotResolveInitialCapability(@Cause Throwable th, String identifier);
 
     @Message(id = 11962, value = "Illegal repository base location: %s")
-    StartException startArtifactBaseLocation(File dir);
+    IllegalStateException illegalStateArtifactBaseLocation(File dir);
+
+    @Message(id = 11963, value = "Invalid servlet alias: %s")
+    String invalidServletAlias(String alias);
+
+    @Message(id = 11964, value = "Invalid resource name: %s")
+    String invalidResourceName(String name);
+
+    @Message(id = 11965, value = "HttpService mapping does not exist: %s")
+    String aliasMappingDoesNotExist(String alias);
+
+    @Message(id = 11966, value = "HttpService mapping '%s' not owned by bundle: %s")
+    String aliasMappingNotOwnedByBundle(String alias, Bundle bundle);
+
+    @Message(id = 11967, value = "HttpService mapping already exists: %s")
+    String aliasMappingAlreadyExists(String alias);
+
+    @Message(id = 11968, value = "Cannot start bundle: %s")
+    StartException cannotStartBundle(@Cause Throwable cause, Bundle bundle);
+
+    @Message(id = 11969, value = "Cannot activate deferred module phase for: %s")
+    BundleException cannotActivateDeferredModulePhase(@Cause Throwable cause, Bundle bundle);
+
+    @Message(id = 11970, value = "Cannot deactivate deferred module phase for: %s")
+    BundleException cannotDeactivateDeferredModulePhase(@Cause Throwable cause, Bundle bundle);
+
+    @Message(id = 11971, value = "Servlet %s already registered with HttpService")
+    String servletAlreadyRegistered(String info);
 }

@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.spi.ManifestBuilder;
+import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -59,7 +59,7 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-mam-tests");
         archive.addClasses(AbstractXServiceTestCase.class);
         return archive;
     }
@@ -120,7 +120,7 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging");
+                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging,org.osgi.core");
                 return builder.openStream();
             }
         });

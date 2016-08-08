@@ -26,7 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.osgi.service.FrameworkActivationService;
+import org.jboss.as.osgi.service.FrameworkActivator;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,7 +47,7 @@ public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
         // This verification handler will cause context.completeStep() to wait until controller is active.
         ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-        if (FrameworkActivationService.activateOnce(verificationHandler)) {
+        if (FrameworkActivator.activateEagerly(verificationHandler)) {
             context.addStep(verificationHandler, Stage.VERIFY);
         }
 
