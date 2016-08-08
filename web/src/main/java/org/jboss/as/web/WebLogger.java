@@ -91,7 +91,7 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 18203, value = "Error instantiating container component: %s")
     void componentInstanceCreationFailed(String className, @Cause Throwable cause);
 
-    @LogMessage(level = WARN)
+    @LogMessage(level = INFO)
     @Message(id = 18204, value = "Clustering not supported, falling back to non-clustered session manager")
     void clusteringNotSupported();
 
