@@ -215,6 +215,9 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             }
             resource.setSecurityRoleReferences(roleRefs);
         }
+        if (roleGroup == null) {
+            return false;
+        }
 
         Map<String, Set<String>> previousRolesAssociationMap = null;
         try {
