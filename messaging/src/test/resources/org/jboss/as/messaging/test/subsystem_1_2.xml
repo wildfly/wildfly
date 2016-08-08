@@ -19,7 +19,7 @@
             <page-max-concurrent-io>10</page-max-concurrent-io>
             <paging-directory path="test" relative-to="test" />
             <bindings-directory path="test" relative-to="test" />
-            <journal-directory path="test" relative-to="test" />
+            <journal-directory path="${my.journal.dir}" relative-to="test" />
             <large-messages-directory path="test" relative-to="test" />
             <connectors>
                <connector name="myconnector">
