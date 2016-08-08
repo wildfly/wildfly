@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -120,8 +121,8 @@ public interface UndertowLogger extends BasicLogger {
     void invalidRedirectURI(@Cause Throwable cause);
 
     @LogMessage(level = INFO)
-    @Message(id = 14, value = "Creating file handler for path %s")
-    void creatingFileHandler(String path);
+    @Message(id = 14, value = "Creating file handler for path '%s' with options [directory-listing: '%s', follow-symlink: '%s', case-sensitive: '%s', safe-symlink-paths: '%s']")
+    void creatingFileHandler(String path, boolean directoryListing, boolean followSymlink, boolean caseSensitive, List<String> safePaths);
 
     // @LogMessage(level = TRACE)
     // @Message(id = 15, value = "registering handler %s under path '%s'")

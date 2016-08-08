@@ -65,14 +65,26 @@ public class Host implements Service<Host> {
     private final List<InjectedValue<FilterRef>> filters = new CopyOnWriteArrayList<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
-
-    protected Host(String name, List<String> aliases, String defaultWebModule) {
+    private final DefaultResponseCodeHandler defaultHandler;
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
+        this.defaultHandler = new DefaultResponseCodeHandler(defaultResponseCode);
+        this.setupDefaultResponseCodeHandler();
+    }
+
+    protected Host(final String name, final List<String> aliases, final String defaultWebModule ) {
+        this.name = name;
+        this.defaultWebModule = defaultWebModule;
+        Set<String> hosts = new HashSet<>(aliases.size() + 1);
+        hosts.add(name);
+        hosts.addAll(aliases);
+        this.allAliases = Collections.unmodifiableSet(hosts);
+        this.defaultHandler = null;
     }
 
     private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -184,6 +196,9 @@ public class Host implements Service<Host> {
 
     public void unregisterHandler(String path) {
         pathHandler.removePrefixPath(path);
+        if(path.equals("/")){
+            this.setupDefaultResponseCodeHandler();
+        }
     }
 
     /**
@@ -207,6 +222,12 @@ public class Host implements Service<Host> {
 
     public Map<String, AuthenticationMechanism> getAdditionalAuthenticationMechanisms() {
         return new LinkedHashMap<>(additionalAuthenticationMechanisms);
+    }
+
+    protected void setupDefaultResponseCodeHandler(){
+        if(this.defaultHandler != null){
+            this.registerHandler("/", this.defaultHandler);
+        }
     }
 
     private static final class OptionsHandler implements HttpHandler {
