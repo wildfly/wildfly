@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC
+   "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+   "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+    <description>Security Tests Using FORM Authentication</description>
+    
+    <!-- ### Servlets -->
+    <servlet>
+        <servlet-name>SecureServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.web.formauth.SecureServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SecuredPostServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.web.formauth.SecuredPostServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.web.formauth.LogoutServlet</servlet-class>
+    </servlet>
+
+    <!-- The servlet and jsp page mappings -->
+    <servlet-mapping>
+        <servlet-name>SecureServlet</servlet-name>
+        <url-pattern>/restricted/SecuredServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SecuredPostServlet</servlet-name>
+        <url-pattern>/restricted/SecuredPostServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/Logout</url-pattern>
+    </servlet-mapping>
+
+    <!-- The Welcome File List -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+    <!-- ### Security -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Restricted</web-resource-name>
+            <description>Declarative security tests</description>
+            <url-pattern>/restricted/*</url-pattern>
+            <http-method>HEAD</http-method>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>Only authenticated users can access secure content</description>
+            <role-name>AuthorizedUser</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+            <description>no description</description>
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/restricted/login.html</form-login-page>
+            <form-error-page>/restricted/errors.jsp</form-error-page>
+        </form-login-config>
+    </login-config>
+    
+    <security-role>
+        <description>An AuthorizedUser is one with a valid username and password</description>
+        <role-name>AuthorizedUser</role-name>
+    </security-role>
+</web-app>
