@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:1.1">
  <resource-adapters>
   <resource-adapter>
    <archive>ear_packaged.ear#ear_packaged.rar</archive>
