@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd">
+
+    <servlet>
+        <servlet-name>ServletClient</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.ws.serviceref.ServletClient</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ServletClient</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    
+    <service-ref>
+        <service-ref-name>service3</service-ref-name>
+        <service-interface>javax.xml.ws.Service</service-interface>
+        <wsdl-file>WEB-INF/wsdl/TestService.wsdl</wsdl-file>
+        <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
+    </service-ref>
+
+    <service-ref>    
+        <service-ref-name>service4</service-ref-name>
+        <service-interface>org.jboss.as.test.integration.ws.serviceref.EndpointService</service-interface>
+        <wsdl-file>WEB-INF/wsdl/TestService.wsdl</wsdl-file>
+        <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
+    </service-ref>
+</web-app>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jboss-web>
+    <service-ref>
+        <service-ref-name>service5</service-ref-name>
+        <wsdl-override>WEB-INF/wsdl/TestService.wsdl</wsdl-override>
+        <service-qname>{http://www.openuri.org/2004/04/HelloWorld}EndpointService</service-qname>
+    </service-ref>
+</jboss-web>
