@@ -1,0 +1,13 @@
+dn: ou=People,dc=jboss,dc=com
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=referraluser,ou=People,dc=jboss,dc=com
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: referraluser
+cn: Referral User
+sn: User
+userPassword: password123

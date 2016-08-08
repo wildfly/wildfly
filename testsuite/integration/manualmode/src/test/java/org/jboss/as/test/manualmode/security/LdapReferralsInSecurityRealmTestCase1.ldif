@@ -1,0 +1,20 @@
+dn: ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=jduke,ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: jduke
+cn: Java Duke
+sn: Duke
+userPassword: password123
+
+dn: ou=RemoteLdap,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RemoteLdap
+ref: ldap://${hostname}:${ldapPort2}/dc=jboss,dc=com
