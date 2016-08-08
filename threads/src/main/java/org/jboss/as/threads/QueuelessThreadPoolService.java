@@ -126,6 +126,10 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
         return executor.getRejectedCount();
     }
 
+    public int getQueueSize() {
+        return executor.getQueueSize();
+    }
+
     TimeUnit getKeepAliveUnit() {
         return keepAlive == null ? TimeSpec.DEFAULT_KEEPALIVE.getUnit() : keepAlive.getUnit();
     }

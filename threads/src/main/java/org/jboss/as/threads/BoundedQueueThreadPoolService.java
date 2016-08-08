@@ -148,4 +148,8 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
         final ManagedQueueExecutorService executor = getValue();
         return executor.getRejectedCount();
     }
+    public int getQueueSize() {
+        final ManagedQueueExecutorService executor = getValue();
+        return executor.getQueueSize();
+    }
 }

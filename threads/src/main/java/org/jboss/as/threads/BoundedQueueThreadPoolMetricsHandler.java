@@ -39,8 +39,9 @@ import org.jboss.msc.service.ServiceName;
  */
 public class BoundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHandler {
 
-    public static final List<AttributeDefinition> METRICS =
-            Arrays.asList(PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.REJECTED_COUNT);
+    public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.CURRENT_THREAD_COUNT,
+            PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.REJECTED_COUNT,
+            PoolAttributeDefinitions.QUEUE_SIZE);
 
     public BoundedQueueThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
         super(METRICS, serviceNameBase);
@@ -56,6 +57,8 @@ public class BoundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHandl
             context.getResult().set(bounded.getLargestThreadCount());
         } else if (attributeName.equals(CommonAttributes.REJECTED_COUNT)) {
             context.getResult().set(bounded.getRejectedCount());
+        } else if (attributeName.equals(CommonAttributes.QUEUE_SIZE)) {
+            context.getResult().set(bounded.getQueueSize());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
             throw ThreadsMessages.MESSAGES.unsupportedBoundedQueueThreadPoolMetric(attributeName);

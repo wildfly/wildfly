@@ -48,7 +48,8 @@ class ThreadPoolResourceDescriptionResolver extends StandardResourceDescriptionR
                 PoolAttributeDefinitions.MAX_THREADS.getName(), PoolAttributeDefinitions.QUEUE_LENGTH.getName(),
                 PoolAttributeDefinitions.THREAD_FACTORY.getName(), PoolAttributeDefinitions.ACTIVE_COUNT.getName(),
                 PoolAttributeDefinitions.COMPLETED_TASK_COUNT.getName(), PoolAttributeDefinitions.CURRENT_THREAD_COUNT.getName(),
-                PoolAttributeDefinitions.LARGEST_THREAD_COUNT.getName(), PoolAttributeDefinitions.TASK_COUNT.getName()));
+                PoolAttributeDefinitions.LARGEST_THREAD_COUNT.getName(), PoolAttributeDefinitions.TASK_COUNT.getName(),
+                PoolAttributeDefinitions.QUEUE_SIZE.getName()));
 
         // note we don't include REJECTED_COUNT as it has a different definition in different resources
     }
