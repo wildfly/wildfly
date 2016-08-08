@@ -191,15 +191,35 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    final EEApplicationClasses applicationClasses = context.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-                    InterceptorClassDescription interceptorConfig = ComponentDescription.mergeInterceptorConfig(configuration.getComponentClass(), applicationClasses.getClassByName(description.getComponentClassName()), description, MetadataCompleteMarker.isMetadataComplete(context.getDeploymentUnit()));
 
-                    configuration.addPostConstructInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPostConstruct(), false), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
-                    configuration.addPreDestroyInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPreDestroy(), false), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                    if (!description.isIgnoreLifecycleInterceptors()) {
 
-                    if (description.isPassivationApplicable()) {
-                        configuration.addPrePassivateInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPrePassivate(), false), InterceptorOrder.ComponentPassivation.TRANSACTION_INTERCEPTOR);
-                        configuration.addPostActivateInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPostActivate(), false), InterceptorOrder.ComponentPassivation.TRANSACTION_INTERCEPTOR);
+                        final EEApplicationClasses applicationClasses = context.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+                        InterceptorClassDescription interceptorConfig = ComponentDescription.mergeInterceptorConfig(configuration.getComponentClass(), applicationClasses.getClassByName(description.getComponentClassName()), description, MetadataCompleteMarker.isMetadataComplete(context.getDeploymentUnit()));
+
+                        MethodIdentifier postConstructMethod = interceptorConfig.getPostConstruct();
+                        if (postConstructMethod != null) {
+                            configuration.addPostConstructInterceptor(new LifecycleCMTTxInterceptor.Factory(postConstructMethod, false), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                        }
+
+                        MethodIdentifier preDestroyMethod = interceptorConfig.getPreDestroy();
+                        if (preDestroyMethod != null) {
+                            configuration.addPreDestroyInterceptor(new LifecycleCMTTxInterceptor.Factory(preDestroyMethod, false), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                        }
+
+                        if (description.isPassivationApplicable()) {
+
+                            MethodIdentifier prePassivateMethod = interceptorConfig.getPrePassivate();
+                            if (prePassivateMethod != null) {
+                                configuration.addPrePassivateInterceptor(new LifecycleCMTTxInterceptor.Factory(prePassivateMethod, false), InterceptorOrder.ComponentPassivation.TRANSACTION_INTERCEPTOR);
+                            }
+
+                            MethodIdentifier postActivateMethod = interceptorConfig.getPostActivate();
+                            if (postActivateMethod != null) {
+                                configuration.addPostActivateInterceptor(new LifecycleCMTTxInterceptor.Factory(postActivateMethod, false), InterceptorOrder.ComponentPassivation.TRANSACTION_INTERCEPTOR);
+                            }
+                        }
+
                     }
                 }
             });
