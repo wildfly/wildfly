@@ -65,7 +65,7 @@
             <!-- Remote JPDA debugging for a specific server
             <jvm name="default">
               <jvm-options>
-                <option value="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"/>
+                <option value="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"/>
               </jvm-options>
            </jvm>
            -->

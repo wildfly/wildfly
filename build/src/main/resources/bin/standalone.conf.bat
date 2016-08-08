@@ -62,10 +62,10 @@ rem # Set the default configuration file to use if -c or --server-config are not
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.server.default.config=standalone.xml"
 
 rem # Sample JPDA settings for remote socket debugging
-rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
+rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 
 rem # Sample JPDA settings for shared memory debugging
-rem set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n"
+rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
 
 rem # Use JBoss Modules lockless mode
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"

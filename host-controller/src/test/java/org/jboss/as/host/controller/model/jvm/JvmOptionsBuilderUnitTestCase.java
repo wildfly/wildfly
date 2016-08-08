@@ -71,7 +71,7 @@ public class JvmOptionsBuilderUnitTestCase {
     private void testDebugOptionsNotEnabled(JvmType type) {
         JvmElement element = JvmElementTestUtils.create(type);
         JvmElementTestUtils.setDebugEnabled(element, false);
-        JvmElementTestUtils.setDebugOptions(element, "-Xrunjdwp:transport=dt_socket,server=y,suspend=n");
+        JvmElementTestUtils.setDebugOptions(element, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n");
 
         List<String> command = new ArrayList<String>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
@@ -92,13 +92,13 @@ public class JvmOptionsBuilderUnitTestCase {
     private void testDebugOptionsAndEnabled(JvmType type) {
         JvmElement element = JvmElementTestUtils.create(type);
         JvmElementTestUtils.setDebugEnabled(element, true);
-        JvmElementTestUtils.setDebugOptions(element, "-Xrunjdwp:transport=dt_socket,server=y,suspend=n");
+        JvmElementTestUtils.setDebugOptions(element, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n");
 
         List<String> command = new ArrayList<String>();
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(1, command.size());
-        Assert.assertTrue(command.contains("-Xrunjdwp:transport=dt_socket,server=y,suspend=n"));
+        Assert.assertTrue(command.contains("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n"));
     }
 
     @Test
@@ -273,7 +273,7 @@ public class JvmOptionsBuilderUnitTestCase {
 
         //Main schema
         JvmElementTestUtils.setDebugEnabled(element, true);
-        JvmElementTestUtils.setDebugOptions(element, "-Xrunjdwp:transport=dt_socket,server=y,suspend=n");
+        JvmElementTestUtils.setDebugOptions(element, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n");
         JvmElementTestUtils.setHeapSize(element, "28M");
         JvmElementTestUtils.setMaxHeap(element, "96M");
         JvmElementTestUtils.setPermgenSize(element, "32M");
@@ -285,7 +285,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmElementTestUtils.addJvmOption(element, "-Xblah1=yes");
         JvmElementTestUtils.addJvmOption(element, "-Xblah2=no");
         //Ignored options
-        JvmElementTestUtils.addJvmOption(element, "-Xrunjdwp:ignoreme");
+        JvmElementTestUtils.addJvmOption(element, "-agentlib:jdwp=ignoreme");
         JvmElementTestUtils.addJvmOption(element, "-Xms1024M");
         JvmElementTestUtils.addJvmOption(element, "-Xmx1024M");
         JvmElementTestUtils.addJvmOption(element, "-XX:PermSize=1024M");
@@ -298,7 +298,7 @@ public class JvmOptionsBuilderUnitTestCase {
         JvmOptionsBuilderFactory.getInstance().addOptions(element, command);
 
         Assert.assertEquals(type == JvmType.SUN ? 10 : 8, command.size());
-        Assert.assertTrue(command.contains("-Xrunjdwp:transport=dt_socket,server=y,suspend=n"));
+        Assert.assertTrue(command.contains("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n"));
         Assert.assertTrue(command.contains("-Xms28M"));
         Assert.assertTrue(command.contains("-Xmx96M"));
         if (type == JvmType.SUN) {
