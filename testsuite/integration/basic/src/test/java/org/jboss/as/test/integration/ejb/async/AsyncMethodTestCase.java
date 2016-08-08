@@ -283,6 +283,18 @@ public class AsyncMethodTestCase {
                 ARCHIVE_NAME + "/" + AsyncBeanRemote.class.getSimpleName() + "!" + AsyncBeanRemoteInterface.class.getName());
         bean.asyncMethod();
     }
+    
+    /**
+     * Remote async return future call
+     */
+    @Test
+    @RunAsClient
+    public void testRemoteAsynchronousReturnFutureCall() throws Exception {
+        AsyncBeanRemoteInterface bean = (AsyncBeanRemoteInterface) remoteContext.lookup(
+                ARCHIVE_NAME + "/" + AsyncBeanRemote.class.getSimpleName() + "!" + AsyncBeanRemoteInterface.class.getName());
+        Future<Boolean> future = bean.futureMethod();
+        Assert.assertTrue("Supposing that future.get() method returns TRUE but it returned FALSE", future.get());
+    }
 
     /**
      * Remote async return future call
