@@ -55,6 +55,7 @@ import org.jboss.security.SubjectFactory;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
