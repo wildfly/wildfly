@@ -22,7 +22,11 @@
 package org.jboss.as.test.clustering.cluster.ejb3.deployment;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -32,7 +36,7 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import org.jboss.arquillian.container.test.api.*;
+
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
@@ -40,42 +44,29 @@ import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * The purpose of this testcase is to ensure that a EJB marked as clustered, either via annotation or deployment descriptor,
- * deploys successfully. This test does <b>not</b> check any clustering semantics (like failover, replication etc...)
+ * deploys successfully. This test does <b>not</b> check any clustering semantics (like failover, replication, etc...)
  *
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-public class ClusteredBeanDeploymentTestCase {
+public class ClusteredBeanDeploymentTestCase extends ClusterAbstractTestCase {
 
     private static final String DD_BASED_MODULE_NAME = "clustered-ejb-deployment";
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive createDDBasedDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, DD_BASED_MODULE_NAME + ".jar");
         ejbJar.addClasses(DDBasedClusteredBean.class, ClusteredBean.class);
+        ejbJar.addClass(ClusterAbstractTestCase.class);
         ejbJar.addAsManifestResource("cluster/ejb3/deployment/jboss-ejb3.xml", "jboss-ejb3.xml");
         return ejbJar;
     }
 
-    @Test
-    @InSequence(-1)
-    @RunAsClient
-    public void testStartContainers() {
-        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
-        NodeUtil.start(controller, CONTAINER_2);
-    }
-
-    @Test
-    @InSequence(1)
-    @RunAsClient
-    public void testStopContainers() {
-        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
-        NodeUtil.stop(controller, CONTAINER_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENT_1);
     }
 
     /**

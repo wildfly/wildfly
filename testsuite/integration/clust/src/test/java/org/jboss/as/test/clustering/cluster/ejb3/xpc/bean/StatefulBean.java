@@ -34,6 +34,7 @@ import javax.sql.DataSource;
 import org.hibernate.Session;
 import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.jboss.ejb3.annotation.Clustered;
+import org.jboss.logging.Logger;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -46,6 +47,8 @@ import java.util.HashMap;
 @javax.ejb.Stateful(name = "StatefulBean")
 
 public class StatefulBean implements Stateful {
+
+    private static final Logger log = Logger.getLogger(StatefulBean.class);
 
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
     EntityManager em;
@@ -103,14 +106,14 @@ public class StatefulBean implements Stateful {
     }
 
     @Override
-        @TransactionAttribute(TransactionAttributeType.REQUIRED)
-        public void deleteEmployee(int id) {
-            Employee employee = em.find(Employee.class, id, LockModeType.NONE);
-            em.remove(employee);
-            logStats("deleteEmployee");
-            version = "deletedEmployee";
-            valueBag.put("version",version);
-        }
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void deleteEmployee(int id) {
+        Employee employee = em.find(Employee.class, id, LockModeType.NONE);
+        em.remove(employee);
+        logStats("deleteEmployee");
+        version = "deletedEmployee";
+        valueBag.put("version", version);
+    }
 
 
     @Override
@@ -132,9 +135,9 @@ public class StatefulBean implements Stateful {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public void echo(String message) {
-        System.out.println("echo entered for " + message);
+        log.info("echo entered for " + message);
         logStats("echo " + message);
-        System.out.println("echo completed for " + message);
+        log.info("echo completed for " + message);
     }
 
 
@@ -166,14 +169,14 @@ public class StatefulBean implements Stateful {
 
     private void logStats(String methodName) {
         Session session = em.unwrap(Session.class);
-        System.out.println(methodName + "(version="+version+", HashMap version="+valueBag.get("version")+") logging statistics for session = " + session);
+        log.info(methodName + "(version="+version+", HashMap version="+valueBag.get("version")+") logging statistics for session = " + session);
         session.getSessionFactory().getStatistics().setStatisticsEnabled(true);
         session.getSessionFactory().getStatistics().logSummary();
         String entityRegionNames[] =  session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
         for (String name: entityRegionNames) {
-            System.out.println("cache entity region name = " + name);
+            log.info("cache entity region name = " + name);
             SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
-            System.out.println("2lc for " + name+ ": " + stats.toString());
+            log.info("2lc for " + name+ ": " + stats.toString());
 
         }
         // we will want to return the SecondLevelCacheStatistics for Employee

@@ -47,6 +47,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -60,6 +61,7 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_REPLICATE;
@@ -72,52 +74,34 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredWebSimpleTestCase {
+public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
 
     private static final int REQUEST_DURATION = 10000;
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
-
-    @BeforeClass
-    public static void printSysProps() {
-        Properties sysprops = System.getProperties();
-        System.out.println("System properties:\n" + sysprops);
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
-        war.addClass(SimpleServlet.class);
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        System.out.println(war.toString(true));
-        return war;
+        return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
+        return getDeployment();
+    }
+
+    private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 
-    @Test
-    @InSequence(-1)
-    public void testStartContainers() {
-        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
-        NodeUtil.start(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
-    }
-
-    @Test
-    @InSequence(1)
-    public void testStopContainers() {
-        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
-        NodeUtil.stop(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
     }
 
     @Test
@@ -127,7 +111,7 @@ public class ClusteredWebSimpleTestCase {
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
         String url = baseURL.toString();
-        System.out.println("URL = " + url);
+        log.info("URL = " + url);
 
         try {
             HttpResponse response = client.execute(new HttpGet(url + "simple"));
@@ -233,10 +217,10 @@ public class ClusteredWebSimpleTestCase {
 
         if (undeployOnly) {
             // Undeploy the app only.
-            deployer.undeploy(DEPLOYMENT_1);
+            undeploy(DEPLOYMENT_1);
         } else {
             // Shutdown server.
-            controller.stop(CONTAINER_1);
+            stop(CONTAINER_1);
         }
 
         // Get result of long request
@@ -262,10 +246,10 @@ public class ClusteredWebSimpleTestCase {
         // Cleanup after test.
         if (undeployOnly) {
             // Redeploy the app only.
-            deployer.deploy(DEPLOYMENT_1);
+            deploy(DEPLOYMENT_1);
         } else {
             // Startup server.
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
         }
     }
 

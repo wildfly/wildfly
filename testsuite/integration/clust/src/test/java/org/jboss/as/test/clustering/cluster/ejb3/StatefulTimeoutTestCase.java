@@ -27,21 +27,23 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
 
-import org.jboss.arquillian.container.test.api.*;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * Tests that the stateful timeout annotation works
@@ -49,20 +51,12 @@ import org.jboss.as.test.clustering.NodeUtil;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class StatefulTimeoutTestCase {
+public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
 
     private static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
+
     @Inject
     private UserTransaction userTransaction;
-
-    @BeforeClass
-    public static void printSysProps() {
-        System.out.println("System properties:\n" + System.getProperties());
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
@@ -73,15 +67,13 @@ public class StatefulTimeoutTestCase {
     @Deployment(name = DEPLOYMENT_2, managed = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
-        jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
-        return jar;
+        return createJar();
     }
 
     private static Archive<?> createJar() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(StatefulTimeoutTestCase.class.getPackage());
+        jar.addClass(ClusterAbstractTestCase.class);
         jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
         return jar;
     }
@@ -90,18 +82,16 @@ public class StatefulTimeoutTestCase {
         return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 
+    /**
+     * Ensure the containers are running.
+     */
+    @Override
     @Test
     @InSequence(-1)
-    public void testStartContainers() {
-        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
-        NodeUtil.start(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
-    }
-
-    @Test
-    @InSequence(1)
-    public void testStopContainers() {
-        NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
-        NodeUtil.stop(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
+    @RunAsClient
+    public void testSetup() {
+        start(CONTAINERS);
+        deploy(DEPLOYMENTS);
     }
 
     @Test

@@ -35,8 +35,10 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.junit.Ignore;
@@ -45,9 +47,9 @@ import org.junit.runner.RunWith;
 
 /**
  * HTTP Session passivation tests.
- *
+ * <p/>
  * Tests: max-idle, min-idle, max-active-sessions
- *
+ * <p/>
  * To be extended with: passivation around fail-over events (restart, shutdown, deploy)
  *
  * @author Radoslav Husar
@@ -55,27 +57,22 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore // AS7-5279
-public abstract class SessionPassivationAbstractCase {
+public abstract class SessionPassivationAbstractCase extends ClusterAbstractTestCase {
 
     // Sync these with jboss-web.xml
     private int MAX_ACTIVE_SESSIONS = 20;
     private int PASSIVATION_MIN_IDLE_TIME = 5;
     private int PASSIVATION_MAX_IDLE_TIME = 10;
-    // ARQ 
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
 
-    @Test
-    @InSequence(-1)
-    public void testStartContainers() {
-        NodeUtil.start(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
 
+    @Override
+    protected void setUp() {
         // By forming a cluster it is not possible to have equivalence between 'session was passivated' and the
         // fact 'session was serialized'. A CacheListener for passivation event will be needed. --Rado
-        // NodeUtil.start(controller, deployer, CONTAINER_2, DEPLOYMENT_2);
+        stop(CONTAINER_2);
+
+        start(CONTAINER_1);
+        deploy(DEPLOYMENT_1);
     }
 
     /**
@@ -84,6 +81,7 @@ public abstract class SessionPassivationAbstractCase {
      * @throws Exception
      */
     @Test
+    @Ignore("https://issues.jboss.org/browse/AS7-5688")
     public void testSessionPassivationWithMaxIdleTime(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws Exception {
 
@@ -92,12 +90,14 @@ public abstract class SessionPassivationAbstractCase {
         try {
             // Setup the session
             HttpResponse response = ClusterHttpClientUtil.tryGet(client, baseURL1 + SimpleServlet.URL);
+            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertFalse("Session should not be serialized",
                     Boolean.valueOf(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
             response.getEntity().getContent().close();
 
             // Get the attribute set
             response = ClusterHttpClientUtil.tryGet(client, baseURL1 + SimpleServlet.URL);
+            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertFalse("Session still should not be serialized",
                     Boolean.valueOf(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
             response.getEntity().getContent().close();
@@ -107,11 +107,11 @@ public abstract class SessionPassivationAbstractCase {
             // default 10 seconds and processExpiresFrequency is 1 so kicks in every time.
             Thread.sleep((PASSIVATION_MAX_IDLE_TIME + 10) * 1000);
 
-            // Activate the session by requesti ng the attribute
+            // Activate the session by requesting the attribute
             response = ClusterHttpClientUtil.tryGet(client, baseURL1 + SimpleServlet.URL);
+            Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             Assert.assertTrue("Session should have activated and have been deserialized",
                     Boolean.valueOf(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
-            Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
         } finally {
             client.getConnectionManager().shutdown();

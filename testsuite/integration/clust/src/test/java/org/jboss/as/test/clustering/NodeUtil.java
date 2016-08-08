@@ -22,56 +22,102 @@
 package org.jboss.as.test.clustering;
 
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.logging.Logger;
 
 /**
- * Helper class to start and stop container including a deployment.
+ * Utility class to start and stop containers and/or deployments.
  *
  * @author Radoslav Husar
+ * @version Oct 2012
  */
 public final class NodeUtil {
 
-    private NodeUtil() {
+    private static final Logger log = Logger.getLogger(NodeUtil.class);
+
+    public static void deploy(Deployer deployer, String... deployments) {
+        for (int i = 0; i < deployments.length; i++) {
+            log.info("Deploying deployment=" + deployments[i]);
+            deployer.deploy(deployments[i]);
+        }
+    }
+
+    public static void undeploy(Deployer deployer, String... deployments) {
+        for (int i = 0; i < deployments.length; i++) {
+            log.info("Undeploying deployment=" + deployments[i]);
+            deployer.undeploy(deployments[i]);
+        }
     }
 
     public static void start(ContainerController controller, Deployer deployer, String container, String deployment) {
         try {
-            System.out.println(new Date() + "starting deployment=" + deployment + ", container=" + container);
+            log.info("Starting deployment=" + deployment + ", container=" + container);
             controller.start(container);
             deployer.deploy(deployment);
-            System.out.println(new Date() + "started deployment=" + deployment + ", container=" + container);
+            log.info("Started deployment=" + deployment + ", container=" + container);
         } catch (Throwable e) {
-            e.printStackTrace(System.err);
+            log.error(e);
+        }
+    }
+
+    public static void start(ContainerController controller, String[] containers) {
+        // TODO do this in parallel.
+        for (int i = 0; i < containers.length; i++) {
+            try {
+                log.info("Starting deployment=NONE, container=" + containers[i]);
+                controller.start(containers[i]);
+            } catch (Throwable e) {
+                log.error(e);
+            }
         }
     }
 
     public static void start(ContainerController controller, String container) {
         try {
-            System.out.println(new Date() + "starting deployment=NONE, container=" + container);
+            log.info("Starting deployment=NONE, container=" + container);
             controller.start(container);
         } catch (Throwable e) {
-            e.printStackTrace(System.err);
+            log.error(e);
+        }
+    }
+
+    public static void stop(ContainerController controller, String[] containers) {
+        for (int i = 0; i < containers.length; i++) {
+            try {
+                log.info("Stopping container=" + containers[i]);
+                controller.stop(containers[i]);
+                log.info("Stopped container=" + containers[i]);
+            } catch (Throwable e) {
+                log.error(e);
+            }
         }
     }
 
     public static void stop(ContainerController controller, Deployer deployer, String container, String deployment) {
         try {
-            System.out.println(new Date() + "stopping deployment=" + deployment + ", container=" + container);
+            log.info("Stopping deployment=" + deployment + ", container=" + container);
             deployer.undeploy(deployment);
             controller.stop(container);
-            System.out.println(new Date() + "stopped deployment=" + deployment + ", container=" + container);
+            log.info("Stopped deployment=" + deployment + ", container=" + container);
         } catch (Throwable e) {
-            e.printStackTrace(System.err);
+            log.error(e);
         }
     }
 
     public static void stop(ContainerController controller, String container) {
         try {
             controller.stop(container);
-            System.out.println(new Date() + "stopped deployment=NONE, container=" + container);
+            log.info("Stopped deployment=NONE, container=" + container);
         } catch (Throwable e) {
-            e.printStackTrace(System.err);
+            log.error(e);
         }
+    }
+
+    private NodeUtil() {
     }
 }
