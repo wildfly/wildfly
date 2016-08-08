@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+        version="3.0">
+
+   <enterprise-beans>
+
+   		<session>
+            <ejb-name>Ejb3DescriptorHandlerTestBean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ee.injection.primitivehandling.Ejb3DescriptorHandlerTestBean</ejb-class>
+      	</session>
+
+
+   </enterprise-beans>
+
+
+
+</ejb-jar>
