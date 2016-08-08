@@ -100,7 +100,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(JobRepositoryType.IN_MEMORY.toString()))
             .setValidator(new EnumValidator<>(JobRepositoryType.class, true, true))
             .setRestartJVM()
-            .setDeprecated(ModelVersion.create(1, 0, 0))
+            .setDeprecated(ModelVersion.create(1, 0, 0), false)
             .build();
 
     public static final BatchSubsystemDefinition INSTANCE = new BatchSubsystemDefinition();
