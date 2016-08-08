@@ -21,19 +21,16 @@
  */
 package org.jboss.as.clustering.naming;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ManagedReferenceInjector;
-import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Builds a ManagedReferenceFactory JNDI binding.
@@ -64,15 +61,10 @@ public class BinderServiceBuilder<T> implements Builder<ManagedReferenceFactory>
 
     @Override
     public ServiceBuilder<ManagedReferenceFactory> build(ServiceTarget target) {
-        String name = this.binding.getBindName();
-        BinderService binder = new BinderService(name);
-        ServiceBuilder<ManagedReferenceFactory> builder = target.addService(this.getServiceName(), binder)
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(name))
-                .addDependency(this.targetServiceName, this.targetClass, new ManagedReferenceInjector<T>(binder.getManagedObjectInjector()))
-                .addDependency(this.binding.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-        ;
+        final org.jboss.as.naming.service.BinderServiceBuilder builder = new org.jboss.as.naming.service.BinderServiceBuilder(binding, target, targetServiceName)
+                .addAliases(binding.alias(ContextNames.JAVA_CONTEXT_SERVICE_NAME));
         for (ContextNames.BindInfo alias : this.aliases) {
-            builder.addAliases(alias.getBinderServiceName(), ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(alias.getBindName()));
+            builder.addAliases(alias, alias.alias(ContextNames.JAVA_CONTEXT_SERVICE_NAME));
         }
         return builder.setInitialMode(ServiceController.Mode.PASSIVE);
     }

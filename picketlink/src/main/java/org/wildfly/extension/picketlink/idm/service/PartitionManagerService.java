@@ -22,23 +22,16 @@
 
 package org.wildfly.extension.picketlink.idm.service;
 
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
-import org.jboss.as.naming.service.BinderService;
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
+import org.jboss.as.naming.service.BinderServiceBuilder;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.picketlink.idm.PartitionManager;
 import org.picketlink.idm.config.IdentityConfigurationBuilder;
 import org.picketlink.idm.internal.DefaultPartitionManager;
@@ -93,28 +86,11 @@ public class PartitionManagerService implements Service<PartitionManager> {
         unpublishPartitionManager(context);
     }
     private void publishPartitionManager(StartContext context) {
-        BindInfo bindInfo = createPartitionManagerBindInfo();
-        ServiceName serviceName = bindInfo.getBinderServiceName();
-        final BinderService binderService = new BinderService(serviceName.getCanonicalName());
-        final ServiceBuilder<ManagedReferenceFactory> builder = context.getController().getServiceContainer()
-                                                                .addService(serviceName, binderService)
-                                                                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(this.jndiName));
-
-        builder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
-        builder.addDependency(createServiceName(this.alias), PartitionManager.class, new Injector<PartitionManager>() {
-            @Override
-            public void inject(final PartitionManager value) throws InjectionException {
-                binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
-            }
-
-            @Override
-            public void uninject() {
-                binderService.getManagedObjectInjector().uninject();
-            }
-        });
-
-        builder.setInitialMode(Mode.PASSIVE).install();
-
+        final BindInfo bindInfo = createPartitionManagerBindInfo();
+        new BinderServiceBuilder(bindInfo, context.getController().getServiceContainer(), createServiceName(this.alias))
+                .addAliases(bindInfo.alias(ContextNames.JAVA_CONTEXT_SERVICE_NAME))
+                .setInitialMode(Mode.PASSIVE)
+                .install();
         ROOT_LOGGER.boundToJndi("PartitionManager " + this.alias, bindInfo.getAbsoluteJndiName());
     }
 
