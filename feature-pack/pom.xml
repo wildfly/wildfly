@@ -1967,12 +1967,8 @@
             <artifactId>wildfly-client-all</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-ejb-client-bom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jms-client-bom</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
