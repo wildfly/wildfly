@@ -89,7 +89,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             Connector cmd = mdr.getValue().getResourceAdapter(deployment);
             File root = mdr.getValue().getRoot(deployment);
 
-            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
+            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(ijmd, cmd);
 
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
                 raName, root, module.getClassLoader(), cmd, raxml, null, deploymentServiceName);
