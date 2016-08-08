@@ -70,7 +70,7 @@ public class CodecSessionConfig implements SessionConfig {
     }
 
     @Override
-    public String rewriteUrl(String originalUrl, String sessionId) {
-        return this.config.rewriteUrl(originalUrl, this.codec.encode(sessionId));
+    public String rewriteUrl(HttpServerExchange exchange, String originalUrl, String sessionId) {
+        return this.config.rewriteUrl(exchange, originalUrl, this.codec.encode(sessionId));
     }
 }
