@@ -37,6 +37,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.listener.TransactionListenerRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.omg.CORBA.ORB;
@@ -58,6 +59,8 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
     private final InjectedValue<UserTransactionRegistry> userTransactionRegistry = new InjectedValue<UserTransactionRegistry>();
+    private final InjectedValue<TransactionListenerRegistry> transactionListenerRegistry = new InjectedValue<>();
+
     private final InjectedValue<JTAEnvironmentBean> jtaEnvironmentBean = new InjectedValue<>();
 
 
@@ -175,6 +178,10 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
     public InjectedValue<UserTransactionRegistry> getUserTransactionRegistry() {
         return userTransactionRegistry;
+    }
+
+    public InjectedValue<TransactionListenerRegistry> getTransactionListenerRegistry() {
+        return transactionListenerRegistry;
     }
 
     public Injector<JTAEnvironmentBean> getJTAEnvironmentBeanInjector() {
