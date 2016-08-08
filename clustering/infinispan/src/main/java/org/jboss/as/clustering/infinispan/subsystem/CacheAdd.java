@@ -204,7 +204,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CacheDependencies cacheDependencies = new CacheDependencies();
 
         // process cache configuration ModelNode describing overrides to defaults
-        processModelNode(context, containerName, cacheModel, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
+        processModelNode(context, containerName, containerModel, cacheModel, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
 
         // get container Model to pick up the value of the default cache of the container
         // AS7-3488 make default-cache no required attribute
@@ -380,14 +380,20 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     /**
      * Create a Configuration object initialized from the operation ModelNode
      *
-     * @param containerName the name of the cache container
-     * @param cache         ModelNode representing cache configuration
-     * @param builder       ConfigurationBuilder object to add data to
-     * @return initialised Configuration object
+     * @param containerName  the name of the cache container
+     * @param containerModel ModelNode representing cache container configuration
+     * @param cache          ModelNode representing cache configuration
+     * @param builder        {@link ConfigurationBuilder} object to add data to
      */
-    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
+    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
 
-        builder.jmxStatistics().enabled(CacheResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, cache).asBoolean());
+        if (cache.hasDefined(ModelKeys.STATISTICS_ENABLED)) {
+            // If the cache explicitly defines statistics-enabled, disregard cache container configuration for this cache
+            builder.jmxStatistics().enabled(CacheResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, cache).asBoolean());
+        } else {
+            // Otherwise default to cache container configuration
+            builder.jmxStatistics().enabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, containerModel).asBoolean());
+        }
 
         final Indexing indexing = Indexing.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cache).asString());
         final boolean batching = CacheResourceDefinition.BATCHING.resolveModelAttribute(context, cache).asBoolean();
