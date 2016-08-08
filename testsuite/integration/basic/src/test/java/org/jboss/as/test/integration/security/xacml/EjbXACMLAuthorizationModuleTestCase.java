@@ -44,7 +44,6 @@ import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,7 +83,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
     public void testNotAuthn() throws Exception {
         try {
             hello.sayHelloWorld();
-            fail("Access to sayHello() should be denied if not authenticated.");
+            fail("Access to sayHelloWorld() should be denied if not authenticated.");
         } catch (EJBAccessException e) {
             //OK
         }
@@ -96,7 +95,6 @@ public class EjbXACMLAuthorizationModuleTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8989")
     public void testAuthz() throws Exception {
         SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
         securityClient.setSimple("jduke", "theduke");
@@ -114,14 +112,13 @@ public class EjbXACMLAuthorizationModuleTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8989")
     public void testNotAuthz() throws Exception {
         SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
         securityClient.setSimple("JohnDoe", "jdoe");
         try {
             securityClient.login();
             hello.sayHelloWorld();
-            fail("Access to sayHello() should be denied for JohnDoe.");
+            fail("Access to sayHelloWorld() should be denied for JohnDoe.");
         } catch (EJBAccessException e) {
             //OK - expected
         } finally {
@@ -135,7 +132,6 @@ public class EjbXACMLAuthorizationModuleTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8989")
     public void testAuthenticationCache() throws Exception {
         try {
             hello.sayHelloWorld();
@@ -170,7 +166,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
                 .addAsResource(new StringAsset("jduke=TestRole,TestRole2\nJohnDoe=TestRole"), "roles.properties")
                 .addAsResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
                         XACMLTestUtils.TESTOBJECTS_CONFIG + "/jbossxacml-config.xml", "jbossxacml-config.xml")
-                .addAsManifestResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
+                .addAsResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
                         XACMLTestUtils.TESTOBJECTS_POLICIES + "/ejb-xacml-policy.xml", "xacml-policy.xml")
                 .addAsManifestResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
                         XACMLTestUtils.TESTOBJECTS_CONFIG + "/jboss-ejb3.xml", "jboss-ejb3.xml");
