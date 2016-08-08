@@ -312,7 +312,7 @@ public class LdapExtLoginModuleTestCase {
         }
     }
 
-    // Embedded classes ------------------------------------------------------
+    // Inner classes ------------------------------------------------------
 
     /**
      * This setup task sets truststore file.
@@ -350,7 +350,8 @@ public class LdapExtLoginModuleTestCase {
                                     .options(getCommonOptions()).putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")
                                     .putOption("java.naming.provider.url", "ldap://" + secondaryTestAddress + ":" + LDAP_PORT)
                                     .putOption("baseFilter", "(uid={0})").putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
-                                    .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn").build()) //
+                                    .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn")
+                                    .putOption("throwValidateError", "true").build()) //
                     .build();
             final SecurityDomain sd2 = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME_PREFIX + DEP2)
@@ -362,7 +363,7 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("rolesCtxDN", "ou=Roles,o=example2,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(cn={0})").putOption("roleAttributeID", "description")
                                     .putOption("roleAttributeIsDN", "true").putOption("roleNameAttributeID", "cn")
-                                    .putOption("roleRecursion", "0").build()) //
+                                    .putOption("roleRecursion", "0").putOption("throwValidateError", "true").build()) //
                     .build();
             final SecurityDomain sd3 = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME_PREFIX + DEP3)
@@ -375,7 +376,7 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("baseFilter", "(cn={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn")
-                                    .putOption("roleRecursion", "0").build()) //
+                                    .putOption("roleRecursion", "0").putOption("throwValidateError", "true").build()) //
                     .build();
             final SecurityDomain sd4 = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME_PREFIX + DEP4)
@@ -388,7 +389,7 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("baseFilter", "(cn={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example4,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn")
-                                    .putOption("roleRecursion", "1").build()) //
+                                    .putOption("roleRecursion", "1").putOption("throwValidateError", "true").build()) //
                     .build();
             return new SecurityDomain[] { sd1, sd2, sd3, sd4 };
         }
