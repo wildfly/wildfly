@@ -278,7 +278,8 @@ public class ServiceBasedNamingStore implements NamingStore {
     private Name convert(ServiceName serviceName) {
         String[] c = serviceName.toArray();
         CompositeName name = new CompositeName();
-        for (int i = 0; i < c.length; i++) {
+        int baseIndex = serviceNameBase.toArray().length;
+        for (int i = baseIndex; i < c.length; i++) {
             try {
                 name.add(c[i]);
             } catch (InvalidNameException e) {
