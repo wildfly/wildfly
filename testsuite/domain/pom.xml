@@ -241,6 +241,7 @@
                     <includes>
                          <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/*TestCase.java</include>
+                         <include>org/jboss/as/test/integration/domain/management/managementClient/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/suites/*TestSuite.java</include>
                     </includes>
                 </configuration>
