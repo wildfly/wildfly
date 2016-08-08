@@ -53,6 +53,8 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     private static WebArchive war;
     private static File warFile;
     private static final int TEST_PORT = 8081;
+    
+    private static final String[] serverGroups = new String[] {"main-server-group", "other-server-group", "test-server-group"};
 
     private static final String[] serverGroups = new String[] {"main-server-group", "other-server-group", "test-server-group"};
 
