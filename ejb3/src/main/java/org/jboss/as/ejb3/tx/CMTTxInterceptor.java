@@ -79,7 +79,7 @@ public class CMTTxInterceptor implements Interceptor {
      */
     protected void endTransaction(final TransactionManager tm, final Transaction tx) {
         try {
-            if (tx != tm.getTransaction()) {
+            if (! tx.equals(tm.getTransaction())) {
                 throw EjbLogger.ROOT_LOGGER.wrongTxOnThread(tx, tm.getTransaction());
             }
             final int txStatus = tx.getStatus();
