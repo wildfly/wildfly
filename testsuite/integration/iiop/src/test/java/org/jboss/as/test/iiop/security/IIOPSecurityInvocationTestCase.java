@@ -23,7 +23,6 @@
 package org.jboss.as.test.iiop.security;
 
 import java.io.IOException;
-import java.rmi.AccessException;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
