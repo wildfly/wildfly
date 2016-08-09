@@ -42,6 +42,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,6 +55,7 @@ import static org.junit.Assert.assertNotNull;
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5841 test for RA activation
  */
+@Ignore
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(AfterResourceCreationDeploymentTestCase.AfterResourceCreationDeploymentTestCaseSetup.class)

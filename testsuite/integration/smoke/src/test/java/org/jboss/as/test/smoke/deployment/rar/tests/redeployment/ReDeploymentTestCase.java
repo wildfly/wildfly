@@ -44,6 +44,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,6 +57,7 @@ import static org.junit.Assert.assertNotNull;
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5968 test for undeployment and re-deployment
  */
+@Ignore
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ReDeploymentTestCase.ReDeploymentTestCaseSetup.class)
