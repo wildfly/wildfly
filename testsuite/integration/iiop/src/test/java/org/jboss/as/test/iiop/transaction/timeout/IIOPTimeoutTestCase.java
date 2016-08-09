@@ -26,6 +26,8 @@ import java.rmi.RemoteException;
 
 import javax.ejb.NoSuchEJBException;
 import javax.naming.NamingException;
+import javax.transaction.TransactionRolledbackException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -153,7 +155,7 @@ public class IIOPTimeoutTestCase {
         } catch (Exception e) {
             // the exception is wrong, there should be javax.ejb.EJBException (or TransactionRolledbackException) here
             Assert.assertEquals("Expecting rollback happened and transaction rollback exception being thrown",
-                    java.lang.IllegalStateException.class, e.getClass());
+                    TransactionRolledbackException.class, e.getClass());
         }
 
         Assert.assertEquals("Synchronization after begin should be called", 1, checker.countSynchronizedBegin());
