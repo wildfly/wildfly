@@ -66,6 +66,7 @@ import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.web.WebExtension;
 import org.jboss.dmr.ModelNode;
@@ -319,6 +320,11 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         @Override
         protected ProcessType getProcessType() {
             return ProcessType.SELF_CONTAINED;
+        }
+
+        @Override
+        protected void setupController(ControllerInitializer controllerInitializer) {
+            controllerInitializer.addPath("jboss.controller.temp.dir", System.getProperty("java.io.tmpdir"), null);
         }
 
     }
