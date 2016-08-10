@@ -22,16 +22,20 @@
  */
 package org.wildfly.extension.undertow.deployment;
 
-import java.util.List;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 import org.apache.jasper.runtime.JspApplicationContextImpl;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
+import org.wildfly.extension.undertow.ImportedClassELResolver;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.jsp.JspApplicationContext;
+import javax.servlet.jsp.JspFactory;
+import java.util.List;
 
 /**
- * Listener that allows the expression factory to be wrapped
+ * Listener that sets up the {@link JspApplicationContext} with any wrapped EL expression factories and also
+ * setting up any relevant {@link javax.el.ELResolver}s
  *
  * @author Stuart Douglas
  */
@@ -41,9 +45,18 @@ public class JspInitializationListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(final ServletContextEvent sce) {
-        List<ExpressionFactoryWrapper> wrapper = (List<ExpressionFactoryWrapper>) sce.getServletContext().getAttribute(CONTEXT_KEY);
-        sce.getServletContext().setAttribute(JspApplicationContextImpl.class.getName(), new JspApplicationContextWrapper(JspApplicationContextImpl.getInstance(sce.getServletContext()), wrapper, sce.getServletContext()));
-
+        // if the servlet version is 3.1 or higher, setup a ELResolver which allows usage of static fields java.lang.*
+        final ServletContext servletContext = sce.getServletContext();
+        final JspApplicationContext jspApplicationContext = JspFactory.getDefaultFactory().getJspApplicationContext(servletContext);
+        if (servletContext.getEffectiveMajorVersion() >= 3 && servletContext.getEffectiveMinorVersion() >= 1) {
+            jspApplicationContext.addELResolver(new ImportedClassELResolver());
+        }
+        // setup a wrapped JspApplicationContext if there are any EL expression factory wrappers for this servlet context
+        final List<ExpressionFactoryWrapper> expressionFactoryWrappers = (List<ExpressionFactoryWrapper>) sce.getServletContext().getAttribute(CONTEXT_KEY);
+        if (expressionFactoryWrappers != null && !expressionFactoryWrappers.isEmpty()) {
+            final JspApplicationContextWrapper jspApplicationContextWrapper = new JspApplicationContextWrapper(JspApplicationContextImpl.getInstance(servletContext), expressionFactoryWrappers, sce.getServletContext());
+            sce.getServletContext().setAttribute(JspApplicationContextImpl.class.getName(), jspApplicationContextWrapper);
+        }
     }
 
     @Override
