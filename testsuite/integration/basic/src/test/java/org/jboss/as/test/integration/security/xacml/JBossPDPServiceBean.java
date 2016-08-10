@@ -37,7 +37,7 @@ import org.jboss.security.xacml.locators.JBossPolicySetLocator;
 
 /**
  * Helper class, which initializes a {@link JBossPDP} instance with policies from Oasis XACML Interoperability use-cases.
- * 
+ *
  * @author Josef Cacek
  */
 public class JBossPDPServiceBean {
@@ -48,7 +48,7 @@ public class JBossPDPServiceBean {
 
     /**
      * Create a new {@link JBossPDPServiceBean}.
-     * 
+     *
      * @throws IOException
      */
     public JBossPDPServiceBean() {
@@ -60,7 +60,7 @@ public class JBossPDPServiceBean {
 
     /**
      * Get the PDP for Interop tests.
-     * 
+     *
      * @return the JBossPDP instance.
      */
     public JBossPDP getJBossPDP() {
@@ -71,7 +71,7 @@ public class JBossPDPServiceBean {
 
     /**
      * Creates a {@link JBossPDP} instance filled with policies from XACML interoperability tests.
-     * 
+     *
      * @return
      */
     private JBossPDP createPDPForInterop() {

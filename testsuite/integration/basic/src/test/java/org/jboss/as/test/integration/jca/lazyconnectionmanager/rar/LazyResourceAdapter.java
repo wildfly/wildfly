@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import org.jboss.logging.Logger;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -30,6 +28,8 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>
@@ -103,42 +103,24 @@ public class LazyResourceAdapter implements ResourceAdapter {
     @Override
     public int hashCode() {
         int result = 17;
-        if (enable != null)
-            result += 31 * result + 7 * enable.hashCode();
-        else
-            result += 31 * result + 7;
-        if (localTransaction != null)
-            result += 31 * result + 7 * localTransaction.hashCode();
-        else
-            result += 31 * result + 7;
-        if (xaTransaction != null)
-            result += 31 * result + 7 * xaTransaction.hashCode();
-        else
-            result += 31 * result + 7;
+        if (enable != null) { result += 31 * result + 7 * enable.hashCode(); } else { result += 31 * result + 7; }
+        if (localTransaction != null) { result += 31 * result + 7 * localTransaction.hashCode(); } else { result += 31 * result + 7; }
+        if (xaTransaction != null) { result += 31 * result + 7 * xaTransaction.hashCode(); } else { result += 31 * result + 7; }
         return result;
     }
 
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof LazyResourceAdapter))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof LazyResourceAdapter)) { return false; }
         LazyResourceAdapter obj = (LazyResourceAdapter) other;
         boolean result = true;
         if (result) {
-            if (localTransaction == null)
-                result = obj.getLocalTransaction() == null;
-            else
-                result = localTransaction.equals(obj.getLocalTransaction());
+            if (localTransaction == null) { result = obj.getLocalTransaction() == null; } else { result = localTransaction.equals(obj.getLocalTransaction()); }
         }
         if (result) {
-            if (xaTransaction == null)
-                result = obj.getXATransaction() == null;
-            else
-                result = xaTransaction.equals(obj.getXATransaction());
+            if (xaTransaction == null) { result = obj.getXATransaction() == null; } else { result = xaTransaction.equals(obj.getXATransaction()); }
         }
         return result;
     }

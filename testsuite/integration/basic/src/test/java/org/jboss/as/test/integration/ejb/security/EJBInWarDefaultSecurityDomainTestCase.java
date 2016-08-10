@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import javax.ejb.EJBAccessException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.security.auth.login.LoginContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -36,12 +42,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBAccessException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.login.LoginContext;
 
 /**
  * User: jpai

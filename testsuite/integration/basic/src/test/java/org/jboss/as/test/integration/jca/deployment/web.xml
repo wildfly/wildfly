@@ -24,16 +24,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
- 
-   <servlet>
-      <servlet-name>RARServlet</servlet-name>
-      <servlet-class>org.jboss.as.test.integration.jca.deployment.RARServlet</servlet-class>
-   </servlet>
 
-   <servlet-mapping>
-      <servlet-name>RARServlet</servlet-name>
-      <url-pattern>/RARServlet</url-pattern>
-   </servlet-mapping>
+    <servlet>
+        <servlet-name>RARServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.jca.deployment.RARServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RARServlet</servlet-name>
+        <url-pattern>/RARServlet</url-pattern>
+    </servlet-mapping>
 
     <administered-object>
         <name>java:app/rardeployment/xml/ao</name>

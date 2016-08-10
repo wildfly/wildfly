@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
 /**
  * @author baranowb
- * 
  */
 public interface Trigger {
 

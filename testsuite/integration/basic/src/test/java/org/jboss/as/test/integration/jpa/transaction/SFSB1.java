@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.transaction;
 
 import java.util.HashSet;
-
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
@@ -45,10 +44,10 @@ import javax.transaction.UserTransaction;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+    EntityManager em;
 
     @PersistenceContext(unitName = "deferdetachpc")
-        EntityManager deferDetachEm;
+    EntityManager deferDetachEm;
 
     @Resource
     SessionContext sessionContext;
@@ -68,9 +67,8 @@ public class SFSB1 {
             em.joinTransaction();
             em.persist(emp);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't start tx", e);
         }
 
         em.flush();         // should throw TransactionRequiredException
@@ -96,9 +94,8 @@ public class SFSB1 {
             em.persist(emp);
             em.persist(theCompany);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't start tx", e);
         }
 
     }

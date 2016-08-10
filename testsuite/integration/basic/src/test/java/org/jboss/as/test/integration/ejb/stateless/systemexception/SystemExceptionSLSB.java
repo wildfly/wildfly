@@ -31,7 +31,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class SystemExceptionSLSB {
 
-    public final static String MESSAGE = "Expected Exception";
+    public static final String MESSAGE = "Expected Exception";
 
     private boolean used = false;
 

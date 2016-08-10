@@ -30,11 +30,11 @@ import org.jboss.as.test.shared.ModuleUtils;
 
 /**
  * @author baranowb
- *
  */
-public class SetupModuleServerSetupTask implements ServerSetupTask{
+public class SetupModuleServerSetupTask implements ServerSetupTask {
 
     private volatile TestModule testModule;
+
     @Override
     public void setup(ManagementClient arg0, String arg1) throws Exception {
         testModule = ModuleUtils.createTestModuleWithEEDependencies(SessionConstants.TEST_MODULE_NAME);

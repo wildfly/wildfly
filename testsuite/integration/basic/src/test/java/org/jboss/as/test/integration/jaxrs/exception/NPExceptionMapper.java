@@ -28,7 +28,7 @@ import javax.ws.rs.ext.Provider;
 
 /**
  * Exception mapper - occurred NPE exception remaps to HTTP 404 Error code
- * 
+ *
  * @author Pavel Janousek
  */
 @Provider

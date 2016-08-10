@@ -49,12 +49,12 @@ public class OverlayExistingResourceTestCase extends EarOverlayTestBase {
     private static final String OVERLAY = "HAL9000";
     private static final String DEPLOYMENT_OVERLAYED = "overlayed";
     private static final String DEPLOYMENT_OVERLAYED_ARCHIVE = DEPLOYMENT_OVERLAYED + ".jar";
-    
+
     private static final String DEPLOYMENT_SHELL = "shell";
     private static final String DEPLOYMENT_SHELL_ARCHIVE = DEPLOYMENT_SHELL + ".ear";
-    
+
     private static final String RESOURCE = "/"+DEPLOYMENT_OVERLAYED_ARCHIVE+"//"+OverlayableInterface.RESOURCE;
-    
+
     @Deployment(name = DEPLOYMENT_SHELL)
     public static Archive createDeployment() throws Exception {
         return createEARWithOverlayedArchive(true, DEPLOYMENT_OVERLAYED_ARCHIVE,DEPLOYMENT_SHELL_ARCHIVE);
@@ -100,5 +100,4 @@ public class OverlayExistingResourceTestCase extends EarOverlayTestBase {
             OverlayUtils.removeOverlay(managementClient, DEPLOYMENT_SHELL_ARCHIVE, OVERLAY, overlay.keySet());
         }
     }
-
 }

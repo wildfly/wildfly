@@ -22,21 +22,20 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.contextduel;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test JPA 2.0 section 7.6.3.1
@@ -53,19 +52,20 @@ public class AddEPC2TxAfterPCTestCase {
     private static final String ARCHIVE_NAME = "jpa_AddEPC2TxAfterPCTestCase";
 
 
-        @Deployment
+    @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(
-            AddEPC2TxAfterPCTestCase.class,
-            Employee.class,
-            BMTEPCStatefulBean.class,
-            CMTPCStatefulBean.class);
-            jar.addAsManifestResource(AddEPC2TxAfterPCTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+                AddEPC2TxAfterPCTestCase.class,
+                Employee.class,
+                BMTEPCStatefulBean.class,
+                CMTPCStatefulBean.class);
+        jar.addAsManifestResource(AddEPC2TxAfterPCTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
 
-            return jar;
-        }
+        return jar;
+    }
+
     @ArquillianResource
     private InitialContext iniCtx;
 
@@ -104,8 +104,7 @@ public class AddEPC2TxAfterPCTestCase {
         BMTEPCStatefulBean stateful = lookup("BMTEPCStatefulBean", BMTEPCStatefulBean.class);
         try {
             stateful.shouldThrowError();
-        }
-        catch(EJBException expected) {
+        } catch (EJBException expected) {
             // success
         }
     }

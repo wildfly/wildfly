@@ -26,7 +26,6 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * 
  * @author Madhumita Sadhukhan
  */
 

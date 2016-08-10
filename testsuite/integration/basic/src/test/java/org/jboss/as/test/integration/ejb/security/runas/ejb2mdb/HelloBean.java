@@ -23,21 +23,33 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-// Security related imports
-import javax.annotation.security.RolesAllowed;
-import javax.jms.*;
-import javax.naming.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
+import javax.jms.TextMessage;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.logging.Logger;
+
+// Security related imports
 
 /**
  * Bean passes message to HelloMDB bean and checks the reply queue. The HellpMDB bean calls this one for getting hello greeting
  * for JBossAdmin role.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @Stateless(name = "Hello")

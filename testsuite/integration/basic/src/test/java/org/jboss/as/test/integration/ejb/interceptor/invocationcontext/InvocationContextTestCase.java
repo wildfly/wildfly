@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Interceptor invocation context testing.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -61,7 +61,7 @@ public class InvocationContextTestCase {
         final String result = bean.callMethod(1, "invoked");
         Assert.assertEquals("DefaultOK:ClassOK:MethodOK:BeanOK:invokedDefaultClassMethodBean", result);
     }
-    
+
     @Test
     public void tesTimerInvocationContext() throws NamingException {
         TimeoutBean bean = (TimeoutBean) ctx.lookup("java:module/" + TimeoutBean.class.getSimpleName());

@@ -26,11 +26,10 @@ import org.jboss.as.arquillian.container.ManagementClient;
 
 /**
  * Implementation of ServerSetupTask for JCA related tests
- * 
- * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  *
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public abstract class JcaMgmtServerSetupTask extends  JcaMgmtBase implements ServerSetupTask {
+public abstract class JcaMgmtServerSetupTask extends JcaMgmtBase implements ServerSetupTask {
 
 
     @Override
@@ -40,5 +39,5 @@ public abstract class JcaMgmtServerSetupTask extends  JcaMgmtBase implements Ser
     }
 
     protected abstract void doSetup(final ManagementClient managementClient) throws Exception;
-    
+
 }

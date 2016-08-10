@@ -26,6 +26,6 @@ package org.jboss.as.test.integration.ejb.remote.byreference;
  */
 public interface RemoteInterface {
 
-    public void modifyFirstElementOfArray(final String[] array, final String newValue);
+    void modifyFirstElementOfArray(final String[] array, final String newValue);
 
 }

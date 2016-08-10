@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
@@ -38,25 +37,33 @@ import javax.transaction.xa.XAResource;
 
 /**
  * Managed connection
- * 
- * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a> 
+ *
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidManagedConnection implements ManagedConnection {
-    /** The logwriter */
+    /**
+     * The logwriter
+     */
     private PrintWriter logwriter;
 
-    /** ManagedConnectionFactory */
+    /**
+     * ManagedConnectionFactory
+     */
     private ValidManagedConnectionFactory mcf;
 
-    /** Listeners */
+    /**
+     * Listeners
+     */
     private List<ConnectionEventListener> listeners;
 
-    /** Connection */
+    /**
+     * Connection
+     */
     private Object connection;
 
     /**
      * Default constructor
-     * 
+     *
      * @param mcf mcf
      */
     public ValidManagedConnection(ValidManagedConnectionFactory mcf) {
@@ -68,8 +75,8 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Creates a new connection handle for the underlying physical connection represented by the ManagedConnection instance.
-     * 
-     * @param subject Security context as JAAS subject
+     *
+     * @param subject       Security context as JAAS subject
      * @param cxRequestInfo ConnectionRequestInfo instance
      * @return generic Object instance representing the connection handle.
      * @throws javax.resource.ResourceException generic exception if operation fails
@@ -82,7 +89,7 @@ public class ValidManagedConnection implements ManagedConnection {
     /**
      * Used by the container to change the association of an application-level connection handle with a ManagedConneciton
      * instance.
-     * 
+     *
      * @param connection Application-level connection handle
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
@@ -91,7 +98,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Application server calls this method to force any cleanup on the ManagedConnection instance.
-     * 
+     *
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
     public void cleanup() throws ResourceException {
@@ -99,7 +106,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Destroys the physical connection to the underlying resource manager.
-     * 
+     *
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
     public void destroy() throws ResourceException {
@@ -107,29 +114,27 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Adds a connection event listener to the ManagedConnection instance.
-     * 
+     *
      * @param listener A new ConnectionEventListener to be registered
      */
     public void addConnectionEventListener(ConnectionEventListener listener) {
-        if (listener == null)
-            throw new IllegalArgumentException("Listener is null");
+        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.add(listener);
     }
 
     /**
      * Removes an already registered connection event listener from the ManagedConnection instance.
-     * 
+     *
      * @param listener already registered connection event listener to be removed
      */
     public void removeConnectionEventListener(ConnectionEventListener listener) {
-        if (listener == null)
-            throw new IllegalArgumentException("Listener is null");
+        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.remove(listener);
     }
 
     /**
      * Close handle
-     * 
+     *
      * @param handle The handle
      */
     public void closeHandle(ValidConnection handle) {
@@ -142,7 +147,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Gets the log writer for this ManagedConnection instance.
-     * 
+     *
      * @return Character ourput stream associated with this Managed-Connection instance
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
@@ -152,7 +157,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Sets the log writer for this ManagedConnection instance.
-     * 
+     *
      * @param out Character Output stream to be associated
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
@@ -162,7 +167,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Returns an <code>javax.resource.spi.LocalTransaction</code> instance.
-     * 
+     *
      * @return LocalTransaction instance
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
@@ -172,7 +177,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Returns an <code>javax.transaction.xa.XAresource</code> instance.
-     * 
+     *
      * @return XAResource instance
      * @throws javax.resource.ResourceException generic exception if operation fails
      */
@@ -182,7 +187,7 @@ public class ValidManagedConnection implements ManagedConnection {
 
     /**
      * Gets the metadata information for this connection's underlying EIS resource manager instance.
-     * 
+     *
      * @return ManagedConnectionMetaData instance
      * @throws javax.resource.ResourceException generic exception if operation fails
      */

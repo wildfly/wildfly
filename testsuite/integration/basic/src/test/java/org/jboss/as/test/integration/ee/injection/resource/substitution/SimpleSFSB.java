@@ -27,7 +27,7 @@ import javax.ejb.Stateful;
 
 /**
  * @author wangchao
- * 
+ *
  */
 @Stateful
 public class SimpleSFSB {

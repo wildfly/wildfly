@@ -22,24 +22,22 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
-import org.junit.Assert;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Tests that JBoss EJB API specific client side EJB interceptors work as expected
@@ -110,8 +108,8 @@ public class EJBClientInterceptorTestCase {
      * Tests that when the client to a remote view of a bean resides on the same server as the EJBs and invokes on it, then the
      * context data populated by the client interceptors gets passed on to the server side interceptors and the bean.
      *
-     * @see https://issues.jboss.org/browse/AS7-6356
      * @throws Exception
+     * @see https://issues.jboss.org/browse/AS7-6356
      */
     @Test
     public void testEJBClientInterceptionFromInVMClient() throws Exception {
@@ -121,7 +119,7 @@ public class EJBClientInterceptorTestCase {
         final RemoteViewInvoker remoteViewInvokingBean = (RemoteViewInvoker) jndiContext.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/"
                 + DISTINCT_NAME + "/" + RemoteViewInvokingBean.class.getSimpleName() + "!" + RemoteViewInvoker.class.getName() + "?stateful");
         // get the data that the local bean is going to populate before invoking the remote bean
-        final Map<String,Object> interceptorData = remoteViewInvokingBean.getDataSetupForInvocationContext();
+        final Map<String, Object> interceptorData = remoteViewInvokingBean.getDataSetupForInvocationContext();
         // invoke the bean and ask it for the invocation data that it saw on the server side
         final Map<String, Object> valuesSeenOnServerSide = remoteViewInvokingBean.invokeRemoteViewAndGetInvocationData(interceptorData.keySet().toArray(new String[interceptorData.size()]));
         // make sure the server side bean was able to get the data which was passed on by the client side

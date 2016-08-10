@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -59,12 +58,12 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests of login via IdentityLoginModule
- * 
+ *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ IdentityLoginModuleTestCase.SecurityDomain1Setup.class, IdentityLoginModuleTestCase.SecurityDomain2Setup.class })
+@ServerSetup({IdentityLoginModuleTestCase.SecurityDomain1Setup.class, IdentityLoginModuleTestCase.SecurityDomain2Setup.class})
 @Category(CommonCriteria.class)
 public class IdentityLoginModuleTestCase {
 
@@ -172,7 +171,7 @@ public class IdentityLoginModuleTestCase {
 
     /**
      * Calls {@link PrincipalPrintingServlet} and checks if the returned principal name is the expected one.
-     * 
+     *
      * @param url
      * @param expectedPrincipal
      * @return Principal name returned from {@link PrincipalPrintingServlet}

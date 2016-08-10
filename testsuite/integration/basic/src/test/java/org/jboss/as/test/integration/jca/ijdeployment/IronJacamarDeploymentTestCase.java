@@ -21,7 +21,15 @@
  */
 package org.jboss.as.test.integration.jca.ijdeployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,15 +47,10 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
-
 /**
  * JBQA-6277 -IronJacamar deployments subsystem test case
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient

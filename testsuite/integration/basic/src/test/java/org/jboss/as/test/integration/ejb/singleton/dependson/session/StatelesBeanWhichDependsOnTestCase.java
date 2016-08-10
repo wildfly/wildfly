@@ -39,9 +39,8 @@ import org.junit.runner.RunWith;
 
 /**
  * @author baranowb
- *
  */
-@ServerSetup({ SetupModuleServerSetupTask.class })
+@ServerSetup({SetupModuleServerSetupTask.class})
 @RunWith(Arquillian.class)
 public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTestCaseBase {
 
@@ -49,7 +48,7 @@ public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTes
     InitialContext ctx;
 
     @Override
-    protected Trigger getTrigger() throws Exception{
+    protected Trigger getTrigger() throws Exception {
         return (Trigger) ctx.lookup(SessionConstants.EJB_STATELES);
     }
 
@@ -59,7 +58,7 @@ public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTes
         jar.addClass(StatelesBeanWhichDependsOnTestCase.class);
         return jar;
     }
-    
+
     @Deployment(name = SessionConstants.DEPLOYMENT_NAME_SESSION, order = 1, managed = false, testable = false)
     public static Archive<?> getSessionArchive() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SessionConstants.DEPLOYMENT_NAME_SESSION);
@@ -73,9 +72,9 @@ public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTes
         logger.info(jar.toString(true));
         return jar;
     }
-    
+
     @Test
-    public void test() throws Exception{
+    public void test() throws Exception {
         super.testSessionBean();
     }
 }

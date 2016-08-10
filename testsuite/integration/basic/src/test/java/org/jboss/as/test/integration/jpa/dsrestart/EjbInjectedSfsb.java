@@ -25,7 +25,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Stateless

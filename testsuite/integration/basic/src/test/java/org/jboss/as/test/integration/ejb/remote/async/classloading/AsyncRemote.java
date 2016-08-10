@@ -34,8 +34,8 @@ import javax.ejb.Remote;
 @Remote
 public interface AsyncRemote {
     @Asynchronous
-    public Future<ReturnObject> testAsync(String x);
-    
+    Future<ReturnObject> testAsync(String x);
+
     @Asynchronous
-    public Future<ReturnObject> testAsyncNull(String x);
+    Future<ReturnObject> testAsyncNull(String x);
 }

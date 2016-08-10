@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.hibernate.entity;
 
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -41,9 +40,9 @@ import javax.persistence.OneToMany;
  * @author Zbyněk Roubalík
  */
 @Entity
-@NamedQueries (
-        {@NamedQuery(name="allCustomers", query="from Customer"),
-        @NamedQuery(name="customerById", query="from Customer c where c.id=:id")})
+@NamedQueries(
+        {@NamedQuery(name = "allCustomers", query = "from Customer"),
+                @NamedQuery(name = "customerById", query = "from Customer c where c.id=:id")})
 public class Customer {
 
     private Long id;
@@ -92,7 +91,7 @@ public class Customer {
         this.tickets = tickets;
     }
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER, mappedBy = "customers")
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "customers")
     public Set<Flight> getFlights() {
         return flights;
     }
@@ -100,7 +99,6 @@ public class Customer {
     public void setFlights(Set<Flight> flights) {
         this.flights = flights;
     }
-
 
 
 }

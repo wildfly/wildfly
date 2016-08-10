@@ -48,7 +48,6 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  * @author olukas
- * 
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ExternalPasswordModuleSetupTask.class,

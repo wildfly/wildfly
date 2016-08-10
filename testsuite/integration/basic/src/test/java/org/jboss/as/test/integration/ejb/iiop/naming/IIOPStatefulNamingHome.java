@@ -9,6 +9,6 @@ import javax.ejb.EJBHome;
  */
 public interface IIOPStatefulNamingHome extends EJBHome {
 
-    public IIOPStatefulRemote create(int start) throws RemoteException;
+    IIOPStatefulRemote create(int start) throws RemoteException;
 
 }

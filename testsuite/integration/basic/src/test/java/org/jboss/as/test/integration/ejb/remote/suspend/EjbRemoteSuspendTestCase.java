@@ -23,13 +23,10 @@
 package org.jboss.as.test.integration.ejb.remote.suspend;
 
 import java.util.Hashtable;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -38,7 +35,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -112,8 +108,8 @@ public class EjbRemoteSuspendTestCase {
                 try {
                     localEcho.echo(message);
                     break;
-                } catch(Exception e) {
-                    if(System.currentTimeMillis() > fin) {
+                } catch (Exception e) {
+                    if (System.currentTimeMillis() > fin) {
                         throw e;
                     }
                 }
@@ -121,7 +117,6 @@ public class EjbRemoteSuspendTestCase {
 
         }
     }
-
 
 
     @Test

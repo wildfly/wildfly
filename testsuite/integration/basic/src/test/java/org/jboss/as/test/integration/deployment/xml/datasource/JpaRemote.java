@@ -10,8 +10,8 @@ import javax.ejb.Remote;
 @Remote
 public interface JpaRemote {
 
-    public void addEmployee(String name);
+    void addEmployee(String name);
 
-    public Set<String> getEmployees();
+    Set<String> getEmployees();
 
 }

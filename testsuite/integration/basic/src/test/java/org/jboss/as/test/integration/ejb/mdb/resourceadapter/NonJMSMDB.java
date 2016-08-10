@@ -34,9 +34,9 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
         @ActivationConfigProperty(propertyName = "someProp", propertyValue = "hello world")})
 @ResourceAdapter(value = "ear-containing-rar.ear#rar-within-a-ear.rar")
 public class NonJMSMDB implements SimpleMessageListener {
-    
+
     @Override
     public void onMessage(String msg) {
-        
+
     }
 }

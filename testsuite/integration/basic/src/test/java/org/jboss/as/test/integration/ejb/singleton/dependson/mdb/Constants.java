@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.mdb;
 
 /**
  * @author baranowb
- * 
  */
 public interface Constants {
 

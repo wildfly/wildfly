@@ -24,14 +24,14 @@ package org.jboss.as.test.integration.ejb.singleton;
 
 /**
  * AccountManager
- * 
+ *
  * @author Jaikiran Pai
  */
 public interface AccountManager {
 
     /**
      * Credits the amount to the account
-     * 
+     *
      * @param amount Amount to be credited
      * @return
      */
@@ -39,7 +39,7 @@ public interface AccountManager {
 
     /**
      * Debits the amount from the account
-     * 
+     *
      * @param amount Amount to be debited
      * @return
      */

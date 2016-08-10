@@ -27,11 +27,10 @@ import java.util.concurrent.Future;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
-import org.jboss.as.test.integration.ejb.remote.async.RemoteInterface;
 
 /**
  * @author baranowb
- * 
+ *
  */
 @Stateless
 public class AsyncRemoteEJB implements AsyncRemote {

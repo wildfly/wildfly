@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
 /**
- * 
  * @author Madhumita Sadhukhan
  */
 public interface FinalInspection {

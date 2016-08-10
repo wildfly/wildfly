@@ -31,10 +31,10 @@ import javax.interceptor.InvocationContext;
  * @author Ondrej Chaloupka
  */
 @Stateless
-@Interceptors({ ClassInterceptor.class })
+@Interceptors({ClassInterceptor.class})
 public class InvocationBean {
 
-    @Interceptors({ MethodInterceptor.class })
+    @Interceptors({MethodInterceptor.class})
     public String callMethod(Integer i, String str2) {
         return str2;
     }

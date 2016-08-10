@@ -29,5 +29,5 @@ import javax.ejb.EJBHome;
  */
 public interface Session21Home extends EJBHome {
 
-    public Session21 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    Session21 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 }

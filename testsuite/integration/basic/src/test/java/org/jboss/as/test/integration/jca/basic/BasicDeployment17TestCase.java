@@ -21,6 +21,11 @@
  */
 package org.jboss.as.test.integration.jca.basic;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.util.List;
+import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -43,11 +48,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -92,7 +92,7 @@ public class BasicDeployment17TestCase extends ContainerResourceMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(BasicDeployment17TestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
+                addClasses(BasicDeployment17TestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
                         BasicDeploymentTestCaseSetup.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
@@ -100,7 +100,6 @@ public class BasicDeployment17TestCase extends ContainerResourceMgmtTestBase {
 
         raa.addAsManifestResource(BasicDeployment17TestCase.class.getPackage(), "ra17.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-        ;
         return raa;
     }
 

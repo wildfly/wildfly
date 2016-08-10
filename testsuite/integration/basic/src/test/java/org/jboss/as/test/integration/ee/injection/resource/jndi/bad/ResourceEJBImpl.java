@@ -4,11 +4,11 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class ResourceEJBImpl implements ResourceEJB {
-	
-	@Override
-	public String echo(String param) {
-		return param+"......"+param+"..."+param;
-		
-	}
+
+    @Override
+    public String echo(String param) {
+        return param + "......" + param + "..." + param;
+
+    }
 }
 

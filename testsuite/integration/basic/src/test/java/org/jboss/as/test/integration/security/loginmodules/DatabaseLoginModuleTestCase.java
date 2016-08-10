@@ -70,7 +70,7 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ DatabaseLoginModuleTestCase.DBSetup.class, //
+@ServerSetup({DatabaseLoginModuleTestCase.DBSetup.class, //
         DatabaseLoginModuleTestCase.DataSourcesSetup.class, //
         DatabaseLoginModuleTestCase.SecurityDomainsSetup.class //
 })
@@ -179,7 +179,7 @@ public class DatabaseLoginModuleTestCase {
      * @throws IOException
      * @throws URISyntaxException
      */
-    private void testAccess(URL url) throws MalformedURLException, ClientProtocolException, IOException, URISyntaxException {
+    private void testAccess(URL url) throws IOException, URISyntaxException {
         final URL servletUrl = new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
         //successful authentication and authorization
         assertEquals("Response body is not correct.", SimpleSecuredServlet.RESPONSE_BODY,
@@ -241,7 +241,7 @@ public class DatabaseLoginModuleTestCase {
             loginModuleBuilder.options(getLoginModuleOptions(DEP4)).putOption("hashAlgorithm", MD5)
                     .putOption("hashEncoding", "hex");
             final SecurityDomain sd4 = new SecurityDomain.Builder().name(DEP4).loginModules(loginModuleBuilder.build()).build();
-            return new SecurityDomain[] { sd1, sd2, sd3, sd4 };
+            return new SecurityDomain[]{sd1, sd2, sd3, sd4};
         }
 
         /**
@@ -266,11 +266,11 @@ public class DatabaseLoginModuleTestCase {
 
         @Override
         protected DataSource[] getDataSourceConfigurations(ManagementClient managementClient, String containerId) {
-            return new DataSource[] { new DataSource.Builder()
+            return new DataSource[]{new DataSource.Builder()
                     .name(DATASOURCE_NAME)
                     .connectionUrl(
                             "jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(managementClient) + "/mem:" + DATASOURCE_NAME)
-                    .driver("h2").username("sa").password("sa").build() };
+                    .driver("h2").username("sa").password("sa").build()};
         }
     }
 

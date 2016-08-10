@@ -31,47 +31,47 @@ import org.jboss.logging.Logger;
 @Stateless
 @Remote(IStatelessBean.class)
 public class StatelessBean implements IStatelessBean {
-	private static final Logger log = Logger.getLogger(StatelessBean.class);
+    private static final Logger log = Logger.getLogger(StatelessBean.class);
 
-	private ModelControllerClient getClient() {
-	    ModelControllerClient client = ExpressionTestManagementService.getTestExpressionClient();
-        assert(client != null); //client can't be null
+    private ModelControllerClient getClient() {
+        ModelControllerClient client = ExpressionTestManagementService.getTestExpressionClient();
+        assert (client != null); //client can't be null
         return client;
-	}
-	
-	@Override
-	public void addJBossProperty(String name, String value) {
-	    ModelControllerClient client = getClient();
-	    log.debugf("Adding jboss property %s with value %s via client %s", name, value, client);
-	    Utils.setProperty(name, value, client);
-	}
-	
-	@Override
-	public void removeJBossProperty(String name) {
-	    ModelControllerClient client = getClient();
-	    log.debugf("Removing jboss property %s via client %s", name, client);
-	    Utils.removeProperty(name, client);
-	}
-	
-	@Override
-	public String getJBossProperty(String name) {
-		ModelControllerClient client = getClient();
-		String result = Utils.getProperty(name, client);
-		log.debug("JBoss system property " + name + " was resolved to be " + result);
-		return result;
-	}
-	
-	@Override
-	public void redefineJBossProperty(String name, String value) {
-	    ModelControllerClient client = getClient();
-	    log.debugf("Redefine jboss property %s with value %s via client %s", name, value, client);
+    }
+
+    @Override
+    public void addJBossProperty(String name, String value) {
+        ModelControllerClient client = getClient();
+        log.debugf("Adding jboss property %s with value %s via client %s", name, value, client);
+        Utils.setProperty(name, value, client);
+    }
+
+    @Override
+    public void removeJBossProperty(String name) {
+        ModelControllerClient client = getClient();
+        log.debugf("Removing jboss property %s via client %s", name, client);
+        Utils.removeProperty(name, client);
+    }
+
+    @Override
+    public String getJBossProperty(String name) {
+        ModelControllerClient client = getClient();
+        String result = Utils.getProperty(name, client);
+        log.debug("JBoss system property " + name + " was resolved to be " + result);
+        return result;
+    }
+
+    @Override
+    public void redefineJBossProperty(String name, String value) {
+        ModelControllerClient client = getClient();
+        log.debugf("Redefine jboss property %s with value %s via client %s", name, value, client);
         Utils.redefineProperty(name, value, client);
-	}
+    }
 
     @Override
     public void addSystemProperty(String name, String value) {
         System.setProperty(name, value);
-        
+
     }
 
     @Override

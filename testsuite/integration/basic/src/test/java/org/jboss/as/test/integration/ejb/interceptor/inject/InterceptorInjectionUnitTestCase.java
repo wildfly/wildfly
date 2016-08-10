@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
 import java.util.ArrayList;
-
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,20 +38,19 @@ import org.junit.runner.RunWith;
 
 /**
  * Migration test from EJB Testsuite (interceptors, 2061) to AS7 [JIRA JBQA-5483].
- *
+ * <p>
  * Interceptor injection test.
  * Bill Burke, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-public class InterceptorInjectionUnitTestCase
-{
+public class InterceptorInjectionUnitTestCase {
     private static final Logger log = Logger.getLogger(InterceptorInjectionUnitTestCase.class);
 
     @ArquillianResource
     InitialContext ctx;
 
     @Deployment
-    public static Archive<?> deployment()  {
+    public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "interceptor-inject-test.jar")
                 .addPackage(InterceptorInjectionUnitTestCase.class.getPackage())
                 .addAsManifestResource(InterceptorInjectionUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
@@ -60,29 +58,28 @@ public class InterceptorInjectionUnitTestCase
         log.info(jar.toString(true));
         return jar;
     }
-   static boolean deployed = false;
-   static int test = 0;
 
-   @Test
-   public void testInterceptAndInjection() throws Exception
-   {
-      MySessionRemote test = (MySessionRemote) ctx.lookup("java:module/" + MySessionBean.class.getSimpleName());
-      ArrayList list = test.doit();
-      Assert.assertEquals("MyBaseInterceptor", list.get(0));
-      Assert.assertEquals("MyInterceptor", list.get(1));
-   }
+    static boolean deployed = false;
+    static int test = 0;
 
-   /**
-    * Tests that the {@link SimpleStatelessBean} and its interceptor class {@link SimpleInterceptor}
-    * have all the expected fields/methods injected
-    *
-    * @throws Exception
-    */
-   @Test
-   public void testInjection() throws Exception
-   {
-      InjectionTester bean = (InjectionTester) ctx.lookup("java:module/" + SimpleStatelessBean.class.getSimpleName());
-      bean.assertAllInjectionsDone();
-   }
+    @Test
+    public void testInterceptAndInjection() throws Exception {
+        MySessionRemote test = (MySessionRemote) ctx.lookup("java:module/" + MySessionBean.class.getSimpleName());
+        ArrayList list = test.doit();
+        Assert.assertEquals("MyBaseInterceptor", list.get(0));
+        Assert.assertEquals("MyInterceptor", list.get(1));
+    }
+
+    /**
+     * Tests that the {@link SimpleStatelessBean} and its interceptor class {@link SimpleInterceptor}
+     * have all the expected fields/methods injected
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testInjection() throws Exception {
+        InjectionTester bean = (InjectionTester) ctx.lookup("java:module/" + SimpleStatelessBean.class.getSimpleName());
+        bean.assertAllInjectionsDone();
+    }
 
 }

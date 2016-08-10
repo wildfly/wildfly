@@ -74,7 +74,7 @@ public class HomedStatefulSession30Bean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public String accessLocalHome() {
         return null;
     }

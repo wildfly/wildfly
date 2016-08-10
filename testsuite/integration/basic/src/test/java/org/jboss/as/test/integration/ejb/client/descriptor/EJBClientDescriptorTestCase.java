@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.ejb.client.descriptor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
 import javax.ejb.EJBException;
 import javax.naming.Context;
 
@@ -37,7 +36,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.wildfly.test.api.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
@@ -46,6 +44,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.api.Authentication;
 
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
@@ -137,7 +136,7 @@ public class EJBClientDescriptorTestCase {
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return jar;
     }
-    
+
     @Deployment(name = "jboss-ejb-client_with_properties_1_2_version", testable = false, managed = false)
     public static JavaArchive createJBossEJBClientWithProperties12VersionDeployment() throws Exception {
 
@@ -145,7 +144,7 @@ public class EJBClientDescriptorTestCase {
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.properties", "jboss.properties");
-        
+
         return jar;
     }
 
@@ -253,7 +252,7 @@ public class EJBClientDescriptorTestCase {
             deployer.undeploy("jboss-ejb-client_1_2_version");
         }
     }
-    
+
     /**
      * Tests that a deployment containing jboss-ejb-client.xml with remoting EJB receivers configured and property placeholders,
      * works as expected.
@@ -274,7 +273,6 @@ public class EJBClientDescriptorTestCase {
             deployer.undeploy("jboss-ejb-client_with_properties_1_2_version");
         }
     }
-    
-    
+
 
 }

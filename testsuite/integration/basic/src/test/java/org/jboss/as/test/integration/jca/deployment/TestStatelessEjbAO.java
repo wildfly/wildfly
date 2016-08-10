@@ -25,29 +25,27 @@ import javax.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.resource.AdministeredObjectDefinition;
 import javax.resource.AdministeredObjectDefinitions;
-import javax.resource.ConnectionFactoryDefinition;
-import javax.resource.ConnectionFactoryDefinitions;
 
 /**
  * This is the impl for a stateless ejb.
  */
 
 @AdministeredObjectDefinition(className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
-                              name = "java:app/rardeployment/AppAdmin",
-                              resourceAdapter = "#inside-eis.rar")
+        name = "java:app/rardeployment/AppAdmin",
+        resourceAdapter = "#inside-eis.rar")
 @AdministeredObjectDefinitions({
-    @AdministeredObjectDefinition(
-        className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
-        name = "java:comp/rardeployment/CompAdmin",
-        resourceAdapter = "#inside-eis"),
-    @AdministeredObjectDefinition(
-        className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
-        name = "java:module/rardeployment/ModuleAdmin",
-        resourceAdapter = "#inside-eis.rar"),
-    @AdministeredObjectDefinition(
-        className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
-        name = "java:global/rardeployment/GlobalAdmin",
-        resourceAdapter = "#inside-eis")
+        @AdministeredObjectDefinition(
+                className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
+                name = "java:comp/rardeployment/CompAdmin",
+                resourceAdapter = "#inside-eis"),
+        @AdministeredObjectDefinition(
+                className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
+                name = "java:module/rardeployment/ModuleAdmin",
+                resourceAdapter = "#inside-eis.rar"),
+        @AdministeredObjectDefinition(
+                className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
+                name = "java:global/rardeployment/GlobalAdmin",
+                resourceAdapter = "#inside-eis")
 })
 @Stateless
 public class TestStatelessEjbAO implements ITestStatelessEjbAO {
@@ -58,13 +56,9 @@ public class TestStatelessEjbAO implements ITestStatelessEjbAO {
         try {
             InitialContext ctx = new InitialContext();
             Object obj = ctx.lookup(jndiName);
-            if (obj == null) {
-                rval = false;
-            } else {
-                rval = true;
-            }
+            rval = obj != null;
         } catch (Exception e) {
-            debug("Fail to access connector resource: "+jndiName);
+            debug("Fail to access connector resource: " + jndiName);
             e.printStackTrace();
         }
 

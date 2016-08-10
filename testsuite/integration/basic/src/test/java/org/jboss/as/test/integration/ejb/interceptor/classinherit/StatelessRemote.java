@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 import javax.ejb.Remote;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 61136 $
  */

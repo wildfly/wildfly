@@ -26,8 +26,10 @@ import static org.jboss.as.test.integration.jca.reauth.DsUtil.testConnection;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -35,10 +37,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import javax.annotation.Resource;
-import org.junit.Ignore;
 
 /**
  * Tests re-authentication support for MySQL data source. JDBC driver and DS configuration deployed inside .ear archive.

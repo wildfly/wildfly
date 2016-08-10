@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests JBossPDP access from a web-application (servlet).
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -50,7 +50,7 @@ public class JBossPDPServletInitializationTestCase {
 
     /**
      * Creates {@link WebArchive} for the deployment.
-     * 
+     *
      * @return
      */
     @Deployment(testable = false)
@@ -65,11 +65,11 @@ public class JBossPDPServletInitializationTestCase {
 
     /**
      * Validates that the servlet returns "OK" response.
-     * 
+     *
      * @throws Exception
      */
     @Test
-    public void testPdpServlet(final @ArquillianResource URL webAppURL) throws Exception {
+    public void testPdpServlet(@ArquillianResource final URL webAppURL) throws Exception {
         assertEquals(JBossPDPInitServlet.RESPONSE_OK,
                 HttpRequest.get(webAppURL.toExternalForm() + JBossPDPInitServlet.SERVLET_PATH.substring(1), 10, SECONDS));
     }

@@ -29,5 +29,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface ITestStatelessEjbAO {
-    public boolean validateConnectorResource(String jndiName);
+    boolean validateConnectorResource(String jndiName);
 }

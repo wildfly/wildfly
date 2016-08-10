@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.hibernate;
 
 import java.util.Properties;
-
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -111,7 +110,7 @@ public class SFSBHibernateSessionFactory {
 
     // fetch student
     public Student getStudent(int id) {
-        Student emp = (Student) sessionFactory.openSession().load(Student.class, id);
+        Student emp = sessionFactory.openSession().load(Student.class, id);
         return emp;
     }
 

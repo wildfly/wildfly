@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.remote.async.classloading;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -32,7 +31,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.as.test.integration.ejb.remote.async.RemoteInterface;
 /**
  * @author baranowb
  *
@@ -53,7 +51,7 @@ public class AsyncReceiverServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             throw new ServletException(e);
-        } 
+        }
         resp.setStatus(200);
         resp.flushBuffer();
     }

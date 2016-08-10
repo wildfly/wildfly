@@ -35,7 +35,6 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -45,6 +44,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test case for servlet activations
+ *
  * @author <a href="jpederse@redhat.com">Jesper Pedersen</a>
  */
 @RunWith(Arquillian.class)
@@ -52,9 +52,9 @@ import org.junit.runner.RunWith;
 public class WarServletDeploymentTestCase {
     private static final Logger log = Logger.getLogger(WarServletDeploymentTestCase.class.getName());
 
-    final static String deploymentName = "raractivation.ear";
-    final static String rarDeploymentName = "eis.rar";
-    final static String webDeploymentName = "web.war";
+    static final String deploymentName = "raractivation.ear";
+    static final String rarDeploymentName = "eis.rar";
+    static final String webDeploymentName = "web.war";
 
     @Deployment(name = "rar", order = 1)
     public static Archive<?> getRar() {
@@ -81,7 +81,6 @@ public class WarServletDeploymentTestCase {
     }
 
 
-
     @ArquillianResource
     @OperateOnDeployment("web")
     private URL webUrl;
@@ -89,6 +88,7 @@ public class WarServletDeploymentTestCase {
 
     /**
      * Test web
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test

@@ -81,8 +81,8 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ LdapLoginModuleTestCase.SystemPropertiesSetup.class, LdapLoginModuleTestCase.LDAPServerSetupTask.class,
-        LdapLoginModuleTestCase.SecurityDomainsSetup.class })
+@ServerSetup({LdapLoginModuleTestCase.SystemPropertiesSetup.class, LdapLoginModuleTestCase.LDAPServerSetupTask.class,
+        LdapLoginModuleTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Category(CommonCriteria.class)
 public class LdapLoginModuleTestCase {
@@ -208,7 +208,7 @@ public class LdapLoginModuleTestCase {
          */
         @Override
         protected SystemProperty[] getSystemProperties() {
-            return new SystemProperty[] { new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath()) };
+            return new SystemProperty[]{new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath())};
         }
     }
 
@@ -313,7 +313,7 @@ public class LdapLoginModuleTestCase {
                             new SecurityModule.Builder().name("Ldap").flag(Constants.SUFFICIENT).options(moduleOptions).build())
                     .build();
 
-            return new SecurityDomain[] { sdLdap, sdLdaps };
+            return new SecurityDomain[]{sdLdap, sdLdaps};
         }
 
     }
@@ -323,35 +323,35 @@ public class LdapLoginModuleTestCase {
      */
     //@formatter:off
     @CreateDS(
-        name = "JBossDS-LdapLoginModuleTestCase",
-        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
-        partitions =
-        {
-            @CreatePartition(
-                name = "jboss",
-                suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=org\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
-                indexes =
-                {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
-                })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer (
-        transports =
-        {
-            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT, address = "0.0.0.0" ),
-            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT, address = "0.0.0.0" )
-        },
+            name = "JBossDS-LdapLoginModuleTestCase",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
+            partitions =
+                    {
+                            @CreatePartition(
+                                    name = "jboss",
+                                    suffix = "dc=jboss,dc=org",
+                                    contextEntry = @ContextEntry(
+                                            entryLdif =
+                                                    "dn: dc=jboss,dc=org\n" +
+                                                            "dc: jboss\n" +
+                                                            "objectClass: top\n" +
+                                                            "objectClass: domain\n\n"),
+                                    indexes =
+                                            {
+                                                    @CreateIndex(attribute = "objectClass"),
+                                                    @CreateIndex(attribute = "dc"),
+                                                    @CreateIndex(attribute = "ou")
+                                            })
+                    },
+            additionalInterceptors = {KeyDerivationInterceptor.class})
+    @CreateLdapServer(
+            transports =
+                    {
+                            @CreateTransport(protocol = "LDAP", port = LDAP_PORT, address = "0.0.0.0"),
+                            @CreateTransport(protocol = "LDAPS", port = LDAPS_PORT, address = "0.0.0.0")
+                    },
 //        keyStore="localhost-ldap.jks",
-        certificatePassword="secret")
+            certificatePassword = "secret")
     //@formatter:on
     static class LDAPServerSetupTask implements ServerSetupTask {
 
@@ -366,7 +366,7 @@ public class LdapLoginModuleTestCase {
          * @param containerId
          * @throws Exception
          * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
+         * java.lang.String)
          */
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try {
@@ -407,7 +407,7 @@ public class LdapLoginModuleTestCase {
          * @param containerId
          * @throws Exception
          * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
+         * java.lang.String)
          */
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             ldapServer.stop();

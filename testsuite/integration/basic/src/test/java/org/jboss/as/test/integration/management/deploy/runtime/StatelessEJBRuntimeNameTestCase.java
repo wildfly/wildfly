@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class StatelessEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
-    
     private static final String EJB_TYPE = EJBComponentType.STATELESS.getResourceType();
     private static final Package BEAN_PACKAGE = PointLessMathBean.class.getPackage();
     private static final String BEAN_NAME = "POINT";

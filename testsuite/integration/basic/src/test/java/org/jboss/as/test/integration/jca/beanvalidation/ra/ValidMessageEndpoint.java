@@ -30,60 +30,52 @@ import javax.resource.spi.endpoint.MessageEndpoint;
 
 /**
  * A simple message endpoint
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com>Vladimir Rastseluev</a>
- * 
  */
-public class ValidMessageEndpoint implements MessageEndpoint, MessageListener
-{
+public class ValidMessageEndpoint implements MessageEndpoint, MessageListener {
 
-   
-   private Message message;
 
-   /**
-    * Constructor
-    *
-    */
-   public ValidMessageEndpoint()
-   {
-   }
+    private Message message;
 
-   /**
-    * {@inheritDoc}
-    */
-   public void onMessage(Message message)
-   {
-      this.message = message;
-      
-   }
+    /**
+     * Constructor
+     */
+    public ValidMessageEndpoint() {
+    }
 
-   /**
-    * Get the message
-    * @return The value
-    */
-   public Message getMessage()
-   {
-      return message;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void onMessage(Message message) {
+        this.message = message;
 
-   /**
-    * {@inheritDoc}
-    */
-   public void afterDelivery()
-   {
-   }
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void beforeDelivery(Method method)
-   {
-   }
+    /**
+     * Get the message
+     *
+     * @return The value
+     */
+    public Message getMessage() {
+        return message;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void release()
-   {
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void afterDelivery() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void beforeDelivery(Method method) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void release() {
+    }
 }

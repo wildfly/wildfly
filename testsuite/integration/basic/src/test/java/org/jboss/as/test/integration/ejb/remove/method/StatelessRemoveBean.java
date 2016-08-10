@@ -25,7 +25,7 @@ import javax.ejb.Stateless;
 
 /**
  * Defines a custom "remove" method that is not associated w/ EJBOBject/EJBLocalObject.remove
- * 
+ *
  * @author <a href="mailto:arubinge@redhat.com">ALR</a>
  */
 @Stateless

@@ -21,19 +21,19 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:application="http://java.sun.com/xml/ns/javaee/application_6.xsd"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd"
-	id="Application_ID" version="6">
-	<initialize-in-order>true</initialize-in-order>
-	<module>
-		<connector>
-			ear_packaged.rar
-		</connector>
-	</module>
-	<!--
+             xmlns="http://java.sun.com/xml/ns/javaee"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd"
+             id="Application_ID" version="6">
+    <initialize-in-order>true</initialize-in-order>
+    <module>
+        <connector>
+            ear_packaged.rar
+        </connector>
+    </module>
+    <!--
     <module>
         <ejb>ejb.jar</ejb>
     </module>
-	-->
+    -->
 </application>
 

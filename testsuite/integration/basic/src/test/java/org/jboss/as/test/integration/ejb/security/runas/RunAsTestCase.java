@@ -21,15 +21,19 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.Principal;
 import java.util.logging.Logger;
-
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 import javax.security.auth.login.LoginContext;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -46,15 +50,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.experimental.categories.Category;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test case to test the requirements related to the handling of a RunAs identity.
@@ -180,21 +179,20 @@ public class RunAsTestCase {
      * Migration test from EJB Testsuite (security/TimerRunAs) to AS7 [JBQA-5483].
      */
     @Test
-    public void testTimerNoSecurityAssociationPrincipal() throws Exception
-    {
-       LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-       lc.login();
+    public void testTimerNoSecurityAssociationPrincipal() throws Exception {
+        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
+        lc.login();
 
-       try {
-           TimerTester test = (TimerTester) ctx.lookup("java:module/" + TimerTesterBean.class.getSimpleName());
+        try {
+            TimerTester test = (TimerTester) ctx.lookup("java:module/" + TimerTesterBean.class.getSimpleName());
 
-           assertNotNull(test);
-           test.startTimer(150);
-           Assert.assertTrue(TimerTesterBean.awaitTimerCall());
+            assertNotNull(test);
+            test.startTimer(150);
+            Assert.assertTrue(TimerTesterBean.awaitTimerCall());
 
-           Assert.assertEquals("user2", TimerTesterBean.calleeCallerPrincipal.iterator().next().getName());
-       } finally {
-           lc.logout();
-       }
+            Assert.assertEquals("user2", TimerTesterBean.calleeCallerPrincipal.iterator().next().getName());
+        } finally {
+            lc.logout();
+        }
     }
 }

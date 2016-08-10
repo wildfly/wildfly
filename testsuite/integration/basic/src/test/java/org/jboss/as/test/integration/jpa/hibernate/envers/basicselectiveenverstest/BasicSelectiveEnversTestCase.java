@@ -31,7 +31,6 @@ import org.jboss.as.test.integration.jpa.hibernate.envers.Organization;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBOrg;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -40,7 +39,7 @@ import org.junit.runner.RunWith;
 
 /**
  * This testcase verifies Envers/Auditing functions on selected attributes(Audited and NotAudited)
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

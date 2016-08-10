@@ -34,7 +34,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,8 +43,8 @@ import org.junit.runner.RunWith;
  * -Djboss.options="-Djava.compiler=NONE -agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"
  * <p/>
  * For embedded debugging:
- *  start AS standalone and attach debugger
- *  mvn install -Premote
+ * start AS standalone and attach debugger
+ * mvn install -Premote
  *
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  * @author Scott Marlow
@@ -58,11 +57,11 @@ public class EPCPropagationTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addClasses(
-            CMTEPCStatefulBean.class, CMTStatefulBean.class, EPCStatefulBean.class,
-            InitEPCStatefulBean.class, IntermediateStatefulBean.class, IntermediateStatefulInterface.class,
-            MyEntity.class, NoTxEPCStatefulBean.class, NoTxStatefulBean.class,
-            StatefulBean.class, StatefulInterface.class, StatelessBean.class,
-            StatelessInterface.class, AbstractStatefulInterface.class, EPCPropagationTestCase.class
+                CMTEPCStatefulBean.class, CMTStatefulBean.class, EPCStatefulBean.class,
+                InitEPCStatefulBean.class, IntermediateStatefulBean.class, IntermediateStatefulInterface.class,
+                MyEntity.class, NoTxEPCStatefulBean.class, NoTxStatefulBean.class,
+                StatefulBean.class, StatefulInterface.class, StatelessBean.class,
+                StatelessInterface.class, AbstractStatefulInterface.class, EPCPropagationTestCase.class
         );
 
         jar.addAsManifestResource(EPCPropagationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
@@ -167,7 +166,7 @@ public class EPCPropagationTestCase {
 
     /**
      * JPA 7.6.2 XPC is closed when dependent session bean(s) are closed/destroyed.
-     *
+     * <p>
      * During this test, an entity (X) will be created in the XPC but not persisted to the database.
      * When the last SFSB referencing the XPC is closed, the entity (X) will no longer be found.
      *
@@ -187,8 +186,8 @@ public class EPCPropagationTestCase {
         StatefulInterface anotherStateful = stateful.createSFSBOnInvocation();
         stateful.finishUp();  // destroy SFSB
         stateful = null;      // clear reference to avoid using it by accident
-                              // both entities (8,9) should still be in XPC
-        equal = anotherStateful.createEntity(9,"John Steed");
+        // both entities (8,9) should still be in XPC
+        equal = anotherStateful.createEntity(9, "John Steed");
         assertTrue("again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
         EntityManager xpc = anotherStateful.getExtendedPersistenceContext();
         assertTrue("extended persistence context is still open", xpc.isOpen());

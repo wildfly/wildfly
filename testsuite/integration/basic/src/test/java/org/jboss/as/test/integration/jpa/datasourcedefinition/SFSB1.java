@@ -43,7 +43,7 @@ import javax.transaction.UserTransaction;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+    EntityManager em;
 
     @Resource
     SessionContext sessionContext;
@@ -63,9 +63,8 @@ public class SFSB1 {
             em.joinTransaction();
             em.persist(emp);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't start tx", e);
         }
 
         em.flush();         // should throw TransactionRequiredException
@@ -85,9 +84,8 @@ public class SFSB1 {
             em.joinTransaction();
             em.persist(emp);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't start tx", e);
         }
 
     }

@@ -34,7 +34,7 @@ public class GZIPResource {
     public String getMessage() {
         return "Hello World!";
     }
-    
+
     @GET
     @GZIP
     @Path("xml")

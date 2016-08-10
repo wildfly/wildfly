@@ -37,50 +37,48 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
  * This test writes and reads entity in the {@link TestServlet}. (based on the
  * EAP 5 testsuite).
- * 
+ *
  * @author Zbyněk Roubalík
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class WebJPATestCase {
 
-	private static final String ARCHIVE_NAME = "web_jpa";
-	
-	@ArquillianResource
-	static URL baseUrl;
+    private static final String ARCHIVE_NAME = "web_jpa";
+
+    @ArquillianResource
+    static URL baseUrl;
 
 
-	@Deployment
-	public static WebArchive deployment() {
-		WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
-		war.addClasses(WebJPATestCase.class, TestServlet.class,
-				HttpRequest.class, Flight.class, Company.class, Customer.class,
-				Ticket.class);
+    @Deployment
+    public static WebArchive deployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
+        war.addClasses(WebJPATestCase.class, TestServlet.class,
+                HttpRequest.class, Flight.class, Company.class, Customer.class,
+                Ticket.class);
         // WEB-INF/classes/ is implied
         war.addAsResource(WebJPATestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
-		return war;
-	}
+        return war;
+    }
 
-	private static String performCall(String urlPattern, String param)
-			throws Exception {
-		return HttpRequest.get(baseUrl.toString() + urlPattern + "?mode=" + param, 20, SECONDS);
-	}
+    private static String performCall(String urlPattern, String param)
+            throws Exception {
+        return HttpRequest.get(baseUrl.toString() + urlPattern + "?mode=" + param, 20, SECONDS);
+    }
 
-	@Test
-	public void testReadWrite() throws Exception {
-		performCall("test", "write");
+    @Test
+    public void testReadWrite() throws Exception {
+        performCall("test", "write");
 
-		String result = performCall("test", "read");
-		assertEquals("Flight number one", result);
-	}
+        String result = performCall("test", "read");
+        assertEquals("Flight number one", result);
+    }
 
 }

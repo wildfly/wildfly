@@ -28,7 +28,7 @@ import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
-abstract public class PostConstructPreDestroyBase {
+public abstract class PostConstructPreDestroyBase {
     @Inject
     protected JobContext jobContext;
 

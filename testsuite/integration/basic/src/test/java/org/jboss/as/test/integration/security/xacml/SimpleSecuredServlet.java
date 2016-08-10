@@ -34,22 +34,24 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * A simple servlet that just writes back a string. All roles are allowed.
- * 
+ *
  * @author Josef Cacek
  */
-@WebServlet(urlPatterns = { SimpleSecuredServlet.SERVLET_PATH })
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "*" }))
+@WebServlet(urlPatterns = {SimpleSecuredServlet.SERVLET_PATH})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"*"}))
 public class SimpleSecuredServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     public static final String SERVLET_PATH = "/secured";
 
-    /** The String returned in the HTTP response body. */
+    /**
+     * The String returned in the HTTP response body.
+     */
     public static final String RESPONSE_BODY = "GOOD";
 
     /**
      * Writes simple text response.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException

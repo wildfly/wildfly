@@ -23,10 +23,8 @@
 package org.jboss.as.test.integration.jpa.sibling;
 
 import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
-import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -34,19 +32,18 @@ import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceUnit;
 
 /**
- *
  * @author Scott Marlow
  */
 @Stateful
 public class DAO1 {
 
-    @PersistenceContext(unitName = "mypc",type= PersistenceContextType.EXTENDED)
+    @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
     EntityManager em;
 
-    @PersistenceUnit(unitName="mypc")
+    @PersistenceUnit(unitName = "mypc")
     private EntityManagerFactory emf;
 
-    public Map<String, Object> getEMInfo(){
+    public Map<String, Object> getEMInfo() {
         return emf.getProperties();
     }
 

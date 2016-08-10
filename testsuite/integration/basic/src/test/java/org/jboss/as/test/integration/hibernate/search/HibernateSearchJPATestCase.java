@@ -35,36 +35,36 @@ import org.junit.runner.RunWith;
 
 /**
  * Verify deployed applications can use the default Hibernate Search module via JPA APIs.
- * 
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
 public class HibernateSearchJPATestCase {
 
-   private static final String ARCHIVE_NAME = "hibernate4native_search_test";
+    private static final String ARCHIVE_NAME = "hibernate4native_search_test";
 
-   @EJB(mappedName = "java:module/SearchBean")
-   private SearchBean searchBean;
+    @EJB(mappedName = "java:module/SearchBean")
+    private SearchBean searchBean;
 
-   @Test
-   public void testFullTextQuery() {
-      searchBean.storeNewBook("Hello");
-      searchBean.storeNewBook("Hello world");
-      searchBean.storeNewBook("Hello planet Mars");
-      assertEquals(3, searchBean.findByKeyword("hello").size());
-      assertEquals(1, searchBean.findByKeyword("mars").size());
-   }
+    @Test
+    public void testFullTextQuery() {
+        searchBean.storeNewBook("Hello");
+        searchBean.storeNewBook("Hello world");
+        searchBean.storeNewBook("Hello planet Mars");
+        assertEquals(3, searchBean.findByKeyword("hello").size());
+        assertEquals(1, searchBean.findByKeyword("mars").size());
+    }
 
-   @Deployment
-   public static Archive<?> deploy() throws Exception {
+    @Deployment
+    public static Archive<?> deploy() throws Exception {
 
-      JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-      // add JPA configuration
-      jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
-      // add testing Bean and entities
-      jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
+        // add JPA configuration
+        jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        // add testing Bean and entities
+        jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);
 
-      return jar;
-   }
+        return jar;
+    }
 
 }

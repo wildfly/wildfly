@@ -27,7 +27,7 @@ import javax.interceptor.InvocationContext;
 
 /**
  * Simple interceptor, which only adds its classname in front of the result of {@link InvocationContext#proceed()}
- * 
+ *
  * @author Jaikiran Pai
  */
 public class ClassLevelContainerInterceptor {

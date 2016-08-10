@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.singleton.concurrency;
 
 import java.util.concurrent.TimeUnit;
-
 import javax.ejb.AccessTimeout;
 import javax.ejb.LocalBean;
 import javax.ejb.Lock;
@@ -49,7 +48,7 @@ public class LongWritesSingletonBean {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        count ++;
+        count++;
     }
 
     @Lock(value = LockType.READ)

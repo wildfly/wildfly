@@ -26,6 +26,5 @@ package org.jboss.as.test.integration.ejb.remote.distinctname;
  * @author Jaikiran Pai
  */
 public interface Echo {
-    
     String echo(String msg);
 }

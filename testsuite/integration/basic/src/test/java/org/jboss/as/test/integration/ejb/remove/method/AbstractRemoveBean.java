@@ -22,9 +22,8 @@
 package org.jboss.as.test.integration.ejb.remove.method;
 
 /**
- * 
  * AbstractRemoveBean.
- * 
+ *
  * @author <a href="arubinge@redhat.com">ALR</a>
  */
 public class AbstractRemoveBean implements Remove {

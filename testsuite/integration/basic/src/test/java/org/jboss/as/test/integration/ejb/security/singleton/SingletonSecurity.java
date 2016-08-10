@@ -27,5 +27,5 @@ package org.jboss.as.test.integration.ejb.security.singleton;
  */
 public interface SingletonSecurity {
 
-    public void allowedForRole1();
+    void allowedForRole1();
 }

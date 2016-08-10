@@ -96,7 +96,7 @@ public class EarJBossDeploymentStructureTestCase {
     @Test
     public void testUsePhysicalCodeSource() throws ClassNotFoundException {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
-        Assert.assertTrue( clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assert.assertTrue(clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
         Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
     }
 
@@ -109,20 +109,18 @@ public class EarJBossDeploymentStructureTestCase {
      * EE.5.15, part of testsuite migration AS6->AS7 (jbas7556)
      */
     @Test
-    public void testModuleName() throws Exception
-    {
-       String result = ejb.query("java:module/ModuleName");
-       assertEquals("ejb", result);
-       result = ejb.getResourceModuleName();
-       assertEquals("ejb", result);
+    public void testModuleName() throws Exception {
+        String result = ejb.query("java:module/ModuleName");
+        assertEquals("ejb", result);
+        result = ejb.getResourceModuleName();
+        assertEquals("ejb", result);
     }
-    
+
     @Test
-    public void testAppName() throws Exception
-    {
-       String result = ejb.query("java:app/AppName");
-       assertEquals("deployment-structure", result);
-       result = ejb.getResourceAppName();
-       assertEquals("deployment-structure", result);
+    public void testAppName() throws Exception {
+        String result = ejb.query("java:app/AppName");
+        assertEquals("deployment-structure", result);
+        result = ejb.getResourceAppName();
+        assertEquals("deployment-structure", result);
     }
 }

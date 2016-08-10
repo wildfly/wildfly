@@ -21,17 +21,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"	version="2.0">
-	<persistence-unit name="mainPu">
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <persistence-unit name="mainPu">
         <jar-file>lib/jarfile.jar</jar-file>
-		<description>Persistence Unit.</description>
-		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
-		<properties>
-			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
-			<property name="hibernate.show_sql" value="false" />
-			<property name="hibernate.session_factory_name" value="modelSessionFactory" />
-          <!-- ensure that the alias for the org:hibernate module can be used -->
-                        <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.0" />
-		</properties>
-	</persistence-unit>
+        <description>Persistence Unit.</description>
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.session_factory_name" value="modelSessionFactory"/>
+            <!-- ensure that the alias for the org:hibernate module can be used -->
+            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.0"/>
+        </properties>
+    </persistence-unit>
 </persistence>

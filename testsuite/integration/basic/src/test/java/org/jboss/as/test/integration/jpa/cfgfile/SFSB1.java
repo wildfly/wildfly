@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.cfgfile;
 
 import java.util.Map;
-
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -37,7 +36,7 @@ import javax.persistence.PersistenceContext;
 @Stateful
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+    EntityManager em;
 
     public void createEmployee(String name, String address, int id) {
         Employee emp = new Employee();
@@ -50,10 +49,10 @@ public class SFSB1 {
     public Employee getEmployeeNoTX(int id) {
         return em.find(Employee.class, id, LockModeType.NONE);
     }
-    
-    
-    public  Map<String, Object> getEMFProperties(){
-    	return em.getEntityManagerFactory().getProperties();  	
+
+
+    public Map<String, Object> getEMFProperties() {
+        return em.getEntityManagerFactory().getProperties();
     }
 
 }

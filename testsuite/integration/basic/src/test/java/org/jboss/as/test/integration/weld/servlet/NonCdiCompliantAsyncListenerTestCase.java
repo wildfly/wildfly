@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A CDI-incompatible {@link javax.servletAsyncListener} may be bundled with a deployment. 
+ * A CDI-incompatible {@link javax.servletAsyncListener} may be bundled with a deployment.
  * This is OK as long as the application does it pass the listener class to
  * {@link javax.servletAsyncContext#createListener(Class)}. This test verifies that the deployment
  * of an application with the listener does not fail.

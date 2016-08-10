@@ -23,21 +23,25 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 /**
  * Connection implementation
- * 
- * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a> 
+ *
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidConnectionImpl implements ValidConnection {
-    /** ManagedConnection */
+    /**
+     * ManagedConnection
+     */
     private ValidManagedConnection mc;
 
-    /** ManagedConnectionFactory */
+    /**
+     * ManagedConnectionFactory
+     */
     private ValidManagedConnectionFactory mcf;
 
     /**
      * Default constructor
-     * 
+     *
      * @param mc  ManagedConnection
-     * @param mcf  ManagedConnectionFactory
+     * @param mcf ManagedConnectionFactory
      */
     public ValidConnectionImpl(ValidManagedConnection mc, ValidManagedConnectionFactory mcf) {
         this.mc = mc;
@@ -46,7 +50,7 @@ public class ValidConnectionImpl implements ValidConnection {
 
     /**
      * Call getResourceAdapterProperty
-     * 
+     *
      * @return String
      */
     public int getResourceAdapterProperty() {
@@ -55,7 +59,7 @@ public class ValidConnectionImpl implements ValidConnection {
 
     /**
      * Call getManagedConnectionFactoryProperty
-     * 
+     *
      * @return String
      */
     public String getManagedConnectionFactoryProperty() {

@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.remove.method;
 
 import java.rmi.RemoteException;
-
 import javax.ejb.RemoteHome;
 import javax.ejb.Stateful;
 

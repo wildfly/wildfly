@@ -26,10 +26,8 @@ import org.jboss.ejb.client.EJBClientContext;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.ejb.LocalBean;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
-import javax.ejb.Stateless;
 import java.util.HashMap;
 import java.util.Map;
 

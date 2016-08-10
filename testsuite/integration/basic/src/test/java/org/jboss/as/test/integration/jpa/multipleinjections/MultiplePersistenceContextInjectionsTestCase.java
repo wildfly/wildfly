@@ -30,7 +30,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +37,7 @@ import org.junit.runner.RunWith;
 
 /**
  * AS7-1118
- *
+ * <p>
  * Tests that injecting multiple persistence units into the same EJB works as expected
  *
  * @author Stuart Douglas

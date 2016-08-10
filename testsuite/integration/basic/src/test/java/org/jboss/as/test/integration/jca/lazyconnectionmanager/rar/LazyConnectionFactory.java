@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
+import java.io.Serializable;
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>
@@ -31,5 +31,5 @@ import java.io.Serializable;
  */
 public interface LazyConnectionFactory extends Serializable, Referenceable {
 
-    public LazyConnection getConnection() throws ResourceException;
+    LazyConnection getConnection() throws ResourceException;
 }

@@ -22,17 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.remove.method;
 
+import java.rmi.RemoteException;
 import javax.ejb.EJBException;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBObject;
-import javax.ejb.Handle;
-import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
 
 /**
  * @author Jaikiran Pai
@@ -43,6 +39,7 @@ public class Ejb21ViewDDBean implements SessionBean {
     public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException {
 
     }
+
     public void ejbCreate() {
     }
 

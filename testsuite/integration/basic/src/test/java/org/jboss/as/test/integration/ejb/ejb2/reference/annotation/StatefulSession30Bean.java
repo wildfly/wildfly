@@ -30,6 +30,7 @@ import javax.ejb.Remote;
 import javax.ejb.RemoteHome;
 import javax.ejb.Stateful;
 import javax.naming.InitialContext;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -78,7 +79,7 @@ public class StatefulSession30Bean implements java.io.Serializable, StatefulSess
         try {
             InitialContext jndiContext = new InitialContext();
             StatefulSession30LocalHome home = (StatefulSession30LocalHome) jndiContext.lookup("java:module/HomedStatefulSession30!" + StatefulSession30LocalHome.class.getName());
-            LocalStatefulSession30 session = (LocalStatefulSession30) home.create();
+            LocalStatefulSession30 session = home.create();
             session.setLocalValue("LocalHome");
             return session.getLocalValue();
         } catch (Exception e) {

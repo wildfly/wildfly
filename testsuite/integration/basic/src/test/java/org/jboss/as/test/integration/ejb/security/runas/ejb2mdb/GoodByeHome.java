@@ -30,5 +30,5 @@ import javax.ejb.EJBHome;
  * @author Ondrej Chaloupka
  */
 public interface GoodByeHome extends EJBHome {
-    public GoodBye create() throws RemoteException, CreateException;
+    GoodBye create() throws RemoteException, CreateException;
 }

@@ -27,12 +27,12 @@ public abstract class AbstractTimerBean implements SimpleFace {
         for (Timer t : this.timerService.getTimers()) {
             t.cancel();
         }
-        this.timerTicks = 0;
+        timerTicks = 0;
     }
 
     @Override
     public int getTimerTicks() {
-        return this.timerTicks;
+        return timerTicks;
     }
 
     @Override
@@ -42,31 +42,31 @@ public abstract class AbstractTimerBean implements SimpleFace {
 
     @Override
     public void waitOnTimeout() throws InterruptedException {
-        this.latch = new CountDownLatch(1);
-        this.latch.await(delay * 2, TimeUnit.MILLISECONDS);
+        latch = new CountDownLatch(1);
+        latch.await(delay * 2, TimeUnit.MILLISECONDS);
     }
 
     @Timeout
     public void booom(Timer t) {
         new Exception().printStackTrace();
-        this.timerTicks++;
+        timerTicks++;
         if (latch != null)
             latch.countDown();
     }
 
     @Override
     public void setPersistent(boolean persistent) {
-        this.persistent = persistent;
+        AbstractTimerBean.persistent = persistent;
     }
 
     @Override
     public void setInfo(Serializable info) {
-        this.info = info;
+        AbstractTimerBean.info = info;
     }
 
     @Override
     public void setDelay(int delay) {
-        this.delay = delay;
+        AbstractTimerBean.delay = delay;
     }
 
     @Override

@@ -33,10 +33,10 @@ import javax.naming.NamingException;
 @Stateless
 public class ClassLoadingEJB {
 
-    @Resource(lookup="java:module/ModuleName")
+    @Resource(lookup = "java:module/ModuleName")
     private String moduleName;
-    
-    @Resource(lookup="java:app/AppName")
+
+    @Resource(lookup = "java:app/AppName")
     private String appName;
 
     public Class<?> loadClass(String className) throws ClassNotFoundException {
@@ -45,16 +45,15 @@ public class ClassLoadingEJB {
         }
         return this.getClass().getClassLoader().loadClass(className);
     }
-    
-    public String query(String name) throws NamingException
-    {
-       return new InitialContext().lookup(name).toString();
+
+    public String query(String name) throws NamingException {
+        return new InitialContext().lookup(name).toString();
     }
-    
+
     public String getResourceModuleName() {
         return moduleName;
     }
-    
+
     public String getResourceAppName() {
         return appName;
     }

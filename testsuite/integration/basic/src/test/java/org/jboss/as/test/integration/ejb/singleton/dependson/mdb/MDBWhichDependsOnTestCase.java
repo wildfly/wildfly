@@ -45,11 +45,11 @@ import org.junit.runner.RunWith;
 
 /**
  * WFLY-2732 - test if MDB can access @DependsOn ejbs in @PostConstruct and @PreDestroy annotated methods.
- * 
+ *
  * @author baranowb
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ JmsQueueServerSetupTask.class,SetupModuleServerSetupTask.class })
+@ServerSetup({JmsQueueServerSetupTask.class, SetupModuleServerSetupTask.class})
 public class MDBWhichDependsOnTestCase {
 
     private static final Logger logger = Logger.getLogger(MDBWhichDependsOnTestCase.class);
@@ -62,11 +62,11 @@ public class MDBWhichDependsOnTestCase {
 
     @EJB
     private CallCounterInterface counter;
-    
+
     @Resource(mappedName = Constants.QUEUE_JNDI_NAME)
     private Queue queue;
-    
-    @Resource (mappedName = Constants.QUEUE_REPLY_JNDI_NAME)
+
+    @Resource(mappedName = Constants.QUEUE_REPLY_JNDI_NAME)
     private Queue replyQueue;
 
     @Deployment(name = Constants.DEPLOYMENT_NAME_COUNTER, order = 0, managed = true, testable = true)
@@ -76,7 +76,7 @@ public class MDBWhichDependsOnTestCase {
         jar.addClass(MDBWhichDependsOnTestCase.class);
         jar.addClass(Constants.class);
         jar.addClass(JMSMessagingUtil.class);
-        jar.addClasses(JmsQueueServerSetupTask.class,SetupModuleServerSetupTask.class);
+        jar.addClasses(JmsQueueServerSetupTask.class, SetupModuleServerSetupTask.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
                 + Constants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
         return jar;
@@ -99,7 +99,7 @@ public class MDBWhichDependsOnTestCase {
 
     /**
      * Test an annotation based MDB with properties substitution
-     * 
+     *
      * @throws Exception
      */
     @Test

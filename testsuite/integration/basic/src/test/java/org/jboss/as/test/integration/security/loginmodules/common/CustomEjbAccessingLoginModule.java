@@ -22,9 +22,12 @@
 
 package org.jboss.as.test.integration.security.loginmodules.common;
 
-import org.jboss.security.SimpleGroup;
-import org.jboss.security.SimplePrincipal;
-
+import java.io.IOException;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -37,12 +40,9 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import java.io.IOException;
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+
+import org.jboss.security.SimpleGroup;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
@@ -54,7 +54,8 @@ import java.util.Set;
 public class CustomEjbAccessingLoginModule implements LoginModule {
 
 
-    @EJB private SimpleSecuredEJB simpleSecuredEJB;
+    @EJB
+    private SimpleSecuredEJB simpleSecuredEJB;
 
     private Subject subject;
     private CallbackHandler callbackHandler;
@@ -82,12 +83,10 @@ public class CustomEjbAccessingLoginModule implements LoginModule {
         simpleSecuredEJB.accessRunAsLoginModuleRole();
 
         if (username.equals("anil")) {
-            if (password.equals("anil"))
-                return true;
+            if (password.equals("anil")) { return true; }
         }
         if (username.equals("marcus")) {
-            if (password.equals("marcus"))
-                return true;
+            if (password.equals("marcus")) { return true; }
         }
 
         return false;
@@ -100,10 +99,8 @@ public class CustomEjbAccessingLoginModule implements LoginModule {
         callerPrincipal.addMember(new SimplePrincipal(username));
         principals.add(callerPrincipal);
         Group roles = new SimpleGroup("Roles");
-        if (username.equals("anil"))
-            roles.addMember(new SimplePrincipal("gooduser"));
-        if (username.equals("marcus"))
-            roles.addMember(new SimplePrincipal("superuser"));
+        if (username.equals("anil")) { roles.addMember(new SimplePrincipal("gooduser")); }
+        if (username.equals("marcus")) { roles.addMember(new SimplePrincipal("superuser")); }
         principals.add(roles);
         return true;
     }
@@ -125,7 +122,7 @@ public class CustomEjbAccessingLoginModule implements LoginModule {
 
         NameCallback nc = new NameCallback("User name: ", "guest");
         PasswordCallback pc = new PasswordCallback("Password: ", false);
-        Callback[] callbacks = { nc, pc };
+        Callback[] callbacks = {nc, pc};
 
         try {
             callbackHandler.handle(callbacks);

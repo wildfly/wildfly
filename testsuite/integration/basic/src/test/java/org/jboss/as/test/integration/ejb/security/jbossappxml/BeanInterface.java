@@ -25,6 +25,6 @@ package org.jboss.as.test.integration.ejb.security.jbossappxml;
  * @author anil saldhana
  */
 public interface BeanInterface {
-    public String getCallerPrincipal();
-    public boolean isCallerInRole(String roleName);
+    String getCallerPrincipal();
+    boolean isCallerInRole(String roleName);
 }

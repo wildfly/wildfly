@@ -29,5 +29,5 @@ import javax.ejb.EJBObject;
  * @author Ondrej Chaloupka
  */
 public interface GoodBye extends EJBObject {
-    public String sayGoodBye(String userID) throws RemoteException;
+    String sayGoodBye(String userID) throws RemoteException;
 }

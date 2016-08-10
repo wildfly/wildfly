@@ -34,15 +34,14 @@ import javax.ejb.Singleton;
 public class SingletonOne {
     @EJB(lookup = "java:global/callcounter/CallCounterSingleton")
     CallCounterSingleton callCounter;
-    
+
     @PostConstruct
     public void postConstruct() {
         callCounter.addCall(SingletonOne.class.getSimpleName());
     }
-    
+
     @PreDestroy
     public void preDestroy() {
         callCounter.addCall(SingletonOne.class.getSimpleName());
-    }    
+    }
 }
- 

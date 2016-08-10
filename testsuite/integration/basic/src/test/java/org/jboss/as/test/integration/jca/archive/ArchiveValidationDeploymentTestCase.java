@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.archive;
 
+import static org.junit.Assert.fail;
+
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -30,11 +32,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
-import org.jboss.as.test.integration.jca.rar.*;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -45,7 +47,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-6006 archive validation checking
@@ -85,7 +86,7 @@ public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
 
@@ -100,12 +101,11 @@ public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(ArchiveValidationDeploymentTestCase.class.getPackage(), name + "ra.xml", "ra.xml")
-                .addAsManifestResource(ArchiveValidationDeploymentTestCase.class.getPackage(),"ironjacamar.xml", "ironjacamar.xml")
+                .addAsManifestResource(ArchiveValidationDeploymentTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(
                         new StringAsset(
                                 "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
                         "MANIFEST.MF");
-        ;
         return raa;
     }
 
@@ -132,7 +132,7 @@ public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
         return createDeployment("warning_");
     }
 
-   public void goodTest(String dName) throws Exception {
+    public void goodTest(String dName) throws Exception {
         deployer.deploy(dName);
         deployer.undeploy(dName);
     }
@@ -143,12 +143,11 @@ public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
             fail("'" + dName + "' deployment shouldn't be deployed if " + description);
         } catch (Exception e) {
             // nothing
-        }
-        finally{
-        deployer.undeploy(dName);
+        } finally {
+            deployer.undeploy(dName);
         }
     }
-    
+
     @Test
     public void testValidationDisabled() throws Throwable {
 

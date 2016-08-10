@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
 import java.io.Serializable;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 

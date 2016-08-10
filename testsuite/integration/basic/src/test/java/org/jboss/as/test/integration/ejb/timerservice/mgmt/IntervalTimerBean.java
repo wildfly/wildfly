@@ -14,8 +14,8 @@ public class IntervalTimerBean extends AbstractTimerBean {
     @Override
     public void createTimer() {
         final TimerConfig timerConfig = new TimerConfig();
-        timerConfig.setPersistent(super.persistent);
-        timerConfig.setInfo(super.info);
-        super.timerService.createIntervalTimer(super.delay, super.delay, timerConfig);
+        timerConfig.setPersistent(persistent);
+        timerConfig.setInfo(info);
+        super.timerService.createIntervalTimer(delay, delay, timerConfig);
     }
 }

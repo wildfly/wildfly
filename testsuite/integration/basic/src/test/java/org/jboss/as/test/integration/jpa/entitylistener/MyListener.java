@@ -31,7 +31,6 @@ import javax.persistence.PreUpdate;
 
 /**
  * test case from AS7-2968
- *
  */
 
 public class MyListener {
@@ -63,8 +62,8 @@ public class MyListener {
         try {
             invocationCount++;
             InitialContext jndiContext = new InitialContext();
-            EJBContext ctx = (EJBContext)jndiContext.lookup("java:comp/EJBContext");
-              //System.out.println(ctx.getCallerPrincipal().getName() + ", entity=" + entity);
+            EJBContext ctx = (EJBContext) jndiContext.lookup("java:comp/EJBContext");
+            //System.out.println(ctx.getCallerPrincipal().getName() + ", entity=" + entity);
         } catch (NamingException e) {
             throw new RuntimeException("initial context error", e);
         }

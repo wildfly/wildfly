@@ -22,19 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.mapbased;
 
-import org.junit.Assert;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.Properties;
 
 /**
  * Tests for EJBCLIENT-34: properties-based JNDI InitialContext for EJB clients.

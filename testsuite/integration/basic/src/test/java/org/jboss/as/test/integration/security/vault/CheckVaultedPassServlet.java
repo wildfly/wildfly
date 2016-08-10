@@ -36,32 +36,32 @@ import org.jboss.security.vault.SecurityVaultUtil;
 /**
  * A servlet for testing purposes which uses @SecurityVaultUtil for obtaning
  * vaulted password.
- * 
+ *
  * @author Filip Bogyai
  */
-@WebServlet(urlPatterns = { "/check" })
+@WebServlet(urlPatterns = {"/check"})
 public class CheckVaultedPassServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
     public static final String SERVLET_PATH = "/check";
-    
+
     public static final String VAULTED_PASS = "vaultedPass";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/plain");
         final PrintWriter writer = resp.getWriter();
-        String vaultString = req.getParameter(VAULTED_PASS) ;
+        String vaultString = req.getParameter(VAULTED_PASS);
         char[] password = "nopass".toCharArray();
-        if(vaultString != null){
+        if (vaultString != null) {
             try {
-                password =  SecurityVaultUtil.getValue(vaultString);
+                password = SecurityVaultUtil.getValue(vaultString);
             } catch (SecurityVaultException e) {
                 e.printStackTrace();
             }
-        }        
-        
+        }
+
         writer.write(password);
         writer.close();
     }

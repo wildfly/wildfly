@@ -64,7 +64,7 @@ public class HelloWorldConnectionImpl implements HelloWorldConnection {
      */
     public String helloWorld() {
 
-        return helloWorld(((HelloWorldResourceAdapter) mcf.getResourceAdapter()).toString());
+        return helloWorld(mcf.getResourceAdapter().toString());
 
     }
 

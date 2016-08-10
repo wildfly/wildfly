@@ -29,6 +29,6 @@ import javax.ejb.Local;
 @Local
 public interface BeanInterface {
 
-    public String name();
+    String name();
 
 }

@@ -55,6 +55,7 @@ public class StatelessBean implements StatelessInterface {
 
     /**
      * can only be called from a SFSB with an extended persistence context
+     *
      * @param id
      * @param name
      */

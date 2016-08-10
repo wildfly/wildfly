@@ -22,11 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.security.DenyAll;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * User: jpai

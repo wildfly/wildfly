@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-	
 package org.jboss.as.test.integration.ejb.mdb.cdi;
 
 import javax.annotation.Resource;
@@ -47,7 +46,7 @@ public class MDBProxyBean implements MDBProxy{
 
     @Resource(mappedName = QUEUE_JNDI_NAME)
     private Queue queue;
-    
+
     @Override
     public void trigger() throws Exception {
         final String goodMorning = "Good morning";

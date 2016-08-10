@@ -36,7 +36,7 @@ import javax.persistence.SynchronizationType;
 @Stateful
 public class UnsynchronizedSFSB {
     @PersistenceContext(unitName = "unsynchronized", synchronization = SynchronizationType.UNSYNCHRONIZED)
-        EntityManager em;
+    EntityManager em;
 
     @EJB
     InnerUnsynchronizedSFSB innerUnsynchronizedSFSB;    // for UNSYNCHRONIZED propagation test

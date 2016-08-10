@@ -23,13 +23,12 @@
 package org.jboss.as.test.integration.ejb.remote.view;
 
 import javax.ejb.Local;
-import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 /**
  * @author Jaikiran Pai
  */
 @Stateless
-@Local (LocalEcho.class)
+@Local(LocalEcho.class)
 public class StatelessEcho extends CommonEcho {
 }

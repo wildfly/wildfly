@@ -27,5 +27,5 @@ package org.jboss.as.test.integration.sar;
  */
 public interface SarWithinEarServiceMBean {
 
-    public int add(int x, int y);
+    int add(int x, int y);
 }

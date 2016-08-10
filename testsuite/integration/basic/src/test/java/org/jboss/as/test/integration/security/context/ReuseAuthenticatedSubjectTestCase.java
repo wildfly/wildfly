@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.security.context;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -141,7 +140,7 @@ public class ReuseAuthenticatedSubjectTestCase {
         Assert.assertEquals("Counter in CounterLoginModule was not successfully reset", "0", counter);
     }
 
-    private String getCounter(URL url) throws Exception, MalformedURLException {
+    private String getCounter(URL url) throws Exception {
         final URL counterServletUrl = new URL(url.toExternalForm() + CounterServlet.SERVLET_PATH.substring(1) + "?"
                 + CounterServlet.RESET_PARAM);
         String counter = Utils.makeCall(counterServletUrl.toURI(), 200);

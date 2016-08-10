@@ -22,22 +22,22 @@
   -->
 
 <entity-mappings
-	xmlns="http://java.sun.com/xml/ns/persistence/orm"
-	version="1.0">
+        xmlns="http://java.sun.com/xml/ns/persistence/orm"
+        version="1.0">
 
-      <entity class="org.jboss.as.test.integration.hibernate.generator.Employee">
-          <table-generator name="employeeGen" pk-column-name="s_id" value-column-name="s_nextnum" pk-column-value="inventory" allocation-size="100"/>
-         <attributes>
+    <entity class="org.jboss.as.test.integration.hibernate.generator.Employee">
+        <table-generator name="employeeGen" pk-column-name="s_id" value-column-name="s_nextnum" pk-column-value="inventory" allocation-size="100"/>
+        <attributes>
             <id name="id">
-               <column name="c_id"/>
-               <generated-value strategy="TABLE" generator="employeeGen"/>
+                <column name="c_id"/>
+                <generated-value strategy="TABLE" generator="employeeGen"/>
             </id>
             <basic name="name">
-               <column name="c_name"/>
+                <column name="c_name"/>
             </basic>
             <basic name="address">
-               <column name="c_address"/>
+                <column name="c_address"/>
             </basic>
-         </attributes>
-      </entity>
+        </attributes>
+    </entity>
 </entity-mappings>

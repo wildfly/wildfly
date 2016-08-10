@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Incorrect interceptor - contains 2 methods annotated with the {@link AroundInvoke}.
- * 
+ *
  * @author Josef Cacek
  */
 public class IncorrectContainerInterceptor {

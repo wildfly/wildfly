@@ -62,9 +62,8 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that the Resource injection with substitution works as expected
- * 
+ *
  * @author wangchao
- * 
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ ResourceInjectionSubstitutionTestCase.SystemPropertySetup.class })

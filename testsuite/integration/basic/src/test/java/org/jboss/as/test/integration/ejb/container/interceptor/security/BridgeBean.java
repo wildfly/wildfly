@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
 /**
  * Implementation of {@link Manage} interface which calls (remotely) the {@link TargetBean} EJB methods. Methods of this class
  * are not protected (@PermitAll used on class level).
- * 
+ *
  * @author Josef Cacek
  */
 @Stateless(name = Manage.BEAN_NAME_BRIDGE)

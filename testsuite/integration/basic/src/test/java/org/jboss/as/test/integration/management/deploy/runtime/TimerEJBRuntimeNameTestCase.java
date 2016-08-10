@@ -131,7 +131,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
         // just to blow up
         Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
     }
-    
+
     @Test
     public void testTimer() throws Exception{
         final InitialContext context = getInitialContext();

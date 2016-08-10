@@ -35,7 +35,7 @@ import javax.persistence.SynchronizationType;
 @Stateful
 public class InnerUnsynchronizedSFSB {
     @PersistenceContext(unitName = "unsynchronized", synchronization = SynchronizationType.UNSYNCHRONIZED)
-        EntityManager em;
+    EntityManager em;
 
     public Employee find(int id) {
         return em.find(Employee.class, id);

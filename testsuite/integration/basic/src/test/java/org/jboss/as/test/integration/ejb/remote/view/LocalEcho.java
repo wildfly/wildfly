@@ -29,6 +29,6 @@ import javax.ejb.Local;
  */
 @Local
 public interface LocalEcho {
-    
+
     String echo(String message);
 }

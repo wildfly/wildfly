@@ -38,7 +38,7 @@ import javax.jms.TextMessage;
  */
 @MessageDriven(
         activationConfig = {
-            @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = TOPIC_LOOKUP)
+                @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = TOPIC_LOOKUP)
         }
 )
 public class TopicMDB implements MessageListener {
@@ -46,15 +46,14 @@ public class TopicMDB implements MessageListener {
     @Inject
     private JMSContext context;
 
-    public void onMessage(final Message m)
-    {
+    public void onMessage(final Message m) {
         try {
-            TextMessage message = (TextMessage)m;
+            TextMessage message = (TextMessage) m;
             Destination replyTo = m.getJMSReplyTo();
 
             context.createProducer()
-                   .setJMSCorrelationID(message.getJMSMessageID())
-                   .send(replyTo, message.getText());
+                    .setJMSCorrelationID(message.getJMSMessageID())
+                    .send(replyTo, message.getText());
         } catch (Exception e) {
             e.printStackTrace();
         }

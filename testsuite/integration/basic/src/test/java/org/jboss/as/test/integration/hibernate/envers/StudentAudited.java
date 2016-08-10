@@ -26,7 +26,7 @@ import org.hibernate.envers.Audited;
 
 /**
  * Represents a student object.
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Audited
@@ -48,10 +48,10 @@ public class StudentAudited {
 
     /**
      * Creates a new instance of Student.
-     * 
+     *
      * @param firstName first name.
-     * @param lastName last name.
-     * @param address address.
+     * @param lastName  last name.
+     * @param address   address.
      */
     public StudentAudited(String firstName, String lastName, String address) {
         this.firstName = firstName;
@@ -61,7 +61,7 @@ public class StudentAudited {
 
     /**
      * Gets the student id for this student.
-     * 
+     *
      * @return student id.
      */
     public int getStudentId() {
@@ -70,7 +70,7 @@ public class StudentAudited {
 
     /**
      * Sets the student id for this student.
-     * 
+     *
      * @return student id.
      */
     public void setStudentId(int studentId) {
@@ -79,7 +79,7 @@ public class StudentAudited {
 
     /**
      * Gets the first name for this student.
-     * 
+     *
      * @return first name.
      */
     public String getFirstName() {
@@ -88,7 +88,7 @@ public class StudentAudited {
 
     /**
      * Sets the first name for this student.
-     * 
+     *
      * @param first name.
      */
     public void setFirstName(String firstName) {
@@ -97,7 +97,7 @@ public class StudentAudited {
 
     /**
      * Gets the last name for this student.
-     * 
+     *
      * @return last name.
      */
     public String getLastName() {
@@ -106,7 +106,7 @@ public class StudentAudited {
 
     /**
      * Sets the last name for this student.
-     * 
+     *
      * @param last name.
      */
     public void setLastName(String lastName) {
@@ -115,7 +115,7 @@ public class StudentAudited {
 
     /**
      * Gets the address for this student.
-     * 
+     *
      * @return address.
      */
     public String getAddress() {
@@ -124,7 +124,7 @@ public class StudentAudited {
 
     /**
      * Sets the address for this student.
-     * 
+     *
      * @param address.
      */
     public void setAddress(String address) {
@@ -133,7 +133,7 @@ public class StudentAudited {
 
     /**
      * Method used by the UI to clear information on the screen.
-     * 
+     *
      * @return String used in the navigation rules.
      */
     public String clear() {

@@ -33,17 +33,14 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Tests that CDI beans defined in an installed library can be used in an .ear deployment.
  *
- * @see https://issues.jboss.org/browse/AS7-6821
- *
  * @author Jozef Hartinger
- *
+ * @see https://issues.jboss.org/browse/AS7-6821
  */
 @RunWith(Arquillian.class)
 public class WeldBundledLibraryDeploymentEarTestCase extends AbstractBundledLibraryDeploymentTestCase {

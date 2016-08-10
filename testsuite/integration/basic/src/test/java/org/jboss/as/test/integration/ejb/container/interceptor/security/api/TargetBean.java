@@ -29,11 +29,11 @@ import javax.ejb.Stateless;
 
 /**
  * An implementation of {@link Manage} interface which has protected {@link #role1()} and {@link #role2()} methods.
- * 
+ *
  * @author Josef Cacek
  */
 @Stateless(name = Manage.BEAN_NAME_TARGET)
-@DeclareRoles({ Manage.ROLE_ROLE1, Manage.ROLE_ROLE2, Manage.ROLE_GUEST, Manage.ROLE_USERS })
+@DeclareRoles({Manage.ROLE_ROLE1, Manage.ROLE_ROLE2, Manage.ROLE_GUEST, Manage.ROLE_USERS})
 @Remote(Manage.class)
 public class TargetBean implements Manage {
 
@@ -41,27 +41,27 @@ public class TargetBean implements Manage {
 
     /**
      * Method with only {@link Manage#ROLE_ROLE1} access.
-     * 
+     *
      * @return
      */
-    @RolesAllowed({ ROLE_ROLE1 })
+    @RolesAllowed({ROLE_ROLE1})
     public String role1() {
         return RESULT;
     }
 
     /**
      * Method with only {@link Manage#ROLE_ROLE2} access.
-     * 
+     *
      * @return
      */
-    @RolesAllowed({ ROLE_ROLE2 })
+    @RolesAllowed({ROLE_ROLE2})
     public String role2() {
         return RESULT;
     }
 
     /**
      * Unprotected method.
-     * 
+     *
      * @return
      */
     @PermitAll

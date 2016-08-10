@@ -118,7 +118,7 @@ public class RunAsPrincipalTestCase  {
     private WhoAmI lookupCaller() throws Exception {
         return (WhoAmI)new InitialContext().lookup("java:module/" + Caller.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
-    
+
     private WhoAmI lookupCallerRunAsPrincipal() throws Exception {
         return (WhoAmI)new InitialContext().lookup("java:module/" + CallerRunAsPrincipal.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }

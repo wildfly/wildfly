@@ -24,13 +24,11 @@ package org.jboss.as.test.integration.management.deploy.runtime.ejb.statefull;
 
 import javax.ejb.Stateful;
 
-import org.jboss.logging.Logger;
-
 
 /**
  * @author baranowb
  */
-@Stateful(name="POINT")
+@Stateful(name = "POINT")
 public class PointLessMathBean implements PointlesMathInterface {
 
     @Override

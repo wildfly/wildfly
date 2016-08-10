@@ -30,7 +30,7 @@ import javax.ejb.Singleton;
 
 /**
  * @author baranowb
- * 
+ *
  */
 @Singleton
 public class OverlayEJB implements OverlayableInterface {
@@ -44,7 +44,7 @@ public class OverlayEJB implements OverlayableInterface {
     public String fetchResourceStatic() throws Exception {
         return fetch(RESOURCE_STATIC);
     }
-    
+
     protected String fetch(final String res) throws Exception {
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(res)) {
             if (is == null) {

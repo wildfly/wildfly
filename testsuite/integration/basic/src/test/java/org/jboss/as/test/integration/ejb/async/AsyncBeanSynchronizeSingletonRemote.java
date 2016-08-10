@@ -29,7 +29,7 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface AsyncBeanSynchronizeSingletonRemote {
-    void reset();    
+    void reset();
     void latchCountDown();
     void latch2CountDown();
     void latchAwaitSeconds(int sec) throws InterruptedException;

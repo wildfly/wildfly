@@ -26,15 +26,15 @@ package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */
 public interface LazyConnection {
-    public boolean isManagedConnectionSet();
+    boolean isManagedConnectionSet();
 
-    public boolean closeManagedConnection();
+    boolean closeManagedConnection();
 
-    public boolean associate();
+    boolean associate();
 
-    public boolean isEnlisted();
+    boolean isEnlisted();
 
-    public boolean enlist();
+    boolean enlist();
 
-    public void close();
+    void close();
 }

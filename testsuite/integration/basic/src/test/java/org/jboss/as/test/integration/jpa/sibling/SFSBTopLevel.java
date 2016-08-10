@@ -43,7 +43,7 @@ import javax.transaction.UserTransaction;
 @Stateful
 public class SFSBTopLevel {
     @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+    EntityManager em;
 
     @Resource
     SessionContext sessionContext;
@@ -58,7 +58,7 @@ public class SFSBTopLevel {
         otherBean1.myFunction();
         otherBean2.myFunction();
         return "fine";
-         }
+    }
 
     /**
      * The PostConstruct callback invocations occur before the first business method invocation on thebean.
@@ -95,9 +95,8 @@ public class SFSBTopLevel {
             em.joinTransaction();
             em.persist(emp);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't start tx", e);
         }
 
         em.flush();         // should throw TransactionRequiredException
@@ -114,13 +113,11 @@ public class SFSBTopLevel {
     public String queryEmployeeNameNoTX(int id) {
         Query q = em.createQuery("SELECT e.name FROM Employee e");
         try {
-            String name = (String)q.getSingleResult();
+            String name = (String) q.getSingleResult();
             return name;
-        }
-        catch (NoResultException expected) {
+        } catch (NoResultException expected) {
             return "success";
-        }
-        catch (Exception unexpected) {
+        } catch (Exception unexpected) {
             return unexpected.getMessage();
         }
 

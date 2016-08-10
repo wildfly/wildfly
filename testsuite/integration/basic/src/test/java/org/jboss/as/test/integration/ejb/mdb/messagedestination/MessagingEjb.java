@@ -52,7 +52,7 @@ public class MessagingEjb {
 
     @Resource(name = "myQueue")
     private Queue queue;
-    
+
     @Resource(name = "myReplyQueue")
     private Queue replyQueue;
 

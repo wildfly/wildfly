@@ -32,7 +32,7 @@ import javax.ejb.Stateful;
 @Stateful
 public class SFSB1 {
 
-    public final static String MESSAGE = "Expected Exception";
+    public static final String MESSAGE = "Expected Exception";
 
     public volatile boolean preDestroy = false;
 

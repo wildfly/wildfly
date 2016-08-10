@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import java.net.URL;
 import java.util.logging.Logger;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -157,7 +156,7 @@ public class RunAsTestCaseEJBMDB {
             String actual = ((TextMessage) replyMsg).getText();
             Assert.assertEquals("Howdy Fred! GoodBye user1", actual);
         } finally {
-            if(session != null) {
+            if (session != null) {
                 session.close();
             }
             closeConnection(connection);

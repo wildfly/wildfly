@@ -33,15 +33,13 @@ public class PersonResource {
     }
 
     @GET
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @GET
     @Path("/address")
-    public String getClassName()
-    {
+    public String getClassName() {
         return name + "'s address is unknown.";
     }
 }

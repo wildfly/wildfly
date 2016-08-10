@@ -26,7 +26,7 @@ import javax.ejb.Singleton;
 
 /**
  * Counting ordering of calls.
- * 
+ *
  * @author baranowb
  */
 @Singleton
@@ -62,7 +62,7 @@ public class CallCounterSingleton implements CallCounterInterface {
     }
 
     /**
-     * 
+     *
      */
     public void setMessage() {
         this.message = true;

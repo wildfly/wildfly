@@ -30,7 +30,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
@@ -41,7 +40,7 @@ import javax.validation.Payload;
  */
 @Constraint(validatedBy = CustomMinValidator.class)
 @Documented
-@Target({ METHOD, FIELD, TYPE, PARAMETER })
+@Target({METHOD, FIELD, TYPE, PARAMETER})
 @Retention(RUNTIME)
 public @interface CustomMin {
     String message() default "Not enough people for a reservation";

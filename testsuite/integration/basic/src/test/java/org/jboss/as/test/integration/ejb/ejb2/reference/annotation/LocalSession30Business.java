@@ -26,9 +26,9 @@ import java.rmi.RemoteException;
 
 /**
  * LocalSession30Business
- * 
+ *
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
 public interface LocalSession30Business {
-    public String access() throws RemoteException;
+    String access() throws RemoteException;
 }

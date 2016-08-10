@@ -29,6 +29,6 @@ import javax.ejb.EJBObject;
  * @author <a href="mailto:dimitris@jboss.org">Dimitris Andreadis</a>
  */
 public interface CountedSession extends EJBObject {
-    public void doSomething(long delay) throws RemoteException;
-    public void doSomethingSync(long delay) throws RemoteException;
+    void doSomething(long delay) throws RemoteException;
+    void doSomethingSync(long delay) throws RemoteException;
 }

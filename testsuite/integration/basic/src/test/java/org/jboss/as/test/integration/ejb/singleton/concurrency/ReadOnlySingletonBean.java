@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.singleton.concurrency;
 
 import java.util.concurrent.TimeUnit;
-
 import javax.ejb.AccessTimeout;
 import javax.ejb.LocalBean;
 import javax.ejb.Lock;
@@ -36,7 +35,7 @@ import javax.ejb.Singleton;
 @Singleton
 @LocalBean
 @Lock(value = LockType.READ)
-public class ReadOnlySingletonBean implements ReadOnlySingleton{
+public class ReadOnlySingletonBean implements ReadOnlySingleton {
 
 
     @AccessTimeout(value = 1, unit = TimeUnit.SECONDS)

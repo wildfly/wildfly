@@ -25,7 +25,7 @@ import javax.ejb.Local;
 
 /**
  * Local implementation of "Remove"
- * 
+ *
  * @author <a href="mailto:arubinge@redhat.com">ALR</a>
  */
 @Local

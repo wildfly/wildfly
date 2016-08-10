@@ -67,7 +67,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Testcases which test JBossPDP initialization a validates XACML Interoperability Use Cases. .
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -82,7 +82,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Creates {@link JavaArchive} for the deployment.
-     * 
+     *
      * @return
      */
     @Deployment
@@ -101,13 +101,12 @@ public class JBossPDPInteroperabilityTestCase {
         jar.addAsResource(JBossPDPServletInitializationTestCase.class.getPackage(), XACMLTestUtils.TESTOBJECTS_REQUESTS
                 + "/med-example-request.xml");
 
-        LOGGER.info(jar.toString(true));
         return jar;
     }
 
     /**
      * Validates the 7 Oasis XACML Interoperability Use Cases.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -129,7 +128,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Tests PDP evaluation of XACML requests provided as the objects (Oasis XACML Interoperability Use Cases).
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -155,7 +154,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Tests loading XACML policies from a filesystem folder.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -204,7 +203,7 @@ public class JBossPDPInteroperabilityTestCase {
     /**
      * Creates a {@link JBossPDP} instance filled with policies from Medical example (loaded from a directory in the
      * filesystem).
-     * 
+     *
      * @param policyDir
      * @return
      * @throws IOException
@@ -242,7 +241,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Get the decision from the given PDP for the given request string (XML as a String).
-     * 
+     *
      * @param pdp
      * @param requestStr
      * @return
@@ -256,7 +255,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Get the decision from the PDP.
-     * 
+     *
      * @param pdp
      * @param requestFileLoc a file where the xacml request is stored
      * @return
@@ -276,7 +275,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Gets the decision from the PDP.
-     * 
+     *
      * @param pdp
      * @param request
      * @return
@@ -287,7 +286,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Creates a single XACML request (instance of {@link RequestType}) with given parameters (subject's attribute values).
-     * 
+     *
      * @param reqTradeAppr
      * @param reqCreditAppr
      * @param buyPrice
@@ -310,7 +309,7 @@ public class JBossPDPInteroperabilityTestCase {
     /**
      * Creates a {@link SubjectType} with given attribute values. Some of the attribute values (as "subject-id" for instance)
      * are fixed.
-     * 
+     *
      * @param reqTradeAppr
      * @param reqCreditAppr
      * @param buyPrice
@@ -350,7 +349,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Creates a {@link ResourceType} with several attributes.
-     * 
+     *
      * @return
      */
     private ResourceType createResource() {
@@ -388,7 +387,7 @@ public class JBossPDPInteroperabilityTestCase {
 
     /**
      * Creates a simple {@link ActionType} with a single attribute - action-id=Buy.
-     * 
+     *
      * @return
      */
     private ActionType createAction() {

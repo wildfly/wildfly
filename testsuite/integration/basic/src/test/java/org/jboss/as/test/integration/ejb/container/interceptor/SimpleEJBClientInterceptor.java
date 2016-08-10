@@ -31,7 +31,7 @@ import org.jboss.ejb.client.EJBClientInvocationContext;
  * An EJB client side interceptor. The entries in a {@link Map} provided to the constructor are copied to the
  * {@link EJBClientInvocationContext#getContextData()} in the {@link #handleInvocation(EJBClientInvocationContext)} before
  * {@link EJBClientInvocationContext#sendRequest()} is called
- * 
+ *
  * @author Jaikiran Pai
  */
 public class SimpleEJBClientInterceptor implements EJBClientInterceptor {

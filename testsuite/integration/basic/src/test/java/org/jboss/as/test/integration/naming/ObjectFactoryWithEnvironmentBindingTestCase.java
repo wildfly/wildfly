@@ -32,9 +32,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -46,11 +46,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-
 import javax.naming.InitialContext;
 import javax.naming.spi.ObjectFactory;
-
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -64,6 +61,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;

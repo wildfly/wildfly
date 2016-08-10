@@ -24,6 +24,18 @@
 
 package org.jboss.as.test.integration.jca.capacitypolicies;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -45,18 +57,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * Integration test for JCA capacity policies JBJCA-986 using datasource/xa-datasource
@@ -168,10 +168,10 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         Assert.assertEquals("Unexpected DestroyedCount", expectedDestroyedCount, destroyedCount);
     }
 
-    static abstract class AbstractDatasourceCapacityPoliciesServerSetup extends JcaMgmtServerSetupTask {
+    abstract static class AbstractDatasourceCapacityPoliciesServerSetup extends JcaMgmtServerSetupTask {
         private boolean xa;
 
-        public AbstractDatasourceCapacityPoliciesServerSetup(boolean xa) {
+        AbstractDatasourceCapacityPoliciesServerSetup(boolean xa) {
             this.xa = xa;
         }
 
@@ -201,8 +201,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
             addOperation.get("max-pool-size").set(5);
             addOperation.get("user-name").set("sa");
             addOperation.get("password").set("sa");
-            if (!xa)
-                addOperation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+            if (!xa) { addOperation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"); }
 
             if (capacityConfiguration != null) {
                 // add capacity-decrementer-class
@@ -276,22 +275,16 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         }
 
         void addCapacityDecrementerProperty(String name, String value) {
-            if (capacityDecrementerClass == null)
-                throw new IllegalStateException("capacityDecrementerClass isn't set");
-            if (name == null)
-                throw new NullPointerException("name");
-            if (value == null)
-                throw new NullPointerException("value");
+            if (capacityDecrementerClass == null) { throw new IllegalStateException("capacityDecrementerClass isn't set"); }
+            if (name == null) { throw new NullPointerException("name"); }
+            if (value == null) { throw new NullPointerException("value"); }
             capacityDecrementerProperties.put(name, value);
         }
 
         void addCapacityIncrementerProperty(String name, String value) {
-            if (capacityIncrementerClass == null)
-                throw new IllegalStateException("capacityIncrementerClass isn't set");
-            if (name == null)
-                throw new NullPointerException("name");
-            if (value == null)
-                throw new NullPointerException("value");
+            if (capacityIncrementerClass == null) { throw new IllegalStateException("capacityIncrementerClass isn't set"); }
+            if (name == null) { throw new NullPointerException("name"); }
+            if (value == null) { throw new NullPointerException("value"); }
             capacityIncrementerProperties.put(name, value);
         }
 

@@ -27,8 +27,8 @@ import javax.interceptor.Interceptors;
 /**
  * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
  */
-@Interceptors({ InterceptA.class })
-abstract public class ABean implements A {
+@Interceptors({InterceptA.class})
+public abstract class ABean implements A {
     public String getMessage() {
         return "The Message";
     }

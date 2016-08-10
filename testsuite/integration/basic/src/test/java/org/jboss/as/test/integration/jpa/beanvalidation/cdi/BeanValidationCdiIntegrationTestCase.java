@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
@@ -86,11 +85,11 @@ public class BeanValidationCdiIntegrationTestCase {
             ConstraintViolationException constraintViolationException = null;
 
             // Find the ConstraintViolationException
-            while(throwable != null && !(throwable instanceof ConstraintViolationException)) {
+            while (throwable != null && !(throwable instanceof ConstraintViolationException)) {
                 throwable = throwable.getCause();
             }
 
-            constraintViolationException = (ConstraintViolationException)throwable;
+            constraintViolationException = (ConstraintViolationException) throwable;
 
             Set<ConstraintViolation<?>> violations = constraintViolationException.getConstraintViolations();
             List<String> actualViolations = new ArrayList<String>();

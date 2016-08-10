@@ -21,18 +21,24 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.junit.Assert.fail;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
@@ -43,9 +49,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.*;
 
 /**
  * JBQA-6456 Test jdbc statistics of data sources
@@ -71,8 +74,7 @@ public class DataSourceJdbcStatisticsTestCase {
                 dsAddress = createDataSource(false, jndiDs);
                 dsXaAddress = createDataSource(true, jndiXaDs);
                 StringBuffer sb = cleanStats(dsAddress).append(cleanStats(dsXaAddress));
-                if (sb.length() > 0)
-                    fail(sb.toString());
+                if (sb.length() > 0) { fail(sb.toString()); }
             } catch (Throwable e) {
                 removeDss();
                 throw new Exception(e);
@@ -84,8 +86,7 @@ public class DataSourceJdbcStatisticsTestCase {
             try {
                 StringBuffer sb = assertStatisticsSet(true, getStatAddr(dsAddress)).append(
                         assertStatisticsSet(true, getStatAddr(dsXaAddress)));
-                if (sb.length() > 0)
-                    fail(sb.toString());
+                if (sb.length() > 0) { fail(sb.toString()); }
 
             } catch (Throwable e) {
                 throw new Exception(e);
@@ -112,7 +113,7 @@ public class DataSourceJdbcStatisticsTestCase {
         /**
          * Creates data source and return its node address
          *
-         * @param xa - should be data source XA?
+         * @param xa       - should be data source XA?
          * @param jndiName of data source
          * @return ModelNode - address of data source node
          * @throws Exception
@@ -129,8 +130,7 @@ public class DataSourceJdbcStatisticsTestCase {
             operation.get("jndi-name").set(jndiName);
             operation.get("driver-name").set("h2");
             operation.get("enabled").set("false");
-            if (!xa)
-                operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+            if (!xa) { operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"); }
             operation.get("prepared-statements-cache-size").set(3);
             operation.get("user-name").set("sa");
             operation.get("password").set("sa");
@@ -177,28 +177,27 @@ public class DataSourceJdbcStatisticsTestCase {
         /**
          * Checks, if some parameters are set on data source statistics node
          *
-         * @param yes - should be parameters set?
+         * @param yes           - should be parameters set?
          * @param statisticNode - address, where to check
          * @return StringBuffer, contains error message, if operation fails
          * @throws Exception
          */
         public StringBuffer assertStatisticsSet(boolean yes, ModelNode statisticNode) throws Exception {
             StringBuffer sb = new StringBuffer();
-            String[] params = { "PreparedStatementCacheAccessCount", // The number of times that the statement cache was
-                                                                     // accessed
+            String[] params = {"PreparedStatementCacheAccessCount", // The number of times that the statement cache was
+                    // accessed
                     "PreparedStatementCacheAddCount", // The number of statements added to the statement cache
                     "PreparedStatementCacheCurrentSize", // The number of prepared and callable statements currently cached in
-                                                         // the statement cache
+                    // the statement cache
                     "PreparedStatementCacheDeleteCount", // The number of statements discarded from the cache
                     "PreparedStatementCacheHitCount" // The number of times that statements from the cache were used
 
             };
-            for (String param : params)
-                if ((getStatisticsAttribute(param, statisticNode) == 0) == yes)
-                    sb.append("\nAttribute " + param + " is " + (yes ? "not " : "") + "set");
+            for (String param : params) {
+                if ((getStatisticsAttribute(param, statisticNode) == 0) == yes) { sb.append("\nAttribute " + param + " is " + (yes ? "not " : "") + "set"); }
+            }
 
-            if (sb.length() > 0)
-                sb.insert(1, "Address:" + statisticNode.toString());
+            if (sb.length() > 0) { sb.insert(1, "Address:" + statisticNode.toString()); }
             return sb;
         }
 

@@ -22,9 +22,7 @@
 
 package org.jboss.as.test.integration.hibernate.secondlevelcache;
 
-import java.io.File;
 import java.util.Properties;
-
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
@@ -42,7 +40,6 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.infinispan.manager.CacheContainer;
 
 /**
- *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -53,11 +50,11 @@ public class SFSB {
 
     /**
      * Lookup the Infinispan cache container to start it.
-     *
+     * <p>
      * We also could of changed the following line in standalone.xml:
-     *   <cache-container name="hibernate" default-cache="local-query">
+     * <cache-container name="hibernate" default-cache="local-query">
      * To:
-     *   <cache-container name="hibernate" default-cache="local-query" start="EAGER">
+     * <cache-container name="hibernate" default-cache="local-query" start="EAGER">
      */
     private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/container/hibernate";
     @Resource(lookup = CONTAINER_JNDI_NAME)
@@ -126,7 +123,7 @@ public class SFSB {
 
         try {
             Session session = sessionFactory.openSession();
-            student = (Student) session.load(Student.class, id);
+            student = session.load(Student.class, id);
             session.close();
 
         } catch (Exception e) {

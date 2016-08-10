@@ -42,7 +42,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import static org.junit.Assert.assertEquals;
 
 /**

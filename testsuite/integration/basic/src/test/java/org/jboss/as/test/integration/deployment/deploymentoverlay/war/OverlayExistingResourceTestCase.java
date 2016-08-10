@@ -49,12 +49,12 @@ public class OverlayExistingResourceTestCase extends WarOverlayTestBase {
     private static final String OVERLAY = "HAL9000";
     private static final String DEPLOYMENT_OVERLAYED = "overlayed";
     private static final String DEPLOYMENT_OVERLAYED_ARCHIVE = DEPLOYMENT_OVERLAYED + ".jar";
-    
+
     private static final String DEPLOYMENT_SHELL = "shell";
     private static final String DEPLOYMENT_SHELL_ARCHIVE = DEPLOYMENT_SHELL + ".war";
-    
+
     private static final String RESOURCE = "/WEB-INF/lib/"+DEPLOYMENT_OVERLAYED_ARCHIVE+"//"+OverlayableInterface.RESOURCE;
-    
+
     @Deployment(name = DEPLOYMENT_SHELL)
     public static Archive createDeployment() throws Exception {
         return createWARWithOverlayedArchive(true, DEPLOYMENT_OVERLAYED_ARCHIVE,DEPLOYMENT_SHELL_ARCHIVE);

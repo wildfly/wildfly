@@ -50,11 +50,11 @@ import org.junit.runner.RunWith;
 
 /**
  * Arquillian testcase, which tests access to web applications protected by XACML authorization modules.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ WebXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class })
+@ServerSetup({WebXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 public class WebXACMLAuthorizationModuleTestCase {
 
@@ -67,7 +67,7 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for the XACMLAuthorizationModule testing.
-     * 
+     *
      * @return
      * @throws IOException
      * @throws IllegalArgumentException
@@ -79,7 +79,7 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * Creates {@link WebArchive} for the {@link CustomXACMLAuthorizationModule} testing.
-     * 
+     *
      * @return
      * @throws IOException
      * @throws IllegalArgumentException
@@ -91,7 +91,7 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * Test access to the web application protected by XACMLAuthorizationModule.
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -104,7 +104,7 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * Test access to the web application protected by {@link CustomXACMLAuthorizationModule}.
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -118,14 +118,14 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * Make requests to protected resource and asserts the response code is the expected one.
-     * 
+     *
      * @param webAppURL
      * @throws MalformedURLException
      * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
      */
-    private void testWebAccess(URL webAppURL) throws MalformedURLException, ClientProtocolException, IOException,
+    private void testWebAccess(URL webAppURL) throws IOException,
             URISyntaxException {
         final URL requestURL = new URL(webAppURL.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
         final String response = Utils.makeCallWithBasicAuthn(requestURL, "jduke", "theduke", 200);
@@ -135,7 +135,7 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * Creates web application with given name and with the given security domain name configured.
-     * 
+     *
      * @param domainName
      * @param warName
      * @return
@@ -165,14 +165,14 @@ public class WebXACMLAuthorizationModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -187,7 +187,7 @@ public class WebXACMLAuthorizationModuleTestCase {
                     .authorizationModules(
                             new SecurityModule.Builder().name(CustomXACMLAuthorizationModule.class.getName()).build()) //
                     .build();
-            return new SecurityDomain[] { sd1, sd2 };
+            return new SecurityDomain[]{sd1, sd2};
         }
     }
 }

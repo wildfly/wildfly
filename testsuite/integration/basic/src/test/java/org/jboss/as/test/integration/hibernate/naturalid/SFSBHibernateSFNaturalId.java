@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.hibernate.naturalid;
 
 import java.util.Properties;
-
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -123,14 +122,14 @@ public class SFSBHibernateSFNaturalId {
 
     // fetch person reference
     public Person getPersonReference(String name, int voterid) {
-        Person emp = (Person) sessionFactory.openSession().byNaturalId(Person.class).using("firstName", name)
+        Person emp = sessionFactory.openSession().byNaturalId(Person.class).using("firstName", name)
                 .using("personVoterId", voterid).getReference();
         return emp;
     }
 
     // load person
     public Person loadPerson(String name, int voterid) {
-        Person emp = (Person) sessionFactory.openSession().byNaturalId(Person.class).using("firstName", name)
+        Person emp = sessionFactory.openSession().byNaturalId(Person.class).using("firstName", name)
                 .using("personVoterId", voterid).load();
         return emp;
     }

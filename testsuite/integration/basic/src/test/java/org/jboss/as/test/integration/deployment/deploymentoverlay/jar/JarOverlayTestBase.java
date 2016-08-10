@@ -36,7 +36,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * @author baranowb
@@ -49,12 +48,12 @@ public class JarOverlayTestBase {
 
     @ArquillianResource
     protected Deployer deployer;
-    
+
     public static Archive<?> createOverlayedArchive(final boolean resourcePresent, final String deploymentOverlayedArchive){
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, deploymentOverlayedArchive);
         jar.addClasses(OverlayableInterface.class, OverlayEJB.class);
         jar.addAsManifestResource(new StringAsset(OverlayableInterface.STATIC), OverlayableInterface.RESOURCE_STATIC_META_INF);
-        
+
         if(resourcePresent){
             jar.addAsManifestResource(new StringAsset(OverlayableInterface.ORIGINAL), OverlayableInterface.RESOURCE_META_INF);
         }

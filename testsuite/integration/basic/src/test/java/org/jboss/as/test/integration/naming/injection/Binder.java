@@ -31,8 +31,8 @@ import javax.naming.NamingException;
 @Remote
 public interface Binder {
 
-    static final String LINK_NAME = "java:global/z";
+    String LINK_NAME = "java:global/z";
 
-    public void bindAndLink(Object value) throws NamingException;
+    void bindAndLink(Object value) throws NamingException;
 
 }

@@ -1,7 +1,6 @@
 package org.jboss.as.test.integration.ee.initializeinorder;
 
 import java.io.IOException;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;

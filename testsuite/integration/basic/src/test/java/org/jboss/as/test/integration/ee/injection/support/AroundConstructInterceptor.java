@@ -41,7 +41,7 @@ public class AroundConstructInterceptor {
         aroundConstructCalled = true;
         Object[] params = ctx.getParameters();
         if (params.length > 0) {
-            params[0] = prefix + (String) params[0];
+            params[0] = prefix + params[0];
         }
         return ctx.proceed();
     }
