@@ -29,17 +29,17 @@ import org.junit.runner.RunWith;
 public class ConnectionListenerTestCase extends AbstractTestsuite{
 
 	private static final Logger log = Logger.getLogger(ConnectionListenerTestCase.class);
-	
+
     @ArquillianResource
     private ContainerController controller;
     @ArquillianResource
     private Deployer deployer;
-    
+
     @Before
     public void init() throws Exception{
     	this.context = Util.createNamingContext();
     }
-    
+
     @After
     public void after() throws Exception {
         this.context.close();
@@ -53,7 +53,7 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     public void testConnListenerWithRollback() throws Exception {
     	testConnListenerTest(DEP_1, false);
     }
-    
+
     /**
      * Test: insert record in transaction and then rollback
      * @throws Exception
@@ -62,7 +62,7 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     public void testConnListenerXaWithRollback() throws Exception {
     	testConnListenerTest(DEP_1_XA, true);
     }
-    
+
     /**
      * Test: insert record in transaction and then rollback
      * @throws Exception
@@ -71,7 +71,7 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     public void testConnListener2WithRollback() throws Exception {
     	testConnListener2Test(DEP_2, false);
     }
-    
+
     /**
      * Test: insert record in transaction and then rollback
      * @throws Exception
@@ -80,7 +80,7 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     public void testConnListener2XaWithRollback() throws Exception {
     	testConnListener2Test(DEP_2_XA, true);
     }
-    
+
     /**
      * Test: insert record in transaction
      * @throws Exception
@@ -89,7 +89,7 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     public void testConnListener3WithoutRollback() throws Exception {
     	testConnListener3Test(DEP_3, false);
     }
-    
+
     /**
      * Test: insert record in transaction
      * @throws Exception
@@ -98,58 +98,58 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     public void testConnListener3XaWithoutRollback() throws Exception {
     	testConnListener3Test(DEP_3_XA, true);
     }
-    
+
     private void testConnListenerTest(String deployment, boolean useXaDatasource) throws NamingException, SQLException{
     	try{
     		if(!controller.isStarted(CONTAINER)){
     			controller.start(CONTAINER);
     		}
-    		
+
     		deployer.deploy(deployment);
-    		
+
     		JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
     		assertNotNull(bean);
-    		
+
     		bean.initDataSource(useXaDatasource);
-    		
+
     		bean.assertRecords(0);
     		bean.insertRecord();
     		bean.insertRecord();
     		bean.insertRecord();
     		bean.insertRecord();
     		bean.insertRecord();
-    		
+
     		bean.assertRecords(5);
-    		
+
     		bean.insertRecord();
     		bean.insertRecord(true);
     		bean.insertRecord(true);
     		bean.assertRecords(6);
     		bean.assertRecords(6);
-    		
+
     		/*
     		 * Activated count - Every new connection creates new activated record, rollback -> remove this record..
     		 * Passivated count - After connection.close() is invoked passivatedConnectionListener, rollback doesn't remove passivated record -> it is created after rollback
     		 */
     		bean.assertExactCountOfRecords(6, 11, 12);
     	}finally{
-    		close(DEP_1_XA);
+    		close(deployment);
     	}
     }
-    
+
     private void testConnListener2Test(String deployment, boolean useXaDatasource) throws SQLException, NamingException{
     	try{
     		if(!controller.isStarted(CONTAINER)){
     			controller.start(CONTAINER);
     		}
-    		
+
     		deployer.deploy(deployment);
 
     		JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
     		assertNotNull(bean);
-    		
+
     		bean.initDataSource(useXaDatasource);
-    		
+
         	bean.insertRecord();
     		bean.insertRecord();
     		bean.insertRecord(true);
@@ -158,23 +158,23 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     		 * Passivated count - rollback remove Activated record, but not passivated -> it is created after rollback
     		 */
     		bean.assertExactCountOfRecords(2, 3, 3);
-    		
+
     	}finally{
     		close(deployment);
     	}
     }
-            
+
     private void testConnListener3Test(String deployment, boolean useXaDatasource) throws Exception {
     	try{
     		if(!controller.isStarted(CONTAINER)){
     			controller.start(CONTAINER);
     		}
-    		
+
     		deployer.deploy(deployment);
 
     		JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
     		assertNotNull(bean);
-    		
+
     		bean.insertRecord();
     		bean.insertRecord();
     		bean.insertRecord();
@@ -184,12 +184,12 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     		 * Activated count - we need open connection for select (in assertExactCountOfRecords...) -> 1 extra activated record is inserted... -> 6
     		 */
     		bean.assertExactCountOfRecords(5, 6, 5);
-    		
+
     	}finally{
     		close(deployment);
     	}
     }
-    
+
     private void close(String deploymentName){
     	try {
     		if(!controller.isStarted(CONTAINER)){
