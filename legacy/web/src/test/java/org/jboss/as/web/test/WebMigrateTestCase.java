@@ -53,6 +53,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.ManagementSecurityIdentitySupplier;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
@@ -283,7 +284,8 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
                     }
                 }
             }, null));
-            rootRegistration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), null, null, new EnvironmentNameReader() {
+            rootRegistration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), new ManagementSecurityIdentitySupplier(),
+                    null, null, new EnvironmentNameReader() {
                 public boolean isServer() {
                     return true;
                 }
