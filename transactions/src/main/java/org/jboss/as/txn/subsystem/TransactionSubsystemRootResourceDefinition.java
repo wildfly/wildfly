@@ -140,6 +140,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition DEFAULT_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_TIMEOUT, ModelType.INT, true)
+            .setValidator(new IntRangeValidator(0))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setDefaultValue(new ModelNode().set(300))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
