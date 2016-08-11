@@ -50,7 +50,12 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-weld</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-bean-validation</artifactId>
         </dependency>
 
         <dependency>

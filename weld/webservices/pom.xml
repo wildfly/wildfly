@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-weld-parent</artifactId>
+      <version>11.0.0.Alpha1-SNAPSHOT</version>
+   </parent>
+
+   <artifactId>wildfly-weld-webservices</artifactId>
+   <name>WildFly: Weld Webservices</name>
+
+   <dependencies>
+
+      <dependency>
+         <groupId>org.wildfly</groupId>
+         <artifactId>wildfly-weld-spi</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.wildfly</groupId>
+         <artifactId>wildfly-weld-common</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.wildfly</groupId>
+         <artifactId>wildfly-webservices-server-integration</artifactId>
+         <exclusions>
+            <exclusion>
+               <artifactId>wildfly-ejb3</artifactId>
+               <groupId>org.wildfly</groupId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+   </dependencies>
+
+</project>
