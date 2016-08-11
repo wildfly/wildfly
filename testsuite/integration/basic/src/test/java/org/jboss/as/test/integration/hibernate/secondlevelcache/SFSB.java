@@ -75,6 +75,7 @@ public class SFSB {
             configuration.getProperties().put(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, "jta");
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
+            configuration.getProperties().put(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, "jta");
             // fetch the properties
             Properties properties = new Properties();
             configuration = configuration.configure("hibernate.cfg.xml");

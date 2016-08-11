@@ -84,6 +84,7 @@ public class SFSBHibernate2LcacheStats {
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
             // set property to enable statistics
             configuration.setProperty("hibernate.generate_statistics", "true");
+            configuration.getProperties().put(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, "jta");
 
             // fetch the properties
             Properties properties = new Properties();
