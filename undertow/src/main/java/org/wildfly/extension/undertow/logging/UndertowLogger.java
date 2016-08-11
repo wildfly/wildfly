@@ -349,4 +349,7 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 82, value = "Could not start '%s' listener.")
     StartException couldNotStartListener(String name, @Cause IOException e);
+
+    @Message(id = 83, value = "%s is not allowed to be null")
+    String nullNotAllowed(String name);
 }
