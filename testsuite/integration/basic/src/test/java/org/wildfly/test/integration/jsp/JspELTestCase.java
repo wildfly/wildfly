@@ -52,7 +52,7 @@ public class JspELTestCase {
     @Deployment(name = Servlet_Spec_3_1_War)
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClass(DummyConstants.class)
+                .addClasses(DummyConstants.class, DummyEnum.class)
                 .addAsWebInfResource(JspELTestCase.class.getResource("web-app_3_1.xml"), "web.xml")
                 .addAsWebResource(JspELTestCase.class.getResource("jsp-with-el.jsp"), "index.jsp");
     }
@@ -60,7 +60,7 @@ public class JspELTestCase {
     @Deployment(name = Servlet_Spec_3_0_War)
     public static WebArchive deploy30War() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClass(DummyConstants.class)
+                .addClasses(DummyConstants.class, DummyEnum.class)
                 .addAsWebInfResource(JspELTestCase.class.getResource("web-app_3_0.xml"), "web.xml")
                 .addAsWebResource(JspELTestCase.class.getResource("jsp-with-el.jsp"), "index.jsp");
     }
@@ -79,10 +79,8 @@ public class JspELTestCase {
         final String responseBody = HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS);
         Assert.assertTrue("Unexpected EL evaluation for ${Boolean.TRUE}", responseBody.contains("Boolean.TRUE: --- " + Boolean.TRUE + " ---"));
         Assert.assertTrue("Unexpected EL evaluation for ${Integer.MAX_VALUE}", responseBody.contains("Integer.MAX_VALUE: --- " + Integer.MAX_VALUE + " ---"));
-        // TODO: FIXME: Uncomment the next assertion once the EL API library fixes the issue where the ImportHandler implementation uses the right "current"
-        // classloader to import the application classes. Right now, it fails to load the DummyConstants class via ImportHandler#resolveClass method since
-        // it's implementation uses the classloader that loaded the ImportHandler class
-        // Assert.assertTrue("Unexpected EL evaluation for ${DummyConstants.FOO}", responseBody.contains("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---"));
+        Assert.assertTrue("Unexpected EL evaluation for ${DummyConstants.FOO}", responseBody.contains("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---"));
+        Assert.assertTrue("Unexpected EL evaluation for ${DummyEnum.VALUE}", responseBody.contains("DummyEnum.VALUE: --- " + DummyEnum.VALUE + " ---"));
     }
 
     /**
@@ -100,10 +98,7 @@ public class JspELTestCase {
         // instead they will have empty values wherever those EL expressions occur
         Assert.assertTrue("Unexpected EL evaluation for ${Boolean.TRUE}", responseBody.contains("Boolean.TRUE: --- " + " ---"));
         Assert.assertTrue("Unexpected EL evaluation for ${Integer.MAX_VALUE}", responseBody.contains("Integer.MAX_VALUE: --- " + " ---"));
-        // servlet spec doesn't matter in this case, this (application specific) constant MUST resolve in the EL expression
-        // TODO: FIXME: Uncomment the next assertion once the EL API library fixes the issue where the ImportHandler implementation uses the right "current"
-        // classloader to import the application classes. Right now, it fails to load the DummyConstants class via ImportHandler#resolveClass method since
-        // it's implementation uses the classloader that loaded the ImportHandler class
-        // Assert.assertTrue("Unexpected EL evaluation for ${DummyConstants.FOO}", responseBody.contains("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---"));
+        Assert.assertTrue("Unexpected EL evaluation for ${DummyConstants.FOO}", responseBody.contains("DummyConstants.FOO: --- " + " ---"));
+        Assert.assertTrue("Unexpected EL evaluation for ${DummyEnum.VALUE}", responseBody.contains("DummyEnum.VALUE: --- " + " ---"));
     }
 }

@@ -28,6 +28,9 @@ import javax.el.ELResolver;
 import javax.el.ImportHandler;
 import java.beans.FeatureDescriptor;
 import java.util.Iterator;
+import java.util.Objects;
+
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * An {@link ELResolver} which supports resolution of EL expressions which use imported classes (for static field/method references)
@@ -40,9 +43,7 @@ public class ImportedClassELResolver extends ELResolver {
 
     @Override
     public Object getValue(final ELContext context, final Object base, final Object property) {
-        if (context == null) {
-            throw new NullPointerException("ELContext cannot be null");
-        }
+        Objects.requireNonNull(context, UndertowLogger.ROOT_LOGGER.nullNotAllowed("ELContext"));
         if (base != null) {
             return null;
         }
@@ -71,9 +72,7 @@ public class ImportedClassELResolver extends ELResolver {
 
     @Override
     public void setValue(final ELContext context, final Object base, final Object property, final Object value) {
-        if (context == null) {
-            throw new NullPointerException("ELContext cannot be null");
-        }
+        Objects.requireNonNull(context, UndertowLogger.ROOT_LOGGER.nullNotAllowed("ELContext"));
         // we don't allow setting any value so this method
     }
 
