@@ -22,23 +22,10 @@
 
 package org.jboss.as.test.iiop.client;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
-
-import java.io.IOException;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import javax.transaction.Status;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -46,12 +33,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -68,9 +49,7 @@ import org.omg.CORBA.SystemException;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ IIOPTransactionPropagationTestCase.JTSSetup.class })
 public class IIOPTransactionPropagationTestCase {
-    private static final Logger log = Logger.getLogger(IIOPTransactionPropagationTestCase.class);
 
     @ArquillianResource
     private static ContainerController container;
@@ -159,134 +138,6 @@ public class IIOPTransactionPropagationTestCase {
             Assert.assertEquals(Status.STATUS_MARKED_ROLLBACK, bean.transactionStatus());
         } finally {
             Util.rollbackCorbaTx();
-        }
-    }
-
-    /**
-     * The setup tasks are bound to deploy/undeploy actions.
-     */
-    static class JTSSetup implements ServerSetupTask {
-        public static final String IIOP_TRANSACTIONS_JTA = "spec";
-        public static final String IIOP_TRANSACTIONS_JTS = "on";
-
-        private boolean isTransactionJTS = true;
-        private String iiopTransaction = IIOP_TRANSACTIONS_JTA;
-
-        ManagementClient managementClient = null;
-
-        /**
-         * The setup method is prepared here just for sure. The jts switching on is done by xslt transformation before the test
-         * is launched.
-         */
-        @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            log.info("JTSSetup.setup");
-            this.managementClient = managementClient;
-            boolean isNeedReload = false;
-
-            // check what is defined before
-            isTransactionJTS = checkJTSOnTransactions();
-            iiopTransaction = checkTransactionsOnJacorb();
-
-            if (!isTransactionJTS) {
-                setTransactionJTS(true);
-                isNeedReload = true;
-            }
-            if (IIOP_TRANSACTIONS_JTA.equalsIgnoreCase(iiopTransaction)) {
-                setJTS(true);
-                isNeedReload = true;
-            }
-
-            if (isNeedReload) {
-                executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
-            }
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            log.info("JTSSetup.tearDown");
-            this.managementClient = managementClient;
-            boolean isNeedReload = false;
-
-            // get it back what was defined before
-            // if it was not JTS, set it back to JTA (was set to JTS setup())
-            // if it was JTA, set it back to JTA (was set to JTS in setup())
-            if (IIOP_TRANSACTIONS_JTA.equalsIgnoreCase(iiopTransaction)) {
-                setJTS(false);
-                isNeedReload = true;
-            }
-            if (!isTransactionJTS) {
-                setTransactionJTS(false);
-            }
-
-            if (isNeedReload) {
-                executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 40000);
-            }
-        }
-
-        public boolean checkJTSOnTransactions() throws IOException, MgmtOperationException {
-            /* /subsystem=transactions:read-attribute(name=jts) */
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "transactions");
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).set(address);
-            operation.get("name").set("jts");
-
-            return executeOperation(operation).asBoolean();
-        }
-
-        public String checkTransactionsOnJacorb() throws IOException, MgmtOperationException {
-            /* /subsystem=jacorb:read-attribute(name=transactions) */
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "iiop-openjdk");
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).set(address);
-            operation.get("name").set("transactions");
-
-            return executeOperation(operation).asString();
-        }
-
-        public void setTransactionJTS(boolean enabled) throws IOException, MgmtOperationException {
-            /* /subsystem=transactions:write-attribute(name=jts,value=false|true) */
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "transactions");
-            ModelNode operation = new ModelNode();
-            operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).set(address);
-            operation.get("name").set("jts");
-            operation.get("value").set(enabled);
-            log.info("operation=" + operation);
-            executeOperation(operation);
-        }
-
-        public void setJTS(boolean enabled) throws IOException, MgmtOperationException {
-            String transactionsOnIIOP = (enabled) ? IIOP_TRANSACTIONS_JTS : IIOP_TRANSACTIONS_JTA;
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "iiop-openjdk");
-            ModelNode operation = new ModelNode();
-            operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).set(address);
-            operation.get("name").set("transactions");
-            operation.get("value").set(transactionsOnIIOP);
-            log.info("operation=" + operation);
-            executeOperation(operation);
-        }
-
-        private ModelNode executeOperation(final ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
-            ModelNode ret = managementClient.getControllerClient().execute(op);
-            if (!unwrapResult)
-                return ret;
-
-            if (!SUCCESS.equals(ret.get(OUTCOME).asString())) {
-                throw new MgmtOperationException("Management operation failed: " + ret.get(FAILURE_DESCRIPTION), op, ret);
-            }
-            return ret.get(RESULT);
-        }
-
-        private ModelNode executeOperation(final ModelNode op) throws IOException, MgmtOperationException {
-            return executeOperation(op, true);
         }
     }
 }
