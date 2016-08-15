@@ -5,6 +5,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -147,7 +148,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization().withCapabilities(buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain")));
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization().withCapabilities(buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"), IDENTITY_CAPABILITY));
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, model)
@@ -214,6 +215,9 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
             // reject the resource /subsystem=ejb3/application-security-domain=domain
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
+            // reject the resource /subsystem=ejb3/service=identity
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
         }
 
         if (EJB3Model.VERSION_1_3_0.matches(version)) {
@@ -250,6 +254,9 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
             // reject the resource /subsystem=ejb3/application-security-domain=domain
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN, "domain")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+
+            // reject the resource /subsystem=ejb3/service=identity
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         return config;

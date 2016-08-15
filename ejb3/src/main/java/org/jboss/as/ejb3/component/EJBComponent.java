@@ -43,7 +43,9 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
@@ -123,6 +125,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     private final SecurityDomain securityDomain;
     private SecurityIdentity incomingRunAsIdentity;
+    private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
 
     /**
      * Construct a new instance.
@@ -177,6 +180,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
         this.incomingRunAsIdentity = null;
+        this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -567,6 +571,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public boolean isSecurityDomainKnown() {
         return securityDomain != null;
+    }
+
+    public Function<SecurityIdentity, Set<SecurityIdentity>> getIdentityOutflowFunction() {
+        return identityOutflowFunction;
     }
 
     @Override

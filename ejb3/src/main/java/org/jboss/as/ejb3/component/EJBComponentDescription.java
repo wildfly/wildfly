@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component;
 
+import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
+
 import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
@@ -41,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -84,6 +88,7 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
+import org.jboss.as.ejb3.security.IdentityOutflowInterceptorFactory;
 import org.jboss.as.ejb3.security.PolicyContextIdInterceptor;
 import org.jboss.as.ejb3.security.RoleAddingInterceptor;
 import org.jboss.as.ejb3.security.RunAsPrincipalInterceptor;
@@ -271,6 +276,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private String policyContextID;
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
+
+    private BooleanSupplier outflowSecurityDomainsConfigured;
 
     /**
      * Construct a new instance.
@@ -695,6 +702,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return knownSecurityDomain == null ? false : knownSecurityDomain.test(getSecurityDomain());
     }
 
+    public void setOutflowSecurityDomainsConfigured(final BooleanSupplier outflowSecurityDomainsConfigured) {
+        this.outflowSecurityDomainsConfigured = outflowSecurityDomainsConfigured;
+    }
+
+    public boolean isOutflowSecurityDomainsConfigured() {
+        return outflowSecurityDomainsConfigured.getAsBoolean();
+    }
+
     /**
      * Returns the security domain that is applicable for this bean. In the absence of any explicit
      * configuration of a security domain for this bean, this method returns the default security domain
@@ -884,11 +899,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     final EJBComponentCreateService ejbComponentCreateService = (EJBComponentCreateService) service;
                     final String securityDomainName = SecurityDomainDependencyConfigurator.this.ejbComponentDescription.getSecurityDomain();
                     if (SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isSecurityDomainKnown()) {
+                        final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                        final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                         if (securityDomainName != null && ! securityDomainName.isEmpty()) {
-                            final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-                            final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                             serviceBuilder.addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, securityDomainName),
                                     ApplicationSecurityDomain.class, ejbComponentCreateService.getApplicationSecurityDomainInjector());
+                        }
+                        if (SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isOutflowSecurityDomainsConfigured()) {
+                            serviceBuilder.addDependency(support.getCapabilityServiceName(IDENTITY_CAPABILITY), Function.class, ejbComponentCreateService.getIdentityOutflowFunctionInjector());
                         }
                     } else {
                         if (securityDomainName != null && !securityDomainName.isEmpty()) {
@@ -1097,6 +1115,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(final String policyContextID) {
         final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
+        final Set<String> roles = new HashSet<>();
 
         // First interceptor: security domain association
         interceptorFactories.put(InterceptorOrder.View.SECURITY_CONTEXT, SecurityDomainInterceptorFactory.INSTANCE);
@@ -1113,12 +1132,21 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             final Set<String> extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
             if (! extraRoles.isEmpty()) {
                 interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(extraRoles)))));
+                roles.addAll(extraRoles);
             }
         }
 
         // Next interceptor: run-as-role
         if (runAsRole != null) {
             interceptorFactories.put(InterceptorOrder.View.RUN_AS_ROLE, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(Collections.singleton(runAsRole))))));
+            roles.add(runAsRole);
+        }
+
+        // Next interceptor: security identity outflow
+        if (! roles.isEmpty()) {
+            interceptorFactories.put(InterceptorOrder.View.SECURITY_IDENTITY_OUTFLOW, new IdentityOutflowInterceptorFactory("ejb", RoleMapper.constant(Roles.fromSet(roles))));
+        } else {
+            interceptorFactories.put(InterceptorOrder.View.SECURITY_IDENTITY_OUTFLOW, IdentityOutflowInterceptorFactory.INSTANCE);
         }
 
         // Ignoring declared roles

@@ -238,6 +238,13 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
+        // identity element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(IDENTITY) && model.get(SERVICE, IDENTITY).hasDefined(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getName())) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.IDENTITY.getLocalName());
+            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getAttributeMarshaller().marshallAsAttribute(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, model.get(SERVICE, IDENTITY), false, writer);
+            writer.writeEndElement();
+        }
+
         // default-missing-method-permissions-deny-access element
         if (model.hasDefined(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.getLocalName());

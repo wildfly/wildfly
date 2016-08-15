@@ -31,6 +31,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDENTITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +68,10 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         switch (element) {
             case APPLICATION_SECURITY_DOMAINS: {
                 parseApplicationSecurityDomains(reader, operations);
+                break;
+            }
+            case IDENTITY: {
+                parseIdentity(reader, operations);
                 break;
             }
             default: {
@@ -120,5 +126,29 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(APPLICATION_SECURITY_DOMAIN, applicationSecurityDomain));
         operation.get(OP_ADDR).set(address.toModelNode());
         operations.add(operation);
+    }
+
+    private void parseIdentity(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+        final PathAddress address = this.getEJB3SubsystemAddress().append(SERVICE, IDENTITY);
+        ModelNode addIdentity = Util.createAddOperation(address);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case OUTFLOW_SECURITY_DOMAINS: {
+                    for (String outflowDomain : reader.getListAttributeValue(i)) {
+                        IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.parseAndAddParameterElement(outflowDomain, addIdentity, reader);
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+
+        }
+        requireNoContent(reader);
+        operations.add(addIdentity);
     }
 }

@@ -140,6 +140,10 @@ public interface EJB3SubsystemModel {
 
     // Elytron integration
     String APPLICATION_SECURITY_DOMAIN = "application-security-domain";
+    String IDENTITY = "identity";
+    String OUTFLOW_SECURITY_DOMAINS = "outflow-security-domains";
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";
+
+    PathElement IDENTITY_PATH = PathElement.pathElement(SERVICE, IDENTITY);
 }

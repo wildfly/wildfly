@@ -96,7 +96,8 @@ public enum EJB3SubsystemXMLElement {
 
     // Elytron integration
     APPLICATION_SECURITY_DOMAIN("application-security-domain"),
-    APPLICATION_SECURITY_DOMAINS("application-security-domains")
+    APPLICATION_SECURITY_DOMAINS("application-security-domains"),
+    IDENTITY("identity")
     ;
 
     private final String name;
