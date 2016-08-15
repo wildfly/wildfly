@@ -24,8 +24,6 @@ package org.jboss.as.test.integration.domain.mixed.eap630;
 
 import org.jboss.as.test.integration.domain.mixed.KernelBehaviorTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.domain.mixed.eap620.MixedDomain620TestSuite;
-import org.jboss.as.test.integration.domain.mixed.eap620.WildcardReads620TestCase;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -35,7 +33,7 @@ import org.junit.runners.Suite;
  * @author Brian Stansberry
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(value= {WildcardReads630TestCase.class})
+@Suite.SuiteClasses(value= {RBACConfig630TestCase.class, WildcardReads630TestCase.class})
 @Version(Version.AsVersion.EAP_6_3_0)
 public class KernelBehavior630TestSuite extends KernelBehaviorTestSuite {
 
