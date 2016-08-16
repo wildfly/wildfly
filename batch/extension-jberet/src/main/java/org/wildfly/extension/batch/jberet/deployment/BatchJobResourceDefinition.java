@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -43,11 +44,19 @@ import org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver;
 public class BatchJobResourceDefinition extends SimpleResourceDefinition {
     static final String JOB = "job";
 
-    static final SimpleAttributeDefinition RUNNING_EXECUTIONS = SimpleAttributeDefinitionBuilder.create("running-executions", ModelType.INT)
+    private static final SimpleAttributeDefinition RUNNING_EXECUTIONS = SimpleAttributeDefinitionBuilder.create("running-executions", ModelType.INT)
             .setStorageRuntime()
             .build();
 
-    static final SimpleAttributeDefinition INSTANCE_COUNT = SimpleAttributeDefinitionBuilder.create("instance-count", ModelType.INT)
+    private static final SimpleAttributeDefinition INSTANCE_COUNT = SimpleAttributeDefinitionBuilder.create("instance-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    private static final SimpleAttributeDefinition JOB_XML_NAME = SimpleAttributeDefinitionBuilder.create("job-xml-name", ModelType.STRING)
+            .setStorageRuntime()
+            .build();
+
+    private static final SimpleListAttributeDefinition JOB_XML_NAMES = SimpleListAttributeDefinition.Builder.of("job-xml-names", JOB_XML_NAME)
             .setStorageRuntime()
             .build();
 
@@ -69,6 +78,18 @@ public class BatchJobResourceDefinition extends SimpleResourceDefinition {
             @Override
             protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
                 model.set(jobOperator.getJobInstanceCount(jobName));
+            }
+        });
+        resourceRegistration.registerReadOnlyAttribute(JOB_XML_NAMES, new JobOperationReadOnlyStepHandler() {
+            @Override
+            protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
+                final ModelNode list = model.setEmptyList();
+                if (jobOperator instanceof JobOperatorService) {
+                    final JobOperatorService jobOperatorService = (JobOperatorService) jobOperator;
+                    for (String jobXmlName : jobOperatorService.getJobDescriptors().getJobXmlNames(jobName)) {
+                        list.add(jobXmlName);
+                    }
+                }
             }
         });
     }
