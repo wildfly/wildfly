@@ -40,6 +40,12 @@ public class CounterBeanDD extends CounterBaseBean implements SessionBean {
     private static final long serialVersionUID = 1L;
 
     @Override
+    public void ejbRemove() throws EJBException, RemoteException {
+        log.info("ejbRemove() was called..");
+        CounterSingleton.destroyCounter.incrementAndGet();
+    }
+
+    @Override
     public void ejbActivate() throws EJBException, RemoteException {
 
     }
@@ -47,12 +53,6 @@ public class CounterBeanDD extends CounterBaseBean implements SessionBean {
     @Override
     public void ejbPassivate() throws EJBException, RemoteException {
 
-    }
-
-    @Override
-    public void ejbRemove() throws EJBException, RemoteException {
-        log.info("ejbRemove() was called..");
-        CounterSingleton.destroyCounter.intValue();
     }
 
     @Override
