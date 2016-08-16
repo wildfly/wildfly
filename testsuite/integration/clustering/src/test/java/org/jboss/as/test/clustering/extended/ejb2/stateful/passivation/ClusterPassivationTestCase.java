@@ -43,7 +43,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -108,7 +107,7 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     }
 
     /**
-     * Associtation of node names to deployment,container names and client context
+     * Association of node names to deployment,container names and client context
      */
     @Test
     @InSequence(-1)
@@ -129,7 +128,6 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         log.info("URL2 nodename: " + nodeName2);
     }
 
-    @Ignore("JBPAPP-8774")
     @Test
     @InSequence(1)
     public void testPassivationBeanAnnotated(
