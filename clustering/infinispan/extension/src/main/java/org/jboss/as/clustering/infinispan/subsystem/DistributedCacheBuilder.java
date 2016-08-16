@@ -29,8 +29,11 @@ import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.HashConfiguration;
+import org.infinispan.configuration.cache.HashConfigurationBuilder;
 import org.infinispan.configuration.cache.L1Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -86,10 +89,13 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     public void accept(ConfigurationBuilder builder) {
         super.accept(builder);
 
-        builder.clustering()
+        HashConfigurationBuilder hash = builder.clustering()
                 .l1().read(this.l1)
-                .hash().read(this.hash)
-                .consistentHashFactory(this.consistentHashStrategy.createConsistentHashFactory(this.container.getValue().transport().hasTopologyInfo()))
-                ;
+                .hash().read(this.hash);
+
+        // ConsistentHashStrategy.INTER_CACHE is Infinispan's default behavior
+        if (this.consistentHashStrategy == ConsistentHashStrategy.INTRA_CACHE) {
+            hash.consistentHashFactory(this.container.getValue().transport().hasTopologyInfo() ? new TopologyAwareConsistentHashFactory() : new DefaultConsistentHashFactory());
+        }
     }
 }

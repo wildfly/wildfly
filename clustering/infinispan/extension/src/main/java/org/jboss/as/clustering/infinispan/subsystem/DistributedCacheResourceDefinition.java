@@ -38,6 +38,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -59,10 +60,10 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE)),
-        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name()), new EnumValidatorBuilder<>(ConsistentHashStrategy.class)),
+        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name()), new EnumValidatorBuilder<>(ConsistentHashStrategy.class)),
         L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(600000L), new DoubleRangeValidatorBuilder().lowerBound(0)),
         OWNERS("owners", ModelType.INT, new ModelNode(2), new IntRangeValidatorBuilder().min(1)),
-        SEGMENTS("segments", ModelType.INT, new ModelNode(80), new IntRangeValidatorBuilder().min(1)),
+        SEGMENTS("segments", ModelType.INT, new ModelNode(256), new IntRangeValidatorBuilder().min(1)),
         ;
         private final AttributeDefinition definition;
 
@@ -94,11 +95,18 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
+        if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CONSISTENT_HASH_STRATEGY.getDefinition()), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.SEGMENTS.getDefinition()), Attribute.SEGMENTS.getDefinition())
+                    .end();
+        }
+
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.CAPACITY_FACTOR.getDefinition().getDefaultValue()), Attribute.CAPACITY_FACTOR.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CAPACITY_FACTOR.getDefinition())
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.CONSISTENT_HASH_STRATEGY.getDefinition().getDefaultValue()), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name())), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
                     .end();
         }
