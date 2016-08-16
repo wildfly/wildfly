@@ -46,7 +46,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -115,13 +114,11 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
      *   arrives at SFO-0 on site SFO
      */
     @Test
-    @Ignore("https://issues.jboss.org/browse/WFLY-5239")
     public void testPutRelayedToBackups(
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
-
             throws IllegalStateException, IOException, URISyntaxException {
 
         String value = "100";
