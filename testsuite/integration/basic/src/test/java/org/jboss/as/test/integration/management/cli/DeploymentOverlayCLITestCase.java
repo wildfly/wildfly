@@ -22,9 +22,11 @@
 
 package org.jboss.as.test.integration.management.cli;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,6 +52,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.ExplodedExporterImpl;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
+import org.jboss.vfs.VirtualFilePermission;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -81,6 +84,9 @@ public class DeploymentOverlayCLITestCase {
     private static File overrideXml;
     private static File replacedAjsp;
 
+    private static final String EAR_DEPLOYMENT_NAME = "eardeployment2.ear";
+    private static final String LIB_JAR_NAME = "lib.jar";
+
     @ArquillianResource URL url;
 
     private String baseUrl;
@@ -102,7 +108,7 @@ public class DeploymentOverlayCLITestCase {
 
         JavaArchive jar;
 
-        jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
+        jar = ShrinkWrap.create(JavaArchive.class, LIB_JAR_NAME);
         jar.addClass(ReplacedLibraryServlet.class);
         jar.add(new StringAsset("replaced library"),"jar-info.txt");
         replacedLibrary = new File(tempDir + File.separator + jar.getName());
@@ -114,7 +120,7 @@ public class DeploymentOverlayCLITestCase {
         addedLibrary = new File(tempDir + File.separator + jar.getName());
         new ZipExporterImpl(jar).exportTo(addedLibrary, true);
 
-        jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
+        jar = ShrinkWrap.create(JavaArchive.class, LIB_JAR_NAME);
         jar.addClass(OriginalLibraryServlet.class);
 
         // deployment1
@@ -158,13 +164,17 @@ public class DeploymentOverlayCLITestCase {
         war.addAsWebResource(DeploymentOverlayCLITestCase.class.getPackage(), "a.jsp", "a.jsp");
         war.addAsWebInfResource(DeploymentOverlayCLITestCase.class.getPackage(), "web.xml", "web.xml");
 
-        jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
+        jar = ShrinkWrap.create(JavaArchive.class, LIB_JAR_NAME);
         jar.add(new StringAsset("original library"),"jar-info.txt");
 
 
-        ear = ShrinkWrap.create(EnterpriseArchive.class, "eardeployment2.ear");
+        ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_DEPLOYMENT_NAME);
         ear.addAsModule(war);
         ear.addAsLibraries(jar);
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                new VirtualFilePermission("/content/" + EAR_DEPLOYMENT_NAME + "/lib/" + LIB_JAR_NAME + "/jar-info.txt", "read"),
+                new VirtualFilePermission(explodedwars_basedir + "/" + EAR_DEPLOYMENT_NAME + "/lib/" + LIB_JAR_NAME + "/jar-info.txt", "read")),
+                "permissions.xml");
         ear2 = new File(tempDir + File.separator + ear.getName());
         new ZipExporterImpl(ear).exportTo(ear2, true);
         ear2_exploded = new ExplodedExporterImpl(ear).exportExploded(explodedwars_basedir);
@@ -258,12 +268,12 @@ public class DeploymentOverlayCLITestCase {
 
         if(multipleOverlay){
             ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
-            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
             ctx.handle("deployment-overlay add --name=overlay3 --content=WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
             
         }else{
             ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                  + ",WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
         }
@@ -308,11 +318,11 @@ public class DeploymentOverlayCLITestCase {
 
         if(multiple){
             ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
-            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
             ctx.handle("deployment-overlay add --name=overlay3 --content=WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath() + " --deployments=" + war1_exploded.getName());
         }else{
             ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                 + ",WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
                 + " --deployments=" + war1_exploded.getName());
         }
@@ -355,10 +365,10 @@ public class DeploymentOverlayCLITestCase {
 
         if(multiple){
             ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
-            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
         }else{
             ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
         }
 
@@ -396,10 +406,10 @@ public class DeploymentOverlayCLITestCase {
 
         if(multiple){
             ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + ",a.jsp=" + replacedAjsp.getAbsolutePath() + " --deployments=" + war1.getName());
-            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
+            ctx.handle("deployment-overlay add --name=overlay2 --content=WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath() + " --deployments=" + war1.getName());
         }else{
             ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
         }
 
@@ -425,7 +435,7 @@ public class DeploymentOverlayCLITestCase {
 
         ctx.handle("deploy " + ear2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + ear2.getName());
 
         //now test Libraries
@@ -443,8 +453,7 @@ public class DeploymentOverlayCLITestCase {
         ctx.handle("/deployment="+ear2_exploded.getName()
                 +":add(content=[{\"path\"=>\""+ear2_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
 
-
-        ctx.handle("deployment-overlay add --name=overlay-test --content=lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + ear2_exploded.getName());
 
         //now test Libraries
@@ -507,7 +516,7 @@ public class DeploymentOverlayCLITestCase {
     private void wildcardOverrideTest(boolean multiple) throws Exception {
 
         if(multiple){
-            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                     + " --deployments=deployment*.war");
         }
         
@@ -550,7 +559,7 @@ public class DeploymentOverlayCLITestCase {
         ctx.handle("deploy " + war3.getAbsolutePath());
         
         if(multiple){
-            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+            ctx.handle("deployment-overlay add --name=overlay1 --content=WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()
                     + " --deployments=deployment*.war");
         }
 
@@ -702,7 +711,7 @@ public class DeploymentOverlayCLITestCase {
                 + "overlay-test --content="
                 + "WEB-INF/web.xml=" + overrideXml.getAbsolutePath()+","
                 + "a.jsp=" + replacedAjsp.getAbsolutePath() + ","
-                + "WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()+","
+                + "WEB-INF/lib/" + LIB_JAR_NAME + "=" + replacedLibrary.getAbsolutePath()+","
                 + "WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
         
