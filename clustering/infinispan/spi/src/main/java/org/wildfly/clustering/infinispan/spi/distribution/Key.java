@@ -63,6 +63,6 @@ public class Key<K> {
 
     @Override
     public String toString() {
-        return this.value.toString();
+        return String.format("%s(%s)", this.getClass().getSimpleName(), this.value.toString());
     }
 }
