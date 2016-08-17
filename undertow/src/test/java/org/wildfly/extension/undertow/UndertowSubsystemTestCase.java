@@ -75,12 +75,12 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-3.1.xml");
+        return readResource("undertow-4.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_3_1.xsd";
+        return "schema/wildfly-undertow_4_0.xsd";
     }
 
     @Override
