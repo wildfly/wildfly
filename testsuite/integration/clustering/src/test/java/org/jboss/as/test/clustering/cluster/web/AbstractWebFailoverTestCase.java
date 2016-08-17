@@ -122,7 +122,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_1, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -151,7 +154,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_2, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -165,7 +171,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 5, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_1, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -176,7 +185,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(6, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_1, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -198,8 +210,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 7, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertEquals(NODE_1, entry.getValue());
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                if (entry != null) {
+                    Assert.assertEquals(NODE_1, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -210,7 +224,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(8, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_1, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -224,7 +241,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was brought up.", 9, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_2, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -235,7 +255,10 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(10, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertEquals(NODE_2, entry.getValue());
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

@@ -663,11 +663,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     jspServlet.addMapping(mapping);
                 }
                 seenMappings.addAll(jspPropertyGroupMappings);
-                //setup JSP expression factory wrapper
-                if (!expressionFactoryWrappers.isEmpty()) {
-                    d.addListener(new ListenerInfo(JspInitializationListener.class));
-                    d.addServletContextAttribute(JspInitializationListener.CONTEXT_KEY, expressionFactoryWrappers);
-                }
+                //setup JSP application context initializing listener
+                d.addListener(new ListenerInfo(JspInitializationListener.class));
+                d.addServletContextAttribute(JspInitializationListener.CONTEXT_KEY, expressionFactoryWrappers);
             }
 
             d.setClassIntrospecter(new ComponentClassIntrospector(componentRegistry));

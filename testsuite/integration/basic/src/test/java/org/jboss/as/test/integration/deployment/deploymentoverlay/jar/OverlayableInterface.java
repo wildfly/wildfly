@@ -20,25 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap700;
+package org.jboss.as.test.integration.deployment.deploymentoverlay.jar;
 
-import org.jboss.as.test.integration.domain.mixed.KernelBehaviorTestSuite;
-import org.jboss.as.test.integration.domain.mixed.Version;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import javax.ejb.Remote;
 
 /**
- *
- * @author Brian Stansberry
+ * @author baranowb
+ * 
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {RBACConfig700TestCase.class, WildcardReads700TestCase.class})
-@Version(Version.AsVersion.EAP_7_0_0)
-public class KernelBehavior700TestSuite extends KernelBehaviorTestSuite {
+@Remote
+public interface OverlayableInterface {
+    String ORIGINAL = "ORIGINAL";
+    String OVERLAYED = "OVERLAYED";
+    String RESOURCE_NAME = "file.txt";
+    String RESOURCE_META_INF = "x/"+RESOURCE_NAME;
+    String RESOURCE = "META-INF/"+RESOURCE_META_INF;
 
-    @BeforeClass
-    public static void initializeDomain() {
-        KernelBehaviorTestSuite.getSupport(KernelBehavior700TestSuite.class);
-    }
+    String STATIC = "STATIC";
+    String RESOURCE_STATIC_NAME = "static.txt";
+    String RESOURCE_STATIC_META_INF = "x/"+RESOURCE_STATIC_NAME;
+    String RESOURCE_STATIC = "META-INF/"+RESOURCE_STATIC_META_INF;
+
+    String fetchResource() throws Exception;
+    
+    String fetchResourceStatic() throws Exception;
 }

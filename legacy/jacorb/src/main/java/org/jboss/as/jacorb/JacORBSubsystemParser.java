@@ -680,7 +680,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        node.add(name, val);
+        node.get(name).set(val);
         requireNoContent(reader);
     }
 
@@ -722,7 +722,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        node.add(name, val);
+        node.get(name).set(val);
         requireNoContent(reader);
     }
 

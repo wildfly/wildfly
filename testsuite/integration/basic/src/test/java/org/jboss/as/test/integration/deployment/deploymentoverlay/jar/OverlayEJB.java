@@ -20,25 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap700;
+package org.jboss.as.test.integration.deployment.deploymentoverlay.jar;
 
-import org.jboss.as.test.integration.domain.mixed.KernelBehaviorTestSuite;
-import org.jboss.as.test.integration.domain.mixed.Version;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import javax.ejb.Singleton;
 
 /**
- *
- * @author Brian Stansberry
+ * @author baranowb
+ * 
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {RBACConfig700TestCase.class, WildcardReads700TestCase.class})
-@Version(Version.AsVersion.EAP_7_0_0)
-public class KernelBehavior700TestSuite extends KernelBehaviorTestSuite {
+@Singleton
+public class OverlayEJB implements OverlayableInterface {
 
-    @BeforeClass
-    public static void initializeDomain() {
-        KernelBehaviorTestSuite.getSupport(KernelBehavior700TestSuite.class);
+    @Override
+    public String fetchResource() throws Exception {
+        return fetch(RESOURCE);
+    }
+
+    @Override
+    public String fetchResourceStatic() throws Exception {
+        return fetch(RESOURCE_STATIC);
+    }
+    
+    protected String fetch(final String res) throws Exception {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(res)) {
+            if (is == null) {
+                return null;
+            }
+            try (InputStreamReader isr = new InputStreamReader(is);
+                 BufferedReader br = new BufferedReader(isr);) {
+                return br.readLine();
+            }
+        }
     }
 }

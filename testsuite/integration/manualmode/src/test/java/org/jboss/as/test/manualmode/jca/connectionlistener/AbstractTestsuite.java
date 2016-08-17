@@ -154,6 +154,7 @@ public abstract class AbstractTestsuite {
             }
                 
             operation.get("connection-listener-class").set(CONNECTION_LISTENER_CLASS_IMPL);
+            operation.get("connection-listener-property").set("testString", "MyTest");
             /**
              * Uncomment after finishing task https://issues.jboss.org/browse/WFLY-2492
              */

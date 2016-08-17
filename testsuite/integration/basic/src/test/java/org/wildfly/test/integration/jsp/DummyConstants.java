@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -18,27 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap700;
-
-import org.jboss.as.test.integration.domain.mixed.KernelBehaviorTestSuite;
-import org.jboss.as.test.integration.domain.mixed.Version;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package org.wildfly.test.integration.jsp;
 
 /**
- *
- * @author Brian Stansberry
+ * @author Jaikiran Pai
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {RBACConfig700TestCase.class, WildcardReads700TestCase.class})
-@Version(Version.AsVersion.EAP_7_0_0)
-public class KernelBehavior700TestSuite extends KernelBehaviorTestSuite {
+public class DummyConstants {
 
-    @BeforeClass
-    public static void initializeDomain() {
-        KernelBehaviorTestSuite.getSupport(KernelBehavior700TestSuite.class);
-    }
+    public static final String FOO = "bar";
 }
