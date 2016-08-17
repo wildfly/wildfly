@@ -47,10 +47,10 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class IIOPSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+public class IIOPSubsystemParser_3 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
 
-    static final IIOPSubsystemParser INSTANCE = new IIOPSubsystemParser();
+    static final IIOPSubsystemParser_3 INSTANCE = new IIOPSubsystemParser_3();
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
@@ -65,7 +65,7 @@ public class IIOPSubsystemParser implements XMLStreamConstants, XMLElementReader
      * Private constructor required by the {@code Singleton} pattern.
      * </p>
      */
-    private IIOPSubsystemParser() {
+    private IIOPSubsystemParser_3() {
     }
 
     /**
