@@ -49,7 +49,7 @@ import org.jboss.msc.service.ServiceName;
 
     private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 3, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
@@ -114,6 +114,7 @@ import org.jboss.msc.service.ServiceName;
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), PARSER);
     }
 
 }
