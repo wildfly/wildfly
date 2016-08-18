@@ -416,9 +416,9 @@
                         <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="segments" type="xs:int" default="80">
+                <xs:attribute name="segments" type="xs:int" default="256">
                     <xs:annotation>
-                        <xs:documentation>Number of hash space segments (per cluster). The recommended value is 10 * cluster size.</xs:documentation>
+                        <xs:documentation>Number of hash space segments (per cluster).</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="l1-lifespan" type="xs:long" default="600000">

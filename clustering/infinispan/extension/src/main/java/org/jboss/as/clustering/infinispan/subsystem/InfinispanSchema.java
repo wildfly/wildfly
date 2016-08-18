@@ -40,9 +40,8 @@ public enum InfinispanSchema implements Schema<InfinispanSchema> {
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
     VERSION_4_0(4, 0),
-    VERSION_4_1(4, 1),
     ;
-    static final InfinispanSchema CURRENT = VERSION_4_1;
+    static final InfinispanSchema CURRENT = VERSION_4_0;
 
     private final int major;
     private final int minor;

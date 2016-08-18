@@ -31,6 +31,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -50,7 +51,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends AbstractWebF
     private static final String DEPLOYMENT_NAME = "negotiationAuthenticator.war";
 
     public ReplicationForNegotiationAuthenticatorTestCase() {
-        super(DEPLOYMENT_NAME);
+        super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
