@@ -29,6 +29,6 @@ import javax.ejb.Remote;
 @Remote
 public interface RemoteInterface {
 
-    public String hello();
+    String hello();
 
 }

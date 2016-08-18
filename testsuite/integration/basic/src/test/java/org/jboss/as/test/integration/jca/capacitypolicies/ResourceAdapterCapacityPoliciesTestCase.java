@@ -24,6 +24,11 @@
 
 package org.jboss.as.test.integration.jca.capacitypolicies;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.List;
+import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -61,14 +66,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Resource;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 /**
  * Integration test for JCA capacity policies JBJCA-986 using resource adapter
- *  *
+ * *
+ *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */
 @RunWith(Arquillian.class)

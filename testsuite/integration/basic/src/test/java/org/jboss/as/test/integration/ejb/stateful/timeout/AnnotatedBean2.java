@@ -39,7 +39,7 @@ public class AnnotatedBean2 {
 
     @PreDestroy
     public void preDestroy() {
-        this.preDestroy = true;
+        preDestroy = true;
     }
 
     public void doStuff() {

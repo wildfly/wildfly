@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.web.security.runas;
 
 /**
- *
  * @author olukas
  */
 public interface Hello {

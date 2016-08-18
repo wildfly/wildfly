@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.NoResultException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

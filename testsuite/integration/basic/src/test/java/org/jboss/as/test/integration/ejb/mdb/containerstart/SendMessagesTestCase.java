@@ -87,7 +87,7 @@ import org.junit.runner.RunWith;
  *    => test waits to MDB would start with receiving the message
  * 3. undeploy the app (undeploy waits until onMessage finishes work)
  * 4. MDB transaction is timeouted which means that is marked as rollback only (no exception thrown)
- *    transaction timeout influences only incoming message (is putting back to queue) 
+ *    transaction timeout influences only incoming message (is putting back to queue)
  *    the outgoing message is not "send" by XA aware connection factory
  *    when TM runs on JTS then sleep is interrupted with interrupted exception
  * 5. meanwhile sending 50 "50loop" messages
@@ -119,7 +119,7 @@ public class SendMessagesTestCase {
 
     private static final int UNDEPLOYED_WAIT_S = TimeoutUtil.adjust(30);
     private static final int RECEIVE_WAIT_S = TimeoutUtil.adjust(30);
-    
+
     @ContainerResource
     private ManagementClient managementClient;
 
@@ -142,7 +142,7 @@ public class SendMessagesTestCase {
 
     @ContainerResource
     private InitialContext ctx;
-    
+
     @AfterClass
     public static void afterClass() {
         executor.shutdown();
@@ -201,7 +201,7 @@ public class SendMessagesTestCase {
 
         try {
             deployer.deploy("mdb");
-            
+
             ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
             Queue queue = (Queue) ctx.lookup(QUEUE_SEND);
 

@@ -31,13 +31,13 @@ import javax.ejb.Stateless;
  * Implementation of {@link Manage} interface which has injected {@link TargetBean} EJB and calls it's methods as
  * {@link Manage#ROLE_MANAGER} role (using {@link javax.annotation.security.RunAs} annotation). This class is protected, it
  * allows access to all test roles. Methods of this class are not protected.
- * 
+ *
  * @author Josef Cacek
  */
 @Stateless(name = Manage.BEAN_NAME_BRIDGE)
-@DeclareRoles({ Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER })
+@DeclareRoles({Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER})
 @RunAs(Manage.ROLE_MANAGER)
-@RolesAllowed({ Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER })
+@RolesAllowed({Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER})
 public class BridgeBean implements Manage {
 
     @EJB(beanName = Manage.BEAN_NAME_TARGET)

@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Unit Test web security
- * 
+ *
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
 @RunWith(Arquillian.class)
@@ -67,7 +67,7 @@ public class WebSecurityJBossSimpleRoleMappingTestCase extends AbstractWebSecuri
 
     /**
      * At this time peter can go through because he has role mapped in the map-module option.
-     * 
+     *
      * @throws Exception
      */
     @Test

@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -85,10 +84,8 @@ public class CustomerMO {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof CustomerMO))
-            return false;
+        if (this == o) { return true; }
+        if (!(o instanceof CustomerMO)) { return false; }
 
         final CustomerMO cust = (CustomerMO) o;
 

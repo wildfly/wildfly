@@ -21,20 +21,20 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <web-app version="2.5"
-   xmlns="http://java.sun.com/xml/ns/javaee"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-   <servlet>
-      <servlet-name>EjbTestServlet</servlet-name>
-      <servlet-class>org.jboss.as.test.integration.jca.deployment.EjbTestServlet</servlet-class>
-   </servlet>
+    <servlet>
+        <servlet-name>EjbTestServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.jca.deployment.EjbTestServlet</servlet-class>
+    </servlet>
 
-   <servlet-mapping>
-      <servlet-name>EjbTestServlet</servlet-name>
-      <url-pattern>/EjbTestServlet</url-pattern>
-   </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EjbTestServlet</servlet-name>
+        <url-pattern>/EjbTestServlet</url-pattern>
+    </servlet-mapping>
 
 </web-app>
 

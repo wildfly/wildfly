@@ -28,6 +28,7 @@ import javax.ejb.Remote;
 import javax.ejb.RemoteHome;
 import javax.ejb.Stateless;
 import javax.naming.InitialContext;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -36,7 +37,7 @@ import org.jboss.logging.Logger;
 @Stateless(name = "Test3")
 @Remote(Test3Business.class)
 @RemoteHome(Test3Home.class)
-@EJBs({ @EJB(name = "injected/Test2", lookup = "java:app/multideploy-ejb2/ejb_Test2!org.jboss.as.test.integration.ejb.ejb2.reference.eararchive.Test2Home", beanInterface = Test2Home.class) })
+@EJBs({@EJB(name = "injected/Test2", lookup = "java:app/multideploy-ejb2/ejb_Test2!org.jboss.as.test.integration.ejb.ejb2.reference.eararchive.Test2Home", beanInterface = Test2Home.class)})
 public class Test3Bean implements Test3Business {
     private static final Logger log = Logger.getLogger(Test3Bean.class);
 

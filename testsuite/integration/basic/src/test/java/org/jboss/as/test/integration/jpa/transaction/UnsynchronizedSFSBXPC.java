@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.transaction;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -37,7 +36,7 @@ import javax.persistence.SynchronizationType;
 @Stateful
 public class UnsynchronizedSFSBXPC {
     @PersistenceContext(unitName = "unsynchronized", type = PersistenceContextType.EXTENDED, synchronization = SynchronizationType.UNSYNCHRONIZED)
-        EntityManager em;
+    EntityManager em;
 
     public Employee createAndFind(String name, String address, int id) {
 

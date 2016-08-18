@@ -23,9 +23,7 @@
 package org.jboss.as.test.integration.security.loginmodules;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,10 +80,11 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
     static final int LDAP_PORT2 = 11389;
     static final int LDAPS_PORT = 10636;
 
-    static final String[] ROLE_NAMES = { "TheDuke", "Echo", "TheDuke2", "Echo2", "JBossAdmin", "jduke", "jduke2", "RG1", "RG2",
-            "RG3", "R1", "R2", "R3", "R4", "R5", "Roles", "User", "Admin", "SharedRoles", "RX" };
+    static final String[] ROLE_NAMES = {"TheDuke", "Echo", "TheDuke2", "Echo2", "JBossAdmin", "jduke", "jduke2", "RG1", "RG2",
+            "RG3", "R1", "R2", "R3", "R4", "R5", "Roles", "User", "Admin", "SharedRoles", "RX"};
 
     static final String QUERY_ROLES;
+
     static {
         final List<NameValuePair> qparams = new ArrayList<NameValuePair>();
         for (final String role : ROLE_NAMES) {
@@ -108,7 +107,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
      * @param containerId
      * @throws Exception
      * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         try {
@@ -127,36 +126,36 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
 
     //@formatter:off
     @CreateDS(
-        name = "JBossDS-LdapExtLDAPServerSetupTask",
-        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
-        partitions =
-        {
-            @CreatePartition(
-                name = "jboss",
-                suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=org\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
-                indexes =
-                {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
-                })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer (
-        transports =
-        {
-            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT),
-            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT)
-        },
-        certificatePassword="secret")
+            name = "JBossDS-LdapExtLDAPServerSetupTask",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
+            partitions =
+                    {
+                            @CreatePartition(
+                                    name = "jboss",
+                                    suffix = "dc=jboss,dc=org",
+                                    contextEntry = @ContextEntry(
+                                            entryLdif =
+                                                    "dn: dc=jboss,dc=org\n" +
+                                                            "dc: jboss\n" +
+                                                            "objectClass: top\n" +
+                                                            "objectClass: domain\n\n"),
+                                    indexes =
+                                            {
+                                                    @CreateIndex(attribute = "objectClass"),
+                                                    @CreateIndex(attribute = "dc"),
+                                                    @CreateIndex(attribute = "ou")
+                                            })
+                    },
+            additionalInterceptors = {KeyDerivationInterceptor.class})
+    @CreateLdapServer(
+            transports =
+                    {
+                            @CreateTransport(protocol = "LDAP", port = LDAP_PORT),
+                            @CreateTransport(protocol = "LDAPS", port = LDAPS_PORT)
+                    },
+            certificatePassword = "secret")
     //@formatter:on
-    public void createLdap1(final String hostname) throws Exception, IOException, ClassNotFoundException, FileNotFoundException {
+    public void createLdap1(final String hostname) throws Exception {
         final Map<String, String> map = new HashMap<String, String>();
         map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
         map.put("ldapPort2", Integer.toString(LDAP_PORT2));
@@ -190,51 +189,51 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
 
     //@formatter:off
     @CreateDS(
-        name = "JBossComDS",
-        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
-        partitions =
-        {
-            @CreatePartition(
-                name = "jbossCom",
-                suffix = "dc=jboss,dc=com",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=com\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n"
-                        ),
-                indexes =
-                {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
-                }),
-            @CreatePartition(
-                    name = "jbossOrg",
-                    suffix = "dc=jboss,dc=org",
-                    contextEntry = @ContextEntry(
-                        entryLdif =
-                            "dn: dc=jboss,dc=org\n" +
-                            "dc: jboss\n" +
-                            "objectClass: top\n" +
-                            "objectClass: domain\n\n"
-                            ),
-                    indexes =
+            name = "JBossComDS",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
+            partitions =
                     {
-                        @CreateIndex( attribute = "objectClass" ),
-                        @CreateIndex( attribute = "dc" ),
-                        @CreateIndex( attribute = "ou" )
+                            @CreatePartition(
+                                    name = "jbossCom",
+                                    suffix = "dc=jboss,dc=com",
+                                    contextEntry = @ContextEntry(
+                                            entryLdif =
+                                                    "dn: dc=jboss,dc=com\n" +
+                                                            "dc: jboss\n" +
+                                                            "objectClass: top\n" +
+                                                            "objectClass: domain\n\n"
+                                    ),
+                                    indexes =
+                                            {
+                                                    @CreateIndex(attribute = "objectClass"),
+                                                    @CreateIndex(attribute = "dc"),
+                                                    @CreateIndex(attribute = "ou")
+                                            }),
+                            @CreatePartition(
+                                    name = "jbossOrg",
+                                    suffix = "dc=jboss,dc=org",
+                                    contextEntry = @ContextEntry(
+                                            entryLdif =
+                                                    "dn: dc=jboss,dc=org\n" +
+                                                            "dc: jboss\n" +
+                                                            "objectClass: top\n" +
+                                                            "objectClass: domain\n\n"
+                                    ),
+                                    indexes =
+                                            {
+                                                    @CreateIndex(attribute = "objectClass"),
+                                                    @CreateIndex(attribute = "dc"),
+                                                    @CreateIndex(attribute = "ou")
+                                            })
+                    },
+            additionalInterceptors = {KeyDerivationInterceptor.class})
+    @CreateLdapServer(
+            transports =
+                    {
+                            @CreateTransport(protocol = "LDAP", port = LDAP_PORT2)
                     })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer (
-        transports =
-        {
-            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT2)
-        })
     //@formatter:on
-    public void createLdap2(final String hostname) throws Exception, IOException, ClassNotFoundException, FileNotFoundException {
+    public void createLdap2(final String hostname) throws Exception {
         directoryService2 = DSAnnotationProcessor.getDirectoryService();
         final SchemaManager schemaManager = directoryService2.getSchemaManager();
         try {
@@ -276,7 +275,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
      * @param containerId
      * @throws Exception
      * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         ldapServer2.stop();
@@ -305,7 +304,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
          */
         @Override
         protected SystemProperty[] getSystemProperties() {
-            return new SystemProperty[] { new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath()) };
+            return new SystemProperty[]{new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath())};
         }
     }
 

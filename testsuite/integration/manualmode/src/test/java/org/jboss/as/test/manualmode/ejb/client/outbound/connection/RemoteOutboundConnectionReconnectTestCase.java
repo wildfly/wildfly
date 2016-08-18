@@ -139,7 +139,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
             final String echoFromIndependentBean = independentBean.echo(msg);
             Assert.assertEquals("Unexpected echo from independent bean", msg, echoFromIndependentBean);
 
-            // now try invoking the EJB (which calls a delegate bean on other server) on this server. 
+            // now try invoking the EJB (which calls a delegate bean on other server) on this server.
             // should fail with no EJB receivers, since the other server
             // which can handle the delegate bean invocation hasn't yet started.
             try {
@@ -147,7 +147,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
                 final String echoBeforeOtherServerStart = dependentBean.echo(msg);
                 Assert.fail("Invocation on bean when was expected to fail due to other server being down");
             } catch (Exception e) {
-                // expected 
+                // expected
                 logger.info("Got the expected exception on invoking a bean when other server was down", e);
             }
             // now start the main server

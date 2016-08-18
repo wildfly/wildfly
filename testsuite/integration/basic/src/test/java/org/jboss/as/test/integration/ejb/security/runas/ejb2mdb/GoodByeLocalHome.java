@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
-import javax.ejb.EJBLocalHome;
 import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
 
 /**
  * @author Ondrej Chaloupka
  */
 public interface GoodByeLocalHome extends EJBLocalHome {
-    public GoodByeLocal create() throws CreateException;
+    GoodByeLocal create() throws CreateException;
 }

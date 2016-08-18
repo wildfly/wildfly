@@ -12,12 +12,11 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
-import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 
 @MessageDriven(name = "AnnoBasedBean", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "${destination}") })
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "${destination}")})
 @DependsOn("CallCounterProxy")
 public class MDBWhichDependsOn implements MessageListener {
 
@@ -31,19 +30,19 @@ public class MDBWhichDependsOn implements MessageListener {
 
     @PostConstruct
     public void postConstruct() {
-        this.logger.info("MDB.postConstruct");
+        logger.info("MDB.postConstruct");
         this.counter.setPostConstruct();
     }
 
     @PreDestroy
     public void preDestroy() {
-        this.logger.info("MDB.preDestroy");
+        logger.info("MDB.preDestroy");
         this.counter.setPreDestroy();
     }
 
     @Override
     public void onMessage(Message message) {
-        this.logger.info("MDB.message");
+        logger.info("MDB.message");
         this.counter.setMessage();
         try {
             final Destination replyTo = message.getJMSReplyTo();

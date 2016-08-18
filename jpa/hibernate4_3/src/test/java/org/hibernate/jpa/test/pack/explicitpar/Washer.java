@@ -28,5 +28,5 @@ import javax.persistence.Entity;
  */
 @Entity
 public class Washer {
-	//No @id so picking it up should fail
+    //No @id so picking it up should fail
 }

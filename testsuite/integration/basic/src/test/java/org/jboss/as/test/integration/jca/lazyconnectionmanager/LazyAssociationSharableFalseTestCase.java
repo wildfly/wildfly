@@ -21,6 +21,13 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import javax.annotation.Resource;
+import javax.resource.ResourceException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnection;
@@ -30,13 +37,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import javax.resource.ResourceException;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test cases for deploying a lazy association resource adapter archive with sharable=false
@@ -78,10 +78,8 @@ public class LazyAssociationSharableFalseTestCase extends LazyAssociationAbstrac
             logger.error(t.getMessage(), t);
             fail("Throwable:" + t.getLocalizedMessage());
         } finally {
-            if (lc1 != null)
-                lc1.close();
-            if (lc2 != null)
-                lc2.close();
+            if (lc1 != null) { lc1.close(); }
+            if (lc2 != null) { lc2.close(); }
         }
     }
 
@@ -103,10 +101,8 @@ public class LazyAssociationSharableFalseTestCase extends LazyAssociationAbstrac
             logger.error(t.getMessage(), t);
             fail("Throwable:" + t.getLocalizedMessage());
         } finally {
-            if (lc1 != null)
-                lc1.close();
-            if (lc2 != null)
-                lc2.close();
+            if (lc1 != null) { lc1.close(); }
+            if (lc2 != null) { lc2.close(); }
         }
 
     }

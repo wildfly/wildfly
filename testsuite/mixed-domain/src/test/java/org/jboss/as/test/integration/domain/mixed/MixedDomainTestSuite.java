@@ -107,7 +107,7 @@ public class MixedDomainTestSuite {
         return version;
     }
 
-    private synchronized static void stop() {
+    private static synchronized void stop() {
         if(support != null) {
             support.stop();
             support = null;
@@ -116,7 +116,7 @@ public class MixedDomainTestSuite {
     }
 
     @AfterClass
-    public synchronized static void afterClass() {
+    public static synchronized void afterClass() {
         stop();
     }
 }

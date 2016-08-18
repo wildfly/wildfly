@@ -1,7 +1,6 @@
 package org.jboss.as.test.integration.ejb.compression;
 
 import java.util.Properties;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 

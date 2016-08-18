@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jsf.beanvalidation.cdi;
 
 import java.io.Serializable;
-
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.validation.constraints.Size;
@@ -39,7 +38,7 @@ public class Team implements Serializable {
     @CustomMin
     private int numberOfPeople;
 
-    @Size(min=3, message="Team name must be at least 3 characters.")
+    @Size(min = 3, message = "Team name must be at least 3 characters.")
     private String name;
 
     public Team() {
@@ -48,15 +47,15 @@ public class Team implements Serializable {
     public String getName() {
         return this.name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public int getNumberOfPeople() {
         return this.numberOfPeople;
     }
-    
+
     public void setNumberOfPeople(int numberOfPeople) {
         this.numberOfPeople = numberOfPeople;
     }

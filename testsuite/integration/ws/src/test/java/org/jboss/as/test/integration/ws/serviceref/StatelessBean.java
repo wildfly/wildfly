@@ -64,29 +64,25 @@ public class StatelessBean implements StatelessRemote {
     }
 
     public String echo1(final String string) throws Exception {
-        if (null == endpoint1)
-            throw new IllegalArgumentException("Serviceref for property 'endpoint1' not injected");
+        if (null == endpoint1) { throw new IllegalArgumentException("Serviceref for property 'endpoint1' not injected"); }
 
         return endpoint1.echo(id + ":" + string);
     }
 
     public String echo2(final String string) throws Exception {
-        if (null == _endpoint2)
-            throw new IllegalArgumentException("Serviceref for property 'endpoint2' not injected");
+        if (null == _endpoint2) { throw new IllegalArgumentException("Serviceref for property 'endpoint2' not injected"); }
 
         return _endpoint2.echo(id + ":" + string);
     }
 
     public String echo3(final String string) throws Exception {
-        if (null == endpoint3)
-            throw new IllegalArgumentException("Serviceref for property 'endpoint3' not injected");
+        if (null == endpoint3) { throw new IllegalArgumentException("Serviceref for property 'endpoint3' not injected"); }
 
         return endpoint3.echo(id + ":" + string);
     }
 
     public String echo4(final String string) throws Exception {
-        if (null == _endpoint4)
-            throw new IllegalArgumentException("Serviceref for property 'endpoint4' not injected");
+        if (null == _endpoint4) { throw new IllegalArgumentException("Serviceref for property 'endpoint4' not injected"); }
 
         return _endpoint4.echo(id + ":" + string);
     }

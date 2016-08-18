@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.deployment.dependencies.ear;
 
 /**
  * A Log. Simple logger - only holds static {@link StringBuffer} instance.
- * 
+ *
  * @author Josef Cacek
  */
 public class Log {

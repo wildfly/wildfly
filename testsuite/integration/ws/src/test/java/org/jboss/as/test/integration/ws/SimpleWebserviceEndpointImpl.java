@@ -39,15 +39,16 @@ import javax.xml.ws.WebServiceContext;
 )
 public class SimpleWebserviceEndpointImpl {
 
-    @Resource WebServiceContext ctx;
-    
+    @Resource
+    WebServiceContext ctx;
+
     // method driven injection, with default name to be computed
     private String string1;
-    @Resource(name="string2")
+    @Resource(name = "string2")
     private String string2;
     // XML driven injection
     private String string3;
-    
+
     @Resource
     private void setString1(final String s) {
         string1 = s;
@@ -61,11 +62,11 @@ public class SimpleWebserviceEndpointImpl {
     }
 
     public String echo(final String s) {
-        if (!postConstructCalled) throw new RuntimeException("@PostConstruct not called");
-        if (!"Ahoj 1".equals(string1)) throw new RuntimeException("@Resource String with default name not injected");
-        if (!"Ahoj 2".equals(string2)) throw new RuntimeException("@Resource String with explicit name not injected");
-        if (!"Ahoj 2".equals(string3)) throw new RuntimeException("@Resource String with DD driven injection not injected");
-        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
+        if (!postConstructCalled) { throw new RuntimeException("@PostConstruct not called"); }
+        if (!"Ahoj 1".equals(string1)) { throw new RuntimeException("@Resource String with default name not injected"); }
+        if (!"Ahoj 2".equals(string2)) { throw new RuntimeException("@Resource String with explicit name not injected"); }
+        if (!"Ahoj 2".equals(string3)) { throw new RuntimeException("@Resource String with DD driven injection not injected"); }
+        if (ctx == null) { throw new RuntimeException("@Resource WebServiceContext not injected"); }
         return s;
     }
 

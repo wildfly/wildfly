@@ -28,7 +28,7 @@ import javax.naming.NamingException;
 
 /**
  * Common base class for "enventry" test EJBs
- * 
+ *
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
 public abstract class TestEnvEntryBeanBase implements TestEnvEntry {

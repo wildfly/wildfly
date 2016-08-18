@@ -9,7 +9,7 @@ public class ClusterTopology implements Serializable {
     private final Collection<String> nodes;
     private final String localNode;
     private final Collection<String> remoteNodes;
-    
+
     public ClusterTopology(Collection<String> nodes, String localNode, Collection<String> remoteNodes) {
         this.nodes = nodes;
         this.localNode = localNode;
@@ -19,11 +19,11 @@ public class ClusterTopology implements Serializable {
     public Collection<String> getNodes() {
         return this.nodes;
     }
-    
+
     public String getLocalNode() {
         return this.localNode;
     }
-    
+
     public Collection<String> getRemoteNodes() {
         return this.remoteNodes;
     }

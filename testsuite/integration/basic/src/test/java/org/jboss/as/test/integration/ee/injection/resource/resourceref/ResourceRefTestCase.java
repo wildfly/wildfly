@@ -119,8 +119,7 @@ public class ResourceRefTestCase {
      * @throws Exception
      */
     @Test
-    public void testResourceEnvRefWithoutInjectionTarget() throws Exception
-    {
+    public void testResourceEnvRefWithoutInjectionTarget() throws Exception {
         InitialContext context = new InitialContext();
        StatelessBeanRemote bean = (StatelessBeanRemote) context.lookup("java:app/resource-ref-test/"+StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getName());
        // check EJBContext through resource-env-ref was handled

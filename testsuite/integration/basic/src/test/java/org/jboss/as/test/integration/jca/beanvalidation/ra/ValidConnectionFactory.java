@@ -22,21 +22,20 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
 /**
- * Connection factory 
- * 
+ * Connection factory
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public interface ValidConnectionFactory extends Serializable, Referenceable {
     /**
      * Get connection from factory
-     * 
-     * @return  Connection instance
-     * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
+     *
+     * @return Connection instance
+     * @throws javax.resource.ResourceException Thrown if a connection can't be obtained
      */
-    public ValidConnection getConnection() throws ResourceException;
+    ValidConnection getConnection() throws ResourceException;
 }

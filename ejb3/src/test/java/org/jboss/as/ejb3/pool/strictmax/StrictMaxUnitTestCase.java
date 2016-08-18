@@ -57,7 +57,7 @@ public class StrictMaxUnitTestCase {
         Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 1, TimeUnit.SECONDS);
         pool.start();
 
-        MockBean beans[] = new MockBean[10];
+        MockBean[] beans = new MockBean[10];
         for (int i = 0; i < beans.length; i++) {
             beans[i] = pool.get();
         }
@@ -102,7 +102,7 @@ public class StrictMaxUnitTestCase {
         };
 
         ExecutorService service = Executors.newFixedThreadPool(20);
-        Future<?> results[] = new Future<?>[20];
+        Future<?>[] results = new Future<?>[20];
         for (int i = 0; i < results.length; i++) {
             results[i] = service.submit(task);
         }
@@ -128,7 +128,7 @@ public class StrictMaxUnitTestCase {
         Pool<MockBean> pool = new StrictMaxPool<MockBean>(factory, 10, 1, TimeUnit.SECONDS);
         pool.start();
 
-        MockBean beans[] = new MockBean[10];
+        MockBean[] beans = new MockBean[10];
         for (int i = 0; i < beans.length; i++) {
             beans[i] = pool.get();
         }

@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
+
 import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -41,7 +42,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @RunWith(Arquillian.class)
@@ -51,7 +51,7 @@ public class TestRequiredAddressingTestCase {
     private static Logger log = Logger.getLogger(TestRequiredAddressingTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
-    
+
     private static final String message = "required-addressing";
     private static final String expectedResponse = "Hello required-addressing!";
 
@@ -100,7 +100,7 @@ public class TestRequiredAddressingTestCase {
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsa/AddressingService?wsdl");
         File wsdlFile = new File(this.getClass().getSimpleName() + ".wsdl");
         TestNoAddressingTestCase.downloadWSDLToFile(wsdlURL, wsdlFile);
-        
+
         Service service = Service.create(wsdlFile.toURI().toURL(), serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
 

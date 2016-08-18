@@ -5,14 +5,14 @@
  * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
+ * under the terms of the GNU Lesser General License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Lesser General License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
@@ -39,173 +39,173 @@ import org.w3c.dom.Element;
 
 /**
  * @author baranowb
- * 
+ *
  */
 public interface WithPropertiesMBean {
 
-    public AtomicBoolean getAtomicBoolean();
+    AtomicBoolean getAtomicBoolean();
 
-    public AtomicInteger getAtomicInteger();
+    AtomicInteger getAtomicInteger();
 
-    public AtomicLong getAtomicLong();
+    AtomicLong getAtomicLong();
 
-    public BigDecimal getBigDecimal();
+    BigDecimal getBigDecimal();
 
-    public BigInteger getBigInteger();
+    BigInteger getBigInteger();
 
-    public boolean getBoolean();
+    boolean getBoolean();
 
-    public boolean[] getBooleanArray();
+    boolean[] getBooleanArray();
 
-    public byte getByte();
+    byte getByte();
 
-    public byte[] getByteArray();
+    byte[] getByteArray();
 
-    public char getChar();
+    char getChar();
 
-    public char[] getCharacterArray();
+    char[] getCharacterArray();
 
-    public Class[] getClassArray();
+    Class[] getClassArray();
 
-    public Class getClazz();
+    Class getClazz();
 
-    public Document getDocument();
+    Document getDocument();
 
-    public double getDouble();
+    double getDouble();
 
-    public Element getElement();
+    Element getElement();
 
-    public File getFile();
+    File getFile();
 
-    public float getFloat();
+    float getFloat();
 
-    public float[] getFloatArray();
+    float[] getFloatArray();
 
-    public InetAddress getInetAddress();
+    InetAddress getInetAddress();
 
-    public InetAddress[] getInetAddressArray();
+    InetAddress[] getInetAddressArray();
 
-    public int getInteger();
+    int getInteger();
 
-    public int[] getIntegerArray();
+    int[] getIntegerArray();
 
-    public Locale getLocale();
+    Locale getLocale();
 
-    public long getLong();
+    long getLong();
 
-    public long[] getLongArray();
+    long[] getLongArray();
 
-    public Boolean getObjectBoolean();
+    Boolean getObjectBoolean();
 
-    public Byte getObjectByte();
+    Byte getObjectByte();
 
-    public Character getObjectChar();
+    Character getObjectChar();
 
-    public Double getObjectDouble();
+    Double getObjectDouble();
 
-    public Float getObjectFloat();
+    Float getObjectFloat();
 
-    public Integer getObjectInteger();
+    Integer getObjectInteger();
 
-    public Long getObjectLong();
+    Long getObjectLong();
 
-    public Short getObjectShort();
+    Short getObjectShort();
 
-    public Properties getProperties();
+    Properties getProperties();
 
-    public short getShort();
+    short getShort();
 
-    public short[] getShortArray();
+    short[] getShortArray();
 
-    public String[] getStringArray();
+    String[] getStringArray();
 
-    public URI getURI();
+    URI getURI();
 
-    public URL getURL();
+    URL getURL();
 
-    public void setAtomicBoolean(AtomicBoolean b);
+    void setAtomicBoolean(AtomicBoolean b);
 
-    public void setAtomicInteger(AtomicInteger b);
+    void setAtomicInteger(AtomicInteger b);
 
-    public void setAtomicLong(AtomicLong b);
+    void setAtomicLong(AtomicLong b);
 
-    public void setBigDecimal(BigDecimal bd);
+    void setBigDecimal(BigDecimal bd);
 
-    public void setBigInteger(BigInteger bigInteger);
+    void setBigInteger(BigInteger bigInteger);
 
-    public void setBoolean(boolean b);
+    void setBoolean(boolean b);
 
-    public void setBooleanArray(boolean[] b);
+    void setBooleanArray(boolean[] b);
 
-    public void setByte(byte _byte);
+    void setByte(byte _byte);
 
-    public void setByteArray(byte[] b);
+    void setByteArray(byte[] b);
 
-    public void setChar(char _char);
+    void setChar(char _char);
 
-    public void setCharacterArray(char[] b);
+    void setCharacterArray(char[] b);
 
-    public void setClassArray(Class[] b);
+    void setClassArray(Class[] b);
 
     // cant override final method from Object :)
-    public void setClazz(Class b);
+    void setClazz(Class b);
 
-    public void setDocument(Document b);
+    void setDocument(Document b);
 
-    public void setDouble(double _double);
+    void setDouble(double _double);
 
-    public void setElement(Element b);
+    void setElement(Element b);
 
-    public void setFile(File b);
+    void setFile(File b);
 
-    public void setFloat(float _float);
+    void setFloat(float _float);
 
-    public void setFloatArray(float[] b);
+    void setFloatArray(float[] b);
 
-    public void setInetAddress(InetAddress b);
+    void setInetAddress(InetAddress b);
 
-    public void setInetAddressArray(InetAddress[] b);
+    void setInetAddressArray(InetAddress[] b);
 
-    public void setInteger(int _integer);
+    void setInteger(int _integer);
 
-    public void setIntegerArray(int[] b);
+    void setIntegerArray(int[] b);
 
-    public void setLocale(Locale b);
+    void setLocale(Locale b);
 
-    public void setLong(long _long);
+    void setLong(long _long);
 
-    public void setLongArray(long[] b);
+    void setLongArray(long[] b);
 
-    public void setObjectBoolean(Boolean objectBoolean);
+    void setObjectBoolean(Boolean objectBoolean);
 
-    public void setObjectByte(Byte objectByte);
+    void setObjectByte(Byte objectByte);
 
-    public void setObjectChar(Character objectChar);
+    void setObjectChar(Character objectChar);
 
-    public void setObjectDouble(Double objectDouble);
+    void setObjectDouble(Double objectDouble);
 
-    public void setObjectFloat(Float objectFloat);
+    void setObjectFloat(Float objectFloat);
 
-    public void setObjectInteger(Integer objectInteger);
+    void setObjectInteger(Integer objectInteger);
 
-    public void setObjectLong(Long objectLong);
+    void setObjectLong(Long objectLong);
 
-    public void setObjectShort(Short objectShort);
+    void setObjectShort(Short objectShort);
 
-    public void setProperties(Properties b);
+    void setProperties(Properties b);
 
-    public void setShort(short _short);
+    void setShort(short _short);
 
-    public void setShortArray(short[] b);
+    void setShortArray(short[] b);
 
-    public void setStringArray(String[] b);
+    void setStringArray(String[] b);
 
-    public void setURI(URI b);
+    void setURI(URI b);
 
-    public void setURL(URL b);
+    void setURL(URL b);
 
-    public void start() throws Exception;
+    void start() throws Exception;
 
-    public void stop() throws Exception;
+    void stop() throws Exception;
 
 }

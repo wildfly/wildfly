@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test case for servlet activations
+ *
  * @author <a href="jpederse@redhat.com">Jesper Pedersen</a>
  */
 @RunWith(Arquillian.class)
@@ -52,11 +53,11 @@ import org.junit.runner.RunWith;
 public class EjbDeploymentTestCase {
     private static final Logger log = Logger.getLogger(EjbDeploymentTestCase.class.getName());
 
-    final static String deploymentName = "raractivation.ear";
-    final static String rarDeploymentName = "eis.rar";
-    final static String insideRarDeploymentName = "inside-eis.rar";
-    final static String webDeploymentName = "web.war";
-    final static String ejbDeploymentName = "ejb.jar";
+    static final String deploymentName = "raractivation.ear";
+    static final String rarDeploymentName = "eis.rar";
+    static final String insideRarDeploymentName = "inside-eis.rar";
+    static final String webDeploymentName = "web.war";
+    static final String ejbDeploymentName = "ejb.jar";
 
     @Deployment(name = "rar", order = 1)
     public static Archive<?> deploytRar() {
@@ -130,6 +131,7 @@ public class EjbDeploymentTestCase {
 
     /**
      * Test EAR
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test

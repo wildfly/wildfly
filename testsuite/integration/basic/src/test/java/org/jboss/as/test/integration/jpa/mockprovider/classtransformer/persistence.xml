@@ -21,16 +21,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"	version="2.0">
-	<persistence-unit name="mypc">
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <persistence-unit name="mypc">
         <provider>org.jboss.as.test.integration.jpa.mockprovider.classtransformer.TestPersistenceProvider</provider>
         <jar-file>lib/jarfile.jar</jar-file>
-		<description>Persistence Unit.</description>
-		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
-		<properties>
+        <description>Persistence Unit.</description>
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
             <!-- setting jboss.as.jpa.classtransformer to true, to insure that classloader transforms are allowed -->
-            <property name="jboss.as.jpa.classtransformer" value="true" />
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
             <property name="jboss.as.jpa.adapterClass" value="org.jboss.as.test.integration.jpa.mockprovider.classtransformer.TestAdapter"/>
-		</properties>
-	</persistence-unit>
+        </properties>
+    </persistence-unit>
 </persistence>

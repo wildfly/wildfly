@@ -26,9 +26,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(value = {AbstractTestsuite.TestCaseSetup.class})
-public class ConnectionListenerTestCase extends AbstractTestsuite{
+public class ConnectionListenerTestCase extends AbstractTestsuite {
 
-	private static final Logger log = Logger.getLogger(ConnectionListenerTestCase.class);
+    private static final Logger log = Logger.getLogger(ConnectionListenerTestCase.class);
 
     @ArquillianResource
     private ContainerController controller;
@@ -36,8 +36,8 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
     private Deployer deployer;
 
     @Before
-    public void init() throws Exception{
-    	this.context = Util.createNamingContext();
+    public void init() throws Exception {
+        this.context = Util.createNamingContext();
     }
 
     @After
@@ -47,169 +47,175 @@ public class ConnectionListenerTestCase extends AbstractTestsuite{
 
     /**
      * Test: insert record in transaction and then rollback
+     *
      * @throws Exception
      */
     @Test
     public void testConnListenerWithRollback() throws Exception {
-    	testConnListenerTest(DEP_1, false);
+        testConnListenerTest(DEP_1, false);
     }
 
     /**
      * Test: insert record in transaction and then rollback
+     *
      * @throws Exception
      */
     @Test
     public void testConnListenerXaWithRollback() throws Exception {
-    	testConnListenerTest(DEP_1_XA, true);
+        testConnListenerTest(DEP_1_XA, true);
     }
 
     /**
      * Test: insert record in transaction and then rollback
+     *
      * @throws Exception
      */
     @Test
     public void testConnListener2WithRollback() throws Exception {
-    	testConnListener2Test(DEP_2, false);
+        testConnListener2Test(DEP_2, false);
     }
 
     /**
      * Test: insert record in transaction and then rollback
+     *
      * @throws Exception
      */
     @Test
     public void testConnListener2XaWithRollback() throws Exception {
-    	testConnListener2Test(DEP_2_XA, true);
+        testConnListener2Test(DEP_2_XA, true);
     }
 
     /**
      * Test: insert record in transaction
+     *
      * @throws Exception
      */
     @Test
     public void testConnListener3WithoutRollback() throws Exception {
-    	testConnListener3Test(DEP_3, false);
+        testConnListener3Test(DEP_3, false);
     }
 
     /**
      * Test: insert record in transaction
+     *
      * @throws Exception
      */
     @Test
     public void testConnListener3XaWithoutRollback() throws Exception {
-    	testConnListener3Test(DEP_3_XA, true);
+        testConnListener3Test(DEP_3_XA, true);
     }
 
-    private void testConnListenerTest(String deployment, boolean useXaDatasource) throws NamingException, SQLException{
-    	try{
-    		if(!controller.isStarted(CONTAINER)){
-    			controller.start(CONTAINER);
-    		}
+    private void testConnListenerTest(String deployment, boolean useXaDatasource) throws NamingException, SQLException {
+        try {
+            if (!controller.isStarted(CONTAINER)) {
+                controller.start(CONTAINER);
+            }
 
-    		deployer.deploy(deployment);
+            deployer.deploy(deployment);
 
-    		JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
-    		assertNotNull(bean);
+            JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
+            assertNotNull(bean);
 
-    		bean.initDataSource(useXaDatasource);
+            bean.initDataSource(useXaDatasource);
 
-    		bean.assertRecords(0);
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord();
+            bean.assertRecords(0);
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord();
 
-    		bean.assertRecords(5);
+            bean.assertRecords(5);
 
-    		bean.insertRecord();
-    		bean.insertRecord(true);
-    		bean.insertRecord(true);
-    		bean.assertRecords(6);
-    		bean.assertRecords(6);
+            bean.insertRecord();
+            bean.insertRecord(true);
+            bean.insertRecord(true);
+            bean.assertRecords(6);
+            bean.assertRecords(6);
 
-    		/*
-    		 * Activated count - Every new connection creates new activated record, rollback -> remove this record..
-    		 * Passivated count - After connection.close() is invoked passivatedConnectionListener, rollback doesn't remove passivated record -> it is created after rollback
-    		 */
-    		bean.assertExactCountOfRecords(6, 11, 12);
-    	}finally{
-    		close(deployment);
-    	}
+            /*
+             * Activated count - Every new connection creates new activated record, rollback -> remove this record..
+             * Passivated count - After connection.close() is invoked passivatedConnectionListener, rollback doesn't remove passivated record -> it is created after rollback
+             */
+            bean.assertExactCountOfRecords(6, 11, 12);
+        } finally {
+            close(deployment);
+        }
     }
 
-    private void testConnListener2Test(String deployment, boolean useXaDatasource) throws SQLException, NamingException{
-    	try{
-    		if(!controller.isStarted(CONTAINER)){
-    			controller.start(CONTAINER);
-    		}
+    private void testConnListener2Test(String deployment, boolean useXaDatasource) throws SQLException, NamingException {
+        try {
+            if (!controller.isStarted(CONTAINER)) {
+                controller.start(CONTAINER);
+            }
 
-    		deployer.deploy(deployment);
+            deployer.deploy(deployment);
 
-    		JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
-    		assertNotNull(bean);
+            JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
+            assertNotNull(bean);
 
-    		bean.initDataSource(useXaDatasource);
+            bean.initDataSource(useXaDatasource);
 
-        	bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord(true);
-    		/*
-    		 * Activated count - we need open connection for select (in assertExactCountOfRecords...) 1 extra activated record is inserted... -> 3
-    		 * Passivated count - rollback remove Activated record, but not passivated -> it is created after rollback
-    		 */
-    		bean.assertExactCountOfRecords(2, 3, 3);
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord(true);
+            /*
+            * Activated count - we need open connection for select (in assertExactCountOfRecords...) 1 extra activated record is inserted... -> 3
+            * Passivated count - rollback remove Activated record, but not passivated -> it is created after rollback
+            */
+            bean.assertExactCountOfRecords(2, 3, 3);
 
-    	}finally{
-    		close(deployment);
-    	}
+        } finally {
+            close(deployment);
+        }
     }
 
     private void testConnListener3Test(String deployment, boolean useXaDatasource) throws Exception {
-    	try{
-    		if(!controller.isStarted(CONTAINER)){
-    			controller.start(CONTAINER);
-    		}
+        try {
+            if (!controller.isStarted(CONTAINER)) {
+                controller.start(CONTAINER);
+            }
 
-    		deployer.deploy(deployment);
+            deployer.deploy(deployment);
 
-    		JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
-    		assertNotNull(bean);
+            JpaTestSlsbRemote bean = lookup(JpaTestSlsbRemote.class, JpaTestSlsb.class, deployment);
+            assertNotNull(bean);
 
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		bean.insertRecord();
-    		/*
-    		 * Activated count - we need open connection for select (in assertExactCountOfRecords...) -> 1 extra activated record is inserted... -> 6
-    		 */
-    		bean.assertExactCountOfRecords(5, 6, 5);
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord();
+            bean.insertRecord();
+            /*
+             * Activated count - we need open connection for select (in assertExactCountOfRecords...) -> 1 extra activated record is inserted... -> 6
+             */
+            bean.assertExactCountOfRecords(5, 6, 5);
 
-    	}finally{
-    		close(deployment);
-    	}
+        } finally {
+            close(deployment);
+        }
     }
 
-    private void close(String deploymentName){
-    	try {
-    		if(!controller.isStarted(CONTAINER)){
-    			controller.start(CONTAINER);
-    		}
-    	} catch (Exception e) {
-    		log.warn(e.getMessage());
-    	}
-    	try {
-    		deployer.undeploy(deploymentName);
-    	} catch (Exception e) {
-    		log.warn(e.getMessage());
-    	}
+    private void close(String deploymentName) {
+        try {
+            if (!controller.isStarted(CONTAINER)) {
+                controller.start(CONTAINER);
+            }
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
+        try {
+            deployer.undeploy(deploymentName);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
 
-    	try{
-    		if(controller.isStarted(CONTAINER)){
-    			controller.stop(CONTAINER);
-    		}
-    	}catch(Exception e){
-    		log.warn(e.getMessage());
-    	}
+        try {
+            if (controller.isStarted(CONTAINER)) {
+                controller.stop(CONTAINER);
+            }
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
     }
 }

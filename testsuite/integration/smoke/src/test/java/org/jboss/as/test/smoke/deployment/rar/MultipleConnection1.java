@@ -26,17 +26,17 @@ package org.jboss.as.test.smoke.deployment.rar;
  *
  * @version $Revision: $
  */
-public interface MultipleConnection1
-{
-   /**
-    * test
-    * @param s s
-    * @return String
-    */
-   public String test(String s);
+public interface MultipleConnection1 {
+    /**
+     * test
+     *
+     * @param s s
+     * @return String
+     */
+    String test(String s);
 
-   /**
-    * Close
-    */
-   public void close();
+    /**
+     * Close
+     */
+    void close();
 }

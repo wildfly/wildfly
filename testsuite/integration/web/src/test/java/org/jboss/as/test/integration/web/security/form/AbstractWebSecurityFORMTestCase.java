@@ -48,7 +48,7 @@ import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
  * An Abstract parent of the FORM based authentication tests. <br/>
  * <i>This class was introduced as a workaround for JBPAPP-9018 - {@link Class#getMethods()} method returns different values in
  * Oracle JDK and IBM JDK.</i>
- * 
+ *
  * @author Josef Cacek
  */
 public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswordBasedBase {
@@ -61,13 +61,13 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
 
     /**
      * Makes a HTTP request to the protected web application.
-     * 
+     *
      * @param user
      * @param pass
      * @param expectedStatusCode
      * @throws Exception
      * @see org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase#makeCall(java.lang.String, java.lang.String,
-     *      int)
+     * int)
      */
     @Override
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
@@ -79,8 +79,7 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             HttpResponse response = httpclient.execute(httpget);
 
             HttpEntity entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
@@ -108,8 +107,7 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
 
             response = httpclient.execute(httpPost);
             entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             statusLine = response.getStatusLine();
 
@@ -122,8 +120,7 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             response = httpclient.execute(httpGet);
 
             entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             LOGGER.info("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();

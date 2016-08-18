@@ -1,5 +1,9 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertEquals;
+
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.PropertyPermission;
@@ -9,23 +13,19 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 import org.wildfly.naming.java.permission.JndiPermission;
-import org.jboss.as.test.integration.security.common.Utils;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import org.jboss.remoting3.security.RemotingPermission;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Regression test for AS7-5718
+ *
  * @author jlivings@redhat.com
  */
 @RunWith(Arquillian.class)
@@ -43,7 +43,7 @@ public class NestedRemoteContextTestCase {
                 .addClasses(MyEjbBean.class, MyEjb.class, MyObject.class);
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web.war")
-                .addClasses(CallEjbServlet.class,  MyObject.class)
+                .addClasses(CallEjbServlet.class, MyObject.class)
                 .setWebXML(thisPackage, "web.xml");
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "ejb.ear")
@@ -61,7 +61,7 @@ public class NestedRemoteContextTestCase {
         return ear;
     }
 
-    @Deployment(name="binder")
+    @Deployment(name = "binder")
     public static WebArchive deploymentThree() {
         return ShrinkWrap.create(WebArchive.class, "binder.war")
                 .addClasses(BindRmiServlet.class, MyObject.class)

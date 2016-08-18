@@ -26,6 +26,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+
 import org.junit.Assert;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -46,7 +47,7 @@ import org.jboss.as.test.integration.ws.wsse.ServiceIface;
 
 /**
  * Test WS sign + encrypt capability
- * 
+ * <p>
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
  * Public key can be imported using keytool -import
@@ -90,10 +91,10 @@ public class SignEncryptTestCase {
     }
 
     private void setupWsse(ServiceIface proxy) throws MalformedURLException {
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER,      new KeystorePasswordCallback());
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES,  "org/jboss/as/test/integration/ws/wsse/alice.properties");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES,    "org/jboss/as/test/integration/ws/wsse/alice.properties");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME,    "alice");
-        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME,      "bob");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER, new KeystorePasswordCallback());
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES, "org/jboss/as/test/integration/ws/wsse/alice.properties");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES, "org/jboss/as/test/integration/ws/wsse/alice.properties");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME, "alice");
+        ((BindingProvider) proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME, "bob");
     }
 }

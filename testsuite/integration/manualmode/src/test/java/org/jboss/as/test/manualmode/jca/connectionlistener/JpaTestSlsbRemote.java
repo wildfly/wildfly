@@ -30,10 +30,14 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface JpaTestSlsbRemote {
-	
-	public void initDataSource(boolean useXaDs);
-	public void insertRecord() throws SQLException;
-	public void insertRecord(boolean doRollback) throws SQLException;    
-    public void assertRecords(int expectedRecords) throws SQLException;
-    public void assertExactCountOfRecords(int expectedRecords, int expectedActivated, int expectedPassivated) throws SQLException;
+
+    void initDataSource(boolean useXaDs);
+
+    void insertRecord() throws SQLException;
+
+    void insertRecord(boolean doRollback) throws SQLException;
+
+    void assertRecords(int expectedRecords) throws SQLException;
+
+    void assertExactCountOfRecords(int expectedRecords, int expectedActivated, int expectedPassivated) throws SQLException;
 }

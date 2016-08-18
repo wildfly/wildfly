@@ -28,34 +28,37 @@ import javax.ejb.SessionContext;
 
 public class SecondBean implements SessionBean {
 
-	
-	public void ejbCreate() {
-		
-	}
-	
-	public void ejbPassivate() {}
-	
-	public void ejbActivate() {}
-	
-	public void ejbRemove() {}
-	
-	public boolean test(String[] s) {
-		//System.out.println(">> test(String[])");
-		return true;
-	}
 
-	public boolean test(String s) {
-		//System.out.println(">> test(String)");
-		return true;
-	}
+    public void ejbCreate() {
 
-	public boolean test(int x) {
-		//System.out.println(">> test(int)");
-		return true;
-	}
+    }
 
-	public void setSessionContext(SessionContext arg0) throws EJBException {
-		
-	}
-	
+    public void ejbPassivate() {
+    }
+
+    public void ejbActivate() {
+    }
+
+    public void ejbRemove() {
+    }
+
+    public boolean test(String[] s) {
+        //System.out.println(">> test(String[])");
+        return true;
+    }
+
+    public boolean test(String s) {
+        //System.out.println(">> test(String)");
+        return true;
+    }
+
+    public boolean test(int x) {
+        //System.out.println(">> test(int)");
+        return true;
+    }
+
+    public void setSessionContext(SessionContext arg0) throws EJBException {
+
+    }
+
 }

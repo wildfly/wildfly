@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.sar;
 
 import java.io.IOException;
-
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;

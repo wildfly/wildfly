@@ -22,22 +22,23 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import javax.resource.cci.Connection;
+
 /**
  * MultipleConnection1
  *
  * @version $Revision: $
  */
-public interface MultipleConnection1 extends Connection
-{
-   /**
-    * test
-    * @param s s
-    * @return String
-    */
-   public String test(String s);
+public interface MultipleConnection1 extends Connection {
+    /**
+     * test
+     *
+     * @param s s
+     * @return String
+     */
+    String test(String s);
 
-   /**
-    * Close
-    */
-   public void close();
+    /**
+     * Close
+     */
+    void close();
 }

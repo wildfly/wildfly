@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests the RESTEasy Jettison provider
- * 
+ *
  * @author Pavel Janousek
  */
 @RunWith(Arquillian.class)

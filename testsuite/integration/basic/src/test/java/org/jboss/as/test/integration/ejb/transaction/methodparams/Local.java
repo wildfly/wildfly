@@ -26,10 +26,10 @@ import javax.ejb.EJBLocalObject;
 
 public interface Local extends EJBLocalObject {
 
-	public boolean test(String[] s);
+    boolean test(String[] s);
 
-	public boolean test(String s);
-	
-	public boolean test(int x);
+    boolean test(String s);
+
+    boolean test(int x);
 
 }

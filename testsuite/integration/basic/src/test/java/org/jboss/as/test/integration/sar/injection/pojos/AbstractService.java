@@ -26,10 +26,10 @@ package org.jboss.as.test.integration.sar.injection.pojos;
  * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
  */
 abstract class AbstractService {
-    
+
     private A a;
     private int injectedCount;
-    
+
     public final void setA(final A a) {
         this.a = a;
     }

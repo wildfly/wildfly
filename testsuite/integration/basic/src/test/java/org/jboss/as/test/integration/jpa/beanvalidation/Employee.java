@@ -36,10 +36,10 @@ public class Employee {
     @Id
     private int id;
 
-    @NotNull(message="Name must be specified.")
+    @NotNull(message = "Name must be specified.")
     private String name;
 
-    @NotNull(message="Address must be specified.")
+    @NotNull(message = "Address must be specified.")
     private String address;
 
     public String getName() {

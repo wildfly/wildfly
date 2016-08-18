@@ -26,12 +26,12 @@ package org.jboss.as.test.integration.sar.injection.pojos;
  * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
  */
 abstract class AbstractLifycycleMethodsA {
-    
+
     private boolean startCalled;
     private boolean stopCalled;
     private boolean createCalled;
     private boolean destroyCalled;
-    
+
     public final void start() {
         startCalled = true;
     }

@@ -21,19 +21,26 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionListener;
-import io.undertow.server.session.SessionListeners;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionListener;
+import io.undertow.server.session.SessionListeners;
 import org.junit.Before;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batch;
@@ -65,7 +72,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void start() {
         this.adapter.start();
-        
+
         verify(this.manager).start();
         verify(this.statistics).reset();
     }
@@ -73,14 +80,14 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void stop() {
         this.adapter.stop();
-        
+
         verify(this.manager).stop();
     }
 
     @Test
     public void setDefaultSessionTimeout() {
         this.adapter.setDefaultSessionTimeout(10);
-        
+
         verify(this.manager).setDefaultMaxInactiveInterval(Duration.ofSeconds(10L));
     }
 
@@ -93,7 +100,7 @@ public class DistributableSessionManagerTestCase {
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
         String existingSessionId = "existing";
-        
+
         when(this.manager.createIdentifier()).thenReturn(existingSessionId, sessionId);
         when(this.manager.containsSession(existingSessionId)).thenReturn(true);
         when(this.manager.containsSession(sessionId)).thenReturn(false);
@@ -113,7 +120,7 @@ public class DistributableSessionManagerTestCase {
 
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
-        
+
         String result = sessionAdapter.getId();
         assertSame(expected, result);
     }
@@ -126,7 +133,7 @@ public class DistributableSessionManagerTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
-        
+
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
@@ -135,16 +142,16 @@ public class DistributableSessionManagerTestCase {
         when(session.getId()).thenReturn(sessionId);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
-        
+
         assertNotNull(sessionAdapter);
-        
+
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(batcher).suspendBatch();
         verify(this.statistics).record(sessionAdapter);
-        
+
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
-        
+
         String result = sessionAdapter.getId();
         assertSame(expected, result);
     }
@@ -157,7 +164,7 @@ public class DistributableSessionManagerTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
-        
+
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(session);
         when(this.manager.getBatcher()).thenReturn(batcher);
@@ -165,7 +172,7 @@ public class DistributableSessionManagerTestCase {
         when(session.getId()).thenReturn(sessionId);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
-        
+
         assertNotNull(sessionAdapter);
 
         verifyZeroInteractions(this.statistics);
@@ -174,7 +181,7 @@ public class DistributableSessionManagerTestCase {
 
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
-        
+
         String result = sessionAdapter.getId();
         assertSame(expected, result);
     }
@@ -185,15 +192,15 @@ public class DistributableSessionManagerTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
-        
+
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(config.findSessionId(exchange)).thenReturn(null);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
-        
+
         assertNull(sessionAdapter);
-        
+
         verify(batch).close();
         verify(batcher, never()).suspendBatch();
     }
@@ -227,16 +234,16 @@ public class DistributableSessionManagerTestCase {
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         String sessionId = "session";
-        
+
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(null);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
-        
+
         assertNull(sessionAdapter);
-        
+
         verify(batch).close();
         verify(batcher, never()).suspendBatch();
     }
@@ -244,16 +251,16 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void activeSessions() {
         when(this.manager.getActiveSessions()).thenReturn(Collections.singleton("expected"));
-        
+
         int result = this.adapter.getActiveSessions().size();
-        
+
         assertEquals(1, result);
     }
 
     @Test
     public void getTransientSessions() {
         Set<String> result = this.adapter.getTransientSessions();
-        
+
         assertTrue(result.isEmpty());
     }
 
@@ -263,7 +270,7 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getActiveSessions()).thenReturn(Collections.singleton(expected));
 
         Set<String> result = this.adapter.getActiveSessions();
-        
+
         assertEquals(1, result.size());
         assertSame(expected, result.iterator().next());
     }
@@ -274,7 +281,7 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getLocalSessions()).thenReturn(Collections.singleton(expected));
 
         Set<String> result = this.adapter.getAllSessions();
-        
+
         assertEquals(1, result.size());
         assertSame(expected, result.iterator().next());
     }
@@ -305,9 +312,9 @@ public class DistributableSessionManagerTestCase {
         when(metaData.getLastAccessedTime()).thenReturn(lastAccessedTime);
         when(metaData.getMaxInactiveInterval()).thenReturn(maxInactiveInterval);
         when(batcher.createBatch()).thenReturn(batch);
-        
+
         io.undertow.server.session.Session result = this.adapter.getSession(id);
-        
+
         assertSame(this.adapter, result.getSessionManager());
         assertSame(id, result.getId());
         assertEquals(creationTime.toEpochMilli(), result.getCreationTime());
@@ -315,7 +322,7 @@ public class DistributableSessionManagerTestCase {
         assertEquals(maxInactiveInterval.getSeconds(), result.getMaxInactiveInterval());
         assertEquals(names, result.getAttributeNames());
         assertSame(value, result.getAttribute(name));
-        
+
         verify(batch).close();
     }
 
@@ -324,13 +331,13 @@ public class DistributableSessionManagerTestCase {
         String id = "session";
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
-        
+
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(this.manager.viewSession(id)).thenReturn(null);
         when(batcher.createBatch()).thenReturn(batch);
-        
+
         io.undertow.server.session.Session result = this.adapter.getSession(id);
-        
+
         assertNull(result);
 
         verify(batch).close();

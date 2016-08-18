@@ -22,10 +22,8 @@
 package org.jboss.as.test.integration.ejb.remote.async.classloading;
 
 import java.io.IOException;
-import java.net.URL;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -35,17 +33,10 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.ejb.remote.async.RemoteInterface;
-import org.jboss.as.test.module.util.TestModule;
-import org.jboss.as.test.shared.ModuleUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -56,7 +47,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test if Future can be returned as Async call
- * 
+ *
  * @author baranowb
  */
 @RunWith(Arquillian.class)
@@ -115,25 +106,25 @@ public class AsyncFutureTestCase {
 
     @Test
     public void testAsyncResultInServlet() throws Exception {
-        final String requestURL = managementClient.getWebUri() + "/" + DEPLOYMENT_UNIT_WAR+ "/x";
+        final String requestURL = managementClient.getWebUri() + "/" + DEPLOYMENT_UNIT_WAR + "/x";
         final HttpGet get = new HttpGet(requestURL);
         final HttpResponse response = HTTP_CLIENT.execute(get);
         // consume!!
         consume(response);
-        Assert.assertEquals(requestURL+">"+response.getStatusLine().getReasonPhrase(),200, response.getStatusLine().getStatusCode());
+        Assert.assertEquals(requestURL + ">" + response.getStatusLine().getReasonPhrase(), 200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testAsyncNullResultInServlet() throws Exception {
-        final String requestURL = managementClient.getWebUri() + "/" + DEPLOYMENT_UNIT_WAR+ "/x?null=true";
+        final String requestURL = managementClient.getWebUri() + "/" + DEPLOYMENT_UNIT_WAR + "/x?null=true";
         final HttpGet get = new HttpGet(requestURL);
         final HttpResponse response = HTTP_CLIENT.execute(get);
         // consume!!
         consume(response);
-        Assert.assertEquals(requestURL+">"+response.getStatusLine().getReasonPhrase(),200, response.getStatusLine().getStatusCode());
+        Assert.assertEquals(requestURL + ">" + response.getStatusLine().getReasonPhrase(), 200, response.getStatusLine().getStatusCode());
     }
 
-    private void consume(final HttpResponse httpResponse){
+    private void consume(final HttpResponse httpResponse) {
         final HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity != null) {
             try {

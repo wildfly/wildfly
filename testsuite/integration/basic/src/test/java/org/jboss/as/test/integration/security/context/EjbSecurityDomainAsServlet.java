@@ -27,5 +27,5 @@ package org.jboss.as.test.integration.security.context;
  */
 public interface EjbSecurityDomainAsServlet {
 
-    public String sayHello();
+    String sayHello();
 }

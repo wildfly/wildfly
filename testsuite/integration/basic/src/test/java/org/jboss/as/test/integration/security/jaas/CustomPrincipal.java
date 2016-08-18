@@ -25,7 +25,7 @@ import java.security.Principal;
 
 /**
  * A custom {@link Principal} implementation.
- * 
+ *
  * @author Josef Cacek
  */
 public class CustomPrincipal implements Principal {
@@ -36,7 +36,7 @@ public class CustomPrincipal implements Principal {
 
     /**
      * Create a new CustomPrincipal.
-     * 
+     *
      * @param name
      */
     public CustomPrincipal(final String name) {
@@ -47,7 +47,7 @@ public class CustomPrincipal implements Principal {
 
     /**
      * Returns the Principal name.
-     * 
+     *
      * @return
      * @see java.security.Principal#getName()
      */
@@ -56,7 +56,6 @@ public class CustomPrincipal implements Principal {
     }
 
     /**
-     * 
      * @param o
      * @return
      * @see java.lang.Object#equals(java.lang.Object)

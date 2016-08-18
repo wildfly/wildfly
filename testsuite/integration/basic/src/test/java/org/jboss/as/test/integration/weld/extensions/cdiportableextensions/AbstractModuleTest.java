@@ -44,7 +44,7 @@ public abstract class AbstractModuleTest {
         deleteRecursively(testModuleRoot);
         createTestModule(testModuleRoot, moduleXml, moduleArchive);
     }
-    
+
     public static void doCleanup(String modulePath) {
         File testModuleRoot = new File(getModulePath(), modulePath);
         deleteRecursively(testModuleRoot);

@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation.requiresnew;
 
 import java.util.List;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -47,6 +46,7 @@ public class BikeRace {
     /**
      * As this em is enrolled in the transaction, if BikeShop executed in the context of this transaction
      * it would throw an exception, as as PC has already been bound to the current transaction.
+     *
      * @return
      */
     public Motorbike createNewBike(int id, String name) {

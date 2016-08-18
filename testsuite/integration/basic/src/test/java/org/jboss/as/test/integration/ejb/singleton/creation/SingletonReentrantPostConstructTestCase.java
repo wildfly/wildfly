@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.singleton.creation;
 
 import java.util.logging.Logger;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;

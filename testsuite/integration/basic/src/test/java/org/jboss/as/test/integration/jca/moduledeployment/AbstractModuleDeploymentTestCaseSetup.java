@@ -48,13 +48,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.cli.CommandContext;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
@@ -103,8 +101,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         testModuleRoot = new File(getModulePath(), moduleName);
         File file = testModuleRoot;
         if (deleteParent) {
-            while (!getModulePath().equals(file.getParentFile()))
-                file = file.getParentFile();
+            while (!getModulePath().equals(file.getParentFile())) { file = file.getParentFile(); }
         }
         toRemove.add(file.toPath());
     }
@@ -158,8 +155,8 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     }
 
     protected void copyModuleXml(File slot, InputStream src) throws IOException {
-        try(BufferedReader in = new BufferedReader(new InputStreamReader(src));
-                PrintWriter out = new PrintWriter(new File(slot, "module.xml"));) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(src));
+             PrintWriter out = new PrintWriter(new File(slot, "module.xml"))) {
             String line;
             while ((line = in.readLine()) != null) {
                 // replace slot name in the module xml file
@@ -200,10 +197,10 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         } finally {
             removeModule(defaultPath, true);
         }
-        if (reloadRequired){
+        if (reloadRequired) {
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
-        for (Path p:toRemove) {
+        for (Path p : toRemove) {
             deleteRecursively(p);
         }
         toRemove.clear();
@@ -297,6 +294,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     /**
      * This should be overridden to return a unique slot name for each test-case class / module.
      * We need this since custom modules are not supported to be removing at runtime, see WFLY-1560.
+     *
      * @return a name of the slot of the test module
      */
     protected abstract String getSlot();

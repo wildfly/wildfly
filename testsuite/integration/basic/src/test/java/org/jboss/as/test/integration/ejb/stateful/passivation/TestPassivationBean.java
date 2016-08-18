@@ -55,7 +55,7 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
 
     @EJB
     private NestledBean nestledBean;
-    
+
     @Inject
     private ManagedBean managedBean;
 

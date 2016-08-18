@@ -39,14 +39,12 @@ import org.jboss.as.test.integration.jpa.basic.Employee;
 import org.jboss.as.test.integration.jpa.basic.SFSB1;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * EntityManagerFactory tests
- *
  *
  * @author Zbynek Roubalik
  */
@@ -60,7 +58,7 @@ public class EntityManagerFactoryTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(EntityManagerFactoryTestCase.class,
-        		SFSB1.class, Employee.class);
+                SFSB1.class, Employee.class);
         jar.addAsManifestResource(EntityManagerFactoryTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
@@ -109,13 +107,13 @@ public class EntityManagerFactoryTestCase {
     @Test
     public void testEntityManagerFactoryName() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Sally","1 home street", 1);
+        sfsb1.createEmployee("Sally", "1 home street", 1);
 
-    	EntityManagerFactory emf = rawLookup("myEMF",EntityManagerFactory.class);
+        EntityManagerFactory emf = rawLookup("myEMF", EntityManagerFactory.class);
         assertNotNull("JNDI lookup of jboss.entity.manager.factory.jndi.name should return EntityManagerFactory", emf);
 
         EntityManager em = emf.createEntityManager();
-        Employee emp = (Employee)em.find(Employee.class,1);
+        Employee emp = em.find(Employee.class, 1);
         assertTrue("Name read from EntityManager is Sally", "Sally".equals(emp.getName()));
 
     }
@@ -126,12 +124,12 @@ public class EntityManagerFactoryTestCase {
     @Test
     public void testEntityManagerName() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Sharon","304 Bubbles Lane", 2);
+        sfsb1.createEmployee("Sharon", "304 Bubbles Lane", 2);
 
-    	EntityManager em = rawLookup("java:/Manager1",EntityManager.class);
+        EntityManager em = rawLookup("java:/Manager1", EntityManager.class);
         assertNotNull("JNDI lookup of jboss.entity.manager.jndi.name should return EntityManager", em);
 
-        Employee emp = em.find(Employee.class,2);
+        Employee emp = em.find(Employee.class, 2);
         assertTrue("Name read from EntityManager is Sharon", "Sharon".equals(emp.getName()));
 
     }

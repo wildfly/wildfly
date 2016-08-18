@@ -77,7 +77,7 @@ public class ContextClassLoaderRule extends TestWatcher {
         return ! WildFlySecurityManager.isChecking() ? action.run() : doPrivileged(action);
     }
 
-    private final static class NewClassLoaderInstanceAction<T extends ClassLoader> implements PrivilegedAction<T> {
+    private static final class NewClassLoaderInstanceAction<T extends ClassLoader> implements PrivilegedAction<T> {
 
         private final Class<T> clazz;
         private final ClassLoader parent;

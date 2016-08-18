@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.naming.local.simple;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertNotNull;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -37,10 +41,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.java.permission.JndiPermission;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author John Bailey
@@ -96,14 +96,14 @@ public class DeploymentWithBindTestCase {
     @Test
     @InSequence(3)
     public void testBasicsNamespaces() throws Exception {
-    	iniCtx.lookup("java:global");
-    	iniCtx.listBindings("java:global");
+        iniCtx.lookup("java:global");
+        iniCtx.listBindings("java:global");
 
-    	iniCtx.lookup("java:jboss");
-    	iniCtx.listBindings("java:jboss");
+        iniCtx.lookup("java:jboss");
+        iniCtx.listBindings("java:jboss");
 
-    	iniCtx.lookup("java:jboss/exported");
-    	iniCtx.listBindings("java:jboss/exported");
+        iniCtx.lookup("java:jboss/exported");
+        iniCtx.listBindings("java:jboss/exported");
 
     }
 }

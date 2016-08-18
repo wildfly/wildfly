@@ -28,9 +28,9 @@ import java.io.Serializable;
 public class TestApplicationException extends Exception implements Serializable {
 
     public TestApplicationException(String message, Throwable e) {
-        super(message,e);
+        super(message, e);
     }
-    
+
     public TestApplicationException(String message) {
         super(message);
     }

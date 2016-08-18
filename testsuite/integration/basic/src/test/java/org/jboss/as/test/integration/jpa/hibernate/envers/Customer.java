@@ -22,10 +22,18 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.envers;
 
-import java.util.*;
-import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 
-import org.hibernate.envers.*;
+import org.hibernate.envers.AuditJoinTable;
+import org.hibernate.envers.Audited;
 
 /**
  * @author Madhumita Sadhukhan
@@ -43,8 +51,8 @@ public class Customer {
     private String surname;
 
     @OneToMany
-    @JoinTable(name = "CUSTOMER_PHONE", joinColumns = { @JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID") }, inverseJoinColumns = { @JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID") })
-    @AuditJoinTable(name = "CUSTOMER_PHONE_AUD", inverseJoinColumns = { @JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID") })
+    @JoinTable(name = "CUSTOMER_PHONE", joinColumns = {@JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID")}, inverseJoinColumns = {@JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID")})
+    @AuditJoinTable(name = "CUSTOMER_PHONE_AUD", inverseJoinColumns = {@JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID")})
     private List<Phone> phones = new ArrayList<Phone>();
 
     public int getId() {
@@ -81,10 +89,8 @@ public class Customer {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Customer))
-            return false;
+        if (this == o) { return true; }
+        if (!(o instanceof Customer)) { return false; }
 
         final Customer cust = (Customer) o;
 

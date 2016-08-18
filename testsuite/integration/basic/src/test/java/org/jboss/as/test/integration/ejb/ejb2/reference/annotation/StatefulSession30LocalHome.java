@@ -29,9 +29,9 @@ import javax.ejb.EJBLocalHome;
  */
 public interface StatefulSession30LocalHome extends EJBLocalHome {
 
-    public LocalStatefulSession30 create() throws javax.ejb.CreateException;
+    LocalStatefulSession30 create() throws javax.ejb.CreateException;
 
-    public LocalStatefulSession30 create(String value) throws javax.ejb.CreateException;
+    LocalStatefulSession30 create(String value) throws javax.ejb.CreateException;
 
-    public LocalStatefulSession30 create(String value, Integer suffix) throws javax.ejb.CreateException;
+    LocalStatefulSession30 create(String value, Integer suffix) throws javax.ejb.CreateException;
 }

@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.transaction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
-
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -45,175 +44,175 @@ import javax.transaction.UserTransaction;
 @Stateless
 @TransactionManagement(TransactionManagementType.BEAN)
 public class SLSB1 {
-	@PersistenceContext(unitName = "mypc")
-	EntityManager em;
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
 
-	@Resource
-	UserTransaction tx;
+    @Resource
+    UserTransaction tx;
 
-	public Employee createEmployee(String name, String address, int id) {
+    public Employee createEmployee(String name, String address, int id) {
 
-		Employee emp = new Employee();
-		emp.setId(id);
-		emp.setAddress(address);
-		emp.setName(name);
-		return emp;
-	}
+        Employee emp = new Employee();
+        emp.setId(id);
+        emp.setAddress(address);
+        emp.setName(name);
+        return emp;
+    }
 
-	/**
-	 * Makes two DAO calls, the transaction fails during the first DAO call. The
-	 * JTA transaction is rolled back and no database changes should occur.
-	 */
-	public String failInFirstCall() throws Exception {
-		int[] initialList = getEmployeeIDsNoEM();
+    /**
+     * Makes two DAO calls, the transaction fails during the first DAO call. The
+     * JTA transaction is rolled back and no database changes should occur.
+     */
+    public String failInFirstCall() throws Exception {
+        int[] initialList = getEmployeeIDsNoEM();
 
-		try {
-			tx.begin();
-			performFailCall();
-			em.persist(createEmployee("Tony", "Butcher", 101));
-			tx.commit();
+        try {
+            tx.begin();
+            performFailCall();
+            em.persist(createEmployee("Tony", "Butcher", 101));
+            tx.commit();
 
-			return "Transaction was performed, but shouldn't";
-		} catch (EntityExistsException e) {
-			tx.rollback();
+            return "Transaction was performed, but shouldn't";
+        } catch (EntityExistsException e) {
+            tx.rollback();
 
-			int[] newList = getEmployeeIDsNoEM();
-			if (Arrays.equals(initialList, newList)) {
-				return "success";
-			} else {
-				return "Database changed.";
-			}
-		}
+            int[] newList = getEmployeeIDsNoEM();
+            if (Arrays.equals(initialList, newList)) {
+                return "success";
+            } else {
+                return "Database changed.";
+            }
+        }
 
-	}
+    }
 
-	/**
-	 * Makes two DAO calls, the transaction fails during the second DAO call.
-	 * The JTA transaction is rolled back and no database changes should occur.
-	 */
+    /**
+     * Makes two DAO calls, the transaction fails during the second DAO call.
+     * The JTA transaction is rolled back and no database changes should occur.
+     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public String failInSecondCall() throws Exception {
-		int[] initialList = getEmployeeIDsNoEM();
+    public String failInSecondCall() throws Exception {
+        int[] initialList = getEmployeeIDsNoEM();
 
-		try {
-			tx.begin();
-			em.persist(createEmployee("Jane", "Butcher", 102));
-			performFailCall();
-			tx.commit();
+        try {
+            tx.begin();
+            em.persist(createEmployee("Jane", "Butcher", 102));
+            performFailCall();
+            tx.commit();
 
-			return "Transaction was performed, but shouldn't";
-		} catch (EntityExistsException e) {
-			tx.rollback();
+            return "Transaction was performed, but shouldn't";
+        } catch (EntityExistsException e) {
+            tx.rollback();
 
-			int[] newList = getEmployeeIDsNoEM();
-			if (Arrays.equals(initialList, newList)) {
-				return "success";
-			} else {
-				return "Database changed.";
-			}
-		} catch (Exception unexpected) {
-			return unexpected.getMessage();
-		}
+            int[] newList = getEmployeeIDsNoEM();
+            if (Arrays.equals(initialList, newList)) {
+                return "success";
+            } else {
+                return "Database changed.";
+            }
+        } catch (Exception unexpected) {
+            return unexpected.getMessage();
+        }
 
-	}
+    }
 
-	/**
-	 * Makes two DAO calls, the transaction fails after the DAO calls. The JTA
-	 * transaction is rolled back and no database changes should occur.
-	 */
-	public String failAfterCalls() throws Exception {
-		int[] initialList = getEmployeeIDsNoEM();
+    /**
+     * Makes two DAO calls, the transaction fails after the DAO calls. The JTA
+     * transaction is rolled back and no database changes should occur.
+     */
+    public String failAfterCalls() throws Exception {
+        int[] initialList = getEmployeeIDsNoEM();
 
-		try {
-			tx.begin();
-			em.persist(createEmployee("Peter", "Butcher", 103));
-			em.persist(createEmployee("John", "Butcher", 104));
+        try {
+            tx.begin();
+            em.persist(createEmployee("Peter", "Butcher", 103));
+            em.persist(createEmployee("John", "Butcher", 104));
 
-			int n = 100 / 0; // this should throw exception: division by zero
-			n = n + 20;
-			tx.commit();
+            int n = 100 / 0; // this should throw exception: division by zero
+            n = n + 20;
+            tx.commit();
 
-			return "Transaction was performed, but shouldn't";
-		} catch (Exception e) {
-			tx.rollback();
+            return "Transaction was performed, but shouldn't";
+        } catch (Exception e) {
+            tx.rollback();
 
-			int[] newList = getEmployeeIDsNoEM();
-			if (Arrays.equals(initialList, newList)) {
-				return "success";
-			} else {
-				return "Database changed.";
-			}
-		}
+            int[] newList = getEmployeeIDsNoEM();
+            if (Arrays.equals(initialList, newList)) {
+                return "success";
+            } else {
+                return "Database changed.";
+            }
+        }
 
-	}
+    }
 
-	/**
-	 * Persisting existing entity, should throws EntityExistsException
-	 */
-	public void performFailCall() {
-		Employee emp = em.find(Employee.class, 1212);
-		
-		if(emp == null){
-			
-			emp = createEmployee("Mr. Problem", "Brno ", 1212);
-			em.persist(emp);
-			em.flush();
-		}
-		
-		em.persist(createEmployee(emp.getName(), emp.getAddress(), emp.getId()));
-	}
+    /**
+     * Persisting existing entity, should throws EntityExistsException
+     */
+    public void performFailCall() {
+        Employee emp = em.find(Employee.class, 1212);
 
-	/**
-	 * Returns array of Employee IDs in DB using raw connection to the
-	 * DataSource
-	 */
-	public int[] getEmployeeIDsNoEM() throws Exception {
+        if (emp == null) {
 
-		int[] idList = null;
+            emp = createEmployee("Mr. Problem", "Brno ", 1212);
+            em.persist(emp);
+            em.flush();
+        }
 
-		Context ctx = new InitialContext();
-		DataSource ds = (DataSource) ctx
-				.lookup("java:jboss/datasources/ExampleDS");
-		Connection conn = ds.getConnection();
-		try {
-			ResultSet rs = conn.createStatement(
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY).executeQuery(
-					"SELECT e.id FROM Employee e ORDER BY e.id");
+        em.persist(createEmployee(emp.getName(), emp.getAddress(), emp.getId()));
+    }
 
-			rs.last();
-			int rowCount = rs.getRow();
-			idList = new int[rowCount];
-			rs.first();
+    /**
+     * Returns array of Employee IDs in DB using raw connection to the
+     * DataSource
+     */
+    public int[] getEmployeeIDsNoEM() throws Exception {
 
-			int i = 0;
-			while (rs.next()) {
-				idList[i] = rs.getInt(1);
-				i++;
-			}
+        int[] idList = null;
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			conn.close();
-		}
+        Context ctx = new InitialContext();
+        DataSource ds = (DataSource) ctx
+                .lookup("java:jboss/datasources/ExampleDS");
+        Connection conn = ds.getConnection();
+        try {
+            ResultSet rs = conn.createStatement(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY).executeQuery(
+                    "SELECT e.id FROM Employee e ORDER BY e.id");
 
-		return idList;
+            rs.last();
+            int rowCount = rs.getRow();
+            idList = new int[rowCount];
+            rs.first();
 
-	}
+            int i = 0;
+            while (rs.next()) {
+                idList[i] = rs.getInt(1);
+                i++;
+            }
 
-	/**
-	 * Adds new Employee
-	 */
-	public void addEmployee() throws Exception {
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            conn.close();
+        }
 
-		try {
-			tx.begin();
-			em.persist(createEmployee("John", "Wayne", 100));
-			tx.commit();
-		} catch (Exception e) {
-			throw new Exception("Couldn't add an Employee.");
-		}
-	}
+        return idList;
+
+    }
+
+    /**
+     * Adds new Employee
+     */
+    public void addEmployee() throws Exception {
+
+        try {
+            tx.begin();
+            em.persist(createEmployee("John", "Wayne", 100));
+            tx.commit();
+        } catch (Exception e) {
+            throw new Exception("Couldn't add an Employee.");
+        }
+    }
 
 }

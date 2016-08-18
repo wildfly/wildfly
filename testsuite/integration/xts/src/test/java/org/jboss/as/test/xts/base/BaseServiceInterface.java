@@ -27,10 +27,10 @@ import org.jboss.as.test.xts.util.EventLog;
 
 /**
  * Base interface which is inherited by other service interfaces.
- * This interface is used in test cases to check results of tests. 
+ * This interface is used in test cases to check results of tests.
  */
 public interface BaseServiceInterface {
-    public EventLog getEventLog();
+    EventLog getEventLog();
 
-    public void clearEventLog();
+    void clearEventLog();
 }

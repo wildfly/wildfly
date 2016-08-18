@@ -59,7 +59,7 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
 
     @Inject
     private EventLog eventLog;
-    
+
     public static final String ARCHIVE_NAME = "wsba-coordinatorcompletition-test";
 
     @Deployment
@@ -85,7 +85,7 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
     protected EventLog getEventLog() {
         return eventLog;
     }
-    
+
     @After
     public void teardownTest() throws Exception {
         getEventLog().clear();
@@ -121,7 +121,7 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
             client1.saveData();
             client2.saveData(CANNOT_COMPLETE);
             client3.saveData();
-            
+
             Assert.fail("Exception should have been thrown by now");
         } catch (javax.xml.ws.soap.SOAPFaultException sfe) {
             // This is OK - exception expected
@@ -135,7 +135,7 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
             assertEventLogClient3();
         }
     }
-    
+
     @Test
     public void testWSBACoordinatorClientCancel() throws Exception {
         uba.begin();
@@ -186,15 +186,17 @@ public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
             assertEventLogClient3(CANCEL);
         }
     }
-    
+
     // --- assert methods
     // --- they take event log names from the service called by particular client
     private void assertEventLogClient1(EventLogEvent... expectedOrder) {
         assertEventLog(BACoordinatorCompletionService1.SERVICE_EVENTLOG_NAME, expectedOrder);
     }
+
     private void assertEventLogClient2(EventLogEvent... expectedOrder) {
         assertEventLog(BACoordinatorCompletionService2.SERVICE_EVENTLOG_NAME, expectedOrder);
     }
+
     private void assertEventLogClient3(EventLogEvent... expectedOrder) {
         assertEventLog(BACoordinatorCompletionService3.SERVICE_EVENTLOG_NAME, expectedOrder);
     }

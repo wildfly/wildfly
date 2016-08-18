@@ -21,22 +21,23 @@
  */
 package org.jboss.as.test.integration.security.cli;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.junit.Assert.assertThat;
+
 import java.io.IOException;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
 @RunWith(Arquillian.class)
@@ -48,9 +49,9 @@ public class JsseTestCase extends AbstractCliTestBase {
     public static void initSecurityDomains() throws Exception {
         AbstractCliTestBase.initCLI();
         cli.sendLine("/subsystem=security/security-domain=empty-jsse:remove()", true);
-        cli.sendLine("/subsystem=security/security-domain=empty-jsse-valid:remove()", true);        
+        cli.sendLine("/subsystem=security/security-domain=empty-jsse-valid:remove()", true);
         cli.sendLine("/subsystem=security/security-domain=empty-jsse-missing-pwd:remove()", true);
-        cli.sendLine("/subsystem=security/security-domain=empty-jsse:add()");        
+        cli.sendLine("/subsystem=security/security-domain=empty-jsse:add()");
         cli.sendLine("/subsystem=security/security-domain=empty-jsse-valid:add()");
         cli.sendLine("/subsystem=security/security-domain=empty-jsse-missing-pwd:add()");
     }

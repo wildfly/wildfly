@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -54,7 +55,7 @@ public class PojoEndpointAuthenticationTestCase {
     URL baseUrl;
 
     QName serviceName = new QName("http://jbossws.org/authentication", "POJOAuthService");
-    
+
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-authentication-pojo.war")
@@ -63,7 +64,7 @@ public class PojoEndpointAuthenticationTestCase {
                 .addClasses(PojoEndpointIface.class, PojoEndpoint.class)
                 .addAsWebInfResource(PojoEndpointAuthenticationTestCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsWebInfResource(PojoEndpointAuthenticationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-        
+
         return war;
     }
 
@@ -82,7 +83,7 @@ public class PojoEndpointAuthenticationTestCase {
             Assert.assertTrue("HTTPException '401: Unauthorized' was expected", e.getCause().getMessage().contains("401: Unauthorized"));
         }
     }
-    
+
     @Test
     public void accessHelloWithBadPassword() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
@@ -102,6 +103,7 @@ public class PojoEndpointAuthenticationTestCase {
             Assert.assertTrue("HTTPException '401: Unauthorized' was expected", e.getCause().getMessage().contains("401: Unauthorized"));
         }
     }
+
     @Test
     public void accessHelloWithValidUser1() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
@@ -116,7 +118,7 @@ public class PojoEndpointAuthenticationTestCase {
         final String result = proxy.hello("World");
         Assert.assertEquals("Hello World!", result);
     }
-    
+
     @Test
     public void accessHelloWithValidUser2() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
@@ -130,8 +132,8 @@ public class PojoEndpointAuthenticationTestCase {
 
         final String result = proxy.hello("World");
         Assert.assertEquals("Hello World!", result);
-    }    
-    
+    }
+
     @Test
     public void accessHelloWithUnauthorizedUser() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
@@ -150,5 +152,5 @@ public class PojoEndpointAuthenticationTestCase {
             // failure is expected
             Assert.assertTrue("String '403: Forbidden' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("403: Forbidden"));
         }
-    }    
+    }
 }

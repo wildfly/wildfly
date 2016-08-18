@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.security.jacc;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Policy;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,10 +34,10 @@ import org.jboss.security.jacc.DelegatingPolicy;
 
 /**
  * A simple servlet that lists JACC policies.
- * 
+ *
  * @author Josef Cacek
  */
-@WebServlet(urlPatterns = { ListJACCPoliciesServlet.SERVLET_PATH })
+@WebServlet(urlPatterns = {ListJACCPoliciesServlet.SERVLET_PATH})
 public class ListJACCPoliciesServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -48,7 +47,7 @@ public class ListJACCPoliciesServlet extends HttpServlet {
 
     /**
      * Writes simple text response.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException

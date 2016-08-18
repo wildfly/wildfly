@@ -55,7 +55,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
 
     private static final Logger log = Logger.getLogger(SimpleStatelessWebserviceEndpointTestCase.class.getName());
 
-    @Deployment (testable=false)
+    @Deployment(testable = false)
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "stateless-ws-endpoint-example.jar");
         jar.addClasses(SimpleStatelessWebserviceEndpointIface.class, SimpleStatelessWebserviceEndpointImpl.class);
@@ -72,22 +72,22 @@ public class SimpleStatelessWebserviceEndpointTestCase {
         final String result = port.echo("hello");
         Assert.assertEquals("hello", result);
     }
-    
+
     /*
      * Test for javax.ejb.Remote annotation in WS interface
      */
     @Test
     public void testRemoteAccess() throws Exception {
-        
+
         final Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context context = new InitialContext(props);
-        SimpleStatelessWebserviceEndpointIface ejb3Remote = (SimpleStatelessWebserviceEndpointIface) 
+        SimpleStatelessWebserviceEndpointIface ejb3Remote = (SimpleStatelessWebserviceEndpointIface)
                 context.lookup("ejb:/stateless-ws-endpoint-example/SimpleStatelessWebserviceEndpointImpl!" + SimpleStatelessWebserviceEndpointIface.class.getName());
-                                                                   
+
         String helloWorld = "Hello world!";
         Object retObj = ejb3Remote.echo(helloWorld);
         Assert.assertEquals(helloWorld, retObj);
     }
-    
+
 }

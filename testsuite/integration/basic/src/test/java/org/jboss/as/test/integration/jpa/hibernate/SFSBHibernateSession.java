@@ -35,7 +35,7 @@ import org.hibernate.Session;
  */
 @Stateful
 public class SFSBHibernateSession {
-    @PersistenceContext(unitName = "mypc", type=PersistenceContextType.EXTENDED)
+    @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
     Session session;
 
     public void createEmployee(String name, String address, int id) {
@@ -47,7 +47,7 @@ public class SFSBHibernateSession {
     }
 
     public Employee getEmployee(int id) {
-        Employee emp = (Employee)session.load(Employee.class, id);
+        Employee emp = session.load(Employee.class, id);
         return emp;
     }
 

@@ -21,8 +21,10 @@
  */
 package org.wildfly.mod_cluster.undertow;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.util.Iterator;
 
@@ -41,7 +43,7 @@ public class UndertowServerTestCase {
     @Test
     public void getEngines() {
         Iterator<Engine> engines = this.server.getEngines().iterator();
-        
+
         assertTrue(engines.hasNext());
         Engine engine = engines.next();
         assertSame(this.connector, engine.getProxyConnector());

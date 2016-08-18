@@ -48,35 +48,36 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class JaxrsJSApiTestCase {
 
-	private static final String depName = "jsapi";
-    @Deployment(name=depName)
+    private static final String depName = "jsapi";
+
+    @Deployment(name = depName)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
         war.addPackage(HttpRequest.class.getPackage());
         war.addPackage(JaxrsJSApiTestCase.class.getPackage());
         war.addAsWebInfResource(WebXml.get(
-        		"<servlet-mapping>\n" +
-                "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
-                "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
-                "</servlet-mapping>\n" +
-                "\n" +
-                "<servlet>\n" +
-                "        <servlet-name>RESTEasy JSAPI</servlet-name>\n" +
-                "        <servlet-class>org.jboss.resteasy.jsapi.JSAPIServlet</servlet-class>\n" +
-                "</servlet>\n" +
-                "\n" +
-                "<servlet-mapping>" +
-                "        <servlet-name>RESTEasy JSAPI</servlet-name>\n" +
-                "        <url-pattern>/rest-JS</url-pattern>\n" +
-                "</servlet-mapping>\n" +
-                "\n"),"web.xml");
+                "<servlet-mapping>\n" +
+                        "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n" +
+                        "        <url-pattern>/myjaxrs/*</url-pattern>\n" +
+                        "</servlet-mapping>\n" +
+                        "\n" +
+                        "<servlet>\n" +
+                        "        <servlet-name>RESTEasy JSAPI</servlet-name>\n" +
+                        "        <servlet-class>org.jboss.resteasy.jsapi.JSAPIServlet</servlet-class>\n" +
+                        "</servlet>\n" +
+                        "\n" +
+                        "<servlet-mapping>" +
+                        "        <servlet-name>RESTEasy JSAPI</servlet-name>\n" +
+                        "        <url-pattern>/rest-JS</url-pattern>\n" +
+                        "</servlet-mapping>\n" +
+                        "\n"), "web.xml");
         return war;
     }
 
     @ArquillianResource
     @OperateOnDeployment(depName)
     static URL url;
-    
+
     private static String performCall(String urlPattern) throws Exception {
         return HttpRequest.get(url.toString() + urlPattern, 5, TimeUnit.SECONDS);
     }
@@ -94,5 +95,5 @@ public class JaxrsJSApiTestCase {
         String result = performCall("/rest-JS");
         Assert.assertTrue(result.contains("var CustomerResource"));
     }
-    
+
 }

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
@@ -43,9 +42,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
  * Tests that hibernate validator works correctly for WAR(Web Applications)
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -73,8 +71,7 @@ public class ConstraintValidationTestCase {
             ConstraintViolation<UserBean> cts = it.next();
             String mess = cts.getMessage();
 
-            if (mess.contains("Please get a valid address"))
-                message = mess;
+            if (mess.contains("Please get a valid address")) { message = mess; }
         }
 
         assertEquals(3, result.size());
@@ -111,8 +108,7 @@ public class ConstraintValidationTestCase {
             ConstraintViolation<Car> cts = it1.next();
             String mess = cts.getMessage();
 
-            if (mess.contains("Please get a valid address"))
-                message = mess;
+            if (mess.contains("Please get a valid address")) { message = mess; }
         }
 
         assertEquals(2, errorresult.size());

@@ -1,6 +1,5 @@
 package org.jboss.as.jacorb;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;

@@ -24,23 +24,16 @@ package org.jboss.as.test.smoke.deployment.rar.tests.pure;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.smoke.deployment.rar.inflow.PureInflowResourceAdapter;
-import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.service.ServiceContainer;
@@ -105,8 +98,7 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         assertNotNull(ids);
         int pureInflowListener = 0;
         for (String id : ids) {
-            if (id.indexOf("PureInflow") != -1) 
-                pureInflowListener++;
+            if (id.indexOf("PureInflow") != -1) { pureInflowListener++; }
         }
         assertEquals(1, pureInflowListener);
 

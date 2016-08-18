@@ -1,7 +1,8 @@
-<subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0">
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:3.0">
     <properties>
         <property name="some_property" value="some_value"/>
     </properties>
+    <orb giop-version="1.1" socket-binding="iiop2" ssl-socket-binding="iiop-ssl2"/>
     <tcp high-water-mark="500" number-to-reclaim="30"/>
     <initializers security="client" transactions="spec"/>
 </subsystem>

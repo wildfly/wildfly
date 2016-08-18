@@ -23,12 +23,11 @@
 package org.jboss.as.test.integration.ejb.servlet;
 
 import java.rmi.RemoteException;
-
 import javax.ejb.EJBHome;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface Session30Home extends EJBHome {
-    public Session30Remote create() throws javax.ejb.CreateException,  RemoteException;
+    Session30Remote create() throws javax.ejb.CreateException,  RemoteException;
 }

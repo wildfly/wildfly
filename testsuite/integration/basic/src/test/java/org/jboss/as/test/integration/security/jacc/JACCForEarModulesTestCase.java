@@ -62,11 +62,11 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests, which checks JACC permissions generated for enterprise applications.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ JACCForEarModulesTestCase.SecurityDomainsSetup.class })
+@ServerSetup({JACCForEarModulesTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Category(CommonCriteria.class)
 @Ignore("See WFLY-4990")
@@ -117,7 +117,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Tests web permissions (war directly and war in ear).
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -133,7 +133,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Tests EJB permissions (jar directly and jar in ear).
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -151,7 +151,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Creates EJB JAR module with the given name.
-     * 
+     *
      * @param jarName
      * @return
      */
@@ -166,7 +166,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Creates WAR module with the given name.
-     * 
+     *
      * @param warName
      * @return
      */
@@ -183,7 +183,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Tests web-app permissions in given ContextPolicy Node.
-     * 
+     *
      * @param contextPolicyNode
      * @throws Exception
      */
@@ -198,7 +198,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Tests EJB permissions in the given ContextPolicy Node.
-     * 
+     *
      * @param contextPolicyNode
      * @throws Exception
      */
@@ -210,14 +210,14 @@ public class JACCForEarModulesTestCase {
 
     /**
      * Returns Dom4j XML Document representation of the JACC policies retrieved from the {@link ListJACCPoliciesServlet}.
-     * 
+     *
      * @param webAppURL
      * @return
      * @throws MalformedURLException
      * @throws IOException
      * @throws DocumentException
      */
-    private Document getPermissionDocument(final URL webAppURL) throws MalformedURLException, IOException, DocumentException {
+    private Document getPermissionDocument(final URL webAppURL) throws IOException, DocumentException {
         final URL servletURL = new URL(webAppURL.toExternalForm() + ListJACCPoliciesServlet.SERVLET_PATH.substring(1));
         LOGGER.info("Testing JACC permissions: " + servletURL);
         final InputStream is = servletURL.openStream();
@@ -236,7 +236,7 @@ public class JACCForEarModulesTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -246,8 +246,8 @@ public class JACCForEarModulesTestCase {
          */
         @Override
         protected SecurityDomain[] getSecurityDomains() {
-            return new SecurityDomain[] { new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME)
-                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()).build() };
+            return new SecurityDomain[]{new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME)
+                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()).build()};
         }
     }
 }

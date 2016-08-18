@@ -23,15 +23,14 @@ package org.jboss.as.test.integration.jca.annorar;
 
 /**
  * AnnoMessageListener
- * 
+ *
  * @version $Revision: $
  */
 public interface AnnoMessageListener1 {
-	/**
-	 * Receive message
-	 * 
-	 * @param msg
-	 *            String.
-	 */
-	public void onMessage(String msg);
+    /**
+     * Receive message
+     *
+     * @param msg String.
+     */
+    void onMessage(String msg);
 }

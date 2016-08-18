@@ -12,19 +12,19 @@
             <transaction-type>Container</transaction-type>
             <init-on-startup>true</init-on-startup>
             <concurrency-management-type>Container</concurrency-management-type>
-	        <concurrent-method>
-	        	<lock>Read</lock>
-            	<method>
-            		<method-name>twoSecondEcho</method-name>
-            		<method-params>
-            			<method-param>java.lang.String</method-param>
-            		</method-params>
-            	</method>
-	            <access-timeout>
-	            	<timeout>1</timeout>
-	            	<unit>Seconds</unit>
-	            </access-timeout>
-	        </concurrent-method>
+            <concurrent-method>
+                <lock>Read</lock>
+                <method>
+                    <method-name>twoSecondEcho</method-name>
+                    <method-params>
+                        <method-param>java.lang.String</method-param>
+                    </method-params>
+                </method>
+                <access-timeout>
+                    <timeout>1</timeout>
+                    <unit>Seconds</unit>
+                </access-timeout>
+            </concurrent-method>
         </session>
         <session>
             <ejb-name>ReadOnlySingletonBeanDescriptorWithExpression</ejb-name>

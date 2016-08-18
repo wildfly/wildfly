@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.servlet.jsp.SkipPageException;
-
 import org.junit.Assert;
 import org.apache.commons.lang.SystemUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;

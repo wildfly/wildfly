@@ -33,6 +33,6 @@ public interface XMBean {
      *
      * @return
      */
-    public boolean resourcesInjected();
+    boolean resourcesInjected();
 
 }

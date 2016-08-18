@@ -30,8 +30,8 @@ import javax.jws.WebService;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @WebService(
-    endpointInterface = "org.jboss.as.test.integration.ws.context.as1605.EndpointIface",
-    targetNamespace = "org.jboss.as.test.integration.ws.context.as1605"
+        endpointInterface = "org.jboss.as.test.integration.ws.context.as1605.EndpointIface",
+        targetNamespace = "org.jboss.as.test.integration.ws.context.as1605"
 )
 public class POJOEndpoint {
 

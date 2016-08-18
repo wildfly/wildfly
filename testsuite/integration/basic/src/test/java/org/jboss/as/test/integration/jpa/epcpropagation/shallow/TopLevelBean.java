@@ -24,9 +24,6 @@ package org.jboss.as.test.integration.jpa.epcpropagation.shallow;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
 
 /**
  * top-level stateful bean that has no extended persistence context of its own

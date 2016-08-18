@@ -28,11 +28,11 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class DefaultReplacingServletContextListener implements ServletContextListener {
-	public void contextInitialized(ServletContextEvent sce) {
-		ServletRegistration registration = sce.getServletContext().addServlet("ReplacementServlet", new ReplacementServlet());
-		registration.addMapping("/");
-	}
+    public void contextInitialized(ServletContextEvent sce) {
+        ServletRegistration registration = sce.getServletContext().addServlet("ReplacementServlet", new ReplacementServlet());
+        registration.addMapping("/");
+    }
 
-	public void contextDestroyed(ServletContextEvent sce) {
-	}
+    public void contextDestroyed(ServletContextEvent sce) {
+    }
 }

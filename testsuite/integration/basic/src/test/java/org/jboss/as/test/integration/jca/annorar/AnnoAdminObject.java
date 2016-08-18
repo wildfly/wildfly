@@ -22,44 +22,41 @@
 package org.jboss.as.test.integration.jca.annorar;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 
 /**
  * AnnoAdminObject
- * 
+ *
  * @version $Revision: $
  */
 public interface AnnoAdminObject extends Referenceable, Serializable {
 
-	/**
-	 * Set first
-	 * 
-	 * @param first
-	 *            The value
-	 */
-	public void setFirst(Long first);
+    /**
+     * Set first
+     *
+     * @param first The value
+     */
+    void setFirst(Long first);
 
-	/**
-	 * Get first
-	 * 
-	 * @return The value
-	 */
-	public Long getFirst();
+    /**
+     * Get first
+     *
+     * @return The value
+     */
+    Long getFirst();
 
-	/**
-	 * Set second
-	 * 
-	 * @param second
-	 *            The value
-	 */
-	public void setSecond(Boolean second);
+    /**
+     * Set second
+     *
+     * @param second The value
+     */
+    void setSecond(Boolean second);
 
-	/**
-	 * Get second
-	 * 
-	 * @return The value
-	 */
-	public Boolean getSecond();
+    /**
+     * Get second
+     *
+     * @return The value
+     */
+    Boolean getSecond();
 
 }

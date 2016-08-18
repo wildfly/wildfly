@@ -32,7 +32,7 @@ public interface HelloWorldConnection {
      * @return String
      */
 
-    public String helloWorld();
+    String helloWorld();
 
 
     /**
@@ -42,12 +42,12 @@ public interface HelloWorldConnection {
      * @return String
      */
 
-    public String helloWorld(String name);
+    String helloWorld(String name);
 
 
     /**
      * Close
      */
 
-    public void close();
+    void close();
 }

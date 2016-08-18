@@ -34,17 +34,17 @@ import javax.jws.WebService;
  */
 @Stateless
 @WebService(
-   name="EJB3",
-   serviceName = "EJB3Service",
-   targetNamespace = "http://jbossws.org/as1675",
-   endpointInterface="org.jboss.as.test.integration.ws.injection.ejb.as1675.EndpointIface"
+        name = "EJB3",
+        serviceName = "EJB3Service",
+        targetNamespace = "http://jbossws.org/as1675",
+        endpointInterface = "org.jboss.as.test.integration.ws.injection.ejb.as1675.EndpointIface"
 )
-@WebContext (
-   urlPattern = "/EJB3Service",
-   contextRoot = "/as1675"
+@WebContext(
+        urlPattern = "/EJB3Service",
+        contextRoot = "/as1675"
 )
 public class EJB3Bean extends AbstractEndpointImpl {
-   public String echo(String msg) {
-      return super.echo(msg) + ":EJB3Bean";
-   }
+    public String echo(String msg) {
+        return super.echo(msg) + ":EJB3Bean";
+    }
 }

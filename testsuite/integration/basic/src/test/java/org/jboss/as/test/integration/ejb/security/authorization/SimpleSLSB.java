@@ -36,7 +36,6 @@ import javax.ejb.Stateless;
 @Stateless
 @SecurityDomain(value = "ejb3-tests", unauthenticatedPrincipal = "nobody")
 public class SimpleSLSB implements Simple{
-   
    public static final String SUCCESS = "SUCCESS";
 
    @RolesAllowed("MDBrole")

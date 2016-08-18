@@ -40,7 +40,7 @@ public class ClassInterceptor {
         String ret = InvocationContextChecker.checkBeanInterceptorContext(ctx, "Default", "Class");
         return ret + ctx.proceed();
     }
-    
+
     @AroundTimeout
     Object interceptTimeout(InvocationContext ctx) throws Exception {
         String ret = InvocationContextChecker.checkTimeoutInterceptorContext(ctx, "Default", "Class");

@@ -31,7 +31,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
-
 import javax.security.auth.Subject;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
@@ -74,13 +73,12 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
      * @param containerId
      * @throws Exception
      * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         // skip server initialization if Kerberos is not able to work correctly.
         // JUnit's AssumptionViolationException is not handled correctly in ServerSetupTask instances
-        if (SKIP_TASK)
-            return;
+        if (SKIP_TASK) { return; }
 
         new Thread(this).start();
         int i = 0;
@@ -115,16 +113,14 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
      * @param containerId
      * @throws Exception
      * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        if (SKIP_TASK)
-            return;
+        if (SKIP_TASK) { return; }
         stop();
     }
 
     /**
-     *
      * @see java.lang.Runnable#run()
      */
     public void run() {

@@ -24,10 +24,10 @@ package org.jboss.as.test.integration.ee.injection.resource.enventry.shared;
 
 import javax.ejb.Local;
 
-/** 
+/**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  */
 @Local
 public interface Shared {
-    public String doit();
+    String doit();
 }

@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>20</version>
+      <version>21</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -216,8 +216,8 @@
         <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
-        <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Alpha5-SNAPSHOT</version.org.wildfly.core>
+        <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.core>3.0.0.Alpha6-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha9-SNAPSHOT</version.org.wildfly.security.elytron-subsystem>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
@@ -406,8 +406,9 @@
                         <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
-                        <useFile/>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java</excludes>
+                        <useFile/>
                     </configuration>
                     <dependencies>
                         <dependency>

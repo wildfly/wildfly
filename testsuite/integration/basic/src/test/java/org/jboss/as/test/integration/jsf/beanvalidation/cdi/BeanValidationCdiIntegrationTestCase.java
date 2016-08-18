@@ -31,7 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
@@ -63,11 +62,11 @@ import org.junit.runner.RunWith;
 public class BeanValidationCdiIntegrationTestCase {
     @ArquillianResource
     private URL url;
-    
+
     private final Pattern viewStatePattern = Pattern.compile("id=\".*javax.faces.ViewState.*\" value=\"([^\"]*)\"");
     private final Pattern nameErrorPattern = Pattern.compile("<div id=\"nameError\">([^<]+)</div>");
     private final Pattern numberErrorPattern = Pattern.compile("<div id=\"numberError\">([^<]+)</div>");
-    
+
     @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "registration-jsf.war");
@@ -77,11 +76,11 @@ public class BeanValidationCdiIntegrationTestCase {
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
-    
+
     @Test
     public void testSuccessfulBeanValidation() throws Exception {
         String responseString = registerTeam("Team1", 6);
-        
+
         Matcher errorMatcher = nameErrorPattern.matcher(responseString);
         assertTrue(!errorMatcher.find());
 
@@ -99,16 +98,16 @@ public class BeanValidationCdiIntegrationTestCase {
         if (errorMatcher.find()) {
             nameError = errorMatcher.group(1).trim();
         }
-        
+
         errorMatcher = numberErrorPattern.matcher(responseString);
         if (errorMatcher.find()) {
             numberError = errorMatcher.group(1).trim();
         }
-        
+
         assertEquals("Team name must be at least 3 characters.", nameError);
         assertEquals("Not enough people for a team.", numberError);
     }
-    
+
     private String registerTeam(String name, int numberOfPeople) throws Exception {
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -130,7 +129,7 @@ public class BeanValidationCdiIntegrationTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Create and execute a POST request with the given team name and 
+            // Create and execute a POST request with the given team name and
             // the given number of people
             HttpPost post = new HttpPost(requestUrl);
 
@@ -141,7 +140,7 @@ public class BeanValidationCdiIntegrationTestCase {
             list.add(new BasicNameValuePair("register:inputNumber", Integer.toString(numberOfPeople)));
             list.add(new BasicNameValuePair("register:registerButton", "Register"));
 
-            post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), ContentType.APPLICATION_FORM_URLENCODED));            
+            post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), ContentType.APPLICATION_FORM_URLENCODED));
             response = client.execute(post);
 
             try {

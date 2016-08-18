@@ -35,7 +35,7 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
 
 /**
  * Login module which allows the "guest" user to switch to another identity.
- * 
+ *
  * @author Josef Cacek
  */
 public class GuestDelegationLoginModule extends AbstractServerLoginModule {
@@ -72,7 +72,7 @@ public class GuestDelegationLoginModule extends AbstractServerLoginModule {
             // This credential type will only be seen for a delegation request, if not seen then the request is not for us.
 
             final CurrentUserCredential cuCredential = (CurrentUserCredential) credential;
-            // only the "guest" can be switched to another identity 
+            // only the "guest" can be switched to another identity
             if ("guest".equals(cuCredential.getUser())) {
 
                 identity = new SimplePrincipal(name);

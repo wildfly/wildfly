@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.messaging.jms.context;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.jms.DeliveryMode.NON_PERSISTENT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

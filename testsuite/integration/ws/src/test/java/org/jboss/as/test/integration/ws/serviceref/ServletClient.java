@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceRef;
+
 import org.jboss.logging.Logger;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 public class ServletClient extends HttpServlet {
@@ -41,7 +41,7 @@ public class ServletClient extends HttpServlet {
 
     @WebServiceRef(value = EndpointService.class, mappedName = "jbossws-client/service/TestService", wsdlLocation = "WEB-INF/wsdl/TestService.wsdl")
     EndpointInterface endpoint1;
-    
+
     EndpointInterface _endpoint2;
 
     @WebServiceRef(value = EndpointService.class, mappedName = "jbossws-client/service/TestService", wsdlLocation = "WEB-INF/wsdl/TestService.wsdl")

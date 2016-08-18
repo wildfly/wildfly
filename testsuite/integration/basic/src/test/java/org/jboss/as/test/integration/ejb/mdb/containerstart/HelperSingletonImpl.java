@@ -42,7 +42,7 @@ public class HelperSingletonImpl implements HelperSingleton {
     public int await(String where, long timeout, TimeUnit unit) throws BrokenBarrierException, TimeoutException, InterruptedException {
         return barrier.await(timeout, unit);
     }
-    
+
     public void reset() {
         barrier.reset();
     }

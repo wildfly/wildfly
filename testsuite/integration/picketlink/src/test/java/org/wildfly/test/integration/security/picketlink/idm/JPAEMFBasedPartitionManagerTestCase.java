@@ -74,7 +74,7 @@ public class JPAEMFBasedPartitionManagerTestCase extends AbstractBasicIdentityMa
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("jpa.emf.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 

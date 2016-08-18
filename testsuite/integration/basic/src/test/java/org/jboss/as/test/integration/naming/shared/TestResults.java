@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 @Remote
 public interface TestResults {
 
-    final String SHARED_BINDING_NAME_ONE = "java:global/sharedbinds/one";
-    final String SHARED_BINDING_NAME_TWO = "java:global/sharedbinds/two";
+    String SHARED_BINDING_NAME_ONE = "java:global/sharedbinds/one";
+    String SHARED_BINDING_NAME_TWO = "java:global/sharedbinds/two";
 
     boolean isPostContructOne();
 

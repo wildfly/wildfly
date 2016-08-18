@@ -26,7 +26,7 @@ import javax.resource.spi.ManagedConnectionMetaData;
 
 /**
  * Managed connection metadata
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData {
@@ -38,7 +38,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
 
     /**
      * Returns Product name of the underlying EIS instance connected through the ManagedConnection.
-     * 
+     *
      * @return Product name of the EIS instance
      * @throws javax.resource.ResourceException Thrown if an error occurs
      */
@@ -49,7 +49,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
 
     /**
      * Returns Product version of the underlying EIS instance connected through the ManagedConnection.
-     * 
+     *
      * @return Product version of the EIS instance
      * @throws javax.resource.ResourceException Thrown if an error occurs
      */
@@ -60,7 +60,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
 
     /**
      * Returns maximum limit on number of active concurrent connections
-     * 
+     *
      * @return Maximum limit for number of active concurrent connections
      * @throws javax.resource.ResourceException Thrown if an error occurs
      */
@@ -71,7 +71,7 @@ public class ValidManagedConnectionMetaData implements ManagedConnectionMetaData
 
     /**
      * Returns name of the user associated with the ManagedConnection instance
-     * 
+     *
      * @return Name of the user
      * @throws javax.resource.ResourceException Thrown if an error occurs
      */

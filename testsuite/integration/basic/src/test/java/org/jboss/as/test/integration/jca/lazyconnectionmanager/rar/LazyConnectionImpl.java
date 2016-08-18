@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import org.jboss.logging.Logger;
-
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.LazyAssociatableConnectionManager;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>

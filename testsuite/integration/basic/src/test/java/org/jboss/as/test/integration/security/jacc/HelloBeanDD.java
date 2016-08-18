@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.security.jacc;
 
 /**
  * A HelloBean.
- * 
+ *
  * @author Josef Cacek
  */
 public class HelloBeanDD {
@@ -35,7 +35,7 @@ public class HelloBeanDD {
 
     /**
      * Returns {@value #HELLO_WORLD}.
-     * 
+     *
      * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHelloWorld()
      */
     public String sayHello() {
@@ -44,7 +44,7 @@ public class HelloBeanDD {
 
     /**
      * Returns echo of the given string (2x repeated).
-     * 
+     *
      * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHello()
      */
     public String echo(String name) {

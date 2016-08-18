@@ -28,10 +28,8 @@ import javax.ejb.Stateless;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  */
 @Stateless
-public class MySession2Bean implements MySession2, MySession2Local
-{
-   public boolean doit()
-   {
-      return true;
-   }
+public class MySession2Bean implements MySession2, MySession2Local {
+    public boolean doit() {
+        return true;
+    }
 }

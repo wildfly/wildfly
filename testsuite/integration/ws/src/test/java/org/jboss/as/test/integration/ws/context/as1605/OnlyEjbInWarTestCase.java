@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 
 /**
  * [AS7-1605] jboss-web.xml ignored for web service root
- *
+ * <p>
  * This test case tests if only EJB3 endpoints are in war archive.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -58,11 +58,11 @@ public class OnlyEjbInWarTestCase {
         war.addClass(EndpointIface.class);
         war.addClass(EJB3Endpoint.class);
         war.addAsWebInfResource(new StringAsset(
-                "<?xml version='1.0' encoding='UTF-8'?>\n" + 
-                "<!DOCTYPE jboss-web PUBLIC \"-//JBoss//DTD Web Application 2.4//EN\" \"http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd\">\n" +
-                "<jboss-web>\n" + 
-                "<context-root>/as1605-customized</context-root>\n" + 
-                "</jboss-web>\n"), "jboss-web.xml");
+                "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                        "<!DOCTYPE jboss-web PUBLIC \"-//JBoss//DTD Web Application 2.4//EN\" \"http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd\">\n" +
+                        "<jboss-web>\n" +
+                        "<context-root>/as1605-customized</context-root>\n" +
+                        "</jboss-web>\n"), "jboss-web.xml");
         return war;
     }
 

@@ -36,12 +36,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import io.undertow.predicate.PredicateParser;
-import io.undertow.server.handlers.builder.PredicatedHandlersParser;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.undertow.predicate.PredicateParser;
+import io.undertow.server.handlers.builder.PredicatedHandlersParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -75,7 +75,6 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
- *
  * @author Stuart Douglas
  */
 public class WebMigrateTestCase extends AbstractSubsystemTest {
@@ -208,12 +207,12 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("extended", accessLog.get(Constants.PATTERN).asString());
         assertEquals("toto", accessLog.get(Constants.DIRECTORY).asString());
         assertEquals("jboss.server.base.dir", accessLog.get(Constants.RELATIVE_TO).asString());
-        
+
         //sso
         ModelNode sso = virtualHost.get(Constants.SETTING, Constants.SINGLE_SIGN_ON);
         assertEquals("${prop.domain:myDomain}", sso.get(Constants.DOMAIN).asString());
         assertEquals("${prop.http-only:true}", sso.get(Constants.HTTP_ONLY).asString());
-        
+
         //global access log valve
         virtualHost = newServer.get(Constants.HOST, "vs1");
         assertTrue(virtualHost.hasDefined(Constants.FILTER_REF, "request-dumper"));
@@ -250,6 +249,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
     private void validateExpressionFilter(ModelNode filter) {
         PredicatedHandlersParser.parse(filter.get("expression").asString(), PredicateParser.class.getClassLoader());
     }
+
     private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {
 
         UndertowExtension undertow = new UndertowExtension();
@@ -265,7 +265,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
 
             PathElement webExtension = PathElement.pathElement(EXTENSION, "org.jboss.as.web");
             rootRegistration.registerSubModel(new SimpleResourceDefinition(webExtension, ControllerResolver.getResolver(EXTENSION)))
-                .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
             rootResource.registerChild(webExtension, Resource.Factory.create());
 
 
@@ -273,7 +273,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
                     ControllerResolver.getResolver(EXTENSION), new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    if(!extensionAdded) {
+                    if (!extensionAdded) {
                         extensionAdded = true;
                         undertow.initialize(extensionRegistry.getExtensionContext("org.wildfly.extension.undertow",
                                 rootRegistration, ExtensionRegistryType.SERVER));

@@ -26,6 +26,6 @@ package org.jboss.as.test.integration.weld.ejb.multipleviews;
  */
 public interface MusicPlayer {
 
-    public void setSongCount(int songCount);
+    void setSongCount(int songCount);
 
 }

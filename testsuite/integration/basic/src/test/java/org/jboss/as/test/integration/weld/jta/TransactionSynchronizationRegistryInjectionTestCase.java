@@ -16,7 +16,7 @@ public class TransactionSynchronizationRegistryInjectionTestCase {
 
     @Inject
     CdiBean cdiBean;
-    
+
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class)
@@ -24,9 +24,9 @@ public class TransactionSynchronizationRegistryInjectionTestCase {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
-    
+
     @Test
-    public void testTransactionSynchronizationRegistryIsInjected(){
+    public void testTransactionSynchronizationRegistryIsInjected() {
         Assert.assertTrue(cdiBean.isTransactionSynchronizationRegistryInjected());
     }
 }

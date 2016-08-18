@@ -56,11 +56,11 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests, which checks run-as identity handling in EJB JACC authorization module.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ JACCAuthzPropagationTestCase.SecurityDomainsSetup.class })
+@ServerSetup({JACCAuthzPropagationTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Ignore("See WFLY-4989")
 public class JACCAuthzPropagationTestCase {
@@ -92,7 +92,7 @@ public class JACCAuthzPropagationTestCase {
 
     /**
      * Tests direct permissions (RolesAllowed).
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -107,7 +107,7 @@ public class JACCAuthzPropagationTestCase {
 
     /**
      * Tests run-as permissions.
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -126,7 +126,7 @@ public class JACCAuthzPropagationTestCase {
 
     /**
      * Asserts the access to the given method in the given bean is allowed for given role.
-     * 
+     *
      * @param webAppURL
      * @param beanName
      * @param methodName
@@ -136,7 +136,7 @@ public class JACCAuthzPropagationTestCase {
      * @throws URISyntaxException
      */
     private void assertAccessAllowed(URL webAppURL, String beanName, String methodName, String roleName)
-            throws ClientProtocolException, IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
         final URL testUrl = getTestURL(webAppURL, beanName, methodName);
         assertEquals("Access of role " + roleName + " to " + methodName + " method in " + beanName + " should be allowed.",
                 Manage.RESULT, Utils.makeCallWithBasicAuthn(testUrl, roleName, roleName, 200));
@@ -144,7 +144,7 @@ public class JACCAuthzPropagationTestCase {
 
     /**
      * Asserts the access to the given method in the given bean is denied for given role.
-     * 
+     *
      * @param webAppURL
      * @param beanName
      * @param methodName
@@ -154,7 +154,7 @@ public class JACCAuthzPropagationTestCase {
      * @throws URISyntaxException
      */
     private void assertAccessDenied(URL webAppURL, String beanName, String methodName, String roleName)
-            throws ClientProtocolException, IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
         final URL testUrl = getTestURL(webAppURL, beanName, methodName);
         assertEquals("Access of role " + roleName + " to " + methodName + " method in " + beanName + " should be denied.",
                 PropagationTestServlet.RESULT_EJB_ACCESS_EXCEPTION,
@@ -163,7 +163,7 @@ public class JACCAuthzPropagationTestCase {
 
     /**
      * Creates URL of the test application with the given values of request parameters.
-     * 
+     *
      * @param webAppURL
      * @param beanName
      * @param method
@@ -174,7 +174,7 @@ public class JACCAuthzPropagationTestCase {
     private URL getTestURL(URL webAppURL, String beanName, String method) throws MalformedURLException,
             UnsupportedEncodingException {
         return new URL(webAppURL.toExternalForm() + PropagationTestServlet.SERVLET_PATH.substring(1) + "?" //
-                + PropagationTestServlet.PARAM_BEAN_NAME + "=" + beanName + "&" // 
+                + PropagationTestServlet.PARAM_BEAN_NAME + "=" + beanName + "&" //
                 + PropagationTestServlet.PARAM_METHOD_NAME + "=" + method);
     }
 
@@ -182,7 +182,7 @@ public class JACCAuthzPropagationTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -191,11 +191,11 @@ public class JACCAuthzPropagationTestCase {
          */
         @Override
         protected SecurityDomain[] getSecurityDomains() {
-            return new SecurityDomain[] { new SecurityDomain.Builder().name(TEST_NAME)
+            return new SecurityDomain[]{new SecurityDomain.Builder().name(TEST_NAME)
                     .loginModules(new SecurityModule.Builder().name("UsersRoles").flag(Constants.REQUIRED).build()) //
                     .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()) //
                     .cacheType("default") //
-                    .build() };
+                    .build()};
         }
     }
 }

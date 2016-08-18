@@ -88,7 +88,7 @@ public class LDAPBasedPartitionManagerTestCase extends AbstractBasicIdentityMana
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("ldap.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 

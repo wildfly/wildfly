@@ -28,5 +28,5 @@ import javax.ejb.EJBHome;
  * @author Ondrej Chaloupka
  */
 public interface TestPassivationRemoteHome extends EJBHome {
-    public TestPassivationRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    TestPassivationRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 }

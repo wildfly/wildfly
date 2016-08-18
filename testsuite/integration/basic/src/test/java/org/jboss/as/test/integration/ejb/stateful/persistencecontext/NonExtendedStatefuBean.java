@@ -36,7 +36,7 @@ import org.jboss.ejb3.annotation.Cache;
 @Cache("passivating")
 public class NonExtendedStatefuBean implements Serializable, StatefulRemote {
     private static final long serialVersionUID = 1L;
-    
+
     @PersistenceContext
     EntityManager manager;
 

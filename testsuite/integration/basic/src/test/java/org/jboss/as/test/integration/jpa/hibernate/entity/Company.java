@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.hibernate.entity;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -51,7 +50,7 @@ public class Company {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="comp_id")
+    @Column(name = "comp_id")
     public Long getId() {
         return id;
     }
@@ -69,7 +68,7 @@ public class Company {
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "company")
-    @Column(name="flight_id")
+    @Column(name = "flight_id")
     public Set<Flight> getFlights() {
         return flights;
     }

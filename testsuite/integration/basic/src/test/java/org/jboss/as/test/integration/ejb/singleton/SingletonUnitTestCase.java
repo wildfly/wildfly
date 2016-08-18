@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.singleton;
 
 import java.util.logging.Logger;
-
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -38,9 +37,9 @@ import org.junit.runner.RunWith;
 
 /**
  * SingletonUnitTestCase
- * 
+ * <p>
  * Part of the migration AS6->AS7 testsuite [JBQA-5275] - ejb3/singleton.
- * 
+ *
  * @author Jaikiran Pai, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -60,9 +59,9 @@ public class SingletonUnitTestCase {
 
     @Test
     public void testSingletonBeanAccess() throws Exception {
-        AccountManagerBean accountManagerLocal = (AccountManagerBean) ctx.lookup("java:module/" 
+        AccountManagerBean accountManagerLocal = (AccountManagerBean) ctx.lookup("java:module/"
                 + AccountManagerBean.class.getSimpleName() + "!" + AccountManagerBean.class.getName());
-        AccountManager accountManagerRemote = (AccountManager) ctx.lookup("java:module/" 
+        AccountManager accountManagerRemote = (AccountManager) ctx.lookup("java:module/"
                 + AccountManagerBean.class.getSimpleName() + "!" + AccountManager.class.getName());
 
         int initialBalance = accountManagerRemote.balance();
@@ -78,7 +77,7 @@ public class SingletonUnitTestCase {
 
         // debit
         anotherAccountManagerRemoteInstance.debit(50);
-        
+
         // checking whether singleton works after throwing exception in a business method
         // EJB3.1 4.8.4
         try {

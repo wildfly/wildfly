@@ -39,7 +39,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author baranowb
- * 
+ *
  */
 public class WithProperties implements WithPropertiesMBean {
 
@@ -89,11 +89,8 @@ public class WithProperties implements WithPropertiesMBean {
     private URI uri;
     private URL url;
 
-    /**
-     * 
-     */
     public WithProperties() {
-        // TODO Auto-generated constructor stub
+
     }
 
     @Override

@@ -21,13 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.singleton.concurrency.inheritance;
 
+import java.util.concurrent.CountDownLatch;
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * @author Stuart Douglas

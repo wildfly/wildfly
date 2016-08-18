@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.weld.extensions.cdiportableextensions;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.Extension;
@@ -33,28 +32,28 @@ import javax.enterprise.inject.spi.ProcessBean;
 
 public class FunExtension implements Extension {
 
-    Set<Class<?>> funnyClasses = new HashSet<Class<?>> ();
-    Set<Bean<?>> funnyBeans = new HashSet<Bean<?>> ();
-    
+    Set<Class<?>> funnyClasses = new HashSet<Class<?>>();
+    Set<Bean<?>> funnyBeans = new HashSet<Bean<?>>();
+
     public Set<Bean<?>> getFunnyBeans() {
-       return funnyBeans;
+        return funnyBeans;
     }
-    
+
     public void processAnnotatedType(@Observes ProcessAnnotatedType<?> pat) {
-       
-       //System.out.println("FunExtension processAnnotatedType " + pat.getAnnotatedType().toString());
-       
-       if (pat.getAnnotatedType().getAnnotation(Funny.class) != null) {
-          //System.out.println("FunExtension adding funny class " + pat.getAnnotatedType().getJavaClass());
-          funnyClasses.add(pat.getAnnotatedType().getJavaClass());
-       }
+
+        //System.out.println("FunExtension processAnnotatedType " + pat.getAnnotatedType().toString());
+
+        if (pat.getAnnotatedType().getAnnotation(Funny.class) != null) {
+            //System.out.println("FunExtension adding funny class " + pat.getAnnotatedType().getJavaClass());
+            funnyClasses.add(pat.getAnnotatedType().getJavaClass());
+        }
     }
-    
+
     public void processBean(@Observes ProcessBean<?> pb) {
-       //System.out.println("FunExtension processBean " + pb.getBean().getBeanClass());
-       
-       if (funnyClasses.contains(pb.getBean().getBeanClass())) {
-          funnyBeans.add(pb.getBean());
-       }
+        //System.out.println("FunExtension processBean " + pb.getBean().getBeanClass());
+
+        if (funnyClasses.contains(pb.getBean().getBeanClass())) {
+            funnyBeans.add(pb.getBean());
+        }
     }
 }

@@ -35,7 +35,7 @@ import javax.persistence.PersistenceContextType;
 @Stateless
 public class StatelessBeanWithXPC {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
-        EntityManager em;
+    EntityManager em;
 
     public void test() {
         em.getEntityManagerFactory();

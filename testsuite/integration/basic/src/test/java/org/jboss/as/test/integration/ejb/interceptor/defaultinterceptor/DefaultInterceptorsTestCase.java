@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that default interceptors are correctly applied
- * 
+ *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
@@ -61,7 +61,7 @@ public class DefaultInterceptorsTestCase {
 
     /**
      * AS7-1436 Test interceptor is applied twice, if it is both class level and a default interceptor
-     * 
+     *
      * @throws NamingException
      */
     @Test

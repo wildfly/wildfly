@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<application xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd" version="6">
-  <display-name>ws-annotated-XXX.ear</display-name>
-  <module>
-    <web>
-      <web-uri>ws-annotated-XXX.war</web-uri>
-      <context-root>/test1</context-root>
-    </web>
-  </module>
- 
+<application xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd" version="6">
+    <display-name>ws-annotated-XXX.ear</display-name>
+    <module>
+        <web>
+            <web-uri>ws-annotated-XXX.war</web-uri>
+            <context-root>/test1</context-root>
+        </web>
+    </module>
+
 </application>

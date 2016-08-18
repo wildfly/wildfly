@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
-
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NamingException;
@@ -55,15 +54,15 @@ public class SecurityHelper {
     }
 
     public static Object testActionPermission(final int action, final NamingContext namingContext,
-        final String name, final Object... params) throws Exception {
+                                              final String name, final Object... params) throws Exception {
 
         return testActionPermission(action, Collections.<JndiPermission>emptyList(), namingContext, name, params);
     }
 
-    public static Object testActionPermission(final int action, 
-        final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
-        final Object... params) throws Exception {
-        
+    public static Object testActionPermission(final int action,
+                                              final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name,
+                                              final Object... params) throws Exception {
+
         Exception positiveTestCaseException = null;
 
         try {
@@ -82,15 +81,15 @@ public class SecurityHelper {
                     throw e;
                 } else {
                     throw new Exception("Both positive and negative permission test for JNDI action "
-                        + action
-                        + " failed. The negative test case (which should have resulted in a security exception)"
-                        + " failed with a message: "
-                        + "("
-                        + e.getClass().getName()
-                        + "): "
-                        + e.getMessage()
-                        + ". The exception of the positive testcase"
-                        + " is set up as the cause of this exception.", positiveTestCaseException);
+                            + action
+                            + " failed. The negative test case (which should have resulted in a security exception)"
+                            + " failed with a message: "
+                            + "("
+                            + e.getClass().getName()
+                            + "): "
+                            + e.getMessage()
+                            + ". The exception of the positive testcase"
+                            + " is set up as the cause of this exception.", positiveTestCaseException);
                 }
             }
 
@@ -98,19 +97,19 @@ public class SecurityHelper {
                 throw positiveTestCaseException;
             }
         }
-        
+
     }
-    
+
     public static Object testActionWithPermission(final int action,
-        final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
-        final Object... params) throws Exception {
+                                                  final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name,
+                                                  final Object... params) throws Exception {
 
         final CompositeName n = name == null ? new CompositeName() : new CompositeName(name);
         final String sn = name == null ? "" : name;
 
         ArrayList<JndiPermission> allPerms = new ArrayList<JndiPermission>(additionalRequiredPerms);
         allPerms.add(new JndiPermission(sn, action));
-        
+
         return runWithSecurityManager(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
@@ -120,15 +119,15 @@ public class SecurityHelper {
     }
 
     public static void testActionWithoutPermission(final int action,
-        final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name, 
-        final Object... params) throws Exception {
+                                                   final Collection<JndiPermission> additionalRequiredPerms, final NamingContext namingContext, final String name,
+                                                   final Object... params) throws Exception {
 
         final CompositeName n = name == null ? new CompositeName() : new CompositeName(name);
         final String sn = name == null ? "" : name;
 
         ArrayList<JndiPermission> allPerms = new ArrayList<JndiPermission>(additionalRequiredPerms);
         allPerms.add(new JndiPermission(sn, not(action)));
-        
+
         try {
             runWithSecurityManager(new Callable<Object>() {
                 @Override
@@ -148,7 +147,7 @@ public class SecurityHelper {
     }
 
     private static Object performAction(int action, NamingContext namingContext, Name name,
-        Object... params) throws NamingException {
+                                        Object... params) throws NamingException {
         switch (action) {
         case JndiPermission.ACTION_BIND:
             if (params.length == 1) {
@@ -189,7 +188,7 @@ public class SecurityHelper {
     }
 
     public static <T> T runWithSecurityManager(final Callable<T> action, final AccessControlContext securityContext)
-        throws Exception {
+            throws Exception {
 
         Policy previousPolicy = Policy.getPolicy();
         SecurityManager previousSM = System.getSecurityManager();
@@ -233,7 +232,7 @@ public class SecurityHelper {
 
         ProtectionDomain domain = new ProtectionDomain(src, perms);
 
-        AccessControlContext ctx = new AccessControlContext(new ProtectionDomain[] { domain });
+        AccessControlContext ctx = new AccessControlContext(new ProtectionDomain[]{domain});
 
         return ctx;
     }

@@ -33,6 +33,7 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Unit test for {@link ExpiredSessionRemover}.
+ *
  * @author Paul Ferraro
  */
 public class ExpiredSessionRemoverTestCase {
@@ -58,7 +59,7 @@ public class ExpiredSessionRemoverTestCase {
         when(factory.tryValue(missingSessionId)).thenReturn(null);
         when(factory.tryValue(expiredSessionId)).thenReturn(expiredValue);
         when(factory.tryValue(validSessionId)).thenReturn(validValue);
-        
+
         when(factory.createImmutableSession(expiredSessionId, expiredValue)).thenReturn(expiredSession);
         when(factory.createImmutableSession(validSessionId, validValue)).thenReturn(validSession);
 

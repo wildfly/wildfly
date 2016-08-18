@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * Represents a planet object.
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 public class Planet {
@@ -49,10 +49,10 @@ public class Planet {
 
     /**
      * Creates a new instance of Planet.
-     * 
+     *
      * @param planetName planetName.
-     * @param galaxy galaxy name.
-     * @param star star name.
+     * @param galaxy     galaxy name.
+     * @param star       star name.
      */
     public Planet(String planetName, String galaxy, String star, Set<Satellite> satellites) {
         this.planetName = planetName;
@@ -63,7 +63,7 @@ public class Planet {
 
     /**
      * Gets the planet id for planet.
-     * 
+     *
      * @return planet id.
      */
     public Integer getPlanetId() {
@@ -72,7 +72,7 @@ public class Planet {
 
     /**
      * Sets the planetId id for this student.
-     * 
+     *
      * @return planetId id.
      */
     public void setPlanetId(Integer planetId) {

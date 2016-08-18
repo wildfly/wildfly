@@ -21,8 +21,10 @@
  */
 package org.wildfly.mod_cluster.undertow;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -36,10 +38,10 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.msc.value.InjectedValue;
 import org.junit.Test;
-import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.AjpListenerService;
 import org.wildfly.extension.undertow.HttpListenerService;
 import org.wildfly.extension.undertow.HttpsListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.xnio.OptionMap;
 
 public class UndertowConnectorTestCase {
@@ -49,9 +51,9 @@ public class UndertowConnectorTestCase {
     @Test
     public void getType() {
         OptionMap options = OptionMap.builder().getMap();
-        assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", options,OptionMap.EMPTY)).getType());
+        assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", options, OptionMap.EMPTY)).getType());
         assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", options, OptionMap.EMPTY, false, false)).getType());
-        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", options, null,OptionMap.EMPTY)).getType());
+        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", options, null, OptionMap.EMPTY)).getType());
     }
 
     @Test

@@ -65,7 +65,7 @@ public class ServletLifecycleCallbackInterceptionTestCase extends LifecycleInter
         // In order to use @ArquillianResource URL from the unmanaged deployment we need to deploy the test archive first
         deployer.deploy(REMOTE);
     }
-    
+
     @Test
     @InSequence(2)
     public void testServletPostConstructInterception(
@@ -84,7 +84,7 @@ public class ServletLifecycleCallbackInterceptionTestCase extends LifecycleInter
 
         // set the context in InfoClient so that it can send request to InfoServlet
         doGetRequest(remoteContextPath + "/InitServlet?url=" + URLEncoder.encode(infoContextPath.toExternalForm(), "UTF-8"));
-        
+
         deployer.undeploy(REMOTE);
         assertEquals("PreDestroy interceptor method not invoked for servlet", "1",
                 doGetRequest(infoContextPath + "/InfoServlet?event=preDestroyVerify"));

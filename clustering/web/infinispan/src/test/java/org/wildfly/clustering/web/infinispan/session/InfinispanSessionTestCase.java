@@ -34,6 +34,7 @@ import org.wildfly.clustering.web.session.Session;
 
 /**
  * Unit test for {@link InfinispanSession}.
+ *
  * @author paul
  */
 public class InfinispanSessionTestCase {
@@ -50,63 +51,63 @@ public class InfinispanSessionTestCase {
     public void getId() {
         assertSame(this.id, this.session.getId());
     }
-    
+
     @Test
     public void getAttributes() {
         assertSame(this.attributes, this.session.getAttributes());
     }
-    
+
     @Test
     public void getMetaData() {
         assertSame(this.metaData, this.session.getMetaData());
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void invalidate() {
         when(this.metaData.invalidate()).thenReturn(true);
-        
+
         this.session.invalidate();
-        
+
         verify(this.remover).remove(this.id);
         reset(this.remover);
-        
+
         when(this.metaData.invalidate()).thenReturn(false);
-        
+
         this.session.invalidate();
-        
+
         verify(this.remover, never()).remove(this.id);
     }
-    
+
     @Test
     public void isValid() {
         when(this.metaData.isValid()).thenReturn(true);
-        
+
         assertTrue(this.session.isValid());
-        
+
         when(this.metaData.isValid()).thenReturn(false);
-        
+
         assertFalse(this.session.isValid());
     }
-    
+
     @Test
     public void close() {
         when(this.metaData.isValid()).thenReturn(true);
-        
+
         this.session.close();
-        
+
         verify(this.attributes).close();
         verify(this.metaData).setLastAccessedTime(any(Instant.class));
-        
+
         reset(this.metaData, this.attributes);
-        
+
         // Verify that session is not mutated if invalid
         when(this.metaData.isValid()).thenReturn(false);
-        
+
         this.session.close();
-        
+
         this.session.close();
-        
+
         verify(this.attributes, never()).close();
         verify(this.metaData, never()).setLastAccessedTime(any(Instant.class));
     }
@@ -116,17 +117,17 @@ public class InfinispanSessionTestCase {
     public void getLocalContext() {
         Object expected = new Object();
         when(this.localContextFactory.createLocalContext()).thenReturn(expected);
-        
+
         Object result = this.session.getLocalContext();
-        
+
         assertSame(expected, result);
-        
+
         reset(this.localContextFactory);
-        
+
         result = this.session.getLocalContext();
-        
+
         verifyZeroInteractions(this.localContextFactory);
-        
+
         assertSame(expected, result);
     }
 }

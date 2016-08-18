@@ -24,7 +24,6 @@ package org.jboss.as.test.smoke.deployment.rar.configproperty;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
@@ -41,168 +40,160 @@ import javax.transaction.xa.XAResource;
  *
  * @version $Revision: $
  */
-public class ConfigPropertyManagedConnection implements ManagedConnection
-{
-   /** The logwriter */
-   private PrintWriter logwriter;
+public class ConfigPropertyManagedConnection implements ManagedConnection {
+    /**
+     * The logwriter
+     */
+    private PrintWriter logwriter;
 
-   /** ManagedConnectionFactory */
-   private ConfigPropertyManagedConnectionFactory mcf;
+    /**
+     * ManagedConnectionFactory
+     */
+    private ConfigPropertyManagedConnectionFactory mcf;
 
-   /** Listeners */
-   private List<ConnectionEventListener> listeners;
+    /**
+     * Listeners
+     */
+    private List<ConnectionEventListener> listeners;
 
-   /** Connection */
-   private Object connection;
+    /**
+     * Connection
+     */
+    private Object connection;
 
-   /**
-    * Default constructor
-    * @param mcf mcf
-    */
-   public ConfigPropertyManagedConnection(ConfigPropertyManagedConnectionFactory mcf)
-   {
-      this.mcf = mcf;
-      this.logwriter = null;
-      this.listeners = new ArrayList<ConnectionEventListener>(1);
-      this.connection = null;
-   }
+    /**
+     * Default constructor
+     *
+     * @param mcf mcf
+     */
+    public ConfigPropertyManagedConnection(ConfigPropertyManagedConnectionFactory mcf) {
+        this.mcf = mcf;
+        this.logwriter = null;
+        this.listeners = new ArrayList<ConnectionEventListener>(1);
+        this.connection = null;
+    }
 
-   /**
-    * Creates a new connection handle for the underlying physical connection
-    * represented by the ManagedConnection instance.
-    *
-    * @param subject Security context as JAAS subject
-    * @param cxRequestInfo ConnectionRequestInfo instance
-    * @return generic Object instance representing the connection handle.
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public Object getConnection(Subject subject,
-      ConnectionRequestInfo cxRequestInfo) throws ResourceException
-   {
-      connection = new ConfigPropertyConnectionImpl(this, mcf);
-      return connection;
-   }
+    /**
+     * Creates a new connection handle for the underlying physical connection
+     * represented by the ManagedConnection instance.
+     *
+     * @param subject       Security context as JAAS subject
+     * @param cxRequestInfo ConnectionRequestInfo instance
+     * @return generic Object instance representing the connection handle.
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public Object getConnection(Subject subject,
+                                ConnectionRequestInfo cxRequestInfo) throws ResourceException {
+        connection = new ConfigPropertyConnectionImpl(this, mcf);
+        return connection;
+    }
 
-   /**
-    * Used by the container to change the association of an
-    * application-level connection handle with a ManagedConneciton instance.
-    *
-    * @param connection Application-level connection handle
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public void associateConnection(Object connection) throws ResourceException
-   {
-   }
+    /**
+     * Used by the container to change the association of an
+     * application-level connection handle with a ManagedConneciton instance.
+     *
+     * @param connection Application-level connection handle
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public void associateConnection(Object connection) throws ResourceException {
+    }
 
-   /**
-    * Application server calls this method to force any cleanup on the ManagedConnection instance.
-    *
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public void cleanup() throws ResourceException
-   {
-   }
+    /**
+     * Application server calls this method to force any cleanup on the ManagedConnection instance.
+     *
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public void cleanup() throws ResourceException {
+    }
 
-   /**
-    * Destroys the physical connection to the underlying resource manager.
-    *
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public void destroy() throws ResourceException
-   {
-   }
+    /**
+     * Destroys the physical connection to the underlying resource manager.
+     *
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public void destroy() throws ResourceException {
+    }
 
-   /**
-    * Adds a connection event listener to the ManagedConnection instance.
-    *
-    * @param listener A new ConnectionEventListener to be registered
-    */
-   public void addConnectionEventListener(ConnectionEventListener listener)
-   {
-      if (listener == null)
-         throw new IllegalArgumentException("Listener is null");
-      listeners.add(listener);
-   }
+    /**
+     * Adds a connection event listener to the ManagedConnection instance.
+     *
+     * @param listener A new ConnectionEventListener to be registered
+     */
+    public void addConnectionEventListener(ConnectionEventListener listener) {
+        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        listeners.add(listener);
+    }
 
-   /**
-    * Removes an already registered connection event listener from the ManagedConnection instance.
-    *
-    * @param listener already registered connection event listener to be removed
-    */
-   public void removeConnectionEventListener(ConnectionEventListener listener)
-   {
-      if (listener == null)
-         throw new IllegalArgumentException("Listener is null");
-      listeners.remove(listener);
-   }
+    /**
+     * Removes an already registered connection event listener from the ManagedConnection instance.
+     *
+     * @param listener already registered connection event listener to be removed
+     */
+    public void removeConnectionEventListener(ConnectionEventListener listener) {
+        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        listeners.remove(listener);
+    }
 
-   /**
-    * Close handle
-    *
-    * @param handle The handle
-    */
-   public void closeHandle(ConfigPropertyConnection handle)
-   {
-      ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
-      event.setConnectionHandle(handle);
-      for (ConnectionEventListener cel : listeners)
-      {
-         cel.connectionClosed(event);
-      }
-   }
+    /**
+     * Close handle
+     *
+     * @param handle The handle
+     */
+    public void closeHandle(ConfigPropertyConnection handle) {
+        ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
+        event.setConnectionHandle(handle);
+        for (ConnectionEventListener cel : listeners) {
+            cel.connectionClosed(event);
+        }
+    }
 
-   /**
-    * Gets the log writer for this ManagedConnection instance.
-    *
-    * @return Character ourput stream associated with this Managed-Connection instance
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public PrintWriter getLogWriter() throws ResourceException
-   {
-      return logwriter;
-   }
+    /**
+     * Gets the log writer for this ManagedConnection instance.
+     *
+     * @return Character ourput stream associated with this Managed-Connection instance
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public PrintWriter getLogWriter() throws ResourceException {
+        return logwriter;
+    }
 
-   /**
-    * Sets the log writer for this ManagedConnection instance.
-    *
-    * @param out Character Output stream to be associated
-    * @throws javax.resource.ResourceException  generic exception if operation fails
-    */
-   public void setLogWriter(PrintWriter out) throws ResourceException
-   {
-      logwriter = out;
-   }
+    /**
+     * Sets the log writer for this ManagedConnection instance.
+     *
+     * @param out Character Output stream to be associated
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public void setLogWriter(PrintWriter out) throws ResourceException {
+        logwriter = out;
+    }
 
-   /**
-    * Returns an <code>javax.resource.spi.LocalTransaction</code> instance.
-    *
-    * @return LocalTransaction instance
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public LocalTransaction getLocalTransaction() throws ResourceException
-   {
-      throw new NotSupportedException("LocalTransaction not supported");
-   }
+    /**
+     * Returns an <code>javax.resource.spi.LocalTransaction</code> instance.
+     *
+     * @return LocalTransaction instance
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public LocalTransaction getLocalTransaction() throws ResourceException {
+        throw new NotSupportedException("LocalTransaction not supported");
+    }
 
-   /**
-    * Returns an <code>javax.transaction.xa.XAresource</code> instance.
-    *
-    * @return XAResource instance
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public XAResource getXAResource() throws ResourceException
-   {
-      throw new NotSupportedException("GetXAResource not supported not supported");
-   }
+    /**
+     * Returns an <code>javax.transaction.xa.XAresource</code> instance.
+     *
+     * @return XAResource instance
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public XAResource getXAResource() throws ResourceException {
+        throw new NotSupportedException("GetXAResource not supported not supported");
+    }
 
-   /**
-    * Gets the metadata information for this connection's underlying EIS resource manager instance.
-    *
-    * @return ManagedConnectionMetaData instance
-    * @throws javax.resource.ResourceException generic exception if operation fails
-    */
-   public ManagedConnectionMetaData getMetaData() throws ResourceException
-   {
-      return new ConfigPropertyManagedConnectionMetaData();
-   }
+    /**
+     * Gets the metadata information for this connection's underlying EIS resource manager instance.
+     *
+     * @return ManagedConnectionMetaData instance
+     * @throws javax.resource.ResourceException generic exception if operation fails
+     */
+    public ManagedConnectionMetaData getMetaData() throws ResourceException {
+        return new ConfigPropertyManagedConnectionMetaData();
+    }
 }

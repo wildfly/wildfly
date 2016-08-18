@@ -99,10 +99,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({
-    KerberosServerSetupTask.Krb5ConfServerSetupTask.class,
-    KerberosServerSetupTask.SystemPropertiesSetup.class,
-    KerberosServerSetupTask.class,
-    SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
+        KerberosServerSetupTask.Krb5ConfServerSetupTask.class,
+        KerberosServerSetupTask.SystemPropertiesSetup.class,
+        KerberosServerSetupTask.class,
+        SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
 })
 @RunAsClient
 @Ignore("AS7-6796 - Undertow SPNEGO")
@@ -144,7 +144,7 @@ public class SAML2KerberosAuthenticationTestCase {
 
     /**
      * Creates a {@link WebArchive} for given security domain.
-     * 
+     *
      * @return
      */
     @Deployment(name = SERVICE_PROVIDER_NAME)
@@ -176,7 +176,7 @@ public class SAML2KerberosAuthenticationTestCase {
 
     /**
      * Creates a {@link WebArchive} for given security domain.
-     * 
+     *
      * @return
      */
     @Deployment(name = IDENTITY_PROVIDER_NAME)
@@ -215,7 +215,7 @@ public class SAML2KerberosAuthenticationTestCase {
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testNegotiateHttpHeader(@ArquillianResource URL webAppURL,
-            @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
+                                        @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
         DefaultHttpClient httpClient = new DefaultHttpClient();
         try {
             final HttpGet httpGet = new HttpGet(webAppURL.toURI());
@@ -248,19 +248,19 @@ public class SAML2KerberosAuthenticationTestCase {
 
     /**
      * Test roles for jduke user.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukeRoles(@ArquillianResource URL webAppURL,
-            @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
+                               @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
         final URI rolesPrintingURL = new URI(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1)
                 + "?test=testDeploymentViaKerberos&" + KerberosServerSetupTask.QUERY_ROLES);
 
         String responseBody = makeCallWithKerberosAuthn(rolesPrintingURL, idpURL.toURI(), "jduke", DUKE_PASSWORD);
 
-        final List<String> assignedRolesList = Arrays.asList(new String[] { "TheDuke", "Echo", "Admin" });
+        final List<String> assignedRolesList = Arrays.asList("TheDuke", "Echo", "Admin");
         for (String role : KerberosServerSetupTask.ROLE_NAMES) {
             if (assignedRolesList.contains(role)) {
                 assertThat("Missing role assignment", responseBody, containsString("," + role + ","));
@@ -278,7 +278,7 @@ public class SAML2KerberosAuthenticationTestCase {
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukePrincipal(@ArquillianResource URL webAppURL,
-            @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
+                                   @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
         final String cannonicalHost = Utils.getCannonicalHost(mgmtClient);
         final URI principalPrintingURL = new URI(webAppURL.toExternalForm()
                 + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?test=testDeploymentViaKerberos");
@@ -295,7 +295,7 @@ public class SAML2KerberosAuthenticationTestCase {
      * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and an username is provided, then the
      * given user is authenticated against Kerberos and a new request is executed under the new subject.
      *
-     * @param uri URI to which the request should be made
+     * @param uri  URI to which the request should be made
      * @param user Username
      * @param pass Password
      * @return HTTP response body
@@ -307,7 +307,7 @@ public class SAML2KerberosAuthenticationTestCase {
     public static String makeCallWithKerberosAuthn(URI uri, URI idpUri, final String user, final String pass)
             throws IOException, URISyntaxException,
             PrivilegedActionException, LoginException {
-        
+
         final String canonicalHost = Utils.getDefaultHost(true);
         uri = Utils.replaceHost(uri, canonicalHost);
         idpUri = Utils.replaceHost(idpUri, canonicalHost);
@@ -333,7 +333,7 @@ public class SAML2KerberosAuthenticationTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Hynek Mlnarik
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -342,7 +342,7 @@ public class SAML2KerberosAuthenticationTestCase {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -381,7 +381,7 @@ public class SAML2KerberosAuthenticationTestCase {
                                             Context.PROVIDER_URL,
                                             "ldap://"
                                                     + NetworkUtils.formatPossibleIpv6Address(Utils
-                                                            .getCannonicalHost(managementClient)) + ":"
+                                                    .getCannonicalHost(managementClient)) + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org").putOption("baseFilter", "(uid={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
@@ -415,18 +415,18 @@ public class SAML2KerberosAuthenticationTestCase {
 
         /**
          * Initializes the instance.
-         * 
-         * @param uri URI of the web application
+         *
+         * @param uri    URI of the web application
          * @param idpUri URI of the respective identity provider
          */
-        public HttpGetInKerberos(URI uri, URI idpUri) {
+        HttpGetInKerberos(URI uri, URI idpUri) {
             this.uri = uri;
             this.idpUri = idpUri;
         }
 
         /**
          * Performs authentication via IdP and retrieves the document body from the {@link #uri}.
-         * 
+         *
          * @return Body of the response retrieved from {@link #uri}
          * @throws Exception
          */
@@ -471,8 +471,8 @@ public class SAML2KerberosAuthenticationTestCase {
                 consumeResponse(response);
 
                 HttpGet idpHttpGetRedirectForAuth = new HttpGet(idpHttpGetRedirect); // GET
-                                                                                     // /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....,
-                                                                                     // Authorization: Negotiate
+                // /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....,
+                // Authorization: Negotiate
                 idpHttpGetRedirectForAuth.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGetRedirectForAuth);
                 assertThat("Unexpected status code when expecting redirect from IdP with SAML response", response

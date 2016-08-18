@@ -29,7 +29,7 @@ class TelnetOption {
 
     protected boolean inNegotiation;
 
-    public TelnetOption(int optionCode) {
+    TelnetOption(int optionCode) {
         this.optionCode = optionCode;
     }
 

@@ -54,7 +54,7 @@ public class FailBecauseOfXPCNotInSFSBTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(FailBecauseOfXPCNotInSFSBTestCase.class,
-            StatelessBeanWithXPC.class
+                StatelessBeanWithXPC.class
         );
         jar.addAsManifestResource(FailBecauseOfXPCNotInSFSBTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
@@ -76,17 +76,15 @@ public class FailBecauseOfXPCNotInSFSBTestCase {
         StatelessBeanWithXPC bean = lookup("StatelessBeanWithXPC", StatelessBeanWithXPC.class);
         try {
             bean.test();
-        }
-        catch (EJBException expected) {
+        } catch (EJBException expected) {
             //expected.printStackTrace();
             Throwable cause = expected.getCause();
-            while(cause != null && ! (cause.getMessage().contains("container-managed extended persistence context can only be"))) {
+            while (cause != null && !(cause.getMessage().contains("container-managed extended persistence context can only be"))) {
                 cause = cause.getCause();
             }
             assertTrue("expected IllegalStateException was not thrown", cause instanceof IllegalStateException);
             assertTrue("expected 'container-managed extended persistence context can only be' in error exception message", cause.getMessage().contains("container-managed extended persistence context can only be"));
-        }
-        catch(Throwable unexpected) {
+        } catch (Throwable unexpected) {
             fail("unexcepted exception " + unexpected.toString());
         }
     }

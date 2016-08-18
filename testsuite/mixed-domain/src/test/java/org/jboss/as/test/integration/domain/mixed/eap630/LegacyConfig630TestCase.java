@@ -18,7 +18,6 @@ package org.jboss.as.test.integration.domain.mixed.eap630;
 
 import org.jboss.as.test.integration.domain.mixed.LegacyConfigTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.domain.mixed.eap620.LegacyConfig620TestSuite;
 import org.junit.BeforeClass;
 
 /**

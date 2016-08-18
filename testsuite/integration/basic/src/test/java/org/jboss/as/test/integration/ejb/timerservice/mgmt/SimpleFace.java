@@ -4,21 +4,21 @@ import java.io.Serializable;
 
 public interface SimpleFace {
 
-    public void clean();
+    void clean();
 
-    public void createTimer();
+    void createTimer();
 
-    public int getTimerCount();
+    int getTimerCount();
 
-    public int getTimerTicks();
+    int getTimerTicks();
 
-    public void waitOnTimeout() throws InterruptedException;
+    void waitOnTimeout() throws InterruptedException;
 
-    public void setPersistent(boolean persistent);
+    void setPersistent(boolean persistent);
 
-    public void setInfo(Serializable info);
+    void setInfo(Serializable info);
 
-    public void setDelay(int delay);
+    void setDelay(int delay);
 
-    public String getComparableTimerDetail();
+    String getComparableTimerDetail();
 }

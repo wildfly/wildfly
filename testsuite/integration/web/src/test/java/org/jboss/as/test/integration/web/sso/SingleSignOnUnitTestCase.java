@@ -40,14 +40,14 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests of web app single sign-on
- * 
+ *
  * @author Scott.Stark@jboss.org
  * @author lbarreiro@redhat.com
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SingleSignOnUnitTestCase.SingleSignOnUnitTestCaseSetup.class)
-@Ignore(value="ARQ-791 Arquillian is unable to reconnect to JMX server if the connection is lost")
+@Ignore(value = "ARQ-791 Arquillian is unable to reconnect to JMX server if the connection is lost")
 @Category(CommonCriteria.class)
 public class SingleSignOnUnitTestCase {
 

@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 /**
  * @author baranowb
- * 
+ *
  */
 public class ReturnObject implements Serializable {
     private final String value;

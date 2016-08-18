@@ -83,7 +83,7 @@ public class MultipleIdentityManagementConfigurationTestCase {
         private FileBasedPartitionManagerTestCase.IdentityManagementServerSetupTask fileIdentityManagementSetupTask;
         private JPADSBasedPartitionManagerTestCase.IdentityManagementServerSetupTask jpaIdentityManagementSetupTask;
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("", "");
             this.jpaIdentityManagementSetupTask = new JPADSBasedPartitionManagerTestCase.IdentityManagementServerSetupTask();
             this.fileIdentityManagementSetupTask = new FileBasedPartitionManagerTestCase.IdentityManagementServerSetupTask();

@@ -41,8 +41,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.iiop.openjdk.IIOPExtension;
-import org.wildfly.iiop.openjdk.Namespace;
 
 /**
  * <ṕ>
@@ -61,7 +59,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-1.0.xml");
+        return readResource("subsystem-3.0.xml");
     }
 
     @Override
@@ -71,12 +69,12 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("expressions-1.0.xml");
+        standardSubsystemTest("expressions.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-iiop-openjdk_1_0.xsd";
+        return "schema/wildfly-iiop-openjdk_3_0.xsd";
     }
 
     @Override
@@ -190,12 +188,17 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testSubsystemWithSecurityIdentity() throws Exception {
-        super.standardSubsystemTest("subsystem-1.0-security-identity.xml");
+        super.standardSubsystemTest("subsystem-security-identity.xml");
     }
 
     @Test
     public void testSubsystemWithSecurityClient() throws Exception {
-        super.standardSubsystemTest("subsystem-1.0-security-client.xml");
+        super.standardSubsystemTest("subsystem-security-client.xml");
+    }
+
+    @Test
+    public void testSubsystem_1_0() throws Exception {
+        super.standardSubsystemTest("subsystem-1.0.xml", false);
     }
 
 }

@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -32,24 +31,29 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 /**
  * Resource adapter
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class ValidResourceAdapter implements ResourceAdapter,Serializable {
+public class ValidResourceAdapter implements ResourceAdapter, Serializable {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
-    /** property */
+    /**
+     * property
+     */
     @NotNull
     @Min(3)
     private Integer raProperty;
-    /** The activations by activation spec */
-    private Map<ValidActivationSpec, ValidActivation> activations=new HashMap<ValidActivationSpec, ValidActivation>();
+    /**
+     * The activations by activation spec
+     */
+    private Map<ValidActivationSpec, ValidActivation> activations = new HashMap<ValidActivationSpec, ValidActivation>();
 
     /**
      * Default constructor
@@ -59,7 +63,7 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * Set property
-     * 
+     *
      * @param property The value
      */
     public void setRaProperty(Integer property) {
@@ -68,7 +72,7 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * Get property
-     * 
+     *
      * @return The value
      */
     public Integer getRaProperty() {
@@ -77,9 +81,9 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * This is called during the activation of a message endpoint.
-     * 
+     *
      * @param endpointFactory A message endpoint factory instance.
-     * @param spec An activation spec JavaBean instance.
+     * @param spec            An activation spec JavaBean instance.
      * @throws javax.resource.ResourceException generic exception
      */
     public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException {
@@ -91,20 +95,19 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * This is called when a message endpoint is deactivated.
-     * 
+     *
      * @param endpointFactory A message endpoint factory instance.
-     * @param spec An activation spec JavaBean instance.
+     * @param spec            An activation spec JavaBean instance.
      */
     public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) {
-        ValidActivation activation = (ValidActivation) activations.remove(spec);
-        if (activation != null)
-            activation.stop();
+        ValidActivation activation = activations.remove(spec);
+        if (activation != null) { activation.stop(); }
 
     }
 
     /**
      * This is called when a resource adapter instance is bootstrapped.
-     * 
+     *
      * @param ctx A bootstrap context containing references
      * @throws javax.resource.spi.ResourceAdapterInternalException indicates bootstrap failure.
      */
@@ -119,10 +122,10 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * This method is called by the application server during crash recovery.
-     * 
+     *
      * @param specs An array of ActivationSpec JavaBeans
-     * @throws javax.resource.ResourceException generic exception
      * @return An array of XAResource objects
+     * @throws javax.resource.ResourceException generic exception
      */
     public XAResource[] getXAResources(ActivationSpec[] specs) throws ResourceException {
         return null;
@@ -130,7 +133,7 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * Returns a hash code value for the object.
-     * 
+     *
      * @return A hash code value for this object.
      */
     @Override
@@ -140,18 +143,15 @@ public class ValidResourceAdapter implements ResourceAdapter,Serializable {
 
     /**
      * Indicates whether some other object is equal to this one.
-     * 
+     *
      * @param other The reference object with which to compare.
      * @return true if this object is the same as the obj argument, false otherwise.
      */
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof ValidResourceAdapter))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof ValidResourceAdapter)) { return false; }
         ValidResourceAdapter obj = (ValidResourceAdapter) other;
         boolean result = true;
         if (result) {

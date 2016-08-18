@@ -29,6 +29,6 @@ import javax.ejb.Remote;
 @Remote
 public interface RemoteInterface {
 
-    public void modifyArray(final String[] array);
+    void modifyArray(final String[] array);
 
 }

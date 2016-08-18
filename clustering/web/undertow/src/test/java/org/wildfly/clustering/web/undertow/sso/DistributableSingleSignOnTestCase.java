@@ -22,20 +22,29 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.Iterator;
+import javax.servlet.http.HttpServletRequest;
+
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
-
-import java.util.Collections;
-import java.util.Iterator;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.wildfly.clustering.ee.Batch;
@@ -46,6 +55,7 @@ import org.wildfly.clustering.web.sso.Sessions;
 
 /**
  * Unit test for {@link DistributableSingleSignOn}
+ *
  * @author Paul Ferraro
  */
 public class DistributableSingleSignOnTestCase {
@@ -249,7 +259,7 @@ public class DistributableSingleSignOnTestCase {
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
 
         this.subject.close();
-        
+
         verify(this.batch).close();
         verify(context).close();
         reset(this.batch);

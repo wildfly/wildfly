@@ -23,15 +23,12 @@
 package org.jboss.as.test.integration.jpa.basic;
 
 import java.util.Map;
-
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContexts;
-import javax.persistence.PersistenceUnit;
 
 /**
  * stateless session bean
@@ -40,21 +37,21 @@ import javax.persistence.PersistenceUnit;
  */
 @Stateless
 @PersistenceContexts({
-	@PersistenceContext(name="pu1", unitName="pu1"),
-	@PersistenceContext(name="pu2", unitName="pu2")
-	})
+        @PersistenceContext(name = "pu1", unitName = "pu1"),
+        @PersistenceContext(name = "pu2", unitName = "pu2")
+})
 public class SLSBPersistenceContexts {
 
     @Resource
     EJBContext ctx;
 
-    public Map<String, Object> getPU1Info(){
-        EntityManager em = (EntityManager)ctx.lookup("pu1");
+    public Map<String, Object> getPU1Info() {
+        EntityManager em = (EntityManager) ctx.lookup("pu1");
         return em.getEntityManagerFactory().getProperties();
     }
 
-    public Map<String, Object> getPU2Info(){
-        EntityManager em = (EntityManager)ctx.lookup("pu2");
+    public Map<String, Object> getPU2Info() {
+        EntityManager em = (EntityManager) ctx.lookup("pu2");
         return em.getEntityManagerFactory().getProperties();
     }
 

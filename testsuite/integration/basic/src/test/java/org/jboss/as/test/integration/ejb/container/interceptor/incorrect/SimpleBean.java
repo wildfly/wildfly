@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
 
 /**
  * A SimpleBean.
- * 
+ *
  * @author Josef Cacek
  */
 @Stateless
@@ -41,7 +41,7 @@ public class SimpleBean {
 
     /**
      * Simply returns given String.
-     * 
+     *
      * @param message
      * @return
      * @see org.jboss.as.test.integration.ejb.container.interceptor.FlowTracker#echo(java.lang.String)

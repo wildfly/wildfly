@@ -49,7 +49,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
@@ -95,12 +94,12 @@ public class JpaDsRestartTestCase {
 
     private void toggleDataSource(boolean enable, boolean expectFailure) throws Exception {
         ModelNode op = new ModelNode();
-        op.get(OP).set(enable? "enable" : "disable");
+        op.get(OP).set(enable ? "enable" : "disable");
         op.get(OP_ADDR).add("subsystem", "datasources").add("data-source", "H2DS");
         if (!enable) {
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         }
-        ModelController controller = (ModelController)serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER).getValue();
+        ModelController controller = (ModelController) serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER).getValue();
 
         //System.out.println("toggle " + enable + ":" + op);
 

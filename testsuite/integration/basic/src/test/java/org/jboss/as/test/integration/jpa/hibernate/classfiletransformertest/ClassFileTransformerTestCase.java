@@ -56,10 +56,10 @@ public class ClassFileTransformerTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(ClassFileTransformerTestCase.class,
-            Employee.class,
-            SFSB1.class,
-            SFSBHibernateSession.class,
-            SFSBHibernateSessionFactory.class
+                Employee.class,
+                SFSB1.class,
+                SFSBHibernateSession.class,
+                SFSBHibernateSessionFactory.class
         );
         jar.addAsManifestResource(ClassFileTransformerTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;

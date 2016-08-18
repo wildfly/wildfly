@@ -26,7 +26,7 @@ import java.rmi.RemoteException;
 
 /**
  * StatefulSession30RemoteBusiness
- * 
+ *
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
 public interface StatefulSession30RemoteBusiness {

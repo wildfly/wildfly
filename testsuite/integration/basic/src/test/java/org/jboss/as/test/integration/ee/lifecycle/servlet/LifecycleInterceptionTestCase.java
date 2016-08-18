@@ -68,7 +68,7 @@ public abstract class LifecycleInterceptionTestCase {
 
     @ArquillianResource//(InfoServlet.class)
     URL infoContextPath;
-    
+
     protected String doGetRequest(String path) throws IOException, ExecutionException, TimeoutException {
         return HttpRequest.get(path, 10, TimeUnit.SECONDS);
     }

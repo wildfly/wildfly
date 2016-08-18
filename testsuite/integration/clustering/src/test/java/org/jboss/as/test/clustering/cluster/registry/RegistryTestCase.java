@@ -1,7 +1,8 @@
 package org.jboss.as.test.clustering.cluster.registry;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.PropertyPermission;
@@ -65,28 +66,28 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
             assertEquals(2, names.size());
             assertTrue(names.toString(), names.contains(NODE_1));
             assertTrue(names.toString(), names.contains(NODE_2));
-            
+
             undeploy(DEPLOYMENT_1);
-            
+
             names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_2));
-            
+
             deploy(DEPLOYMENT_1);
-            
+
             names = bean.getNodes();
             assertEquals(2, names.size());
             assertTrue(names.contains(NODE_1));
             assertTrue(names.contains(NODE_2));
-            
+
             stop(CONTAINER_2);
-            
+
             names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_1));
-            
+
             start(CONTAINER_2);
-            
+
             names = bean.getNodes();
             assertEquals(2, names.size());
             assertTrue(names.contains(NODE_1));

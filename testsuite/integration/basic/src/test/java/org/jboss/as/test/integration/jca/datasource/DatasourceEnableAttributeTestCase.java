@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.integration.jca.datasource;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.runner.RunWith;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Running tests from {@link DatasourceEnableAttributeTestBase} with standard non-XA datsource.
@@ -53,7 +54,7 @@ public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttribute
 
     @Override
     protected void removeDataSourceSilently(Datasource datasource) {
-        if(datasource == null || datasource.getName() == null) {
+        if (datasource == null || datasource.getName() == null) {
             return;
         }
 
@@ -69,8 +70,8 @@ public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttribute
     @Override
     protected ModelNode getDataSourceAddress(Datasource datasource) {
         ModelNode address = new ModelNode()
-             .add(SUBSYSTEM, "datasources")
-            .add("data-source", datasource.getName());
+                .add(SUBSYSTEM, "datasources")
+                .add("data-source", datasource.getName());
         address.protect();
         return address;
     }

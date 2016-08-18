@@ -8,6 +8,6 @@ import java.rmi.RemoteException;
  */
 public interface IIOPBasicStatefulHome extends EJBHome {
 
-    public IIOPBasicStatefulRemote create(int state) throws RemoteException;
+    IIOPBasicStatefulRemote create(int state) throws RemoteException;
 
 }

@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.localview;
 
 import java.io.Serializable;
-
 import javax.ejb.Stateless;
 
 /**

@@ -35,7 +35,7 @@ public class PreDestroyInterceptor {
     public static boolean preDestroyInvocationTargetNull = false;
     public static boolean postConstructInvocationTargetNull = false;
 
-    @PostConstruct    
+    @PostConstruct
     @SuppressWarnings("unused")
     private void postConstruct(InvocationContext ctx) throws Exception {
         if(ctx.getTarget() == null) {
@@ -45,7 +45,7 @@ public class PreDestroyInterceptor {
         ctx.proceed();
     }
 
-    @PreDestroy    
+    @PreDestroy
     @SuppressWarnings("unused")
     private void preDestroy(InvocationContext ctx) throws Exception {
         if(ctx.getTarget() == null) {

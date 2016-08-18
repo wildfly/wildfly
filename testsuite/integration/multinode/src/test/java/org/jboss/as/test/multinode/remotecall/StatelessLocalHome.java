@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.multinode.remotecall;
 
-import javax.ejb.*;
+import javax.ejb.EJBHome;
 
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface StatelessLocalHome extends EJBHome {
 
-    public StatelessLocal create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    StatelessLocal create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 }

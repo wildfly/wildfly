@@ -41,7 +41,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * The idea and the most part of the code taken from: 
+ * The idea and the most part of the code taken from:
  * http://management-platform.blogspot.cz/2012/07/co-located-management-client-for.html
  * The service loading problem seems to still exist: https://issues.jboss.org/browse/AS7-5172
  */

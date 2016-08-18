@@ -30,9 +30,9 @@ import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterProx
 import org.jboss.logging.Logger;
 
 /**
- * Base for session beans. 
+ * Base for session beans.
+ *
  * @author baranowb
- * 
  */
 //@DependsOn("CallCounterProxy")
 public abstract class BeanBase implements Trigger {

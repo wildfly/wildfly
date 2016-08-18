@@ -91,10 +91,8 @@ public class Player {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Player))
-            return false;
+        if (this == o) { return true; }
+        if (!(o instanceof Player)) { return false; }
 
         final Player player = (Player) o;
 

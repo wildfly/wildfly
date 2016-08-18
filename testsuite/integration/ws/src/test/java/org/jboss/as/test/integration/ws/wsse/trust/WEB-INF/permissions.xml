@@ -33,9 +33,9 @@
         <name>*</name>
         <actions>connect,resolve</actions>
     </permission>
-     <permission>
-         <class-name>java.io.FilePermission</class-name>
-         <name>&lt;&lt;ALL FILES&gt;&gt;</name>
-         <actions>read</actions>
-     </permission>
+    <permission>
+        <class-name>java.io.FilePermission</class-name>
+        <name>&lt;&lt;ALL FILES&gt;&gt;</name>
+        <actions>read</actions>
+    </permission>
 </permissions>

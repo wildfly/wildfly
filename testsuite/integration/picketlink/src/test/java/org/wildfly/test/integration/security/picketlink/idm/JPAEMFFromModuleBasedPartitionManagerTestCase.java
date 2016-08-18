@@ -95,7 +95,7 @@ public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasic
 
         private TestModule module;
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("jpa.emf.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 

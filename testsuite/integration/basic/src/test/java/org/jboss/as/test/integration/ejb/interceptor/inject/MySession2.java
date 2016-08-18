@@ -28,7 +28,6 @@ import javax.ejb.Remote;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  */
 @Remote
-public interface MySession2
-{
-   boolean doit();
+public interface MySession2 {
+    boolean doit();
 }

@@ -41,8 +41,7 @@ public class SFSB1 {
     @PreDestroy
     private void preDestroy() {
         preDestroyCalled = true;
-        if(shouldDenyDestruction)
-            throw new RuntimeException("Denying bean destruction");
+        if (shouldDenyDestruction) { throw new RuntimeException("Denying bean destruction"); }
     }
 
     // always throws a TransactionRequiredException

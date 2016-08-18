@@ -22,12 +22,10 @@
 package org.jboss.as.test.integration.ejb.remove.method;
 
 import java.rmi.RemoteException;
-
 import javax.ejb.EJBHome;
 
 /**
  * @author carlo
- * 
  */
 public interface Ejb21ViewHome extends EJBHome {
     Ejb21View create() throws RemoteException;

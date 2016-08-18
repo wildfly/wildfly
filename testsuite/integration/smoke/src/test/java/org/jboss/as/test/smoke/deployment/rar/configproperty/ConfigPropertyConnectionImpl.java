@@ -26,48 +26,50 @@ package org.jboss.as.test.smoke.deployment.rar.configproperty;
  *
  * @version $Revision: $
  */
-public class ConfigPropertyConnectionImpl implements ConfigPropertyConnection
-{
-   /** ManagedConnection */
-   private ConfigPropertyManagedConnection mc;
+public class ConfigPropertyConnectionImpl implements ConfigPropertyConnection {
+    /**
+     * ManagedConnection
+     */
+    private ConfigPropertyManagedConnection mc;
 
-   /** ManagedConnectionFactory */
-   private ConfigPropertyManagedConnectionFactory mcf;
+    /**
+     * ManagedConnectionFactory
+     */
+    private ConfigPropertyManagedConnectionFactory mcf;
 
-   /**
-    * Default constructor
-    * @param mc ConfigPropertyManagedConnection
-    * @param mcf ConfigPropertyManagedConnectionFactory
-    */
-   public ConfigPropertyConnectionImpl(ConfigPropertyManagedConnection mc, ConfigPropertyManagedConnectionFactory mcf)
-   {
-      this.mc = mc;
-      this.mcf = mcf;
-   }
+    /**
+     * Default constructor
+     *
+     * @param mc  ConfigPropertyManagedConnection
+     * @param mcf ConfigPropertyManagedConnectionFactory
+     */
+    public ConfigPropertyConnectionImpl(ConfigPropertyManagedConnection mc, ConfigPropertyManagedConnectionFactory mcf) {
+        this.mc = mc;
+        this.mcf = mcf;
+    }
 
-   /**
-    * Call getResourceAdapterProperty
-    * @return String
-    */
-   public String getResourceAdapterProperty()
-   {
-      return ((ConfigPropertyResourceAdapter)mcf.getResourceAdapter()).getProperty();
-   }
+    /**
+     * Call getResourceAdapterProperty
+     *
+     * @return String
+     */
+    public String getResourceAdapterProperty() {
+        return ((ConfigPropertyResourceAdapter) mcf.getResourceAdapter()).getProperty();
+    }
 
-   /**
-    * Call getManagedConnectionFactoryProperty
-    * @return String
-    */
-   public String getManagedConnectionFactoryProperty()
-   {
-      return mcf.getProperty();
-   }
+    /**
+     * Call getManagedConnectionFactoryProperty
+     *
+     * @return String
+     */
+    public String getManagedConnectionFactoryProperty() {
+        return mcf.getProperty();
+    }
 
-   /**
-    * Close
-    */
-   public void close()
-   {
-      mc.closeHandle(this);
-   }
+    /**
+     * Close
+     */
+    public void close() {
+        mc.closeHandle(this);
+    }
 }

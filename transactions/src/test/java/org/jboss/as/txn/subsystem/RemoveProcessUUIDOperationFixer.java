@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class RemoveProcessUUIDOperationFixer implements OperationFixer, Serializable {
     private static final long serialVersionUID = 1L;
-    static transient final RemoveProcessUUIDOperationFixer INSTANCE = new RemoveProcessUUIDOperationFixer();
+    static final transient RemoveProcessUUIDOperationFixer INSTANCE = new RemoveProcessUUIDOperationFixer();
 
     private RemoveProcessUUIDOperationFixer(){
     }

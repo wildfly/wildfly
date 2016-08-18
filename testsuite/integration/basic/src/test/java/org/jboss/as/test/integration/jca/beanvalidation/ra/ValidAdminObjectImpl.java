@@ -22,31 +22,38 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.io.Serializable;
-
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.Referenceable;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 
-import org.hibernate.validator.constraints.*;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Admin object implementation
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidAdminObjectImpl implements ValidAdminObjectInterface, ResourceAdapterAssociation, Referenceable, Serializable {
-    /** Serial version uid */
+    /**
+     * Serial version uid
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The resource adapter */
+    /**
+     * The resource adapter
+     */
     private ResourceAdapter ra;
 
-    /** Reference */
+    /**
+     * Reference
+     */
     private Reference reference;
 
-    /** property */
+    /**
+     * property
+     */
     @NotEmpty
     private String aoProperty;
 
@@ -59,7 +66,7 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Set property
-     * 
+     *
      * @param property The value
      */
     public void setAoProperty(String property) {
@@ -68,7 +75,7 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Get property
-     * 
+     *
      * @return The value
      */
     public String getAoProperty() {
@@ -77,7 +84,7 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Get the resource adapter
-     * 
+     *
      * @return The handle
      */
     public ResourceAdapter getResourceAdapter() {
@@ -86,7 +93,7 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Set the resource adapter
-     * 
+     *
      * @param ra The handle
      */
     public void setResourceAdapter(ResourceAdapter ra) {
@@ -95,9 +102,9 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Get the Reference instance.
-     * 
+     *
      * @return Reference instance
-     * @exception javax.naming.NamingException Thrown if a reference can't be obtained
+     * @throws javax.naming.NamingException Thrown if a reference can't be obtained
      */
     @Override
     public Reference getReference() throws NamingException {
@@ -106,7 +113,7 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Set the Reference instance.
-     * 
+     *
      * @param reference A Reference instance
      */
     @Override
@@ -116,40 +123,31 @@ public class ValidAdminObjectImpl implements ValidAdminObjectInterface, Resource
 
     /**
      * Returns a hash code value for the object.
-     * 
+     *
      * @return A hash code value for this object.
      */
     @Override
     public int hashCode() {
         int result = 77;
-        if (aoProperty != null)
-            result += 13 * result + 11 * aoProperty.hashCode();
-        else
-            result += 13 * result + 11;
+        if (aoProperty != null) { result += 13 * result + 11 * aoProperty.hashCode(); } else { result += 13 * result + 11; }
         return result;
     }
 
     /**
      * Indicates whether some other object is equal to this one.
-     * 
+     *
      * @param other The reference object with which to compare.
      * @return true if this object is the same as the obj argument, false otherwise.
      */
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof ValidAdminObjectImpl))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof ValidAdminObjectImpl)) { return false; }
         ValidAdminObjectImpl obj = (ValidAdminObjectImpl) other;
         boolean result = true;
         if (result) {
-            if (aoProperty == null)
-                result = obj.getAoProperty() == null;
-            else
-                result = aoProperty.equals(obj.getAoProperty());
+            if (aoProperty == null) { result = obj.getAoProperty() == null; } else { result = aoProperty.equals(obj.getAoProperty()); }
         }
         return result;
     }

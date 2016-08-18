@@ -41,7 +41,7 @@ import javax.transaction.UserTransaction;
 @Stateful
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc")
-        EntityManager em;
+    EntityManager em;
 
     @Resource
     SessionContext sessionContext;
@@ -73,9 +73,8 @@ public class SFSB1 {
             em.joinTransaction();
             em.persist(emp);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't start tx", e);
         }
 
         em.flush();         // should throw TransactionRequiredException
@@ -92,13 +91,11 @@ public class SFSB1 {
     public String queryEmployeeNameNoTX(int id) {
         Query q = em.createQuery("SELECT e.name FROM Employee e");
         try {
-            String name = (String)q.getSingleResult();
+            String name = (String) q.getSingleResult();
             return name;
-        }
-        catch (NoResultException expected) {
+        } catch (NoResultException expected) {
             return "success";
-        }
-        catch (Exception unexpected) {
+        } catch (Exception unexpected) {
             return unexpected.getMessage();
         }
 

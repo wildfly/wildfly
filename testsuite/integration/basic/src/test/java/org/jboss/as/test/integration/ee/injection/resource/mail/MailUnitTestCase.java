@@ -37,17 +37,17 @@ import org.junit.runner.RunWith;
 /**
  * Testing injection of mail service and its definition in xml file.
  * Part migration of tests from EJB testsuite (mail/Mail) [JIRA JBQA-5483].
- * 
+ *
  * @author Darran Lofthouse, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 public class MailUnitTestCase {
-    
+
     private static final Logger log = Logger.getLogger(MailUnitTestCase.class);
-    
+
     @ArquillianResource
     InitialContext ctx;
-    
+
     @Deployment
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "mail-injection-test.jar");
@@ -56,14 +56,13 @@ public class MailUnitTestCase {
         log.info(jar.toString(true));
         return jar;
     }
-    
+
     @Test
-    public void testMailInjection() throws Exception
-    {
-       StatelessMail bean = (StatelessMail) ctx.lookup("java:module/StatelessMailBean");
-       Assert.assertNotNull(bean);
-    
-       bean.testMail();
-       bean.testMailInjection();
+    public void testMailInjection() throws Exception {
+        StatelessMail bean = (StatelessMail) ctx.lookup("java:module/StatelessMailBean");
+        Assert.assertNotNull(bean);
+
+        bean.testMail();
+        bean.testMailInjection();
     }
 }

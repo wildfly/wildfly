@@ -23,18 +23,19 @@ package org.jboss.as.test.integration.ws.wsse;
 
 import javax.ejb.Stateless;
 import javax.jws.WebService;
+
 import org.jboss.ws.api.annotation.EndpointConfig;
 import org.jboss.ws.api.annotation.WebContext;
 
 @Stateless
 @WebService
-(
-   portName = "EJBEncryptSecurityServicePort",
-   serviceName = "EJBEncryptSecurityService",
-   wsdlLocation = "META-INF/wsdl/SecurityService.wsdl",
-   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
-   endpointInterface = "org.jboss.as.test.integration.ws.wsse.ServiceIface"
-)
+        (
+                portName = "EJBEncryptSecurityServicePort",
+                serviceName = "EJBEncryptSecurityService",
+                wsdlLocation = "META-INF/wsdl/SecurityService.wsdl",
+                targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
+                endpointInterface = "org.jboss.as.test.integration.ws.wsse.ServiceIface"
+        )
 @WebContext(
         urlPattern = "/EJBEncryptSecurityService"
 )

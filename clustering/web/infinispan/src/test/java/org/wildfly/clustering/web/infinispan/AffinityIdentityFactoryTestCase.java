@@ -41,6 +41,7 @@ import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
  * Unit test for {@link AffinityIdentifierFactory}
+ *
  * @author Paul Ferraro
  */
 public class AffinityIdentityFactoryTestCase {

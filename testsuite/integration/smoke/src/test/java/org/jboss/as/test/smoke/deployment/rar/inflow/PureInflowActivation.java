@@ -28,75 +28,79 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 /**
  * PureInflowActivation
  */
-public class PureInflowActivation
-{
-   /** The resource adapter */
-   private PureInflowResourceAdapter ra;
+public class PureInflowActivation {
+    /**
+     * The resource adapter
+     */
+    private PureInflowResourceAdapter ra;
 
-   /** Activation spec */
-   private PureInflowActivationSpec spec;
+    /**
+     * Activation spec
+     */
+    private PureInflowActivationSpec spec;
 
-   /** The message endpoint factory */
-   private MessageEndpointFactory endpointFactory;
+    /**
+     * The message endpoint factory
+     */
+    private MessageEndpointFactory endpointFactory;
 
-   /**
-    * Default constructor
-    * @exception ResourceException Thrown if an error occurs
-    */
-   public PureInflowActivation() throws ResourceException
-   {
-      this(null, null, null);
-   }
+    /**
+     * Default constructor
+     *
+     * @throws ResourceException Thrown if an error occurs
+     */
+    public PureInflowActivation() throws ResourceException {
+        this(null, null, null);
+    }
 
-   /**
-    * Constructor
-    * @param ra PureInflowResourceAdapter
-    * @param endpointFactory MessageEndpointFactory
-    * @param spec PureInflowActivationSpec
-    * @exception ResourceException Thrown if an error occurs
-    */
-   public PureInflowActivation(PureInflowResourceAdapter ra,
-                               MessageEndpointFactory endpointFactory,
-                               PureInflowActivationSpec spec)
-      throws ResourceException
-   {
-      this.ra = ra;
-      this.endpointFactory = endpointFactory;
-      this.spec = spec;
-   }
+    /**
+     * Constructor
+     *
+     * @param ra              PureInflowResourceAdapter
+     * @param endpointFactory MessageEndpointFactory
+     * @param spec            PureInflowActivationSpec
+     * @throws ResourceException Thrown if an error occurs
+     */
+    public PureInflowActivation(PureInflowResourceAdapter ra,
+                                MessageEndpointFactory endpointFactory,
+                                PureInflowActivationSpec spec)
+            throws ResourceException {
+        this.ra = ra;
+        this.endpointFactory = endpointFactory;
+        this.spec = spec;
+    }
 
-   /**
-    * Get activation spec class
-    * @return Activation spec
-    */
-   public PureInflowActivationSpec getActivationSpec()
-   {
-      return spec;
-   }
+    /**
+     * Get activation spec class
+     *
+     * @return Activation spec
+     */
+    public PureInflowActivationSpec getActivationSpec() {
+        return spec;
+    }
 
-   /**
-    * Get message endpoint factory
-    * @return Message endpoint factory
-    */
-   public MessageEndpointFactory getMessageEndpointFactory()
-   {
-      return endpointFactory;
-   }
+    /**
+     * Get message endpoint factory
+     *
+     * @return Message endpoint factory
+     */
+    public MessageEndpointFactory getMessageEndpointFactory() {
+        return endpointFactory;
+    }
 
-   /**
-    * Start the activation
-    * @throws ResourceException Thrown if an error occurs
-    */
-   public void start() throws ResourceException
-   {
+    /**
+     * Start the activation
+     *
+     * @throws ResourceException Thrown if an error occurs
+     */
+    public void start() throws ResourceException {
 
-   }
+    }
 
-   /**
-    * Stop the activation
-    */
-   public void stop()
-   {
+    /**
+     * Stop the activation
+     */
+    public void stop() {
 
-   }
+    }
 }

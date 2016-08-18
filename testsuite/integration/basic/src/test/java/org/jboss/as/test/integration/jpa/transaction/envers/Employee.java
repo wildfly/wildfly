@@ -29,7 +29,7 @@ import org.hibernate.envers.Audited;
 
 /**
  * Employee entity class
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @Entity

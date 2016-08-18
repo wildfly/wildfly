@@ -8,9 +8,9 @@ import javax.ejb.Local;
 @Local
 public interface TransactionLocal {
 
-    public int transactionStatus();
+    int transactionStatus();
 
 
-    public int transactionStatus2();
+    int transactionStatus2();
 
 }

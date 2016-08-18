@@ -19,7 +19,6 @@ package org.jboss.as.ee.subsystem;
 import java.io.IOException;
 
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;

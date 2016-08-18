@@ -38,7 +38,7 @@ public class AsyncResource {
     @GET
     @Path("basic")
     @Produces("text/plain")
-    public void getBasic(final @Suspend(10000) AsynchronousResponse response) throws Exception {
+    public void getBasic(@Suspend(10000) final AsynchronousResponse response) throws Exception {
         Thread t = new Thread() {
             @Override
             public void run() {

@@ -38,7 +38,6 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**

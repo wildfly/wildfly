@@ -200,11 +200,11 @@ public class SubDeploymentAvailableInClassPathTestCase {
     }
 
     /**
-     * Tests that for a .ear like this one: 
+     * Tests that for a .ear like this one:
      * myapp.ear
      * |
      * |--- web.war
-     * | 
+     * |
      * |--- ejb.jar
      * <p/>
      * <p/>

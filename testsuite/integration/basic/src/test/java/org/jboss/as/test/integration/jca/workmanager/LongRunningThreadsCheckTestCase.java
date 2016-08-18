@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.integration.jca.workmanager;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -28,11 +36,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
-import org.jboss.as.test.integration.jca.rar.*;
+import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
+import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter3;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -44,9 +55,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * JBQA-6454 Test case: long running threads pool and short running threads pool

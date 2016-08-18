@@ -32,7 +32,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,8 +51,8 @@ public class SerializationTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(SerializationTestCase.class,
-            Employee.class,
-            SFSB1.class
+                Employee.class,
+                SFSB1.class
         );
         jar.addAsManifestResource(SerializationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
@@ -76,6 +75,6 @@ public class SerializationTestCase {
         sfsb1.createEmployeeNoTx("name", "address", 100);
         byte[] serialized = sfsb1.getSerializedXPC();
 
-        assertNotNull("could serialize JPA extended persistence context",serialized);
+        assertNotNull("could serialize JPA extended persistence context", serialized);
     }
 }

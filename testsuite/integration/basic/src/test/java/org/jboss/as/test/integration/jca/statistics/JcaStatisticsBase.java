@@ -21,18 +21,17 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.*;
 
 /**
  * Base class for JCA statistics tests
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- *
  */
 public abstract class JcaStatisticsBase extends JcaMgmtBase {
 
@@ -43,12 +42,12 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
      * Default test for pool statistics: flush pool, then test connection
      *
      * @param connectionNode - where to test
-     * @param statName - name of statistics parameter
+     * @param statName       - name of statistics parameter
      * @throws Exception
      */
     protected void testStatistics(ModelNode connectionNode) throws Exception {
         ModelNode statisticsNode = translateFromConnectionToStatistics(connectionNode);
-        writeAttribute(statisticsNode,"statistics-enabled","true");
+        writeAttribute(statisticsNode, "statistics-enabled", "true");
 
         executeOnNode(connectionNode, "flush-all-connection-in-pool");
         assertStatisticsShouldBeSet(statisticsNode, false);
@@ -61,7 +60,7 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
      * Test for pool statistics: flush pool, then test connection twice
      *
      * @param connectionNode - where to test
-     * @param statName - name of statistics parameter
+     * @param statName       - name of statistics parameter
      * @throws Exception
      */
     protected void testStatisticsDouble(ModelNode connectionNode) throws Exception {
@@ -93,7 +92,7 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
      * Checks if statistics properties set correctly
      *
      * @param node,on which to test
-     * @param yes - should be properties set or not
+     * @param yes     - should be properties set or not
      * @throws Exception
      */
     protected void assertStatisticsShouldBeSet(ModelNode node, boolean yes) throws Exception {
@@ -105,7 +104,7 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
         assertTrue(avail > 0);
         if (yes) {
             assertTrue("active==" + active, active > 0);
-            assertTrue("maxused==" + maxUsed,maxUsed > 0);
+            assertTrue("maxused==" + maxUsed, maxUsed > 0);
         } else {
             assertEquals(active, 0);
             assertEquals(maxUsed, 0);

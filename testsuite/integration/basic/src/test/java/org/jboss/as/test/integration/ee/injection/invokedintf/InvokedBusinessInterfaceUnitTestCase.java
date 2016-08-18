@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 /**
  * Test to see if the proper invoked business interface is returned. Part of migration tests from EJB Testsuite (ejbthree-1060)
  * to AS7 [JIRA JBQA-5483].
- * 
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

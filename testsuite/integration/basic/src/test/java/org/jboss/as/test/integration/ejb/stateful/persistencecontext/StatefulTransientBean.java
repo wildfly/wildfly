@@ -38,7 +38,7 @@ import org.jboss.ejb3.annotation.Cache;
 @Cache("passivating")
 public class StatefulTransientBean implements Serializable, StatefulRemote {
     private static final long serialVersionUID = 1L;
-    
+
     @Transient
     @PersistenceContext(type = PersistenceContextType.EXTENDED)
     EntityManager manager;

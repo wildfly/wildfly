@@ -29,5 +29,5 @@ import org.jboss.ejb3.annotation.TransactionTimeout;
 @TransactionTimeout(value=8000, unit=TimeUnit.MILLISECONDS)
 public interface TimeoutLocalView {
 
-    public int getLocalViewTimeout();
+    int getLocalViewTimeout();
 }

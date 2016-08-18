@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jca.basic;
 
 import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -52,7 +51,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Basic test to check if we can activate more than one IDed RA. (there are similar tests but with exploded module)
- * 
+ *
  * @author baranowb
  */
 @RunWith(Arquillian.class)
@@ -140,7 +139,7 @@ public class BasicDoubleDeployment16TestCase extends ContainerResourceMgmtTestBa
 
     /**
      * Test configuration
-     * 
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test

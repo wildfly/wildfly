@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -59,11 +58,11 @@ import org.junit.runner.RunWith;
 
 /**
  * A JUnit 4 testcase with regression tests for JAAS identity caching issues.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ JAASIdentityCachingTestCase.SecurityDomainsSetup.class })
+@ServerSetup({JAASIdentityCachingTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 public class JAASIdentityCachingTestCase {
     private static Logger LOGGER = Logger.getLogger(JAASIdentityCachingTestCase.class);
@@ -105,7 +104,7 @@ public class JAASIdentityCachingTestCase {
     /**
      * Test how many times is called login() method of {@link CustomLoginModule} and if the response from HelloBean is the
      * expected one.
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -138,7 +137,7 @@ public class JAASIdentityCachingTestCase {
             response = httpClient.execute(getGreeting);
             assertEquals("Hello Caller!", EntityUtils.toString(response.getEntity()));
 
-            //There should be only one call to login() method 
+            //There should be only one call to login() method
             response = httpClient.execute(getCounter);
             assertEquals("1", EntityUtils.toString(response.getEntity()));
         } finally {
@@ -150,7 +149,7 @@ public class JAASIdentityCachingTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -160,12 +159,12 @@ public class JAASIdentityCachingTestCase {
          */
         @Override
         protected SecurityDomain[] getSecurityDomains() {
-            return new SecurityDomain[] { new SecurityDomain.Builder()
+            return new SecurityDomain[]{new SecurityDomain.Builder()
                     .name(TEST_NAME)
                     .cacheType("default")
                     .loginModules(
                             new SecurityModule.Builder().name(CustomLoginModule.class.getName()).flag(Constants.REQUIRED)
-                                    .putOption(CustomLoginModule.MODULE_OPTION_ROLE, HelloBean.ROLE_ALLOWED).build()).build() };
+                                    .putOption(CustomLoginModule.MODULE_OPTION_ROLE, HelloBean.ROLE_ALLOWED).build()).build()};
         }
     }
 }

@@ -26,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -38,6 +37,7 @@ import javax.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.junit.Assert;
 
@@ -51,7 +51,7 @@ import org.junit.Assert;
 @Local(SecuredStatelessLocal.class)
 @Asynchronous
 public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStatelessLocal {
-    
+
     public static volatile CountDownLatch startLatch = new CountDownLatch(1);
 
     public static void reset() {
@@ -61,7 +61,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
     @PermitAll
     public Future<Boolean> uncheckedMethod() throws InterruptedException {
         try {
-            if(!startLatch.await(5, TimeUnit.SECONDS)) {
+            if (!startLatch.await(5, TimeUnit.SECONDS)) {
                 throw new RuntimeException("Invocation was not asynchronous");
             }
         } catch (InterruptedException e) {
@@ -73,7 +73,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
     @DenyAll
     public Future<Boolean> excludedMethod() throws InterruptedException {
         try {
-            if(!startLatch.await(5, TimeUnit.SECONDS)) {
+            if (!startLatch.await(5, TimeUnit.SECONDS)) {
                 throw new RuntimeException("Invocation was not asynchronous");
             }
         } catch (InterruptedException e) {
@@ -83,15 +83,15 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
     }
 
     @RolesAllowed("allowed")
-    public Future<Boolean> method() throws InterruptedException, ExecutionException  {
+    public Future<Boolean> method() throws InterruptedException, ExecutionException {
         try {
-            if(!startLatch.await(5, TimeUnit.SECONDS)) {
+            if (!startLatch.await(5, TimeUnit.SECONDS)) {
                 throw new RuntimeException("Invocation was not asynchronous");
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        
+
         SecuredStatelessLocal localSearchedBean = null;
         try {
             Context context = new InitialContext();
@@ -100,7 +100,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
-        
+
         final CountDownLatch latchLocal = new CountDownLatch(1);
         final Future<Boolean> future = localSearchedBean.localSecured(latchLocal);
         latchLocal.countDown();
@@ -109,7 +109,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
 
         return new AsyncResult<Boolean>(true);
     }
-    
+
     @RolesAllowed("allowed")
     public Future<Boolean> localSecured(CountDownLatch latchLocal) throws InterruptedException {
         latchLocal.await(5, TimeUnit.SECONDS);

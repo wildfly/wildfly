@@ -27,7 +27,7 @@ import javax.interceptor.InvocationContext;
 import org.junit.Assert;
 
 /**
- * 
+ *
  * @author Stuart Douglas
  */
 public class InterceptorChild extends InterceptorParent {

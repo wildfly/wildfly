@@ -21,21 +21,22 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.dmr.ModelNode;
 import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Data source statistics testCase
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -72,8 +73,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
         operation.get("jndi-name").set(jndiName);
         operation.get("driver-name").set("h2");
         operation.get("enabled").set("false");
-        if (!xa)
-            operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        if (!xa) { operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"); }
         operation.get("min-pool-size").set(minPoolSize);
         operation.get("max-pool-size").set(maxPoolSize);
         operation.get("pool-prefill").set(prefill);
@@ -182,7 +182,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
     @Override
     public ModelNode translateFromConnectionToStatistics(ModelNode connectionNode) {
         ModelNode statNode = connectionNode.clone();
-        statNode.add("statistics","pool");
+        statNode.add("statistics", "pool");
         return statNode;
     }
 }

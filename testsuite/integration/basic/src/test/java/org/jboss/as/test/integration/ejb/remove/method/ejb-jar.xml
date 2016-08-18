@@ -28,7 +28,7 @@
         <session>
             <ejb-name>Ejb21ViewDDBean</ejb-name>
             <home>org.jboss.as.test.integration.ejb.remove.method.Ejb21ViewHome</home>
-            <ejb-class> org.jboss.as.test.integration.ejb.remove.method.Ejb21ViewDDBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.remove.method.Ejb21ViewDDBean</ejb-class>
             <session-type>Stateful</session-type>
             <transaction-type>Container</transaction-type>
         </session>

@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Simple interceptor, which throws an {@link IllegalArgumentException}.
- * 
+ *
  * @author Josef Cacek
  */
 public class FailingContainerInterceptor {

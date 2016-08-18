@@ -24,8 +24,8 @@ package org.jboss.as.test.integration.jaxrs.provider;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 import java.util.Currency;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 /**
  * A JUnit 4 test for testing deployment multiple JAX-RS providers from different modules. It's mainly a regression test for
  * JBPAPP-9963 issue.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -58,9 +58,10 @@ public class CustomProvidersTestCase {
     private static final String WEBAPP_TEST_CONVERTER = "test-converter";
 
     // Public methods --------------------------------------------------------
+
     /**
      * Creates {@value #WEBAPP_TEST_EXCEPTION_MAPPER} web application.
-     * 
+     *
      * @return
      */
     @Deployment(name = WEBAPP_TEST_EXCEPTION_MAPPER)
@@ -73,7 +74,7 @@ public class CustomProvidersTestCase {
 
     /**
      * Creates {@value #WEBAPP_TEST_CONVERTER} web application.
-     * 
+     *
      * @return
      */
     @Deployment(name = WEBAPP_TEST_CONVERTER)
@@ -86,7 +87,7 @@ public class CustomProvidersTestCase {
 
     /**
      * Test JAX-RS providers deployment, when 2 web applications are used.
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -99,7 +100,7 @@ public class CustomProvidersTestCase {
 
         final String converterPath = webAppURL.toExternalForm().replace(WEBAPP_TEST_EXCEPTION_MAPPER, WEBAPP_TEST_CONVERTER)
                 + CurrencyConverterProvider.PATH_CONVERTER.substring(1).replace(
-                        "{" + CurrencyConverterProvider.PARAM_CURRENCY + "}", "USD");
+                "{" + CurrencyConverterProvider.PARAM_CURRENCY + "}", "USD");
         LOGGER.info("Requested path: " + converterPath);
         assertEquals(Currency.getInstance("USD").getSymbol(), HttpRequest.get(converterPath, 10, TimeUnit.SECONDS));
     }

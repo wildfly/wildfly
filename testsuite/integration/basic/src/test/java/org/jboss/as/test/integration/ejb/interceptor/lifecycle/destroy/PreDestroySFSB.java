@@ -52,7 +52,7 @@ public class PreDestroySFSB {
         postConstructCalled = true;
     }
 
-    @PreDestroy    
+    @PreDestroy
     @SuppressWarnings("unused")
     private void preDestroy() {
         preDestroyCalled = true;

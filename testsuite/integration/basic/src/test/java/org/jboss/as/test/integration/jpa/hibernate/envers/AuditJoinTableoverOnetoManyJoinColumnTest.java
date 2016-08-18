@@ -22,19 +22,14 @@
 package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import java.util.List;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.jpa.hibernate.envers.Customer;
-import org.jboss.as.test.integration.jpa.hibernate.envers.Phone;
-import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBAudit;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -43,7 +38,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test @AuditJoinTable over Uni-directional One-to-Many Relationship
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -117,10 +112,8 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
 
             Assert.assertEquals("MADHUMITA", rev.getFirstname());
 
-            if (counter == 1)
-                Assert.assertEquals("SADHUKHAN", rev.getSurname());
-            if (counter == 2)
-                Assert.assertEquals("Mondal", rev.getSurname());
+            if (counter == 1) { Assert.assertEquals("SADHUKHAN", rev.getSurname()); }
+            if (counter == 2) { Assert.assertEquals("Mondal", rev.getSurname()); }
 
         }
 

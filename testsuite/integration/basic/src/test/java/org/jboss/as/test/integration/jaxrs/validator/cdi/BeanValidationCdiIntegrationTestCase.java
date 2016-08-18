@@ -63,16 +63,16 @@ public class BeanValidationCdiIntegrationTestCase {
     @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war")
-            .addPackage(HttpRequest.class.getPackage())
-            .addClasses(
-                BeanValidationCdiIntegrationTestCase.class,
-                OrderModel.class,
-                OrderResource.class,
-                CustomMax.class,
-                CustomMaxValidator.class,
-                MaximumValueProvider.class
-            )
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addPackage(HttpRequest.class.getPackage())
+                .addClasses(
+                        BeanValidationCdiIntegrationTestCase.class,
+                        OrderModel.class,
+                        OrderResource.class,
+                        CustomMax.class,
+                        CustomMaxValidator.class,
+                        MaximumValueProvider.class
+                )
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @ArquillianResource

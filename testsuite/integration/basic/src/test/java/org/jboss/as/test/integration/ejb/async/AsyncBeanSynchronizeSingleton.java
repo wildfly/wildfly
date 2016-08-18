@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
@@ -42,21 +41,21 @@ public class AsyncBeanSynchronizeSingleton implements AsyncBeanSynchronizeSingle
         latch = new CountDownLatch(1);
         latch2 = new CountDownLatch(1);
     }
-    
+
     public void latchCountDown() {
         latch.countDown();
     }
-    
+
     public void latch2CountDown() {
         latch2.countDown();
     }
 
     public void latchAwaitSeconds(int sec) throws InterruptedException {
-        if(!latch.await(sec, TimeUnit.SECONDS)) {
+        if (!latch.await(sec, TimeUnit.SECONDS)) {
             throw new RuntimeException("Await failed");
         }
     }
-    
+
     public void latch2AwaitSeconds(int sec) throws InterruptedException {
         latch2.await(sec, TimeUnit.SECONDS);
     }

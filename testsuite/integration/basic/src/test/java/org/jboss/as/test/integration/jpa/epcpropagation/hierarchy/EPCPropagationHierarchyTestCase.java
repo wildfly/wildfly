@@ -29,16 +29,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * AS7-1121 Tests that JPA interceptors are correctly registered if injection is done into the superclass of a SFSB
- *
+ * <p>
  * TODO: AS7-1120 Also tests that persistence context inheritance (JPA 7.6.2.1) works correctly when injecting one SFSB into another directly
- *
  *
  * @author Stuart Douglas
  */

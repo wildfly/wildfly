@@ -48,7 +48,6 @@ import org.junit.runner.RunWith;
  * is using EntityManager.
  * AS7-6586
  *
- *
  * @author Scott Marlow
  */
 @Ignore // WFLY-5319 is for fixing this test (see failure https://gist.github.com/scottmarlow/6409290362f35f2d1320)
@@ -61,10 +60,10 @@ public class TxTimeoutTestCase {
     public static Archive<?> deploy() {
         JavaArchive persistenceProvider = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         persistenceProvider.addClasses(
-                    TestEntityManagerFactory.class,
-                    TestEntityManager.class,
-                    TestPersistenceProvider.class
-                );
+                TestEntityManagerFactory.class,
+                TestEntityManager.class,
+                TestPersistenceProvider.class
+        );
 
         // META-INF/services/javax.persistence.spi.PersistenceProvider
         persistenceProvider.addAsResource(new StringAsset("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.TestPersistenceProvider"),
@@ -93,12 +92,12 @@ public class TxTimeoutTestCase {
     private static StringAsset emptyEjbJar() {
         return new StringAsset(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
-                "         version=\"3.0\">\n" +
-                "   \n" +
-                "</ejb-jar>");
+                        "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
+                        "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
+                        "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
+                        "         version=\"3.0\">\n" +
+                        "   \n" +
+                        "</ejb-jar>");
     }
 
     @ArquillianResource
@@ -155,7 +154,7 @@ public class TxTimeoutTestCase {
     /**
      * Ensures that the entity manager is not closed by the reaper thread.
      * The transaction times out for this test, but the EntityManager.close should be ignored from the reaper thread.
-     *
+     * <p>
      * Ignoring this test, since it will be faster to only run test_negativeTxTimeoutVerifyReaperThreadCanceledTxTest,
      * which has the same test actions (with the addition of the tx reaper thread test)
      *
@@ -196,7 +195,7 @@ public class TxTimeoutTestCase {
             System.out.println("ignoring the " + e.getMessage());
         }
         assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
-        assertTrue("transaction was canceled by reaper thread", sfsb1.isAfterCompletionCalledByTMTimeoutThread());
+        assertTrue("transaction was canceled by reaper thread", SFSB1.isAfterCompletionCalledByTMTimeoutThread());
     }
 
 }

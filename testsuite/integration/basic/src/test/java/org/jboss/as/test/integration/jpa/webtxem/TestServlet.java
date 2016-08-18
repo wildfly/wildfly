@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.webtxem;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -38,13 +37,13 @@ import javax.transaction.UserTransaction;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
 
 /**
-* Test servlet used by {@link WebJPATestCase}. Entity {@link Flight} is read or written, type of operation depends on
-* parameter: mode=write or mode=read.
-*
-* @author Zbyněk Roubalík
-*/
+ * Test servlet used by {@link WebJPATestCase}. Entity {@link Flight} is read or written, type of operation depends on
+ * parameter: mode=write or mode=read.
+ *
+ * @author Zbyněk Roubalík
+ */
 
-@WebServlet(name = "TestServlet", urlPatterns = { "/test" })
+@WebServlet(name = "TestServlet", urlPatterns = {"/test"})
 public class TestServlet extends HttpServlet {
 
     @PersistenceContext(unitName = "web_jpa_pc")
@@ -71,7 +70,7 @@ public class TestServlet extends HttpServlet {
 
                 } else if (mode.equals("read")) {
 
-                    Flight f = (Flight) em.find(Flight.class, new Long(1));
+                    Flight f = em.find(Flight.class, new Long(1));
                     resp.setContentType("text/plain");
                     PrintWriter out = resp.getWriter();
                     out.print(f.getName());

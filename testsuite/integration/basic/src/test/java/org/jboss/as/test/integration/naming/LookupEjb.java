@@ -1,9 +1,9 @@
 package org.jboss.as.test.integration.naming;
 
-import com.sun.jndi.ldap.LdapCtx;
-
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
+
+import com.sun.jndi.ldap.LdapCtx;
 
 /**
  * @author Stuart Douglas

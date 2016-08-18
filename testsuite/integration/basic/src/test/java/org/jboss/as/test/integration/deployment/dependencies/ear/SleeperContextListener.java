@@ -28,7 +28,7 @@ import org.jboss.logging.Logger;
 
 /**
  * A lifecycle hook for the test web-app.
- * 
+ *
  * @author Josef Cacek
  */
 public class SleeperContextListener implements ServletContextListener {
@@ -38,7 +38,6 @@ public class SleeperContextListener implements ServletContextListener {
     // Public methods --------------------------------------------------------
 
     /**
-     * 
      * @param arg0
      * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
      */
@@ -47,7 +46,6 @@ public class SleeperContextListener implements ServletContextListener {
     }
 
     /**
-     * 
      * @param arg0
      * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
      */

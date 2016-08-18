@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.ejb.mdb;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jms.Destination;

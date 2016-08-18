@@ -23,8 +23,6 @@ package org.jboss.as.test.integration.jca.deployment;
 
 import javax.ejb.Stateless;
 import javax.naming.InitialContext;
-import javax.resource.AdministeredObjectDefinition;
-import javax.resource.AdministeredObjectDefinitions;
 import javax.resource.ConnectionFactoryDefinition;
 import javax.resource.ConnectionFactoryDefinitions;
 
@@ -33,21 +31,21 @@ import javax.resource.ConnectionFactoryDefinitions;
  */
 
 @ConnectionFactoryDefinition(interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
-                             name = "java:app/rardeployment/AppCF",
-                             resourceAdapter = "eis.rar")
+        name = "java:app/rardeployment/AppCF",
+        resourceAdapter = "eis.rar")
 @ConnectionFactoryDefinitions({
-    @ConnectionFactoryDefinition(
-        interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
-        name = "java:comp/rardeployment/CompCF",
-        resourceAdapter = "eis"),
-    @ConnectionFactoryDefinition(
-        interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
-        name = "java:module/rardeployment/ModuleCF",
-        resourceAdapter = "eis.rar"),
-    @ConnectionFactoryDefinition(
-        interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
-        name = "java:global/rardeployment/GlobalCF",
-        resourceAdapter = "eis")
+        @ConnectionFactoryDefinition(
+                interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
+                name = "java:comp/rardeployment/CompCF",
+                resourceAdapter = "eis"),
+        @ConnectionFactoryDefinition(
+                interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
+                name = "java:module/rardeployment/ModuleCF",
+                resourceAdapter = "eis.rar"),
+        @ConnectionFactoryDefinition(
+                interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
+                name = "java:global/rardeployment/GlobalCF",
+                resourceAdapter = "eis")
 })
 @Stateless
 public class TestStatelessEjb implements ITestStatelessEjb {
@@ -58,13 +56,9 @@ public class TestStatelessEjb implements ITestStatelessEjb {
         try {
             InitialContext ctx = new InitialContext();
             Object obj = ctx.lookup(jndiName);
-            if (obj == null) {
-                rval = false;
-            } else {
-                rval = true;
-            }
+            rval = obj != null;
         } catch (Exception e) {
-            debug("Fail to access connector resource: "+jndiName);
+            debug("Fail to access connector resource: " + jndiName);
             e.printStackTrace();
         }
 

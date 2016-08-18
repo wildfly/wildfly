@@ -32,7 +32,7 @@ import javax.persistence.Id;
  * @author Scott Marlow
  */
 @Entity
-@EntityListeners({ MyListener.class })
+@EntityListeners({MyListener.class})
 public class Employee {
     @Id
     private int id;
@@ -67,6 +67,6 @@ public class Employee {
     }
 
     public String toString() {
-        return "employee " + name +", " + address + ", #" + id;
+        return "employee " + name + ", " + address + ", #" + id;
     }
 }

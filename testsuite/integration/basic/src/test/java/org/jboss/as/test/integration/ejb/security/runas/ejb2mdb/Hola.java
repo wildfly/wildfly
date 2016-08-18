@@ -26,5 +26,5 @@ package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
  * @author Ondrej Chaloupka
  */
 public interface Hola {
-    public String sayHola();
+    String sayHola();
 }

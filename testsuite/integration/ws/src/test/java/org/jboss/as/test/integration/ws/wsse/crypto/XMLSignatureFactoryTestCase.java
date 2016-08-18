@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 
 /**
  * A testcase for verifying that XMLSignatureFactory can be properly created
- * 
+ *
  * @author alessio.soldano@jboss.com
  */
 @RunWith(Arquillian.class)
@@ -52,7 +52,7 @@ public class XMLSignatureFactoryTestCase {
     private static Logger log = Logger.getLogger(XMLSignatureFactoryTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
-    
+
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "crypto.war").addClasses(TestServlet.class);

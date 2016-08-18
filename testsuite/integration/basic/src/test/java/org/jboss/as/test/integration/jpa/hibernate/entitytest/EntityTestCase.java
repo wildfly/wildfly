@@ -22,8 +22,11 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.entitytest;
 
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Set;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -38,19 +41,14 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Hibernate entity tests (based on the EAP 5 test), using {@link EntityTest} bean. Tests relations between entities,
  * loading entities and named queries.
- *
+ * <p>
  * Note that this test uses an extended persistence context, so that the Hibernate session will stay open long enough
  * to complete each test.  A transaction scoped entity manager would be closed after each JTA transaction completes.
  *
@@ -81,7 +79,6 @@ public class EntityTestCase {
         jar.addAsManifestResource(EntityTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
-
 
 
     @Test

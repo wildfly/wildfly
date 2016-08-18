@@ -31,24 +31,36 @@ import org.jboss.shrinkwrap.api.container.ResourceContainer;
 
 /**
  * Constants and helper methods for {@link JBossPDP} and XACMLAuthorizationModule tests.
- * 
+ *
  * @author Josef Cacek
  */
 public abstract class XACMLTestUtils {
 
     private static Logger LOGGER = Logger.getLogger(XACMLTestUtils.class);
 
-    /** The TESTOBJECTS_REQUESTS */
+    /**
+     * The TESTOBJECTS_REQUESTS
+     */
     public static final String TESTOBJECTS_REQUESTS = "testobjects/requests";
-    /** The TESTOBJECTS_POLICIES */
+    /**
+     * The TESTOBJECTS_POLICIES
+     */
     public static final String TESTOBJECTS_POLICIES = "testobjects/policies";
-    /** The TESTOBJECTS_CONFIG */
+    /**
+     * The TESTOBJECTS_CONFIG
+     */
     public static final String TESTOBJECTS_CONFIG = "testobjects/config";
-    /** The property name to replace in the Medical XACML request template. */
+    /**
+     * The property name to replace in the Medical XACML request template.
+     */
     public static final String SUBST_SUBJECT_ID = "subjectId";
-    /** The MED_EXAMPLE_POLICY_SET */
+    /**
+     * The MED_EXAMPLE_POLICY_SET
+     */
     public static final String MED_EXAMPLE_POLICY_SET = "med-example-policySet.xml";
-    /** The MED_EXAMPLE_POLICY */
+    /**
+     * The MED_EXAMPLE_POLICY
+     */
     public static final String MED_EXAMPLE_POLICY_SET2 = "med-example-policySet2.xml";
 
     // Protected methods -----------------------------------------------------
@@ -56,28 +68,28 @@ public abstract class XACMLTestUtils {
     /**
      * Adds jboss-deployment-structure.xml configuration file which enables "org.jboss.security.xacml" module to the given
      * archive.
-     * 
+     *
      * @param mc
      */
     protected static <T extends Archive<T>> void addJBossDeploymentStructureToArchive(final ManifestContainer<T> mc) {
         LOGGER.debug("Adding jboss-deployment-structure.xml to the Archive");
         mc.addAsManifestResource(new StringAsset("<jboss-deployment-structure><deployment><dependencies>" //
-                + "<module name='org.jboss.security.xacml'/>" //
-                + "<module name='org.apache.commons.lang'/>" //
-                + "<module name='org.apache.commons.io'/>" //
-                + "</dependencies></deployment></jboss-deployment-structure>"), //
+                        + "<module name='org.jboss.security.xacml'/>" //
+                        + "<module name='org.apache.commons.lang'/>" //
+                        + "<module name='org.apache.commons.io'/>" //
+                        + "</dependencies></deployment></jboss-deployment-structure>"), //
                 "jboss-deployment-structure.xml");
     }
 
     /**
      * Adds XACML policies from Oasis XACML Interoperability use-cases to the given archive.
-     * 
+     *
      * @param rc
      */
     protected static <T extends Archive<T>> void addXACMLPoliciesToArchive(final ResourceContainer<T> rc) {
         LOGGER.debug("Adding files with XACML policies to the Archive");
-        rc.addAsResources(JBossPDPServletInitializationTestCase.class.getPackage(),// 
-                TESTOBJECTS_POLICIES + "/xacml-policySet.xml", // 
+        rc.addAsResources(JBossPDPServletInitializationTestCase.class.getPackage(),//
+                TESTOBJECTS_POLICIES + "/xacml-policySet.xml", //
                 TESTOBJECTS_POLICIES + "/xacml-policy2.xml",//
                 TESTOBJECTS_POLICIES + "/xacml-policy3.xml", //
                 TESTOBJECTS_POLICIES + "/xacml-policy4.xml", //
@@ -89,7 +101,7 @@ public abstract class XACMLTestUtils {
 
     /**
      * Adds common classes to the given archive.
-     * 
+     *
      * @param cc
      */
     protected static <T extends Archive<T>> void addCommonClassesToArchive(final ClassContainer<T> cc) {

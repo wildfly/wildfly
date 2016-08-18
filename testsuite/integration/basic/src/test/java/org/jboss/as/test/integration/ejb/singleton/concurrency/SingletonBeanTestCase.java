@@ -35,7 +35,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJB;
 
@@ -130,7 +129,7 @@ public class SingletonBeanTestCase {
 
     @EJB(mappedName = "java:global/ejb3-singleton-bean-example/LongWritesSingletonBean!org.jboss.as.test.integration.ejb.singleton.concurrency.LongWritesSingletonBean")
     private LongWritesSingletonBean longWritesSingletonBean;
-    
+
     @EJB(mappedName = "java:global/ejb3-singleton-bean-example/ReadOnlySingletonBeanDescriptor!org.jboss.as.test.integration.ejb.singleton.concurrency.ReadOnlySingletonBeanDescriptor")
     private ReadOnlySingletonBeanDescriptor readOnlySingletonBeanDescriptor;
 
@@ -157,7 +156,7 @@ public class SingletonBeanTestCase {
     public void testReadOnlySingletonDescriptorWithExpression() throws Exception {
         testReadOnlySingleton(readOnlySingletonBeanDescriptorWithExpression);
     }
-    
+
     public void testReadOnlySingleton(ReadOnlySingleton readOnlySingleton) throws Exception {
         final int NUM_THREADS = 10;
         ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
@@ -171,7 +170,7 @@ public class SingletonBeanTestCase {
             Assert.assertEquals("Unexpected value from singleton bean", String.valueOf(i), result);
         }
     }
-    
+
     /**
      * Tests that invocation on a singleton bean method with write lock results in ConcurrentAccessTimeoutException
      * for subsequent invocations, if the previous invocation(s) hasn't yet completed.

@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.jpa.cfgfile;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -60,20 +59,20 @@ public class CfgFileTestCase {
                     "    <property name=\"hibernate.hbm2ddl.auto\">create-drop</property>\n" +
                     "  </session-factory>\n" +
                     "</hibernate-configuration>";
-    
+
 
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(CfgFileTestCase.class,
-            Employee.class,
-            SFSB1.class
+                Employee.class,
+                SFSB1.class
         );
         jar.addAsManifestResource(CfgFileTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsResource(new StringAsset(hibernate_cfg_xml), "hibernate.cfg.xml");
-        return jar; 
-    
+        return jar;
+
     }
 
     @ArquillianResource
@@ -93,7 +92,7 @@ public class CfgFileTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);
     }
-    
+
     @Test
     public void testProperties() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
@@ -103,5 +102,5 @@ public class CfgFileTestCase {
         assertEquals("Value for hibernate.connection.datasource", "java:jboss/datasources/ExampleDS", props.get("hibernate.connection.datasource").toString());
         assertEquals("Value for dialect", "org.hibernate.dialect.HSQLDialect", props.get("hibernate.dialect").toString());
     }
-    
+
 }

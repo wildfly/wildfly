@@ -4,5 +4,5 @@ import javax.ejb.Remote;
 
 @Remote
 public interface MyEjb {
-	public abstract String doIt();
+    String doIt();
 }

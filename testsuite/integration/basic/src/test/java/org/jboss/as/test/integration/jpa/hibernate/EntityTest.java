@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.hibernate;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.ejb.Stateful;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
@@ -138,24 +137,24 @@ public class EntityTest {
     }
 
     public void changeCustomer(Long id, String name) {
-        Customer c = (Customer) session.load(Customer.class, id);
+        Customer c = session.load(Customer.class, id);
         c.setName(name);
     }
 
 
     public Flight findFlightById(Long id) {
 
-        return (Flight) session.load(Flight.class, id);
+        return session.load(Flight.class, id);
     }
 
     public Company findCompanyById(Long id) {
 
-        return (Company) session.load(Company.class, id);
+        return session.load(Company.class, id);
     }
 
     public Customer findCustomerById(Long id) {
 
-        return (Customer) session.load(Customer.class, id);
+        return session.load(Customer.class, id);
     }
 
 }

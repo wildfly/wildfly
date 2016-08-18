@@ -31,7 +31,7 @@ import javax.ejb.Stateless;
 
 /**
  * SessionBeanWithoutSecurityDomain - testing getCallerPrincipal() method
- * 
+ *
  * @author Jaikiran Pai, Ondrej Chaloupka
  */
 @Stateless

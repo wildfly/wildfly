@@ -23,20 +23,21 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.EJB;
 import javax.ejb.Local;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-// Security related imports
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJB;
 
 import org.jboss.logging.Logger;
 
+// Security related imports
+
 /**
  * Returns howdy greeting for INTERNAL_ROLE.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @Stateless(name = "Howdy")
@@ -45,13 +46,13 @@ import org.jboss.logging.Logger;
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class HowdyBean implements Howdy {
     private static final Logger log = Logger.getLogger(HowdyBean.class);
-    
+
     @Resource
     private SessionContext context;
 
     @EJB
     Hola hola;
-    
+
     public String sayHowdy() {
         log.info("HowdyBean.sayHowdy(). Caller name: " + context.getCallerPrincipal().getName());
         log.info("[Howdy] calling sayHola: " + hola.sayHola());

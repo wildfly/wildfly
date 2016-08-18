@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests a DataSource which uses Credentials stored in a security domain.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)

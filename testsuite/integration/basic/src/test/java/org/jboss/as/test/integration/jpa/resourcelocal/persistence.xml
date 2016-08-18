@@ -21,17 +21,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"	version="2.0">
-	<persistence-unit name="mypc" transaction-type="RESOURCE_LOCAL">
-		<description>Persistence Unit.</description>
-		<non-jta-data-source>java:app/DataSource</non-jta-data-source>
-		<properties>
-			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
-			<property name="hibernate.show_sql" value="false" />
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <persistence-unit name="mypc" transaction-type="RESOURCE_LOCAL">
+        <description>Persistence Unit.</description>
+        <non-jta-data-source>java:app/DataSource</non-jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.show_sql" value="false"/>
             <!-- @DataSourceDefinition need to be started from the install phase, set wildfly.jpa.twophasebootstrap=false,
                  to delay starting the persistence unit service until the install phase.
              -->
             <property name="wildfly.jpa.twophasebootstrap" value="false"/>
-		</properties>
-	</persistence-unit>
+        </properties>
+    </persistence-unit>
 </persistence>

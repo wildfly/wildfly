@@ -21,35 +21,37 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
-import java.util.regex.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.*;
-import org.junit.runner.RunWith;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Resource adapter statistics testCase
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
 
-    final static String pack = "org.jboss.as.test.integration.jca.rar";
-    final static String fact = "java:jboss/ConnectionFactory";
+    static final String pack = "org.jboss.as.test.integration.jca.rar";
+    static final String fact = "java:jboss/ConnectionFactory";
 
     @ArquillianResource
     Deployer deployer;
@@ -57,13 +59,13 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
 
     public static ResourceAdapterArchive createDeployment(String deploymentName) throws Exception {
 
-        ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, "archive"+deploymentName + ".rar");
+        ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, "archive" + deploymentName + ".rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, deploymentName + ".jar");
         ja.addPackage(pack);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(IronJacamarDeploymentStatisticsTestCase.class.getPackage(), "ra.xml", "ra.xml");
-        raa.addAsManifestResource(IronJacamarDeploymentStatisticsTestCase.class.getPackage(), "ironjacamar"+deploymentName+".xml", "ironjacamar.xml");
+        raa.addAsManifestResource(IronJacamarDeploymentStatisticsTestCase.class.getPackage(), "ironjacamar" + deploymentName + ".xml", "ironjacamar.xml");
         return raa;
     }
 
@@ -84,22 +86,22 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
 
     public ModelNode prepareTest(String name) throws Exception {
         ModelNode address = new ModelNode();
-        String arch = "archive"+name+".rar";
-        address.add(DEPLOYMENT,arch)
-        .add(SUBSYSTEM,"resource-adapters")
-        .add("ironjacamar","ironjacamar")
-        .add("resource-adapter",arch)
-        .add("connection-definitions",fact+name);
+        String arch = "archive" + name + ".rar";
+        address.add(DEPLOYMENT, arch)
+                .add(SUBSYSTEM, "resource-adapters")
+                .add("ironjacamar", "ironjacamar")
+                .add("resource-adapter", arch)
+                .add("connection-definitions", fact + name);
 
         deployer.deploy(name);
 
-        enableStats(name, fact+name);
+        enableStats(name, fact + name);
 
         return address;
     }
 
     private void enableStats(String name, String cdName) throws Exception {
-        String arch = "archive"+name+".rar";
+        String arch = "archive" + name + ".rar";
         ModelNode statAddress = new ModelNode();
         statAddress.add(DEPLOYMENT, arch)
                 .add(SUBSYSTEM, "resource-adapters")
@@ -119,7 +121,7 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
 
     @Test
     public void testOneConnection() throws Exception {
-        ModelNode mn=prepareTest("1");
+        ModelNode mn = prepareTest("1");
         testStatistics(mn);
         testStatisticsDouble(mn);
         deployer.undeploy("1");
@@ -127,8 +129,8 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
 
     @Test
     public void testTwoConnections() throws Exception {
-        ModelNode mn=prepareTest("1");
-        ModelNode mn1=prepareTest("2");
+        ModelNode mn = prepareTest("1");
+        ModelNode mn1 = prepareTest("2");
         testStatistics(mn);
         testStatisticsDouble(mn);
         testStatistics(mn1);
@@ -141,7 +143,7 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
 
     @Test
     public void testTwoConnectionsInOneRa() throws Exception {
-        ModelNode mn=prepareTest("3");
+        ModelNode mn = prepareTest("3");
         ModelNode mn1 = getAnotherConnection(mn);
         enableStats("3", mn1.get(4).get("connection-definitions").asString());
         testStatistics(mn);
