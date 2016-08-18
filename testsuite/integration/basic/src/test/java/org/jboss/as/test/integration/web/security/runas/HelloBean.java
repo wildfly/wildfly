@@ -27,7 +27,6 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 /**
- *
  * @author olukas
  */
 @DeclareRoles({HelloBean.AUTHORIZED_ROLE, HelloBean.NOT_AUTHORIZED_ROLE})

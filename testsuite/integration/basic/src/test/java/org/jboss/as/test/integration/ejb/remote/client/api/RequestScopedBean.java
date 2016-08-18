@@ -7,7 +7,6 @@ import javax.enterprise.context.RequestScoped;
  */
 @RequestScoped
 public class RequestScopedBean {
-    
     private int state = 0;
 
     public int getState() {

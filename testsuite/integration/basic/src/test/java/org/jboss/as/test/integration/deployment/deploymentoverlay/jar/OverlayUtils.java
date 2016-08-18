@@ -21,6 +21,7 @@
  */
 
 package org.jboss.as.test.integration.deployment.deploymentoverlay.jar;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -35,11 +36,10 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author baranowb
  * @author lgao
- *
  */
 public final class OverlayUtils {
 
-    public static void setupOverlay(final ManagementClient managementClient, final String deployment,final String overlayName, final Map<String, String> overlay) throws Exception {
+    public static void setupOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final Map<String, String> overlay) throws Exception {
 
         // create overlay
         ModelNode op = new ModelNode();
@@ -47,7 +47,7 @@ public final class OverlayUtils {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-        for (Map.Entry<String, String> overlayItem: overlay.entrySet()) {
+        for (Map.Entry<String, String> overlayItem : overlay.entrySet()) {
             // add content
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
@@ -84,12 +84,12 @@ public final class OverlayUtils {
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
-    public static void setupOverlay(final ManagementClient managementClient, final String deployment,final String overlayName, final String overlayPath,final String overlayedContent) throws Exception {
+    public static void setupOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final String overlayPath, final String overlayedContent) throws Exception {
         setupOverlay(managementClient, deployment, overlayName, Collections.singletonMap(overlayPath, overlayedContent));
     }
 
-    public static void removeOverlay(final ManagementClient managementClient, final String deployment,final String overlayName, final Set<String> overlayPaths) throws Exception {
-        for (String overlayPath: overlayPaths) {
+    public static void removeOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final Set<String> overlayPaths) throws Exception {
+        for (String overlayPath : overlayPaths) {
             removeContentItem(managementClient, overlayName, overlayPath);
         }
         removeDeploymentItem(managementClient, overlayName, deployment);
@@ -100,35 +100,33 @@ public final class OverlayUtils {
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
-    public static void removeOverlay(final ManagementClient managementClient, final String deployment,final String overlayName, final String overlayPath) throws Exception {
+    public static void removeOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final String overlayPath) throws Exception {
         removeOverlay(managementClient, deployment, overlayName, Collections.singleton(overlayPath));
     }
-    
-        protected static void removeContentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
-            final ModelNode op;
-            final ModelNode addr;
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
-            addr.add(ModelDescriptionConstants.CONTENT, a);
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        }
-    
-    
-        protected static void removeDeploymentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
-            final ModelNode op;
-            final ModelNode addr;
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
-            addr.add(ModelDescriptionConstants.DEPLOYMENT, a);
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        }
 
-    
-    
+    protected static void removeContentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
+        final ModelNode op;
+        final ModelNode addr;
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
+        addr.add(ModelDescriptionConstants.CONTENT, a);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+    }
+
+
+    protected static void removeDeploymentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
+        final ModelNode op;
+        final ModelNode addr;
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
+        addr.add(ModelDescriptionConstants.DEPLOYMENT, a);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+    }
+
 }

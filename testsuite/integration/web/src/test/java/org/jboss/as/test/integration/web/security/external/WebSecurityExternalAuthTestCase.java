@@ -25,8 +25,6 @@ import io.undertow.servlet.ServletExtension;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -38,7 +36,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
-import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -87,13 +84,13 @@ public class WebSecurityExternalAuthTestCase  {
             HttpGet httpget = new HttpGet(url.toExternalForm() + "secured/");
             httpget.addHeader("User", user);
 
-            System.out.println("executing request" + httpget.getRequestLine());
+            //System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
-            System.out.println("----------------------------------------");
+            //System.out.println("----------------------------------------");
             StatusLine statusLine = response.getStatusLine();
-            System.out.println(statusLine);
+            //System.out.println(statusLine);
             if (entity != null) {
                 System.out.println("Response content length: " + entity.getContentLength());
             }

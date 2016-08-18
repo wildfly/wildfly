@@ -39,7 +39,7 @@ import javax.xml.ws.soap.SOAPFaultException;
         serviceName = "POJOService",
         targetNamespace = "http://jbossws.org/basic",
         endpointInterface = "org.jboss.as.test.integration.ws.basic.EndpointIface"
-        )
+)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class PojoEndpoint implements EndpointIface {
 

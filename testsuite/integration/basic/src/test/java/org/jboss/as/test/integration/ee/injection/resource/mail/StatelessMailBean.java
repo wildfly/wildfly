@@ -37,34 +37,30 @@ import javax.naming.NamingException;
 @Stateless
 @Remote(StatelessMail.class)
 public class StatelessMailBean
-   implements StatelessMail
-{
-   
-   @Resource(name="MyDefaultMail")
-   private Session mailSession;
-   
-   @Resource(lookup="java:jboss/mail/Default")
-   private Session session;
-   
-   // injected via xml descriptor
-   private Session dsSession;
-   
-   public void testMail() throws NamingException
-   {
-      Context initCtx = new InitialContext();
-      Context myEnv = (Context) initCtx.lookup("java:comp/env");
-      
-      // JavaMail Session
-      Object obj = myEnv.lookup("MyDefaultMail");
-      if ((obj instanceof javax.mail.Session) == false)
-         throw new NamingException("DefaultMail is not a javax.mail.Session");
-   }
-   
-   public void testMailInjection()
-   {
-      mailSession.getProperties();
-      session.getProperties();
-      dsSession.getProperties();
-   }
+        implements StatelessMail {
+
+    @Resource(name = "MyDefaultMail")
+    private Session mailSession;
+
+    @Resource(lookup = "java:jboss/mail/Default")
+    private Session session;
+
+    // injected via xml descriptor
+    private Session dsSession;
+
+    public void testMail() throws NamingException {
+        Context initCtx = new InitialContext();
+        Context myEnv = (Context) initCtx.lookup("java:comp/env");
+
+        // JavaMail Session
+        Object obj = myEnv.lookup("MyDefaultMail");
+        if ((obj instanceof javax.mail.Session) == false) { throw new NamingException("DefaultMail is not a javax.mail.Session"); }
+    }
+
+    public void testMailInjection() {
+        mailSession.getProperties();
+        session.getProperties();
+        dsSession.getProperties();
+    }
 
 }

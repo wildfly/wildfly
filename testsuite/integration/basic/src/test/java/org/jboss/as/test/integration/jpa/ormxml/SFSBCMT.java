@@ -40,15 +40,15 @@ import javax.persistence.Query;
 @TransactionManagement(TransactionManagementType.CONTAINER)
 public class SFSBCMT {
     @PersistenceContext(unitName = "ORMpc")
-        EntityManager em;
+    EntityManager em;
 
     @Resource
     SessionContext sessionContext;
 
     public Employee queryEmployeeName(int id) {
         Query q = em.createQuery("SELECT e FROM Employee e where id=?");
-        q.setParameter(1,new Integer(id));
-        return (Employee)q.getSingleResult();
+        q.setParameter(1, new Integer(id));
+        return (Employee) q.getSingleResult();
     }
 
 

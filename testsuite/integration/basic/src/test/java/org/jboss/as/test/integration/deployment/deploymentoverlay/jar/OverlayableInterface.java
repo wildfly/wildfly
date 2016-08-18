@@ -26,7 +26,7 @@ import javax.ejb.Remote;
 
 /**
  * @author baranowb
- * 
+ *
  */
 @Remote
 public interface OverlayableInterface {
@@ -42,6 +42,6 @@ public interface OverlayableInterface {
     String RESOURCE_STATIC = "META-INF/"+RESOURCE_STATIC_META_INF;
 
     String fetchResource() throws Exception;
-    
+
     String fetchResourceStatic() throws Exception;
 }

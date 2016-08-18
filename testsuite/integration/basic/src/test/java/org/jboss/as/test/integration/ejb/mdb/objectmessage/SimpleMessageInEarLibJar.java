@@ -49,9 +49,8 @@ public class SimpleMessageInEarLibJar implements Serializable {
 
         SimpleMessageInEarLibJar that = (SimpleMessageInEarLibJar) o;
 
-        if (!msg.equals(that.msg)) return false;
+        return msg.equals(that.msg);
 
-        return true;
     }
 
     @Override

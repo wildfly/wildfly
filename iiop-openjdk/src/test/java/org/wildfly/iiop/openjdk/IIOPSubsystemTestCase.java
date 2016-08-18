@@ -41,8 +41,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.iiop.openjdk.IIOPExtension;
-import org.wildfly.iiop.openjdk.Namespace;
 
 /**
  * <ṕ>

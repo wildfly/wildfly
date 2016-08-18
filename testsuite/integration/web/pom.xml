@@ -29,7 +29,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <version.exec.maven.plugin>1.2.1</version.exec.maven.plugin>
         <!-- use the web build for tests -->
         <jboss.dist>${jbossas.project.dir}/${wildfly.web.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>

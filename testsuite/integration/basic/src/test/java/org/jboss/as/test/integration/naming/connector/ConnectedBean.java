@@ -32,7 +32,7 @@ import javax.naming.InitialContext;
 
 /**
  * Simple bean to check access MBean server count through JMXConnector and JNDI.
- * 
+ *
  * @author baranowb
  * @author Eduardo Martins
  */

@@ -28,10 +28,10 @@ import org.jboss.ejb3.annotation.TransactionTimeout;
 @Remote
 public interface TimeoutRemoteView {
 
-    public int getBeanTimeout();
+    int getBeanTimeout();
 
-    public int getBeanMethodTimeout();
+    int getBeanMethodTimeout();
 
     @TransactionTimeout(value=7, unit=TimeUnit.SECONDS)
-    public int getRemoteMethodTimeout();
+    int getRemoteMethodTimeout();
 }

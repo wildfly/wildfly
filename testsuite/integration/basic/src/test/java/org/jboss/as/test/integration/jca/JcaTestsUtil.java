@@ -24,17 +24,17 @@
 
 package org.jboss.as.test.integration.jca;
 
-import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
-import org.jboss.jca.adapters.jdbc.WrapperDataSource;
-import org.jboss.jca.core.connectionmanager.ConnectionManager;
-import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPool;
-import org.jboss.jca.core.util.Injection;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.junit.Assert.fail;
+import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
+import org.jboss.jca.adapters.jdbc.WrapperDataSource;
+import org.jboss.jca.core.connectionmanager.ConnectionManager;
+import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPool;
+import org.jboss.jca.core.util.Injection;
 
 /**
  * Utility class for JCA integration test
@@ -45,6 +45,7 @@ public class JcaTestsUtil {
 
     /**
      * set lastIdleCheck property in ManagedConnectionPool to minimun and ManagedConnectionPool's removeIdleConnection
+     *
      * @param mcp
      * @throws Exception
      */
@@ -115,7 +116,7 @@ public class JcaTestsUtil {
                     if (type.equals(javax.resource.spi.ConnectionManager.class) ||
                             type.equals(ConnectionManager.class)) {
                         method.setAccessible(true);
-                        return (ConnectionManager) method.invoke(connectionFactory, new Object[]{});
+                        return (ConnectionManager) method.invoke(connectionFactory);
                     }
                 }
             } catch (Throwable t) {
@@ -128,6 +129,7 @@ public class JcaTestsUtil {
 
     /**
      * Extract WrapperDataSource from WildflyDataSource by using reflection
+     *
      * @param wfds
      * @return WrapperDataSource instance, <code>null</code> if not found
      */

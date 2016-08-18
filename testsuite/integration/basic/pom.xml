@@ -29,7 +29,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <version.exec.maven.plugin>1.2.1</version.exec.maven.plugin>
     </properties>
 
     <dependencies>
@@ -418,7 +417,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>${version.exec.maven.plugin}</version>
+                        <version>${version.exec.plugin}</version>
                         <executions>
                             <!-- There is no similar option as -Dcom.sun.CORBA.ORBUseDynamicStub=true for IBM JDK
                             we need to create stub do it manually with rmic tools -->

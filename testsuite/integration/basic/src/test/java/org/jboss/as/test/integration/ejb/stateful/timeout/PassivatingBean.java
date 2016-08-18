@@ -43,7 +43,7 @@ public class PassivatingBean {
 
     @PreDestroy
     public void preDestroy() {
-        this.preDestroy = true;
+        preDestroy = true;
     }
 
     public void doStuff() {

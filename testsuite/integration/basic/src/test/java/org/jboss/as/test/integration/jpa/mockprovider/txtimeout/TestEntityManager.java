@@ -29,10 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
 import org.jboss.tm.TxUtils;
 
 /**
@@ -51,15 +51,15 @@ public class TestEntityManager implements InvocationHandler {
         invocations.add(method.getName());
         System.out.println("TestEntityManager method=" + method.getName());
 
-        if(method.getName().equals("persist")) {
+        if (method.getName().equals("persist")) {
             return persist();
         }
 
-        if(method.getName().equals("close")) {
+        if (method.getName().equals("close")) {
             return close();
         }
 
-        if(method.getName().equals("toString")) {
+        if (method.getName().equals("toString")) {
             return "EntityManager";
         }
 
@@ -99,7 +99,7 @@ public class TestEntityManager implements InvocationHandler {
     private Object close() {
         String currentThreadName = Thread.currentThread().getName();
         boolean isBackgroundReaperThread =
-            TxUtils.isTransactionManagerTimeoutThread();
+                TxUtils.isTransactionManagerTimeoutThread();
         if (isBackgroundReaperThread) {
             System.out.println("EntityManager closed by tx reaper thread");
             closedByReaperThread.set(true);

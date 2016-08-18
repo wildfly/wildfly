@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test WS sign + encrypt capability for multiple clients (alice and john)
- *
+ * <p>
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
  * Public key can be imported using keytool -import

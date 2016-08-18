@@ -22,10 +22,16 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.envers;
 
-import java.util.*;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
 
-import org.hibernate.envers.*;
+import org.hibernate.envers.AuditJoinTable;
+import org.hibernate.envers.Audited;
 
 /**
  * @author Madhumita Sadhukhan
@@ -45,8 +51,8 @@ public class PhoneMO {
     private String areacode;
 
     @ManyToOne
-    @JoinTable(name = "CUSTOMER_PHONE", joinColumns = { @JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID") })
-    @AuditJoinTable(name = "CUSTOMER_PHONE_AUD", inverseJoinColumns = { @JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID") })
+    @JoinTable(name = "CUSTOMER_PHONE", joinColumns = {@JoinColumn(name = "PHONE_ID", referencedColumnName = "PHONE_ID")}, inverseJoinColumns = {@JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID")})
+    @AuditJoinTable(name = "CUSTOMER_PHONE_AUD", inverseJoinColumns = {@JoinColumn(name = "CUST_ID", referencedColumnName = "CUST_ID")})
     private CustomerMO customer;
 
     public String getNumber() {
@@ -91,10 +97,8 @@ public class PhoneMO {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof PhoneMO))
-            return false;
+        if (this == o) { return true; }
+        if (!(o instanceof PhoneMO)) { return false; }
 
         final PhoneMO phone = (PhoneMO) o;
 

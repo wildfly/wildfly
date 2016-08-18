@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
-
 import javax.ejb.AsyncResult;
 
 public class AsyncBeanDescriptor {

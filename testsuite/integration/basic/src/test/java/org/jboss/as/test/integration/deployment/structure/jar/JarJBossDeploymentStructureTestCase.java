@@ -1,5 +1,8 @@
 package org.jboss.as.test.integration.deployment.structure.jar;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertEquals;
+
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -12,9 +15,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -83,7 +83,7 @@ public class JarJBossDeploymentStructureTestCase {
     @Test
     public void testUsePhysicalCodeSource() throws ClassNotFoundException {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
-        Assert.assertTrue( clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assert.assertTrue(clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
         Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
     }
 
@@ -96,20 +96,18 @@ public class JarJBossDeploymentStructureTestCase {
      * EE.5.15, part of testsuite migration AS6->AS7 (jbas7556)
      */
     @Test
-    public void testModuleName() throws Exception
-    {
-       String result = ejb.query("java:module/ModuleName");
-       assertEquals("deployment-structure", result);
-       result = ejb.getResourceModuleName();
-       assertEquals("deployment-structure", result);
+    public void testModuleName() throws Exception {
+        String result = ejb.query("java:module/ModuleName");
+        assertEquals("deployment-structure", result);
+        result = ejb.getResourceModuleName();
+        assertEquals("deployment-structure", result);
     }
 
     @Test
-    public void testAppName() throws Exception
-    {
-       String result = ejb.query("java:app/AppName");
-       assertEquals("deployment-structure", result);
-       result = ejb.getResourceAppName();
-       assertEquals("deployment-structure", result);
+    public void testAppName() throws Exception {
+        String result = ejb.query("java:app/AppName");
+        assertEquals("deployment-structure", result);
+        result = ejb.getResourceAppName();
+        assertEquals("deployment-structure", result);
     }
 }

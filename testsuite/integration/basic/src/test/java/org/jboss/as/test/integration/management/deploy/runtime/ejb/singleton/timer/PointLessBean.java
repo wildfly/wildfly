@@ -21,9 +21,7 @@
  */
 package org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.Resource;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
@@ -34,7 +32,7 @@ import javax.ejb.TimerService;
 /**
  * @author baranowb
  */
-@Singleton(name="POINT")
+@Singleton(name = "POINT")
 public class PointLessBean implements PointlessInterface {
 
     private static final int WAIT_TIME = 1;
@@ -49,7 +47,7 @@ public class PointLessBean implements PointlessInterface {
     public void triggerTimer() throws Exception {
         count = 0;
         timerService.createSingleActionTimer(100, TIMER_CONFIG);
-        
+
     }
 
     @Override

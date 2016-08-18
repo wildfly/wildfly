@@ -61,7 +61,7 @@ import static org.jboss.as.test.xts.util.EventLogEvent.*;
 public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
     UserBusinessActivity uba;
     BAParticipantCompletion client1, client2, client3;
-    
+
     @Inject
     private EventLog eventLog;
 
@@ -88,7 +88,7 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
     public static void removeBytemanScript() {
         BMScript.remove(ParticipantCompletionCoordinatorRules.RESOURCE_PATH);
     }
-    
+
     @Before
     public void setupTest() throws Exception {
         uba = UserBusinessActivityFactory.userBusinessActivity();
@@ -96,7 +96,7 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
         client2 = BAParticipantCompletionClient.newInstance("BAParticipantCompletionService2");
         client3 = BAParticipantCompletionClient.newInstance("BAParticipantCompletionService3");
     }
-    
+
     protected EventLog getEventLog() {
         return eventLog;
     }
@@ -117,7 +117,7 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
 
         assertEventLogClient1(CONFIRM_COMPLETED, CLOSE);
     }
-    
+
     @Test
     public void testWSBAParticipantCompleteSimple() throws Exception {
         ParticipantCompletionCoordinatorRules.setParticipantCount(3);
@@ -132,7 +132,7 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
         assertEventLogClient2(CONFIRM_COMPLETED, CLOSE);
         assertEventLogClient3(CONFIRM_COMPLETED, CLOSE);
     }
-    
+
     @Test
     public void testWSBAParticipantDoNotComplete() throws Exception {
         ParticipantCompletionCoordinatorRules.setParticipantCount(3);
@@ -143,9 +143,9 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
             client2.saveData(DO_COMPLETE);
             client3.saveData();  // this participant does not inform about correct completition
             uba.close();
-            
+
             Assert.fail("Exception should have been thrown by now");
-        } catch(TransactionRolledBackException e) {
+        } catch (TransactionRolledBackException e) {
             // we expect this :)
         }
 
@@ -153,11 +153,11 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
         assertEventLogClient2(CONFIRM_COMPLETED, COMPENSATE);
         assertEventLogClient3(CANCEL);
     }
-    
+
     @Test
     public void testWSBAParticipantClientCancelNotComplete() throws Exception {
         ParticipantCompletionCoordinatorRules.setParticipantCount(3);
-        
+
         uba.begin();
         client1.saveData(DO_COMPLETE);
         client2.saveData();
@@ -168,37 +168,37 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
         assertEventLogClient2(CANCEL);
         assertEventLogClient3(CONFIRM_COMPLETED, COMPENSATE);
     }
-    
+
     @Test
     public void testWSBAParticipantCannotComplete() throws Exception {
         ParticipantCompletionCoordinatorRules.setParticipantCount(3);
-        
+
         try {
             uba.begin();
             client1.saveData(DO_COMPLETE);
             client2.saveData(CANNOT_COMPLETE);
             client3.saveData(DO_COMPLETE);
-            
+
             Assert.fail("Exception should have been thrown by now");
         } catch (javax.xml.ws.soap.SOAPFaultException sfe) {
             // Exception is expected - enlisting participant #3 can't be done
         }
-        
+
         try {
             uba.close();
-        } catch(TransactionRolledBackException e) {
+        } catch (TransactionRolledBackException e) {
             // Exception is expected - rollback on close because of cannotComplete
         }
-        
+
         assertEventLogClient1(CONFIRM_COMPLETED, COMPENSATE);
         assertEventLogClient2();
         assertEventLogClient3();
     }
-    
+
     @Test
     public void testWSBAParticipantClientCancel() throws Exception {
         ParticipantCompletionCoordinatorRules.setParticipantCount(3);
-        
+
         uba.begin();
         client1.saveData(DO_COMPLETE);
         client2.saveData(DO_COMPLETE);
@@ -213,17 +213,17 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
     @Test
     public void testWSBAParticipantApplicationException() throws Exception {
         ParticipantCompletionCoordinatorRules.setParticipantCount(3);
-        
+
         try {
             uba.begin();
             client1.saveData(DO_COMPLETE);
             client2.saveData(APPLICATION_EXCEPTION);
-            
+
             Assert.fail("Exception should have been thrown by now");
         } catch (TestApplicationException e) {
             // Exception is expected
-        } 
-        
+        }
+
         try {
             client3.saveData(DO_COMPLETE);
             uba.close();
@@ -231,20 +231,22 @@ public class BAParticipantCompletionTestCase extends BaseFunctionalTest {
         } catch (com.arjuna.wst.TransactionRolledBackException tre) {
             // Exception is expected to be throws from close() method
         }
-        
+
         assertEventLogClient1(CONFIRM_COMPLETED, COMPENSATE);
         assertEventLogClient2(CANCEL);
         assertEventLogClient3(CONFIRM_COMPLETED, COMPENSATE);
     }
-    
+
     // --- assert methods
     // --- they take event log names from the service called by particular client
     private void assertEventLogClient1(EventLogEvent... expectedOrder) {
         assertEventLog(BAParticipantCompletionService1.SERVICE_EVENTLOG_NAME, expectedOrder);
     }
+
     private void assertEventLogClient2(EventLogEvent... expectedOrder) {
         assertEventLog(BAParticipantCompletionService2.SERVICE_EVENTLOG_NAME, expectedOrder);
     }
+
     private void assertEventLogClient3(EventLogEvent... expectedOrder) {
         assertEventLog(BAParticipantCompletionService3.SERVICE_EVENTLOG_NAME, expectedOrder);
     }

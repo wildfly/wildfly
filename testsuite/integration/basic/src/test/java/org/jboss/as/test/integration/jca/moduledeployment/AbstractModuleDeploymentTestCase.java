@@ -32,7 +32,6 @@ import javax.naming.InitialContext;
 import javax.resource.cci.Connection;
 import javax.resource.cci.ConnectionFactory;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -64,12 +63,13 @@ public abstract class AbstractModuleDeploymentTestCase extends
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage())
                 .addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
-        
-        if (withDependencies)
-        	ja.addAsManifestResource(
-                new StringAsset(
-                        "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
-                "MANIFEST.MF");
+
+        if (withDependencies) {
+            ja.addAsManifestResource(
+                    new StringAsset(
+                            "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,javax.inject.api,org.jboss.as.connector\n"),
+                    "MANIFEST.MF");
+        }
 
         return ja;
 
@@ -81,9 +81,9 @@ public abstract class AbstractModuleDeploymentTestCase extends
      * @return The deployment archive
      */
     public static JavaArchive createDeployment() throws Exception {
-    	return createDeployment(true);
+        return createDeployment(true);
     }
- 
+
     /**
      * Test configuration
      *
@@ -92,7 +92,7 @@ public abstract class AbstractModuleDeploymentTestCase extends
     public void testConnectionFactory(ConnectionFactory connectionFactory)
             throws Throwable {
         assertNotNull(connectionFactory);
-        Connection c = connectionFactory.getConnection(); 
+        Connection c = connectionFactory.getConnection();
         assertNotNull(c);
         c.close();
     }
@@ -118,7 +118,7 @@ public abstract class AbstractModuleDeploymentTestCase extends
      *
      * @return address
      */
-    abstract protected ModelNode getAddress();
+    protected abstract ModelNode getAddress();
 
     /**
      * Finding object by JNDI name and checks, if its String representation

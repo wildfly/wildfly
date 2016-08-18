@@ -37,7 +37,6 @@ import org.junit.Assert;
 
 /**
  * @author baranowb
- *
  */
 
 public abstract class SessionWhichDependeOnTestCaseBase {
@@ -51,7 +50,7 @@ public abstract class SessionWhichDependeOnTestCaseBase {
     private CallCounterInterface counter;
 
     protected abstract Trigger getTrigger() throws Exception;
-    
+
     protected static JavaArchive getTestArchiveBase() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, Constants.DEPLOYMENT_JAR_NAME_COUNTER);
         jar.addClass(CallCounterSingleton.class);
@@ -64,7 +63,7 @@ public abstract class SessionWhichDependeOnTestCaseBase {
         return jar;
     }
 
-    public void testSessionBean() throws Exception{
+    public void testSessionBean() throws Exception {
         this.deployer.deploy(SessionConstants.DEPLOYMENT_NAME_SESSION);
         getTrigger().trigger();
         this.deployer.undeploy(SessionConstants.DEPLOYMENT_NAME_SESSION);

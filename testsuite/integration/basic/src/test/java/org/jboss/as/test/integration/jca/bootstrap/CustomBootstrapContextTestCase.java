@@ -21,16 +21,27 @@
  */
 package org.jboss.as.test.integration.jca.bootstrap;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
-import org.jboss.as.test.integration.jca.rar.*;
+import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
+import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
+import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter2;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -41,9 +52,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5936 custom bootstrap context deployment
@@ -107,7 +115,7 @@ public class CustomBootstrapContextTestCase extends JcaMgmtBase {
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     @Deployment
@@ -115,18 +123,17 @@ public class CustomBootstrapContextTestCase extends JcaMgmtBase {
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, "bootstrap_archive_ij.rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(CustomBootstrapContextTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class,JcaMgmtBase.class);
+                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class, JcaMgmtBase.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(),"ra.xml", "ra.xml")
-                .addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(),"ironjacamar.xml", "ironjacamar.xml")
+        raa.addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(), "ra.xml", "ra.xml")
+                .addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(
                         new StringAsset(
                                 "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
                         "MANIFEST.MF");
-        ;
         return raa;
     }
 
@@ -138,7 +145,7 @@ public class CustomBootstrapContextTestCase extends JcaMgmtBase {
 
     /**
      * Test configuration
-     * 
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test

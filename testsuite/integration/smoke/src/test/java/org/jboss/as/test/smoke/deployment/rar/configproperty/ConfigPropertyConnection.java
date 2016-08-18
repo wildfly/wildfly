@@ -26,21 +26,23 @@ package org.jboss.as.test.smoke.deployment.rar.configproperty;
  *
  * @version $Revision: $
  */
-public interface ConfigPropertyConnection
-{
-   /**
-    * getResourceAdapterProperty
-    * @return String
-    */
-   public String getResourceAdapterProperty();
-   /**
-    * getManagedConnectionFactoryProperty
-    * @return String
-    */
-   public String getManagedConnectionFactoryProperty();
+public interface ConfigPropertyConnection {
+    /**
+     * getResourceAdapterProperty
+     *
+     * @return String
+     */
+    String getResourceAdapterProperty();
 
-   /**
-    * Close
-    */
-   public void close();
+    /**
+     * getManagedConnectionFactoryProperty
+     *
+     * @return String
+     */
+    String getManagedConnectionFactoryProperty();
+
+    /**
+     * Close
+     */
+    void close();
 }

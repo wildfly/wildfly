@@ -23,10 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.ironjacamar.ra16out1" slot="main">
-   
+
     <resources>
-    	<resource-root path="."/>
-    	<resource-root path="ra16out.jar"/>
+        <resource-root path="."/>
+        <resource-root path="ra16out.jar"/>
         <!-- Insert resources here -->
     </resources>
 

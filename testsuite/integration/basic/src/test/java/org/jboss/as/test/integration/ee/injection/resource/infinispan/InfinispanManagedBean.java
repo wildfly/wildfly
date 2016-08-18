@@ -77,8 +77,7 @@ public class InfinispanManagedBean {
 
     }
 
-    public static class Bean implements java.io.Serializable
-    {
+    public static class Bean implements java.io.Serializable {
         private static final long serialVersionUID = -7265704761812104791L;
     }
 }

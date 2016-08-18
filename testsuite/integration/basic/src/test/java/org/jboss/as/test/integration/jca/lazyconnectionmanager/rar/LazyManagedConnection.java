@@ -21,8 +21,10 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import org.jboss.logging.Logger;
-
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
@@ -37,10 +39,8 @@ import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionMetaData;
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>
@@ -72,10 +72,8 @@ public class LazyManagedConnection implements ManagedConnection, DissociatableMa
         this.enlisted = false;
         this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
 
-        if (localTransaction)
-            this.lazyLocalTransaction = new LazyLocalTransaction(this);
-        if (xaTransaction)
-            this.lazyXAResource = new LazyXAResource(this);
+        if (localTransaction) { this.lazyLocalTransaction = new LazyLocalTransaction(this); }
+        if (xaTransaction) { this.lazyXAResource = new LazyXAResource(this); }
     }
 
     @Override
@@ -122,8 +120,7 @@ public class LazyManagedConnection implements ManagedConnection, DissociatableMa
         }
 
         if (connection != null) {
-            if (!(connection instanceof LazyConnectionImpl))
-                throw new ResourceException("Connection isn't LazyConnectionImpl: " + connection.getClass().getName());
+            if (!(connection instanceof LazyConnectionImpl)) { throw new ResourceException("Connection isn't LazyConnectionImpl: " + connection.getClass().getName()); }
 
             this.connection = (LazyConnectionImpl) connection;
             this.connection.setManagedConnection(this);
@@ -135,8 +132,7 @@ public class LazyManagedConnection implements ManagedConnection, DissociatableMa
     @Override
     public void addConnectionEventListener(ConnectionEventListener listener) {
         logger.trace("#LazyManagedConnection.addConnectionEventListener");
-        if (listener == null)
-            throw new IllegalArgumentException("Listener is null");
+        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.add(listener);
 
     }
@@ -144,8 +140,7 @@ public class LazyManagedConnection implements ManagedConnection, DissociatableMa
     @Override
     public void removeConnectionEventListener(ConnectionEventListener listener) {
         logger.trace("#LazyManagedConnection.removeConnectionEventListener");
-        if (listener == null)
-            throw new IllegalArgumentException("Listener is null");
+        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.remove(listener);
     }
 

@@ -216,7 +216,7 @@ public abstract class AbstractTimerManagementTestCase {
         final Set<String> lst = tmp.keys();
         Assert.assertEquals(1, lst.size());
         this.timerId = lst.iterator().next();
-        this.timerAddress = address.pathAddress(address, PathElement.pathElement("timer", this.timerId));
+        this.timerAddress = PathAddress.pathAddress(address, PathElement.pathElement("timer", this.timerId));
         return this.timerAddress;
     }
 

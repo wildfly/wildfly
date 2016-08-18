@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.sessioncontext;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -31,9 +34,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 /**
  * Tests that bean implementing the {@link javax.ejb.SessionBean} interface has its
  * {@link javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)} method invoked.
@@ -42,7 +42,7 @@ import javax.naming.NamingException;
  */
 @RunWith(Arquillian.class)
 public class SetSessionContextMethodInvocationTestCase {
-    
+
     @ArquillianResource
     InitialContext ctx;
 
@@ -57,7 +57,7 @@ public class SetSessionContextMethodInvocationTestCase {
     private<T> T lookup(Class<T> beanType) throws NamingException {
         return beanType.cast(ctx.lookup("java:module/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
-    
+
     /**
      * Tests that {@link javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)} was invoked on a stateless
      * session bean, implementing the {@link javax.ejb.SessionBean} interface
@@ -67,7 +67,7 @@ public class SetSessionContextMethodInvocationTestCase {
     @Test
     public void testSetSessionContextOnSLSB() throws Exception {
         final SLSBImplementingSessionBean slsb = lookup(SLSBImplementingSessionBean.class);
-        Assert.assertTrue("setSessionContext(SessionContext) method was not invoked on a stateless bean implementing javax.ejb.SessionBean", 
+        Assert.assertTrue("setSessionContext(SessionContext) method was not invoked on a stateless bean implementing javax.ejb.SessionBean",
                 slsb.wasSetSessionContextMethodInvoked());
     }
 
@@ -80,7 +80,7 @@ public class SetSessionContextMethodInvocationTestCase {
     @Test
     public void testSetSessionContextOnSFSB() throws Exception {
         final SFSBImplementingSessionBean sfsb = lookup(SFSBImplementingSessionBean.class);
-        Assert.assertTrue("setSessionContext(SessionContext) method was not invoked on a stateful bean implementing javax.ejb.SessionBean", 
+        Assert.assertTrue("setSessionContext(SessionContext) method was not invoked on a stateful bean implementing javax.ejb.SessionBean",
                 sfsb.wasSetSessionContextMethodInvoked());
     }
 
@@ -116,7 +116,7 @@ public class SetSessionContextMethodInvocationTestCase {
         try {
             slsb.wasCanceledCalled();
         } catch (Exception e) {
-            Assert.assertEquals("The SessionContext.wasCanceledCalled() method was called on not asynchronous method. We supposing " + IllegalStateException.class.getName(), 
+            Assert.assertEquals("The SessionContext.wasCanceledCalled() method was called on not asynchronous method. We supposing " + IllegalStateException.class.getName(),
                     IllegalStateException.class, e.getCause().getClass());
             return; // we are fine with this
         }

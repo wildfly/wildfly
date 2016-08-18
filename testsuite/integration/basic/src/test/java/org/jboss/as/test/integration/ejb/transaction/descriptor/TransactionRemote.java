@@ -8,7 +8,7 @@ import javax.ejb.Remote;
 @Remote
 public interface TransactionRemote {
 
-    public int transactionStatus();
+    int transactionStatus();
 
-    public int transactionStatus2();
+    int transactionStatus2();
 }

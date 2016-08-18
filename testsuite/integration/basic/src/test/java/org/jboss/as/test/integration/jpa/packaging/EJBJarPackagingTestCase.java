@@ -40,7 +40,6 @@ import org.junit.runner.RunWith;
 
 /**
  * Test that an EJB jar can reference the persistence provider classes
- *
  */
 @RunWith(Arquillian.class)
 public class EJBJarPackagingTestCase {
@@ -75,18 +74,18 @@ public class EJBJarPackagingTestCase {
     public void testBeanInEJBJarCanAccessPersistenceProviderClass() throws Exception {
         EmployeeBean bean = (EmployeeBean) iniCtx.lookup("java:app/ejbjar/EmployeeBean");
         Class sessionClass = bean.getPersistenceProviderClass("org.hibernate.Session");
-        assertNotNull("was able to load 'org.hibernate.Session' class from persistence provider",sessionClass);
+        assertNotNull("was able to load 'org.hibernate.Session' class from persistence provider", sessionClass);
     }
 
     private static StringAsset emptyEjbJar() {
         return new StringAsset(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
-                "         version=\"3.0\">\n" +
-                "   \n" +
-                "</ejb-jar>");
+                        "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" \n" +
+                        "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
+                        "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd\"\n" +
+                        "         version=\"3.0\">\n" +
+                        "   \n" +
+                        "</ejb-jar>");
     }
 
 }

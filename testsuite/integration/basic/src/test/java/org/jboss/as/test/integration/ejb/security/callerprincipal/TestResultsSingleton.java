@@ -33,12 +33,12 @@ import javax.ejb.Startup;
 @Startup
 @Remote(ITestResultsSingleton.class)
 public class TestResultsSingleton implements ITestResultsSingleton {
-    
+
     private Map<String, String> slsb = new HashMap<String, String>();
     private Map<String, String> sfsb = new HashMap<String, String>();
     private Map<String, String> mdb = new HashMap<String, String>();
     private Map<String, String> eb = new HashMap<String, String>();
-    
+
     public String getSlsb(String index) {
         return this.slsb.get(index);
     }

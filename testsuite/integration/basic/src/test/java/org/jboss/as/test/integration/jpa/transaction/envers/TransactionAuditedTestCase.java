@@ -33,14 +33,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Test Envers on Transactions
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)
@@ -53,7 +52,7 @@ public class TransactionAuditedTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(TransactionAuditedTestCase.class, Employee.class, SFSB1.class);
-        jar.addAsManifestResource(TransactionAuditedTestCase.class.getPackage(), "persistence.xml","persistence.xml");
+        jar.addAsManifestResource(TransactionAuditedTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
 
@@ -71,8 +70,6 @@ public class TransactionAuditedTestCase {
 
     /**
      * Ensure that auditing works with transactions
-     * 
-     * 
      */
     @Test
     public void testAuditingOverTransaction() throws Exception {
@@ -96,7 +93,7 @@ public class TransactionAuditedTestCase {
 
     /**
      * Ensure that auditing does not save data not committed when a transaction is rolled back
-     * 
+     *
      * @throws Exception
      */
     @Test

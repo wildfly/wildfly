@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation.shallow;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
@@ -55,12 +54,12 @@ public class FirstDAO {
      */
     public void induceCreationViaJNDILookup() {
 
-        SecondDAO secondDAO = (SecondDAO)ctx.lookup("java:module/SecondDAO");     // create an instance of SecondDAO that will share
-                                                                                  // the same extended persistence context
+        SecondDAO secondDAO = (SecondDAO) ctx.lookup("java:module/SecondDAO");     // create an instance of SecondDAO that will share
+        // the same extended persistence context
 
 
         secondDAO.noop();   // any failures should of already occurred, calling noop just gives an additional
-                            // change to check for other unexpected failures.
+        // change to check for other unexpected failures.
 
     }
 
@@ -71,8 +70,8 @@ public class FirstDAO {
      */
     public void induceTwoLevelCreationViaJNDILookup() {
 
-        SecondDAO secondDAO = (SecondDAO)ctx.lookup("java:module/SecondDAO");     // create an instance of SecondDAO that will share
-                                                                                  // the same extended persistence context
+        SecondDAO secondDAO = (SecondDAO) ctx.lookup("java:module/SecondDAO");     // create an instance of SecondDAO that will share
+        // the same extended persistence context
 
 
         secondDAO.induceCreationViaJNDILookup();    // second level of creation via JNDI lookup

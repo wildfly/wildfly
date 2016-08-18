@@ -62,12 +62,12 @@ public class ATTestCase extends BaseFunctionalTest {
 
     private UserTransaction ut;
     private AT client1, client2, client3;
-    
+
     public static final String ARCHIVE_NAME = "wsat-test";
 
     @Inject
     EventLog eventLog;
-    
+
     @Deployment
     public static WebArchive createTestArchive() {
         final WebArchive archive = DeploymentHelper.getInstance().getWebArchiveWithPermissions(ARCHIVE_NAME)
@@ -92,7 +92,7 @@ public class ATTestCase extends BaseFunctionalTest {
     protected EventLog getEventLog() {
         return eventLog;
     }
-    
+
     @After
     public void teardownTest() throws Exception {
         getEventLog().clear();
@@ -149,7 +149,7 @@ public class ATTestCase extends BaseFunctionalTest {
             throw e;
         }
     }
-    
+
     @Test(expected = TransactionRolledBackException.class)
     public void testWSATVoteRollbackPrePrepare() throws Exception {
         try {
@@ -189,7 +189,7 @@ public class ATTestCase extends BaseFunctionalTest {
         client2.invoke(VOTE_READONLY_DURABLE); // durable for COMMIT
         client3.invoke(VOTE_READONLY_DURABLE, VOTE_READONLY_VOLATILE);
         ut.commit();
-    
+
         assertEventLogClient1(BEFORE_PREPARE, PREPARE, COMMIT);
         assertEventLogClient2(BEFORE_PREPARE, PREPARE, VOLATILE_COMMIT);
         assertEventLogClient3(BEFORE_PREPARE, PREPARE);
@@ -213,7 +213,7 @@ public class ATTestCase extends BaseFunctionalTest {
         assertEventLogClient2(ROLLBACK, VOLATILE_ROLLBACK);
         assertEventLogClient3(ROLLBACK, VOLATILE_ROLLBACK);
     }
-    
+
     @Test
     public void testWSATApplicationExceptionCommit() throws Exception {
         try {
@@ -232,16 +232,18 @@ public class ATTestCase extends BaseFunctionalTest {
         assertEventLogClient2(BEFORE_PREPARE, PREPARE, COMMIT, VOLATILE_COMMIT);
         assertEventLogClient3(BEFORE_PREPARE, PREPARE, COMMIT, VOLATILE_COMMIT);
     }
-    
-    
+
+
     // --- assert methods
     // --- they take event log names from the service called by particular client
     private void assertEventLogClient1(EventLogEvent... expectedOrder) {
         assertEventLog(ATService1.LOG_NAME, expectedOrder);
     }
+
     private void assertEventLogClient2(EventLogEvent... expectedOrder) {
         assertEventLog(ATService2.LOG_NAME, expectedOrder);
     }
+
     private void assertEventLogClient3(EventLogEvent... expectedOrder) {
         assertEventLog(ATService3.LOG_NAME, expectedOrder);
     }

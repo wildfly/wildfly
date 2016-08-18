@@ -34,7 +34,7 @@ import javax.xml.ws.WebServiceFeature;
  */
 @WebServiceClient(name = "EndpointService", targetNamespace = "http://www.openuri.org/2004/04/HelloWorld")
 public class EndpointService extends javax.xml.ws.Service {
-    private final static QName TEST_ENDPOINT_PORT = new QName("http://www.openuri.org/2004/04/HelloWorld", "EJB3BeanPort");
+    private static final QName TEST_ENDPOINT_PORT = new QName("http://www.openuri.org/2004/04/HelloWorld", "EJB3BeanPort");
 
     public EndpointService(URL wsdlLocation, QName serviceName) {
         super(wsdlLocation, serviceName);

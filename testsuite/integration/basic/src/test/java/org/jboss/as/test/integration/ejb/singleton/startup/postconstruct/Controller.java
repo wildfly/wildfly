@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.singleton.startup.postconstruct;
 
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import java.util.logging.Logger;
 
 /**
  * @author Jan Martiska / jmartisk@redhat.com

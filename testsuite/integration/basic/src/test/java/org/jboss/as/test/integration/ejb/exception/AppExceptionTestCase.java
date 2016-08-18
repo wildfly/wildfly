@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.exception;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 
@@ -32,9 +35,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * AS7-1317

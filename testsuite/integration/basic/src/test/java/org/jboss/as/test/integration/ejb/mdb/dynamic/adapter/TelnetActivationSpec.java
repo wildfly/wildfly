@@ -40,7 +40,7 @@ public class TelnetActivationSpec implements ActivationSpec {
      * @return the bean class
      * @throws InvalidPropertyException
      */
-    private final Class<?> beanClass() throws InvalidPropertyException {
+    private Class<?> beanClass() throws InvalidPropertyException {
         // Carlo: this is different as opposed to the original proposal
         try {
             // we can only hope for the best here
@@ -77,7 +77,7 @@ public class TelnetActivationSpec implements ActivationSpec {
 
         final Class<?> beanClass = beanClass();
         // Set Prompt
-        final Prompt prompt = (Prompt) beanClass.getAnnotation(Prompt.class);
+        final Prompt prompt = beanClass.getAnnotation(Prompt.class);
         if (prompt != null) {
             this.prompt = prompt.value();
         }

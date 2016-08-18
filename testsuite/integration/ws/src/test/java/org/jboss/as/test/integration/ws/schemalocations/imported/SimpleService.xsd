@@ -2,7 +2,7 @@
 <xs:schema elementFormDefault="qualified" targetNamespace="http://jbossws.org/SchemaLocationsRewrite"
            version="1.0" xmlns:tns="http://jbossws.org/SchemaLocationsRewrite"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:imp="http://jbossws.org/SchemaLocationsRewrite/imported">
+           xmlns:imp="http://jbossws.org/SchemaLocationsRewrite/imported">
     <xs:import namespace="http://jbossws.org/SchemaLocationsRewrite/imported" schemaLocation="importedschema.xsd"/>
     <xs:element name="sayHello" type="tns:sayHello"/>
     <xs:element name="sayHelloResponse" type="tns:sayHelloResponse"/>

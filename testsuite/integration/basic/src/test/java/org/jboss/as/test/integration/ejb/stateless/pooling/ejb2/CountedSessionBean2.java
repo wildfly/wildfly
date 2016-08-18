@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
 public class CountedSessionBean2 extends CountedSessionBean1 {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CountedSessionBean2.class);
-    
+
     public CountedSessionBean2() {
         log.info("CTOR2");
     }

@@ -58,7 +58,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> createDeploymentForContainer2Singleton() {
         return createDeploymentSingleton();
-    }    
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -79,7 +79,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
         jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
         return jar;
     }
-    
+
     @Override
     @InSequence(1)
     @Test

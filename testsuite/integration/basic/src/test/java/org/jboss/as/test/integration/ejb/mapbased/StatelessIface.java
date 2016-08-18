@@ -27,6 +27,6 @@ package org.jboss.as.test.integration.ejb.mapbased;
  */
 public interface StatelessIface {
 
-    public String getCallerPrincipalName();
+    String getCallerPrincipalName();
 
 }

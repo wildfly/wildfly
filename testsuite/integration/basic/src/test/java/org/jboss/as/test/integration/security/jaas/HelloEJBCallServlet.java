@@ -43,7 +43,7 @@ import org.jboss.logging.Logger;
 /**
  * Servlet which handles GET requests. It calls remote EJB3 method {@link Hello#sayHello()} and returns it as a plain text
  * response. JNDI lookup of the Hello bean is based on provided {@value #PARAM_JNDI_NAME} request parameter.
- * 
+ *
  * @author Josef Cacek
  */
 @DeclareRoles({ HelloBean.ROLE_ALLOWED })
@@ -61,7 +61,7 @@ public class HelloEJBCallServlet extends HttpServlet {
 
     /**
      * Writes simple text response.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException

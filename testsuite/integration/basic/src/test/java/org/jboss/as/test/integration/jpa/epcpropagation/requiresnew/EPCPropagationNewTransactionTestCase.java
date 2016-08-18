@@ -30,14 +30,13 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *Tests that the propagation rules for Extended Persistence Contexts respect nestled transactions.
- *
+ * Tests that the propagation rules for Extended Persistence Contexts respect nestled transactions.
+ * <p>
  * As a transaction scoped EM has already been bound to the transaction, if REQUIRES_NEW is not used then
  * an exception will be thrown by the SFSB with the EPC.
  *

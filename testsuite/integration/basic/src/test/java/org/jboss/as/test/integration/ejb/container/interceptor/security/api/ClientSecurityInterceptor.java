@@ -30,7 +30,7 @@ import org.jboss.security.SecurityContextAssociation;
 
 /**
  * Client side interceptor responsible for propagating the local identity.
- * 
+ *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Josef Cacek
  */
@@ -39,7 +39,7 @@ public class ClientSecurityInterceptor implements EJBClientInterceptor {
     /**
      * Sets the current principal name to the invocation context. Principal name is stored to the context under the
      * {@link ServerSecurityInterceptor#DELEGATED_USER_KEY} key.
-     * 
+     *
      * @param context
      * @throws Exception
      * @see org.jboss.ejb.client.EJBClientInterceptor#handleInvocation(org.jboss.ejb.client.EJBClientInvocationContext)

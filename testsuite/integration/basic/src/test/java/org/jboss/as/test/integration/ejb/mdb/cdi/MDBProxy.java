@@ -26,13 +26,13 @@ import javax.ejb.Remote;
 
 /**
  * @author baranowb
- * 
+ *
  */
 @Remote
 public interface MDBProxy {
 
-    public static final String REPLY_QUEUE_JNDI_NAME = "java:/mdb-cdi-test/replyQueue";
-    public static final String QUEUE_JNDI_NAME = "java:/mdb-cdi-test/mdb-cdi-test";
+    String REPLY_QUEUE_JNDI_NAME = "java:/mdb-cdi-test/replyQueue";
+    String QUEUE_JNDI_NAME = "java:/mdb-cdi-test/mdb-cdi-test";
 
-    public void trigger() throws Exception;
+    void trigger() throws Exception;
 }

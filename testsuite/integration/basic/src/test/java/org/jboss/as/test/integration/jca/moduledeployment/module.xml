@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.1" name="org.jboss.ironjacamar.ra16out" slot="main">
 
     <resources>
-    	<resource-root path="."/>
+        <resource-root path="."/>
         <!-- Insert resources here -->
     </resources>
 
@@ -41,6 +41,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.threads"/>
         <module name="javax.xml.stream.api"/>
-        <module name="javax.jms.api" />
+        <module name="javax.jms.api"/>
     </dependencies>
 </module>

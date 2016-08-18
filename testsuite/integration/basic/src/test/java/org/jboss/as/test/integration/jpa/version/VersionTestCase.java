@@ -32,7 +32,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,10 +56,10 @@ public class VersionTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(VersionTestCase.class,
-            Employee.class,
-            SFSB1.class
+                Employee.class,
+                SFSB1.class
         );
-        jar.addAsManifestResource(VersionTestCase.class.getPackage(), "persistence.xml","persistence.xml");
+        jar.addAsManifestResource(VersionTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
 
@@ -77,7 +76,6 @@ public class VersionTestCase {
     }
 
     /**
-     *
      * @throws Exception
      */
     @Test
@@ -96,11 +94,11 @@ public class VersionTestCase {
         Employee updatedEmp = sfsb1.mutateEmployee(emp);
 
         assertTrue(
-            "entities read in non-tx should be detached from persistence context as they are read." +
-                "  version at time of creation = " + firstVersion +
-                ", version after update should be greater than creation version" +
-                ", version after update is = " + updatedEmp.getVersion(),
-            firstVersion.intValue() < updatedEmp.getVersion().intValue() );
+                "entities read in non-tx should be detached from persistence context as they are read." +
+                        "  version at time of creation = " + firstVersion +
+                        ", version after update should be greater than creation version" +
+                        ", version after update is = " + updatedEmp.getVersion(),
+                firstVersion.intValue() < updatedEmp.getVersion().intValue());
     }
 
 }

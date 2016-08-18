@@ -32,8 +32,8 @@ import javax.jws.WebService;
  */
 @Stateless
 @WebService(
-    endpointInterface = "org.jboss.as.test.integration.ws.context.as1605.EndpointIface",
-    targetNamespace = "org.jboss.as.test.integration.ws.context.as1605"
+        endpointInterface = "org.jboss.as.test.integration.ws.context.as1605.EndpointIface",
+        targetNamespace = "org.jboss.as.test.integration.ws.context.as1605"
 )
 public class EJB3Endpoint {
 

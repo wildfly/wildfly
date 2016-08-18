@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.home.localhome.annotation;
 
 import javax.annotation.Resource;
-import javax.ejb.Local;
 import javax.ejb.LocalHome;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
@@ -35,7 +34,7 @@ import org.jboss.as.test.integration.ejb.home.localhome.SimpleStatefulLocalHome;
  */
 @Stateful
 @LocalHome(SimpleStatefulLocalHome.class)
-public class SimpleStatefulLocalBean  {
+public class SimpleStatefulLocalBean {
 
     @Resource
     private SessionContext sessionContext;
@@ -55,6 +54,6 @@ public class SimpleStatefulLocalBean  {
     }
 
     public String otherMethod() {
-        return ((SimpleLocalInterface)sessionContext.getEJBLocalObject()).sayHello();
+        return ((SimpleLocalInterface) sessionContext.getEJBLocalObject()).sayHello();
     }
 }

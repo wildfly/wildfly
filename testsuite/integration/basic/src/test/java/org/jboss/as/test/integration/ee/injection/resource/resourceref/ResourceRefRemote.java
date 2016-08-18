@@ -27,10 +27,10 @@ import javax.naming.NamingException;
 
 /**
  * ResourceRefRemote
- * 
+ *
  * @author Jaikiran Pai
  */
 @Remote
 public interface ResourceRefRemote {
-    public boolean isDataSourceAvailableInEnc() throws NamingException;
+    boolean isDataSourceAvailableInEnc() throws NamingException;
 }

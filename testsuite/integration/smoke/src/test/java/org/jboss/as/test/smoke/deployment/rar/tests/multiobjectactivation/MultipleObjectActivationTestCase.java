@@ -21,9 +21,10 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.multiobjectactivation;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -50,8 +51,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -102,7 +101,6 @@ public class MultipleObjectActivationTestCase extends ContainerResourceMgmtTestB
 
         raa.addAsManifestResource(MultipleObjectActivationTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-        ;
         return raa;
     }
 

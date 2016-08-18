@@ -46,38 +46,38 @@ import static org.jboss.as.test.xts.util.ServiceCommand.*;
  */
 public abstract class BAParticipantCompletionSuperService implements BAParticipantCompletion {
     private static final Logger log = Logger.getLogger(BAParticipantCompletionSuperService.class);
-    
+
     // for tests this is not needed - but the code operating with participant registry should be synchronized
     private static final Map<String, BAParticipantManager> participantRegistry = new HashMap<String, BAParticipantManager>();
-    
+
     @Inject
     private EventLog eventLog;
-    
-       
+
+
     /**
      * Add an item to a set Enrolls a Participant if necessary and passes the call through to the business logic.
-     * 
+     *
      * @param value the value to add to the set.
-     * @throws  
+     * @throws
      * @throws AlreadyInSetException if value is already in the set
-     * @throws SetServiceException if an error occurred when attempting to add the item to the set.
+     * @throws SetServiceException   if an error occurred when attempting to add the item to the set.
      */
     public void saveData(String value, ServiceCommand... serviceCommands) throws TestApplicationException {
 
         log.info("[BA PARTICIPANT COMPL SERVICE] invoked saveData('" + value + "')");
         eventLog.foundEventLogName(value);
-        
+
         BAParticipantManager participantManager;
         BusinessActivityManager activityManager = BusinessActivityManagerFactory.businessActivityManager();
         String txid;
-        
+
         try {
             txid = activityManager.currentTransaction().toString();
         } catch (SystemException se) {
             throw new RuntimeException("Error on getting TX id from BusinessActivityManager", se);
         }
-        
-        if(participantRegistry.keySet().contains(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
+
+        if (participantRegistry.keySet().contains(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
             log.info("[BA PARTICIPANT COMPL SERVICE] Reusing BA participant manager - command: " + REUSE_BA_PARTICIPANT);
             participantManager = participantRegistry.get(txid);
         } else {
@@ -96,10 +96,9 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
 
         if (ServiceCommand.isPresent(APPLICATION_EXCEPTION, serviceCommands)) {
             throw new TestApplicationException("Intentionally thrown Application Exception - service command set to: " + APPLICATION_EXCEPTION);
-        }   
-        
+        }
+
         // There could be invoked some back-end business logic here
-        
         /*
          * This service employs the participant completion protocol which means it decides when it wants to commit local
          * changes. If the local changes (adding the item to the set) succeeded, we notify the coordinator that we have
@@ -118,8 +117,8 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
                 log.error("[BA PARTICIPANT COMPL SERVICE] 'completed' callback failed");
                 throw new RuntimeException("Error when notifying the coordinator that the work is completed", e);
             }
-        } 
-        
+        }
+
         if (ServiceCommand.isPresent(CANNOT_COMPLETE, serviceCommands)) {
             try {
                 // Tell the participant manager we cannot complete. This will force the activity to fail.

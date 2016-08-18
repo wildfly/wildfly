@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import org.jboss.logging.Logger;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>
@@ -67,8 +67,7 @@ public class LazyXAResource implements XAResource {
     @Override
     public boolean isSameRM(XAResource xaResource) throws XAException {
         logger.trace("#LazyXAResource.isSameRM");
-        if (xaResource != null)
-            return xaResource instanceof LazyXAResource;
+        if (xaResource != null) { return xaResource instanceof LazyXAResource; }
         return false;
     }
 

@@ -23,5 +23,5 @@
 package org.jboss.as.test.integration.sar;
 
 public interface JNDIBindingServiceMBean {
-    public void sayHello();
+    void sayHello();
 }

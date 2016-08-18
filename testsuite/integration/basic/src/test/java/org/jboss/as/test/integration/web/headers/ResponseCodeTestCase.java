@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test if certain response code wont erase content-type
- * 
+ *
  * @author baranowb
  */
 @RunWith(Arquillian.class)
@@ -71,7 +71,7 @@ public class ResponseCodeTestCase {
     @Test
     public void test200() throws Exception {
         final HttpGet get = new HttpGet(url.toExternalForm() + "jaxrs/test/returnCode/200");
-        final HttpResponse response = HTTP_CLIENT.execute(get); 
+        final HttpResponse response = HTTP_CLIENT.execute(get);
         doContentTypeChecks(response, 200);
     }
 
@@ -102,6 +102,7 @@ public class ResponseCodeTestCase {
         final HttpResponse response = HTTP_CLIENT.execute(get);
         doContentTypeChecks(response, 500);
     }
+
     /**
      * @param execute
      * @param i

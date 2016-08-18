@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.jca.basic;
 
-import java.util.List;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,12 +32,12 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
-import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -46,8 +47,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -92,7 +91,7 @@ public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(BasicDeployment10TestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
+                addClasses(BasicDeployment10TestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class,
                         BasicDeploymentTestCaseSetup.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
@@ -100,14 +99,11 @@ public class BasicDeployment10TestCase extends ContainerResourceMgmtTestBase {
 
         raa.addAsManifestResource(BasicDeployment10TestCase.class.getPackage(), "ra10.xml", "ra.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
-        ;
         return raa;
     }
 
     @Resource(mappedName = "java:jboss/name1")
     private MultipleConnectionFactory1 connectionFactory1;
-
-
 
 
     /**

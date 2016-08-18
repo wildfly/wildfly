@@ -21,8 +21,9 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 
@@ -33,6 +34,7 @@ import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
  * Unit test for {@link DistributableSessionIdentifierCodec}.
+ *
  * @author Paul Ferraro
  */
 public class DistributableSessionIdentifierCodecTestCase {

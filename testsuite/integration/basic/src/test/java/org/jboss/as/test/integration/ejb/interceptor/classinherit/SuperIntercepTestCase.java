@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Interceptor must also apply to super-methods. Migrated from EJB3 testsuite [JBQA-5451] from ejbthree471
- * 
+ *
  * @author Carlo de Wolf, Bill Burke, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

@@ -26,7 +26,7 @@ package org.jboss.as.test.integration.ejb.ejb2.reference.annotation;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface LocalStatefulSession30Business {
-    public String getLocalValue();
+    String getLocalValue();
 
-    public void setLocalValue(String value);
+    void setLocalValue(String value);
 }

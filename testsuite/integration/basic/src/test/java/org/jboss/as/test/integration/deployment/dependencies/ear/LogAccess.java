@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.deployment.dependencies.ear;
 
 /**
  * A remote interface for basic EJB tests.
- * 
+ *
  * @author Josef Cacek
  */
 public interface LogAccess {

@@ -26,7 +26,7 @@ import javax.ejb.Singleton;
 
 /**
  * Calculator
- * 
+ *
  * @author Jaikiran Pai
  */
 @Singleton

@@ -34,7 +34,7 @@ import javax.management.remote.JMXServiceURL;
 @Remote
 public interface ConnectedBeanInterface {
 
-    public int getMBeanCountFromConnector(JMXServiceURL jmxServiceURL) throws Exception;
+    int getMBeanCountFromConnector(JMXServiceURL jmxServiceURL) throws Exception;
 
-    public int getMBeanCountFromJNDI(String rmiServerJndiName) throws Exception;
+    int getMBeanCountFromJNDI(String rmiServerJndiName) throws Exception;
 }

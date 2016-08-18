@@ -434,7 +434,7 @@ public class SwitchIdentityTestCase {
      * @author Josef Cacek
      */
     private enum ManageMethodEnum {
-        ROLE1, ROLE2, ALLROLES;
+        ROLE1, ROLE2, ALLROLES
     }
 
 }

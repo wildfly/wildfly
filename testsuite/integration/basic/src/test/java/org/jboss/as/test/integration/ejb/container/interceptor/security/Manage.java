@@ -22,8 +22,6 @@
 package org.jboss.as.test.integration.ejb.container.interceptor.security;
 
 /**
- * 
- * 
  * @author Josef Cacek
  */
 public interface Manage {

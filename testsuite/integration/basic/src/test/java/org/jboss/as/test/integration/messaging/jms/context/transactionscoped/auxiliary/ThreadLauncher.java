@@ -66,7 +66,7 @@ public class ThreadLauncher {
         private final CountDownLatch latch;
         private final int numMessages;
 
-        public SendRunnable(CountDownLatch latch, int numMessages) {
+        SendRunnable(CountDownLatch latch, int numMessages) {
 
             this.latch = latch;
             this.numMessages = numMessages;

@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.hibernate;
 
 import java.util.Properties;
-
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -113,7 +112,7 @@ public class SFSBHibernateTransaction {
     public Student updateStudent(String address, int id) {
 
         Session session = sessionFactory.openSession();
-        Student student = (Student) session.load(Student.class, id);
+        Student student = session.load(Student.class, id);
         student.setAddress(address);
 
         try {
@@ -135,7 +134,7 @@ public class SFSBHibernateTransaction {
     // fetch student
     public Student getStudentNoTx(int id) {
         // Transaction trans = sessionFactory.openSession().beginTransaction();
-        Student emp = (Student) sessionFactory.openSession().load(Student.class, id);
+        Student emp = sessionFactory.openSession().load(Student.class, id);
         return emp;
     }
 

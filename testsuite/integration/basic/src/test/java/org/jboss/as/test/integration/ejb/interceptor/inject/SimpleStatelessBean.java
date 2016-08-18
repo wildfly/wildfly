@@ -38,26 +38,22 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @Interceptors(SimpleInterceptor.class)
 @Remote(InjectionTester.class)
-public class SimpleStatelessBean implements InjectionTester
-{
-   @PersistenceContext(unitName = "interceptors-test")
-   private EntityManager em;
+public class SimpleStatelessBean implements InjectionTester {
+    @PersistenceContext(unitName = "interceptors-test")
+    private EntityManager em;
 
-   @Resource
-   private SessionContext sessionContext;
+    @Resource
+    private SessionContext sessionContext;
 
-   public void assertAllInjectionsDone() throws IllegalStateException
-   {
-      if (em == null)
-      {
-         throw new IllegalStateException("EntityManager was *not* injected in bean " + this.getClass().getName());
-      }
+    public void assertAllInjectionsDone() throws IllegalStateException {
+        if (em == null) {
+            throw new IllegalStateException("EntityManager was *not* injected in bean " + this.getClass().getName());
+        }
 
-      if (this.sessionContext == null)
-      {
-         throw new IllegalStateException("SessionContext was *not* injected in interceptor "
-               + this.getClass().getName());
-      }
-   }
+        if (this.sessionContext == null) {
+            throw new IllegalStateException("SessionContext was *not* injected in interceptor "
+                    + this.getClass().getName());
+        }
+    }
 
 }

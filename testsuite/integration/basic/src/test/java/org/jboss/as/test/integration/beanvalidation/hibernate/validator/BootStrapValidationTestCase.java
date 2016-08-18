@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Set;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.ConstraintViolation;
@@ -124,7 +123,7 @@ public class BootStrapValidationTestCase {
 
         private final ConstraintValidatorFactory delegate;
 
-        public CustomConstraintValidatorFactory(ConstraintValidatorFactory delegate) {
+        CustomConstraintValidatorFactory(ConstraintValidatorFactory delegate) {
             this.delegate = delegate;
         }
 

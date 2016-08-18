@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
-import org.jboss.logging.Logger;
-
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -31,9 +32,8 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Set;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>
@@ -120,12 +120,9 @@ public class LazyManagedConnectionFactory implements ManagedConnectionFactory, R
 
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof LazyManagedConnectionFactory))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof LazyManagedConnectionFactory)) { return false; }
         LazyManagedConnectionFactory obj = (LazyManagedConnectionFactory) other;
         boolean result = true;
         return result;

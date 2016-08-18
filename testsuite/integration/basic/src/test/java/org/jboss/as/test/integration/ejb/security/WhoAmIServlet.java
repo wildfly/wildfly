@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import static org.jboss.as.test.shared.integration.ejb.security.Util.getCLMLoginContext;
+
+import java.io.IOException;
+import java.io.Writer;
 import javax.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
@@ -33,10 +37,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-
-import static org.jboss.as.test.shared.integration.ejb.security.Util.getCLMLoginContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

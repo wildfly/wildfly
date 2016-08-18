@@ -70,6 +70,7 @@ import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
  * Unit test for {@link MutableDetector}
+ *
  * @author Paul Ferraro
  */
 public class MutableDetectorTestCase {

@@ -22,16 +22,10 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
-import javax.annotation.Resource;
 import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
-import javax.transaction.UserTransaction;
 
 /**
  * stateful session bean

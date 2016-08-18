@@ -26,5 +26,5 @@ package org.jboss.as.test.integration.ejb.interceptor.classinherit;
  * @author <a href="mailto:amay@ingenta.com">Andrew May</a>
  */
 public interface A {
-    public String getMessage();
+    String getMessage();
 }

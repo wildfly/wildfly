@@ -23,17 +23,17 @@ package org.jboss.as.test.integration.jca.annorar;
 
 /**
  * AnnoConnection
- * 
+ *
  * @version $Revision: $
  */
 public interface AnnoConnection {
-	/**
-	 * Call me
-	 */
-	public void callMe();
+    /**
+     * Call me
+     */
+    void callMe();
 
-	/**
-	 * Close
-	 */
-	public void close();
+    /**
+     * Close
+     */
+    void close();
 }

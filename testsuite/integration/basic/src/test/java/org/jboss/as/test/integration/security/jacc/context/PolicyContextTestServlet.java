@@ -23,8 +23,6 @@
 package org.jboss.as.test.integration.security.jacc.context;
 
 import java.io.IOException;
-import java.lang.System;
-
 import javax.ejb.EJB;
 import javax.security.jacc.PolicyContextException;
 import javax.servlet.ServletException;
@@ -33,7 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(urlPatterns = { PolicyContextTestServlet.SERVLET_PATH })
+@WebServlet(urlPatterns = {PolicyContextTestServlet.SERVLET_PATH})
 public class PolicyContextTestServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -47,8 +45,7 @@ public class PolicyContextTestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             HttpServletRequest servletRequest = this.policyContextTestBean.getHttpServletRequestFromPolicyContext();
-            if (servletRequest != null)
-                response.getWriter().write("EJB successfully retrieved HttpServletRequest reference from PolicyContext");
+            if (servletRequest != null) { response.getWriter().write("EJB successfully retrieved HttpServletRequest reference from PolicyContext"); }
         } catch (PolicyContextException e) {
             throw new ServletException("Error retrieving request: " + e.getMessage(), e);
         }

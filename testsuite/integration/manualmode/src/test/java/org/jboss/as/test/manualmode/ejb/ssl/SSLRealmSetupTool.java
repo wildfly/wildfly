@@ -24,7 +24,6 @@ package org.jboss.as.test.manualmode.ejb.ssl;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;

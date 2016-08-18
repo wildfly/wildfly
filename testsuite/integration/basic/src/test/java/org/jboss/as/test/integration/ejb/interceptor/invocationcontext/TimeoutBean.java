@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.invocationcontext;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -32,25 +34,20 @@ import javax.interceptor.ExcludeDefaultInterceptors;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
 
-import org.jboss.logging.Logger;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author Ondrej Chaloupka
  */
 @Stateless
 @Interceptors({ClassInterceptor.class})
 public class TimeoutBean {
-    
+
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static boolean timerServiceCalled = false;
     public static String interceptorResults = "";
 
     @Resource
     private TimerService timerService;
-    
+
     @ExcludeDefaultInterceptors
     @ExcludeClassInterceptors
     public void createTimer() {

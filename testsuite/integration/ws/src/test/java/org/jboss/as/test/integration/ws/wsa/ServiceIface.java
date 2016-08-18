@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.ws.wsa;
 
 import javax.jws.WebService;
 
-@WebService( targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing")
+@WebService(targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing")
 public interface ServiceIface {
 
-    public String sayHello(String name);
+    String sayHello(String name);
 }

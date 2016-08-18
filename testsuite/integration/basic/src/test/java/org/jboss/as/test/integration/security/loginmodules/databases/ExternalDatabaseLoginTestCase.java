@@ -65,12 +65,12 @@ import org.junit.runner.RunWith;
  * uses ExampleDS, which is by default embedded H2 database, but this will be
  * replaced with certified databases during QE testing. Database is filled with
  * users and roles on startup with help of DatabaseCreatorBean.
- * 
+ *
  * @author Filip Bogyai
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ ExternalDatabaseLoginTestCase.SecurityDomainsSetup.class })
+@ServerSetup({ExternalDatabaseLoginTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Category(CommonCriteria.class)
 public class ExternalDatabaseLoginTestCase {
@@ -86,7 +86,7 @@ public class ExternalDatabaseLoginTestCase {
 
     /**
      * Creates WAR for test database login module with ExampleDS database
-     * 
+     *
      * @return
      */
     @Deployment(name = DB)
@@ -102,23 +102,21 @@ public class ExternalDatabaseLoginTestCase {
 
     /**
      * Tests access to a protected servlet.
-     * 
+     *
      * @param url
      * @throws MalformedURLException
      * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
-     * 
      * @test.objective Test whether user with right name and password is
-     *                 correctly authenticated and authorized. Also test
-     *                 unsuccessful authentication and authorization.
-     * 
-     *                 It uses web.xml and jboss-web.xml files.
-     * 
+     * correctly authenticated and authorized. Also test
+     * unsuccessful authentication and authorization.
+     * <p>
+     * It uses web.xml and jboss-web.xml files.
      * @test.expectedResult All asserts are correct and test finishes without
-     *                      any exception.
+     * any exception.
      */
-    private void testAccess(URL url) throws MalformedURLException, ClientProtocolException, IOException, URISyntaxException {
+    private void testAccess(URL url) throws IOException, URISyntaxException {
         final URL servletUrl = new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
         // successful authentication and authorization
         assertEquals("Response body is not correct.", SimpleSecuredServlet.RESPONSE_BODY,
@@ -133,9 +131,8 @@ public class ExternalDatabaseLoginTestCase {
 
     /**
      * Creates {@link WebArchive} (WAR) for given deployment name.
-     * 
-     * @param String
-     *            deployment name
+     *
+     * @param String deployment name
      * @return WebArchive deployment
      */
     private static WebArchive createWar(final String deployment) {
@@ -171,7 +168,7 @@ public class ExternalDatabaseLoginTestCase {
             final SecurityModule.Builder loginModuleBuilder = new SecurityModule.Builder().name("Database").options(
                     getLoginModuleOptions());
             final SecurityDomain sd1 = new SecurityDomain.Builder().name(DB).loginModules(loginModuleBuilder.build()).build();
-            return new SecurityDomain[] { sd1 };
+            return new SecurityDomain[]{sd1};
         }
 
         /**

@@ -24,8 +24,8 @@ public class CalendarTimerBean extends AbstractTimerBean {
         scheduleExpression.hour("*");
         scheduleExpression.minute("*");
         final TimerConfig timerConfig = new TimerConfig();
-        timerConfig.setPersistent(super.persistent);
-        timerConfig.setInfo(super.info);
+        timerConfig.setPersistent(persistent);
+        timerConfig.setInfo(info);
         super.timerService.createCalendarTimer(scheduleExpression, timerConfig);
     }
 
@@ -35,7 +35,7 @@ public class CalendarTimerBean extends AbstractTimerBean {
         int current = base;
         List<Integer> list = new ArrayList<Integer>();
         final int boundary = base + 60;
-        final int delay = super.delay / 1000;
+        final int delay = AbstractTimerBean.delay / 1000;
         for (; current < boundary;) {
             list.add(current % 60);
             current += delay;

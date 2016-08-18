@@ -38,8 +38,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.net.URL;
-
 /**
  * Test if all providers work as required.
  *

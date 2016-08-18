@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.rar;
 
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.rar.ejb.NoOpEJB;
@@ -32,8 +34,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
 
 /**
  * Tests that a .rar deployed within a .ear doesn't run into deployment problems

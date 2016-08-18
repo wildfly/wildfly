@@ -26,5 +26,5 @@ package org.jboss.as.test.integration.weld.ejb.multipleviews;
  */
 public interface EntertainmentDevice {
 
-    public int getSongCount();
+    int getSongCount();
 }

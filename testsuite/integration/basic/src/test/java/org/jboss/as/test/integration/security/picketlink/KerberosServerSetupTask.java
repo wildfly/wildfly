@@ -23,9 +23,7 @@
 package org.jboss.as.test.integration.security.picketlink;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,9 +90,10 @@ public class KerberosServerSetupTask implements ServerSetupTask {
 
     public static final String KERBEROS_PRIMARY_REALM = "JBOSS.ORG";
 
-    public static final String[] ROLE_NAMES = { "TheDuke", "Echo", "Admin", "SharedRoles", "RX" };
+    public static final String[] ROLE_NAMES = {"TheDuke", "Echo", "Admin", "SharedRoles", "RX"};
 
     public static final String QUERY_ROLES;
+
     static {
         final List<NameValuePair> qparams = new ArrayList<NameValuePair>();
         for (final String role : ROLE_NAMES) {
@@ -116,7 +115,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
      * @param containerId
      * @throws Exception
      * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         try {
@@ -134,45 +133,44 @@ public class KerberosServerSetupTask implements ServerSetupTask {
 
     //@formatter:off
     @CreateDS(
-        name = "JBossDS-KerberosServerSetupTask",
-        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
-        partitions =
-        {
-            @CreatePartition(
-                name = "jboss",
-                suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=org\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
-                indexes =
-                {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
-                })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer (
-        transports =
-        {
-            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT),
-            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT)
-        },
-        certificatePassword="secret")
+            name = "JBossDS-KerberosServerSetupTask",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
+            partitions =
+                    {
+                            @CreatePartition(
+                                    name = "jboss",
+                                    suffix = "dc=jboss,dc=org",
+                                    contextEntry = @ContextEntry(
+                                            entryLdif =
+                                                    "dn: dc=jboss,dc=org\n" +
+                                                            "dc: jboss\n" +
+                                                            "objectClass: top\n" +
+                                                            "objectClass: domain\n\n"),
+                                    indexes =
+                                            {
+                                                    @CreateIndex(attribute = "objectClass"),
+                                                    @CreateIndex(attribute = "dc"),
+                                                    @CreateIndex(attribute = "ou")
+                                            })
+                    },
+            additionalInterceptors = {KeyDerivationInterceptor.class})
+    @CreateLdapServer(
+            transports =
+                    {
+                            @CreateTransport(protocol = "LDAP", port = LDAP_PORT),
+                            @CreateTransport(protocol = "LDAPS", port = LDAPS_PORT)
+                    },
+            certificatePassword = "secret")
     @CreateKdcServer(
-      primaryRealm = KERBEROS_PRIMARY_REALM,
-      kdcPrincipal = "krbtgt/" + KERBEROS_PRIMARY_REALM + "@" + KERBEROS_PRIMARY_REALM,
-      searchBaseDn = "dc=jboss,dc=org",
-      transports = {
-        @CreateTransport( protocol = "UDP", port = KERBEROS_PORT ),
-        @CreateTransport( protocol = "TCP", port = KERBEROS_PORT )
-    })
+            primaryRealm = KERBEROS_PRIMARY_REALM,
+            kdcPrincipal = "krbtgt/" + KERBEROS_PRIMARY_REALM + "@" + KERBEROS_PRIMARY_REALM,
+            searchBaseDn = "dc=jboss,dc=org",
+            transports = {
+                    @CreateTransport(protocol = "UDP", port = KERBEROS_PORT),
+                    @CreateTransport(protocol = "TCP", port = KERBEROS_PORT)
+            })
     //@formatter:on
-    public void createLdap1(ManagementClient managementClient, final String hostname) throws Exception, IOException,
-            ClassNotFoundException, FileNotFoundException {
+    public void createLdap1(ManagementClient managementClient, final String hostname) throws Exception {
         final Map<String, String> map = new HashMap<String, String>();
         final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
         map.put("hostname", cannonicalHost);
@@ -233,7 +231,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
      * @param containerId
      * @throws Exception
      * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         krbServer1.stop();

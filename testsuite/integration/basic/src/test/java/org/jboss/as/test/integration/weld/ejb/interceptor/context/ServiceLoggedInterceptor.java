@@ -24,12 +24,9 @@ package org.jboss.as.test.integration.weld.ejb.interceptor.context;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-
-import javax.naming.InitialContext;
 
 @Interceptor
 @ServiceLogged
@@ -41,11 +38,11 @@ public class ServiceLoggedInterceptor {
 
     @PostConstruct
     public void init(InvocationContext context) throws Exception {
-         context.proceed();
+        context.proceed();
     }
 
     @AroundInvoke
     public Object log(InvocationContext ic) throws Exception {
-            return ic.proceed();
+        return ic.proceed();
     }
 }

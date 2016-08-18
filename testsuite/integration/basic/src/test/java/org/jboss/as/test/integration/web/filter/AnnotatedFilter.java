@@ -38,7 +38,7 @@ import javax.servlet.annotation.WebFilter;
 @WebFilter(value = "/*", description = "Annotated filter")
 public class AnnotatedFilter implements Filter {
 
-    public final static String OUTPUT = "filter";
+    public static final String OUTPUT = "filter";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

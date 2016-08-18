@@ -56,7 +56,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
                 "ActiveMQ Resource Adapter", activemqRAProperties);
     }
 
-    private static final SortedSet<String> findAllResourceAdapterProperties(ConnectionFactoryAttribute... attrs) {
+    private static SortedSet<String> findAllResourceAdapterProperties(ConnectionFactoryAttribute... attrs) {
         SortedSet<String> names = new TreeSet<String>();
         for (ConnectionFactoryAttribute attr : attrs) {
             if (attr.isResourceAdapterProperty()) {

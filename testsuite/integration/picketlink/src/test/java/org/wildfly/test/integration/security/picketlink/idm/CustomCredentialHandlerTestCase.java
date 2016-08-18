@@ -122,7 +122,7 @@ public class CustomCredentialHandlerTestCase extends AbstractBasicIdentityManage
 
         private TestModule module;
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("jpa.ds.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 

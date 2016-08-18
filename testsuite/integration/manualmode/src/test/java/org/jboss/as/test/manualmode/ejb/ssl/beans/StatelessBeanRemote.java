@@ -24,7 +24,6 @@ package org.jboss.as.test.manualmode.ejb.ssl.beans;
 
 import javax.ejb.Remote;
 import java.util.concurrent.Future;
-import javax.ejb.Asynchronous;
 
 /**
  * @author Ondrej Chaloupka
@@ -32,7 +31,7 @@ import javax.ejb.Asynchronous;
  */
 @Remote
 public interface StatelessBeanRemote {
-    static final String ANSWER = "Hello";
+    String ANSWER = "Hello";
 
     String sayHello();
 

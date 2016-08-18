@@ -37,24 +37,23 @@ import org.jboss.logging.Logger;
 import java.io.Serializable;
 
 /**
- * 
- * A participant completion participant which only logs invoked methods. The log {@link EventLog} is then checked at the end of every test. 
+ * A participant completion participant which only logs invoked methods. The log {@link EventLog} is then checked at the end of every test.
+ *
  * @see BaseFunctionalTest#assertEventLog
- * 
  */
-public class BAParticipantCompletionParticipant 
+public class BAParticipantCompletionParticipant
         implements BusinessAgreementWithParticipantCompletionParticipant, ConfirmCompletedParticipant, Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(BAParticipantCompletionParticipant.class);
-    
-    private String participantName; 
+
+    private String participantName;
     // Where to log participant activity
     private EventLog eventLog;
-   
+
 
     /**
      * Participant instances are related to business method calls in a one to one manner.
-     * 
+     *
      * @param value the value to remove from the set during compensation
      */
     public BAParticipantCompletionParticipant(ServiceCommand[] serviceCommands, EventLog eventLog, String value) {
@@ -69,9 +68,9 @@ public class BAParticipantCompletionParticipant
     /**
      * The transaction has completed successfully. The participant previously informed the coordinator that it was ready to
      * complete.
-     * 
+     *
      * @throws com.arjuna.wst.WrongStateException never in this implementation.
-     * @throws com.arjuna.wst.SystemException never in this implementation.
+     * @throws com.arjuna.wst.SystemException     never in this implementation.
      */
 
     public void close() throws WrongStateException, SystemException {
@@ -84,24 +83,24 @@ public class BAParticipantCompletionParticipant
     /**
      * The transaction has canceled, and the participant should undo any work. The participant cannot have informed the
      * coordinator that it has completed.
-     * 
+     *
      * @throws com.arjuna.wst.WrongStateException never in this implementation.
-     * @throws com.arjuna.wst.SystemException never in this implementation.
+     * @throws com.arjuna.wst.SystemException     never in this implementation.
      */
 
     public void cancel() throws WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.CANCEL);
         // The participant should compensate any work done within this BA
         log.info("[BA PARTICIPANT COMPL SERVICE] Participant cancel() - logged: " + EventLogEvent.CANCEL);
-        // A compensate work will be carrying here 
+        // A compensate work will be carrying here
     }
 
     /**
      * The transaction has cancelled. The participant previously informed the coordinator that it had finished work but could
      * compensate later if required, and it is now requested to do so.
-     * 
+     *
      * @throws com.arjuna.wst.WrongStateException never in this implementation.
-     * @throws com.arjuna.wst.SystemException if unable to perform the compensating transaction.
+     * @throws com.arjuna.wst.SystemException     if unable to perform the compensating transaction.
      */
 
     public void compensate() throws FaultedException, WrongStateException, SystemException {
@@ -125,9 +124,9 @@ public class BAParticipantCompletionParticipant
     /**
      * method called to perform commit or rollback of prepared changes to the underlying manager state after the participant
      * recovery record has been written
-     * 
+     *
      * @param confirmed true if the log record has been written and changes should be rolled forward and false if it has not
-     *        been written and changes should be rolled back
+     *                  been written and changes should be rolled back
      */
     public void confirmCompleted(boolean confirmed) {
         log.info("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(" + Boolean.toString(confirmed) + ")");

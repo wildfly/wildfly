@@ -40,11 +40,12 @@ import javax.xml.ws.WebServiceContext;
 )
 public class SimpleStatelessWebserviceEndpointImpl implements SimpleStatelessWebserviceEndpointIface {
 
-    @Resource WebServiceContext ctx;
+    @Resource
+    WebServiceContext ctx;
 
     @Override
     public String echo(final String s) {
-        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
+        if (ctx == null) { throw new RuntimeException("@Resource WebServiceContext not injected"); }
         return s;
     }
 

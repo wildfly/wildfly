@@ -16,68 +16,68 @@
 	http://www.fsf.org. */ -->
 
 <connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
            http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
-	version="1.6">
+           version="1.6">
 
-	<vendor-name>Red Hat Middleware LLC</vendor-name>
-	<eis-type>Test RA</eis-type>
-	<resourceadapter-version>0.1</resourceadapter-version>
-	<resourceadapter>
-		<resourceadapter-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidResourceAdapter</resourceadapter-class>
-		<config-property>
-			<config-property-name>raProperty</config-property-name>
-			<config-property-type>java.lang.Integer</config-property-type>
-			<config-property-value>5</config-property-value>
-		</config-property>
+    <vendor-name>Red Hat Middleware LLC</vendor-name>
+    <eis-type>Test RA</eis-type>
+    <resourceadapter-version>0.1</resourceadapter-version>
+    <resourceadapter>
+        <resourceadapter-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidResourceAdapter</resourceadapter-class>
+        <config-property>
+            <config-property-name>raProperty</config-property-name>
+            <config-property-type>java.lang.Integer</config-property-type>
+            <config-property-value>5</config-property-value>
+        </config-property>
 
-		<outbound-resourceadapter>
-			<connection-definition>
-				<managedconnectionfactory-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidManagedConnectionFactory</managedconnectionfactory-class>
-				<config-property>
-					<config-property-name>cfProperty</config-property-name>
-					<config-property-type>java.lang.String</config-property-type>
-					<config-property-value>property</config-property-value>
-				</config-property>
+        <outbound-resourceadapter>
+            <connection-definition>
+                <managedconnectionfactory-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidManagedConnectionFactory</managedconnectionfactory-class>
+                <config-property>
+                    <config-property-name>cfProperty</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>property</config-property-value>
+                </config-property>
 
-				<connectionfactory-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory</connectionfactory-interface>
-				<connectionfactory-impl-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactoryImpl</connectionfactory-impl-class>
-				<connection-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnection</connection-interface>
-				<connection-impl-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionImpl</connection-impl-class>
-			</connection-definition>
-			<transaction-support>NoTransaction</transaction-support>
-			<reauthentication-support>false</reauthentication-support>
-		</outbound-resourceadapter>
+                <connectionfactory-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory</connectionfactory-interface>
+                <connectionfactory-impl-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactoryImpl</connectionfactory-impl-class>
+                <connection-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnection</connection-interface>
+                <connection-impl-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionImpl</connection-impl-class>
+            </connection-definition>
+            <transaction-support>NoTransaction</transaction-support>
+            <reauthentication-support>false</reauthentication-support>
+        </outbound-resourceadapter>
 
-		<inbound-resourceadapter>
-			<messageadapter>
-				<messagelistener>
-					<messagelistener-type>javax.jms.MessageListener</messagelistener-type>
-					<activationspec>
-						<activationspec-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec</activationspec-class>
-						<config-property>
-							<config-property-name>myBooleanProperty</config-property-name>
-							<config-property-type>java.lang.Boolean</config-property-type>
-							<config-property-value>true</config-property-value>
-						</config-property>
-						<config-property>
-							<config-property-name>myStringProperty</config-property-name>
-							<config-property-type>java.lang.String</config-property-type>
-							<config-property-value>property</config-property-value>
-						</config-property>
-					</activationspec>
-				</messagelistener>
-			</messageadapter>
-		</inbound-resourceadapter>
-		
-		<adminobject>
-			<adminobject-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectInterface</adminobject-interface>
-			<adminobject-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectImpl</adminobject-class>
-			<config-property>
-				<config-property-name>aoProperty</config-property-name>
-				<config-property-type>java.lang.String</config-property-type>
-				<config-property-value>f</config-property-value>
-			</config-property>
-		</adminobject>
-	</resourceadapter>
+        <inbound-resourceadapter>
+            <messageadapter>
+                <messagelistener>
+                    <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+                    <activationspec>
+                        <activationspec-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec</activationspec-class>
+                        <config-property>
+                            <config-property-name>myBooleanProperty</config-property-name>
+                            <config-property-type>java.lang.Boolean</config-property-type>
+                            <config-property-value>true</config-property-value>
+                        </config-property>
+                        <config-property>
+                            <config-property-name>myStringProperty</config-property-name>
+                            <config-property-type>java.lang.String</config-property-type>
+                            <config-property-value>property</config-property-value>
+                        </config-property>
+                    </activationspec>
+                </messagelistener>
+            </messageadapter>
+        </inbound-resourceadapter>
+
+        <adminobject>
+            <adminobject-interface>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectInterface</adminobject-interface>
+            <adminobject-class>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectImpl</adminobject-class>
+            <config-property>
+                <config-property-name>aoProperty</config-property-name>
+                <config-property-type>java.lang.String</config-property-type>
+                <config-property-value>f</config-property-value>
+            </config-property>
+        </adminobject>
+    </resourceadapter>
 </connector>

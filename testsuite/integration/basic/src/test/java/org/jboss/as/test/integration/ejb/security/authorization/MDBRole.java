@@ -54,10 +54,10 @@ public class MDBRole implements MessageListener {
 
    @EJB
    Simple simple;
-   
+
    private String createResponse(){
       String response;
-      try{ 
+      try{
          response = simple.testAuthorizedRole();
       } catch (EJBAccessException ex) {
          response = "UNAUTHORIZED: testAuthorizedRole()";

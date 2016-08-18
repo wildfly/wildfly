@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ws.authentication;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.jws.WebService;
+
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.ws.api.annotation.TransportGuarantee;
 import org.jboss.ws.api.annotation.AuthMethod;
@@ -53,7 +54,7 @@ public class EJBEndpointSecuredWSDLAccess implements EJBEndpointIface {
 
     public String hello(String input) {
         return "Hello " + input + "!";
-    }    
+    }
 
     public String helloForAll(String input) {
         return "Hello " + input + "!";
@@ -65,9 +66,9 @@ public class EJBEndpointSecuredWSDLAccess implements EJBEndpointIface {
 
     public String helloForRole(String input) {
         return "Hello " + input + "!";
-    } 
+    }
 
     public String helloForRoles(String input) {
         return "Hello " + input + "!";
-    } 
+    }
 }

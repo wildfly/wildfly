@@ -22,14 +22,20 @@
 
 package org.jboss.as.test.integration.jca.datasource;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.io.IOException;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.runner.RunWith;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import java.io.IOException;
 
 /**
  * Running tests from {@link DatasourceEnableAttributeTestBase} with XA datsource.
@@ -48,7 +54,7 @@ public class DatasourceXaEnableAttributeTestCase extends DatasourceEnableAttribu
         ModelNode batch = new ModelNode();
         batch.get(OP).set(COMPOSITE);
         batch.get(OP_ADDR).setEmptyList();
-        
+
         ModelNode operation = getDataSourceOperation(address, datasource);
         batch.get(STEPS).add(operation);
 
@@ -62,7 +68,7 @@ public class DatasourceXaEnableAttributeTestCase extends DatasourceEnableAttribu
 
     @Override
     protected void removeDataSourceSilently(Datasource datasource) {
-        if(datasource == null || datasource.getName() == null) {
+        if (datasource == null || datasource.getName() == null) {
             return;
         }
 
@@ -88,17 +94,17 @@ public class DatasourceXaEnableAttributeTestCase extends DatasourceEnableAttribu
     protected void testConnection(Datasource datasource) throws Exception {
         testConnectionXA(datasource.getName());
     }
-    
+
     private ModelNode getAddXADataSourcePropertyOperation(final ModelNode address, final String name, final String value) throws IOException, MgmtOperationException {
         final ModelNode propertyAddress = address.clone();
         propertyAddress.add("xa-datasource-properties", name);
         propertyAddress.protect();
-        
+
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(propertyAddress);
         operation.get("value").set(value);
-        
+
         return operation;
     }
 }

@@ -26,7 +26,7 @@ import javax.ejb.EJB;
 
 /**
  * Stateless bean placed into classes in war archive. Bean definition in xml dd.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 public class WarBean implements BeanInterface {

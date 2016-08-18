@@ -26,13 +26,13 @@ import javax.jws.WebService;
 import javax.xml.ws.soap.Addressing;
 
 @WebService
-(
-   portName = "AddressingServicePort",
-   serviceName = "AddressingService",
-   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing",
-   endpointInterface = "org.jboss.as.test.integration.ws.wsa.ServiceIface"
-)
-@Addressing(enabled=true, required=true)
+        (
+                portName = "AddressingServicePort",
+                serviceName = "AddressingService",
+                targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing",
+                endpointInterface = "org.jboss.as.test.integration.ws.wsa.ServiceIface"
+        )
+@Addressing(enabled = true, required = true)
 @HandlerChain(file = "ws-handler.xml")
 public class ServiceImplAddressingRequired implements ServiceIface {
 

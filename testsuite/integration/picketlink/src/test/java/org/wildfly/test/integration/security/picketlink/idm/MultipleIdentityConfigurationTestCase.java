@@ -129,7 +129,7 @@ public class MultipleIdentityConfigurationTestCase {
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("multiple.store.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 

@@ -22,15 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.global;
 
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 /**
  * @author $Author: wolfc
  */
 public interface Session21 extends javax.ejb.EJBObject {
-    public String access() throws RemoteException;
+    String access() throws RemoteException;
 
-    public String access30() throws RemoteException;
+    String access30() throws RemoteException;
 
-    public String globalAccess30() throws RemoteException;
+    String globalAccess30() throws RemoteException;
 }

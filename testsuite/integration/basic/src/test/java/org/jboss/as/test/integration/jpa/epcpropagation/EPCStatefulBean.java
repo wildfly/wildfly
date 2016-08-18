@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
 import java.util.Locale;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -42,7 +41,7 @@ import javax.transaction.UserTransaction;
 @Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
 @Local
-public class EPCStatefulBean extends AbstractStatefulInterface  implements StatefulInterface {
+public class EPCStatefulBean extends AbstractStatefulInterface implements StatefulInterface {
 
     @PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "mypc")
     EntityManager em;

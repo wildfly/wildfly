@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.hibernate.naturalid;
 
 /**
  * Represents a Person object.
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 public class Person {
@@ -48,10 +48,10 @@ public class Person {
 
     /**
      * Creates a new instance of Person.
-     * 
+     *
      * @param firstName first name.
-     * @param lastName last name.
-     * @param address address.
+     * @param lastName  last name.
+     * @param address   address.
      */
     public Person(String firstName, String lastName, String address) {
         this.firstName = firstName;
@@ -61,7 +61,7 @@ public class Person {
 
     /**
      * Gets the person id for this student.
-     * 
+     *
      * @return person id.
      */
     public int getPersonId() {
@@ -70,7 +70,7 @@ public class Person {
 
     /**
      * Sets the person id for this Person.
-     * 
+     *
      * @return person id.
      */
     public void setPersonId(int personId) {
@@ -79,7 +79,7 @@ public class Person {
 
     /**
      * Gets the first name for this person.
-     * 
+     *
      * @return first name.
      */
     public String getFirstName() {
@@ -88,7 +88,7 @@ public class Person {
 
     /**
      * Sets the first name for this person.
-     * 
+     *
      * @param first name.
      */
     public void setFirstName(String firstName) {
@@ -97,7 +97,7 @@ public class Person {
 
     /**
      * Gets the last name for this person.
-     * 
+     *
      * @return last name.
      */
     public String getLastName() {
@@ -106,7 +106,7 @@ public class Person {
 
     /**
      * Sets the last name for this person.
-     * 
+     *
      * @param last name.
      */
     public void setLastName(String lastName) {
@@ -115,7 +115,7 @@ public class Person {
 
     /**
      * Gets the address for this student.
-     * 
+     *
      * @return address.
      */
     public String getAddress() {
@@ -124,7 +124,7 @@ public class Person {
 
     /**
      * Sets the address for this student.
-     * 
+     *
      * @param address.
      */
     public void setAddress(String address) {
@@ -141,7 +141,7 @@ public class Person {
 
     /**
      * Method used by the UI to clear information on the screen.
-     * 
+     *
      * @return String used in the navigation rules.
      */
     public String clear() {

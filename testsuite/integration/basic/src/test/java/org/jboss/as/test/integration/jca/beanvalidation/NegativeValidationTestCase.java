@@ -21,15 +21,15 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation;
 
-import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.*;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -43,7 +43,7 @@ public class NegativeValidationTestCase {
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     public static ResourceAdapterArchive createDeployment(String ij) throws Exception {
@@ -54,9 +54,9 @@ public class NegativeValidationTestCase {
         ja.addPackage(ValidConnectionFactory.class.getPackage()).addClasses(NegativeValidationTestCase.class);
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(NegativeValidationTestCase.class.getPackage(),"ra.xml", "ra.xml")
-            .addAsManifestResource(
-                NegativeValidationTestCase.class.getPackage(),"ironjacamar" + (ij != null ? "-" + ij : "") + ".xml", "ironjacamar.xml");
+        raa.addAsManifestResource(NegativeValidationTestCase.class.getPackage(), "ra.xml", "ra.xml")
+                .addAsManifestResource(
+                        NegativeValidationTestCase.class.getPackage(), "ironjacamar" + (ij != null ? "-" + ij : "") + ".xml", "ironjacamar.xml");
 
         return raa;
     }

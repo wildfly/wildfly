@@ -63,13 +63,13 @@ import org.junit.runner.RunWith;
  * Tests for Security Vault external passwords, obtained from external command
  * or class. Each test case initialize a test vault with different password
  * type.
- * 
+ *
  * @author Filip Bogyai
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ExternalPasswordModuleSetupTask.class,
-    ExternalPasswordCommandsTestCase.ExternalVaultPasswordSetup.class})
+        ExternalPasswordCommandsTestCase.ExternalVaultPasswordSetup.class})
 public class ExternalPasswordCommandsTestCase {
 
     private static Logger LOGGER = Logger.getLogger(ExternalPasswordCommandsTestCase.class);
@@ -94,13 +94,12 @@ public class ExternalPasswordCommandsTestCase {
     public static final int ITER_COUNT = 47;
 
     private static final ExternalPasswordProvider passwordProvider = new ExternalPasswordProvider(System.getProperty("java.io.tmpdir")
-                    + File.separator + "tmp.counter");
+            + File.separator + "tmp.counter");
     public static final PathAddress VAULT_PATH = PathAddress.pathAddress().append(CORE_SERVICE, VAULT);
 
     /**
      * Test deployment used for checking if vaulted password can be loaded from
      * vault configured in server config.
-     * 
      */
     @Deployment(name = "vault")
     public static WebArchive appDeploymentCahce() {
@@ -180,11 +179,12 @@ public class ExternalPasswordCommandsTestCase {
 
     }
 
-    
+
     /**
      * TestingTesting {CLASS[@module_name]}classname[:ctorargs]' option password
      * where the '[:ctorargs]' is an optional string delimited by the ':' from
-     * the classname that will be passed to the class constructor. The class     
+     * the classname that will be passed to the class constructor. The class
+     *
      * @TmpFilePassword constructor takes one argument with file, in which the password
      * is stored password.
      */
@@ -260,8 +260,8 @@ public class ExternalPasswordCommandsTestCase {
     /**
      * Creates runnable command for vault to retrieve password from external
      * source
-     * 
-     * @param option as command type EXT or CMD
+     *
+     * @param option    as command type EXT or CMD
      * @param delimiter to split argument from command
      * @return command to run a class which will return password
      */
@@ -270,10 +270,7 @@ public class ExternalPasswordCommandsTestCase {
         File java = new File(System.getProperty("java.home"), "/bin/java");
         File javaExe = new File(System.getProperty("java.home"), "/bin/java.exe");
         String jre;
-        if (java.exists())
-            jre = java.getAbsolutePath();
-        else
-            jre = javaExe.getAbsolutePath();
+        if (java.exists()) { jre = java.getAbsolutePath(); } else { jre = javaExe.getAbsolutePath(); }
         // Build the command to run this jre
         String cmd = jre + delimiter + "-cp" + delimiter
                 + ExternalPasswordProvider.class.getProtectionDomain().getCodeSource().getLocation().getPath() + delimiter
@@ -336,7 +333,7 @@ public class ExternalPasswordCommandsTestCase {
                 op = Util.createAddOperation(VAULT_PATH);
                 ModelNode vaultOption = op.get(VAULT_OPTIONS);
                 while (it.hasNext()) {
-                    String param = (String) it.next();
+                    String param = it.next();
                     vaultOption.get(param).set(originalVault.get(param));
                 }
                 Utils.applyUpdate(op, managementClient.getControllerClient());

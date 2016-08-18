@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.basic;
 
 import java.util.Map;
-
 import javax.ejb.Stateless;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -39,7 +38,7 @@ public class SLSBAmbiguousPU {
     @PersistenceUnit()
     private EntityManagerFactory emf;
 
-    public Map<String, Object> getEMInfo(){
+    public Map<String, Object> getEMInfo() {
         return emf.getProperties();
     }
 

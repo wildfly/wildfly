@@ -32,5 +32,5 @@ import javax.jws.soap.SOAPBinding;
 @SOAPBinding
 public interface XercesUsageWSEndpoint {
 
-    public String parseUsingXerces(String xmlResource);
+    String parseUsingXerces(String xmlResource);
 }

@@ -23,8 +23,6 @@
 package org.jboss.as.test.integration.sar.servicembean;
 
 import javax.management.Attribute;
-import javax.management.NotificationListener;
-import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
@@ -34,7 +32,6 @@ import org.jboss.system.ServiceMBeanSupport;
  * An MBean that extends legacy {@link ServiceMBeanSupport}.
  *
  * @author Eduardo Martins
- *
  */
 public class TestService extends ServiceMBeanSupport implements TestServiceMBean {
 

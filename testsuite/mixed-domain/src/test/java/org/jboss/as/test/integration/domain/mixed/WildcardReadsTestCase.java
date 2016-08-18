@@ -128,7 +128,7 @@ public class WildcardReadsTestCase {
     }
 
     @AfterClass
-    public synchronized static void afterClass() {
+    public static synchronized void afterClass() {
         if (masterServerOneStarted == Boolean.FALSE) {
             ModelNode op = Util.createEmptyOperation("stop", PathAddress.pathAddress(HOST_MASTER, SERVER_CONFIG_ONE));
             executeForResult(op, ModelType.STRING);

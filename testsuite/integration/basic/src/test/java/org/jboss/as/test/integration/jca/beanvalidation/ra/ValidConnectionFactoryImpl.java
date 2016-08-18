@@ -32,16 +32,24 @@ import javax.resource.spi.ConnectionManager;
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
-    /** The serial version UID */
+    /**
+     * The serial version UID
+     */
     private static final long serialVersionUID = 1L;
 
-    /** Reference */
+    /**
+     * Reference
+     */
     private Reference reference;
 
-    /** ManagedConnectionFactory */
+    /**
+     * ManagedConnectionFactory
+     */
     private ValidManagedConnectionFactory mcf;
 
-    /** ConnectionManager */
+    /**
+     * ConnectionManager
+     */
     private ConnectionManager connectionManager;
 
     /**
@@ -53,8 +61,8 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
 
     /**
      * Constructor
-     * 
-     * @param mcf ManagedConnectionFactory
+     *
+     * @param mcf       ManagedConnectionFactory
      * @param cxManager ConnectionManager
      */
     public ValidConnectionFactoryImpl(ValidManagedConnectionFactory mcf, ConnectionManager cxManager) {
@@ -64,9 +72,9 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
 
     /**
      * Get connection from factory
-     * 
-     * @return  Connection instance
-     * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
+     *
+     * @return Connection instance
+     * @throws javax.resource.ResourceException Thrown if a connection can't be obtained
      */
     @Override
     public ValidConnection getConnection() throws ResourceException {
@@ -75,9 +83,9 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
 
     /**
      * Get the Reference instance.
-     * 
+     *
      * @return Reference instance
-     * @exception javax.naming.NamingException Thrown if a reference can't be obtained
+     * @throws javax.naming.NamingException Thrown if a reference can't be obtained
      */
     @Override
     public Reference getReference() throws NamingException {
@@ -86,7 +94,7 @@ public class ValidConnectionFactoryImpl implements ValidConnectionFactory {
 
     /**
      * Set the Reference instance.
-     * 
+     *
      * @param reference A Reference instance
      */
     @Override

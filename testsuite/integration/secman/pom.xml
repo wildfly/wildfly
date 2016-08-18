@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
 
     <parent>
@@ -12,83 +12,83 @@
     </parent>
 
 
-	<artifactId>wildfly-ts-integ-secman</artifactId>
+    <artifactId>wildfly-ts-integ-secman</artifactId>
 
-	<name>WildFly Test Suite: Integration - Security Manager</name>
+    <name>WildFly Test Suite: Integration - Security Manager</name>
 
-	<properties>
-		<jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
-		<jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
-		<jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-	</properties>
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
 
-	<profiles>
-		<profile>
-			<id>secman.integration.tests.profile</id>
-			<activation>
-				<property>
-					<name>!no.secman.integration.tests</name>
-				</property>
-			</activation>
+    <profiles>
+        <profile>
+            <id>secman.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!no.secman.integration.tests</name>
+                </property>
+            </activation>
 
-			<!-- Server configuration executions. -->
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<executions>
+            <!-- Server configuration executions. -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
 
-							<!-- Disable default-test execution. -->
-							<execution>
-								<id>default-test</id>
-								<goals>
-									<goal>test</goal>
-								</goals>
-								<phase>none</phase>
-							</execution>
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
 
-							<execution>
-								<id>secman-integration.surefire</id>
-								<phase>test</phase>
-								<goals>
-									<goal>test</goal>
-								</goals>
-								<configuration>
-									<includes>
-										<include>org/jboss/as/testsuite/integration/secman/**/*Test*.java</include>
-									</includes>
+                            <execution>
+                                <id>secman-integration.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>org/jboss/as/testsuite/integration/secman/**/*Test*.java</include>
+                                    </includes>
 
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                                     </environmentVariables>
 
-									<systemPropertyVariables>
-										<jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-										<jboss.inst>${basedir}/target/jbossas</jboss.inst>
-									</systemPropertyVariables>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<artifactId>maven-checkstyle-plugin</artifactId>
-						<configuration>
-							<!-- workaround for not working includeTestSourceDirectory parameter -->
-							<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-						</configuration>
-						<executions>
-							<execution>
-								<id>check-style</id>
-								<phase>test-compile</phase>
-								<goals>
-									<goal>checkstyle</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <configuration>
+                            <!-- workaround for not working includeTestSourceDirectory parameter -->
+                            <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>check-style</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>checkstyle</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

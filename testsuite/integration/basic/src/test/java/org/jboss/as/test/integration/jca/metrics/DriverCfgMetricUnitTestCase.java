@@ -23,14 +23,13 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
+import static org.junit.Assert.assertEquals;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * XA datasource configuration and metrics unit test.
@@ -39,51 +38,51 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DriverCfgMetricUnitTestCase  extends JCAMetrictsTestBase {
+public class DriverCfgMetricUnitTestCase extends JCAMetrictsTestBase {
 
-	@BeforeClass
+    @BeforeClass
     public static void before() {
-    	setBaseAddress("jdbc-driver", "name");
+        setBaseAddress("jdbc-driver", "name");
     }
 
     @Test
-    public void testDriverAttributes()throws Exception {
-    	setModel("complex-driver.xml");
-    	assertEquals("name",readAttribute(baseAddress,"driver-name").asString());
-    	assertEquals("DsClass",readAttribute(baseAddress,"driver-datasource-class-name").asString());
-    	assertEquals("XaDsClass",readAttribute(baseAddress,"driver-xa-datasource-class-name").asString());
+    public void testDriverAttributes() throws Exception {
+        setModel("complex-driver.xml");
+        assertEquals("name", readAttribute(baseAddress, "driver-name").asString());
+        assertEquals("DsClass", readAttribute(baseAddress, "driver-datasource-class-name").asString());
+        assertEquals("XaDsClass", readAttribute(baseAddress, "driver-xa-datasource-class-name").asString());
         removeDs();
     }
 
     @Test
-    public void testEmptyDriver()throws Exception {
-    	setModel("empty-driver.xml");
-    	assertEquals("name",readAttribute(baseAddress,"driver-name").asString());
+    public void testEmptyDriver() throws Exception {
+        setModel("empty-driver.xml");
+        assertEquals("name", readAttribute(baseAddress, "driver-name").asString());
         removeDs();
     }
 
-    @Test(expected=Exception.class)
-    public void testDriverWoName()throws Exception {
-    	setBadModel("wrong-wo-name-driver.xml");
+    @Test(expected = Exception.class)
+    public void testDriverWoName() throws Exception {
+        setBadModel("wrong-wo-name-driver.xml");
     }
 
-    @Test(expected=Exception.class)
-    public void testDriverWithNoName()throws Exception {
-    	setBadModel("wrong-empty-name-driver.xml");
+    @Test(expected = Exception.class)
+    public void testDriverWithNoName() throws Exception {
+        setBadModel("wrong-empty-name-driver.xml");
     }
 
-    @Test(expected=Exception.class)
-    public void test2DriverClasses()throws Exception {
-    	setBadModel("wrong-2-driver-classes.xml");
+    @Test(expected = Exception.class)
+    public void test2DriverClasses() throws Exception {
+        setBadModel("wrong-2-driver-classes.xml");
     }
 
-    @Test(expected=Exception.class)
-    public void test2DSClasses()throws Exception {
-    	setBadModel("wrong-2-ds-classes-driver.xml");
+    @Test(expected = Exception.class)
+    public void test2DSClasses() throws Exception {
+        setBadModel("wrong-2-ds-classes-driver.xml");
     }
 
-    @Test(expected=Exception.class)
-    public void test2XADSClasses()throws Exception {
-    	setBadModel("wrong-2-xa-ds-classes-driver.xml");
+    @Test(expected = Exception.class)
+    public void test2XADSClasses() throws Exception {
+        setBadModel("wrong-2-xa-ds-classes-driver.xml");
     }
 }

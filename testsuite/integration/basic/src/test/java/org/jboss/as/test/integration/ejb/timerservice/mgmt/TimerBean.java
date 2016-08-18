@@ -12,7 +12,7 @@ public class TimerBean extends AbstractTimerBean {
 
     @Override
     public void createTimer() {
-        super.timerService.createTimer(super.delay, super.info);
+        super.timerService.createTimer(delay, info);
     }
 
 }

@@ -27,13 +27,12 @@ import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
+
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.junit.Assert;
 
 /**
- *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
 @Singleton
@@ -44,7 +43,7 @@ import org.junit.Assert;
 @RunAsPrincipal("Helloween")
 @SecurityDomain("other")
 public class SingletonBean implements WhoAmI {
-     @EJB(beanName = "StatelessBBean")
+    @EJB(beanName = "StatelessBBean")
     private WhoAmI beanB;
 
     private String principal;

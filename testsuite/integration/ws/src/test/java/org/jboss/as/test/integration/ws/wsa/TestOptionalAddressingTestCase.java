@@ -27,6 +27,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+
 import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,7 +41,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @RunWith(Arquillian.class)
@@ -53,7 +53,7 @@ public class TestOptionalAddressingTestCase {
 
     private static final String message = "optional-addressing";
     private static final String expectedResponse = "Hello optional-addressing!";
-    
+
     @Deployment
     public static Archive<?> deployment() {
 
@@ -94,7 +94,7 @@ public class TestOptionalAddressingTestCase {
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsa/AddressingService?wsdl");
         File wsdlFile = new File(this.getClass().getSimpleName() + ".wsdl");
         TestNoAddressingTestCase.downloadWSDLToFile(wsdlURL, wsdlFile);
-        
+
         Service service = Service.create(wsdlFile.toURI().toURL(), serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
 

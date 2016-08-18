@@ -25,5 +25,5 @@ package org.jboss.as.test.integration.jpa.epcpropagation;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface IntermediateStatefulInterface {
-    public boolean execute(Integer id, String name) throws Exception;
+    boolean execute(Integer id, String name) throws Exception;
 }

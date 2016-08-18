@@ -24,7 +24,11 @@ package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 
@@ -33,7 +37,7 @@ import org.hibernate.envers.Audited;
  */
 @Entity
 @Audited
-@Table(name="ADDRESS_HIB")
+@Table(name = "ADDRESS_HIB")
 public class Address {
     @Id
     @GeneratedValue
@@ -45,37 +49,37 @@ public class Address {
 
 
     @OneToMany(mappedBy = "address")
-    private Set<Person> persons = new HashSet<Person>(  );
+    private Set<Person> persons = new HashSet<Person>();
 
-	public Integer getHouseNumber() {
-		return houseNumber;
-	}
+    public Integer getHouseNumber() {
+        return houseNumber;
+    }
 
-	public void setHouseNumber(Integer houseNumber) {
-		this.houseNumber = houseNumber;
-	}
+    public void setHouseNumber(Integer houseNumber) {
+        this.houseNumber = houseNumber;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public Set<Person> getPersons() {
-		return persons;
-	}
+    public Set<Person> getPersons() {
+        return persons;
+    }
 
-	public void setPersons(Set<Person> persons) {
-		this.persons = persons;
-	}
+    public void setPersons(Set<Person> persons) {
+        this.persons = persons;
+    }
 
-	public String getStreetName() {
-		return streetName;
-	}
+    public String getStreetName() {
+        return streetName;
+    }
 
-	public void setStreetName(String streetName) {
-		this.streetName = streetName;
-	}
+    public void setStreetName(String streetName) {
+        this.streetName = streetName;
+    }
 }

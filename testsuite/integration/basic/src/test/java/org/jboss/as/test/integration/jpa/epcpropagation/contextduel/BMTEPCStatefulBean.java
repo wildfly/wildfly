@@ -62,7 +62,7 @@ public class BMTEPCStatefulBean {
 
     // expect EJBException to be thrown for success, anything else thrown is an error
     public void shouldThrowError() throws SystemException, NotSupportedException, RollbackException,
-        HeuristicRollbackException, HeuristicMixedException {
+            HeuristicRollbackException, HeuristicMixedException {
         Employee emp = new Employee();
         emp.setAddress("1003 Main Street");
         emp.setName("Sharon Sells");
@@ -82,14 +82,14 @@ public class BMTEPCStatefulBean {
         // if we invoke an operation on the BMTEPCStatefulBean.em, an EJBException should be thrown
         Employee shouldOfBeenAnError = em.find(Employee.class, 1);
         throw new RuntimeException("EJBException not thrown when attempting to propagate EPC into TX that already has PC " +
-            ", look at ExtendedEntityManager logic for likely cause, find returned = " + shouldOfBeenAnError
+                ", look at ExtendedEntityManager logic for likely cause, find returned = " + shouldOfBeenAnError
         );
         //sessionContext.getUserTransaction().commit();
 
     }
 
     public void shouldNotThrowError() throws SystemException, NotSupportedException, RollbackException,
-        HeuristicRollbackException, HeuristicMixedException {
+            HeuristicRollbackException, HeuristicMixedException {
         Employee emp = new Employee();
         emp.setAddress("1003 Main Street");
         emp.setName("Sharon Sells");

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.hibernate.envers;
 
+import static org.junit.Assert.assertTrue;
+
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -39,8 +41,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test that Hibernate Envers is working over Native Hibernate API in AS7 container without any JPA assistance

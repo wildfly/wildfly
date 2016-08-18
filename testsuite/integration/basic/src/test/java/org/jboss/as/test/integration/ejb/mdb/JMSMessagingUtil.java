@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.mdb;
 
 
+import java.io.Serializable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -37,7 +38,6 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import java.io.Serializable;
 
 /**
  * User: jpai

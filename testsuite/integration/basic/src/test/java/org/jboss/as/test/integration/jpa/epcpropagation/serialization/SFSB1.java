@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.jpa.epcpropagation.serialization;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -39,7 +38,7 @@ import javax.persistence.PersistenceContextType;
 @Stateful
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
-        EntityManager em;
+    EntityManager em;
 
     public void createEmployeeNoTx(String name, String address, int id) {
         Employee emp = new Employee();

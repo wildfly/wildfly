@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.security.jaas;
 
 import java.security.acl.Group;
 import java.util.Map;
-
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
@@ -36,7 +35,7 @@ import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
 
 /**
  * A custom LoginModule which validates all users password against {@value #PASSWORD} value.
- * 
+ *
  * @author Josef Cacek
  */
 public class CustomLoginModule extends UsernamePasswordLoginModule {
@@ -55,13 +54,13 @@ public class CustomLoginModule extends UsernamePasswordLoginModule {
     /**
      * Initialization - takes {@value #MODULE_OPTION_ROLE} module option with name of role which should be assigned to all
      * authenticated users.
-     * 
+     *
      * @param subject
      * @param callbackHandler
      * @param sharedState
      * @param options
      * @see org.jboss.security.auth.spi.UsernamePasswordLoginModule#initialize(javax.security.auth.Subject,
-     *      javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
+     * javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
      */
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
@@ -71,7 +70,7 @@ public class CustomLoginModule extends UsernamePasswordLoginModule {
 
     /**
      * Login method only increases {@link #loginCounter} and calls login from the parent class.
-     * 
+     *
      * @return
      * @throws LoginException
      * @see org.jboss.security.auth.spi.UsernamePasswordLoginModule#login()
@@ -86,7 +85,7 @@ public class CustomLoginModule extends UsernamePasswordLoginModule {
     /**
      * Returns Roles and CallerPrincipal groups. The Roles group contains role defined as login module option. The
      * CallerPrincipal contains {@link CustomPrincipal} instance with fixed name {@value #CALLER_NAME}.
-     * 
+     *
      * @return
      * @throws LoginException
      * @see org.jboss.security.auth.spi.AbstractServerLoginModule#getRoleSets()
@@ -98,7 +97,7 @@ public class CustomLoginModule extends UsernamePasswordLoginModule {
             roles.addMember(new SimplePrincipal(role));
             Group callerPrincipal = new SimpleGroup(SecurityConstants.CALLER_PRINCIPAL_GROUP);
             callerPrincipal.addMember(new CustomPrincipal(CALLER_NAME));
-            return new Group[] { roles, callerPrincipal };
+            return new Group[]{roles, callerPrincipal};
         } catch (Exception e) {
             throw new LoginException(e.toString());
         }
@@ -106,7 +105,7 @@ public class CustomLoginModule extends UsernamePasswordLoginModule {
 
     /**
      * Returns {@value #PASSWORD}
-     * 
+     *
      * @return
      * @see org.jboss.security.auth.spi.UsernamePasswordLoginModule#getUsersPassword()
      */

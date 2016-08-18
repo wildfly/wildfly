@@ -29,7 +29,7 @@ import javax.ejb.Singleton;
 
 /**
  * AccountManagerBean
- * 
+ *
  * @author Jaikiran Pai
  */
 @Singleton
@@ -62,7 +62,7 @@ public class AccountManagerBean implements AccountManager {
     public int balance() {
         return this.balance;
     }
-    
+
     public void throwException() {
         throw new IllegalArgumentException();
     }

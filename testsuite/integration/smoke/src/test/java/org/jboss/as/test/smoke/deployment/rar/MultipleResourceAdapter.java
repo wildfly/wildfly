@@ -23,7 +23,6 @@ package org.jboss.as.test.smoke.deployment.rar;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -101,8 +100,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      * This is called when a resource adapter instance is bootstrapped.
      *
      * @param ctx A bootstrap context containing references
-     * @throws ResourceAdapterInternalException
-     *          indicates bootstrap failure.
+     * @throws ResourceAdapterInternalException indicates bootstrap failure.
      */
     public void start(BootstrapContext ctx)
             throws ResourceAdapterInternalException {
@@ -138,10 +136,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
     @Override
     public int hashCode() {
         int result = 17;
-        if (name != null)
-            result += 31 * result + 7 * name.hashCode();
-        else
-            result += 31 * result + 7;
+        if (name != null) { result += 31 * result + 7 * name.hashCode(); } else { result += 31 * result + 7; }
         return result;
     }
 
@@ -153,19 +148,13 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      */
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof MultipleResourceAdapter))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof MultipleResourceAdapter)) { return false; }
         MultipleResourceAdapter obj = (MultipleResourceAdapter) other;
         boolean result = true;
         if (result) {
-            if (name == null)
-                result = obj.getName() == null;
-            else
-                result = name.equals(obj.getName());
+            if (name == null) { result = obj.getName() == null; } else { result = name.equals(obj.getName()); }
         }
         return result;
     }

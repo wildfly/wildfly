@@ -18,6 +18,6 @@ package org.jboss.as.test.integration.weld.deployment;
 
 public interface Ping {
 
-    public void pong();
+    void pong();
 
 }

@@ -25,55 +25,58 @@ import java.util.logging.Logger;
 
 /**
  * AnnoConnectionImpl
- * 
+ *
  * @version $Revision: $
  */
 public class AnnoConnectionImpl1 implements AnnoConnection1 {
-	/** The logger */
-	private static Logger log = Logger.getLogger("AnnoConnectionImpl");
+    /**
+     * The logger
+     */
+    private static Logger log = Logger.getLogger("AnnoConnectionImpl");
 
-	/** ManagedConnection */
-	private AnnoManagedConnection1 mc;
+    /**
+     * ManagedConnection
+     */
+    private AnnoManagedConnection1 mc;
 
-	/** ManagedConnectionFactory */
-	private AnnoManagedConnectionFactory1 mcf;
+    /**
+     * ManagedConnectionFactory
+     */
+    private AnnoManagedConnectionFactory1 mcf;
 
-	/**
-	 * Default constructor
-	 * 
-	 * @param mc
-	 *            AnnoManagedConnection
-	 * @param mcf
-	 *            AnnoManagedConnectionFactory
-	 */
-	public AnnoConnectionImpl1(AnnoManagedConnection1 mc,
-			AnnoManagedConnectionFactory1 mcf) {
-		this.mc = mc;
-		this.mcf = mcf;
-	}
+    /**
+     * Default constructor
+     *
+     * @param mc  AnnoManagedConnection
+     * @param mcf AnnoManagedConnectionFactory
+     */
+    public AnnoConnectionImpl1(AnnoManagedConnection1 mc,
+                               AnnoManagedConnectionFactory1 mcf) {
+        this.mc = mc;
+        this.mcf = mcf;
+    }
 
-	/**
-	 * Call me
-	 */
-	public void callMe() {
-		mc.callMe();
-	}
+    /**
+     * Call me
+     */
+    public void callMe() {
+        mc.callMe();
+    }
 
-	/**
-	 * Close
-	 */
-	public void close() {
-		mc.closeHandle(this);
-	}
+    /**
+     * Close
+     */
+    public void close() {
+        mc.closeHandle(this);
+    }
 
-	/**
-	 * 
-	 * Returns AnnoManagedConnectionFactory
-	 * 
-	 * @return mcf
-	 */
-	public AnnoManagedConnectionFactory1 getMCF() {
-		return mcf;
-	}
+    /**
+     * Returns AnnoManagedConnectionFactory
+     *
+     * @return mcf
+     */
+    public AnnoManagedConnectionFactory1 getMCF() {
+        return mcf;
+    }
 
 }

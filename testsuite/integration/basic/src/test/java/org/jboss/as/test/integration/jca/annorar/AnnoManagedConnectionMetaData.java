@@ -22,80 +22,76 @@
 package org.jboss.as.test.integration.jca.annorar;
 
 import java.util.logging.Logger;
-
 import javax.resource.ResourceException;
-
 import javax.resource.spi.ManagedConnectionMetaData;
 
 /**
  * AnnoManagedConnectionMetaData
- * 
+ *
  * @version $Revision: $
  */
 public class AnnoManagedConnectionMetaData implements ManagedConnectionMetaData {
-	/** The logger */
-	private static Logger log = Logger
-			.getLogger("AnnoManagedConnectionMetaData");
+    /**
+     * The logger
+     */
+    private static Logger log = Logger
+            .getLogger("AnnoManagedConnectionMetaData");
 
-	/**
-	 * Default constructor
-	 */
-	public AnnoManagedConnectionMetaData() {
+    /**
+     * Default constructor
+     */
+    public AnnoManagedConnectionMetaData() {
 
-	}
+    }
 
-	/**
-	 * Returns Product name of the underlying EIS instance connected through the
-	 * ManagedConnection.
-	 * 
-	 * @return Product name of the EIS instance
-	 * @throws ResourceException
-	 *             Thrown if an error occurs
-	 */
-	@Override
-	public String getEISProductName() throws ResourceException {
-		log.finest("getEISProductName()");
-		return null; // TODO
-	}
+    /**
+     * Returns Product name of the underlying EIS instance connected through the
+     * ManagedConnection.
+     *
+     * @return Product name of the EIS instance
+     * @throws ResourceException Thrown if an error occurs
+     */
+    @Override
+    public String getEISProductName() throws ResourceException {
+        log.finest("getEISProductName()");
+        return null; // TODO
+    }
 
-	/**
-	 * Returns Product version of the underlying EIS instance connected through
-	 * the ManagedConnection.
-	 * 
-	 * @return Product version of the EIS instance
-	 * @throws ResourceException
-	 *             Thrown if an error occurs
-	 */
-	@Override
-	public String getEISProductVersion() throws ResourceException {
-		log.finest("getEISProductVersion()");
-		return null; // TODO
-	}
+    /**
+     * Returns Product version of the underlying EIS instance connected through
+     * the ManagedConnection.
+     *
+     * @return Product version of the EIS instance
+     * @throws ResourceException Thrown if an error occurs
+     */
+    @Override
+    public String getEISProductVersion() throws ResourceException {
+        log.finest("getEISProductVersion()");
+        return null; // TODO
+    }
 
-	/**
-	 * Returns maximum limit on number of active concurrent connections
-	 * 
-	 * @return Maximum limit for number of active concurrent connections
-	 * @throws ResourceException
-	 *             Thrown if an error occurs
-	 */
-	@Override
-	public int getMaxConnections() throws ResourceException {
-		log.finest("getMaxConnections()");
-		return 0; // TODO
-	}
+    /**
+     * Returns maximum limit on number of active concurrent connections
+     *
+     * @return Maximum limit for number of active concurrent connections
+     * @throws ResourceException Thrown if an error occurs
+     */
+    @Override
+    public int getMaxConnections() throws ResourceException {
+        log.finest("getMaxConnections()");
+        return 0; // TODO
+    }
 
-	/**
-	 * Returns name of the user associated with the ManagedConnection instance
-	 * 
-	 * @return Name of the user
-	 * @throws ResourceException
-	 *             Thrown if an error occurs
-	 */
-	@Override
-	public String getUserName() throws ResourceException {
-		log.finest("getUserName()");
-		return null; // TODO
-	}
+    /**
+     * Returns name of the user associated with the ManagedConnection instance
+     *
+     * @return Name of the user
+     * @throws ResourceException Thrown if an error occurs
+     */
+    @Override
+    public String getUserName() throws ResourceException {
+        log.finest("getUserName()");
+        return null; // TODO
+    }
 
 }

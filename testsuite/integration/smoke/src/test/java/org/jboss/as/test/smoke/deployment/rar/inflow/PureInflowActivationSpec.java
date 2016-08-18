@@ -32,52 +32,51 @@ import org.jboss.logging.Logger;
  *
  * @version $Revision: $
  */
-public class PureInflowActivationSpec implements ActivationSpec
-{
-   /** The logger */
-   private static Logger log = Logger.getLogger(PureInflowActivationSpec.class);
+public class PureInflowActivationSpec implements ActivationSpec {
+    /**
+     * The logger
+     */
+    private static Logger log = Logger.getLogger(PureInflowActivationSpec.class);
 
-   /** The resource adapter */
-   private ResourceAdapter ra;
+    /**
+     * The resource adapter
+     */
+    private ResourceAdapter ra;
 
-   /**
-    * Default constructor
-    */
-   public PureInflowActivationSpec()
-   {
+    /**
+     * Default constructor
+     */
+    public PureInflowActivationSpec() {
 
-   }
+    }
 
-   /**
-    * This method may be called by a deployment tool to validate the overall
-    * activation configuration information provided by the endpoint deployer.
-    *
-    * @throws InvalidPropertyException indicates invalid onfiguration property settings.
-    */
-   public void validate() throws InvalidPropertyException
-   {
-      log.trace("validate()");
-   }
+    /**
+     * This method may be called by a deployment tool to validate the overall
+     * activation configuration information provided by the endpoint deployer.
+     *
+     * @throws InvalidPropertyException indicates invalid onfiguration property settings.
+     */
+    public void validate() throws InvalidPropertyException {
+        log.trace("validate()");
+    }
 
-   /**
-    * Get the resource adapter
-    *
-    * @return The handle
-    */
-   public ResourceAdapter getResourceAdapter()
-   {
-      log.trace("getResourceAdapter()");
-      return ra;
-   }
+    /**
+     * Get the resource adapter
+     *
+     * @return The handle
+     */
+    public ResourceAdapter getResourceAdapter() {
+        log.trace("getResourceAdapter()");
+        return ra;
+    }
 
-   /**
-    * Set the resource adapter
-    *
-    * @param ra The handle
-    */
-   public void setResourceAdapter(ResourceAdapter ra)
-   {
-      log.trace("setResourceAdapter()");
-      this.ra = ra;
-   }
+    /**
+     * Set the resource adapter
+     *
+     * @param ra The handle
+     */
+    public void setResourceAdapter(ResourceAdapter ra) {
+        log.trace("setResourceAdapter()");
+        this.ra = ra;
+    }
 }

@@ -21,18 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.aroundconstruct.simple;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
-
-import org.jboss.as.test.integration.ejb.interceptor.lifecycle.chains.LifecycleInterceptorNoProceed;
 
 /**
  * @author Dmitrii Tikhomirov
  */
 @Stateless
 @Interceptors(AroundConstructInterceptorWithObjectReturnType.class)
-public class AroundConstructInterceptorWithObjectReturnTypeSLSB{
+public class AroundConstructInterceptorWithObjectReturnTypeSLSB {
 
     private String message = "";
 

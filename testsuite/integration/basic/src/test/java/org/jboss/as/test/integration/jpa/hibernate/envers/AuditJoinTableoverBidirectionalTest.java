@@ -27,12 +27,8 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.jpa.hibernate.envers.CustomerMO;
-import org.jboss.as.test.integration.jpa.hibernate.envers.PhoneMO;
-import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBAuditMO;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -41,7 +37,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test @AuditJoinTable over Bidirectional Relationship
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests the RESTEasy exception handling
- * 
+ *
  * @author Pavel Janousek
  */
 @RunWith(Arquillian.class)

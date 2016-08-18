@@ -30,6 +30,6 @@ import java.rmi.RemoteException;
  */
 public interface IIOPSslStatelessHome extends EJBHome {
 
-    public IIOPSslStatelessRemote create() throws RemoteException;
+    IIOPSslStatelessRemote create() throws RemoteException;
 
 }

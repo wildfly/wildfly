@@ -28,6 +28,6 @@ import javax.ejb.EJBHome;
  * @author Ondrej Chaloupka
  */
 public interface StatefulRemoteHome extends EJBHome {
-    public StatefulRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    StatefulRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 
 }

@@ -21,6 +21,13 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnection;
@@ -30,13 +37,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test cases for deploying a lazy association resource adapter archive
@@ -81,8 +81,7 @@ public class LazyAssociationSharableDefaultTestCase extends LazyAssociationAbstr
             logger.error(t.getMessage(), t);
             fail("Throwable:" + t.getMessage());
         } finally {
-            if (lc != null)
-                lc.close();
+            if (lc != null) { lc.close(); }
         }
     }
 
@@ -120,11 +119,9 @@ public class LazyAssociationSharableDefaultTestCase extends LazyAssociationAbstr
             logger.error(t.getMessage(), t);
             fail("Throwable:" + t.getMessage());
         } finally {
-            if (lc1 != null)
-                lc1.close();
+            if (lc1 != null) { lc1.close(); }
 
-            if (lc2 != null)
-                lc2.close();
+            if (lc2 != null) { lc2.close(); }
         }
     }
 }

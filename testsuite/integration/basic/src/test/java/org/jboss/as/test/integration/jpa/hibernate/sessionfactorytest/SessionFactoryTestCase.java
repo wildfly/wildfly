@@ -41,14 +41,12 @@ import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSession;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Hibernate session factory tests
- *
  *
  * @author Scott Marlow
  */
@@ -62,10 +60,10 @@ public class SessionFactoryTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(SessionFactoryTestCase.class,
-            Employee.class,
-            SFSB1.class,
-            SFSBHibernateSession.class,
-            SFSBHibernateSessionFactory.class
+                Employee.class,
+                SFSB1.class,
+                SFSBHibernateSession.class,
+                SFSBHibernateSessionFactory.class
         );
 
         jar.addAsManifestResource(SessionFactoryTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
@@ -115,15 +113,15 @@ public class SessionFactoryTestCase {
     @Test
     public void testHibernateSessionFactoryName() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Sally","1 home street", 1);
+        sfsb1.createEmployee("Sally", "1 home street", 1);
 
         // check if we can look up the Hibernate session factory that should of been bound because of
         // the hibernate.session_factory_name was specified in the properties (in peristence.xml above).
-        SessionFactory hibernateSessionFactory = rawLookup("modelSessionFactory",SessionFactory.class);
+        SessionFactory hibernateSessionFactory = rawLookup("modelSessionFactory", SessionFactory.class);
         assertNotNull("jndi lookup of hibernate.session_factory_name should return HibernateSessionFactory", hibernateSessionFactory);
 
         Session session = hibernateSessionFactory.openSession();
-        Employee emp = (Employee)session.get(Employee.class,1);
+        Employee emp = session.get(Employee.class, 1);
         assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
     }
 
@@ -133,7 +131,7 @@ public class SessionFactoryTestCase {
     // Using extended persistence context allows the hibernate session to stay open long enough for the lazy fetch.
     @Test
     public void testInjectPCIntoHibernateSession() throws Exception {
-        SFSBHibernateSession sfsbHibernateSession = lookup("SFSBHibernateSession",SFSBHibernateSession.class);
+        SFSBHibernateSession sfsbHibernateSession = lookup("SFSBHibernateSession", SFSBHibernateSession.class);
         sfsbHibernateSession.createEmployee("Molly", "2 apple way", 2);
 
         Employee emp = sfsbHibernateSession.getEmployee(2);
@@ -144,7 +142,7 @@ public class SessionFactoryTestCase {
     @Test
     public void testInjectPUIntoHibernateSessionFactory() throws Exception {
         SFSBHibernateSessionFactory sfsbHibernateSessionFactory =
-            lookup("SFSBHibernateSessionFactory",SFSBHibernateSessionFactory.class);
+                lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
         sfsbHibernateSessionFactory.createEmployee("Sharon", "3 beach ave", 3);
 
         Employee emp = sfsbHibernateSessionFactory.getEmployee(3);

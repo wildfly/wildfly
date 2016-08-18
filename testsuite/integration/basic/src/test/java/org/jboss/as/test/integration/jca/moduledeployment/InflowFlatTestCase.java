@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.Set;
+import javax.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,16 +51,14 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.resource.spi.ActivationSpec;
-
 /**
  * AS7-5768 -Support for RA module deployment
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- *
+ *         <p>
  *         Tests for module deployment of resource adapter archive in
  *         uncompressed form with classes in flat form (under package structure)
- *
+ *         <p>
  *         Structure of module is:
  *         modulename
  *         modulename/main
@@ -76,112 +75,111 @@ import javax.resource.spi.ActivationSpec;
 @ServerSetup(InflowFlatTestCase.ModuleAcDeploymentTestCaseSetup.class)
 public class InflowFlatTestCase extends AbstractModuleDeploymentTestCase {
 
-	static class ModuleAcDeploymentTestCaseSetup extends
-			AbstractModuleDeploymentTestCaseSetup {
+    static class ModuleAcDeploymentTestCaseSetup extends
+            AbstractModuleDeploymentTestCaseSetup {
 
-		@Override
-		public void doSetup(ManagementClient managementClient) throws Exception {
+        @Override
+        public void doSetup(ManagementClient managementClient) throws Exception {
 
-			super.doSetup(managementClient);
-			fillModuleWithFlatClasses("ra3.xml");
-			setConfiguration("inflow.xml");
+            super.doSetup(managementClient);
+            fillModuleWithFlatClasses("ra3.xml");
+            setConfiguration("inflow.xml");
 
-		}
+        }
 
         @Override
         protected String getSlot() {
             return InflowFlatTestCase.class.getSimpleName().toLowerCase();
         }
-	}
+    }
 
-	/**
-	 * Define the deployment
-	 *
-	 * @return The deployment archive
-	 */
-	@Deployment
-	public static Archive<?> createRarDeployment() throws Exception {
-		JavaArchive ja = createDeployment(false);
+    /**
+     * Define the deployment
+     *
+     * @return The deployment archive
+     */
+    @Deployment
+    public static Archive<?> createRarDeployment() throws Exception {
+        JavaArchive ja = createDeployment(false);
 
-		ResourceAdapterArchive raa = ShrinkWrap.create(
-				ResourceAdapterArchive.class, "inflow.rar");
-		ja.addPackage(ValidConnectionFactory.class.getPackage());
-		raa.addAsLibrary(ja);
-		raa.addAsManifestResource(
-				NegativeValidationTestCase.class.getPackage(), "ra.xml",
-				"ra.xml")
-				.addAsManifestResource(
-						new StringAsset(
-								"Dependencies: javax.inject.api,org.jboss.as.connector,org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
-						"MANIFEST.MF");
+        ResourceAdapterArchive raa = ShrinkWrap.create(
+                ResourceAdapterArchive.class, "inflow.rar");
+        ja.addPackage(ValidConnectionFactory.class.getPackage());
+        raa.addAsLibrary(ja);
+        raa.addAsManifestResource(
+                NegativeValidationTestCase.class.getPackage(), "ra.xml",
+                "ra.xml")
+                .addAsManifestResource(
+                        new StringAsset(
+                                "Dependencies: javax.inject.api,org.jboss.as.connector,org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
+                        "MANIFEST.MF");
 
-		return raa;
-	}
+        return raa;
+    }
 
     @ArquillianResource
     ServiceContainer serviceContainer;
 
-	/**
-	 * Test configuration
-	 *
-	 * @throws Throwable
-	 *             Thrown if case of an error
-	 */
-	@Test
-	public void testRegistryConfiguration() throws Throwable {
-		assertNotNull(serviceContainer);
-		ServiceController<?> controller = serviceContainer
-				.getService(ConnectorServices.RA_REPOSITORY_SERVICE);
-		assertNotNull(controller);
-		ResourceAdapterRepository repository = (ResourceAdapterRepository) controller
-				.getValue();
-		assertNotNull(repository);
-		Set<String> ids = repository.getResourceAdapters();
+    /**
+     * Test configuration
+     *
+     * @throws Throwable Thrown if case of an error
+     */
+    @Test
+    public void testRegistryConfiguration() throws Throwable {
+        assertNotNull(serviceContainer);
+        ServiceController<?> controller = serviceContainer
+                .getService(ConnectorServices.RA_REPOSITORY_SERVICE);
+        assertNotNull(controller);
+        ResourceAdapterRepository repository = (ResourceAdapterRepository) controller
+                .getValue();
+        assertNotNull(repository);
+        Set<String> ids = repository.getResourceAdapters();
 
-		assertNotNull(ids);
-		//System.out.println("////RA" + ids.toString());
-		String piId = getElementContaining(ids, "MultipleResourceAdapter");
-		assertNotNull(piId);
+        assertNotNull(ids);
+        //System.out.println("////RA" + ids.toString());
+        String piId = getElementContaining(ids, "MultipleResourceAdapter");
+        assertNotNull(piId);
 
-		Endpoint endpoint = repository.getEndpoint(piId);
-		assertNotNull(endpoint);
+        Endpoint endpoint = repository.getEndpoint(piId);
+        assertNotNull(endpoint);
 
-		List<MessageListener> listeners = repository.getMessageListeners(piId);
-		assertNotNull(listeners);
-		assertEquals(1, listeners.size());
+        List<MessageListener> listeners = repository.getMessageListeners(piId);
+        assertNotNull(listeners);
+        assertEquals(1, listeners.size());
 
-		MessageListener listener = listeners.get(0);
+        MessageListener listener = listeners.get(0);
 
-		ActivationSpec as = listener.getActivation().createInstance();
-		assertNotNull(as);
-		assertNotNull(as.getResourceAdapter());
-	}
+        ActivationSpec as = listener.getActivation().createInstance();
+        assertNotNull(as);
+        assertNotNull(as.getResourceAdapter());
+    }
 
-	/**
-	 * Tests metadata configuration
-	 *
-	 * @throws Throwable
-	 */
-	@Test
-	public void testMetadataConfiguration() throws Throwable {
-		ServiceController<?> controller = serviceContainer
-				.getService(ConnectorServices.IRONJACAMAR_MDR);
-		assertNotNull(controller);
-		MetadataRepository repository = (MetadataRepository) controller
-				.getValue();
-		assertNotNull(repository);
-		Set<String> ids = repository.getResourceAdapters();
+    /**
+     * Tests metadata configuration
+     *
+     * @throws Throwable
+     */
+    @Test
+    public void testMetadataConfiguration() throws Throwable {
+        ServiceController<?> controller = serviceContainer
+                .getService(ConnectorServices.IRONJACAMAR_MDR);
+        assertNotNull(controller);
+        MetadataRepository repository = (MetadataRepository) controller
+                .getValue();
+        assertNotNull(repository);
+        Set<String> ids = repository.getResourceAdapters();
 
-		assertNotNull(ids);
-		//System.out.println("////MD" + ids.toString());
-		String piId = getElementContaining(ids, "inflow2");
-		assertNotNull(piId);
-		assertNotNull(repository.getResourceAdapter(piId));
-	}
+        assertNotNull(ids);
+        //System.out.println("////MD" + ids.toString());
+        String piId = getElementContaining(ids, "inflow2");
+        assertNotNull(piId);
+        assertNotNull(repository.getResourceAdapter(piId));
+    }
 
-	@Override
-	protected ModelNode getAddress() {
-		return ModuleAcDeploymentTestCaseSetup.getAddress();
-	}
+    @Override
+    protected ModelNode getAddress() {
+        return ModuleAcDeploymentTestCaseSetup.getAddress();
+    }
 
 }

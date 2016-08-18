@@ -26,7 +26,10 @@ package org.jboss.as.security;
 
 import static java.util.Collections.addAll;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.net.URLDecoder;
 import java.security.KeyStore;
 import java.security.Permission;
@@ -37,7 +40,11 @@ import java.util.Map;
 
 import org.jboss.as.security.vault.MockRuntimeVaultReader;
 import org.jboss.as.security.vault.VaultTool;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -58,7 +65,7 @@ public class VaultToolTestCase {
   private static final String SALT_VALUE = "bdfbdf12";
   private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();
 
-  private static final String getKeystorePath() {
+  private static String getKeystorePath() {
      try {
        return new String(URLDecoder.decode(CODE_LOCATION, "UTF-8" ) + "org/jboss/as/security/vault.keystore");
      } catch (Exception e) {
@@ -213,11 +220,11 @@ public class VaultToolTestCase {
 
   /**
    * Clean given directory.
-   * 
+   *
    * @param directory
    */
   private static void cleanDirectory(String dir) {
-    File directory = new File(dir);  
+    File directory = new File(dir);
     if (directory.exists()) {
       for (File f : directory.listFiles()) {
         f.delete();

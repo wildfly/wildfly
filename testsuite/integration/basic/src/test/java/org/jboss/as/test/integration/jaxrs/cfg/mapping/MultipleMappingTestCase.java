@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests for RESTEasy multiple mapping of servlet of JAX-RS impl.
- * 
+ *
  * @author Pavel Janousek
  */
 @RunWith(Arquillian.class)
@@ -51,7 +51,7 @@ public class MultipleMappingTestCase {
     private static final String depMultipleUrl = "mapping_multiple_url";
     private static final String depMultipleMapping = "mapping_multiple_mapping";
 
-    @Deployment(name=depMultipleUrl)
+    @Deployment(name = depMultipleUrl)
     public static Archive<?> deploy_multiple_url() {
         return ShrinkWrap
                 .create(WebArchive.class, depMultipleUrl + ".war")
@@ -59,12 +59,12 @@ public class MultipleMappingTestCase {
                 .setWebXML(
                         WebXml.get("<servlet-mapping>\n"
                                 + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
-                                + "        <url-pattern>/map1/*</url-pattern>\n" 
-                                + "        <url-pattern>/map2/*</url-pattern>\n" 
+                                + "        <url-pattern>/map1/*</url-pattern>\n"
+                                + "        <url-pattern>/map2/*</url-pattern>\n"
                                 + "</servlet-mapping>\n"));
     }
 
-    @Deployment(name=depMultipleMapping)
+    @Deployment(name = depMultipleMapping)
     public static Archive<?> deploy_multiple_mapping() {
         return ShrinkWrap
                 .create(WebArchive.class, depMultipleMapping + ".war")
@@ -72,11 +72,11 @@ public class MultipleMappingTestCase {
                 .setWebXML(
                         WebXml.get("<servlet-mapping>\n"
                                 + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
-                                + "        <url-pattern>/map1/*</url-pattern>\n" 
+                                + "        <url-pattern>/map1/*</url-pattern>\n"
                                 + "</servlet-mapping>\n"
                                 + "<servlet-mapping>\n"
                                 + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
-                                + "        <url-pattern>/map2/*</url-pattern>\n" 
+                                + "        <url-pattern>/map2/*</url-pattern>\n"
                                 + "</servlet-mapping>\n"));
     }
 

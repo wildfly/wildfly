@@ -28,6 +28,6 @@ import javax.ejb.Local;
  */
 @Local
 public interface LocalInterface {
-    public void passByReference(String[] value);
+    void passByReference(String[] value);
 
 }

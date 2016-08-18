@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.timerservice.expired;
 
-import org.jboss.logging.Logger;
-
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
@@ -34,11 +34,8 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import org.jboss.logging.Logger;
 
 /**
  * @author Jaikiran Pai
@@ -49,7 +46,7 @@ public class SingletonBean {
 
     private static final Logger log = Logger.getLogger(SingletonBean.class);
     private static int TIMER_CALL_WAITING_S = 5;
-    
+
     @Resource
     private TimerService timerService;
 
@@ -58,8 +55,8 @@ public class SingletonBean {
     private CountDownLatch timeoutNotifyingLatch;
     private CountDownLatch timeoutWaiter;
 
-    public void createSingleActionTimer(final long delay, final TimerConfig config, 
-            CountDownLatch timeoutNotifyingLatch, CountDownLatch timeoutWaiter) {
+    public void createSingleActionTimer(final long delay, final TimerConfig config,
+                                        CountDownLatch timeoutNotifyingLatch, CountDownLatch timeoutWaiter) {
         this.timer = this.timerService.createSingleActionTimer(delay, config);
         this.timeoutNotifyingLatch = timeoutNotifyingLatch;
         this.timeoutWaiter = timeoutWaiter;
@@ -73,7 +70,7 @@ public class SingletonBean {
         this.timeoutWaiter.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
         log.debug("End of onTimeout on singleton");
     }
-    
+
     public Timer getTimer() {
         return this.timer;
     }

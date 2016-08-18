@@ -42,7 +42,7 @@ import javax.transaction.UserTransaction;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class SFSBXPC {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)
-        EntityManager extendedEm;
+    EntityManager extendedEm;
 
     @Resource
     UserTransaction tx;
@@ -58,12 +58,12 @@ public class SFSBXPC {
 
     /**
      * UT part of test for JPA 7.9.1 Container Responsibilities for XPC
-     *
+     * <p>
      * "When a business method of the stateful session bean is invoked, if the stateful session bean
-     *  uses bean managed transaction demarcation and a UserTransaction is begun within the method,
-     *  the container associates the persistence context with the JTA transaction and calls
-     *  EntityManager.joinTransaction.
-     *  "
+     * uses bean managed transaction demarcation and a UserTransaction is begun within the method,
+     * the container associates the persistence context with the JTA transaction and calls
+     * EntityManager.joinTransaction.
+     * "
      */
     public void savePendingChanges() {
 
@@ -92,10 +92,9 @@ public class SFSBXPC {
 
         employee = extendedEm.find(Employee.class, id);
         if (shouldOfSavedAlready && employee == null) {
-            throw new RuntimeException("unexpectedly in forceRollbackAndLosePendingChanges(), rollback lost Employee id = "+ id +", which should of been previously saved");
-        }
-        else if(!shouldOfSavedAlready && employee != null) {
-            throw new RuntimeException("unexpectedly in forceRollbackAndLosePendingChanges(), database changes shouldn't of been saved yet for Employee id = "+ id);
+            throw new RuntimeException("unexpectedly in forceRollbackAndLosePendingChanges(), rollback lost Employee id = " + id + ", which should of been previously saved");
+        } else if (!shouldOfSavedAlready && employee != null) {
+            throw new RuntimeException("unexpectedly in forceRollbackAndLosePendingChanges(), database changes shouldn't of been saved yet for Employee id = " + id);
         }
 
 

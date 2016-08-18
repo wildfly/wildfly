@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
 import java.security.Principal;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -39,20 +38,20 @@ import org.jboss.logging.Logger;
 @Remote(IBeanLifecycleCallback.class)
 @SecurityDomain("ejb3-tests")
 public class SLSBLifecycleCallback implements IBeanLifecycleCallback {
-    
+
     private static Logger log = Logger.getLogger(SLSBLifecycleCallback.class);
-    
+
     @Resource
     private SessionContext sessContext;
-        
+
     private ITestResultsSingleton getSingleton() {
         return (ITestResultsSingleton) sessContext.lookup("java:global/single/" + TestResultsSingleton.class.getSimpleName());
     }
-    
+
     public void remove() {
         // nothing to do
     }
-       
+
     @PostConstruct
     public void init() throws Exception {
         // on Stateless bean is not permitted to call getCallerPrincipal on @PostConstruct
@@ -67,7 +66,7 @@ public class SLSBLifecycleCallback implements IBeanLifecycleCallback {
         }
         results.setSlsb("postconstruct", "Method getCallerPrincipal was called from @PostConstruct with result: " + princ);
     }
-    
+
     @PreDestroy
     public void tearDown() throws Exception {
         // on Stateless bean is not permitted to call getCallerPrincipal on @PreDestroy
@@ -82,7 +81,7 @@ public class SLSBLifecycleCallback implements IBeanLifecycleCallback {
         }
         results.setSlsb("predestroy", "Method getCallerPrincipal was called from @PreDestroy with result: " + princ);
     }
-    
+
     public String get() {
         return "stateless";
     }

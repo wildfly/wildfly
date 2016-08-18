@@ -27,9 +27,8 @@ import javax.naming.NamingException;
 /**
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
-public interface StatelessMail
-{
-   void testMail() throws NamingException;
-   
-   void testMailInjection();
+public interface StatelessMail {
+    void testMail() throws NamingException;
+
+    void testMailInjection();
 }

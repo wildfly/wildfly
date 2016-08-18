@@ -23,7 +23,6 @@
 package org.jboss.as.test.iiop.client;
 
 import java.rmi.RemoteException;
-
 import javax.annotation.Resource;
 import javax.ejb.Remote;
 import javax.ejb.RemoteHome;
@@ -43,8 +42,8 @@ public class IIOPTestBean {
 
     @Resource
     private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    
-    
+
+
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public String callMandatory() throws RemoteException {
         return "transaction-attribute-mandatory";
@@ -54,15 +53,15 @@ public class IIOPTestBean {
     public String callNever() throws RemoteException {
         return "transaction-attributte-never";
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public String callRollbackOnly() throws RemoteException {
         sessionContext.setRollbackOnly();
         return "transaction-rollback-only";
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public int transactionStatus()  throws RemoteException {
+    public int transactionStatus() throws RemoteException {
         return transactionSynchronizationRegistry.getTransactionStatus();
     }
 

@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 
 /**
  * @author baranowb
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -42,7 +42,7 @@ public class OverlayExistingResourceTestCase extends JarOverlayTestBase {
     private static final String OVERLAY = "HAL9000";
     private static final String DEPLOYMENT_OVERLAYED = "overlayed";
     private static final String DEPLOYMENT_OVERLAYED_ARCHIVE = DEPLOYMENT_OVERLAYED + ".jar";
-    
+
     @Deployment(name = DEPLOYMENT_OVERLAYED)
     public static Archive createDeployment() throws Exception {
         return createOverlayedArchive(true, DEPLOYMENT_OVERLAYED_ARCHIVE);
@@ -67,5 +67,4 @@ public class OverlayExistingResourceTestCase extends JarOverlayTestBase {
             OverlayUtils.removeOverlay(managementClient, DEPLOYMENT_OVERLAYED_ARCHIVE, OVERLAY, OverlayableInterface.RESOURCE);
         }
     }
-
 }

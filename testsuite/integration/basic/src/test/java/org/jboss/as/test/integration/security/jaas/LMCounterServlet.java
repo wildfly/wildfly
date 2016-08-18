@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.security.jaas;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,7 +33,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Servlet which returns value of {@link CustomLoginModule#loginCounter} as a plain text response.
- * 
+ *
  * @author Josef Cacek
  */
 @WebServlet(LMCounterServlet.SERVLET_PATH)
@@ -48,7 +47,7 @@ public class LMCounterServlet extends HttpServlet {
 
     /**
      * Writes simple text response.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException

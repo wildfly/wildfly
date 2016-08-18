@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Unit Test the BASIC authentication
- * 
+ *
  * @author Anil Saldhana
  */
 @RunWith(Arquillian.class)

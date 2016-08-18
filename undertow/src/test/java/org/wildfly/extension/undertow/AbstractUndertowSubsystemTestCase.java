@@ -39,7 +39,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
     public AbstractUndertowSubsystemTestCase() {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
     }
-    
+
     public static void setProperty() {
         System.setProperty("server.data.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));

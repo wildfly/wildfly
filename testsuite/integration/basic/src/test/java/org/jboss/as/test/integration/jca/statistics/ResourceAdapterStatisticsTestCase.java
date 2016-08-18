@@ -21,28 +21,31 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
-import java.util.regex.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.*;
-import org.junit.runner.RunWith;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Resource adapter statistics testCase
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -50,8 +53,8 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
 
     static int jndiCount = 0;
     static int archiveCount = 0;
-    final static String pack = "org.jboss.as.test.integration.jca.rar";
-    final static String fact = "java:jboss/ConnectionFactory";
+    static final String pack = "org.jboss.as.test.integration.jca.rar";
+    static final String fact = "java:jboss/ConnectionFactory";
 
     @ArquillianResource
     Deployer deployer;

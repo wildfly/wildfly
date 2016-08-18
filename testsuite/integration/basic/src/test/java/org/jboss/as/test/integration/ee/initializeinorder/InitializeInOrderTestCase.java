@@ -23,10 +23,8 @@ package org.jboss.as.test.integration.ee.initializeinorder;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.naming.NamingException;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -34,11 +32,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * Tests that <initialize-in-order> works as expected.
  *
  * @author Stuart Douglas
@@ -47,7 +45,7 @@ import org.junit.runner.RunWith;
 public class InitializeInOrderTestCase {
 
     private static final List<String> initOrder = new ArrayList<String>();
-    
+
     @Deployment
     public static Archive<?> deployment() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "init.ear");
@@ -70,7 +68,7 @@ public class InitializeInOrderTestCase {
         Assert.assertEquals("MyServlet", initOrder.get(0));
         Assert.assertEquals("MyEjb", initOrder.get(1));
     }
-    
+
     public static void recordInit(final String clazz) {
         initOrder.add(clazz);
     }

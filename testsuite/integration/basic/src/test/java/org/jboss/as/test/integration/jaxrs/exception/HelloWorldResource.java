@@ -27,7 +27,7 @@ import javax.ws.rs.Produces;
 
 /**
  * Simple resource + produces exception
- * 
+ *
  * @author Pavel Janousek
  */
 @Path("helloworld")
@@ -37,7 +37,7 @@ public class HelloWorldResource {
     public String getMessage() {
         return "Hello World!";
     }
-    
+
     @GET
     @Path("ex1")
     @SuppressWarnings("null")
@@ -49,7 +49,7 @@ public class HelloWorldResource {
     @GET
     @Path("ex2")
     public String getArrayIndexOutOfBoundsException() {
-        String[] a = new String[1]; 
+        String[] a = new String[1];
         return a[5];
     }
 }

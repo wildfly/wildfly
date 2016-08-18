@@ -28,5 +28,5 @@ import javax.ejb.EJBLocalHome;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface Session30LocalHome extends EJBLocalHome {
-    public LocalSession30 create() throws javax.ejb.CreateException;
+    LocalSession30 create() throws javax.ejb.CreateException;
 }

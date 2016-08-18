@@ -28,9 +28,9 @@ package org.jboss.as.test.integration.sar.injection.pojos;
 public interface AMBean {
 
     int getCount();
-    
+
     boolean getStartCalled();
-    
+
     boolean getCreateCalled();
-    
+
 }

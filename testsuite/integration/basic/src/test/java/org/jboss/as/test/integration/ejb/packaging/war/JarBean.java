@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.ejb.packaging.war;
 import javax.ejb.EJB;
 
 /**
- * Stateless bean placed into jar archive in war archive. 
+ * Stateless bean placed into jar archive in war archive.
  * Bean definition in xml dd.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 public class JarBean implements BeanInterface {

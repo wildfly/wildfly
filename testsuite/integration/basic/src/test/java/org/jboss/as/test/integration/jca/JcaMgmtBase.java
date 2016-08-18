@@ -39,12 +39,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public  class JcaMgmtBase extends  ContainerResourceMgmtTestBase {
+public class JcaMgmtBase extends ContainerResourceMgmtTestBase {
 
 
-    protected static ModelNode subsystemAddress=new ModelNode().add(SUBSYSTEM, "jca");
+    protected static ModelNode subsystemAddress = new ModelNode().add(SUBSYSTEM, "jca");
 
-    protected static ModelNode archiveValidationAddress=subsystemAddress.clone().add("archive-validation","archive-validation");
+    protected static ModelNode archiveValidationAddress = subsystemAddress.clone().add("archive-validation", "archive-validation");
 
     /**
      * Provide reload operation on server
@@ -58,13 +58,13 @@ public  class JcaMgmtBase extends  ContainerResourceMgmtTestBase {
     /**
      * Reads attribute from DMR model
      *
-     * @param address to read
+     * @param address       to read
      * @param attributeName
      * @return attribute value
      * @throws Exception
      */
-    public ModelNode readAttribute(ModelNode address, String attributeName) throws Exception{
-        ModelNode op= new ModelNode();
+    public ModelNode readAttribute(ModelNode address, String attributeName) throws Exception {
+        ModelNode op = new ModelNode();
         op.get(OP).set(READ_ATTRIBUTE_OPERATION);
         op.get(NAME).set(attributeName);
         op.get(OP_ADDR).set(address);
@@ -74,14 +74,14 @@ public  class JcaMgmtBase extends  ContainerResourceMgmtTestBase {
     /**
      * Writes attribute value
      *
-     * @param address to write
+     * @param address        to write
      * @param attributeName
      * @param attributeValue
      * @return result of operation
      * @throws Exception
      */
-    public ModelNode writeAttribute(ModelNode address, String attributeName, String attributeValue) throws Exception{
-        ModelNode op= new ModelNode();
+    public ModelNode writeAttribute(ModelNode address, String attributeName, String attributeValue) throws Exception {
+        ModelNode op = new ModelNode();
         op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set(attributeName);
         op.get(VALUE).set(attributeValue);
@@ -92,15 +92,15 @@ public  class JcaMgmtBase extends  ContainerResourceMgmtTestBase {
     /**
      * Set parameters for archive validation in JCA
      *
-     * @param enabled - if validation is enabled
-     * @param failOnErr - if validation should fail an error
+     * @param enabled    - if validation is enabled
+     * @param failOnErr  - if validation should fail an error
      * @param failOnWarn - if validation should fail on error or warning
      * @throws Exception
      */
-    public void setArchiveValidation(boolean enabled,boolean failOnErr,boolean failOnWarn) throws Exception{
+    public void setArchiveValidation(boolean enabled, boolean failOnErr, boolean failOnWarn) throws Exception {
 
         remove(archiveValidationAddress);
-        ModelNode op= new ModelNode();
+        ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(archiveValidationAddress);
         op.get("enabled").set(enabled);
@@ -117,7 +117,7 @@ public  class JcaMgmtBase extends  ContainerResourceMgmtTestBase {
      * @return boolean value of attribute
      * @throws Exception
      */
-    public boolean getArchiveValidationAttribute(String attributeName) throws Exception{
+    public boolean getArchiveValidationAttribute(String attributeName) throws Exception {
         return readAttribute(archiveValidationAddress, attributeName).asBoolean();
     }
 

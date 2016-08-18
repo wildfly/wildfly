@@ -29,14 +29,14 @@ import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetup
 
 /**
  * This server setup task creates a krb5.conf file and generates KeyTab files for the HTTP server and users hnelson and jduke.
- * 
+ *
  * @author Josef Cacek
  */
 public class Krb5ConfServerSetupTask extends AbstractKrb5ConfServerSetupTask {
 
     public static final File HNELSON_KEYTAB_FILE = new File(WORK_DIR, "hnelson.keytab");
     public static final File JDUKE_KEYTAB_FILE = new File(WORK_DIR, "jduke.keytab");
-    
+
     @Override
     protected List<UserForKeyTab> kerberosUsers() {
         List<UserForKeyTab> users = new ArrayList<UserForKeyTab>();

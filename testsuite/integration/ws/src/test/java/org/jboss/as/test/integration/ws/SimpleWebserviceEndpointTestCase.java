@@ -58,10 +58,10 @@ public class SimpleWebserviceEndpointTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-endpoint-example.war");
         war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
         war.addClass(SimpleWebserviceEndpointImpl.class);
-        war.addAsWebInfResource(SimpleWebserviceEndpointTestCase.class.getPackage(),"web.xml","web.xml");
+        war.addAsWebInfResource(SimpleWebserviceEndpointTestCase.class.getPackage(), "web.xml", "web.xml");
         return war;
     }
-    
+
     @Test
     public void testJBossWSIntegrationIsInPlace() {
         String p = Provider.provider().getClass().getName();

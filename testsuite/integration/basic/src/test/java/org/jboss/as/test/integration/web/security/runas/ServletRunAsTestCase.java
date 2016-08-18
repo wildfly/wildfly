@@ -21,14 +21,22 @@
  */
 package org.jboss.as.test.integration.web.security.runas;
 
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DESTROY_METHOD_NOT_PASS;
+import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DESTROY_METHOD_PASS;
+import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DOGET_METHOD_NOT_PASS;
+import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DOGET_METHOD_PASS;
+import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_NOT_PASS;
+import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_PASS;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.FileReader;
 import java.io.IOException;
-import static java.net.HttpURLConnection.HTTP_OK;
 import java.net.URL;
+
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,17 +47,10 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.Utils;
-import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DESTROY_METHOD_NOT_PASS;
-import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DESTROY_METHOD_PASS;
-import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DOGET_METHOD_NOT_PASS;
-import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DOGET_METHOD_PASS;
-import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_NOT_PASS;
-import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_PASS;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -88,7 +89,7 @@ public class ServletRunAsTestCase {
 
     /**
      * Access Servlet which uses RunAs with correct role needed for secured EJB invocation.
-     *
+     * <p>
      * This method will run init() and doGet() method and stores results.
      *
      * @param url
@@ -131,7 +132,7 @@ public class ServletRunAsTestCase {
 
     /**
      * Access Servlet which uses RunAs with different role than in needed for secured EJB invocation.
-     *
+     * <p>
      * This method will run init() and doGet() method and stores results.
      *
      * @param url
@@ -206,7 +207,7 @@ public class ServletRunAsTestCase {
     @InSequence(9)
     public void checkDestroyInUndeployingMethodWithIncorrectRole() throws Exception {
         assertTrue("EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role during "
-                + "undeploying.",
+                        + "undeploying.",
                 readFirstLineOfFile(INCORRECT_ROLE_AND_UNDEPLOY).contains(DESTROY_METHOD_NOT_PASS));
     }
 
@@ -243,7 +244,7 @@ public class ServletRunAsTestCase {
     @InSequence(11)
     public void checkDestroyMethodInStopServerWithCorrectRole() throws Exception {
         assertTrue("EJB invocation failed in destroy() method of Servlet which uses RunAs with correct role during stopping "
-                + "server.",
+                        + "server.",
                 readFirstLineOfFile(CORRECT_ROLE_AND_STOP_SERVER).contains(DESTROY_METHOD_PASS + HelloBean.HELLO));
     }
 
@@ -257,7 +258,7 @@ public class ServletRunAsTestCase {
     @InSequence(12)
     public void checkDestroyMethodInStopServerWithIncorrectRole() throws Exception {
         assertTrue("EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role "
-                + "during stopping server.",
+                        + "during stopping server.",
                 readFirstLineOfFile(INCORRECT_ROLE_AND_STOP_SERVER).contains(DESTROY_METHOD_NOT_PASS));
     }
 
@@ -277,7 +278,7 @@ public class ServletRunAsTestCase {
         return war;
     }
 
-    private String readFirstLineOfFile(File file) throws FileNotFoundException, IOException {
+    private String readFirstLineOfFile(File file) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             return br.readLine();
         }

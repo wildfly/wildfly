@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.security.runas.mdb;
 
 import java.util.logging.Logger;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -55,9 +54,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Make sure the run-as on a MDB is picked up. 
+ * Make sure the run-as on a MDB is picked up.
  * Part of migration test from EAP5 (JBAS-6239) to AS7 [JBQA-5275].
- * 
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

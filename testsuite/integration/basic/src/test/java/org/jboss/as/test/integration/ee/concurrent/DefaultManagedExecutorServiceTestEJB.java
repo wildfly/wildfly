@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
-import org.jboss.logging.Logger;
-
+import java.security.Principal;
+import java.util.concurrent.Future;
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJBContext;
@@ -33,8 +33,8 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.NamingException;
-import java.security.Principal;
-import java.util.concurrent.Future;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author Eduardo Martins

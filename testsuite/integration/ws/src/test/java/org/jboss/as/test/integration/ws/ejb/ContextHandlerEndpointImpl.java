@@ -28,7 +28,6 @@ import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @Stateless

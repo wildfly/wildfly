@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Simplistic servlet
  * @author baranowb
- * 
+ *
  */
 @WebServlet (urlPatterns = Servlet.URL_PATTERN)
 public class Servlet extends HttpServlet {

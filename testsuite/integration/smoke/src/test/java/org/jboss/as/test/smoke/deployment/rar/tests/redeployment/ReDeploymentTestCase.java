@@ -21,8 +21,11 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.redeployment;
 
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -47,10 +50,6 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
-
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
@@ -72,7 +71,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
     static class ReDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", deploymentName);
@@ -108,7 +107,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
      *
      * @return The deployment archive
      */
-    @Deployment(name = "re-deployment.rar", managed=false)
+    @Deployment(name = "re-deployment.rar", managed = false)
     public static ResourceAdapterArchive createDeployment() throws Exception {
 
 

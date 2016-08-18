@@ -1,5 +1,9 @@
 package org.jboss.as.test.integration.jca.metrics;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
 
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
@@ -8,10 +12,6 @@ import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Stuart Douglas
@@ -34,7 +34,7 @@ public abstract class JCAMetrictsTestBase extends DsMgmtTestBase {
      * Bad model must throw an Exception during setModel methos call. To work around wrong test case
      * removeDs() method is added.
      */
-    protected void setBadModel(String filename) throws Exception{
+    protected void setBadModel(String filename) throws Exception {
         setModel(filename);
         removeDs();
     }

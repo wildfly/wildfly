@@ -35,16 +35,16 @@ import org.junit.Assert;
 import com.arjuna.mw.wst11.UserBusinessActivity;
 
 /**
- * Shared functionality with XTS test cases. 
+ * Shared functionality with XTS test cases.
  */
 public abstract class BaseFunctionalTest {
-    
+
     @ArquillianResource
     private InitialContext iniCtx;
-    
+
     // ABSTRACT methods used from children classes
     protected abstract EventLog getEventLog();
-    
+
     // ---- Work with transactions
     public void rollbackIfActive(com.arjuna.mw.wst11.UserTransaction ut) {
         try {
@@ -53,7 +53,7 @@ public abstract class BaseFunctionalTest {
             // do nothing, not active
         }
     }
-    
+
     public void rollbackIfActive(javax.transaction.UserTransaction ut) {
         try {
             ut.rollback();
@@ -69,18 +69,18 @@ public abstract class BaseFunctionalTest {
             // do nothing, not active
         }
     }
-    
+
     protected <T> T lookup(Class<T> beanType, String archiveName) {
         try {
             return beanType.cast(iniCtx.lookup("java:global/" + archiveName + "/" + beanType.getSimpleName() + "!"
-                + beanType.getName()));
-        } catch(NamingException ne) {
+                    + beanType.getName()));
+        } catch (NamingException ne) {
             throw new RuntimeException(ne);
         }
     }
-    
-    
-    // ---- Test result checking    
+
+
+    // ---- Test result checking
     protected void assertEventLog(String eventLogName, EventLogEvent... expectedOrder) {
         Assert.assertEquals("Another status order expected for the " + eventLogName, Arrays.asList(expectedOrder), getEventLog().getEventLog(eventLogName));
     }

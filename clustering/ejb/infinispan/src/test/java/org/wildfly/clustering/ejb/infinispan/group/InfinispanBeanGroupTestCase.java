@@ -21,7 +21,12 @@
  */
 package org.wildfly.clustering.ejb.infinispan.group;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -82,9 +87,9 @@ public class InfinispanBeanGroupTestCase {
 
         when(this.entry.getBeans()).thenReturn(value);
         when(value.get(this.context)).thenReturn(beans);
-        
+
         this.group.addBean(id, bean);
-        
+
         verify(beans).put(id, bean);
     }
 
@@ -102,11 +107,11 @@ public class InfinispanBeanGroupTestCase {
         when(this.entry.incrementUsage(id)).thenReturn(1);
 
         Object result = this.group.getBean(id, listener);
-        
+
         Assert.assertSame(bean, result);
-        
+
         verifyZeroInteractions(listener);
-        
+
         when(this.entry.incrementUsage(id)).thenReturn(0);
 
         result = this.group.getBean(id, listener);
@@ -129,7 +134,7 @@ public class InfinispanBeanGroupTestCase {
         boolean result = this.group.releaseBean(id, listener);
 
         Assert.assertFalse(result);
-        
+
         verifyZeroInteractions(listener);
         verify(this.entry, never()).getBeans();
 

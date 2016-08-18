@@ -23,5 +23,5 @@ package org.jboss.as.test.integration.weld.modules;
 
 public interface PortableExtensionLookup {
 
-    public PortableExtension getPortableExtension();
+    PortableExtension getPortableExtension();
 }

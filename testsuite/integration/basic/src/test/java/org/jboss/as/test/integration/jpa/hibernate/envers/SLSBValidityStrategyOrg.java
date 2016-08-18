@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import java.util.List;
 import java.util.Map;
-
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

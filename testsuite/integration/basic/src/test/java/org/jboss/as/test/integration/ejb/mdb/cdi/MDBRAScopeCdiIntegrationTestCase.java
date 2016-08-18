@@ -63,16 +63,16 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that the CDI request scope is active in MDB invocations.
- * 
+ *
  * @author baranowb
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ MDBRAScopeCdiIntegrationTestCase.JmsQueueSetup.class })
 public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestBase {
 
-    public final static String testDeploymentName = "test.jar";
-    public final static String deploymentName = "test-ear.ear";
-    public final static String subDeploymentName = "ear_packaged.rar";
+    public static final String testDeploymentName = "test.jar";
+    public static final String deploymentName = "test-ear.ear";
+    public static final String subDeploymentName = "ear_packaged.rar";
 
     private ModelNode raAddress_subdeployment;
     private ModelNode raAddress_regular;
@@ -105,7 +105,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
     }
 
     /**
-     * 
+     *
      */
     private void setupSubdeployedRA() throws Exception {
         // since it is created after deployment it needs activation
@@ -117,7 +117,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
     }
 
     /**
-     * 
+     *
      */
     private void setupStandaloneRA() throws Exception {
         raAddress_regular = new ModelNode();

@@ -42,35 +42,35 @@ public class Ticket {
     String number;
     Customer customer;
 
-    public Ticket(){
+    public Ticket() {
     }
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    public Long getId()    {
-       return id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long getId() {
+        return id;
     }
 
-    public void setId(Long long1){
+    public void setId(Long long1) {
         id = long1;
     }
 
-    public String getNumber(){
-       return number;
+    public String getNumber() {
+        return number;
     }
 
-    public void setNumber(String string){
-       number = string;
+    public void setNumber(String string) {
+        number = string;
     }
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "CUSTOMER_ID")
-    public Customer getCustomer(){
-       return customer;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setCustomer(Customer customer){
-       this.customer = customer;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
 }

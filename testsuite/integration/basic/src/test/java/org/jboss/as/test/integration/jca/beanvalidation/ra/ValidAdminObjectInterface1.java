@@ -22,26 +22,25 @@
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 
 /**
  * Admin object
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public interface ValidAdminObjectInterface1 extends Referenceable, Serializable {
     /**
      * Set property
-     * 
+     *
      * @param property The value
      */
-    public void setAoProperty(String property);
+    void setAoProperty(String property);
 
     /**
      * Get property
-     * 
+     *
      * @return The value
      */
-    public String getAoProperty();
+    String getAoProperty();
 }

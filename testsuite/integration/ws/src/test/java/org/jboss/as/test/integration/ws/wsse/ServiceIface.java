@@ -25,9 +25,9 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 @WebService
-(
-   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
-)
+        (
+                targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
+        )
 public interface ServiceIface {
 
     @WebMethod

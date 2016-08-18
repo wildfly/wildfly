@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.earpackage;
 
-import java.util.List;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -49,8 +50,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertNotNull;
-
 
 /**
  * @author <a href="robert.reimann@googlemail.com">Robert Reimann</a>
@@ -63,14 +62,14 @@ public class EarPackagedDeploymentTestCase extends ContainerResourceMgmtTestBase
     static class EarPackagedDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void doSetup(final ManagementClient managementClient) throws Exception{
-                String xml = FileUtils.readFile(EarPackagedDeploymentTestCase.class, "ear_packaged.xml");
-                List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
-                executeOperation( operationListToCompositeOperation(operations));
+        public void doSetup(final ManagementClient managementClient) throws Exception {
+            String xml = FileUtils.readFile(EarPackagedDeploymentTestCase.class, "ear_packaged.xml");
+            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
+            executeOperation(operationListToCompositeOperation(operations));
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
 
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
@@ -95,7 +94,7 @@ public class EarPackagedDeploymentTestCase extends ContainerResourceMgmtTestBase
                 ShrinkWrap.create(ResourceAdapterArchive.class, subDeploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(EarPackagedDeploymentTestCase.class,  MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(EarPackagedDeploymentTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
 
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);

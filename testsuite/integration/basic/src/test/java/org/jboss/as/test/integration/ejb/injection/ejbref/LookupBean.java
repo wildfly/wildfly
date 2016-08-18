@@ -39,6 +39,7 @@ public class LookupBean {
             throw new RuntimeException(e);
         }
     }
+
     public LocalHomeInterface doLookupLocal() {
         try {
             return (LocalHomeInterface) new InitialContext().lookup("java:comp/env/ejb/local");

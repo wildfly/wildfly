@@ -193,9 +193,9 @@ public class RequestDumpingHandlerTestCase {
 
     private final String HTTPS_PORT = "8443";
 
-    private final static String DEPLOYMENT = "no-req-dump";
-    private final static String DEPLOYMENT_DUMP = "req-dump";
-    private final static String DEPLOYMENT_WS = "req-dump-ws";
+    private static final String DEPLOYMENT = "no-req-dump";
+    private static final String DEPLOYMENT_DUMP = "req-dump";
+    private static final String DEPLOYMENT_WS = "req-dump-ws";
 
     @Deployment(name = DEPLOYMENT_DUMP)
     public static WebArchive deployWithReqDump() {

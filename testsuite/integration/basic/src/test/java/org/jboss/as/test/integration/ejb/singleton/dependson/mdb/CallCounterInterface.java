@@ -26,19 +26,18 @@ import javax.ejb.Local;
 
 /**
  * @author baranowb
- * 
  */
 @Local
 public interface CallCounterInterface {
-    public boolean isPostConstruct();
+    boolean isPostConstruct();
 
-    public void setPostConstruct();
+    void setPostConstruct();
 
-    public boolean isPreDestroy();
+    boolean isPreDestroy();
 
-    public void setPreDestroy();
+    void setPreDestroy();
 
-    public void setMessage();
+    void setMessage();
 
-    public boolean isMessage();
+    boolean isMessage();
 }

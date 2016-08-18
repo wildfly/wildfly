@@ -1,5 +1,6 @@
 package org.jboss.as.test.integration.web.security.runas;
 
+import java.io.IOException;
 import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -7,7 +8,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * @author Stuart Douglas

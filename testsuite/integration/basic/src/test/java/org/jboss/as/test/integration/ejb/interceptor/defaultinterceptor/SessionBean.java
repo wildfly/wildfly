@@ -26,5 +26,5 @@ package org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor;
  */
 public interface SessionBean {
 
-    public void setPostConstructCalled();
+    void setPostConstructCalled();
 }

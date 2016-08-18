@@ -26,6 +26,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+
 import org.junit.Assert;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -45,7 +46,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * Test WS sign capability
- * 
+ * <p>
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
  * Public key can be imported using keytool -import
@@ -60,10 +61,10 @@ public class EJBSignTestCase {
     private static Logger log = Logger.getLogger(EJBSignTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
-    
-    @Deployment( testable=false )
+
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
-        
+
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-wsse-sign.jar").
                 addAsManifestResource(new StringAsset("Dependencies: org.apache.ws.security\n"), "MANIFEST.MF").
                 addClasses(ServiceIface.class, EJBServiceImpl.class, KeystorePasswordCallback.class).
@@ -79,13 +80,13 @@ public class EJBSignTestCase {
 
     @Test
     public void signedRequest() throws Exception {
-        QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBSecurityService");        
+        QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBSecurityService");
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsse-sign-ejb/EJBSecurityService?wsdl");
-        
+
         Service service = Service.create(wsdlURL, serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
         setupWsse(proxy);
-        
+
         Assert.assertEquals("Secure Hello World!", proxy.sayHello());
     }
 

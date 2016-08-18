@@ -48,7 +48,7 @@ import org.jboss.security.xacml.interfaces.XACMLConstants;
  * A custom XACML authorization module, which emulates behavior of {@link XACMLAuthorizationModule}. This class helps test usage
  * of a custom authorization module for web applications and EJBs. It also checks integration of XACML authorization routines
  * (workaround for an issue JBPAPP-8773).
- * 
+ *
  * @author Josef Cacek
  */
 public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule {
@@ -76,7 +76,7 @@ public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule 
 
     /**
      * Implements XACML based authorization for {@link WebResource} and {@link EJBResource}.
-     * 
+     *
      * @param resource
      * @return
      * @see org.jboss.security.authorization.modules.AbstractAuthorizationModule#authorize(org.jboss.security.authorization.Resource)
@@ -100,7 +100,7 @@ public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule 
 
     /**
      * Authorizes the {@link WebResource} instance.
-     * 
+     *
      * @param webResource
      * @return
      */
@@ -114,16 +114,15 @@ public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule 
 
         //If it is a userDataCheck or a RoleRefCheck, then the base class (RealmBase) decision holds
         if (Boolean.TRUE.equals(map.get(ResourceKeys.USERDATA_PERM_CHECK))
-                || Boolean.TRUE.equals(map.get(ResourceKeys.ROLEREF_PERM_CHECK)))
+                || Boolean.TRUE.equals(map.get(ResourceKeys.ROLEREF_PERM_CHECK))) {
             return AuthorizationContext.PERMIT; //Base class decision holds good
+        }
 
         final HttpServletRequest request = (HttpServletRequest) webResource.getServletRequest();
-        if (request == null)
-            throw new IllegalStateException("HttpServletRequest is null");
+        if (request == null) { throw new IllegalStateException("HttpServletRequest is null"); }
 
         final Principal userP = request.getUserPrincipal();
-        if (userP == null)
-            throw new IllegalStateException("User Principal is null");
+        if (userP == null) { throw new IllegalStateException("User Principal is null"); }
 
         final WebXACMLUtil util = new WebXACMLUtil();
         try {
@@ -142,7 +141,7 @@ public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule 
 
     /**
      * Authorizes {@link EJBResource} instance.
-     * 
+     *
      * @param ejbResource
      * @return
      */
@@ -178,13 +177,13 @@ public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule 
 
     /**
      * Returns the given {@link RequestContext} marshaled into a String.
-     * 
+     *
      * @param requestCtx
      * @return
      * @throws IOException
      * @throws UnsupportedEncodingException
      */
-    private String toString(final RequestContext requestCtx) throws IOException, UnsupportedEncodingException {
+    private String toString(final RequestContext requestCtx) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         requestCtx.marshall(baos);
         final String requestCtxStr = baos.toString("UTF-8");

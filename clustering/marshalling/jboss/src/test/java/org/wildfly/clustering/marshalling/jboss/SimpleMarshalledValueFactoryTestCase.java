@@ -33,21 +33,16 @@ import java.util.UUID;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 
 /**
  * Unit tests for SimpleMarshalledValue.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SimpleMarshalledValueFactoryTestCase {
     private final MarshallingContext context;
     private final SimpleMarshalledValueFactory factory;
-    
+
     public SimpleMarshalledValueFactoryTestCase() {
         MarshallingConfigurationRepository repository = new MarshallingConfigurationRepository() {
             @Override
@@ -68,7 +63,7 @@ public class SimpleMarshalledValueFactoryTestCase {
     SimpleMarshalledValueFactory createFactory(MarshallingContext context) {
         return new SimpleMarshalledValueFactory(context);
     }
-    
+
     /**
      * Test method for {@link org.jboss.ha.framework.server.SimpleMarshalledValue#get()}.
      */
@@ -84,7 +79,7 @@ public class SimpleMarshalledValueFactoryTestCase {
         SimpleMarshalledValue<UUID> copy = replicate(mv);
 
         assertNull(copy.peek());
-        
+
         UUID uuid2 = copy.get(this.context);
         assertNotSame(uuid, uuid2);
         assertEquals(uuid, uuid2);
@@ -147,7 +142,7 @@ public class SimpleMarshalledValueFactoryTestCase {
     <T> void validateHashCode(T original, SimpleMarshalledValue<T> copy) {
         assertEquals(0, copy.hashCode());
     }
-    
+
     @SuppressWarnings("unchecked")
     <V> SimpleMarshalledValue<V> replicate(SimpleMarshalledValue<V> mv) throws IOException, ClassNotFoundException {
         return (SimpleMarshalledValue<V>) unmarshall(marshall(mv));

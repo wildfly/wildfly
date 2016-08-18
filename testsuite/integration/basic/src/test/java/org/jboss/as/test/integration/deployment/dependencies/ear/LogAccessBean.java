@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
 
 /**
  * A Singleton EJB - implementation of {@link LogAccess} interface.
- * 
+ *
  * @author Josef Cacek
  */
 @Singleton
@@ -55,7 +55,7 @@ public class LogAccessBean implements LogAccess {
 
     /**
      * Returns {@link Log#SB} content.
-     * 
+     *
      * @return
      * @see org.jboss.as.test.integration.deployment.dependencies.ear.LogAccess#getLog()
      */

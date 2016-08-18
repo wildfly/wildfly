@@ -22,8 +22,16 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +53,7 @@ import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Unit test for {@link DefaultCacheContainer}.
+ *
  * @author Paul Ferraro
  */
 public class DefaultCacheContainerTestCase {
@@ -188,7 +197,7 @@ public class DefaultCacheContainerTestCase {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         Configuration defaultConfig = builder.build();
         Configuration otherConfig = builder.build();
-        
+
         when(this.manager.defineConfiguration(DEFAULT_CACHE, defaultConfig)).thenReturn(defaultConfig);
         when(this.manager.defineConfiguration("other", otherConfig)).thenReturn(otherConfig);
 
@@ -265,33 +274,33 @@ public class DefaultCacheContainerTestCase {
     @Test
     public void getCacheManagerConfiguration() {
         GlobalConfiguration global = new GlobalConfigurationBuilder().build();
-        
+
         when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
-        
+
         GlobalConfiguration result = this.subject.getCacheManagerConfiguration();
-        
+
         assertSame(global, result);
     }
 
     @Test
     public void getDefaultCacheConfiguration() {
         Configuration config = new ConfigurationBuilder().build();
-        
+
         when(this.manager.getCacheConfiguration(DEFAULT_CACHE)).thenReturn(config);
-        
+
         Configuration result = this.subject.getDefaultCacheConfiguration();
-        
+
         assertSame(config, result);
     }
 
     @Test
     public void getCacheConfiguration() {
         Configuration config = new ConfigurationBuilder().build();
-        
+
         when(this.manager.getCacheConfiguration("cache")).thenReturn(config);
-        
+
         Configuration result = this.subject.getCacheConfiguration("cache");
-        
+
         assertSame(config, result);
     }
 
@@ -332,7 +341,7 @@ public class DefaultCacheContainerTestCase {
 
         assertTrue(result);
     }
-    
+
     @Test
     public void startCaches() {
         when(this.manager.startCaches("other", DEFAULT_CACHE)).thenReturn(this.manager);

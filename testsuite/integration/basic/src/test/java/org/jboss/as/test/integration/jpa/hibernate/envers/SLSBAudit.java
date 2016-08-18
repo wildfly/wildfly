@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.jpa.hibernate.envers;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -85,8 +84,7 @@ public class SLSBAudit {
 
             AuditQuery query = reader.createQuery().forEntitiesAtRevision(Customer.class, revisionNumber);
             query.add(AuditEntity.property("firstname").eq("MADHUMITA"));
-            if (query.getResultList() != null && query.getResultList().size() > 0)
-                custHistory.add(query.getResultList());
+            if (query.getResultList() != null && query.getResultList().size() > 0) { custHistory.add(query.getResultList()); }
         }
 
         return custHistory;
@@ -103,8 +101,7 @@ public class SLSBAudit {
 
             AuditQuery query = reader.createQuery().forEntitiesAtRevision(Customer.class, revisionNumber);
             query.add(AuditEntity.revisionType().eq(RevisionType.MOD));
-            if (query.getResultList() != null && query.getResultList().size() > 0)
-                custHistory.add(query.getResultList());
+            if (query.getResultList() != null && query.getResultList().size() > 0) { custHistory.add(query.getResultList()); }
         }
 
         return custHistory;

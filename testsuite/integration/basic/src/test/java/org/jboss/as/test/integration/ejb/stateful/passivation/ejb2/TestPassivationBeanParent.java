@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 
 import java.rmi.RemoteException;
 import javax.ejb.EJBException;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -31,21 +32,21 @@ import org.jboss.logging.Logger;
  */
 public abstract class TestPassivationBeanParent {
     private static final Logger log = Logger.getLogger(TestPassivationBeanParent.class);
-    
+
     protected String identificator;
     protected boolean beenPassivated = false;
     protected boolean beenActivated = false;
-    
+
     /**
-     * Overriding the ejbPassivate method of SessionBean on child class 
+     * Overriding the ejbPassivate method of SessionBean on child class
      */
     public void ejbPassivate() throws EJBException, RemoteException {
         log.info(this.toString() + " ejbPassivate [" + this.identificator + "]");
         this.beenPassivated = true;
     }
-    
+
     /**
-     * Overriding the ejbActivate method of SessionBean on child class 
+     * Overriding the ejbActivate method of SessionBean on child class
      */
     public void ejbActivate() throws EJBException, RemoteException {
         log.info(this.toString() + " ejbActivate [" + this.identificator + "]");
@@ -53,7 +54,7 @@ public abstract class TestPassivationBeanParent {
     }
 
     /**
-     * Overriding the ejbRemove method of SessionBean on child class 
+     * Overriding the ejbRemove method of SessionBean on child class
      */
     public void ejbRemove() throws EJBException, RemoteException {
         log.info("Bean [" + this.identificator + "] destroyed");

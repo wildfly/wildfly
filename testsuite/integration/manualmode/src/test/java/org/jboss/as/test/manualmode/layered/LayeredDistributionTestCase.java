@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -86,7 +87,7 @@ public class LayeredDistributionTestCase {
         war.addClass(LayeredTestServlet.class);
         war.setManifest(new StringAsset(
                 "Manifest-Version: 1.0" + System.getProperty("line.separator")
-                + "Dependencies: org.jboss.ldtc, org.jboss.modules" + System.getProperty("line.separator")));
+                        + "Dependencies: org.jboss.ldtc, org.jboss.modules" + System.getProperty("line.separator")));
         return war;
     }
 
@@ -137,15 +138,15 @@ public class LayeredDistributionTestCase {
 
     @Test
     public void testLayeredDeployment() throws Throwable {
-        
+
         deployer.deploy(DEPLOYMENT);
-        
+
         // test that the deployment can access class from a layered module
         String response = HttpRequest.get(webURI + "/test-deployment/LayeredTestServlet", 10, TimeUnit.SECONDS);
         Assert.assertTrue(response.contains("LayeredTestServlet"));
-        
+
         deployer.undeploy(DEPLOYMENT);
-        
+
     }
 
     private void buildLayer(String layer) throws Exception {
@@ -189,11 +190,11 @@ public class LayeredDistributionTestCase {
         manifestStream.flush();
         manifestStream.close();
 
-        // set product.conf        
+        // set product.conf
         File binDir = new File(AS_PATH, "bin");
         Assert.assertTrue(binDir.exists());
         File productConf = new File(binDir, "product.conf");
-        if (productConf.exists()) productConf.delete();
+        if (productConf.exists()) { productConf.delete(); }
         FileUtils.writeStringToFile(productConf, "slot=test" + System.getProperty("line.separator"));
 
     }

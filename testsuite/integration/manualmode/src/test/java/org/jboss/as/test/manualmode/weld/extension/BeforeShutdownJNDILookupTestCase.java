@@ -1,6 +1,5 @@
 package org.jboss.as.test.manualmode.weld.extension;
 
-import junit.framework.AssertionFailedError;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -15,6 +14,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -72,7 +72,7 @@ public class BeforeShutdownJNDILookupTestCase {
         if (output.get(0).equals("Exception")) {
             String stacktrace = output.get(1).replaceAll(",", System.getProperty("line.separator"));
             String msg = "An exception was thrown by the deployment %s during shutdown.  The server stacktrace is shown below: %n%s";
-            throw new AssertionFailedError(String.format(msg, DEPLOYMENT, stacktrace));
+            Assert.fail(String.format(msg, DEPLOYMENT, stacktrace));
         }
         assertEquals("Contents of result.txt is not valid!", "UserTransaction", output.get(0));
     }

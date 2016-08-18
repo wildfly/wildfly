@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
 /**
  * @author baranowb
- * 
  */
 public interface SessionConstants {
     String DEPLOYMENT_NAME_SESSION = "session";

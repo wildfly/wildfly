@@ -24,16 +24,13 @@ package org.jboss.as.test.integration.weld.jpa.subdeployment;
 
 import javax.enterprise.inject.Produces;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceUnit;
-import javax.persistence.Query;
 
 public class CdiJpaInjectingBean {
 
     @Produces
-       @QualifyEntityManagerFactory
-       @PersistenceUnit(unitName="cdiPu")
+    @QualifyEntityManagerFactory
+    @PersistenceUnit(unitName = "cdiPu")
     EntityManagerFactory emf;
 
     public EntityManagerFactory entityManagerFactory() {

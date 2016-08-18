@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jca.basic;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
-
 import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -57,7 +56,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test failure of activation for non ID-ed RAs
- * 
+ *
  * @author baranowb
  */
 @RunWith(Arquillian.class)
@@ -86,7 +85,7 @@ public class BasicDoubleDeploymentFail16_1TestCase extends ContainerResourceMgmt
             operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(),
                     new ResourceAdapterSubsystemParser());
 
-            final ModelNode result = executeOperation(operationListToCompositeOperation(operations),false);
+            final ModelNode result = executeOperation(operationListToCompositeOperation(operations), false);
             Assert.assertTrue(!Operations.isSuccessfulOutcome(result));
             final String failureDescription = result.get("result").get("step-1").get("failure-description").asString();
             Assert.assertTrue(failureDescription.startsWith("WFLYCTL0212: Duplicate resource"));
@@ -137,7 +136,7 @@ public class BasicDoubleDeploymentFail16_1TestCase extends ContainerResourceMgmt
 
     /**
      * Test configuration
-     * 
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test
@@ -146,13 +145,14 @@ public class BasicDoubleDeploymentFail16_1TestCase extends ContainerResourceMgmt
         assertNotNull("AO1 not found", adminObject1);
     }
 
-    @Test(expected=NameNotFoundException.class)
-    public void testNonExistingConfig_1() throws Exception{
+    @Test(expected = NameNotFoundException.class)
+    public void testNonExistingConfig_1() throws Exception {
         InitialContext initialContext = new InitialContext();
-        initialContext.lookup("java:jboss/name1-2");        
+        initialContext.lookup("java:jboss/name1-2");
     }
-    @Test(expected=NameNotFoundException.class)
-    public void testNonExistingConfig_2() throws Exception{
+
+    @Test(expected = NameNotFoundException.class)
+    public void testNonExistingConfig_2() throws Exception {
         InitialContext initialContext = new InitialContext();
         initialContext.lookup("java:jboss/Name3-2");
     }
