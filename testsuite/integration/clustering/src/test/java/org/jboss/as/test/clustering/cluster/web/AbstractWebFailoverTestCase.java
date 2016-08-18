@@ -33,6 +33,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -56,9 +57,20 @@ import org.junit.runner.RunWith;
 public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCase {
 
     private final String deploymentName;
+    private final Runnable nonOwnerTask;
 
-    protected AbstractWebFailoverTestCase(String deploymentName) {
+    protected AbstractWebFailoverTestCase(String deploymentName, TransactionMode mode) {
         this.deploymentName = deploymentName;
+        this.nonOwnerTask = () -> {
+            // If the cache is non-transactional, we need to wait for that replication to finish, otherwise the read can be stale
+            if (!mode.isTransactional()) {
+                try {
+                    Thread.sleep(GRACE_TIME_TO_REPLICATE);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
     }
 
     /**
@@ -178,6 +190,9 @@ public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCas
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
+
+            // The previous and next requests intentially hit the non-owning node
+            this.nonOwnerTask.run();
 
             // Let's do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(uri2));

@@ -426,9 +426,9 @@
                         <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="segments" type="xs:int" default="80">
+                <xs:attribute name="segments" type="xs:int" default="256">
                     <xs:annotation>
-                        <xs:documentation>Number of hash space segments (per cluster). The recommended value is 10 * cluster size.</xs:documentation>
+                        <xs:documentation>Number of hash space segments (per cluster).</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="l1-lifespan" type="xs:long" default="600000">
@@ -441,7 +441,7 @@
                         <xs:documentation>Controls the proportion of entries that will reside on the local node, compared to the other nodes in the cluster.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="consistent-hash-strategy" type="tns:consistent-hash-strategy" default="INTRA_CACHE">
+                <xs:attribute name="consistent-hash-strategy" type="tns:consistent-hash-strategy" default="INTER_CACHE">
                     <xs:annotation>
                         <xs:documentation>
                             Defines the consistent hash strategy for the cache.
