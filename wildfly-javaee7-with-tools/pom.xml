@@ -23,11 +23,11 @@
     <parent>
         <artifactId>wildfly-javaee7</artifactId>
         <groupId>org.wildfly.bom</groupId>
-        <version>10.1.0.Final-SNAPSHOT</version>
+        <version>10.1.0.Final</version>
     </parent>
 
     <artifactId>wildfly-javaee7-with-tools</artifactId>
-    <version>10.1.1.CR1-SNAPSHOT</version>
+    <version>10.1.0.Final</version>
     <packaging>pom</packaging>
 
     <name>WildFly Java EE 7 Specification APIs with Tools BOM</name>

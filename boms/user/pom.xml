@@ -16,8 +16,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,7 +28,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly-javaee7</artifactId>
-    <version>10.1.0.Final-SNAPSHOT</version>
+    <version>10.1.0.Final</version>
 
     <packaging>pom</packaging>
 
@@ -62,7 +61,7 @@
     <scm>
         <connection>scm:git:https://github.com/wildfly/boms.git</connection>
         <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>wildfly-javaee7-10.1.0.Final</tag>
         <url>http://github.com/wildfly/boms</url>
     </scm>
     <issueManagement>
