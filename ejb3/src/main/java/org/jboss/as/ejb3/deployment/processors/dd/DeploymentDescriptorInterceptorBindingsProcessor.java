@@ -29,13 +29,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.subsystem.EjbNameRegexService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -57,6 +60,11 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
  */
 public class DeploymentDescriptorInterceptorBindingsProcessor implements DeploymentUnitProcessor {
 
+    private final EjbNameRegexService ejbNameRegexService;
+
+    public DeploymentDescriptorInterceptorBindingsProcessor(EjbNameRegexService ejbNameRegexService) {
+        this.ejbNameRegexService = ejbNameRegexService;
+    }
 
 
     @Override
@@ -100,6 +108,20 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     throw EjbLogger.ROOT_LOGGER.defaultInterceptorsNotSpecifyOrder();
                 }
                 defaultInterceptorBindings.add(binding);
+            } else if(ejbNameRegexService.isEjbNameRegexAllowed()) {
+                Pattern pattern = Pattern.compile(binding.getEjbName());
+                for (final ComponentDescription componentDescription : eeModuleDescription.getComponentDescriptions()) {
+                    if(componentDescription instanceof EJBComponentDescription) {
+                        String ejbName = ((EJBComponentDescription) componentDescription).getEJBName();
+                        if(pattern.matcher(ejbName).matches()) {
+                            List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(ejbName);
+                            if (bindings == null) {
+                                bindingsPerComponent.put(ejbName, bindings = new ArrayList<InterceptorBindingMetaData>());
+                            }
+                            bindings.add(binding);
+                        }
+                    }
+                }
             } else {
                 List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(binding.getEjbName());
                 if (bindings == null) {

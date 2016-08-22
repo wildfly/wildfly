@@ -35,6 +35,8 @@ public interface EJB3SubsystemModel {
     String ALIASES = "aliases";
 
     String ASYNC = "async";
+    String ALLOW_EJB_NAME_REGEX = "allow-ejb-name-regex";
+
     String IIOP = "iiop";
 
     String CONNECTOR_REF = "connector-ref";
