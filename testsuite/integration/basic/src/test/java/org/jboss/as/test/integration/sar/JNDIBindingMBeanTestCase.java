@@ -37,7 +37,7 @@ public class JNDIBindingMBeanTestCase {
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "multiple-jndi-binding-mbeans.sar");
         sar.addClasses(JNDIBindingService.class, JNDIBindingMBeanTestCase.class, JNDIBindingServiceMBean.class);
         sar.addAsManifestResource(JNDIBindingMBeanTestCase.class.getPackage(), "multiple-jndi-binding-mbeans-jboss-service.xml", "jboss-service.xml");
-        sar.addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("global/env/foo/-", "bind")), "permissions.xml");
+        sar.addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("global/env/foo/-", "bind,unbind")), "permissions.xml");
         return sar;
     }
 
