@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -34,6 +35,16 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.iiop.openjdk.logging.IIOPLogger;
+
+import java.util.Map;
 
 /**
  * <p>
@@ -73,6 +84,7 @@ public class IIOPExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             IIOPRootDefinition.registerTransformers(subsystem);
+
         }
     }
 
@@ -81,4 +93,49 @@ public class IIOPExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_0.getUriString(), IIOPSubsystemParser_1.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_3_0.getUriString(), IIOPSubsystemParser_3.INSTANCE);
     }
+
+    protected static void registerTransformers(final SubsystemRegistration subsystem) {
+        ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+
+        ResourceTransformationDescriptionBuilder builder = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_1);
+        builder.getAttributeBuilder()
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                    @Override
+                    protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
+                        return attributeValue.asString().equals("true");
+                    }
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> map) {
+                        return IIOPLogger.ROOT_LOGGER.serverRequiresSslNotSupportedInPreviousVersions();
+                    }
+                }, IIOPRootDefinition.SERVER_REQUIRES_SSL)
+                .setValueConverter(new AttributeConverter() {
+                    @Override
+                    public void convertOperationParameter(PathAddress pathAddress, String s, ModelNode attributeValue, ModelNode operation, TransformationContext transformationContext) {
+                        convert(attributeValue);
+                    }
+
+                    @Override
+                    public void convertResourceAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
+                        convert(attributeValue);
+                    }
+
+                    private void convert(ModelNode attributeValue){
+                        final boolean clientRequiresSsl = attributeValue.asBoolean();
+                        if(clientRequiresSsl){
+                            attributeValue.set(SSLConfigValue.MUTUALAUTH.toString());
+                        } else {
+                            attributeValue.set(SSLConfigValue.NONE.toString());
+                        }
+                    }
+
+                } , IIOPRootDefinition.CLIENT_REQUIRES_SSL);
+
+        chained.buildAndRegister(subsystem, new ModelVersion[]{
+                VERSION_1
+        });
+    }
+
+
 }
