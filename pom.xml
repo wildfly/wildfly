@@ -218,7 +218,7 @@
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>3.0.0.Alpha5</version.org.wildfly.core>
-        <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>2.0.0.Final</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
@@ -6024,17 +6024,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-common</artifactId>
                 <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <!-- only needed until wildfly-arquillian has properly synced this version with arquillian it uses -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
-                <artifactId>shrinkwrap-descriptors-impl-base</artifactId>
-                <version>${version.org.jboss.shrinkwrap.descriptors}</version>
             </dependency>
 
             <dependency>

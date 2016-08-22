@@ -290,10 +290,18 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         }
     }
 
-    @InSequence(3)
     @Test
-    @Ignore("WFLY-3532")
-    public void testConcurrentFailover() throws Exception {
+    public void testGracefulShutdownConcurrentFailover() throws Exception {
+        this.testConcurrentFailover(new GracefulRestartLifecycle());
+    }
+
+    @Test
+    @Ignore("Needs graceful undeploy support")
+    public void testGracefulUndeployConcurrentFailover() throws Exception {
+        this.testConcurrentFailover(new RedeployLifecycle());
+    }
+
+    public void testConcurrentFailover(Lifecycle lifecycle) throws Exception {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
@@ -310,7 +318,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 Future<?> future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
                 latch.await();
 
-                undeploy(this.findDeployment(target));
+                lifecycle.stop(target);
 
                 future.cancel(false);
                 try {
@@ -319,28 +327,13 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                     // Ignore
                 }
 
-                deploy(this.findDeployment(target));
-
-                latch = new CountDownLatch(1);
-                future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
-                latch.await();
-
-                stop(this.findContainer(target));
-
-                future.cancel(false);
-                try {
-                    future.get();
-                } catch (CancellationException e) {
-                    // Ignore
-                }
-
-                start(this.findContainer(target));
+                lifecycle.start(target);
 
                 latch = new CountDownLatch(1);
                 future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowToDestroyStatefulIncrementorBean.class, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
                 latch.await();
 
-                undeploy(this.findDeployment(target));
+                lifecycle.stop(target);
 
                 future.cancel(false);
                 try {
@@ -349,22 +342,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                     // Ignore
                 }
 
-                deploy(this.findDeployment(target));
-
-                latch = new CountDownLatch(1);
-                future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowToDestroyStatefulIncrementorBean.class, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
-                latch.await();
-
-                stop(this.findContainer(target));
-
-                future.cancel(false);
-                try {
-                    future.get();
-                } catch (CancellationException e) {
-                    // Ignore
-                }
-
-                start(this.findContainer(target));
+                lifecycle.start(target);
             } finally {
                 executor.shutdownNow();
             }
