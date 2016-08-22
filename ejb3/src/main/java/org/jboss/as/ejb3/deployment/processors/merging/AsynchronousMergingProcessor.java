@@ -97,6 +97,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
         final SessionBeanMetaData data = description.getDescriptorData();
+        final boolean isSecurityDomainKnown = description.isSecurityDomainKnown();
         if (data != null) {
             if (data instanceof SessionBean31MetaData) {
                 final SessionBean31MetaData sessionBeanData = (SessionBean31MetaData) data;
@@ -140,12 +141,12 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
 
                             if (componentMethod != null) {
                                 if (componentDescription.getAsynchronousClasses().contains(componentMethod.getDeclaringClass().getName())) {
-                                    addAsyncInterceptor(configuration, method);
+                                    addAsyncInterceptor(configuration, method, isSecurityDomainKnown);
                                     configuration.addAsyncMethod(method);
                                 } else {
                                     MethodIdentifier id = MethodIdentifier.getIdentifierForMethod(method);
                                     if (componentDescription.getAsynchronousMethods().contains(id)) {
-                                        addAsyncInterceptor(configuration, method);
+                                        addAsyncInterceptor(configuration, method, isSecurityDomainKnown);
                                         configuration.addAsyncMethod(method);
                                     }
                                 }
@@ -157,12 +158,14 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
         }
     }
 
-    private static void addAsyncInterceptor(final ViewConfiguration configuration, final Method method) throws DeploymentUnitProcessingException {
+    private static void addAsyncInterceptor(final ViewConfiguration configuration, final Method method, final boolean isSecurityDomainKnown) throws DeploymentUnitProcessingException {
         if (method.getReturnType().equals(void.class) || method.getReturnType().equals(Future.class)) {
             configuration.addClientInterceptor(method, LogDiagnosticContextStorageInterceptor.getFactory(), InterceptorOrder.Client.LOCAL_ASYNC_LOG_SAVE);
 
-            // Make sure the security domain is available in the private data of the InterceptorContext
-            configuration.addClientInterceptor(method, SecurityDomainInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_SECURITY_CONTEXT);
+            if (isSecurityDomainKnown) {
+                // Make sure the security domain is available in the private data of the InterceptorContext
+                configuration.addClientInterceptor(method, SecurityDomainInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_SECURITY_CONTEXT);
+            }
             configuration.addClientInterceptor(method, AsyncFutureInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_INVOCATION);
 
             configuration.addClientInterceptor(method, LogDiagnosticContextRecoveryInterceptor.getFactory(), InterceptorOrder.Client.LOCAL_ASYNC_LOG_RESTORE);
