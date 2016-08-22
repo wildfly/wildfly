@@ -117,6 +117,8 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         res.add(HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS);
         res.add(HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE);
         res.add(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE);
+        res.add(HttpListenerResourceDefinition.CERTIFICATE_FORWARDING);
+        res.add(HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING);
         return res;
     }
 

@@ -94,6 +94,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
                                                 // xsd https-listener-type
                                                 .addAttributes(
+                                                        HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
+                                                        HttpListenerResourceDefinition.CERTIFICATE_FORWARDING,
                                                         HttpsListenerResourceDefinition.SECURITY_REALM,
                                                         HttpsListenerResourceDefinition.VERIFY_CLIENT,
                                                         HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES,
