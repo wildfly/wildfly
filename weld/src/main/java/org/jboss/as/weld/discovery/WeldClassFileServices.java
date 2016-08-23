@@ -25,11 +25,10 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.weld.resources.spi.ClassFileInfo;
 import org.jboss.weld.resources.spi.ClassFileServices;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableSet;
+import org.jboss.weld.util.Function;
+import org.jboss.weld.util.cache.ComputingCache;
+import org.jboss.weld.util.cache.ComputingCacheBuilder;
+import org.jboss.weld.util.collections.ImmutableSet;
 
 /**
  *
@@ -39,13 +38,13 @@ public class WeldClassFileServices implements ClassFileServices {
 
     private CompositeIndex index;
 
-    private LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache;
+    private ComputingCache<DotName, Set<String>> annotationClassAnnotationsCache;
 
     private final ClassLoader moduleClassLoader;
 
-    private class AnnotationClassAnnotationLoader extends CacheLoader<DotName, Set<String>> {
+    private class AnnotationClassAnnotationLoader implements Function<DotName, Set<String>> {
         @Override
-        public Set<String> load(DotName name) throws Exception {
+        public Set<String> apply(DotName name) {
 
             ClassInfo annotationClassInfo = index.getClassByName(name);
             ImmutableSet.Builder<String> builder = ImmutableSet.builder();
@@ -78,7 +77,7 @@ public class WeldClassFileServices implements ClassFileServices {
         }
         this.moduleClassLoader = moduleClassLoader;
         this.index = index;
-        this.annotationClassAnnotationsCache = CacheBuilder.newBuilder().build(new AnnotationClassAnnotationLoader());
+        this.annotationClassAnnotationsCache = ComputingCacheBuilder.newBuilder().build(new AnnotationClassAnnotationLoader());
     }
 
     @Override
@@ -89,7 +88,7 @@ public class WeldClassFileServices implements ClassFileServices {
     @Override
     public void cleanupAfterBoot() {
         if (annotationClassAnnotationsCache != null) {
-            annotationClassAnnotationsCache.invalidateAll();
+            annotationClassAnnotationsCache.clear();
             annotationClassAnnotationsCache = null;
         }
         index = null;
