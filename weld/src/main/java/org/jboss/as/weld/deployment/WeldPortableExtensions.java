@@ -12,7 +12,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.metadata.MetadataImpl;
+import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 
 /**
  * Container class that is attached to the top level deployment that holds all portable extension metadata.

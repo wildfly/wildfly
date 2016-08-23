@@ -33,8 +33,6 @@
     </resources>
 
     <dependencies>
-        <module name="ch.qos.cal10n" />
-        <module name="com.google.guava"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.ejb.api" />
