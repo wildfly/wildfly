@@ -59,14 +59,16 @@ public class StartupMergingProcessor extends AbstractMergingProcessor<SingletonC
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SingletonComponentDescription description) throws DeploymentUnitProcessingException {
-        SessionBeanMetaData data = description.getDescriptorData();
-        if (data instanceof SessionBean31MetaData) {
-            SessionBean31MetaData singletonBeanMetaData = (SessionBean31MetaData) data;
-            Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
-            if (initOnStartup != null && initOnStartup) {
-                description.initOnStartup();
-                description.getModuleDescription().registerStartupBean();
+        if (!description.isInitOnStartup()) {
+            SessionBeanMetaData data = description.getDescriptorData();
+            if (data instanceof SessionBean31MetaData) {
+                SessionBean31MetaData singletonBeanMetaData = (SessionBean31MetaData) data;
+                Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
+                if (initOnStartup != null && initOnStartup) {
+                    description.initOnStartup();
+                    description.getModuleDescription().registerStartupBean();
+                }
             }
-        }
+        } // else skip. This is already marked as InitOnStartup by @Startup annotation.
     }
 }
