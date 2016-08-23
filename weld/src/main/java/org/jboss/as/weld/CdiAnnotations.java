@@ -25,10 +25,9 @@ import java.util.Set;
 
 import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.jandex.DotName;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
+import org.jboss.weld.util.Function;
+import org.jboss.weld.util.collections.ImmutableSet;
+import org.jboss.weld.util.collections.Iterables;
 
 /**
  * Class that stores the {@link DotName}s of CDI annotations.
@@ -200,8 +199,8 @@ public enum CdiAnnotations {
 
     public static final Set<DotName> BUILT_IN_SCOPE_NAMES = ImmutableSet.<DotName>of(DEPENDENT.getDotName(), REQ_SCOPED.getDotName(), CONV_SCOPED.getDotName(), SESS_SCOPED.getDotName(), APP_SCOPED.getDotName(), SINGLETON.getDotName());
 
-    public static final Set<AnnotationType> BUILT_IN_SCOPES = ImmutableSet.copyOf(Collections2.transform(BUILT_IN_SCOPE_NAMES,
-            new Function<DotName, AnnotationType>() {
+    public static final Set<AnnotationType> BUILT_IN_SCOPES = ImmutableSet
+            .copyOf(Iterables.transform(BUILT_IN_SCOPE_NAMES, new Function<DotName, AnnotationType>() {
                 public AnnotationType apply(DotName input) {
                     return new AnnotationType(input, true);
                 }

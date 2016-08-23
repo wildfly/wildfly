@@ -24,9 +24,8 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+import org.jboss.weld.util.Function;
+import org.jboss.weld.util.Predicate;
 
 /**
  * Utilities for working with Jandex indices.
@@ -47,7 +46,7 @@ public class Indices {
 
     public static final Predicate<ClassInfo> ANNOTATION_PREDICATE = new Predicate<ClassInfo>() {
         @Override
-        public boolean apply(ClassInfo input) {
+        public boolean test(ClassInfo input) {
             return isAnnotation(input);
         }
     };

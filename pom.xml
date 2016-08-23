@@ -199,8 +199,8 @@
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.3.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.3.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.spec.javax.websockets>1.1.1.Final</version.org.jboss.spec.javax.websockets>
-        <version.org.jboss.weld.weld>2.3.5.Final</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>2.3.SP2</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>2.4.0.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>2.4.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>3.1.2.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>3.1.3.Final</version.org.jboss.ws.common>
