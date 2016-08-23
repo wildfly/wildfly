@@ -30,7 +30,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
-import org.wildfly.security.authz.AuthorizationCheckException;
+import org.wildfly.security.authz.AuthorizationFailureException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -60,7 +60,7 @@ public class RunAsPrincipalInterceptor implements Interceptor {
             // run as a user with the given name or if the caller has sufficient permission
             try {
                 newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
-            } catch (AuthorizationCheckException ex) {
+            } catch (AuthorizationFailureException ex) {
                 newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal, false);
             }
             ejbComponent.setIncomingRunAsIdentity(currentIdentity);
