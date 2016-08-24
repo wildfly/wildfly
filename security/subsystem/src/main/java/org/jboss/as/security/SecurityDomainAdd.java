@@ -211,7 +211,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                mappingInfo.setJBossModuleName(moduleName.asString());
+                mappingInfo.addJBossModuleName(moduleName.asString());
             }
         }
 
@@ -236,7 +236,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                identityTrustInfo.setJBossModuleName(moduleName.asString());
+                identityTrustInfo.addJBossModuleName(moduleName.asString());
             }
         }
         applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
@@ -258,7 +258,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                auditInfo.setJBossModuleName(moduleName.asString());
+                auditInfo.addJBossModuleName(moduleName.asString());
             }
         }
         applicationPolicy.setAuditInfo(auditInfo);
@@ -283,7 +283,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                aclInfo.setJBossModuleName(moduleName.asString());
+                aclInfo.addJBossModuleName(moduleName.asString());
             }
 
         }
@@ -309,7 +309,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authzInfo.setJBossModuleName(moduleName.asString());
+                authzInfo.addJBossModuleName(moduleName.asString());
             }
         }
 
@@ -365,7 +365,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, authModule);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authenticationInfo.setJBossModuleName(moduleName.asString());
+                authenticationInfo.addJBossModuleName(moduleName.asString());
             }
         }
         applicationPolicy.setAuthenticationInfo(authenticationInfo);
@@ -421,7 +421,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             container.addAppConfigurationEntry(entry);
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authInfo.setJBossModuleName(moduleName.asString());
+                authInfo.addJBossModuleName(moduleName.asString());
             }
         }
     }
