@@ -25,6 +25,8 @@ package org.jboss.as.test.integration.ee.injection.support.jpa;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PrePersist;
 
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
@@ -35,6 +37,12 @@ public class MyListener {
     private static boolean injectionPerformed = false;
 
     private static volatile int invocationCount = 0;
+
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
+
+    @PersistenceContext(unitName = "onephasePU")
+    EntityManager onephaseEm;
 
     @Inject
     private Alpha alpha;
@@ -56,7 +64,7 @@ public class MyListener {
 
     @PostConstruct
     public void checkInjectionPerformed() {
-        injectionPerformed = alpha != null && bravo != null;
+        injectionPerformed = alpha != null && bravo != null && em != null && onephaseEm!=null;
     }
 
     public static boolean isIjectionPerformed() {

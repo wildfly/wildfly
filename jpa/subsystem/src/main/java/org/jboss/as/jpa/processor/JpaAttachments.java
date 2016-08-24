@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jpa.processor;
 
+import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -48,6 +49,8 @@ public final class JpaAttachments {
      * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
      */
     public static final AttachmentKey<PersistenceProviderDeploymentHolder> DEPLOYED_PERSISTENCE_PROVIDER = AttachmentKey.create(PersistenceProviderDeploymentHolder.class);
+
+    public static final AttachmentKey<BeanManagerAfterDeploymentValidation> BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY = AttachmentKey.create(BeanManagerAfterDeploymentValidation.class);
 
     private JpaAttachments() {
     }

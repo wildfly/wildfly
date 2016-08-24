@@ -25,6 +25,8 @@ package org.jipijapa.eclipselink;
 import java.util.Map;
 
 
+import javax.enterprise.inject.spi.BeanManager;
+
 import org.jipijapa.plugin.spi.JtaManager;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
@@ -90,6 +92,16 @@ public class EclipseLinkPersistenceProviderAdaptor implements
     @Override
     public void cleanup(PersistenceUnitMetadata pu) {
         // no action required
+    }
+
+    @Override
+    public Object beanManagerLifeCycle(BeanManager beanManager) {
+        return null;
+    }
+
+    @Override
+    public void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle) {
+
     }
 
 }

@@ -24,6 +24,8 @@ package org.jipijapa.plugin.spi;
 
 import java.util.Map;
 
+import javax.enterprise.inject.spi.BeanManager;
+
 /**
  * PersistenceProvider adaptor
  *
@@ -96,5 +98,18 @@ public interface PersistenceProviderAdaptor {
      * Called when we are done with the persistence unit metadata
      */
     void cleanup(PersistenceUnitMetadata pu);
+
+    /**
+     * Some persistence provider adapters may handle life cycle notification services for when the CDI bean manager
+     * can lookup the persistence unit that is using the CDI bean manager (e.g. for handling self referencing cycles).
+     * <p>
+     * persistence provider BeanManager extension.
+     *
+     * @param beanManager
+     * @return wrapper object representing BeanManager lifecycle
+     */
+    Object beanManagerLifeCycle(BeanManager beanManager);
+
+    void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle);
 }
 

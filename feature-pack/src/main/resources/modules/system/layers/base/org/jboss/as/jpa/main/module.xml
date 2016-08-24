@@ -74,6 +74,7 @@
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.as.weld.common"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
         <module name="org.wildfly.clustering.service"/>
 

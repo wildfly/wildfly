@@ -37,6 +37,9 @@ public class MyBean {
     @PersistenceContext(unitName = "mypc")
     EntityManager em;
 
+    @PersistenceContext(unitName = "onephasePU")
+    EntityManager onephaseEm;
+
     public void createEmployee(String name, String address, int id) {
         Employee emp = new Employee();
         emp.setId(id);
@@ -47,6 +50,6 @@ public class MyBean {
     }
 
     public Employee getEmployeeById(int id) {
-        return em.find(Employee.class, id, LockModeType.NONE);
+        return onephaseEm.find(Employee.class, id, LockModeType.NONE);
     }
 }
