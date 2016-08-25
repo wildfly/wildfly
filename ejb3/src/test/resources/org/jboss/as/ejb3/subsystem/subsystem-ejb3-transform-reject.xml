@@ -81,6 +81,8 @@
     <application-security-domains>
         <application-security-domain name="domain" security-domain="ApplicationDomain"/>
     </application-security-domains>
+    <!-- should be rejected -->
+    <identity outflow-security-domains="ApplicationDomain"/>
     <default-missing-method-permissions-deny-access value="true" />
     <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />
