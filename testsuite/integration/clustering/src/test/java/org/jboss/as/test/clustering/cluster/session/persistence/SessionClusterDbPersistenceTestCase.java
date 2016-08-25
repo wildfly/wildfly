@@ -1,5 +1,6 @@
 package org.jboss.as.test.clustering.cluster.session.persistence;
 
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -20,7 +21,7 @@ public class SessionClusterDbPersistenceTestCase extends AbstractWebFailoverTest
     private static final String DEPLOYMENT_NAME = "session-db-cluster.war";
 
     public SessionClusterDbPersistenceTestCase() {
-        super(DEPLOYMENT_NAME);
+        super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.test.clustering.ClusterTestUtil;
@@ -34,7 +35,7 @@ public class ConcurrentCoarseWebFailoverTestCase extends AbstractWebFailoverTest
     private static final String DEPLOYMENT_NAME = "coarse-concurrent-distributable.war";
 
     public ConcurrentCoarseWebFailoverTestCase() {
-        super(DEPLOYMENT_NAME);
+        super(DEPLOYMENT_NAME, TransactionMode.NON_TRANSACTIONAL);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

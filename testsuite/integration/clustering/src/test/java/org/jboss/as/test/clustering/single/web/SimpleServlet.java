@@ -69,6 +69,8 @@ public class SimpleServlet extends HttpServlet {
         resp.setIntHeader(VALUE_HEADER, custom.getValue());
         resp.setHeader(HEADER_SERIALIZED, Boolean.toString(custom.wasSerialized()));
 
+        this.getServletContext().log(req.getRequestURI() + ", value = " + custom.getValue());
+
         // Long running request?
         if (req.getParameter(REQUEST_DURATION_PARAM) != null) {
             int duration = Integer.valueOf(req.getParameter(REQUEST_DURATION_PARAM));

@@ -38,7 +38,7 @@
                 <filter-ref name="x-powered-by-header"/>
             </host>
         </server>
-        <servlet-container name="default" >
+        <servlet-container name="default">
             <jsp-config/>
             <websockets/>
         </servlet-container>

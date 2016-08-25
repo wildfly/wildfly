@@ -76,6 +76,7 @@ public interface ClusteringTestConstants {
      * Timeouts.
      */
     int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
+    int GRACEFUL_SHUTDOWN_TIMEOUT = TimeoutUtil.adjust(15);
 
     /**
      * TODO: This will be removed.
