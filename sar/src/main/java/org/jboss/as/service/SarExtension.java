@@ -73,7 +73,7 @@ public class SarExtension implements Extension {
     private static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SarExtension.SUBSYSTEM_NAME);
 
     static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
-    static final RuntimeCapability<Void> SAR_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.sar-deployment")
+    static final RuntimeCapability<Void> SAR_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.sar-deployment")
             .addRequirements(JMX_CAPABILITY)
             .build();
 
