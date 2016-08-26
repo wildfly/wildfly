@@ -32,14 +32,14 @@ import javax.jws.soap.SOAPBinding;
 import javax.servlet.annotation.WebServlet;
 
 @WebService(serviceName = "BAParticipantCompletionService2",
-        portName = "BAParticipantCompletion", name = "BAParticipantCompletion", 
+        portName = "BAParticipantCompletion", name = "BAParticipantCompletion",
         targetNamespace = "http://www.jboss.com/jbossas/test/xts/ba/participantcompletion/")
 @SOAPBinding(style = SOAPBinding.Style.RPC)
 @HandlerChain(file = "/context-handlers.xml")
-@WebServlet(name="BAParticipantCompletionService2", urlPatterns={"/BAParticipantCompletionService2"})
+@WebServlet(name = "BAParticipantCompletionService2", urlPatterns = {"/BAParticipantCompletionService2"})
 public class BAParticipantCompletionService2 extends BAParticipantCompletionSuperService {
     public static final String SERVICE_EVENTLOG_NAME = "baparticipant_completition_service2";
-       
+
     @WebMethod
     public void saveData(ServiceCommand... serviceCommands) throws TestApplicationException {
         super.saveData(SERVICE_EVENTLOG_NAME, serviceCommands);

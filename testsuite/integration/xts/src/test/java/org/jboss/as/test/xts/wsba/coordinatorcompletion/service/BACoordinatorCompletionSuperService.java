@@ -42,23 +42,23 @@ import static org.jboss.as.test.xts.util.ServiceCommand.*;
  */
 public abstract class BACoordinatorCompletionSuperService implements BACoordinatorCompletion {
     private static final Logger log = Logger.getLogger(BACoordinatorCompletionSuperService.class);
-    
+
     @Inject
     private EventLog eventLog;
-    
+
     /**
      * Add an item to a set and enroll a Participant if necessary then pass the call through to the business logic.
-     * 
+     *
      * @param value the value to add to the set.
      * @throws AlreadyInSetException if value is already in the set
-     * @throws SetServiceException if an error occurred when attempting to add the item to the set.
+     * @throws SetServiceException   if an error occurred when attempting to add the item to the set.
      */
     public void saveData(String value, ServiceCommand... serviceCommands) throws TestApplicationException {
 
         log.info("[BA COORDINATOR COMPL SERVICE] web method saveData('" + value + "')");
         eventLog.foundEventLogName(value);
         BusinessActivityManager activityManager = BusinessActivityManagerFactory.businessActivityManager();
-        
+
         // transaction context associated with this thread
         String transactionId;
         try {
@@ -67,11 +67,11 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
             throw new RuntimeException("Unable to lookup existing business activity", e);
         }
 
-         // Lookup existing participant or register new participant (
+        // Lookup existing participant or register new participant (
         BACoordinationCompletionParticipant participantBA = BACoordinationCompletionParticipant.getSomeParticipant(transactionId);
 
         if (participantBA != null && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
-            log.info("[BA COORDINATOR COMPL SERVICE] Re-using the existing participant, already registered for this BA - command set to: " + 
+            log.info("[BA COORDINATOR COMPL SERVICE] Re-using the existing participant, already registered for this BA - command set to: " +
                     REUSE_BA_PARTICIPANT);
         } else {
             try {
@@ -80,17 +80,17 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
                 BACoordinationCompletionParticipant.recordParticipant(transactionId, participantBA);
 
                 log.info("[BA COORDINATOR COMPL SERVICE] Enlisting a participant into the BA");
-                BAParticipantManager baParticipantManager =  activityManager.enlistForBusinessAgreementWithCoordinatorCompletion(participantBA, 
+                BAParticipantManager baParticipantManager = activityManager.enlistForBusinessAgreementWithCoordinatorCompletion(participantBA,
                         "BACoordinatorCompletition:" + new Uid().toString());
 
                 if (ServiceCommand.isPresent(CANNOT_COMPLETE, serviceCommands)) {
                     baParticipantManager.cannotComplete();
                     return;
                 }
-                
+
                 if (ServiceCommand.isPresent(DO_COMPLETE, serviceCommands)) {
                     throw new RuntimeException("Only ParticipantCompletion participants are supposed to call complete. " +
-                    		"CoordinatorCompletion participants need to wait to be notified by the coordinator.");
+                            "CoordinatorCompletion participants need to wait to be notified by the coordinator.");
                 }
 
             } catch (Exception e) {
@@ -98,10 +98,10 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
                 throw new RuntimeException("Error enlisting participant", e);
             }
         }
-        
+
         if (ServiceCommand.isPresent(APPLICATION_EXCEPTION, serviceCommands)) {
             throw new TestApplicationException("Intentionally thrown Application Exception - service command set to: " + APPLICATION_EXCEPTION);
-        }        
+        }
 
         // invoke the back-end business logic
         log.info("[BA COORDINATOR COMPL SERVICE] Invoking the back-end business logic - saving value: " + value);

@@ -29,7 +29,7 @@
     <security-role>
         <role-name>role2</role-name>
     </security-role>
-    
+
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>secured-area</web-resource-name>

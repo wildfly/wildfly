@@ -30,43 +30,44 @@
            http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
            version="1.5">
 
-   <vendor-name>Red Hat Middleware LLC</vendor-name>
-   <eis-type>Test RA</eis-type>
-   <resourceadapter-version>0.1</resourceadapter-version>
-   <resourceadapter>
-      <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyResourceAdapter</resourceadapter-class>
-      <config-property>
-         <config-property-name>Property</config-property-name>
-         <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>default</config-property-value>
-      </config-property>
-
-      <outbound-resourceadapter>
-         <connection-definition>
-            <managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyManagedConnectionFactory</managedconnectionfactory-class>
-            <config-property>
-               <config-property-name>Property</config-property-name>
-               <config-property-type>java.lang.String</config-property-type>
-               <config-property-value>default</config-property-value>
-            </config-property>
-
-            <connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactory</connectionfactory-interface>
-            <connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactoryImpl</connectionfactory-impl-class>
-            <connection-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection</connection-interface>
-            <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionImpl</connection-impl-class>
-         </connection-definition>
-         <transaction-support>NoTransaction</transaction-support>
-         <reauthentication-support>false</reauthentication-support>
-      </outbound-resourceadapter>
-      <adminobject>
-         <adminobject-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface</adminobject-interface>
-         <adminobject-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectImpl</adminobject-class>
-         <config-property>
+    <vendor-name>Red Hat Middleware LLC</vendor-name>
+    <eis-type>Test RA</eis-type>
+    <resourceadapter-version>0.1</resourceadapter-version>
+    <resourceadapter>
+        <resourceadapter-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyResourceAdapter</resourceadapter-class>
+        <config-property>
             <config-property-name>Property</config-property-name>
             <config-property-type>java.lang.String</config-property-type>
             <config-property-value>default</config-property-value>
-         </config-property>
+        </config-property>
 
-      </adminobject>
-   </resourceadapter>
+        <outbound-resourceadapter>
+            <connection-definition>
+                <managedconnectionfactory-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyManagedConnectionFactory
+                </managedconnectionfactory-class>
+                <config-property>
+                    <config-property-name>Property</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>default</config-property-value>
+                </config-property>
+
+                <connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactory</connectionfactory-interface>
+                <connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionFactoryImpl</connectionfactory-impl-class>
+                <connection-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnection</connection-interface>
+                <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyConnectionImpl</connection-impl-class>
+            </connection-definition>
+            <transaction-support>NoTransaction</transaction-support>
+            <reauthentication-support>false</reauthentication-support>
+        </outbound-resourceadapter>
+        <adminobject>
+            <adminobject-interface>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectInterface</adminobject-interface>
+            <adminobject-class>org.jboss.as.test.smoke.deployment.rar.configproperty.ConfigPropertyAdminObjectImpl</adminobject-class>
+            <config-property>
+                <config-property-name>Property</config-property-name>
+                <config-property-type>java.lang.String</config-property-type>
+                <config-property-value>default</config-property-value>
+            </config-property>
+
+        </adminobject>
+    </resourceadapter>
 </connector>

@@ -22,8 +22,9 @@
 
 package org.jboss.as.test.integration.hibernate.secondlevelcache;
 
-import java.sql.Connection;
+import static org.junit.Assert.assertTrue;
 
+import java.sql.Connection;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -42,9 +43,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test that Hibernate second level cache is working native Hibernate

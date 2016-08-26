@@ -66,7 +66,7 @@ public class TestPassivationBean extends TestPassivationBeanParent implements Se
     }
 
     /**
-     * "Called" by create() method of home interface. 
+     * "Called" by create() method of home interface.
      */
     public void ejbCreate() {
         Random r = new Random();

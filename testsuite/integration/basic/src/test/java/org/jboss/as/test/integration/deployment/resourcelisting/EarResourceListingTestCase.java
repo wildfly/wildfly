@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.deployment.resourcelisting;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.deployment.classloading.war.WebInfLibClass;
@@ -29,17 +33,12 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @RunWith(Arquillian.class)
 public class EarResourceListingTestCase {
@@ -72,7 +71,7 @@ public class EarResourceListingTestCase {
         ear.addAsModules(libJar, war);
         ear.addAsManifestResource(EmptyAsset.INSTANCE, "MANIFEST.MF");
         ear.addAsResource(EmptyAsset.INSTANCE, "emptyEarResource");
-        ear.addAsManifestResource(EarResourceListingTestCase.class.getPackage(),"application.xml","application.xml");
+        ear.addAsManifestResource(EarResourceListingTestCase.class.getPackage(), "application.xml", "application.xml");
 
         return ear;
     }

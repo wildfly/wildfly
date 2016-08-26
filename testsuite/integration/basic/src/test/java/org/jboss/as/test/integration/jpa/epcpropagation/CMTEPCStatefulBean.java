@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
 import java.util.Locale;
-
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Local;

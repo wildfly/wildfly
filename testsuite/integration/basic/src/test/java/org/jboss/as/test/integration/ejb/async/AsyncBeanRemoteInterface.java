@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.ejb.async;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
 import javax.ejb.Remote;
 
 /**
@@ -10,6 +9,6 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface AsyncBeanRemoteInterface {
-    public void asyncMethod() throws InterruptedException;
-    public Future<Boolean> futureMethod() throws InterruptedException, ExecutionException;
+    void asyncMethod() throws InterruptedException;
+    Future<Boolean> futureMethod() throws InterruptedException, ExecutionException;
 }

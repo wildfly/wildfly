@@ -31,6 +31,6 @@ import javax.ejb.Stateless;
 public class NoOpEJB {
 
     public void doNothing() {
-        
+
     }
 }

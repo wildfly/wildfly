@@ -32,10 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.WebServiceRef;
 
 /**
- *
  * @author Matus Abaffy
  */
-@WebServlet(name = "ServletLoadOnStartup", urlPatterns = { "/servletLOS" }, loadOnStartup = 1)
+@WebServlet(name = "ServletLoadOnStartup", urlPatterns = {"/servletLOS"}, loadOnStartup = 1)
 public class ServletLoadOnStartup extends HttpServlet {
 
     private static final long serialVersionUID = -5664912198621349534L;

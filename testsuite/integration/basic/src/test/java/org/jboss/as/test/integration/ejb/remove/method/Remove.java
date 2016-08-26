@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.ejb.remove.method;
 
 /**
  * Defines a method named "remove" of return type "String"
- * 
+ *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @author <a href="mailto:arubinge@redhat.com">ALR</a>
  */

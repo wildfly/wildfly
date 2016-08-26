@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.ejb.singleton.dependson;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -51,10 +50,10 @@ public class DependsOnSingletonUnitTestCase {
 
     @ArquillianResource
     InitialContext ctx;
-    
+
     @ArquillianResource
     Deployer deployer;
-    
+
     @Deployment(name = "callcounter", order = 0, managed = true, testable = true)
     public static Archive<?> deployCallcounter() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "callcounter.jar");
@@ -63,18 +62,18 @@ public class DependsOnSingletonUnitTestCase {
         log.info(jar.toString(true));
         return jar;
     }
-    
+
     @Deployment(name = "ear", order = 1, managed = false, testable = false)
     public static Archive<?> deployDependsOn() {
         JavaArchive jarOne = ShrinkWrap.create(JavaArchive.class, "one.jar");
         jarOne.addClass(SingletonOne.class);
-       
+
         JavaArchive jarTwo = ShrinkWrap.create(JavaArchive.class, "two.jar");
         jarTwo.addClass(SingletonTwo.class);
-              
+
         JavaArchive jarThree = ShrinkWrap.create(JavaArchive.class, "three.jar");
         jarThree.addClass(SingletonThree.class);
-        
+
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "dependson-test.ear");
         ear.addAsModule(jarOne);
         ear.addAsModule(jarTwo);
@@ -92,7 +91,7 @@ public class DependsOnSingletonUnitTestCase {
 
         deployer.deploy("ear");
         deployer.undeploy("ear");
-        
+
         List<String> expectedOrder = new ArrayList<String>();
         expectedOrder.add("SingletonOne");
         expectedOrder.add("SingletonTwo");

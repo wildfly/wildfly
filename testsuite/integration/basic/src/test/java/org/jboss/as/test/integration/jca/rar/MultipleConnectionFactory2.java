@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
@@ -31,14 +30,13 @@ import javax.resource.ResourceException;
  *
  * @version $Revision: $
  */
-public interface MultipleConnectionFactory2 extends Serializable, Referenceable
-{
-   /** 
-    * Get connection from factory
-    *
-    * @return MultipleConnection2 instance
-    * @exception ResourceException Thrown if a connection can't be obtained
-    */
-   public MultipleConnection2 getConnection() throws ResourceException;
+public interface MultipleConnectionFactory2 extends Serializable, Referenceable {
+    /**
+     * Get connection from factory
+     *
+     * @return MultipleConnection2 instance
+     * @throws ResourceException Thrown if a connection can't be obtained
+     */
+    MultipleConnection2 getConnection() throws ResourceException;
 
 }

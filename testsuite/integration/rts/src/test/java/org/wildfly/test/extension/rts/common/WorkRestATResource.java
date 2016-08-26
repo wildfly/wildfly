@@ -109,9 +109,9 @@ public final class WorkRestATResource {
         if (work == null)
             throw new WebApplicationException(HttpURLConnection.HTTP_NOT_FOUND);
 
-        if ("move".equals(query))
-            /* Ignore*/;
-        else if ("recoveryUrl".equals(query))
+        if ("move".equals(query)) {
+            /* Ignore*/
+        }else if ("recoveryUrl".equals(query))
             res = work.recoveryUrl;
         else if ("status".equals(query))
             res = work.status;

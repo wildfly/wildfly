@@ -43,8 +43,8 @@ import javax.jms.TextMessage;
 @MessageDriven(
         name = "RequestScopedMDB",
         activationConfig = {
-            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-            @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = QUEUE_NAME_FOR_REQUEST_SCOPE)
+                @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = QUEUE_NAME_FOR_REQUEST_SCOPE)
         }
 )
 @TransactionManagement(BEAN)
@@ -55,12 +55,11 @@ public class RequestScopedMDB implements MessageListener {
 
     public static JMSConsumer consumer;
 
-    public void onMessage(final Message m)
-    {
+    public void onMessage(final Message m) {
         Destination tempQueue = context.createTemporaryQueue();
         consumer = context.createConsumer(tempQueue);
 
-        TextMessage textMessage = (TextMessage)m;
+        TextMessage textMessage = (TextMessage) m;
         try {
             context.createProducer()
                     .setDeliveryDelay(500)

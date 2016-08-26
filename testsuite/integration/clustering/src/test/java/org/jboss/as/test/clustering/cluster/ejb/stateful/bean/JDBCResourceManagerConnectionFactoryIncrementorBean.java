@@ -36,7 +36,7 @@ public class JDBCResourceManagerConnectionFactoryIncrementorBean implements Incr
 
     @Resource
     private DataSource dataSource;
-    
+
     private final AtomicInteger count = new AtomicInteger(0);
 
     @Override

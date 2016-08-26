@@ -61,28 +61,28 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
             assertEquals(2, names.size());
             assertTrue(names.toString(), names.contains(NODE_1));
             assertTrue(names.toString(), names.contains(NODE_2));
-            
+
             undeploy(DEPLOYMENT_1);
-            
+
             names = bean.getProviders();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_2));
-            
+
             deploy(DEPLOYMENT_1);
-            
+
             names = bean.getProviders();
             assertEquals(2, names.size());
             assertTrue(names.contains(NODE_1));
             assertTrue(names.contains(NODE_2));
-            
+
             stop(CONTAINER_2);
-            
+
             names = bean.getProviders();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_1));
-            
+
             start(CONTAINER_2);
-            
+
             names = bean.getProviders();
             assertEquals(2, names.size());
             assertTrue(names.contains(NODE_1));

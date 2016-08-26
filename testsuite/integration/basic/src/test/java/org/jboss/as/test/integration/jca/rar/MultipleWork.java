@@ -23,22 +23,21 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import java.util.logging.Logger;
-
 import javax.resource.spi.work.Work;
 
 public class MultipleWork implements Work {
 
     private static Logger log = Logger.getLogger("MultipleWork");
-    
+
     @Override
     public void run() {
-        
+
         log.finest("Work is started");
     }
 
     @Override
     public void release() {
-        
+
         log.finest("Work is done");
     }
 

@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
 import java.util.Locale;
-
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Local;
@@ -81,7 +80,7 @@ public class NoTxEPCStatefulBean extends AbstractStatefulInterface {
         stateful_3rdSFSBInvocation.finishUp();
 
         // transaction entity manager should still be able to find/update the entity
-        cmtBean.updateEntity(id,name + " and Emma Peel");
+        cmtBean.updateEntity(id, name + " and Emma Peel");
 
         MyEntity eb = em.find(MyEntity.class, id);
 

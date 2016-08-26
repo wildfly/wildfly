@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.jpa.beanvalidation.Employee;
 import org.jboss.as.test.integration.jpa.beanvalidation.SFSB1;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,8 +55,8 @@ public class JPABeanValidationTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(JPABeanValidationTestCase.class,
-            Employee.class,
-            SFSB1.class
+                Employee.class,
+                SFSB1.class
         );
         jar.addAsManifestResource(JPABeanValidationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
@@ -76,6 +75,7 @@ public class JPABeanValidationTestCase {
 
     /**
      * Test that a bean validation error is not thrown
+     *
      * @throws Exception
      */
     @Test
@@ -86,6 +86,7 @@ public class JPABeanValidationTestCase {
 
     /**
      * Test that a bean validation error is thrown
+     *
      * @throws Exception
      */
     @Test
@@ -97,11 +98,11 @@ public class JPABeanValidationTestCase {
         } catch (Throwable throwable) {
             ConstraintViolationException constraintViolationException = null;
             // find the ConstraintViolationException
-            while(throwable != null && ! (throwable instanceof ConstraintViolationException)) {
+            while (throwable != null && !(throwable instanceof ConstraintViolationException)) {
                 throwable = throwable.getCause();
             }
             // should be null or instanceof ConstraintViolationException
-            constraintViolationException = (ConstraintViolationException)throwable;
+            constraintViolationException = (ConstraintViolationException) throwable;
             assertTrue("expected ConstraintViolationException but got " + constraintViolationException, constraintViolationException instanceof ConstraintViolationException);
         }
     }

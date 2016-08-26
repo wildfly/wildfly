@@ -40,7 +40,7 @@ import javax.transaction.UserTransaction;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class SFSB1 {
     @PersistenceContext
-        EntityManager em;
+    EntityManager em;
 
     @Resource
     SessionContext sessionContext;
@@ -58,9 +58,8 @@ public class SFSB1 {
             em.joinTransaction();
             em.persist(emp);
             tx1.commit();
-        }
-        catch (Exception e) {
-            throw new RuntimeException("createEmployee couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("createEmployee couldn't start tx", e);
         }
     }
 
@@ -82,9 +81,8 @@ public class SFSB1 {
 
             // load the entity with no jta transaction (should get fresh copy of entity with updated version field)
             return getEmployeeNoTX(employee.getId());
-        }
-        catch (Exception e) {
-            throw new RuntimeException("mutateEmployee couldn't start tx" , e);
+        } catch (Exception e) {
+            throw new RuntimeException("mutateEmployee couldn't start tx", e);
         }
     }
 

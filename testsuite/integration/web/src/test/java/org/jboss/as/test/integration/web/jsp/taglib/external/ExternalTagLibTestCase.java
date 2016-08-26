@@ -49,10 +49,10 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ExternalTagLibTestCase {
 
-	private static final String BOTH_DEPENDENCIES_WAR = "both-dependencies.war";
+    private static final String BOTH_DEPENDENCIES_WAR = "both-dependencies.war";
     private static final String EXTERNAL_DEPENDENCY_ONLY_WAR = "external-dependency-only.war";
-	private static final String MODULE_NAME = "external-tag-lib";
-	private static final String TEST_JSP = "test.jsp";
+    private static final String MODULE_NAME = "external-tag-lib";
+    private static final String TEST_JSP = "test.jsp";
     private static TestModule testModule;
 
     @AfterClass
@@ -60,21 +60,21 @@ public class ExternalTagLibTestCase {
         testModule.remove();
     }
 
-    @Deployment(name=EXTERNAL_DEPENDENCY_ONLY_WAR, order=1)
+    @Deployment(name = EXTERNAL_DEPENDENCY_ONLY_WAR, order = 1)
     public static WebArchive deployment() throws Exception {
         doSetup();
         return ShrinkWrap.create(WebArchive.class, EXTERNAL_DEPENDENCY_ONLY_WAR)
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF")
-                .addAsWebResource(getJspAsset(false),TEST_JSP);
+                .addAsWebResource(getJspAsset(false), TEST_JSP);
     }
 
-    @Deployment(name=BOTH_DEPENDENCIES_WAR, order=2)
+    @Deployment(name = BOTH_DEPENDENCIES_WAR, order = 2)
     public static WebArchive deployWithBothDependencies() throws Exception {
         return ShrinkWrap.create(WebArchive.class, BOTH_DEPENDENCIES_WAR)
                 .addClass(InternalTag.class)
                 .addAsWebInfResource(ExternalTagLibTestCase.class.getPackage(), "internal.tld", "internal.tld")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF")
-                .addAsWebResource(getJspAsset(true),TEST_JSP);
+                .addAsWebResource(getJspAsset(true), TEST_JSP);
     }
 
     @ArquillianResource
@@ -130,22 +130,22 @@ public class ExternalTagLibTestCase {
         testModule.create(true);
     }
 
-    private static StringAsset getJspAsset(boolean withInternalLib){
+    private static StringAsset getJspAsset(boolean withInternalLib) {
         String optionalInternalTagLib = withInternalLib ? "<%@ taglib prefix=\"i\" uri=\"http://internal.taglib\" %>\n" : "";
         String optionalInternalTag = withInternalLib ? "    <i:test/>\n" : "";
 
         return new StringAsset(
                 "<%@ taglib prefix=\"e\" uri=\"http://external.taglib\" %>\n" +
-                optionalInternalTagLib +
-                "<html>\n" +
-                "  <head>\n" +
-                "    <title>test</title>\n" +
-                "  </head>\n" +
-                "  <body>\n" +
-                "    <e:test/>\n" +
-                optionalInternalTag +
-                "  </body>\n" +
-                "</html>");
+                        optionalInternalTagLib +
+                        "<html>\n" +
+                        "  <head>\n" +
+                        "    <title>test</title>\n" +
+                        "  </head>\n" +
+                        "  <body>\n" +
+                        "    <e:test/>\n" +
+                        optionalInternalTag +
+                        "  </body>\n" +
+                        "</html>");
     }
 
 }

@@ -23,15 +23,12 @@
 package org.jboss.as.test.integration.batch.common;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

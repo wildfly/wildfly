@@ -29,6 +29,6 @@ import javax.ejb.Local;
 @Local
 public interface LocalInterface {
 
-    public void modifyArray(final String[] array);
+    void modifyArray(final String[] array);
 
 }

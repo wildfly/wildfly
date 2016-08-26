@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.Resource;
 import javax.annotation.security.RunAs;
 import javax.ejb.Remote;
@@ -50,23 +49,25 @@ import org.jboss.logging.Logger;
 public class TimerTesterBean implements TimerTester {
     private static final Logger log = Logger.getLogger(TimerTesterBean.class);
 
-    private static final CountDownLatch latch = new CountDownLatch(1);    
+    private static final CountDownLatch latch = new CountDownLatch(1);
     public static boolean timerCalled = false;
-    public static Principal callerPrincipal = null; 
+    public static Principal callerPrincipal = null;
     public static Set<Principal> calleeCallerPrincipal = null;
 
-    private @Resource
-    TimerService timerService;
 
-    private @Resource
-    SessionContext ctx;
+    @Resource
+    private TimerService timerService;
+
+
+    @Resource
+    private SessionContext ctx;
 
     public void startTimer(long pPeriod) {
         timerCalled = false;
         timerService.createTimer(new Date(new Date().getTime() + pPeriod), null);
 
     }
-    
+
     public static boolean awaitTimerCall() {
         try {
             latch.await(2, TimeUnit.SECONDS);

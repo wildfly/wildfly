@@ -23,15 +23,13 @@
 package org.jboss.as.test.integration.ejb.interceptor.inject;
 
 import java.util.ArrayList;
-
 import javax.ejb.Remote;
 
 /**
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  */
 @Remote
-public interface MySessionRemote
-{
-   public ArrayList doit();
+public interface MySessionRemote {
+    ArrayList doit();
 
 }

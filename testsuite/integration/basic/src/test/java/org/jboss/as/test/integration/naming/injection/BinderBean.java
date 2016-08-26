@@ -33,7 +33,7 @@ import javax.naming.NamingException;
 @Stateless
 public class BinderBean implements Binder {
 
-    private final static String SRC_NAME = "java:global/a";
+    private static final String SRC_NAME = "java:global/a";
 
     public void bindAndLink(Object value) throws NamingException {
         InitialContext initialContext = new InitialContext();

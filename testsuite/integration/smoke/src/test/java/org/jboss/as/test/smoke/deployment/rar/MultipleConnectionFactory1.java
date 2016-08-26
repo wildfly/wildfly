@@ -22,7 +22,6 @@
 package org.jboss.as.test.smoke.deployment.rar;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
@@ -31,14 +30,13 @@ import javax.resource.ResourceException;
  *
  * @version $Revision: $
  */
-public interface MultipleConnectionFactory1 extends Serializable, Referenceable
-{
-   /**
-    * Get connection from factory
-    *
-    * @return MultipleConnection1 instance
-    * @exception ResourceException Thrown if a connection can't be obtained
-    */
-   public MultipleConnection1 getConnection() throws ResourceException;
+public interface MultipleConnectionFactory1 extends Serializable, Referenceable {
+    /**
+     * Get connection from factory
+     *
+     * @return MultipleConnection1 instance
+     * @throws ResourceException Thrown if a connection can't be obtained
+     */
+    MultipleConnection1 getConnection() throws ResourceException;
 
 }

@@ -28,5 +28,5 @@ import javax.jws.WebService;
  */
 @WebService(name = "EndpointIface", targetNamespace = "http://org.jboss.test.ws/jbws3441")
 public interface EndpointIface {
-    public String echo(final String message);
+    String echo(final String message);
 }

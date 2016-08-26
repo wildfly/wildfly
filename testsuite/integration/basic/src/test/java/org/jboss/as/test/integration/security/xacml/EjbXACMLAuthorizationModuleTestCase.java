@@ -49,11 +49,11 @@ import org.junit.runner.RunWith;
 
 /**
  * Arquillian JUnit testcase for testing XACML based authorization of EJBs.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ EjbXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class })
+@ServerSetup({EjbXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class})
 public class EjbXACMLAuthorizationModuleTestCase {
     private static Logger LOGGER = Logger.getLogger(EjbXACMLAuthorizationModuleTestCase.class);
 
@@ -64,7 +64,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * Creates {@link JavaArchive} for testing the {@link CustomXACMLAuthorizationModule}.
-     * 
+     *
      * @return
      * @throws IOException
      * @throws IllegalArgumentException
@@ -76,7 +76,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * Tests secured EJB call for unauthenticated user.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -91,7 +91,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * Test secured EJB call for authenticated and authorized user.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -108,7 +108,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * Test secured EJB call for authenticated but not authorized authorized user.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -128,7 +128,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * Tests unauthenticated call followed by the authentication and second call to the same instance.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -153,7 +153,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * Creates JAR with the EJB for the test deployment.
-     * 
+     *
      * @param archiveName
      * @param securityDomainName
      * @return
@@ -180,14 +180,14 @@ public class EjbXACMLAuthorizationModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -198,7 +198,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
                     .authorizationModules(
                             new SecurityModule.Builder().name(CustomXACMLAuthorizationModule.class.getName()).build()) //
                     .build();
-            return new SecurityDomain[] { sd };
+            return new SecurityDomain[]{sd};
         }
     }
 }

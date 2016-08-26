@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.hibernate;
 
 /**
  * Represents a satellite object.
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 
@@ -35,17 +35,13 @@ public class Satellite {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Satellite))
-            return false;
+        if (this == o) { return true; }
+        if (!(o instanceof Satellite)) { return false; }
 
         final Satellite satellite = (Satellite) o;
 
-        if (!name.equals(satellite.name))
-            return false;
+        return name.equals(satellite.name);
 
-        return true;
     }
 
     @Override

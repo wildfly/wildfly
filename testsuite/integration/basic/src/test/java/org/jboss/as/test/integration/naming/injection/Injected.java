@@ -30,6 +30,6 @@ import javax.ejb.Remote;
 @Remote
 public interface Injected {
 
-    public String getInjectedResource();
+    String getInjectedResource();
 
 }

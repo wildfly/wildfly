@@ -7,16 +7,17 @@ import org.jboss.logging.Logger;
 
 /**
  * Checking values of InvocationContext during its flow amongst interceptors.
+ *
  * @author Ondrej Chaloupka
  */
 public class InvocationContextChecker {
 
     private static final Logger log = Logger.getLogger(InvocationContextChecker.class);
-    
+
     public static String checkBeanInterceptorContext(InvocationContext ctx, String previousPhase, String currentPhase) {
         log.info("Checking method call interceptor on: " + currentPhase);
         boolean okContext = false;
-        if(previousPhase == null) {
+        if (previousPhase == null) {
             okContext = ctx.getContextData().get("interceptor") == null;
         } else {
             okContext = previousPhase.equals(ctx.getContextData().get("interceptor"));
@@ -30,12 +31,12 @@ public class InvocationContextChecker {
         Integer param1 = (Integer) params[0];
         String param2 = (String) params[1];
         final boolean okParam = param1 == 1;
-        Object[] newParams = { param1, param2 + currentPhase };
+        Object[] newParams = {param1, param2 + currentPhase};
         ctx.setParameters(newParams);
 
         String retStr = currentPhase;
         boolean isOk = okContext && okTimer && okTarget && okMethod && okParam;
-        if(isOk) {
+        if (isOk) {
             retStr += "OK:";
         } else {
             retStr += "FAIL:";
@@ -48,11 +49,11 @@ public class InvocationContextChecker {
         }
         return retStr;
     }
-    
+
     public static String checkTimeoutInterceptorContext(InvocationContext ctx, String previousPhase, String currentPhase) {
         log.info("Checking timeout interceptor on: " + currentPhase);
         boolean okContext = false;
-        if(previousPhase == null) {
+        if (previousPhase == null) {
             okContext = ctx.getContextData().get("interceptor") == null;
         } else {
             okContext = previousPhase.equals(ctx.getContextData().get("interceptor"));
@@ -66,7 +67,7 @@ public class InvocationContextChecker {
 
         String retStr = "Timeout" + currentPhase;
         boolean isOk = okContext && okTimer && okTarget && okMethod && okParams;
-        if(isOk) {
+        if (isOk) {
             retStr += "OK:";
         } else {
             retStr += "FAIL:";

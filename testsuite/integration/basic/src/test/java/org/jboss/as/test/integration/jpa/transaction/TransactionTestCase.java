@@ -28,7 +28,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import javax.ejb.EJBTransactionRolledbackException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.TransactionRequiredException;
@@ -58,18 +57,18 @@ public class TransactionTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(TransactionTestCase.class,
-            Employee.class,
-            Company.class,
-            SFSB1.class,
-            SFSBXPC.class,
-            SFSBCMT.class,
-            SLSB1.class,
-            UnsynchronizedSFSB.class,
-            InnerUnsynchronizedSFSB.class,
-            UnsynchronizedSFSBXPC.class,
-            InnerSynchronizedSFSB.class
+                Employee.class,
+                Company.class,
+                SFSB1.class,
+                SFSBXPC.class,
+                SFSBCMT.class,
+                SLSB1.class,
+                UnsynchronizedSFSB.class,
+                InnerUnsynchronizedSFSB.class,
+                UnsynchronizedSFSBXPC.class,
+                InnerSynchronizedSFSB.class
         );
-        jar.addAsManifestResource(TransactionTestCase.class.getPackage(), "persistence.xml","persistence.xml");
+        jar.addAsManifestResource(TransactionTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
 
@@ -90,8 +89,8 @@ public class TransactionTestCase {
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
-                                    // that isn't running in a transaction.  So, a new underlying
-                                    // entity manager will be obtained.  The is to ensure that we don't blow up.
+        // that isn't running in a transaction.  So, a new underlying
+        // entity manager will be obtained.  The is to ensure that we don't blow up.
         sfsb1.getEmployeeNoTX(1);
         sfsb1.getEmployeeNoTX(1);
     }
@@ -141,32 +140,32 @@ public class TransactionTestCase {
             error = error.getCause();
         }
         assertTrue(
-            "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
-                + " but we instead got a " + error, error instanceof TransactionRequiredException);
+                "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
+                        + " but we instead got a " + error, error instanceof TransactionRequiredException);
     }
 
 
     /**
      * Tests JTA involving an EJB 3 SLSB which makes two DAO calls in transaction.
-     * Scenarios: 
-     * 1) The transaction fails during the first DAO call and the JTA transaction is rolled back and no database changes should occur. 
+     * Scenarios:
+     * 1) The transaction fails during the first DAO call and the JTA transaction is rolled back and no database changes should occur.
      * 2) The transaction fails during the second DAO call and the JTA transaction is rolled back and no database changes should occur.
-     * 3) The transaction fails after the DAO calls and the JTA transaction is rolled back and no database changes should occur.  
+     * 3) The transaction fails after the DAO calls and the JTA transaction is rolled back and no database changes should occur.
      */
     @Test
     @InSequence(5)
     public void testFailInDAOCalls() throws Exception {
-    	SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
-    	slsb1.addEmployee();
+        SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
+        slsb1.addEmployee();
 
-    	String message = slsb1.failInFirstCall();
-    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
-    	
-    	message = slsb1.failInSecondCall();
-    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
-    	
-    	message = slsb1.failAfterCalls();
-    	assertEquals("DB should be unchanged, which we indicate by returning 'success'","success", message);
+        String message = slsb1.failInFirstCall();
+        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+
+        message = slsb1.failInSecondCall();
+        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+
+        message = slsb1.failAfterCalls();
+        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
     }
 
     @Test
@@ -206,10 +205,9 @@ public class TransactionTestCase {
 
     /**
      * test JPA 2.1 SynchronizationType.UNSYNCHRONIZED support
-     *
+     * <p>
      * Note: Each invocation to UnsynchronizedSFSB will get a new persistence context as expected for transaction scoped entity manager.
      */
-
 
 
     @Test
@@ -219,13 +217,13 @@ public class TransactionTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
 
         // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
-        Employee employee = unsynchronizedSFSB.createAndFind("New England Revolution","Gillette Stadium", 50);
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same persistence context",employee);    // we should see new employee in unsynchronized persistence context
+        Employee employee = unsynchronizedSFSB.createAndFind("New England Revolution", "Gillette Stadium", 50);
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same persistence context", employee);    // we should see new employee in unsynchronized persistence context
 
         employee = sfsb1.getEmployeeNoTX(50);
         assertNull("SynchronizationType.UNSYNCHRONIZED change is visible to separate persistence context", employee);       // other persistence context shouldn't see unsynchronized (pending) changes
 
-        unsynchronizedSFSB.createAndJoin("New England Revolution","Gillette Stadium", 50);
+        unsynchronizedSFSB.createAndJoin("New England Revolution", "Gillette Stadium", 50);
         employee = sfsb1.getEmployeeNoTX(50);   // so that other persistence context can also see new entity
         assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible to separate persistence context after joining persistence context to jta transaction",
                 employee);
@@ -234,13 +232,13 @@ public class TransactionTestCase {
         // inner bean sees new entity that hasn't been saved to the database
         employee = unsynchronizedSFSB.createAndPropagatedFind("Catherine Stark", "Winterfell", 55);
         assertNotNull("SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4",
-                        employee);
+                employee);
 
-        unsynchronizedSFSB.createAndPropagatedJoin("Jon Snow","knows nothing",56);
+        unsynchronizedSFSB.createAndPropagatedJoin("Jon Snow", "knows nothing", 56);
         employee = unsynchronizedSFSB.find(56);
         assertNotNull("SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4 and " +
-                "pending changes saved when inner bean calls EntityManager.joinTransaction",
-                                employee);
+                        "pending changes saved when inner bean calls EntityManager.joinTransaction",
+                employee);
     }
 
 
@@ -251,8 +249,8 @@ public class TransactionTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
 
         // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
-        Employee employee = unsynchronizedSFSBXPC.createAndFind("Tom Jones","Singer", 500);
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same extended persistence context within same tx",employee);    // we should see new employee in unsynchronized persistence context
+        Employee employee = unsynchronizedSFSBXPC.createAndFind("Tom Jones", "Singer", 500);
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same extended persistence context within same tx", employee);    // we should see new employee in unsynchronized persistence context
 
         employee = sfsb1.getEmployeeNoTX(500);
         assertNull("entity created in SynchronizationType.UNSYNCHRONIZED XPC should not of been saved to database", employee);       // same extended persistence context

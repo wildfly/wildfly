@@ -55,7 +55,7 @@ public class StatefulServlet extends HttpServlet {
     private static final String COMMAND = "command";
     private static final String BEAN = "bean";
     private static final String MESSAGE = "message";
-    private static enum Command {
+    private enum Command {
         CREATE_EMPLOYEE,
         GET_EMPLOYEE,
         DELETE_EMPLOYEE,

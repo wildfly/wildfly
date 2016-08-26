@@ -48,7 +48,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests for RESTEasy @GZIP annotation feature
- * 
+ *
  * @author Pavel Janousek
  */
 @RunWith(Arquillian.class)

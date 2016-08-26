@@ -26,7 +26,7 @@ import javax.ws.rs.core.Application;
 
 /**
  * A JAX-RS application.
- * 
+ *
  * @author Josef Cacek
  */
 @ApplicationPath(MyApplication.APPLICATION_PATH)

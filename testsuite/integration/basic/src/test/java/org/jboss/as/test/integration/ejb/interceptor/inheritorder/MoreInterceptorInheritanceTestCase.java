@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Interceptor inheritance test.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

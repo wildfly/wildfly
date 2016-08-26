@@ -47,12 +47,11 @@ import java.util.PropertyPermission;
 
 /**
  * Test whether vault can be used for system property.
- * 
+ *
  * @author olukas
- * 
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ BasicVaultServerSetupTask.class, VaultSystemPropertiesTestCase.SystemPropertySetup.class })
+@ServerSetup({BasicVaultServerSetupTask.class, VaultSystemPropertiesTestCase.SystemPropertySetup.class})
 public class VaultSystemPropertiesTestCase {
 
     public static final String TESTING_SYSTEM_PROPERTY = "vault.testing.property";
@@ -64,7 +63,7 @@ public class VaultSystemPropertiesTestCase {
         assertEquals("Vaulted system property wasn't read successfully", BasicVaultServerSetupTask.VAULT_ATTRIBUTE,
                 System.getProperty(TESTING_SYSTEM_PROPERTY));
     }
-    
+
     static class SystemPropertySetup implements ServerSetupTask {
 
         static final PathAddress SYSTEM_PROPERTIES_PATH = PathAddress.pathAddress().append(SYSTEM_PROPERTY,

@@ -26,7 +26,8 @@ import javax.ws.rs.core.Application;
 
 /**
  * Application with no path
- *@author Stuart Douglas
+ *
+ * @author Stuart Douglas
  */
 @ApplicationPath("app1")
 public class HelloWorldApplication extends Application {

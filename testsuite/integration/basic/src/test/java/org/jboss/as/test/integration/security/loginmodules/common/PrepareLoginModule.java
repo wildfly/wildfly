@@ -22,37 +22,37 @@
 
 package org.jboss.as.test.integration.security.loginmodules.common;
 
+import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 public class PrepareLoginModule implements LoginModule {
-   private Map sharedState;
+    private Map sharedState;
 
-   public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
-      this.sharedState = sharedState;
-   }
+    public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
+        this.sharedState = sharedState;
+    }
 
-   public boolean login() throws LoginException {
-      sharedState.put("javax.security.auth.login.name", "anil");
-      sharedState.put("javax.security.auth.login.password", "anil");
-      return true;
-   }
+    public boolean login() throws LoginException {
+        sharedState.put("javax.security.auth.login.name", "anil");
+        sharedState.put("javax.security.auth.login.password", "anil");
+        return true;
+    }
 
-   public boolean commit() throws LoginException {
-      return false;
-   }
+    public boolean commit() throws LoginException {
+        return false;
+    }
 
-   public boolean abort() throws LoginException {
-      return false;
-   }
+    public boolean abort() throws LoginException {
+        return false;
+    }
 
-   public boolean logout() throws LoginException {
-      return true;
-   }
+    public boolean logout() throws LoginException {
+        return true;
+    }
 }

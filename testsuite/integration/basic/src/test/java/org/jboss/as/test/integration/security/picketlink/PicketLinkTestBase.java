@@ -54,7 +54,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Base class with common utilities for PicketLink integration tests
- * 
+ *
  * @author Filip Bogyai
  */
 public class PicketLinkTestBase {
@@ -69,9 +69,9 @@ public class PicketLinkTestBase {
 
     /**
      * Requests given URL and checks if the returned HTTP status code is the expected one. Returns HTTP response body
-     * 
-     * @param URL url to which the request should be made
-     * @param DefaultHttpClient httpClient to test multiple access
+     *
+     * @param URL                url to which the request should be made
+     * @param DefaultHttpClient  httpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
      * @throws ClientProtocolException
@@ -79,7 +79,7 @@ public class PicketLinkTestBase {
      * @throws URISyntaxException
      */
     public static String makeCall(URL url, DefaultHttpClient httpClient, int expectedStatusCode)
-            throws ClientProtocolException, IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         String httpResponseBody = null;
         final URI requestURI = Utils.replaceHost(url.toURI(), Utils.getDefaultHost(true));
@@ -101,15 +101,15 @@ public class PicketLinkTestBase {
     /**
      * Requests given URL and returns redirect location URL from response header. If response is not redirected then returns the
      * same URL which was requested
-     * 
-     * @param URL url to which the request should be made
+     *
+     * @param URL               url to which the request should be made
      * @param DefaultHttpClient httpClient to test multiple access
      * @return URL redirect location
      * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static URL makeCallWithoutRedirect(URL url, DefaultHttpClient httpClient) throws ClientProtocolException,
+    public static URL makeCallWithoutRedirect(URL url, DefaultHttpClient httpClient) throws
             IOException, URISyntaxException {
 
         HttpParams params = new BasicHttpParams();
@@ -137,9 +137,9 @@ public class PicketLinkTestBase {
 
     /**
      * Requests given SP and post SAMLRequest to IdP, then post back SAMLResponse. Returns HTTP response body
-     * 
-     * @param URL spURL of requested Service Provider
-     * @param URL idpURL of Identity Provider
+     *
+     * @param URL               spURL of requested Service Provider
+     * @param URL               idpURL of Identity Provider
      * @param DefaultHttpClient httpClient to test multiple access
      * @return HTTP response body
      * @throws ClientProtocolException
@@ -147,7 +147,7 @@ public class PicketLinkTestBase {
      * @throws URISyntaxException
      */
     public static String postSAML2Assertions(URL spURL, URL idpURL, DefaultHttpClient httpClient)
-            throws ClientProtocolException, IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
         final String canonicalHost = Utils.getDefaultHost(true);
 
         String httpResponseBody = makeCall(spURL, httpClient, 200);
@@ -190,14 +190,14 @@ public class PicketLinkTestBase {
     /**
      * Replace variables in PicketLink configurations files with given values and set ${hostname} variable from system property:
      * node0
-     * 
+     *
      * @param String resourceFile
      * @param String deploymentName
      * @param String bindingType
      * @return String content
      */
     public static String propertiesReplacer(String resourceFile, String deploymentName, String bindingType,
-            String idpContextPath) {
+                                            String idpContextPath) {
 
 
         final Map<String, String> map = new HashMap<String, String>();
@@ -223,9 +223,9 @@ public class PicketLinkTestBase {
      * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and an username is provided, then the
      * given user is authenticated against Kerberos and a new request is executed under the new subject.
      *
-     * @param uri URI to which the request should be made
-     * @param user Username
-     * @param pass Password
+     * @param uri                URI to which the request should be made
+     * @param user               Username
+     * @param pass               Password
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
      * @throws IOException
@@ -234,7 +234,7 @@ public class PicketLinkTestBase {
      * @throws LoginException
      */
     public static String makeCallWithKerberosAuthn(URI uri, final DefaultHttpClient httpClient, final String user,
-            final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
+                                                   final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
             LoginException {
         uri = Utils.replaceHost(uri, Utils.getDefaultHost(true));
         LOGGER.info("Requesting URI: " + uri);
@@ -260,8 +260,7 @@ public class PicketLinkTestBase {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
         }
-        if (entity != null)
-            EntityUtils.consume(entity);
+        if (entity != null) { EntityUtils.consume(entity); }
 
         // Use our custom configuration to avoid reliance on external config
         final Krb5LoginConfiguration krb5configuration = new Krb5LoginConfiguration(Utils.getLoginConfiguration());
@@ -285,14 +284,14 @@ public class PicketLinkTestBase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for Identity Provider(IdP) and Service Provider(SP)
-     * 
+     *
      * @author Filip Bogyai
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -314,7 +313,7 @@ public class PicketLinkTestBase {
                                     .name("org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule")
                                     .flag("required").build()) //
                     .build();
-            return new SecurityDomain[] { idp, sp };
+            return new SecurityDomain[]{idp, sp};
         }
     }
 

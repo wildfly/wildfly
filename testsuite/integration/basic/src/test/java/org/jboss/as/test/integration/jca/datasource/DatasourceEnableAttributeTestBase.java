@@ -22,14 +22,20 @@
 
 package org.jboss.as.test.integration.jca.datasource;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.io.IOException;
+
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import java.io.IOException;
 
 /**
  * A basic testing of setting/unsetting "enable" attribute of datasource.
@@ -44,8 +50,8 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
     @Test
     public void addDatasourceEnabled() throws Exception {
         Datasource ds = Datasource.Builder("testDatasourceEnabled")
-            .enabled(true)
-            .build();
+                .enabled(true)
+                .build();
 
         try {
             createDataSource(ds);
@@ -60,7 +66,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         Datasource ds = Datasource.Builder("testDatasourceDisabled")
                 .enabled(false)
                 .build();
-        
+
         try {
             createDataSource(ds);
             testConnection(ds);
@@ -68,13 +74,13 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
             removeDataSourceSilently(ds);
         }
     }
-    
+
     @Test
     public void enableLater() throws Exception {
         Datasource ds = Datasource.Builder("testDatasourceLater")
                 .enabled(false)
                 .build();
-        
+
         try {
             createDataSource(ds);
 
@@ -93,13 +99,13 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
             removeDataSourceSilently(ds);
         }
     }
-    
+
     @Test
     public void enableBySystemProperty() throws Exception {
         Datasource ds = Datasource.Builder("testDatasourceEnableBySystem")
                 .enabled(wrapProp(DS_ENABLED_SYSTEM_PROPERTY_NAME))
                 .build();
-       
+
         try {
             addSystemProperty(DS_ENABLED_SYSTEM_PROPERTY_NAME, "true");
             createDataSource(ds);
@@ -115,7 +121,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         Datasource ds = Datasource.Builder("testDatasourceDisableBySystem")
                 .enabled(wrapProp(DS_ENABLED_SYSTEM_PROPERTY_NAME))
                 .build();
-        
+
         try {
             addSystemProperty(DS_ENABLED_SYSTEM_PROPERTY_NAME, "false");
             createDataSource(ds);
@@ -134,14 +140,14 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         String jndiName = "ds.jndi";
         String driverName = "ds.drivername";
         Datasource ds = Datasource.Builder("testAllBySystem")
-            .connectionUrl(wrapProp(url))
-            .userName(wrapProp(username))
-            .password(wrapProp(password))
-            .jndiName(wrapProp(jndiName))
-            .driverName(wrapProp(driverName))
-            .enabled(wrapProp(DS_ENABLED_SYSTEM_PROPERTY_NAME))
-            .build();
-        
+                .connectionUrl(wrapProp(url))
+                .userName(wrapProp(username))
+                .password(wrapProp(password))
+                .jndiName(wrapProp(jndiName))
+                .driverName(wrapProp(driverName))
+                .enabled(wrapProp(DS_ENABLED_SYSTEM_PROPERTY_NAME))
+                .build();
+
         try {
             Datasource defaultPropertyDs = Datasource.Builder("temporary").build();
             addSystemProperty(url, defaultPropertyDs.getConnectionUrl());
@@ -167,8 +173,11 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
      * Abstract method overriden in test subclasses
      */
     protected abstract ModelNode createDataSource(Datasource datasource) throws Exception;
+
     protected abstract void removeDataSourceSilently(Datasource datasource);
+
     protected abstract ModelNode getDataSourceAddress(Datasource datasource);
+
     protected abstract void testConnection(Datasource datasource) throws Exception;
 
     /**
@@ -207,7 +216,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
     }
 
     protected void removeSystemPropertySilently(String name) {
-        if(name == null) {
+        if (name == null) {
             return;
         }
         try {
@@ -215,7 +224,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
                     .add(SYSTEM_PROPERTY, name);
             address.protect();
             remove(address);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.debugf(e, "Can't remove system property '%s' by cli", name);
         }
     }

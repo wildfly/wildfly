@@ -58,6 +58,7 @@
             <xs:element name="default-distinct-name" type="default-distinct-nameType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-security-domain" type="default-security-domainType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="application-security-domains" type="applicationSecurityDomainsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="identity" type="identityType" minOccurs="0" />
             <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
             <xs:element name="disable-default-ejb-permissions" type="disable-default-ejb-permissionsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
@@ -432,6 +433,16 @@
         </xs:attribute>
     </xs:complexType>
 
+    <xs:complexType name="identityType">
+        <xs:attribute name="outflow-security-domains" type="stringListType">
+            <xs:annotation>
+                <xs:documentation>
+                    List of security domain references to attempt to outflow any established identity to.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
     <xs:complexType name="channel-creation-optionsType">
         <xs:annotation>
             <xs:documentation>
@@ -499,4 +510,12 @@
         </xs:annotation>
         <xs:attribute name="value" type="xs:boolean"/>
     </xs:complexType>
+
+    <xs:simpleType name="stringListType">
+        <xs:annotation>
+            <xs:documentation>A list of String.</xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:string"/>
+    </xs:simpleType>
+
 </xs:schema>

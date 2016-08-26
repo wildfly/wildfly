@@ -31,7 +31,7 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class BeanImpl implements BeanIface {
-   public String printString() {
-      return "Injected hello message";
-   }
+    public String printString() {
+        return "Injected hello message";
+    }
 }

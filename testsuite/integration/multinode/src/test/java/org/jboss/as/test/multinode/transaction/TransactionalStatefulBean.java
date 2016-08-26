@@ -22,7 +22,13 @@
 package org.jboss.as.test.multinode.transaction;
 
 import javax.annotation.Resource;
-import javax.ejb.*;
+import javax.ejb.EJBException;
+import javax.ejb.Remote;
+import javax.ejb.SessionContext;
+import javax.ejb.SessionSynchronization;
+import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.rmi.RemoteException;
 

@@ -22,23 +22,21 @@
 package org.jboss.as.test.integration.jca.annorar;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
 /**
  * AnnoConnectionFactory
- * 
+ *
  * @version $Revision: $
  */
 public interface AnnoConnectionFactory extends Serializable, Referenceable {
-	/**
-	 * Get connection from factory
-	 * 
-	 * @return AnnoConnection instance
-	 * @exception ResourceException
-	 *                Thrown if a connection can't be obtained
-	 */
-	public AnnoConnection getConnection() throws ResourceException;
+    /**
+     * Get connection from factory
+     *
+     * @return AnnoConnection instance
+     * @throws ResourceException Thrown if a connection can't be obtained
+     */
+    AnnoConnection getConnection() throws ResourceException;
 
 }

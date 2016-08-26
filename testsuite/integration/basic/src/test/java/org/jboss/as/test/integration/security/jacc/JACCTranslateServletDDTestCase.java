@@ -53,11 +53,11 @@ import org.junit.runner.RunWith;
 /**
  * Test based on a section 3.1.3 "Translating Servlet Deployment Descriptors" of the JACC 1.1 specification. This tests works
  * with deployment descriptor (web.xml) content which is a part of the JACC specification as an Example section 3.1.3.4.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ JACCTranslateServletDDTestCase.SecurityDomainsSetup.class })
+@ServerSetup({JACCTranslateServletDDTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Category(CommonCriteria.class)
 @Ignore("WFLY-4991")
@@ -70,7 +70,7 @@ public class JACCTranslateServletDDTestCase {
 
     /**
      * Creates {@link WebArchive}.
-     * 
+     *
      * @return
      */
     @Deployment
@@ -90,7 +90,7 @@ public class JACCTranslateServletDDTestCase {
 
     /**
      * Test canonical form of HTTP Method list.
-     * 
+     *
      * @see #testHTTPMethodExceptionList(URL) for some other tests
      */
     @Test
@@ -176,7 +176,7 @@ public class JACCTranslateServletDDTestCase {
 
     /**
      * Retruns Node representing ContextPolicy with given contextId.
-     * 
+     *
      * @param webAppURL
      */
     private Node getContextPolicyNode(final URL webAppURL, String contextId) throws Exception {
@@ -202,7 +202,7 @@ public class JACCTranslateServletDDTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
@@ -212,8 +212,8 @@ public class JACCTranslateServletDDTestCase {
          */
         @Override
         protected SecurityDomain[] getSecurityDomains() {
-            return new SecurityDomain[] { new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME)
-                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()).build() };
+            return new SecurityDomain[]{new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME)
+                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()).build()};
         }
     }
 }

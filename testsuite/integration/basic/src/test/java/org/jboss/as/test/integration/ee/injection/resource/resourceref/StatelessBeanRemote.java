@@ -25,12 +25,11 @@ package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 /**
  * @author Jaikiran Pai
  */
-public interface StatelessBeanRemote
-{
+public interface StatelessBeanRemote {
 
-   boolean isEJBContextAvailableThroughResourceEnvRef();
+    boolean isEJBContextAvailableThroughResourceEnvRef();
 
-   boolean isUserTransactionAvailableThroughResourceEnvRef();
+    boolean isUserTransactionAvailableThroughResourceEnvRef();
 
-   boolean isOtherResourceAvailableThroughResourceEnvRef();
+    boolean isOtherResourceAvailableThroughResourceEnvRef();
 }

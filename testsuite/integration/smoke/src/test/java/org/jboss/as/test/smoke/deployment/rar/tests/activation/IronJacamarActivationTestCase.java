@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.activation;
 
+import static org.junit.Assert.assertNotNull;
+
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,8 +41,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
 
 
 /**

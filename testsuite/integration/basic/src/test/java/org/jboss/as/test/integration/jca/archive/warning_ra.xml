@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <connector xmlns="http://java.sun.com/xml/ns/javaee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
            http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
-	version="1.6" metadata-complete="true">
+           version="1.6" metadata-complete="true">
 
-	<vendor-name>Red Hat Middleware LLC</vendor-name>
-	<eis-type>Test RA</eis-type>
-	<resourceadapter-version>0.1</resourceadapter-version>
+    <vendor-name>Red Hat Middleware LLC</vendor-name>
+    <eis-type>Test RA</eis-type>
+    <resourceadapter-version>0.1</resourceadapter-version>
 
-	<resourceadapter>
-		<resourceadapter-class>org.jboss.as.test.integration.jca.rar.MultipleWarningResourceAdapter
-		</resourceadapter-class>
-		<config-property>
-			<config-property-name>name</config-property-name>
-			<config-property-type>java.lang.Integer</config-property-type>
-			<config-property-value>5</config-property-value>
-		</config-property>
-	</resourceadapter>
+    <resourceadapter>
+        <resourceadapter-class>org.jboss.as.test.integration.jca.rar.MultipleWarningResourceAdapter
+        </resourceadapter-class>
+        <config-property>
+            <config-property-name>name</config-property-name>
+            <config-property-type>java.lang.Integer</config-property-type>
+            <config-property-value>5</config-property-value>
+        </config-property>
+    </resourceadapter>
 </connector>

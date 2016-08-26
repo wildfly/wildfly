@@ -36,7 +36,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.JSSE;
 import org.jboss.as.test.integration.security.common.config.SecureStore;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;

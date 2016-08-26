@@ -25,12 +25,12 @@ import javax.jws.HandlerChain;
 import javax.jws.WebService;
 
 @WebService
-(
-   portName = "AddressingServicePort",
-   serviceName = "AddressingService",
-   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing",
-   endpointInterface = "org.jboss.as.test.integration.ws.wsa.ServiceIface"
-)
+        (
+                portName = "AddressingServicePort",
+                serviceName = "AddressingService",
+                targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing",
+                endpointInterface = "org.jboss.as.test.integration.ws.wsa.ServiceIface"
+        )
 @HandlerChain(file = "ws-handler.xml")
 public class ServiceImplNoAddressing implements ServiceIface {
 

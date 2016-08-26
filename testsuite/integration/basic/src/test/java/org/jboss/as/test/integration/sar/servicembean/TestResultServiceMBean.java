@@ -24,33 +24,32 @@ package org.jboss.as.test.integration.sar.servicembean;
 
 /**
  * MBean interface for {@link TestResultService}.
- * 
+ *
  * @author Eduardo Martins
- * 
  */
 public interface TestResultServiceMBean {
 
-    public boolean isCreateServiceInvoked();
+    boolean isCreateServiceInvoked();
 
-    public boolean isStartServiceInvoked();
+    boolean isStartServiceInvoked();
 
-    public boolean isStopServiceInvoked();
+    boolean isStopServiceInvoked();
 
-    public boolean isDestroyServiceInvoked();
+    boolean isDestroyServiceInvoked();
 
-    public void setCreateServiceInvoked(boolean createServiceInvoked);
+    void setCreateServiceInvoked(boolean createServiceInvoked);
 
-    public void setDestroyServiceInvoked(boolean destroyServiceInvoked);
+    void setDestroyServiceInvoked(boolean destroyServiceInvoked);
 
-    public void setStartServiceInvoked(boolean startServiceInvoked);
+    void setStartServiceInvoked(boolean startServiceInvoked);
 
-    public void setStopServiceInvoked(boolean stopServiceInvoked);
+    void setStopServiceInvoked(boolean stopServiceInvoked);
 
-    public boolean isStartingNotificationReceived();
+    boolean isStartingNotificationReceived();
 
-    public boolean isStartedNotificationReceived();
+    boolean isStartedNotificationReceived();
 
-    public boolean isStoppingNotificationReceived();
+    boolean isStoppingNotificationReceived();
 
-    public boolean isStoppedNotificationReceived();
+    boolean isStoppedNotificationReceived();
 }

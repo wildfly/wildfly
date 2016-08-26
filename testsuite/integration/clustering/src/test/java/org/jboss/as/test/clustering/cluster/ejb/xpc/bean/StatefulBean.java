@@ -149,7 +149,7 @@ public class StatefulBean implements Stateful {
     @Override
     public long getEmployeesInMemory() {
         Session session = em.unwrap(Session.class);
-        String entityRegionNames[] = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
+        String[] entityRegionNames = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
         for (String name : entityRegionNames) {
             if (name.contains(Employee.class.getName())) {
                 SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
@@ -165,7 +165,7 @@ public class StatefulBean implements Stateful {
         log.info(methodName + "(version=" + version + ", HashMap version=" + valueBag.get("version") + ") logging statistics for session = " + session);
         session.getSessionFactory().getStatistics().setStatisticsEnabled(true);
         session.getSessionFactory().getStatistics().logSummary();
-        String entityRegionNames[] = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
+        String[] entityRegionNames = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
         for (String name : entityRegionNames) {
             log.info("cache entity region name = " + name);
             SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);

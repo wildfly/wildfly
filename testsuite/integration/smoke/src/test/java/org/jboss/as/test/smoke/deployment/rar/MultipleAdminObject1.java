@@ -22,7 +22,6 @@
 package org.jboss.as.test.smoke.deployment.rar;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 
 /**
@@ -30,20 +29,21 @@ import javax.resource.Referenceable;
  *
  * @version $Revision: $
  */
-public interface MultipleAdminObject1 extends Referenceable, Serializable
-{
+public interface MultipleAdminObject1 extends Referenceable, Serializable {
 
-   /**
-    * Set name
-    * @param name The value
-    */
-   public void setName(String name);
+    /**
+     * Set name
+     *
+     * @param name The value
+     */
+    void setName(String name);
 
-   /**
-    * Get name
-    * @return The value
-    */
-   public String getName();
+    /**
+     * Get name
+     *
+     * @return The value
+     */
+    String getName();
 
 
 }

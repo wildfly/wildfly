@@ -21,11 +21,17 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Resource;
+import javax.resource.spi.ActivationSpec;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidAdminObjectInterface;
@@ -33,12 +39,6 @@ import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnection;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpoint;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidMessageEndpointFactory;
-
-import javax.annotation.Resource;
-import javax.resource.spi.ActivationSpec;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -46,11 +46,11 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.*;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5904
@@ -75,9 +75,9 @@ public class PositiveValidationTestCase {
         ja.addPackage(ValidConnectionFactory.class.getPackage()).addClasses(PositiveValidationTestCase.class);
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(PositiveValidationTestCase.class.getPackage(),"ra.xml", "ra.xml")
-                .addAsManifestResource(PositiveValidationTestCase.class.getPackage(),"ironjacamar.xml", "ironjacamar.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector\n"),"MANIFEST.MF");
+        raa.addAsManifestResource(PositiveValidationTestCase.class.getPackage(), "ra.xml", "ra.xml")
+                .addAsManifestResource(PositiveValidationTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
 
         return raa;
     }
@@ -129,7 +129,7 @@ public class PositiveValidationTestCase {
         assertNotNull(as);
         assertNotNull(as.getResourceAdapter());
 
-        ValidActivationSpec vas=(ValidActivationSpec)as;
+        ValidActivationSpec vas = (ValidActivationSpec) as;
 
         ValidMessageEndpoint me = new ValidMessageEndpoint();
         ValidMessageEndpointFactory mef = new ValidMessageEndpointFactory(me);

@@ -32,5 +32,5 @@ import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30;
  */
 public interface Session30Home extends EJBHome {
 
-    public Session30 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    Session30 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 }

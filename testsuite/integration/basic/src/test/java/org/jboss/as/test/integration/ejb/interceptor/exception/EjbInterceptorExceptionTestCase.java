@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that exception thrown in interceptor method intercepting a session bean does not get suppressed.
- * 
+ *
  * @author Matus Abaffy
  * @author Jozef Hartinger
  */

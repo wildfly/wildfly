@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
@@ -34,7 +33,6 @@ import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
-
 import org.jboss.tm.TxUtils;
 
 /**
@@ -47,7 +45,7 @@ public class SFSB1 {
     @PersistenceContext
     EntityManager entityManager;
 
-    static private boolean afterCompletionCalledByTMTimeoutThread = false;
+    private static boolean afterCompletionCalledByTMTimeoutThread = false;
 
     @Resource
     TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -81,17 +79,17 @@ public class SFSB1 {
                         @Override
                         public void afterCompletion(int status) {
                             afterCompletionCalledByTMTimeoutThread =
-                                TxUtils.isTransactionManagerTimeoutThread();
+                                    TxUtils.isTransactionManagerTimeoutThread();
                         }
                     });
         }
 
-        while(!done) {
+        while (!done) {
             try {
                 Thread.sleep(250);
                 entityManager.find(Employee.class, id);
                 int status = transactionSynchronizationRegistry.getTransactionStatus();
-                switch(status) {
+                switch (status) {
                     case Status.STATUS_COMMITTED:
                         throw new RuntimeException("transaction was committed.");
                     case Status.STATUS_ROLLEDBACK:
@@ -102,7 +100,7 @@ public class SFSB1 {
                         System.out.println("tx is still active, sleep for 250ms and check tx status again.");
                         break;
                     default:
-                        System.out.println("tx status = " + status +", sleep for 250ms and check tx status again.");
+                        System.out.println("tx status = " + status + ", sleep for 250ms and check tx status again.");
                         break;
                 }
 

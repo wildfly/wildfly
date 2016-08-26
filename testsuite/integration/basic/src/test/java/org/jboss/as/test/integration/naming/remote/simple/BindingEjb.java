@@ -27,15 +27,6 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.naming.InitialContext;
 
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.value.Values;
-
 /**
  * @author John Bailey
  */

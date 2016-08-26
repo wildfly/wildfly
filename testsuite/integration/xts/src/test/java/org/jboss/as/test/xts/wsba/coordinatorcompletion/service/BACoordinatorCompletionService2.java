@@ -31,15 +31,15 @@ import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.servlet.annotation.WebServlet;
 
-@WebService(serviceName = "BACoordinatorCompletionService2", 
-        portName = "BACoordinatorCompletion", name = "BACoordinatorCompletion", 
+@WebService(serviceName = "BACoordinatorCompletionService2",
+        portName = "BACoordinatorCompletion", name = "BACoordinatorCompletion",
         targetNamespace = "http://www.jboss.com/jbossas/test/xts/ba/coordinatorcompletion/")
 @SOAPBinding(style = SOAPBinding.Style.RPC)
 @HandlerChain(file = "/context-handlers.xml")
-@WebServlet(name="BACoordinatorCompletionService2", urlPatterns={"/BACoordinatorCompletionService2"})
+@WebServlet(name = "BACoordinatorCompletionService2", urlPatterns = {"/BACoordinatorCompletionService2"})
 public class BACoordinatorCompletionService2 extends BACoordinatorCompletionSuperService {
     public static final String SERVICE_EVENTLOG_NAME = "bacoordinator_completition_service2";
-    
+
     @WebMethod
     public void saveData(ServiceCommand... serviceCommands) throws TestApplicationException {
         super.saveData(SERVICE_EVENTLOG_NAME, serviceCommands);

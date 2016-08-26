@@ -39,10 +39,11 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Unit test for {@link SessionEvictionScheduler}.
+ *
  * @author Paul Ferraro
  */
 public class SessionEvictionSchedulerTestCase {
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void test() throws Exception {
         String name = "cache";
@@ -60,9 +61,9 @@ public class SessionEvictionSchedulerTestCase {
 
         try (Scheduler scheduler = new SessionEvictionScheduler(name, evictor, dispatcherFactory, 1)) {
             SessionEvictionContext context = capturedContext.getValue();
-            
+
             assertSame(scheduler, context);
-            
+
             scheduler.schedule(evictedSessionId, evictedSessionMetaData);
 
             verifyZeroInteractions(dispatcher);
@@ -70,9 +71,9 @@ public class SessionEvictionSchedulerTestCase {
             scheduler.schedule(activeSessionId, activeSessionMetaData);
 
             verify(dispatcher).submitOnCluster(capturedCommand.capture());
-            
+
             capturedCommand.getValue().execute(context);
-            
+
             verify(evictor).evict(evictedSessionId);
             verify(evictor, never()).evict(activeSessionId);
         }

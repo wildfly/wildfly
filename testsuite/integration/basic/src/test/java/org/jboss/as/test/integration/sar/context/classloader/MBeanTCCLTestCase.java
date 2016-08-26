@@ -92,7 +92,7 @@ public class MBeanTCCLTestCase {
                 // MBeanInAModuleService#testClassLoadByTCCL() needs the following permission
                 new RuntimePermission("getClassLoader")),
                 "permissions.xml");
-        
+
         logger.info("created deployment: " + ear.toString(true));
         return ear;
     }

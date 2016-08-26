@@ -9,7 +9,7 @@
 
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <property name="jboss.entity.manager.factory.jndi.name" value="myEMF" />
+            <property name="jboss.entity.manager.factory.jndi.name" value="myEMF"/>
             <property name="jboss.entity.manager.jndi.name" value="java:/Manager1"/>
         </properties>
     </persistence-unit>

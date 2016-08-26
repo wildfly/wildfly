@@ -33,6 +33,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
+
 import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -46,7 +47,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @RunWith(Arquillian.class)
@@ -104,7 +104,7 @@ public class TestNoAddressingTestCase {
         URL wsdlURL = new URL(baseUrl, "/jaxws-wsa/AddressingService?wsdl");
         File wsdlFile = new File(this.getClass().getSimpleName() + ".wsdl");
         downloadWSDLToFile(wsdlURL, wsdlFile);
-        
+
         Service service = Service.create(wsdlFile.toURI().toURL(), serviceName);
         ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
 
@@ -125,12 +125,12 @@ public class TestNoAddressingTestCase {
 
         return proxy;
     }
-    
+
     protected static void downloadWSDLToFile(URL wsdlURL, File wsdlFile) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(wsdlURL.openStream()));
         BufferedWriter out = new BufferedWriter(new FileWriter(wsdlFile));
         String inputLine;
-        while ((inputLine = in.readLine()) != null) { 
+        while ((inputLine = in.readLine()) != null) {
             out.write(inputLine);
             out.newLine();
         }

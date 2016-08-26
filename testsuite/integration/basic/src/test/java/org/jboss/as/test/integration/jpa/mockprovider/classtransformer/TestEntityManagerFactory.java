@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class TestEntityManagerFactory implements InvocationHandler {
 
-    private static final List<String> invocations =Collections.synchronizedList(new ArrayList<String>());
+    private static final List<String> invocations = Collections.synchronizedList(new ArrayList<String>());
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

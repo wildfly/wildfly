@@ -52,7 +52,7 @@ public class ResourceLocalTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(ResourceLocalTestCase.class.getPackage());
-        jar.addAsManifestResource(ResourceLocalTestCase.class.getPackage(), "persistence.xml","persistence.xml");
+        jar.addAsManifestResource(ResourceLocalTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
         return jar;
     }

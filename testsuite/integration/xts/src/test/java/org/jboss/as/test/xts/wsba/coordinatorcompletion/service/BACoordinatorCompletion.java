@@ -28,7 +28,7 @@ import org.jboss.as.test.xts.base.TestApplicationException;
 import org.jboss.as.test.xts.util.ServiceCommand;
 
 public interface BACoordinatorCompletion {
-    
+
     @WebMethod
     void saveData(ServiceCommand... serviceCommands) throws TestApplicationException;
 }

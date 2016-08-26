@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that schema locations are rewritten.
- *
+ * <p>
  * CXF-6469
  *
  * @author Tomas Hofman (thofman@redhat.com)
@@ -111,7 +111,7 @@ public class SchemaLocationsRewriteTestCase {
 
     private String findLocation(List<String> values, String locationSuffix) {
         String result = null;
-        for (String location: values) {
+        for (String location : values) {
             if (location.endsWith(locationSuffix)) {
                 if (result == null) {
                     result = location;

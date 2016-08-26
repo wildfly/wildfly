@@ -22,20 +22,18 @@
 package org.jboss.as.test.integration.ejb.home.localhome.annotation;
 
 import javax.annotation.Resource;
-import javax.ejb.Local;
 import javax.ejb.LocalHome;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 
 import org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalHome;
-import org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalInterface;
 
 /**
  * @author Stuart Douglas
  */
 @Stateless
 @LocalHome(SimpleLocalHome.class)
-public class SimpleStatelessLocalBean  {
+public class SimpleStatelessLocalBean {
 
     @Resource
     private SessionContext sessionContext;
@@ -52,7 +50,7 @@ public class SimpleStatelessLocalBean  {
     }
 
     public String otherMethod() {
-        return  ((SimpleLocalHome)sessionContext.getEJBLocalHome()).createSimple().sayHello();
+        return ((SimpleLocalHome) sessionContext.getEJBLocalHome()).createSimple().sayHello();
     }
 
 

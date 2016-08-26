@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Simple bean which returns goodbye greeting.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 public class GoodByeBean implements SessionBean {

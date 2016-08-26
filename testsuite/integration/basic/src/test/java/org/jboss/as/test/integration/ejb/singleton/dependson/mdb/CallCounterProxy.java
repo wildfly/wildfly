@@ -28,7 +28,7 @@ import javax.naming.NamingException;
 
 /**
  * Proxy which is deployed with MDB.
- * 
+ *
  * @author baranowb
  */
 @Singleton
@@ -49,7 +49,7 @@ public class CallCounterProxy {
     }
 
     /**
-     * 
+     *
      */
     public void setMessage() {
         this.getCounter().setMessage();

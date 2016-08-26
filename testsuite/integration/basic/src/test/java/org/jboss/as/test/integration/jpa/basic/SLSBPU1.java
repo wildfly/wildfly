@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.basic;
 
 import java.util.Map;
-
 import javax.ejb.Stateless;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
@@ -36,10 +35,10 @@ import javax.persistence.PersistenceUnit;
 @Stateless
 public class SLSBPU1 {
 
-    @PersistenceUnit(unitName="pu1")
+    @PersistenceUnit(unitName = "pu1")
     private EntityManagerFactory emf;
 
-    public Map<String, Object> getEMInfo(){
+    public Map<String, Object> getEMInfo() {
         return emf.getProperties();
     }
 

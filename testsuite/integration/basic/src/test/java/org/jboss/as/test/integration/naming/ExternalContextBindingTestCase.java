@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.naming;
 
-import java.security.Security;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -41,11 +39,14 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEX
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.security.Security;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 
+import com.sun.jndi.ldap.LdapCtx;
+import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifReader;
@@ -76,9 +77,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.sun.jndi.ldap.LdapCtx;
-import com.sun.jndi.ldap.LdapCtxFactory;
 import org.wildfly.naming.java.permission.JndiPermission;
 
 /**

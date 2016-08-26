@@ -28,9 +28,8 @@ import org.jboss.logging.Logger;
  * @author Jaikiran Pai
  */
 public abstract class AbstractSlowBean {
-
     private static final Logger logger = Logger.getLogger(AbstractSlowBean.class);
-    
+
     public void delay(final long delayInMilliSec) {
         try {
             logger.info("Sleeping for " + delayInMilliSec + " milliseconds");

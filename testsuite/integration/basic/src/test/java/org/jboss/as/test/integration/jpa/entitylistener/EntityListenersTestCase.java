@@ -98,13 +98,14 @@ public class EntityListenersTestCase {
 
     /**
      * Test that @PostConstruct is invoked
+     *
      * @throws Exception
      */
     @Test
     public void testCDICallbackInvoked() throws Exception {
         SFSBCMT cmt = lookup("SFSBCMT", SFSBCMT.class);
         assertEquals("MyListener should of been created by the BeanManager instance passed into the " +
-                "persistence provider via property 'javax.persistence.bean.manager'. "
+                        "persistence provider via property 'javax.persistence.bean.manager'. "
                 , 1, MyListener.getPostCtorInvocationCount());
 
     }

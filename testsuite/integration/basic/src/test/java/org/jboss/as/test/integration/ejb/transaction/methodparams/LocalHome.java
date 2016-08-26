@@ -26,6 +26,6 @@ import javax.ejb.EJBLocalHome;
 
 public interface LocalHome extends EJBLocalHome {
 
-	Local create();
-	
+    Local create();
+
 }

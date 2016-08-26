@@ -36,7 +36,7 @@ import javax.persistence.PersistenceContextType;
  */
 @Stateful
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-public class BikeShop  {
+public class BikeShop {
 
 
     @PersistenceContext(type = PersistenceContextType.EXTENDED)
@@ -51,6 +51,7 @@ public class BikeShop  {
 
     /**
      * create new motor bike but don't save to the DB until purchaseNow is invoked.
+     *
      * @param id
      * @param name
      * @return
@@ -65,11 +66,11 @@ public class BikeShop  {
     /**
      * save MotorBikes that we previously put a down payment on
      * pending DB changes should be flushed as per JPA 7.9.1 Container Responsibilities for XPC:
-     *    When a business method of the stateful session bean is invoked,
-     *    if the stateful session bean uses container managed transaction demarcation,
-     *    and the entity manager is not already associated with the current JTA transaction,
-     *    the container associates the entity manager with the current JTA transaction and
-     *    calls EntityManager.joinTransaction.
+     * When a business method of the stateful session bean is invoked,
+     * if the stateful session bean uses container managed transaction demarcation,
+     * and the entity manager is not already associated with the current JTA transaction,
+     * the container associates the entity manager with the current JTA transaction and
+     * calls EntityManager.joinTransaction.
      */
     public void purchaseNowAndFlushDbChanges() {
 

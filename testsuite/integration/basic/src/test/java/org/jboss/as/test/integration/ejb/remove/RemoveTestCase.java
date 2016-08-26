@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.remove;
 
+import javax.ejb.NoSuchEJBException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -32,15 +36,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ejb.NoSuchEJBException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 /**
- * @Remove tests
- *
  * @author Scott Marlow
  * @author Jan Martiska
+ * @Remove tests
  */
 @RunWith(Arquillian.class)
 public class RemoveTestCase {
@@ -52,7 +51,7 @@ public class RemoveTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(RemoveTestCase.class,
-            SFSB1.class
+                SFSB1.class
         );
         return jar;
     }
@@ -86,6 +85,7 @@ public class RemoveTestCase {
     /**
      * Ensure that a Stateful bean gets properly @Remove-d even if it throws an exception within its @PreDestroy method
      * Required by EJB 3.1 spec
+     *
      * @throws Exception
      */
     @Test

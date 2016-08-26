@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.management.api.expression;
+package org.jboss.as.test.integration.deployment.deploymentoverlay.jar;
 
-public interface IStatelessBean {
-  void addJBossProperty(String name, String value);
-  void removeJBossProperty(String name);
-  String getJBossProperty(String name);
-  void redefineJBossProperty(String name, String value);
-  
-  void addSystemProperty(String name, String value);
-  void removeSystemProperty(String name);
-  String getSystemProperty(String name);
+import javax.ejb.Remote;
+
+/**
+ * @author baranowb
+ *
+ */
+@Remote
+public interface OverlayableInterface {
+    String ORIGINAL = "ORIGINAL";
+    String OVERLAYED = "OVERLAYED";
+    String RESOURCE_NAME = "file.txt";
+    String RESOURCE_META_INF = "x/"+RESOURCE_NAME;
+    String RESOURCE = "META-INF/"+RESOURCE_META_INF;
+
+    String STATIC = "STATIC";
+    String RESOURCE_STATIC_NAME = "static.txt";
+    String RESOURCE_STATIC_META_INF = "x/"+RESOURCE_STATIC_NAME;
+    String RESOURCE_STATIC = "META-INF/"+RESOURCE_STATIC_META_INF;
+
+    String fetchResource() throws Exception;
+
+    String fetchResourceStatic() throws Exception;
 }

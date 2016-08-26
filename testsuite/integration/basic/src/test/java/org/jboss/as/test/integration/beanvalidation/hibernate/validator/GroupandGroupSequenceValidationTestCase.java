@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
@@ -42,7 +41,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests GroupSequenceProvider feature in Hibernate Validator.
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

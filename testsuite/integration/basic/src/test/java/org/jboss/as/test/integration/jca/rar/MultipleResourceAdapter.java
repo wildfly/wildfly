@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.jca.rar;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -40,11 +39,11 @@ import javax.transaction.xa.XAResource;
 public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	/**
+    /**
      * The logger
      */
     private static Logger log = Logger.getLogger("MultipleResourceAdapter");
@@ -58,7 +57,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      * Default constructor
      */
     public MultipleResourceAdapter() {
-    	setName("RA");
+        setName("RA");
     }
 
     /**
@@ -106,8 +105,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      * This is called when a resource adapter instance is bootstrapped.
      *
      * @param ctx A bootstrap context containing references
-     * @throws ResourceAdapterInternalException
-     *          indicates bootstrap failure.
+     * @throws ResourceAdapterInternalException indicates bootstrap failure.
      */
     public void start(BootstrapContext ctx)
             throws ResourceAdapterInternalException {
@@ -143,10 +141,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
     @Override
     public int hashCode() {
         int result = 17;
-        if (name != null)
-            result += 31 * result + 7 * name.hashCode();
-        else
-            result += 31 * result + 7;
+        if (name != null) { result += 31 * result + 7 * name.hashCode(); } else { result += 31 * result + 7; }
         return result;
     }
 
@@ -158,25 +153,19 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      */
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof MultipleResourceAdapter))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof MultipleResourceAdapter)) { return false; }
         MultipleResourceAdapter obj = (MultipleResourceAdapter) other;
         boolean result = true;
         if (result) {
-            if (name == null)
-                result = obj.getName() == null;
-            else
-                result = name.equals(obj.getName());
+            if (name == null) { result = obj.getName() == null; } else { result = name.equals(obj.getName()); }
         }
         return result;
     }
 
     @Override
-    public String toString(){
- 	   return this.getClass().toString()+"name="+name;
+    public String toString() {
+        return this.getClass().toString() + "name=" + name;
     }
 }

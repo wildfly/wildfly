@@ -34,6 +34,6 @@ import javax.jws.soap.SOAPBinding;
 @WebService
 @SOAPBinding(style = SOAPBinding.Style.RPC)
 public interface EndpointIface {
-   @WebMethod
-   String echo(String s);
+    @WebMethod
+    String echo(String s);
 }

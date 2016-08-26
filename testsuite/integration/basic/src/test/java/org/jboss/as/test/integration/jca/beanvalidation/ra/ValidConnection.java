@@ -23,26 +23,26 @@ package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
 /**
  * Connection
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public interface ValidConnection {
     /**
      * getResourceAdapterProperty
-     * 
+     *
      * @return String
      */
-    public int getResourceAdapterProperty();
+    int getResourceAdapterProperty();
 
     /**
      * getManagedConnectionFactoryProperty
-     * 
+     *
      * @return String
      */
-    public String getManagedConnectionFactoryProperty();
+    String getManagedConnectionFactoryProperty();
 
     /**
      * Close
      */
-    public void close();
+    void close();
 }

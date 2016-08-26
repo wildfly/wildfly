@@ -49,7 +49,7 @@ public class WeldInterceptorEJBContextTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addPackage(WeldInterceptorEJBContextTestCase.class.getPackage());
         jar.addAsManifestResource(
-                new StringAsset("<beans><interceptors><class>" + ServiceLoggedInterceptor.class.getName() + "</class></interceptors></beans>"), 
+                new StringAsset("<beans><interceptors><class>" + ServiceLoggedInterceptor.class.getName() + "</class></interceptors></beans>"),
                 "beans.xml");
         return jar;
     }

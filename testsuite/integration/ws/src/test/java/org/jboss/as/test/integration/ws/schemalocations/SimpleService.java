@@ -22,10 +22,7 @@
 
 package org.jboss.as.test.integration.ws.schemalocations;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
 
 /**
  * Simple WS endpoint

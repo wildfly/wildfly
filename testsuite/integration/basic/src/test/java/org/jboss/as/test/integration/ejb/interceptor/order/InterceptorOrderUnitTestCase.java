@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test migrated from EJB3 testsuite [JBQA-5451] - from test ejbthree1852
- * 
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

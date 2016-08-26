@@ -25,7 +25,7 @@ import javax.ejb.Remote;
 
 /**
  * A Delegate to invoke upon local views of the Remove EJBs
- * 
+ *
  * @author <a href="arubinge@redhat.com">ALR</a>
  */
 @Remote

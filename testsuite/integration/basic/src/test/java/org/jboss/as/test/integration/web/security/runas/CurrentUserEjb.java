@@ -1,10 +1,10 @@
 package org.jboss.as.test.integration.web.security.runas;
 
+import java.security.Principal;
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import java.security.Principal;
 
 /**
  * @author Stuart Douglas

@@ -34,7 +34,6 @@ import org.jboss.logging.Logger;
  * The test fixture for {@link SingletonReentrantPostConstructTestCase}.
  *
  * @author steve.coy
- *
  */
 @Singleton
 public class SingletonBeanOne {

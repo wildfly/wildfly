@@ -41,7 +41,7 @@ public class DatasourceCapacityPoliciesTestCase extends AbstractDatasourceCapaci
 
     static class DatasourceServerSetupTask extends AbstractDatasourceCapacityPoliciesTestCase.AbstractDatasourceCapacityPoliciesServerSetup {
 
-        public DatasourceServerSetupTask() {
+        DatasourceServerSetupTask() {
             // add non-xa datasource
             super(false);
         }

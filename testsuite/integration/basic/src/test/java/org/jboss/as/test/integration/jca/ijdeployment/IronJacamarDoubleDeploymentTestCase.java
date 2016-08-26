@@ -50,7 +50,6 @@ import org.junit.runner.RunWith;
  * Test of two ear ij deployments conflict.
  *
  * @author baranowb
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient

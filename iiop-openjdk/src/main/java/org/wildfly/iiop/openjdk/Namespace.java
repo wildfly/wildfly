@@ -31,9 +31,11 @@ import java.util.Map;
 
 enum Namespace {
 
-    UNKNOWN(null), IIOP_OPENJDK_1_0("urn:jboss:domain:iiop-openjdk:1.0");
+    UNKNOWN(null),
+    IIOP_OPENJDK_1_0("urn:jboss:domain:iiop-openjdk:1.0"),
+    IIOP_OPENJDK_3_0("urn:jboss:domain:iiop-openjdk:3.0");
 
-    static final Namespace CURRENT = IIOP_OPENJDK_1_0;
+    static final Namespace CURRENT = IIOP_OPENJDK_3_0;
 
     private final String namespaceURI;
 

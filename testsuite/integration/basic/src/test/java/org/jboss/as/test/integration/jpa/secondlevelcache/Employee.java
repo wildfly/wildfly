@@ -33,7 +33,7 @@ import javax.persistence.Id;
  */
 @Entity
 @Cacheable(true)
-public class Employee  {
+public class Employee {
 
     @Id
     private int id;

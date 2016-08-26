@@ -22,29 +22,17 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.jndi.bad;
 
-import javax.ejb.EJB;
-
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -55,7 +43,6 @@ import org.junit.runner.RunWith;
 
 /**
  * @author baranowb
- * 
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -111,7 +98,7 @@ public class BadResourceTestCase {
         // just to blow up
         Assert.assertTrue("Failed to deploy: " + result, !Operations.isSuccessfulOutcome(result));
 
-        Assert.assertTrue(""+result,result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString()
+        Assert.assertTrue("" + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString()
                 .contains(Constants.ERROR_MESSAGE));
 
     }

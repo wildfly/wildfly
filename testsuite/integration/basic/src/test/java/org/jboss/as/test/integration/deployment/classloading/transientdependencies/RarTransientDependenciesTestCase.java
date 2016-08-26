@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.transientdependencies;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -38,9 +41,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Tests that a rar deployments transitive deps are made available to a deployment that references the rar
  *
@@ -57,23 +57,23 @@ public class RarTransientDependenciesTestCase {
      * rar-transient-dep.ear
      * |
      * |--- rardeployment.rar (RAR deployment)
-     * |		|
-     * |		|--- META-INF
-     * |		|		|
-     * |		|		|--- ra.xml
-     * |		|		|
-     * |		|		|--- MANIFEST.MF containing -> Class-Path: transient.jar (to point to the jar at the root of the .ear)
+     * |        |
+     * |        |--- META-INF
+     * |        |       |
+     * |        |       |--- ra.xml
+     * |        |       |
+     * |        |       |--- MANIFEST.MF containing -> Class-Path: transient.jar (to point to the jar at the root of the .ear)
      * |
      * |
      * |--- referenceingwebapp.war (war deployment)
-     * |		|
-     * |		|
-     * |		|--- org.jboss.as.test.integration.deployment.classloading.transientdependencies.Servlet (the servlet which tries to access the class in the transient.jar, when invoked)
+     * |        |
+     * |        |
+     * |        |--- org.jboss.as.test.integration.deployment.classloading.transientdependencies.Servlet (the servlet which tries to access the class in the transient.jar, when invoked)
      * |
      * |
      * |--- transient.jar (simple jar file and NOT a deployment. this jar is referenced via the Class-Path manifest attribute in the .rar and as a result, is transitively expected to be available for access in the .war)
-     * |		|
-     * |		|--- org.jboss.as.test.integration.deployment.classloading.transientdependencies.JarClass
+     * |        |
+     * |        |--- org.jboss.as.test.integration.deployment.classloading.transientdependencies.JarClass
      *
      * @return
      */

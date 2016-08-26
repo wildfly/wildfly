@@ -29,14 +29,11 @@ import javax.ejb.SessionContext;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */
 //@Stateless
-public class CtxInjectionTesterBean implements CtxInjectionTester
-{
-   // injected from ejb-jar.xml
-   private SessionContext ctx;
-   
-   public void checkInjection() throws FailedException
-   {
-      if(ctx == null)
-         throw new FailedException();
-   }
+public class CtxInjectionTesterBean implements CtxInjectionTester {
+    // injected from ejb-jar.xml
+    private SessionContext ctx;
+
+    public void checkInjection() throws FailedException {
+        if (ctx == null) { throw new FailedException(); }
+    }
 }

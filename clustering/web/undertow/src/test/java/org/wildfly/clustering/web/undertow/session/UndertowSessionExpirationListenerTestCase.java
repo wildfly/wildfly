@@ -21,14 +21,22 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.Session;
+import io.undertow.server.session.SessionListener;
+import io.undertow.server.session.SessionListeners;
+import io.undertow.servlet.api.Deployment;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.ee.Batch;
@@ -38,12 +46,6 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.session.Session;
-import io.undertow.server.session.SessionListener;
-import io.undertow.server.session.SessionListeners;
-import io.undertow.servlet.api.Deployment;
 
 public class UndertowSessionExpirationListenerTestCase {
 

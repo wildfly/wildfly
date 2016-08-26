@@ -61,13 +61,13 @@ import org.junit.runner.RunWith;
  * for attribute mapping in Identity Provider (IdP) when SPNEGO (Kerberos) authentication is used.
  * <p>
  * PLINK-405
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ KerberosServerSetupTask.Krb5ConfServerSetupTask.class, KerberosServerSetupTask.SystemPropertiesSetup.class,
-        KerberosServerSetupTask.class, SAML2AttributeMappingTestCase.SecurityDomainsSetup.class })
+@ServerSetup({KerberosServerSetupTask.Krb5ConfServerSetupTask.class, KerberosServerSetupTask.SystemPropertiesSetup.class,
+        KerberosServerSetupTask.class, SAML2AttributeMappingTestCase.SecurityDomainsSetup.class})
 @Ignore("AS7-6796 - Undertow SPNEGO")
 public class SAML2AttributeMappingTestCase {
 
@@ -130,7 +130,7 @@ public class SAML2AttributeMappingTestCase {
     /**
      * Tests IDP attribute mapping when passUserPrincipalToAttributeManager is set to "true". Automatic handling of redirections
      * is enabled for HTTP client used.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -158,7 +158,7 @@ public class SAML2AttributeMappingTestCase {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -197,7 +197,7 @@ public class SAML2AttributeMappingTestCase {
                                             Context.PROVIDER_URL,
                                             "ldap://"
                                                     + NetworkUtils.formatPossibleIpv6Address(Utils
-                                                            .getCannonicalHost(managementClient)) + ":"
+                                                    .getCannonicalHost(managementClient)) + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org").putOption("baseFilter", "(uid={0})")
                                     .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
@@ -216,7 +216,7 @@ public class SAML2AttributeMappingTestCase {
                                             Context.PROVIDER_URL,
                                             "ldap://"
                                                     + NetworkUtils.formatPossibleIpv6Address(Utils
-                                                            .getCannonicalHost(managementClient)) + ":"
+                                                    .getCannonicalHost(managementClient)) + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("bindDN", KerberosServerSetupTask.SECURITY_PRINCIPAL)
                                     .putOption("bindCredential", KerberosServerSetupTask.SECURITY_CREDENTIALS)

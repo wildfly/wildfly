@@ -26,6 +26,5 @@ package org.jboss.as.test.manualmode.ejb.client.outbound.connection;
  * @author Jaikiran Pai
  */
 public interface RemoteEcho {
-    
     String echo(String msg);
 }

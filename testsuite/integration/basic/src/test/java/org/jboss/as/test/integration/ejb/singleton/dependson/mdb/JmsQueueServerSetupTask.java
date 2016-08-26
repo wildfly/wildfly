@@ -29,7 +29,6 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 
 /**
  * @author baranowb
- *
  */
 public class JmsQueueServerSetupTask implements ServerSetupTask {
 
@@ -41,7 +40,7 @@ public class JmsQueueServerSetupTask implements ServerSetupTask {
         jmsAdminOperations.createJmsQueue(Constants.QUEUE_NAME, Constants.QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue(Constants.QUEUE_REPLY_NAME, Constants.QUEUE_REPLY_JNDI_NAME);
         jmsAdminOperations.setSystemProperties(Constants.SYS_PROP_KEY, Constants.SYS_PROP_VALUE);
-        
+
     }
 
     @Override

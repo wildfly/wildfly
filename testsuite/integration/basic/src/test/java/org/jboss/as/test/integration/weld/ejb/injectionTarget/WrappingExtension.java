@@ -29,8 +29,7 @@ import javax.enterprise.inject.spi.ProcessInjectionTarget;
 
 public class WrappingExtension implements Extension {
 
-    public void wrapInjectionTarget(@Observes ProcessInjectionTarget<Bus> event)
-    {
+    public void wrapInjectionTarget(@Observes ProcessInjectionTarget<Bus> event) {
         final InjectionTarget<Bus> injectionTarget = event.getInjectionTarget();
         event.setInjectionTarget(new ForwardingInjectionTarget<Bus>() {
 

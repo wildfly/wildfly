@@ -36,7 +36,7 @@ public class CountedSessionBean1 implements SessionBean {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CountedSessionBean1.class);
     protected SessionContext ctx;
-    
+
     public CountedSessionBean1() {
         log.info("CTOR1");
     }
@@ -52,7 +52,7 @@ public class CountedSessionBean1 implements SessionBean {
             }
         }
     }
-    
+
     public void doSomethingSync(long delay) {
         try {
             doSomething(delay);
@@ -60,7 +60,7 @@ public class CountedSessionBean1 implements SessionBean {
             EjbRemoveUnitTestCase.CDL.countDown();
         }
     }
-    
+
     // Container callbacks -------------------------------------------
     public void setSessionContext(SessionContext ctx) throws EJBException, RemoteException {
         this.ctx = ctx;

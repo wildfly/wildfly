@@ -24,17 +24,16 @@ package org.jboss.as.test.integration.ws.basic;
 import javax.jws.WebService;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @WebService
 public interface EndpointIface {
 
-    public String helloString(String input);
+    String helloString(String input);
 
-    public HelloObject helloBean(HelloObject input);
+    HelloObject helloBean(HelloObject input);
 
-    public HelloObject[] helloArray(HelloObject[] input);
+    HelloObject[] helloArray(HelloObject[] input);
 
-    public String helloError(String input);
+    String helloError(String input);
 }

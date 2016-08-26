@@ -28,8 +28,7 @@ import javax.ws.rs.PathParam;
 public class PeopleResource {
 
     @Path("{name}")
-    public PersonResource findPerson(@PathParam("name") String name)
-    {
+    public PersonResource findPerson(@PathParam("name") String name) {
         return new PersonResource(name);
     }
 }

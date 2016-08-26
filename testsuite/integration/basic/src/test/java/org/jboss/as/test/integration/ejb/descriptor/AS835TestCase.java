@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.ejb.descriptor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,10 +35,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * [AS7-835] ejb-jar.xml doesn't need to define a session-type

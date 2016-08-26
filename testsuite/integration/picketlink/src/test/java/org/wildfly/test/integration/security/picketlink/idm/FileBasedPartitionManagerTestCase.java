@@ -73,7 +73,7 @@ public class FileBasedPartitionManagerTestCase extends AbstractBasicIdentityMana
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             super("file.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 

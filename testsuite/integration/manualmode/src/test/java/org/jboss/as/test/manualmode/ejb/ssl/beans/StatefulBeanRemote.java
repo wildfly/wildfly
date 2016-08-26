@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
  */
 @Remote
 public interface StatefulBeanRemote {
-    static final String ANSWER = "Hello";
+    String ANSWER = "Hello";
 
     String sayHello();
 

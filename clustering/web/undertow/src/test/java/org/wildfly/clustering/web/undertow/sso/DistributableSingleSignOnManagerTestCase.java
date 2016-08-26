@@ -22,8 +22,15 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +38,6 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
 import io.undertow.security.impl.SingleSignOnManager;
-
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.ee.Batch;
@@ -41,6 +47,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
 
 /**
  * Unit test for {@link DistributableSingleSignOnManager}
+ *
  * @author Paul Ferraro
  */
 public class DistributableSingleSignOnManagerTestCase {

@@ -34,7 +34,7 @@ import org.jboss.logging.Logger;
 /**
  * A JAX-RS test implementation for {@link ExceptionMapper}. If an Exception occurs, returns HTTP OK (200) and prints
  * {@value #ERROR_MESSAGE} as the response body.
- * 
+ *
  * @author Josef Cacek
  */
 @Provider
@@ -52,7 +52,7 @@ public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
 
     /**
      * Responds {@value #ERROR_MESSAGE} to the OK (200) response.
-     * 
+     *
      * @param exception
      * @return
      * @see javax.ws.rs.ext.ExceptionMapper#toResponse(java.lang.Throwable)
@@ -65,7 +65,7 @@ public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
 
     /**
      * Test method for the Provider. Throws an IllegalArgumentException.
-     * 
+     *
      * @return
      */
     @GET

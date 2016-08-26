@@ -29,12 +29,11 @@ import javax.persistence.EntityManager;
  */
 @Local
 public interface StatefulInterface {
-    public boolean execute(Integer id, String name) throws Exception;
+    boolean execute(Integer id, String name) throws Exception;
 
-    public String getPostConstructErrorMessage() throws Exception;
+    String getPostConstructErrorMessage() throws Exception;
 
     /**
-     *
      * @param id
      * @param name
      * @return true for success
@@ -45,5 +44,6 @@ public interface StatefulInterface {
     StatefulInterface createSFSBOnInvocation() throws Exception;
 
     EntityManager getExtendedPersistenceContext();
+
     void finishUp() throws Exception;
 }

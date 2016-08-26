@@ -350,13 +350,16 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 82, value = "Could not start '%s' listener.")
     StartException couldNotStartListener(String name, @Cause IOException e);
 
-    @Message(id = 83, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
+    @Message(id = 83, value = "%s is not allowed to be null")
+    String nullNotAllowed(String name);
+
+    @Message(id = 84, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
     IllegalStateException noMechanismsAvailable();
 
-    @Message(id = 84, value = "The required mechanism '%s' is not available from the HttpAuthenticationFactory.")
+    @Message(id = 85, value = "The required mechanism '%s' is not available from the HttpAuthenticationFactory.")
     IllegalStateException requiredMechanismNotAvailable(String mechanismName);
 
-    @Message(id = 85, value = "No authentication mechanisms have been selected.")
+    @Message(id = 86, value = "No authentication mechanisms have been selected.")
     IllegalStateException noMechanismsSelected();
 
 }

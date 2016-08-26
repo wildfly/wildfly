@@ -26,7 +26,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- *
  * @author Scott Marlow
  */
 @Entity

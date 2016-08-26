@@ -30,5 +30,5 @@ import javax.jws.WebService;
 @WebService
 public interface EndpointIface {
 
-    public String helloString(String input);
+    String helloString(String input);
 }

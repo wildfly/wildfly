@@ -8,16 +8,16 @@ import javax.ejb.Remote;
 @Remote
 public interface SimpleAuthorizationRemote {
 
-    public String defaultAccess(String message);
+    String defaultAccess(String message);
 
-    public String roleBasedAccessOne(String message);
+    String roleBasedAccessOne(String message);
 
-    public String roleBasedAccessMore(String message);
+    String roleBasedAccessMore(String message);
 
-    public String permitAll(String message);
+    String permitAll(String message);
 
-    public String denyAll(String message);
+    String denyAll(String message);
 
-    public String starRoleAllowed(String message);
+    String starRoleAllowed(String message);
 
 }

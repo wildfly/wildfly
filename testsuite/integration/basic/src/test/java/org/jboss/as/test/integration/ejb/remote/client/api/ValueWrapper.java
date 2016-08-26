@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 /**

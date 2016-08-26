@@ -21,48 +21,23 @@
 */
 package org.jboss.as.test.integration.jmx;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanInfo;
-import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.management.openmbean.ArrayType;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenMBeanParameterInfo;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.jmx.model.ModelControllerMBeanHelper;
-import org.jboss.as.test.integration.jmx.sar.TestMBean;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,126 +91,6 @@ public class ModelControllerMBeanTestCase {
         }
         Assert.assertTrue(failedInfos.toString(), failedInfos.isEmpty());
     }
-
-    @Test
-    public void testSystemProperties() throws Exception {
-        String[] initialNames = getSystemPropertyNames();
-
-        ObjectName testName = new ObjectName(RESOLVED_DOMAIN + ":system-property=mbeantest");
-        assertNoMBean(testName);
-
-        connection.invoke(RESOLVED_ROOT_MODEL_NAME, "addSystemProperty", new Object[] {"mbeantest", "800"}, new String[] {String.class.getName(), String.class.getName()});
-        try {
-            String[] newNames = getSystemPropertyNames();
-            Assert.assertEquals(initialNames.length + 1, newNames.length);
-            boolean found = false;
-            for (String s : newNames) {
-                if (s.equals("mbeantest")) {
-                    found = true;
-                    break;
-                }
-            };
-            Assert.assertTrue(found);
-            Assert.assertNotNull(connection.getMBeanInfo(new ObjectName(RESOLVED_DOMAIN + ":system-property=mbeantest")));
-        } finally {
-            connection.invoke(new ObjectName(RESOLVED_DOMAIN + ":system-property=mbeantest"), "remove", new Object[0], new String[0]);
-        }
-
-        assertNoMBean(testName);
-
-        Assert.assertEquals(initialNames.length, getSystemPropertyNames().length);
-    }
-
-    @Test
-    public void testDeploymentViaJmx() throws Exception {
-        ObjectName testSarMBeanName = new ObjectName("jboss:name=test,type=jmx-sar");
-        ObjectName testDeploymentModelName = new ObjectName("" + RESOLVED_DOMAIN + ":deployment=test-jmx-sar.sar");
-
-        assertNoMBean(testSarMBeanName);
-        assertNoMBean(testDeploymentModelName);
-
-        final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "test-jmx-sar.sar");
-        sar.addClasses(org.jboss.as.test.integration.jmx.sar.Test.class, TestMBean.class);
-        sar.addAsManifestResource(ModelControllerMBeanTestCase.class.getPackage(), "jboss-service.xml", "jboss-service.xml");
-
-        InputStream in = sar.as(ZipExporter.class).exportAsInputStream();
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        int i = in.read();
-        while (i != -1) {
-            bout.write(i);
-            i = in.read();
-        }
-
-        byte[] bytes = bout.toByteArray();
-
-        //Upload the content
-        byte[] hash = (byte[])connection.invoke(RESOLVED_ROOT_MODEL_NAME, "uploadDeploymentBytes", new Object[] {bytes}, new String[] {byte.class.getName()});
-
-
-        //Do all this to create the composite type
-        CompositeType contentType = null;
-        MBeanInfo info = connection.getMBeanInfo(RESOLVED_ROOT_MODEL_NAME);
-        for (MBeanOperationInfo op : info.getOperations()) {
-            if (op.getName().equals("addDeployment")) {
-                contentType = (CompositeType)((ArrayType<CompositeType>)((OpenMBeanParameterInfo)op.getSignature()[2]).getOpenType()).getElementOpenType();
-                break;
-            }
-        }
-        Map<String, Object> values = new HashMap<String, Object>();
-        for (String key : contentType.keySet()) {
-            values.put(key, null);
-        }
-        values.put("hash", hash);
-        CompositeData contents = new CompositeDataSupport(contentType, values);
-
-        //Deploy it
-        connection.invoke(RESOLVED_ROOT_MODEL_NAME,
-                "addDeployment",
-                new Object[] {"test-jmx-sar.sar", "test-jmx-sar.sar", new CompositeData[] {contents}, Boolean.TRUE},
-                new String[] {String.class.getName(), String.class.getName(), CompositeData.class.getName(), Boolean.class.getName()});
-
-        //Make sure the test deployment mbean and the management model mbean for the deployment are there
-        Assert.assertNotNull(connection.getMBeanInfo(testSarMBeanName));
-        Assert.assertTrue((Boolean)connection.getAttribute(testDeploymentModelName, "enabled"));
-
-        //Undeploy
-        connection.invoke(testDeploymentModelName, "undeploy", new Object[0], new String[0]);
-
-        //Check the app was undeployed
-        assertNoMBean(testSarMBeanName);
-        Assert.assertFalse((Boolean)connection.getAttribute(testDeploymentModelName, "enabled"));
-
-        //Remove
-        connection.invoke(testDeploymentModelName, "remove", new Object[0], new String[0]);
-        assertNoMBean(testDeploymentModelName);
-    }
-
-    private void assertNoMBean(ObjectName name) throws Exception {
-        try {
-            connection.getMBeanInfo(name);
-            Assert.fail("Should not have found mbean with nane " + name);
-        } catch (InstanceNotFoundException expected) {
-        }
-    }
-
-    private String[] getSystemPropertyNames() throws Exception {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
-        op.get(OP_ADDR).setEmptyList();
-        op.get(CHILD_TYPE).set("system-property");
-
-        ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        List<ModelNode> propertyNames = result.get(RESULT).asList();
-        String[] names = new String[propertyNames.size()];
-        int i = 0;
-        for (ModelNode node : propertyNames) {
-            names[i++] = node.asString();
-        }
-        return names;
-    }
-
-
 
     private static ObjectName createObjectName(String name) {
         try {

@@ -78,7 +78,7 @@ public class LazyValidatorFactoryTestCase {
      *
      * @author Gunnar Morling
      */
-    public final static class TestClassLoader extends ClassLoader {
+    public static final class TestClassLoader extends ClassLoader {
 
         public TestClassLoader(ClassLoader parent) {
             super(parent);

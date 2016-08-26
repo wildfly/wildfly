@@ -29,7 +29,7 @@ import javax.ejb.Singleton;
  * @author Jaikiran Pai
  */
 @Singleton
-@Remote (RemoveMethodInvocationTracker.class)
+@Remote(RemoveMethodInvocationTracker.class)
 public class RemoveMethodInvocationTrackerBean implements RemoveMethodInvocationTracker {
 
     private boolean ejbRemoveCallbackInvoked;

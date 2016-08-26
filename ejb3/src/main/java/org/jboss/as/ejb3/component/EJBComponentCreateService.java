@@ -110,6 +110,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
     private final InjectedValue<ApplicationSecurityDomain> applicationSecurityDomain = new InjectedValue<>();
+    private final InjectedValue<Function> identityOutflowFunction = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -425,6 +426,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     public SecurityDomain getSecurityDomain() {
         ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
         return applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityDomain() : null;
+    }
+
+    Injector<Function> getIdentityOutflowFunctionInjector() {
+        return identityOutflowFunction;
+    }
+
+    public Function getIdentityOutflowFunction() {
+        return identityOutflowFunction.getOptionalValue();
     }
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {

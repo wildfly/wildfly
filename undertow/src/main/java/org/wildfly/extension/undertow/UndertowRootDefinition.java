@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.UndertowExtension.MODEL_VERSION_3_2_0;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -117,10 +115,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     }
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        registerTransformers_3_2_0(subsystemRegistration);
+        registerTransformers_EAP_7_0_0(subsystemRegistration);
     }
 
-    private static void registerTransformers_3_2_0(SubsystemRegistration subsystemRegistration) {
+    private static void registerTransformers_EAP_7_0_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         // Version 4.0.0 adds the new SSL_CONTEXT attribute, however it is mutually exclusive to the SECURITY_REALM attribute, both of which can
@@ -132,7 +130,8 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                 .end();
 
         builder.discardChildResource(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MODEL_VERSION_3_2_0);
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, UndertowExtension.MODEL_VERSION_EAP7_0_0);
     }
 
 }

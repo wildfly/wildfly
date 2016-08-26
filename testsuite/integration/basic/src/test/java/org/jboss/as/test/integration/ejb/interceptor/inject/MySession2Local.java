@@ -25,12 +25,10 @@ package org.jboss.as.test.integration.ejb.interceptor.inject;
 import javax.ejb.Local;
 
 
-
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @Local
-public interface MySession2Local
-{
-   boolean doit();
+public interface MySession2Local {
+    boolean doit();
 }

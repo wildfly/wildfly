@@ -26,85 +26,83 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 
 /**
  * AnnoActivation
- * 
+ *
  * @version $Revision: $
  */
 public class AnnoActivation {
 
-	/** The resource adapter */
-	private AnnoResourceAdapter ra;
+    /**
+     * The resource adapter
+     */
+    private AnnoResourceAdapter ra;
 
-	/** Activation spec */
-	private AnnoActivationSpec spec;
+    /**
+     * Activation spec
+     */
+    private AnnoActivationSpec spec;
 
-	/** The message endpoint factory */
-	private MessageEndpointFactory endpointFactory;
+    /**
+     * The message endpoint factory
+     */
+    private MessageEndpointFactory endpointFactory;
 
-	/**
-	 * Default constructor
-	 * 
-	 * @exception ResourceException
-	 *                Thrown if an error occurs
-	 */
-	public AnnoActivation() throws ResourceException {
-		this(null, null, null);
-	}
+    /**
+     * Default constructor
+     *
+     * @throws ResourceException Thrown if an error occurs
+     */
+    public AnnoActivation() throws ResourceException {
+        this(null, null, null);
+    }
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ra
-	 *            AnnoResourceAdapter
-	 * @param endpointFactory
-	 *            MessageEndpointFactory
-	 * @param spec
-	 *            AnnoActivationSpec
-	 * @exception ResourceException
-	 *                Thrown if an error occurs
-	 */
-	public AnnoActivation(AnnoResourceAdapter ra,
-			MessageEndpointFactory endpointFactory, AnnoActivationSpec spec)
-			throws ResourceException
+    /**
+     * Constructor
+     *
+     * @param ra              AnnoResourceAdapter
+     * @param endpointFactory MessageEndpointFactory
+     * @param spec            AnnoActivationSpec
+     * @throws ResourceException Thrown if an error occurs
+     */
+    public AnnoActivation(AnnoResourceAdapter ra,
+                          MessageEndpointFactory endpointFactory, AnnoActivationSpec spec)
+            throws ResourceException {
+        this.ra = ra;
+        this.endpointFactory = endpointFactory;
+        this.spec = spec;
+    }
 
-	{
-		this.ra = ra;
-		this.endpointFactory = endpointFactory;
-		this.spec = spec;
-	}
+    /**
+     * Get activation spec class
+     *
+     * @return Activation spec
+     */
+    public AnnoActivationSpec getActivationSpec() {
+        return spec;
+    }
 
-	/**
-	 * Get activation spec class
-	 * 
-	 * @return Activation spec
-	 */
-	public AnnoActivationSpec getActivationSpec() {
-		return spec;
-	}
+    /**
+     * Get message endpoint factory
+     *
+     * @return Message endpoint factory
+     */
+    public MessageEndpointFactory getMessageEndpointFactory() {
+        return endpointFactory;
+    }
 
-	/**
-	 * Get message endpoint factory
-	 * 
-	 * @return Message endpoint factory
-	 */
-	public MessageEndpointFactory getMessageEndpointFactory() {
-		return endpointFactory;
-	}
+    /**
+     * Start the activation
+     *
+     * @throws ResourceException Thrown if an error occurs
+     */
+    public void start() throws ResourceException {
 
-	/**
-	 * Start the activation
-	 * 
-	 * @throws ResourceException
-	 *             Thrown if an error occurs
-	 */
-	public void start() throws ResourceException {
+    }
 
-	}
+    /**
+     * Stop the activation
+     */
+    public void stop() {
 
-	/**
-	 * Stop the activation
-	 */
-	public void stop() {
-
-	}
+    }
 
 }

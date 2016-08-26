@@ -185,6 +185,7 @@ public class InterceptorOrder {
         public static final int RUN_AS_PRINCIPAL = 0x310;
         public static final int EXTRA_PRINCIPAL_ROLES = 0x320;
         public static final int RUN_AS_ROLE = 0x330;
+        public static final int SECURITY_IDENTITY_OUTFLOW = 0x340;
         // after security we take note of the invocation
         public static final int EJB_WAIT_TIME_INTERCEPTOR = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;

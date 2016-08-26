@@ -22,10 +22,8 @@
 package org.jboss.as.test.integration.jca.rar;
 
 import java.util.logging.Logger;
-
 import javax.naming.NamingException;
 import javax.naming.Reference;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 
@@ -34,79 +32,84 @@ import javax.resource.spi.ConnectionManager;
  *
  * @version $Revision: $
  */
-public class MultipleConnectionFactory2Impl implements MultipleConnectionFactory2
-{
-   /** The serial version UID */
-   private static final long serialVersionUID = 1L;
+public class MultipleConnectionFactory2Impl implements MultipleConnectionFactory2 {
+    /**
+     * The serial version UID
+     */
+    private static final long serialVersionUID = 1L;
 
-   /** The logger */
-   private static Logger log = Logger.getLogger("MultipleConnectionFactory2Impl");
+    /**
+     * The logger
+     */
+    private static Logger log = Logger.getLogger("MultipleConnectionFactory2Impl");
 
-   /** Reference */
-   private Reference reference;
+    /**
+     * Reference
+     */
+    private Reference reference;
 
-   /** ManagedConnectionFactory */
-   private MultipleManagedConnectionFactory2 mcf;
+    /**
+     * ManagedConnectionFactory
+     */
+    private MultipleManagedConnectionFactory2 mcf;
 
-   /** ConnectionManager */
-   private ConnectionManager connectionManager;
+    /**
+     * ConnectionManager
+     */
+    private ConnectionManager connectionManager;
 
-   /**
-    * Default constructor
-    */
-   public MultipleConnectionFactory2Impl()
-   {
+    /**
+     * Default constructor
+     */
+    public MultipleConnectionFactory2Impl() {
 
-   }
+    }
 
-   /**
-    * Default constructor
-    * @param mcf ManagedConnectionFactory
-    * @param cxManager ConnectionManager
-    */
-   public MultipleConnectionFactory2Impl(MultipleManagedConnectionFactory2 mcf, ConnectionManager cxManager)
-   {
-      this.mcf = mcf;
-      this.connectionManager = cxManager;
-   }
+    /**
+     * Default constructor
+     *
+     * @param mcf       ManagedConnectionFactory
+     * @param cxManager ConnectionManager
+     */
+    public MultipleConnectionFactory2Impl(MultipleManagedConnectionFactory2 mcf, ConnectionManager cxManager) {
+        this.mcf = mcf;
+        this.connectionManager = cxManager;
+    }
 
-   /** 
-    * Get connection from factory
-    *
-    * @return MultipleConnection2 instance
-    * @exception ResourceException Thrown if a connection can't be obtained
-    */
-   @Override
-   public MultipleConnection2 getConnection() throws ResourceException
-   {
-      log.finest("getConnection()");
-      return (MultipleConnection2)connectionManager.allocateConnection(mcf, null);
-   }
+    /**
+     * Get connection from factory
+     *
+     * @return MultipleConnection2 instance
+     * @throws ResourceException Thrown if a connection can't be obtained
+     */
+    @Override
+    public MultipleConnection2 getConnection() throws ResourceException {
+        log.finest("getConnection()");
+        return (MultipleConnection2) connectionManager.allocateConnection(mcf, null);
+    }
 
-   /**
-    * Get the Reference instance.
-    *
-    * @return Reference instance
-    * @exception NamingException Thrown if a reference can't be obtained
-    */
-   @Override
-   public Reference getReference() throws NamingException
-   {
-      log.finest("getReference()");
-      return reference;
-   }
+    /**
+     * Get the Reference instance.
+     *
+     * @return Reference instance
+     * @throws NamingException Thrown if a reference can't be obtained
+     */
+    @Override
+    public Reference getReference() throws NamingException {
+        log.finest("getReference()");
+        return reference;
+    }
 
-   /**
-    * Set the Reference instance.
-    *
-    * @param reference A Reference instance
-    */
-   @Override
-   public void setReference(Reference reference)
-   {
-      log.finest("setReference()");
-      this.reference = reference;
-   }
+    /**
+     * Set the Reference instance.
+     *
+     * @param reference A Reference instance
+     */
+    @Override
+    public void setReference(Reference reference) {
+        log.finest("setReference()");
+        this.reference = reference;
+    }
 
 
 }

@@ -155,7 +155,7 @@ public class UndertowEngine implements Engine {
     @Override
     public String getSessionCookieName() {
         SessionCookieConfig override = server.getServletContainer().getSessionCookieConfig();
-        if (override == null) {
+        if (override == null || override.getName() == null) {
             return io.undertow.server.session.SessionCookieConfig.DEFAULT_SESSION_ID;
         }
         return override.getName();

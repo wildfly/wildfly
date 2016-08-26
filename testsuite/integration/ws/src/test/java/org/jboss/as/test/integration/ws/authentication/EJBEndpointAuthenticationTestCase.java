@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -55,7 +56,7 @@ public class EJBEndpointAuthenticationTestCase {
     URL baseUrl;
 
     QName serviceName = new QName("http://jbossws.org/authentication", "EJB3AuthService");
-    
+
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-authentication-ejb.jar")
@@ -69,7 +70,7 @@ public class EJBEndpointAuthenticationTestCase {
     //
     // Tests for hello method
     //
-    
+
     @Test
     public void accessHelloWithoutUsernameAndPassord() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -85,7 +86,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertTrue("HTTPException '401: Unauthorized' was expected", e.getCause().getMessage().contains("401: Unauthorized"));
         }
     }
-    
+
     @Test
     public void accessHelloWithBadPassword() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -105,7 +106,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertTrue("HTTPException '401: Unauthorized' was expected", e.getCause().getMessage().contains("401: Unauthorized"));
         }
     }
-    
+
     @Test
     public void accessHelloWithUnauthorizedUser() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -125,7 +126,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertEquals(getNotAllowedExceptionMessage("hello"), e.getCause().getMessage());
         }
     }
-    
+
     @Test
     public void accessHelloWithValidUser() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -140,13 +141,13 @@ public class EJBEndpointAuthenticationTestCase {
         final String result = proxy.hello("World");
         Assert.assertEquals("Hello World!", result);
     }
-    
-        
+
+
     // ------------------------------------------------------------------------------
     //
     // Tests for helloForRole method
     //
-    
+
     @Test
     public void accessHelloForRoleWithInvalidRole() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -166,11 +167,11 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertEquals(getNotAllowedExceptionMessage("helloForRole"), e.getCause().getMessage());
         }
     }
-    
+
     @Test
     public void accessHelloForRoleWithValidRole() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
-        
+
         Service service = Service.create(wsdlURL, serviceName);
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
@@ -182,12 +183,12 @@ public class EJBEndpointAuthenticationTestCase {
         Assert.assertEquals("Hello World!", result);
     }
 
-    
+
     // ------------------------------------------------------------------------------
     //
     // Tests for helloForRoles method
     //
-  
+
     @Test
     public void accessHelloForRolesWithValidRole1() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -202,7 +203,7 @@ public class EJBEndpointAuthenticationTestCase {
         final String result = proxy.helloForRoles("World");
         Assert.assertEquals("Hello World!", result);
     }
-    
+
     @Test
     public void accessHelloForRolesWithValidRole2() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -217,7 +218,7 @@ public class EJBEndpointAuthenticationTestCase {
         final String result = proxy.helloForRoles("World");
         Assert.assertEquals("Hello World!", result);
     }
-      
+
     @Test
     public void accessHelloForRolesWithInvalidRole() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -237,13 +238,13 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertEquals(getNotAllowedExceptionMessage("helloForRoles"), e.getCause().getMessage());
         }
     }
-    
-    
+
+
     // ------------------------------------------------------------------------------
     //
     // Tests for helloForAll method
     //
-    
+
     @Test
     public void accessHelloForAllWithValidRole1() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -258,7 +259,7 @@ public class EJBEndpointAuthenticationTestCase {
         final String result = proxy.helloForAll("World");
         Assert.assertEquals("Hello World!", result);
     }
-    
+
     @Test
     public void accessHelloForAllWithValidRole2() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -273,7 +274,7 @@ public class EJBEndpointAuthenticationTestCase {
         final String result = proxy.helloForAll("World");
         Assert.assertEquals("Hello World!", result);
     }
-    
+
     @Test
     public void accessHelloForAllWithValidRole3() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -288,12 +289,12 @@ public class EJBEndpointAuthenticationTestCase {
         final String result = proxy.helloForAll("World");
         Assert.assertEquals("Hello World!", result);
     }
-        
+
     // ------------------------------------------------------------------------------
     //
     // Tests for helloForNone method
     //
-    
+
     @Test
     public void accessHelloForNoneWithValidRole1() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -313,7 +314,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertEquals(getNotAllowedExceptionMessage("helloForNone"), e.getCause().getMessage());
         }
     }
-    
+
     @Test
     public void accessHelloForNoneWithValidRole2() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");
@@ -333,7 +334,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.assertEquals(getNotAllowedExceptionMessage("helloForNone"), e.getCause().getMessage());
         }
     }
-    
+
     @Test
     public void accessHelloForNoneWithValidRole3() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3/EJB3AuthService?wsdl");

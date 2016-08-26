@@ -39,6 +39,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.security.auth.AuthPermission;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -67,14 +68,11 @@ import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLogi
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import javax.security.auth.AuthPermission;
 
 /**
  * Unit test for custom login modules in authentication.

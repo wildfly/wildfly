@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.ejb.EJB;
 import javax.naming.InitialContext;
 import javax.servlet.ServletException;

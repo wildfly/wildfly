@@ -40,10 +40,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * 
- * A coordinator completion participant which only logs invoked methods. The log {@link EventLog} is then checked at the end of every test. 
+ * A coordinator completion participant which only logs invoked methods. The log {@link EventLog} is then checked at the end of every test.
+ *
  * @see BaseFunctionalTest#assertEventLog
- * 
  */
 public class BACoordinationCompletionParticipant implements BusinessAgreementWithCoordinatorCompletionParticipant, ConfirmCompletedParticipant,
         Serializable {
@@ -53,8 +52,8 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     private String txID;
     // table of currently active participants
     private static HashMap<String, Set<BACoordinationCompletionParticipant>> participants = new HashMap<String, Set<BACoordinationCompletionParticipant>>();
-    
-    private String participantName; 
+
+    private String participantName;
     // Service command which define behaving of the participant
     private ServiceCommand[] serviceCommands;
     // Where to log participant activity
@@ -62,8 +61,8 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
 
     /**
      * Participant instances are related to business method calls in a one to one manner.
-     * 
-     * @param txID The ID of the current Business Activity
+     *
+     * @param txID  The ID of the current Business Activity
      * @param value the value to remove from the set during compensation
      */
     public BACoordinationCompletionParticipant(ServiceCommand[] serviceCommands, EventLog eventLog, String txID, String value) {
@@ -77,13 +76,13 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     public String status() {
         return null;
     }
-    
+
     /**
      * The transaction has completed successfully. The participant previously informed the coordinator that it was ready to
      * complete.
-     * 
+     *
      * @throws com.arjuna.wst.WrongStateException never in this implementation.
-     * @throws com.arjuna.wst.SystemException never in this implementation.
+     * @throws com.arjuna.wst.SystemException     never in this implementation.
      */
     public void close() throws WrongStateException, SystemException {
         // Nothing to do here as the item has already been added to the set
@@ -98,7 +97,7 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
      * coordinator that it has completed.
      *
      * @throws com.arjuna.wst.WrongStateException never in this implementation.
-     * @throws com.arjuna.wst.SystemException never in this implementation.
+     * @throws com.arjuna.wst.SystemException     never in this implementation.
      */
     public void cancel() throws WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.CANCEL);
@@ -112,7 +111,7 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
      * compensate later if required, and it is now requested to do so.
      *
      * @throws com.arjuna.wst.WrongStateException never in this implementation.
-     * @throws com.arjuna.wst.SystemException if unable to perform the compensating transaction.
+     * @throws com.arjuna.wst.SystemException     if unable to perform the compensating transaction.
      */
     public void compensate() throws FaultedException, WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.COMPENSATE);
@@ -138,8 +137,8 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
         // This tells the participant that the BA completed, but may be compensated later
         eventLog.addEvent(participantName, EventLogEvent.COMPLETE);
         log.info("[BA COORDINATOR COMPL SERVICE] Participant complete() - logged: " + EventLogEvent.COMPLETE);
-        
-        if(ServiceCommand.isPresent(ServiceCommand.SYSTEM_EXCEPTION_ON_COMPLETE, serviceCommands)) {
+
+        if (ServiceCommand.isPresent(ServiceCommand.SYSTEM_EXCEPTION_ON_COMPLETE, serviceCommands)) {
             log.info("[BA COORDINATOR COMPL SERVICE] Participant complete() - intentionally throwing " + SystemException.class.getName());
             throw new SystemException("Intentionally throwing system exception to get compensation method on run");
         }
@@ -148,9 +147,9 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     /**
      * Method called to perform commit or rollback of prepared changes to the underlying manager state after the participant
      * recovery record has been written
-     * 
+     *
      * @param confirmed true if the log record has been written and changes should be rolled forward and false if it has not
-     *        been written and changes should be rolled back
+     *                  been written and changes should be rolled back
      */
     public void confirmCompleted(boolean confirmed) {
         if (confirmed) {
@@ -159,8 +158,8 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
             log.info("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(true) - logged: " + EventLogEvent.CONFIRM_COMPLETED);
         } else {
             // A compensation action will follow here
-        	eventLog.addEvent(participantName, EventLogEvent.CONFIRM_FAILED);
-        	log.info("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(false) - logged: " + EventLogEvent.CONFIRM_FAILED);
+            eventLog.addEvent(participantName, EventLogEvent.CONFIRM_FAILED);
+            log.info("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(false) - logged: " + EventLogEvent.CONFIRM_FAILED);
         }
     }
 
@@ -169,8 +168,8 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     /************************************************************************/
     /**
      * keep track of a participant
-     * 
-     * @param txID the participant's transaction id
+     *
+     * @param txID        the participant's transaction id
      * @param participant The participant associated with this BA
      */
     public static synchronized void recordParticipant(String txID, BACoordinationCompletionParticipant participant) {
@@ -179,32 +178,32 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
 
     /**
      * forget about a participant
-     * 
+     *
      * @param txID the participant's transaction id
      */
     public static void removeParticipant(String txID, BACoordinationCompletionParticipant participant) {
         getParticipantSet(txID).remove(participant);
-        if(getParticipantSet(txID).isEmpty()) {
+        if (getParticipantSet(txID).isEmpty()) {
             participants.remove(txID);
         }
     }
 
     /**
      * lookup a participant
-     * 
+     *
      * @param txID the participant's transaction id
      * @return the participant
      */
     public static synchronized BACoordinationCompletionParticipant getSomeParticipant(String txID) {
         Iterator<BACoordinationCompletionParticipant> i = getParticipantSet(txID).iterator();
-        if(i.hasNext()) {
+        if (i.hasNext()) {
             return i.next();
         }
         return null;
     }
-    
+
     private static Set<BACoordinationCompletionParticipant> getParticipantSet(String txID) {
-        if(participants.containsKey(txID)) {
+        if (participants.containsKey(txID)) {
             return participants.get(txID);
         } else {
             Set<BACoordinationCompletionParticipant> set = new HashSet<BACoordinationCompletionParticipant>();

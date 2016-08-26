@@ -25,5 +25,5 @@ package org.jboss.as.test.integration.ejb.security.callerprincipal;
 import java.security.Principal;
 
 public interface ISLSBWithoutSecurityDomain  {
-    public Principal getCallerPrincipal();
+    Principal getCallerPrincipal();
 }

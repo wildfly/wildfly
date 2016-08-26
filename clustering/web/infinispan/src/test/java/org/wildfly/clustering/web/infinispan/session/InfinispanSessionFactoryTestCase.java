@@ -37,6 +37,7 @@ import org.wildfly.clustering.web.session.Session;
 
 /**
  * Unit test for {@link InfinispanSessionFactory}.
+ *
  * @author Paul Ferraro
  */
 public class InfinispanSessionFactoryTestCase {
@@ -97,13 +98,13 @@ public class InfinispanSessionFactoryTestCase {
     public void remove() {
         String id = "id";
 
-        when (this.metaDataFactory.remove(id)).thenReturn(false);
+        when(this.metaDataFactory.remove(id)).thenReturn(false);
 
         this.factory.remove(id);
 
         verify(this.attributesFactory, never()).remove(id);
 
-        when (this.metaDataFactory.remove(id)).thenReturn(true);
+        when(this.metaDataFactory.remove(id)).thenReturn(true);
 
         this.factory.remove(id);
 

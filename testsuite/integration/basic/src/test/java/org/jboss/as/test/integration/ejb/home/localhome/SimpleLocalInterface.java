@@ -28,7 +28,7 @@ import javax.ejb.EJBLocalObject;
  */
 public interface SimpleLocalInterface extends EJBLocalObject {
 
-    public String sayHello();
+    String sayHello();
 
-    public String otherMethod();
+    String otherMethod();
 }

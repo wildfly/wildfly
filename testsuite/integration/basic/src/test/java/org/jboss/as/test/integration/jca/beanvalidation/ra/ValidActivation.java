@@ -26,23 +26,29 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 
 /**
  * Activation
- * 
- *@author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
+ *
+ * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 public class ValidActivation {
-    /** The resource adapter */
+    /**
+     * The resource adapter
+     */
     private ValidResourceAdapter ra;
 
-    /** Activation spec */
+    /**
+     * Activation spec
+     */
     private ValidActivationSpec spec;
 
-    /** The message endpoint factory */
+    /**
+     * The message endpoint factory
+     */
     private MessageEndpointFactory endpointFactory;
 
     /**
      * Default constructor
-     * 
-     * @exception ResourceException Thrown if an error occurs
+     *
+     * @throws ResourceException Thrown if an error occurs
      */
     public ValidActivation() throws ResourceException {
         this(null, null, null);
@@ -50,11 +56,11 @@ public class ValidActivation {
 
     /**
      * Constructor
-     * 
-     * @param ra ResourceAdapter
+     *
+     * @param ra              ResourceAdapter
      * @param endpointFactory MessageEndpointFactory
-     * @param spec ActivationSpec
-     * @exception ResourceException Thrown if an error occurs
+     * @param spec            ActivationSpec
+     * @throws ResourceException Thrown if an error occurs
      */
     public ValidActivation(ValidResourceAdapter ra, MessageEndpointFactory endpointFactory, ValidActivationSpec spec)
             throws ResourceException {
@@ -65,7 +71,7 @@ public class ValidActivation {
 
     /**
      * Get activation spec class
-     * 
+     *
      * @return Activation spec
      */
     public ValidActivationSpec getActivationSpec() {
@@ -74,7 +80,7 @@ public class ValidActivation {
 
     /**
      * Get message endpoint factory
-     * 
+     *
      * @return Message endpoint factory
      */
     public MessageEndpointFactory getMessageEndpointFactory() {
@@ -83,7 +89,7 @@ public class ValidActivation {
 
     /**
      * Start the activation
-     * 
+     *
      * @throws ResourceException Thrown if an error occurs
      */
     public void start() throws ResourceException {

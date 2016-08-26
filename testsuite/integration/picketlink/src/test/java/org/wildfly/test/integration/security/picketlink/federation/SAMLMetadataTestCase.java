@@ -70,5 +70,4 @@ public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
     public boolean performGlobalLogout() {
         return false;
     }
-    
 }

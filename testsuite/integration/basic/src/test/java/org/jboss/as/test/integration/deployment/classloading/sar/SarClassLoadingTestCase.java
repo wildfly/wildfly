@@ -21,18 +21,13 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.sar;
 
-import org.junit.Assert;
-
-import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,7 +35,6 @@ import org.junit.runner.RunWith;
  * Tests that nested jars in a sar are picked up as resource roots and loaded from the same class loader.
  *
  * @author Tomasz Adamski
- *
  */
 @RunWith(Arquillian.class)
 public class SarClassLoadingTestCase {

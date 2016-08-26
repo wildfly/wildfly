@@ -24,15 +24,18 @@ package org.jboss.as.test.integration.ws.authentication;
 import javax.jws.WebService;
 
 /**
- *
  * @author Rostislav Svoboda
  */
 @WebService
 public interface EJBEndpointIface {
 
-    public String hello(String input);
-    public String helloForAll(String input);
-    public String helloForNone(String input);
-    public String helloForRole(String input);
-    public String helloForRoles(String input);
+    String hello(String input);
+
+    String helloForAll(String input);
+
+    String helloForNone(String input);
+
+    String helloForRole(String input);
+
+    String helloForRoles(String input);
 }

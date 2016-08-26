@@ -22,10 +22,8 @@
 
 package org.jboss.as.test.integration.hibernate.envers;
 
-import java.io.File;
 import java.util.List;
 import java.util.Properties;
-
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -116,7 +114,7 @@ public class SFSBHibernateEnversSessionFactory {
         try {
             Session session = sessionFactory.openSession();
             Transaction trans = session.beginTransaction();
-            student = (StudentAudited) session.load(StudentAudited.class, id);
+            student = session.load(StudentAudited.class, id);
             student.setAddress(address);
             session.save(student);
             session.flush();

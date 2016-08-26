@@ -370,6 +370,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             return ElytronContextAssociationHandler.builder()
                     .setNext(toWrap)
+                    .setSecurityDomain(httpAuthenticationFactory.getSecurityDomain())
                     .setMechanismSupplier(() -> getAuthenticationMechanisms(selectedMechanisms))
                     .setHttpExchangeSupplier(httpServerExchange -> new ElytronHttpExchange(httpServerExchange, scopeResolvers, scopeSessionListener) {
                         @Override

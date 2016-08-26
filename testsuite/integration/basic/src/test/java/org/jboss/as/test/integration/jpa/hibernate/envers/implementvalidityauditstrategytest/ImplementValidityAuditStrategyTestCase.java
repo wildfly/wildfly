@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.hibernate.envers.implementvalidityaudi
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -37,7 +36,6 @@ import org.jboss.as.test.integration.jpa.hibernate.envers.Organization;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBValidityStrategyOrg;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -46,7 +44,7 @@ import org.junit.runner.RunWith;
 
 /**
  * This testcase verifies whether Envers/Auditing functions properly when implemented with Validity Audit Strategy
- * 
+ *
  * @author Madhumita Sadhukhan
  */
 @RunWith(Arquillian.class)

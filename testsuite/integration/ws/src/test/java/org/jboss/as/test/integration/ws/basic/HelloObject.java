@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ws.basic;
 import java.io.Serializable;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 public class HelloObject implements Serializable {
@@ -32,7 +31,7 @@ public class HelloObject implements Serializable {
 
     public HelloObject() {
     }
-    
+
     public HelloObject(String message) {
         this.message = message;
     }

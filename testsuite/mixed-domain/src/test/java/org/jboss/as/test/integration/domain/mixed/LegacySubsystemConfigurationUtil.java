@@ -71,8 +71,8 @@ import org.wildfly.build.util.InputStreamSource;
  */
 public class LegacySubsystemConfigurationUtil {
 
-    private final static String SUBSYSTEM_OPEN = "<subsystem";
-    private final static String SUBSYSTEM_CLOSE = "</subsystem>";
+    private static final String SUBSYSTEM_OPEN = "<subsystem";
+    private static final String SUBSYSTEM_CLOSE = "</subsystem>";
     private static final String TEST_NAMESPACE = "urn.org.jboss.test:1.0";
 
     final Extension extension;

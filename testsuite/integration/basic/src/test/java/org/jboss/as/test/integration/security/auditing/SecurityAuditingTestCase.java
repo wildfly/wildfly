@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.security.auditing;
 
-import static org.junit.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -121,7 +121,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
             op.get(OP_ADDR).add("logger", "org.jboss.security.audit");
             updates.add(op);
 
-            // /subsystem=logging/periodic-rotating-file-handler=AUDIT:remove            
+            // /subsystem=logging/periodic-rotating-file-handler=AUDIT:remove
             op = new ModelNode();
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
@@ -235,14 +235,14 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
     /*
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /*
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override

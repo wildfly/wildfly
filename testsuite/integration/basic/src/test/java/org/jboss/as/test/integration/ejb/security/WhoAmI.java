@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.ejb.Local;
 import java.security.Principal;
+import javax.ejb.Local;
 
 /**
  * The local interface to the simple WhoAmI bean.

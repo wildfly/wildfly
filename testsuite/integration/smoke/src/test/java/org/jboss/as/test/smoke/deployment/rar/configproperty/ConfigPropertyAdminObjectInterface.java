@@ -22,7 +22,6 @@
 package org.jboss.as.test.smoke.deployment.rar.configproperty;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 
 /**
@@ -30,17 +29,18 @@ import javax.resource.Referenceable;
  *
  * @version $Revision: $
  */
-public interface ConfigPropertyAdminObjectInterface extends Referenceable, Serializable
-{
-   /**
-    * Set property
-    * @param property The value
-    */
-   public void setProperty(String property);
+public interface ConfigPropertyAdminObjectInterface extends Referenceable, Serializable {
+    /**
+     * Set property
+     *
+     * @param property The value
+     */
+    void setProperty(String property);
 
-   /**
-    * Get property
-    * @return The value
-    */
-   public String getProperty();
+    /**
+     * Get property
+     *
+     * @return The value
+     */
+    String getProperty();
 }

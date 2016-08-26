@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <jboss-web>
-  <security-domain>web-tests</security-domain>
+    <security-domain>web-tests</security-domain>
 
     <security-role>
         <role-name>anil</role-name>

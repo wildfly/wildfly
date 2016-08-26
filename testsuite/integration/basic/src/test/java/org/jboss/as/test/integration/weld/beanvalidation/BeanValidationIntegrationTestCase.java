@@ -75,7 +75,7 @@ public class BeanValidationIntegrationTestCase {
     public void testJndiBoundValidatorFactoryIsCdiEnabled() throws NamingException {
         ValidatorFactory validatorFactory = (ValidatorFactory) new InitialContext().lookup("java:comp/ValidatorFactory");
         assertNotNull(validatorFactory);
-        
+
         Set<ConstraintViolation<Reservation>> violations = validatorFactory.getValidator().validate(new Reservation(4, null));
         List<String> actualViolations = new ArrayList<String>();
         for (ConstraintViolation<?> violation : violations) {

@@ -76,7 +76,7 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
             }
         };
     }
-    
+
     @AfterClass
     public static void resetClassLoaderProvider() {
         //HACK: another hack required because we're not running in a valid modular environment, hence at the of the test
@@ -85,17 +85,17 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         //The issue can be prevented in various ways, but given this whole test is a hack as we're not running in a
         //proper environment, I prefer to do as below for now (after all, this is a testsuite issue only, WFLY-4122)
         ClassLoaderProvider.setDefaultProvider(new ClassLoaderProvider() {
-            
+
             @Override
             public ClassLoader getWebServiceSubsystemClassLoader() {
                 return Thread.currentThread().getContextClassLoader();
             }
-            
+
             @Override
             public ClassLoader getServerJAXRPCIntegrationClassLoader() {
                 return Thread.currentThread().getContextClassLoader();
             }
-            
+
             @Override
             public ClassLoader getServerIntegrationClassLoader() {
                 return Thread.currentThread().getContextClassLoader();
@@ -147,7 +147,7 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         Assert.assertEquals("MyHandler2", clCfg.getPostHandlerChains().get(0).getHandlers().get(0).getHandlerName());
         Assert.assertEquals("org.jboss.ws.common.invocation.MyHandler2", clCfg.getPostHandlerChains().get(0).getHandlers().get(0).getHandlerClass());
         Assert.assertEquals("##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM", clCfg.getPostHandlerChains().get(0).getProtocolBindings());
-        
+
         serverConfig.reloadEndpointConfigs();
         EndpointConfig epCfg = serverConfig.getEndpointConfig("Standard-Endpoint-Config");
         Assert.assertNotNull(epCfg);
@@ -176,7 +176,7 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         Assert.assertEquals("org.jboss.ws.common.invocation.RecordingServerHandler", epCfg.getPostHandlerChains().get(0).getHandlers().get(1).getHandlerClass());
         Assert.assertEquals("##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM", epCfg.getPostHandlerChains().get(0).getProtocolBindings());
     }
-    
+
     @SuppressWarnings("unchecked")
     public static <T> T getMSCService(final ServiceContainer container, final ServiceName serviceName, final Class<T> clazz) {
         ServiceController<T> service = (ServiceController<T>) container.getService(serviceName);

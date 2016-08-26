@@ -159,7 +159,6 @@
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
-
     </properties>
 
     <dependencyManagement>
@@ -364,13 +363,6 @@
                    <groupId>org.apache.maven.plugins</groupId>
                    <artifactId>maven-source-plugin</artifactId>
                    <executions><execution><id>attach-sources</id><phase>none</phase></execution></executions>
-               </plugin>
-
-               <!-- Don't run checkstyle - nothing in src/java. -->
-               <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-checkstyle-plugin</artifactId>
-                   <executions><execution><id>check-style</id><phase>none</phase></execution></executions>
                </plugin>
 
                <!-- Don't install - nothing to do. -->

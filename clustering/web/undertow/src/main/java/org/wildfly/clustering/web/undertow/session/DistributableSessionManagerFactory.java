@@ -40,6 +40,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.ThreadSetupHandler;
 
 /**
  * Factory for creating a {@link DistributableSessionManager}.
@@ -90,12 +91,19 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         };
         SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(configuration);
         Batcher<Batch> batcher = manager.getBatcher();
-        info.addThreadSetupAction((HttpServerExchange exchange) -> {
-            Batch batch = batcher.suspendBatch();
-            BatchContext context = batcher.resumeBatch(batch);
-            return () -> {
-                context.close();
-            };
+        info.addThreadSetupAction(new ThreadSetupHandler() {
+            @Override
+            public <T, C> Action<T, C> create(Action<T, C> action) {
+                return new Action<T, C>() {
+                    @Override
+                    public T call(HttpServerExchange exchange, C context) throws Exception {
+                        Batch batch = batcher.suspendBatch();
+                        try (BatchContext ctx = batcher.resumeBatch(batch)) {
+                            return action.call(exchange, context);
+                        }
+                    }
+                };
+            }
         });
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics) : null;
         return new DistributableSessionManager(info.getDeploymentName(), manager, listeners, statistics);

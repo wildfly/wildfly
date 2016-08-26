@@ -102,6 +102,7 @@ public enum EJB3SubsystemXMLAttribute {
     EXECUTE_IN_WORKER("execute-in-worker"),
 
     // Elytron integration
+    OUTFLOW_SECURITY_DOMAINS("outflow-security-domains"),
     SECURITY_DOMAIN("security-domain")
     ;
 

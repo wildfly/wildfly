@@ -28,7 +28,7 @@ import javax.ejb.EJBLocalObject;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  */
 public interface LocalStatefulSession30 extends EJBLocalObject {
-    public String getLocalValue();
+    String getLocalValue();
 
-    public void setLocalValue(String value);
+    void setLocalValue(String value);
 }

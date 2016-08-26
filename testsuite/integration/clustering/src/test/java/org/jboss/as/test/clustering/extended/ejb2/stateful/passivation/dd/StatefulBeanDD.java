@@ -31,7 +31,7 @@ import org.jboss.as.test.clustering.extended.ejb2.stateful.passivation.StatefulB
  */
 public class StatefulBeanDD extends StatefulBeanBase implements SessionBean {
     private static final long serialVersionUID = 1L;
-    
+
     /*
     public void ejbPassivate() throws EJBException, RemoteException {
         super.ejbPassivate();

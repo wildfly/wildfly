@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.ejb.bridgemethods;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
 import javax.interceptor.InterceptorBinding;
 
 /**

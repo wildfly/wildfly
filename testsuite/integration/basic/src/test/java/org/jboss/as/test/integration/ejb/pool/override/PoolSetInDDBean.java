@@ -25,8 +25,6 @@ package org.jboss.as.test.integration.ejb.pool.override;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
-import org.jboss.ejb3.annotation.Pool;
-
 /**
  * @author Jaikiran Pai
  */

@@ -24,12 +24,10 @@ package org.jboss.as.test.integration.hibernate;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
@@ -49,7 +47,6 @@ import org.hibernate.stat.Statistics;
 import org.infinispan.manager.CacheContainer;
 
 /**
- *
  * @author Madhumita Sadhukhan
  */
 @Stateful
@@ -60,7 +57,7 @@ public class SFSBHibernate2LcacheStats {
 
     /**
      * Lookup the Infinispan cache container to start it.
-     *
+     * <p>
      * We also could change the following line in standalone.xml: <cache-container name="hibernate" default-cache="local-query">
      * To: <cache-container name="hibernate" default-cache="local-query" start="EAGER">
      */
@@ -153,7 +150,7 @@ public class SFSBHibernate2LcacheStats {
 
     // fetch planet
     public Planet getPlanet(Integer id) {
-        Planet planet = (Planet) sessionFactory.openSession().get(Planet.class, id);
+        Planet planet = sessionFactory.openSession().get(Planet.class, id);
         return planet;
     }
 

@@ -80,10 +80,8 @@ public class Phone {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Phone))
-            return false;
+        if (this == o) { return true; }
+        if (!(o instanceof Phone)) { return false; }
 
         final Phone phone = (Phone) o;
 

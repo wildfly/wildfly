@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
 
+import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -35,8 +36,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests that Unified EL expressions can be used in Bean Violation messages as supported since BV 1.1.

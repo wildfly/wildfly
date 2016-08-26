@@ -8,14 +8,13 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.spec.ServletContextImpl;
 
 /**
  * @author Stuart Douglas
  */
 public class SimpleUndertowExtension implements ServletExtension {
 
-    public static final String THIS_IS_NOT_A_SERVLET = "This is not a servlet";
+    static final String THIS_IS_NOT_A_SERVLET = "This is not a servlet";
 
     @Override
     public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContext servletContext) {
@@ -26,7 +25,7 @@ public class SimpleUndertowExtension implements ServletExtension {
                     @Override
                     public void handleRequest(final HttpServerExchange exchange) throws Exception {
                         if(Thread.currentThread() != exchange.getIoThread()) {
-                            exchange.setResponseCode(500);
+                            exchange.setStatusCode(500);
                             exchange.getResponseSender().send("Response was dispatched, not running in IO thread", IoCallback.END_EXCHANGE);
                         }
                         exchange.getResponseSender().send(THIS_IS_NOT_A_SERVLET, IoCallback.END_EXCHANGE);

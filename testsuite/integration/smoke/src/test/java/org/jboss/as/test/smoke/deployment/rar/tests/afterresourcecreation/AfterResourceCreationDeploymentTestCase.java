@@ -21,8 +21,11 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.afterresourcecreation;
 
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -46,10 +49,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
-
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
@@ -70,7 +69,7 @@ public class AfterResourceCreationDeploymentTestCase extends ContainerResourceMg
     static class AfterResourceCreationDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 
         @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception{
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final ModelNode address = new ModelNode();
             address.add("subsystem", "resource-adapters");
             address.add("resource-adapter", deploymentName);
@@ -116,7 +115,7 @@ public class AfterResourceCreationDeploymentTestCase extends ContainerResourceMg
         ja.addPackage(MultipleConnectionFactory1.class.getPackage());
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(AfterResourceCreationDeploymentTestCase.class.getPackage(),"ra.xml", "ra.xml");
+        raa.addAsManifestResource(AfterResourceCreationDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml");
         return raa;
     }
 

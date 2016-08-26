@@ -24,11 +24,10 @@ package org.jboss.as.test.integration.sar.servicembean;
 
 /**
  * MBean interface for {@link TestService}.
- * 
+ *
  * @author Eduardo Martins
- * 
  */
 public interface TestServiceMBean {
 
-    public int getState();
+    int getState();
 }

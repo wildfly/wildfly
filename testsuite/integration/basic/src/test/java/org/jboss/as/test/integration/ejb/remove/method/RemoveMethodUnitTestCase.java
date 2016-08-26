@@ -22,13 +22,11 @@
 package org.jboss.as.test.integration.ejb.remove.method;
 
 import java.rmi.NoSuchObjectException;
-
 import javax.ejb.EJBObject;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
@@ -43,7 +41,7 @@ import org.junit.runner.RunWith;
 /**
  * Migration test from EJB Testsuite (ejbthree-786) to AS7 [JIRA JBQA-5483].
  * We want a remove action on a backing bean.
- * 
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

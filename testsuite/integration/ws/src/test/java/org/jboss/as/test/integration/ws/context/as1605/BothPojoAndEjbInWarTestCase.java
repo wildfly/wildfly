@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 
 /**
  * [AS7-1605] jboss-web.xml ignored for web service root
- *
+ * <p>
  * This test case tests if both POJO & EJB3 endpoints are in war archive.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -60,26 +60,26 @@ public class BothPojoAndEjbInWarTestCase {
         war.addClass(EJB3Endpoint.class);
         war.addAsWebInfResource(new StringAsset(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<web-app version=\"3.0\"\n" +
-                "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
-                "         metadata-complete=\"false\">\n" +
-                "  <servlet>\n" +
-                "    <servlet-name>POJOService</servlet-name>\n" +
-                "    <servlet-class>org.jboss.as.test.integration.ws.context.as1605.POJOEndpoint</servlet-class>\n" +
-                "  </servlet>\n" +
-                "  <servlet-mapping>\n" +
-                "    <servlet-name>POJOService</servlet-name>\n" +
-                "    <url-pattern>/POJOEndpoint</url-pattern>\n" +
-                "  </servlet-mapping>\n" +
-                "</web-app>\n"),"web.xml");
+                        "<web-app version=\"3.0\"\n" +
+                        "         xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+                        "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                        "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+                        "         metadata-complete=\"false\">\n" +
+                        "  <servlet>\n" +
+                        "    <servlet-name>POJOService</servlet-name>\n" +
+                        "    <servlet-class>org.jboss.as.test.integration.ws.context.as1605.POJOEndpoint</servlet-class>\n" +
+                        "  </servlet>\n" +
+                        "  <servlet-mapping>\n" +
+                        "    <servlet-name>POJOService</servlet-name>\n" +
+                        "    <url-pattern>/POJOEndpoint</url-pattern>\n" +
+                        "  </servlet-mapping>\n" +
+                        "</web-app>\n"), "web.xml");
         war.addAsWebInfResource(new StringAsset(
-                "<?xml version='1.0' encoding='UTF-8'?>\n" + 
-                "<!DOCTYPE jboss-web PUBLIC \"-//JBoss//DTD Web Application 2.4//EN\" \"http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd\">\n" +
-                "<jboss-web>\n" + 
-                "<context-root>/as1605-customized</context-root>\n" + 
-                "</jboss-web>\n"), "jboss-web.xml");
+                "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                        "<!DOCTYPE jboss-web PUBLIC \"-//JBoss//DTD Web Application 2.4//EN\" \"http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd\">\n" +
+                        "<jboss-web>\n" +
+                        "<context-root>/as1605-customized</context-root>\n" +
+                        "</jboss-web>\n"), "jboss-web.xml");
         return war;
     }
 

@@ -31,9 +31,8 @@ import javax.ejb.Local;
  */
 @Local
 public interface Simple {
-   
-   public String testAuthorizedRole();
-   public String testUnauthorizedRole();
-   public String testPermitAll();
-   public String testDenyAll();
+   String testAuthorizedRole();
+   String testUnauthorizedRole();
+   String testPermitAll();
+   String testDenyAll();
 }

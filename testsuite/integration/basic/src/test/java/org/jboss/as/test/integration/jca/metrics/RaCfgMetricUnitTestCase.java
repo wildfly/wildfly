@@ -23,23 +23,21 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import java.util.List;
-
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-
-import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
-import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.shared.FileUtils;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.List;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.test.shared.FileUtils;
+import org.jboss.dmr.ModelNode;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Resource adapters configuration and metrics unit test.
@@ -67,7 +65,7 @@ public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
      */
     protected void setModel(String modelName) throws Exception {
         setBaseAddress(modelName + ".rar");
-        String xml = FileUtils.readFile(RaCfgMetricUnitTestCase.class, "ra/"+ modelName + ".xml");
+        String xml = FileUtils.readFile(RaCfgMetricUnitTestCase.class, "ra/" + modelName + ".xml");
         List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(),
                 new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
@@ -193,14 +191,13 @@ public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
         assertTrue(readAttribute(address1, "wrap-xa-resource").asBoolean());
         assertFalse(readAttribute(address1, "pad-xid").asBoolean());
         assertFalse(readAttribute(address1, "same-rm-override").isDefined());
-        try{
-        	readAttribute(address1, "same-rm-override").asBoolean();
-        	fail("Got  boolean value of undefined parameter");
-        }catch(Exception e){
-        	//Expected
-        }
-        finally{
-        	removeRa();
+        try {
+            readAttribute(address1, "same-rm-override").asBoolean();
+            fail("Got  boolean value of undefined parameter");
+        } catch (Exception e) {
+            //Expected
+        } finally {
+            removeRa();
         }
     }
 

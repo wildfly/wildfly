@@ -42,7 +42,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PropertyPermission;
-
 import javax.security.auth.kerberos.ServicePermission;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
@@ -65,7 +64,6 @@ import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -124,17 +122,19 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ SecurityTraceLoggingServerSetupTask.class, Krb5ConfServerSetupTask.class, //
+@ServerSetup({SecurityTraceLoggingServerSetupTask.class, Krb5ConfServerSetupTask.class, //
         SPNEGOLoginModuleTestCase.KerberosSystemPropertiesSetupTask.class, //
         SPNEGOLoginModuleTestCase.KDCServerSetupTask.class, //
         GSSTestServer.class, //
-        SPNEGOLoginModuleTestCase.SecurityDomainsSetup.class })
+        SPNEGOLoginModuleTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 public class SPNEGOLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(SPNEGOLoginModuleTestCase.class);
 
-    /** The WEBAPP_NAME */
+    /**
+     * The WEBAPP_NAME
+     */
     private static final String WEBAPP_NAME = "kerberos-login-module";
     private static final String WEBAPP_NAME_FALLBACK = "kerberos-test-form-fallback";
 
@@ -145,7 +145,9 @@ public class SPNEGOLoginModuleTestCase {
 
     private static final byte[] DUMMY_TOKEN = "Ahoj, svete!".getBytes(StandardCharsets.UTF_8);
 
-    /** The TRUE */
+    /**
+     * The TRUE
+     */
     private static final String TRUE = Boolean.TRUE.toString();
 
     @ArquillianResource
@@ -171,11 +173,11 @@ public class SPNEGOLoginModuleTestCase {
                 // Permissions for PropagateIdentityServlet to get delegation credentials DelegationCredentialContext.getDelegCredential()
                 new RuntimePermission("org.jboss.security.negotiation.getDelegCredential"),
                 // Permissions for PropagateIdentityServlet to read properties
-                new PropertyPermission(GSSTestConstants.PROPERTY_PORT,"read"),
-                new PropertyPermission(GSSTestConstants.PROPERTY_PRINCIPAL,"read"),
-                new PropertyPermission(GSSTestConstants.PROPERTY_PASSWORD,"read"),
+                new PropertyPermission(GSSTestConstants.PROPERTY_PORT, "read"),
+                new PropertyPermission(GSSTestConstants.PROPERTY_PRINCIPAL, "read"),
+                new PropertyPermission(GSSTestConstants.PROPERTY_PASSWORD, "read"),
                 // Permissions for GSSTestClient to connect to GSSTestServer
-                new SocketPermission(TestSuiteEnvironment.getServerAddress(),"resolve,connect"),
+                new SocketPermission(TestSuiteEnvironment.getServerAddress(), "resolve,connect"),
                 // Permissions for GSSTestClient to initiate gss context
                 new ServicePermission(GSSTestConstants.PRINCIPAL, "initiate"),
                 new ServicePermission("krbtgt/JBOSS.ORG@JBOSS.ORG", "initiate")),
@@ -317,7 +319,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testSimpleSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_KERBEROS_V5 };
+        final String[] mechTypes = new String[]{OID_KERBEROS_V5};
         assertSpnegoWorkflow(uri, mechTypes, createNewKerberosTicketForHttp(uri), null, false, true);
     }
 
@@ -329,7 +331,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testMoreMechTypesSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_KERBEROS_V5, OID_DUMMY, OID_KERBEROS_V5_LEGACY };
+        final String[] mechTypes = new String[]{OID_KERBEROS_V5, OID_DUMMY, OID_KERBEROS_V5_LEGACY};
         assertSpnegoWorkflow(uri, mechTypes, createNewKerberosTicketForHttp(uri), null, false, true);
     }
 
@@ -341,7 +343,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testContSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_DUMMY, OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5 };
+        final String[] mechTypes = new String[]{OID_DUMMY, OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5};
         assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, createNewKerberosTicketForHttp(uri), true, true);
     }
 
@@ -354,7 +356,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testLegacyKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5 };
+        final String[] mechTypes = new String[]{OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5};
         final byte[] kerberosToken = createNewKerberosTicketForHttp(uri);
         assertSpnegoWorkflow(uri, mechTypes, kerberosToken, kerberosToken, true, true);
     }
@@ -366,7 +368,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testNoKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_DUMMY, OID_NTLM };
+        final String[] mechTypes = new String[]{OID_DUMMY, OID_NTLM};
         assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, null, false, false);
     }
 
@@ -378,7 +380,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testContInvalidKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_DUMMY, OID_KERBEROS_V5 };
+        final String[] mechTypes = new String[]{OID_DUMMY, OID_KERBEROS_V5};
         assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, DUMMY_TOKEN, true, false);
     }
 
@@ -391,7 +393,7 @@ public class SPNEGOLoginModuleTestCase {
     @Ignore("JBEAP-4114")
     public void testInvalidKerberosSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        final String[] mechTypes = new String[] { OID_KERBEROS_V5, OID_DUMMY };
+        final String[] mechTypes = new String[]{OID_KERBEROS_V5, OID_DUMMY};
         assertSpnegoWorkflow(uri, mechTypes, DUMMY_TOKEN, null, false, false);
     }
 
@@ -404,7 +406,7 @@ public class SPNEGOLoginModuleTestCase {
     public void testPlainKerberosWorkflow(@ArquillianResource URL webAppURL) throws Exception {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         final byte[] kerberosToken = createNewKerberosTicketForHttp(uri);
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             final HttpGet httpGet = new HttpGet(uri);
             HttpResponse response = httpClient.execute(httpGet);
             assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
@@ -447,7 +449,7 @@ public class SPNEGOLoginModuleTestCase {
     /**
      * Create a new Kerberos ticket for HTTP service. The ticket should be newly generated for every test to avoid the
      * "ticket reply errors".
-     * 
+     *
      * @param uri servlet URI (used to retrieve hostname)
      * @return ASN.1 (DER) encoded Kerberos key for HTTP service
      */
@@ -460,21 +462,21 @@ public class SPNEGOLoginModuleTestCase {
     /**
      * Implements testing of SPNEGO authentication workflow with configurable parameters such supported mechanisms, tokens,
      * expected continuation and checking responses.
-     * 
-     * @param uri test URI which is protected by SPNEGO/Kerberos authentication.
-     * @param mechTypesOids array of supported mechanisms by the client in decreasing preference order (favorite choice first)
-     * @param initMechToken initial token (optimistic mechanism token) - token for the first of supported mechanisms
-     * @param responseToken token which is used in the second round when the server requests using Kerberos as a mechanism for
-     *        authentication
+     *
+     * @param uri                  test URI which is protected by SPNEGO/Kerberos authentication.
+     * @param mechTypesOids        array of supported mechanisms by the client in decreasing preference order (favorite choice first)
+     * @param initMechToken        initial token (optimistic mechanism token) - token for the first of supported mechanisms
+     * @param responseToken        token which is used in the second round when the server requests using Kerberos as a mechanism for
+     *                             authentication
      * @param continuationExpected flag which says that we expect server to require the second round of authentication (i.e.
-     *        server asks to send Kerberos token)
-     * @param successExpected flag which says that we expect the authentication finishes with success (in the first or second
-     *        round - which depends on the continuationExpected param)
+     *                             server asks to send Kerberos token)
+     * @param successExpected      flag which says that we expect the authentication finishes with success (in the first or second
+     *                             round - which depends on the continuationExpected param)
      */
     private void assertSpnegoWorkflow(URI uri, final String[] mechTypesOids, final byte[] initMechToken,
-            final byte[] responseToken, boolean continuationExpected, boolean successExpected)
-            throws IOException, ClientProtocolException {
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+                                      final byte[] responseToken, boolean continuationExpected, boolean successExpected)
+            throws IOException {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             final HttpGet httpGet = new HttpGet(uri);
             HttpResponse response = httpClient.execute(httpGet);
             assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
@@ -518,34 +520,34 @@ public class SPNEGOLoginModuleTestCase {
      */
     //@formatter:off
     @CreateDS(
-        name = "JBossDS-SPNEGOLoginModuleTestCase",
-        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
-        partitions =
-        {
-            @CreatePartition(
-                name = "jboss",
-                suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=org\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
-                indexes =
-                {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
-                })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
+            name = "JBossDS-SPNEGOLoginModuleTestCase",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
+            partitions =
+                    {
+                            @CreatePartition(
+                                    name = "jboss",
+                                    suffix = "dc=jboss,dc=org",
+                                    contextEntry = @ContextEntry(
+                                            entryLdif =
+                                                    "dn: dc=jboss,dc=org\n" +
+                                                            "dc: jboss\n" +
+                                                            "objectClass: top\n" +
+                                                            "objectClass: domain\n\n"),
+                                    indexes =
+                                            {
+                                                    @CreateIndex(attribute = "objectClass"),
+                                                    @CreateIndex(attribute = "dc"),
+                                                    @CreateIndex(attribute = "ou")
+                                            })
+                    },
+            additionalInterceptors = {KeyDerivationInterceptor.class})
     @CreateKdcServer(primaryRealm = "JBOSS.ORG",
-        kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
-        searchBaseDn = "dc=jboss,dc=org",
-        transports =
-        {
-            @CreateTransport(protocol = "UDP", port = 6088)
-        })
+            kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
+            searchBaseDn = "dc=jboss,dc=org",
+            transports =
+                    {
+                            @CreateTransport(protocol = "UDP", port = 6088)
+                    })
     //@formatter:on
     static class KDCServerSetupTask implements ServerSetupTask {
 
@@ -561,7 +563,7 @@ public class SPNEGOLoginModuleTestCase {
          * @param containerId
          * @throws Exception
          * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
+         * java.lang.String)
          */
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
@@ -602,7 +604,7 @@ public class SPNEGOLoginModuleTestCase {
          * @param containerId
          * @throws Exception
          * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
+         * java.lang.String)
          */
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
@@ -683,7 +685,7 @@ public class SPNEGOLoginModuleTestCase {
                             .putOption("usersProperties", "fallback-users.properties") //
                             .putOption("rolesProperties", "fallback-roles.properties") //
                             .build()).build();
-            return new SecurityDomain[] { hostDomain, spnegoDomain, spnegoWithFallback, formFallbackDomain };
+            return new SecurityDomain[]{hostDomain, spnegoDomain, spnegoWithFallback, formFallbackDomain};
         }
     }
 

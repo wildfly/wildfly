@@ -24,10 +24,9 @@ package org.jboss.as.test.integration.ws.authentication;
 import javax.jws.WebService;
 
 /**
- *
  * @author Rostislav Svoboda
  */
 @WebService
 public interface PojoEndpointIface {
-    public String hello(String input);
+    String hello(String input);
 }

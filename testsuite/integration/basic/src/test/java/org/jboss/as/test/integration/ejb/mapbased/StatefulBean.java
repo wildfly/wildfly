@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.mapbased;
 
-import org.jboss.ejb3.annotation.SecurityDomain;
-
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import javax.ejb.EJBContext;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author Jan Martiska / jmartisk@redhat.com

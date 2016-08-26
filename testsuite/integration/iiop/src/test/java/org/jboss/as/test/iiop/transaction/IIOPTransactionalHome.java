@@ -9,6 +9,6 @@ import javax.ejb.EJBHome;
  */
 public interface IIOPTransactionalHome extends EJBHome {
 
-    public IIOPTransactionalRemote create() throws RemoteException;
+    IIOPTransactionalRemote create() throws RemoteException;
 
 }

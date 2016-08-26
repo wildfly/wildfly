@@ -58,7 +58,7 @@ public class SFSBHibernateSessionFactory {
     }
 
     public Employee getEmployee(int id) {
-        Employee emp = (Employee)sessionFactory.openSession().load(Employee.class, id);
+        Employee emp = sessionFactory.openSession().load(Employee.class, id);
         return emp;
     }
 

@@ -37,7 +37,7 @@ import org.jboss.security.negotiation.Constants;
 
 /**
  * A client for {@link GSSTestServer}.
- * 
+ *
  * @author Josef Cacek
  */
 public class GSSTestClient {
@@ -52,10 +52,10 @@ public class GSSTestClient {
 
     /**
      * Create a new GSSTestClient.
-     * 
+     *
      * @param serverHost
      * @param serverPort
-     * @param spn Service Principal Name
+     * @param spn        Service Principal Name
      */
     public GSSTestClient(String serverHost, int serverPort, String spn) {
         this.host = serverHost;
@@ -67,7 +67,7 @@ public class GSSTestClient {
 
     /**
      * Retrieves the name of calling identity (based on given gssCredential) retrieved from {@link GSSTestServer}.
-     * 
+     *
      * @param gssCredential
      * @return
      * @throws IOException
@@ -134,7 +134,6 @@ public class GSSTestClient {
     }
 
     /**
-     * 
      * @return
      * @see java.lang.Object#toString()
      */

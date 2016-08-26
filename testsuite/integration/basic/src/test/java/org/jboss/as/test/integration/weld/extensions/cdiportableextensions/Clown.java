@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.weld.extensions.cdiportableextensions;
 
 @Funny
-public class Clown
-{
+public class Clown {
 
 }

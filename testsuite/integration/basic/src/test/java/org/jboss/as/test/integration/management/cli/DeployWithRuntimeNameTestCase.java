@@ -192,7 +192,7 @@ public class DeployWithRuntimeNameTestCase {
         }
     }
 
-    private final String getBaseURL(URL url) throws MalformedURLException {
+    private String getBaseURL(URL url) throws MalformedURLException {
         return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 }

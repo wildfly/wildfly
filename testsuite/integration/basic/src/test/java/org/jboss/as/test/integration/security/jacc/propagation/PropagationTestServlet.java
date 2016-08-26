@@ -46,11 +46,11 @@ import org.jboss.logging.Logger;
  * <li>{@value #PARAM_METHOD_NAME} - the value should be one of {@value #METHOD_NAME_ADMIN}, {@value #METHOD_NAME_MANAGE},
  * {@value #METHOD_NAME_USER}
  * </ul>
- * 
+ *
  * @author Josef Cacek
  */
-@DeclareRoles({ Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER })
-@ServletSecurity(@HttpConstraint(rolesAllowed = { Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER }))
+@DeclareRoles({Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {Manage.ROLE_ADMIN, Manage.ROLE_MANAGER, Manage.ROLE_USER}))
 @WebServlet(PropagationTestServlet.SERVLET_PATH)
 public class PropagationTestServlet extends HttpServlet {
 
@@ -71,7 +71,7 @@ public class PropagationTestServlet extends HttpServlet {
 
     /**
      * Tests access to EJBs implementing {@link Manage} interface.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException

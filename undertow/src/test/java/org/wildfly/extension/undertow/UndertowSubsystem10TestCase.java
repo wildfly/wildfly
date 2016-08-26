@@ -27,7 +27,6 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;

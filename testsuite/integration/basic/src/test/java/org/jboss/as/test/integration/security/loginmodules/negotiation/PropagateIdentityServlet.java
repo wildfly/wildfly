@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.annotation.security.DeclareRoles;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
@@ -41,11 +40,11 @@ import org.jboss.security.negotiation.DelegationCredentialContext;
 
 /**
  * A PropagateServlet for testing Kerberos identity propagation in JBoss Negotiation.
- * 
+ *
  * @author Josef Cacek
  */
-@DeclareRoles({ PropagateIdentityServlet.ALLOWED_ROLE })
-@ServletSecurity(@HttpConstraint(rolesAllowed = { PropagateIdentityServlet.ALLOWED_ROLE }))
+@DeclareRoles({PropagateIdentityServlet.ALLOWED_ROLE})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {PropagateIdentityServlet.ALLOWED_ROLE}))
 @WebServlet(PropagateIdentityServlet.SERVLET_PATH)
 public class PropagateIdentityServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -60,7 +59,7 @@ public class PropagateIdentityServlet extends HttpServlet {
      * Retrieves a {@link GSSCredential} from {@link DelegationCredentialContext#getDelegCredential()}. If it's null error 401
      * (SC_UNAUTHORIZED) is returned, otherwise {@link GSSTestClient} is used retrieve name of propagated identity from
      * {@link GSSTestServer}.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException

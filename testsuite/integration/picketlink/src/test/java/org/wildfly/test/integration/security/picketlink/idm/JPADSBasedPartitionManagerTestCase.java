@@ -74,11 +74,11 @@ public class JPADSBasedPartitionManagerTestCase extends AbstractBasicIdentityMan
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        public IdentityManagementServerSetupTask() {
+        IdentityManagementServerSetupTask() {
             this("jpa.ds.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 
-        public IdentityManagementServerSetupTask(String name, String partitionManagerJndiName) {
+        IdentityManagementServerSetupTask(String name, String partitionManagerJndiName) {
             super(name, partitionManagerJndiName);
         }
 

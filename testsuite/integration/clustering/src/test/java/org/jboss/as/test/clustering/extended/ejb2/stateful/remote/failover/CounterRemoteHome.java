@@ -28,6 +28,6 @@ import javax.ejb.EJBHome;
  * @author Ondrej Chaloupka
  */
 public interface CounterRemoteHome extends EJBHome {
-    public CounterRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    CounterRemote create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 
 }

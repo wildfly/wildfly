@@ -22,9 +22,13 @@
 
 package org.jboss.as.test.integration.security.perimeter;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
@@ -32,13 +36,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This class contains a check that CLI access is secured.
@@ -70,7 +67,7 @@ public class CLISecurityTestCase {
             return null;
         }
 
-        public synchronized void shutdown(){
+        public synchronized void shutdown() {
             this.quit();
         }
     }
@@ -80,7 +77,7 @@ public class CLISecurityTestCase {
      */
     @BeforeClass
     public static void renameTokenDir() {
-       originalTokenDir.renameTo(renamedTokenDir);
+        originalTokenDir.renameTo(renamedTokenDir);
     }
 
     /**
@@ -93,6 +90,7 @@ public class CLISecurityTestCase {
 
     /**
      * This test checks that CLI access is secured.
+     *
      * @throws Exception
      */
     @Test

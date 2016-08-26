@@ -5,6 +5,6 @@ import java.util.List;
 import javax.management.ObjectName;
 
 public interface BMBean {
-        public List<ObjectName> getObjectNames();
-        public void setObjectNames(List<ObjectName> names);
+        List<ObjectName> getObjectNames();
+        void setObjectNames(List<ObjectName> names);
 }

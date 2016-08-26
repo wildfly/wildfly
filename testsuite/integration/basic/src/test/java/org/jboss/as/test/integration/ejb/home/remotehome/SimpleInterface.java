@@ -30,7 +30,7 @@ import javax.ejb.EJBObject;
  */
 public interface SimpleInterface extends EJBObject {
 
-    public String sayHello() throws RemoteException;
+    String sayHello() throws RemoteException;
 
-    public String otherMethod() throws RemoteException;
+    String otherMethod() throws RemoteException;
 }

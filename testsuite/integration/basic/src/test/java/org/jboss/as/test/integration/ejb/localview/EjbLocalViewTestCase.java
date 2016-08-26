@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.localview;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
-
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;

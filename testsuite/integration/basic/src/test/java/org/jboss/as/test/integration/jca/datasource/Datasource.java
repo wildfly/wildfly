@@ -30,12 +30,12 @@ public class Datasource {
 
     private Datasource(Builder builder) {
         this.name = builder.datasourceName;
-        this.jndiName = builder. jndiName;
-        this.driverName = builder. driverName;
-        this.connectionUrl = builder. connectionUrl;
-        this.userName = builder. userName;
-        this.password = builder. password;
-        this.enabled = builder. enabled;
+        this.jndiName = builder.jndiName;
+        this.driverName = builder.driverName;
+        this.connectionUrl = builder.connectionUrl;
+        this.userName = builder.userName;
+        this.password = builder.password;
+        this.enabled = builder.enabled;
     }
 
     public static Builder Builder(String datasourceName) {
@@ -72,8 +72,8 @@ public class Datasource {
 
     @Override
     public String toString() {
-      return String.format("Datasource name: %s, jndi: %s, driver name: %s, url: %s, user name: %s, password: %s, enabled: %s",
-          name, jndiName, driverName, connectionUrl, userName, password, enabled);
+        return String.format("Datasource name: %s, jndi: %s, driver name: %s, url: %s, user name: %s, password: %s, enabled: %s",
+                name, jndiName, driverName, connectionUrl, userName, password, enabled);
     }
 
 
@@ -89,10 +89,10 @@ public class Datasource {
         private Builder(String datasourceName) {
             this.datasourceName = datasourceName;
             this.jndiName = "java:jboss/datasources/" + datasourceName;
-            if(this.driverName == null) driverName = "h2";
-            if(this.connectionUrl == null) connectionUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
-            if(this.userName == null) userName = "sa";
-            if(this.password == null) password = "sa";
+            if (this.driverName == null) { driverName = "h2"; }
+            if (this.connectionUrl == null) { connectionUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"; }
+            if (this.userName == null) { userName = "sa"; }
+            if (this.password == null) { password = "sa"; }
         }
 
         public Builder jndiName(String jndiName) {

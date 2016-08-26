@@ -1,11 +1,11 @@
 package org.jboss.as.test.clustering.twoclusters.bean.forwarding;
 
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
-import org.jboss.ejb3.annotation.Clustered;
-
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+
+import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
+import org.jboss.ejb3.annotation.Clustered;
 
 @Stateful
 @Clustered
@@ -15,20 +15,17 @@ public class ForwardingStatefulSBImpl extends AbstractForwardingStatefulSBImpl i
     // we need to override these methods so that the TransactionAttribute gets processed on this class!
 
     @Override
-    public int getSerial()
-    {
+    public int getSerial() {
         return super.getSerial();
     }
 
     @Override
-    public int getSerialAndIncrement()
-    {
+    public int getSerialAndIncrement() {
         return super.getSerialAndIncrement();
     }
 
     @Override
-    public byte[] getCargo()
-    {
+    public byte[] getCargo() {
         return super.getCargo();
     }
 }

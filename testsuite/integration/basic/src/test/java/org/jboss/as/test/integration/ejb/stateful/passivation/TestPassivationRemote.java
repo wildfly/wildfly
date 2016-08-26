@@ -53,12 +53,12 @@ public interface TestPassivationRemote extends AutoCloseable {
     void addEntity(int id, String name);
 
     Employee getSuperEmployee();
-    
+
     /**
-     * returns a value of a property of a CDI bean 
+     * returns a value of a property of a CDI bean
      */
     String getManagedBeanMessage();
-    
+
     void setManagedBeanMessage(String message);
 
     @Override

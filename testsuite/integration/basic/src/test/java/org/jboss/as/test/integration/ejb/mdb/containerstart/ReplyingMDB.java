@@ -41,7 +41,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 
 /**
@@ -55,7 +54,7 @@ import org.jboss.logging.Logger;
         @ActivationConfigProperty(propertyName = "useDLQ", propertyValue = "false") })
 public class ReplyingMDB implements MessageListener {
     private static final Logger log = Logger.getLogger(ReplyingMDB.class);
-    
+
     @Resource(lookup = "java:/ConnectionFactory")
     private ConnectionFactory factory;
 
@@ -87,7 +86,7 @@ public class ReplyingMDB implements MessageListener {
                         log.info("Sleeping for transaction timeout was interrupted."
                                 + "This is expected at least for JTS transaction.");
                     }
-                    // synchronize with test to undeploy would be in processing 
+                    // synchronize with test to undeploy would be in processing
                     HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                 }
                 replyMessage = session.createTextMessage("Reply: " + text);
@@ -97,7 +96,7 @@ public class ReplyingMDB implements MessageListener {
             Destination destination = message.getJMSReplyTo();
             message.setJMSDeliveryMode(NON_PERSISTENT);
             sender.send(destination, replyMessage);
-            log.infof("onMessage method [OK], msg: [%s] with id [%s]. Replying to destination [%s].", 
+            log.infof("onMessage method [OK], msg: [%s] with id [%s]. Replying to destination [%s].",
                     text, message, destination);
         } catch (Exception e) {
             throw new RuntimeException(e);

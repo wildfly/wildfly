@@ -29,7 +29,6 @@ import javax.ejb.Stateful;
 
 /**
  * @author baranowb
- *
  */
 @Stateful
 @Remote(Trigger.class)

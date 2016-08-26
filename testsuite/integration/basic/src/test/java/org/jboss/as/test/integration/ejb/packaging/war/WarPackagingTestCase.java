@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Testing packaging ejb in war.
- * 
+ *
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

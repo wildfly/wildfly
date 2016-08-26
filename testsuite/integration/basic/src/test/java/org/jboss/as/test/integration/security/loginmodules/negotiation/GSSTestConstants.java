@@ -31,19 +31,19 @@ import java.nio.charset.StandardCharsets;
  */
 public interface GSSTestConstants {
 
-    public static final String PROPERTY_PORT = "gsstestserver.port";
-    public static final String PROPERTY_PRINCIPAL = "gsstestserver.principal";
-    public static final String PROPERTY_PASSWORD = "gsstestserver.password";
+    String PROPERTY_PORT = "gsstestserver.port";
+    String PROPERTY_PRINCIPAL = "gsstestserver.principal";
+    String PROPERTY_PASSWORD = "gsstestserver.password";
 
-    public static final int PORT = Integer.getInteger(PROPERTY_PORT, 10961);
-    public static final String PRINCIPAL = System.getProperty(PROPERTY_PRINCIPAL, "gsstestserver/xxx@JBOSS.ORG");
-    public static final String PASSWORD = System.getProperty(PROPERTY_PASSWORD, "gsstestpwd");
+    int PORT = Integer.getInteger(PROPERTY_PORT, 10961);
+    String PRINCIPAL = System.getProperty(PROPERTY_PRINCIPAL, "gsstestserver/xxx@JBOSS.ORG");
+    String PASSWORD = System.getProperty(PROPERTY_PASSWORD, "gsstestpwd");
 
-    public static final Charset CHAR_ENC = StandardCharsets.UTF_8;
-    public static final int CMD_NOOP = 0;
-    public static final int CMD_NAME = 1;
-    public static final int CMD_STOP = 2;
+    Charset CHAR_ENC = StandardCharsets.UTF_8;
+    int CMD_NOOP = 0;
+    int CMD_NAME = 1;
+    int CMD_STOP = 2;
 
-    public static final int SOCKET_TIMEOUT = 30000; //30s
+    int SOCKET_TIMEOUT = 30000; //30s
 
 }

@@ -54,12 +54,12 @@ public class SecondDAO {
      */
     public void induceCreationViaJNDILookup() {
 
-        FirstDAO secondDAO = (FirstDAO)ctx.lookup("java:module/FirstDAO");        // create an instance of FirstDAO that will share
-                                                                                  // the same extended persistence context
+        FirstDAO secondDAO = (FirstDAO) ctx.lookup("java:module/FirstDAO");        // create an instance of FirstDAO that will share
+        // the same extended persistence context
 
 
         secondDAO.noop();   // any failures should of already occurred, calling noop just gives an additional
-                            // change to check for other unexpected failures.
+        // change to check for other unexpected failures.
 
     }
 

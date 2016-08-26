@@ -43,7 +43,7 @@ public class StatefulBean implements Serializable, StatefulRemote {
 
     @PersistenceContext(type = PersistenceContextType.EXTENDED)
     EntityManager manager;
-    
+
     @Resource
     SessionContext ctx;
 

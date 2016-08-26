@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.jpa.hibernate.entity;
 
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -48,55 +47,47 @@ public class Flight {
     private Company company;
     private Set<Customer> customers;
 
-    public Flight(){
+    public Flight() {
     }
 
     @Id
-    @Column(name="flight_id")
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    public Long getId()
-    {
-       return id;
+    @Column(name = "flight_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long getId() {
+        return id;
     }
 
-    public void setId(Long long1)
-    {
-       id = long1;
+    public void setId(Long long1) {
+        id = long1;
     }
 
     @Column(updatable = false, name = "flight_name", nullable = false, length = 50)
-    public String getName()
-    {
-       return name;
+    public String getName() {
+        return name;
     }
 
-    public void setName(String string)
-    {
-       name = string;
+    public void setName(String string) {
+        name = string;
     }
 
 
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "comp_id")
-    public Company getCompany()
-    {
-       return company;
+    public Company getCompany() {
+        return company;
     }
 
-    public void setCompany(Company company)
-    {
-       this.company = company;
+    public void setCompany(Company company) {
+        this.company = company;
     }
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    public Set<Customer> getCustomers()
-    {
-       return customers;
+    public Set<Customer> getCustomers() {
+        return customers;
     }
 
-    public void setCustomers(Set<Customer> customers)
-    {
-       this.customers = customers;
+    public void setCustomers(Set<Customer> customers) {
+        this.customers = customers;
     }
 
 }

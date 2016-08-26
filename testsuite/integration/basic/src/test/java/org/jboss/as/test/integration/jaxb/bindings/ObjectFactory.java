@@ -31,8 +31,8 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _PurchaseOrder_QNAME = new QName("", "purchaseOrder");
-    private final static QName _Comment_QNAME = new QName("", "comment");
+    private static final QName _PurchaseOrder_QNAME = new QName("", "purchaseOrder");
+    private static final QName _Comment_QNAME = new QName("", "comment");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.jboss.as.test.integration.jaxb.bindings

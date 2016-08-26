@@ -22,7 +22,6 @@
 package org.jboss.as.test.smoke.deployment.rar.configproperty;
 
 import java.io.Serializable;
-
 import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
@@ -31,13 +30,12 @@ import javax.resource.ResourceException;
  *
  * @version $Revision: $
  */
-public interface ConfigPropertyConnectionFactory extends Serializable, Referenceable
-{
-   /**
-    * Get connection from factory
-    *
-    * @return ConfigPropertyConnection instance
-    * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
-    */
-   public ConfigPropertyConnection getConnection() throws ResourceException;
+public interface ConfigPropertyConnectionFactory extends Serializable, Referenceable {
+    /**
+     * Get connection from factory
+     *
+     * @return ConfigPropertyConnection instance
+     * @throws javax.resource.ResourceException Thrown if a connection can't be obtained
+     */
+    ConfigPropertyConnection getConnection() throws ResourceException;
 }

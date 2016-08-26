@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.sar;
 
-import org.jboss.logging.Logger;
-
-import javax.naming.InitialContext;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.naming.InitialContext;
+
+import org.jboss.logging.Logger;
 
 /**
  * An MBean that binds to JNDI in its start method and unbinds from JNDI in its stop method

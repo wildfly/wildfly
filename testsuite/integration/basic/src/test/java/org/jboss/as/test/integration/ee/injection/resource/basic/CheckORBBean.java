@@ -33,7 +33,7 @@ import org.omg.PortableServer.POA;
 
 /**
  * This beans checks both methods of getting an ORB.
- * 
+ *
  * @author carlo
  */
 @Stateless

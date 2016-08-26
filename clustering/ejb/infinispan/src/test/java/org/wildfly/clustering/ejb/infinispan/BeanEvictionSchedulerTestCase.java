@@ -21,8 +21,13 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,7 +41,7 @@ import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 
 public class BeanEvictionSchedulerTestCase {
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     @org.junit.Ignore
     public void test() throws Exception {
@@ -61,7 +66,7 @@ public class BeanEvictionSchedulerTestCase {
             BeanGroupEvictionContext<String> context = capturedContext.getValue();
 
             assertSame(scheduler, context);
-            
+
             scheduler.schedule(evictedBeanId);
 
             verifyZeroInteractions(dispatcher);

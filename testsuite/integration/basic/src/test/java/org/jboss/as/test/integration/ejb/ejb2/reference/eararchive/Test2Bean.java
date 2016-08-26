@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.ejb2.reference.eararchive;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.SessionContext;
 import javax.naming.InitialContext;
 
@@ -33,7 +31,7 @@ import javax.naming.InitialContext;
 public class Test2Bean implements javax.ejb.SessionBean {
     private static final long serialVersionUID = -8375644698783606562L;
 
-    public void testAccess() throws RemoteException, Exception {
+    public void testAccess() throws Exception {
         InitialContext jndiContext = new InitialContext();
 
         Test3Business session = (Test3Business) jndiContext.lookup("java:comp/env/ejb/Test3");

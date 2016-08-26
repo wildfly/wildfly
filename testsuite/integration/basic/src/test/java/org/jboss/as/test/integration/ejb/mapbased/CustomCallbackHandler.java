@@ -22,12 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.mapbased;
 
+import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
 
 /**
  * A custom {@link CallbackHandler} which is used in {@link MapBasedInitialContextEjbClientTestCase} and sets the {@link NameCallback}

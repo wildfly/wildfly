@@ -29,9 +29,9 @@ import javax.ejb.EJBHome;
  */
 public interface StatefulSession30Home extends EJBHome {
 
-    public StatefulSession30 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
+    StatefulSession30 create() throws java.rmi.RemoteException, javax.ejb.CreateException;
 
-    public StatefulSession30 create(String value) throws java.rmi.RemoteException, javax.ejb.CreateException;
+    StatefulSession30 create(String value) throws java.rmi.RemoteException, javax.ejb.CreateException;
 
-    public StatefulSession30 create(String value, Integer suffix) throws java.rmi.RemoteException, javax.ejb.CreateException;
+    StatefulSession30 create(String value, Integer suffix) throws java.rmi.RemoteException, javax.ejb.CreateException;
 }

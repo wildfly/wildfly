@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.security.loginmodules.databases;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
@@ -38,7 +37,7 @@ import org.jboss.logging.Logger;
 
 /**
  * This bean will create users and roles in ExampleDS datasource on startup.
- * 
+ *
  * @author Filip Bogyai
  */
 

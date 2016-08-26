@@ -29,9 +29,7 @@ import java.util.List;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -66,7 +64,7 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/webservices.xml"
         };
     }
@@ -158,7 +156,7 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
     public void testTransformersEAP630() throws Exception {
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_3_0);
     }
-    
+
     @Test
     public void testTransformersEAP640() throws Exception {
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_4_0);

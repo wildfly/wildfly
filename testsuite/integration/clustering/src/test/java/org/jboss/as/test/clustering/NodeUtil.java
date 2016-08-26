@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.logging.Logger;
 
 /**
@@ -78,6 +79,18 @@ public final class NodeUtil {
                 log.info("Stopping container=" + container);
                 controller.stop(container);
                 log.info("Stopped container=" + container);
+            } catch (Throwable e) {
+                log.error("Failed to stop containers", e);
+            }
+        }
+    }
+
+    public static void stop(int timeout, WildFlyContainerController controller, String... containers) {
+        for (String container : containers) {
+            try {
+                log.info("Stopping container=" + container + ", timeout=" + timeout);
+                controller.stop(container, timeout);
+                log.info("Stopped container=" + container + ", timeout=" + timeout);
             } catch (Throwable e) {
                 log.error("Failed to stop containers", e);
             }

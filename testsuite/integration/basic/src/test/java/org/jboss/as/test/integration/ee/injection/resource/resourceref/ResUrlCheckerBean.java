@@ -29,7 +29,7 @@ import javax.ejb.Stateless;
 
 /**
  * Let's see what we can do with resources of the URL breed.
- * 
+ *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */
 @Stateless

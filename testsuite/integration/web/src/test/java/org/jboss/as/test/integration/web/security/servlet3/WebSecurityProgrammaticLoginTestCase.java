@@ -21,10 +21,24 @@
  */
 package org.jboss.as.test.integration.web.security.servlet3;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.Arrays;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,21 +57,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import java.util.Arrays;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.LOGIN_MODULE;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Unit Test the programmatic login feature of Servlet 3
@@ -119,7 +118,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
 
-            HttpResponse res =  httpclient.execute(new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass));
+            HttpResponse res = httpclient.execute(new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass));
             Assert.assertEquals(expectedStatusCode, res.getStatusLine().getStatusCode());
             //System.out.println("Response content length: " + EntityUtils.toString(res.getEntity()));
         } finally {
@@ -144,10 +143,10 @@ public class WebSecurityProgrammaticLoginTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) {
             final ModelNode compositeOp = new ModelNode();
-                    compositeOp.get(OP).set(COMPOSITE);
-                    compositeOp.get(OP_ADDR).setEmptyList();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
 
-                    ModelNode steps = compositeOp.get(STEPS);
+            ModelNode steps = compositeOp.get(STEPS);
             String securityDomain = "web-programmatic-login";
 
             PathAddress address = PathAddress.pathAddress()

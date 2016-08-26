@@ -3,61 +3,61 @@
          xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd">
-  
-   <description>jBoss service-ref test application</description>
-   <display-name>Test</display-name>
-   <enterprise-beans>
-      <session>
-         <ejb-name>StatelessBean</ejb-name>
-         <ejb-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</ejb-class>
-         <session-type>Stateless</session-type>
-         <env-entry>
-            <env-entry-name>org.jboss.as.test.integration.ws.serviceref.StatelessBean/id</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value>First EJB</env-entry-value>
-         </env-entry>
-         <service-ref>
-            <service-ref-name>service/Endpoint3</service-ref-name>
-            <service-interface>org.jboss.as.test.integration.ws.serviceref.EndpointService</service-interface>
-            <injection-target>
-               <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
-               <injection-target-name>endpoint3</injection-target-name>
-            </injection-target>
-         </service-ref>
-         <service-ref>
-            <service-ref-name>service/Endpoint4</service-ref-name>
-            <service-interface>javax.xml.ws.Service</service-interface>
-            <injection-target>
-               <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
-               <injection-target-name>endpoint4</injection-target-name>
-            </injection-target>
-         </service-ref>
-      </session>
-      <session>
-         <ejb-name>StatelessBean2</ejb-name>
-         <ejb-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</ejb-class>
-         <session-type>Stateless</session-type>
-         <env-entry>
-            <env-entry-name>org.jboss.as.test.integration.ws.serviceref.StatelessBean/id</env-entry-name>
-            <env-entry-type>java.lang.String</env-entry-type>
-            <env-entry-value>Second EJB</env-entry-value>
-         </env-entry>
-         <service-ref>
-            <service-ref-name>service/Endpoint3</service-ref-name>
-            <service-interface>org.jboss.as.test.integration.ws.serviceref.EndpointService</service-interface>
-            <injection-target>
-               <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
-               <injection-target-name>endpoint3</injection-target-name>
-            </injection-target>
-         </service-ref>
-         <service-ref>
-            <service-ref-name>service/Endpoint4</service-ref-name>
-            <service-interface>javax.xml.ws.Service</service-interface>
-            <injection-target>
-               <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
-               <injection-target-name>endpoint4</injection-target-name>
-            </injection-target>
-         </service-ref>
-      </session>
-   </enterprise-beans>
+
+    <description>jBoss service-ref test application</description>
+    <display-name>Test</display-name>
+    <enterprise-beans>
+        <session>
+            <ejb-name>StatelessBean</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <env-entry>
+                <env-entry-name>org.jboss.as.test.integration.ws.serviceref.StatelessBean/id</env-entry-name>
+                <env-entry-type>java.lang.String</env-entry-type>
+                <env-entry-value>First EJB</env-entry-value>
+            </env-entry>
+            <service-ref>
+                <service-ref-name>service/Endpoint3</service-ref-name>
+                <service-interface>org.jboss.as.test.integration.ws.serviceref.EndpointService</service-interface>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
+                    <injection-target-name>endpoint3</injection-target-name>
+                </injection-target>
+            </service-ref>
+            <service-ref>
+                <service-ref-name>service/Endpoint4</service-ref-name>
+                <service-interface>javax.xml.ws.Service</service-interface>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
+                    <injection-target-name>endpoint4</injection-target-name>
+                </injection-target>
+            </service-ref>
+        </session>
+        <session>
+            <ejb-name>StatelessBean2</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <env-entry>
+                <env-entry-name>org.jboss.as.test.integration.ws.serviceref.StatelessBean/id</env-entry-name>
+                <env-entry-type>java.lang.String</env-entry-type>
+                <env-entry-value>Second EJB</env-entry-value>
+            </env-entry>
+            <service-ref>
+                <service-ref-name>service/Endpoint3</service-ref-name>
+                <service-interface>org.jboss.as.test.integration.ws.serviceref.EndpointService</service-interface>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
+                    <injection-target-name>endpoint3</injection-target-name>
+                </injection-target>
+            </service-ref>
+            <service-ref>
+                <service-ref-name>service/Endpoint4</service-ref-name>
+                <service-interface>javax.xml.ws.Service</service-interface>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.integration.ws.serviceref.StatelessBean</injection-target-class>
+                    <injection-target-name>endpoint4</injection-target-name>
+                </injection-target>
+            </service-ref>
+        </session>
+    </enterprise-beans>
 </ejb-jar>

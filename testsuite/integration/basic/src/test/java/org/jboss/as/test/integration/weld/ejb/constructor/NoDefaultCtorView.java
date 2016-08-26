@@ -30,6 +30,6 @@ import javax.ejb.Local;
 @Local
 public interface NoDefaultCtorView {
 
-    public Dog getDog();
+    Dog getDog();
 
 }

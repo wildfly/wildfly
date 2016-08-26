@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.rar;
 
+import java.io.PrintWriter;
+import java.util.Set;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionDefinition;
 import javax.resource.spi.ConnectionManager;
@@ -31,8 +33,6 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
-import java.io.PrintWriter;
-import java.util.Set;
 
 /**
  * User: jpai

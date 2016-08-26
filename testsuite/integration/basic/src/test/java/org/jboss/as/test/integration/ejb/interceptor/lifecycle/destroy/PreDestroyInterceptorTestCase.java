@@ -52,7 +52,7 @@ public class PreDestroyInterceptorTestCase {
 
     @Test
     public void testPreDestroyInterceptor() throws NamingException {
-        
+
         InitialContext ctx = new InitialContext();
         PreDestroySFSB bean = (PreDestroySFSB)ctx.lookup("java:module/" + PreDestroySFSB.class.getSimpleName());
         Assert.assertTrue(PreDestroySFSB.postConstructCalled);
@@ -60,7 +60,7 @@ public class PreDestroyInterceptorTestCase {
         Assert.assertFalse("InvocationContext.getTarget() was null for post-construct interceptor", PreDestroyInterceptor.postConstructInvocationTargetNull);
         Assert.assertTrue(PreDestroyInterceptorDescriptor.postConstruct);
         Assert.assertFalse("InvocationContext.getTarget() was null for post-construct interceptor", PreDestroyInterceptorDescriptor.postConstructInvocationTargetNull);
-        
+
         bean.remove();
         Assert.assertTrue(PreDestroySFSB.preDestroyCalled);
         Assert.assertTrue(PreDestroyInterceptor.preDestroy);

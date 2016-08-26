@@ -31,9 +31,8 @@ import org.jboss.system.ServiceMBean;
 
 /**
  * An MBean that collects results of life-cycle methods invocations of {@link TestServiceMBean}.
- * 
+ *
  * @author Eduardo Martins
- * 
  */
 public class TestResultService implements TestResultServiceMBean, ServiceMBean, NotificationListener {
 
@@ -157,18 +156,17 @@ public class TestResultService implements TestResultServiceMBean, ServiceMBean, 
     public void handleNotification(Notification notification, Object handback) {
         if (notification instanceof AttributeChangeNotification) {
             AttributeChangeNotification attributeChangeNotification
-                    = (AttributeChangeNotification)notification;
-            int oldValue = (Integer)attributeChangeNotification.getOldValue();
-            int newValue = (Integer)attributeChangeNotification.getNewValue();
+                    = (AttributeChangeNotification) notification;
+            int oldValue = (Integer) attributeChangeNotification.getOldValue();
+            int newValue = (Integer) attributeChangeNotification.getNewValue();
             logger.info("Attribute change notification: " + oldValue + "->" + newValue);
-            if(oldValue == STOPPED && newValue == STARTING)
-                startingNotificationReceived = true;
-            else if(oldValue == STARTING && newValue == STARTED)
+            if (oldValue == STOPPED && newValue == STARTING) { startingNotificationReceived = true; } else if (oldValue == STARTING && newValue == STARTED) {
                 startedNotificationReceived = true;
-            else if(oldValue == STARTED && newValue == STOPPING)
+            } else if (oldValue == STARTED && newValue == STOPPING) {
                 stoppingNotificationReceived = true;
-            else if(oldValue == STOPPING && newValue == STOPPED)
+            } else if (oldValue == STOPPING && newValue == STOPPED) {
                 stoppedNotificationReceived = true;
+            }
         }
     }
 

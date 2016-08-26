@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.container.interceptor.security;
 /**
  * A helper Credential, which holds current RealmUser name. It's used in the {@link GuestDelegationLoginModule} to check if the
  * delegation is allowed for this user.
- * 
+ *
  * @author Josef Cacek
  */
 public final class CurrentUserCredential {
@@ -42,7 +42,7 @@ public final class CurrentUserCredential {
 
     /**
      * Returns user name held by this Credential.
-     * 
+     *
      * @return
      */
     public String getUser() {

@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.jca.rar;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
-
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -34,13 +33,13 @@ import javax.transaction.xa.XAResource;
 
 /**
  * MultipleResourceAdapter
- * 
+ *
  * @version $Revision: $
  */
 public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -63,7 +62,7 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * Set name
-     * 
+     *
      * @param name The value
      */
     public void setName(int name) {
@@ -72,7 +71,7 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * Get name
-     * 
+     *
      * @return The value
      */
     public int getName() {
@@ -81,9 +80,9 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * This is called during the activation of a message endpoint.
-     * 
+     *
      * @param endpointFactory A message endpoint factory instance.
-     * @param spec An activation spec JavaBean instance.
+     * @param spec            An activation spec JavaBean instance.
      * @throws ResourceException generic exception
      */
     public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException {
@@ -92,9 +91,9 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * This is called when a message endpoint is deactivated.
-     * 
+     *
      * @param endpointFactory A message endpoint factory instance.
-     * @param spec An activation spec JavaBean instance.
+     * @param spec            An activation spec JavaBean instance.
      */
     public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) {
         log.finest("endpointDeactivation()");
@@ -102,7 +101,7 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * This is called when a resource adapter instance is bootstrapped.
-     * 
+     *
      * @param ctx A bootstrap context containing references
      * @throws ResourceAdapterInternalException indicates bootstrap failure.
      */
@@ -119,7 +118,7 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * This method is called by the application server during crash recovery.
-     * 
+     *
      * @param specs An array of ActivationSpec JavaBeans
      * @return An array of XAResource objects
      * @throws ResourceException generic exception
@@ -131,38 +130,35 @@ public class MultipleWarningResourceAdapter implements ResourceAdapter, Serializ
 
     /**
      * Returns a hash code value for the object.
-     * 
+     *
      * @return A hash code value for this object.
      */
     @Override
     public int hashCode() {
         int result = 17;
-        
-            result += 31 * result + 7 * name;
-        
+
+        result += 31 * result + 7 * name;
+
         return result;
     }
 
     /**
      * Indicates whether some other object is equal to this one.
-     * 
+     *
      * @param other The reference object with which to compare.
      * @return true if this object is the same as the obj argument, false otherwise.
      */
     @Override
     public boolean equals(Object other) {
-        if (other == null)
-            return false;
-        if (other == this)
-            return true;
-        if (!(other instanceof MultipleWarningResourceAdapter))
-            return false;
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (!(other instanceof MultipleWarningResourceAdapter)) { return false; }
         MultipleWarningResourceAdapter obj = (MultipleWarningResourceAdapter) other;
         boolean result = true;
         if (result) {
-            
-                result = obj.getName() == name;
-            
+
+            result = obj.getName() == name;
+
         }
         return result;
     }

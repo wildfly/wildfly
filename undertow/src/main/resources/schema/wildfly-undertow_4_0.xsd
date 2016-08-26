@@ -113,7 +113,7 @@
     <xs:complexType name="http-listener-type">
         <xs:complexContent>
             <xs:extension base="listener-type">
-                <xs:attribute name="certificate-forwarding" use="optional" type="xs:string">
+               <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
@@ -133,7 +133,7 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="proxy-address-forwarding" use="optional" type="xs:string">
+                <xs:attribute name="proxy-address-forwarding" use="optional" type="xs:string" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
@@ -170,6 +170,25 @@
                             Reference to the SSLContext that should be used by this listener.
 
                             If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                                If certificate forwarding should be enabled. If this is enabled then the listener will take the certificate from the SSL_CLIENT_CERT
+                                                attribute. This should only be enabled if behind a proxy, and the proxy is configured to always set these headers.
+                                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="proxy-address-forwarding" use="optional" type="xs:string" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                              enables x-forwarded-host and similar headers and set a remote ip address and hostname
+                                               ]]>
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
@@ -286,8 +305,8 @@
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
-        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 

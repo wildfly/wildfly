@@ -60,7 +60,7 @@ public class GlobalSession30Bean implements Session30RemoteBusiness {
         try {
             InitialContext jndiContext = new InitialContext();
             Session21Home home = (Session21Home) jndiContext.lookup("java:global/global-reference-ejb2/Session21!" + Session21Home.class.getName());
-            Session21 session = (Session21) home.create();
+            Session21 session = home.create();
             return session.access();
         } catch (Exception e) {
             log.error("GlobalSession30Bean.globalAccess21()", e);

@@ -52,8 +52,8 @@ import org.junit.runner.RunWith;
 public class CustomErrorsUnitTestCase {
 
     private static Logger log = Logger.getLogger(CustomErrorsUnitTestCase.class);
- 
-    @Deployment (name = "custom-errors.war", testable = false)
+
+    @Deployment(name = "custom-errors.war", testable = false)
     public static WebArchive errorDeployment() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/customerrors/resources/";
@@ -73,7 +73,7 @@ public class CustomErrorsUnitTestCase {
     public static WebArchive producerDeployment() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/customerrors/resources/";
-        
+
         WebArchive war = ShrinkWrap.create(WebArchive.class, "error-producer.war");
         war.setWebXML(tccl.getResource(resourcesLocation + "error-producer-web.xml"));
         war.addAsManifestResource(CustomErrorsUnitTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
@@ -101,7 +101,7 @@ public class CustomErrorsUnitTestCase {
      *
      * @throws Exception
      */
-    @Test 
+    @Test
     @OperateOnDeployment("error-producer.war")
     public void test500Error(@ArquillianResource(ErrorGeneratorServlet.class) URL baseURL) throws Exception {
         int errorCode = HttpURLConnection.HTTP_INTERNAL_ERROR;

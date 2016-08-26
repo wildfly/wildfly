@@ -18,7 +18,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import org.jboss.remoting3.security.RemotingPermission;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import static org.junit.Assert.assertEquals;
 
 /**

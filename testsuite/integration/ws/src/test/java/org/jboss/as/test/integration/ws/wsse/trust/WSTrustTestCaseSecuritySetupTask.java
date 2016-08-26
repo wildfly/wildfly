@@ -60,7 +60,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
     private void addHttpsListener(ManagementClient managementClient) throws Exception {
 
 
-        ModelNode addOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2" , ADD);
+        ModelNode addOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2", ADD);
         addOp.get(PORT).set("8444");
         addOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         addOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);

@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 
 /**
  * [AS7-1675] Problem with @Resource lookups on EJBs
- *
+ * <p>
  * https://issues.jboss.org/browse/AS7-1675
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

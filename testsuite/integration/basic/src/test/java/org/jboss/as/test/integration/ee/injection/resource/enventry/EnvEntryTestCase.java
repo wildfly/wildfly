@@ -50,10 +50,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Migration test from EJB Testsuite (ejbthree-985 + enventry) to AS7 [JIRA JBQA-5483]. 
+ * Migration test from EJB Testsuite (ejbthree-985 + enventry) to AS7 [JIRA JBQA-5483].
  * Test to see if optional env-entry-value works (16.4.1.3).
  * Testing of behaviour of environment variables in ejb-jar.xml.
- * 
+ *
  * @author Carlo de Wolf, William DeCoste, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)

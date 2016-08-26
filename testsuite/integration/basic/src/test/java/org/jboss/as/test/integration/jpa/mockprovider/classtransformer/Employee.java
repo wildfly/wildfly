@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
-import javax.persistence.Cacheable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -32,7 +31,7 @@ import javax.persistence.Id;
  * @author Scott Marlow
  */
 @Entity
-public class Employee  {
+public class Employee {
 
     @Id
     private int id;

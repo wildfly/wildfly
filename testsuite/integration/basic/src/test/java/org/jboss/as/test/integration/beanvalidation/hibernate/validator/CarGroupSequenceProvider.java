@@ -28,7 +28,6 @@ import java.util.List;
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 
 /**
- *
  * @author Madhumita Sadhukhan
  */
 public class CarGroupSequenceProvider implements DefaultGroupSequenceProvider<Car> {
@@ -39,8 +38,7 @@ public class CarGroupSequenceProvider implements DefaultGroupSequenceProvider<Ca
     public List<Class<?>> getValidationGroups(Car car) {
         if (car == null || !car.inspectionCompleted()) {
             return DEFAULT_SEQUENCE;
-        }
-        else {
+        } else {
             List<Class<?>> finalInspectionSequence = new ArrayList<>(3);
             finalInspectionSequence.addAll(DEFAULT_SEQUENCE);
             finalInspectionSequence.add(FinalInspection.class);

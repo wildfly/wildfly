@@ -30,7 +30,6 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
-import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 
 /**

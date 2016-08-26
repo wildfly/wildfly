@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
+import javax.security.auth.AuthPermission;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -70,8 +71,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import javax.security.auth.AuthPermission;
 
 /**
  * This is a test case for RunAsLoginModule

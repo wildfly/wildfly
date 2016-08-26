@@ -64,6 +64,7 @@ public class EjbRefTestCase {
         Assert.assertEquals("hello", remote.hello());
 
     }
+
     @Test
     public void testEjbRefLocalLookup() throws Exception {
         final LookupBean bean = (LookupBean) iniCtx.lookup("java:module/LookupBean");
@@ -72,18 +73,14 @@ public class EjbRefTestCase {
         Assert.assertEquals("hello", remote.hello());
 
     }
-    
+
     @Test
-    public void testInjection() throws Exception
-    {
-       CtxInjectionTester session = (CtxInjectionTester) iniCtx.lookup("java:module/CtxInjectionTesterBean");
-       try
-       {
-          session.checkInjection();
-       }
-       catch(CtxInjectionTester.FailedException e)
-       {
-          Assert.fail("SessionContext not injected");
-       }
+    public void testInjection() throws Exception {
+        CtxInjectionTester session = (CtxInjectionTester) iniCtx.lookup("java:module/CtxInjectionTesterBean");
+        try {
+            session.checkInjection();
+        } catch (CtxInjectionTester.FailedException e) {
+            Assert.fail("SessionContext not injected");
+        }
     }
 }

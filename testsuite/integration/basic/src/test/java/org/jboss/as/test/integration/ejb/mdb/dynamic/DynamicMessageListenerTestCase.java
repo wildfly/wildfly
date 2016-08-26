@@ -48,7 +48,6 @@ import java.util.PropertyPermission;
 
 import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Bright;
 import static org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TtyCodes.TTY_Reset;
-import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;

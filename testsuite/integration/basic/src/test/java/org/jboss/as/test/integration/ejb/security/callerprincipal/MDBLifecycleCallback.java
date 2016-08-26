@@ -44,7 +44,6 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.naming.NamingException;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
 

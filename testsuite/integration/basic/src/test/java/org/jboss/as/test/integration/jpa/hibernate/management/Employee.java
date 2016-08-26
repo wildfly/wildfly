@@ -31,7 +31,7 @@ import javax.persistence.Id;
  * @author Scott Marlow
  */
 @Entity
-public class Employee  {
+public class Employee {
 
     @Id
     private int id;

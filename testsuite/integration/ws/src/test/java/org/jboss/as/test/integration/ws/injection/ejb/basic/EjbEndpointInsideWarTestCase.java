@@ -31,12 +31,9 @@ import org.jboss.as.test.integration.ws.injection.ejb.basic.shared.handlers.Test
 import org.jboss.as.test.integration.ws.injection.ejb.basic.webservice.AbstractEndpointImpl;
 import org.jboss.as.test.integration.ws.injection.ejb.basic.webservice.EJB3Bean;
 import org.jboss.as.test.integration.ws.injection.ejb.basic.webservice.EndpointIface;
-import org.jboss.as.test.integration.ws.injection.ejb.basic.webservice.POJOBean;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -86,7 +83,7 @@ public class EjbEndpointInsideWarTestCase {
 
     @Test
     public void testEjb3InsideWarEndpoint() throws Exception {
-       QName serviceName = new QName("http://jbossws.org/injection", "EJB3Service");
+        QName serviceName = new QName("http://jbossws.org/injection", "EJB3Service");
         URL wsdlURL = new URL(baseUrl, "/jaxws-injection-ejb3/EJB3Service?wsdl");
 
         Service service = Service.create(wsdlURL, serviceName);

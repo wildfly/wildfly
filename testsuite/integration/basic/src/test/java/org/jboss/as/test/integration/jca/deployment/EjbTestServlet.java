@@ -24,14 +24,8 @@ package org.jboss.as.test.integration.jca.deployment;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.naming.InitialContext;
-import javax.resource.AdministeredObjectDefinition;
-import javax.resource.AdministeredObjectDefinitions;
-import javax.resource.ConnectionFactoryDefinition;
-import javax.resource.ConnectionFactoryDefinitions;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -53,78 +47,70 @@ import org.jboss.logging.Logger;
 
 public class EjbTestServlet extends HttpServlet {
     @EJB
-    private  ITestStatelessEjb  testStatelessEjb;
+    private ITestStatelessEjb testStatelessEjb;
     @EJB
-    private  ITestStatelessEjbAO  testStatelessEjbAO;
+    private ITestStatelessEjbAO testStatelessEjbAO;
 
-    private String servletAppContext=null;
-    private String testMethod=null;
-    private String RARJndiScope=null;
+    private String servletAppContext = null;
+    private String testMethod = null;
+    private String RARJndiScope = null;
 
     private static final long serialVersionUID = 1L;
-        private static final Logger log = Logger.getLogger(EjbTestServlet.class);
+    private static final Logger log = Logger.getLogger(EjbTestServlet.class);
 
-        protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            //SecurityClient client = null;
-            try {
-                InitialContext ctx = new InitialContext();
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //SecurityClient client = null;
+        try {
+            InitialContext ctx = new InitialContext();
 
-                boolean testPassed;
+            boolean testPassed;
 
 
-                testPassed = testStatelessEjbAO.validateConnectorResource("java:app/rardeployment/AppAdmin");
-                if (! testPassed)
-                   throw new ServletException("Failed to access AppAdmin");
+            testPassed = testStatelessEjbAO.validateConnectorResource("java:app/rardeployment/AppAdmin");
+            if (!testPassed) { throw new ServletException("Failed to access AppAdmin"); }
 
-                testPassed =testStatelessEjbAO.validateConnectorResource("java:comp/rardeployment/CompAdmin");
-                if (! testPassed)
-                   throw new ServletException("Failed to access CompAdmin");
+            testPassed = testStatelessEjbAO.validateConnectorResource("java:comp/rardeployment/CompAdmin");
+            if (!testPassed) { throw new ServletException("Failed to access CompAdmin"); }
 
-                testPassed = testStatelessEjbAO.validateConnectorResource("java:module/rardeployment/ModuleAdmin");
-                if (! testPassed)
-                   throw new ServletException("Failed to access ModuleAdmin");
+            testPassed = testStatelessEjbAO.validateConnectorResource("java:module/rardeployment/ModuleAdmin");
+            if (!testPassed) { throw new ServletException("Failed to access ModuleAdmin"); }
 
-                testPassed = testStatelessEjbAO.validateConnectorResource("java:global/rardeployment/GlobalAdmin");
-                if (! testPassed)
-                   throw new ServletException("Failed to access GlobalAdmin");
+            testPassed = testStatelessEjbAO.validateConnectorResource("java:global/rardeployment/GlobalAdmin");
+            if (!testPassed) { throw new ServletException("Failed to access GlobalAdmin"); }
 
-                testPassed = testStatelessEjb.validateConnectorResource("java:app/rardeployment/AppCF");
-                if (! testPassed)
-                   throw new ServletException("Failed to access AppCF");
+            testPassed = testStatelessEjb.validateConnectorResource("java:app/rardeployment/AppCF");
+            if (!testPassed) { throw new ServletException("Failed to access AppCF"); }
 
-                testPassed = testStatelessEjb.validateConnectorResource("java:comp/rardeployment/CompCF");
-                if (! testPassed)
-                   throw new ServletException("Failed to access CompCF");
+            testPassed = testStatelessEjb.validateConnectorResource("java:comp/rardeployment/CompCF");
+            if (!testPassed) { throw new ServletException("Failed to access CompCF"); }
 
-                testPassed = testStatelessEjb.validateConnectorResource("java:module/rardeployment/ModuleCF");
-                if (! testPassed)
-                   throw new ServletException("Failed to access ModuleCF");
+            testPassed = testStatelessEjb.validateConnectorResource("java:module/rardeployment/ModuleCF");
+            if (!testPassed) { throw new ServletException("Failed to access ModuleCF"); }
 
-                testPassed = testStatelessEjb.validateConnectorResource("java:global/rardeployment/GlobalCF");
-                if (! testPassed)
-                   throw new ServletException("Failed to access GlobalCF");
+            testPassed = testStatelessEjb.validateConnectorResource("java:global/rardeployment/GlobalCF");
+            if (!testPassed) { throw new ServletException("Failed to access GlobalCF"); }
 
-            } catch (ServletException se) {
-                log.error(se);
-                throw se;
-            } catch (Exception e) {
-                log.error(e);
-                throw new ServletException("Failed to access resource adapter", e);
-            } finally {
-                //client.logout();
-            }
-            response.setContentType("text/plain");
-            PrintWriter out = response.getWriter();
-            out.print("EjbTestServlet OK");
-            out.close();
+        } catch (ServletException se) {
+            log.error(se);
+            throw se;
+        } catch (Exception e) {
+            log.error(e);
+            throw new ServletException("Failed to access resource adapter", e);
+        } finally {
+            //client.logout();
         }
+        response.setContentType("text/plain");
+        PrintWriter out = response.getWriter();
+        out.print("EjbTestServlet OK");
+        out.close();
+    }
 
-        protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            processRequest(request, response);
-        }
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
-        protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            processRequest(request, response);
-        }
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
 }

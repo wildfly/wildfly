@@ -21,14 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.persistence.legacy;
 
+import java.io.File;
+import java.io.InputStream;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.ejb.timerservice.persistence.CancelledTimerServiceBean;
-import org.jboss.as.test.integration.ejb.timerservice.persistence.NonPersistentTimerServiceBean;
-import org.jboss.as.test.integration.ejb.timerservice.persistence.SimpleTimerServiceBean;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,14 +37,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.TimerHandle;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
 
 /**
  * Tests that the old non-xml class based serialization format can still be read

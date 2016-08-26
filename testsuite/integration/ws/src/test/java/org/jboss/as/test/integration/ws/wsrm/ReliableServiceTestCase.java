@@ -25,6 +25,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+
 import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,7 +41,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 @RunWith(Arquillian.class)

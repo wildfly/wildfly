@@ -27,7 +27,6 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * Convert the 1.4 SEGMENTS value to VIRTUAL_NODES in model and operations, if defined and not an expression
- * Remove the 1.4 attributes INDEXING_PROPERTIES and SEGMENTS from model and operations
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  * @author Richard Achmatowicz (c) RedHat 2013
