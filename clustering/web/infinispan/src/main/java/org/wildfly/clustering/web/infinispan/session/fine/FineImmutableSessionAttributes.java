@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
@@ -37,28 +37,30 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  */
 public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttributes {
     private final String id;
+    private final Map<String, Integer> names;
     private final Cache<SessionAttributeKey, V> cache;
     private final Marshaller<Object, V, MarshallingContext> marshaller;
 
-    public FineImmutableSessionAttributes(String id, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller) {
+    public FineImmutableSessionAttributes(String id, Map<String, Integer> names, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller) {
         this.id = id;
+        this.names = names;
         this.cache = attributeCache;
         this.marshaller = marshaller;
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        return this.cache.getAdvancedCache().getGroup(this.id).keySet().stream().filter((Object object) -> object instanceof SessionAttributeKey).map(key -> key.getAttribute()).collect(Collectors.toSet());
+        return this.names.keySet();
     }
 
     @Override
     public Object getAttribute(String name) {
-        SessionAttributeKey key = this.createKey(name);
-        return this.read(name, this.cache.get(key));
+        Integer attributeId = this.names.get(name);
+        return (attributeId != null) ? this.read(name, this.cache.get(this.createKey(attributeId))) : null;
     }
 
-    protected SessionAttributeKey createKey(String attribute) {
-        return new SessionAttributeKey(this.id, attribute);
+    protected SessionAttributeKey createKey(int attributeId) {
+        return new SessionAttributeKey(this.id, attributeId);
     }
 
     protected Object read(String name, V value) {
