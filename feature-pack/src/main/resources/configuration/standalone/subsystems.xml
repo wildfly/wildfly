@@ -30,5 +30,6 @@
         <subsystem>undertow.xml</subsystem>
         <subsystem>webservices.xml</subsystem>
         <subsystem>weld.xml</subsystem>
+        <subsystem>wise.xml</subsystem>
     </subsystems>
 </config>
