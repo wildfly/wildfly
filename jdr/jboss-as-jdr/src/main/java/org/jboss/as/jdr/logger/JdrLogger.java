@@ -141,4 +141,7 @@ public interface JdrLogger extends BasicLogger {
 
     @Message(id = Message.NONE, value = "Configuration file of the server if it is not running.")
     String jdrConfigMessage();
+
+    @Message(id = Message.NONE, value = "JBoss Diagnostic Reporter (JDR) is a subsystem built to collect information to aid in troubleshooting. The jdr script is a utility for generating JDR reports.")
+    String jdrDescriptionMessage();
 }
