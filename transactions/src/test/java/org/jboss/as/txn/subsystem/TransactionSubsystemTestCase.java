@@ -31,9 +31,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 
+import com.arjuna.ats.arjuna.coordinator.TxStats;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -65,7 +67,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_3_0.xsd";
+        return "schema/wildfly-txn_3_1.xsd";
     }
 
     @Override
@@ -121,6 +123,30 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParser_3_0() throws Exception {
         standardSubsystemTest("full-3.0.xml");
+    }
+
+    @Test
+    public void testParser_3_1() throws Exception {
+        standardSubsystemTest("full-3.1.xml");
+    }
+
+    @Test
+    public void testTxStats() throws Exception {
+        // Parse the subsystem xml and install into the first controller
+        final String subsystemXml = getSubsystemXml();
+        final KernelServices kernelServices = super.createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
+
+        // Reads stats
+        ModelNode operation = createReadAttributeOperation(CommonAttributes.NUMBER_OF_SYSTEM_ROLLBACKS);
+        ModelNode result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+        Assert.assertEquals(TxStats.getInstance().getNumberOfSystemRollbacks(), result.get(ModelDescriptionConstants.RESULT).asLong());
+
+        operation = createReadAttributeOperation(CommonAttributes.AVERAGE_COMMIT_TIME);
+        result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+        Assert.assertEquals(TxStats.getInstance().getAverageCommitTime(), result.get(ModelDescriptionConstants.RESULT).asLong());
     }
 
 
@@ -212,6 +238,17 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
+    }
+
+    private ModelNode createReadAttributeOperation(String name) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, getMainSubsystemName());
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get(ModelDescriptionConstants.NAME).set(name);
+        return operation;
     }
 
     private static ModelFixer ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO = new ModelFixer() {

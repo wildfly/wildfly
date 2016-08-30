@@ -64,7 +64,7 @@ public class TransactionExtension implements Extension {
     static final ModelVersion MODEL_VERSION_EAP62 = ModelVersion.create(1, 3);
     static final ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 4);
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 1, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -141,6 +141,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_5.getUriString(), TransactionSubsystem15Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_2_0.getUriString(), TransactionSubsystem20Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_0.getUriString(), TransactionSubsystem30Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_1.getUriString(), TransactionSubsystem31Parser.INSTANCE);
     }
 
     // Transformation
