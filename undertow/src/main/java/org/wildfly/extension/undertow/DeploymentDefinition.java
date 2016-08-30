@@ -145,14 +145,14 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                         if(sms == null) {
                             result.set(0);
                         } else {
-                            result.set((int)sms.getAverageSessionAliveTime());
+                            result.set((int) sms.getAverageSessionAliveTime() / 1000);
                         }
                         break;
                     case SESSION_MAX_ALIVE_TIME:
                         if(sms == null) {
                             result.set(0);
                         } else {
-                            result.set((int)sms.getMaxSessionAliveTime());
+                            result.set((int) sms.getMaxSessionAliveTime() / 1000);
                         }
                         break;
                     case REJECTED_SESSIONS:
