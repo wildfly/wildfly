@@ -66,13 +66,6 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
     private final Map<String, VirtualFile> jobXmlFiles;
     private final ClassLoader classLoader;
 
-    private WildFlyJobXmlResolver() {
-        classLoader = null;
-        resolvedJobs = Collections.emptyMap();
-        jobXmlResolvers = Collections.emptySet();
-        jobXmlFiles = Collections.emptyMap();
-    }
-
     private WildFlyJobXmlResolver(final ClassLoader classLoader, final Map<String, VirtualFile> jobXmlFiles) {
         this.classLoader = classLoader;
         resolvedJobs = new LinkedHashMap<>();
@@ -95,17 +88,17 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
                 // We may have some job XML files
                 final Map<String, VirtualFile> xmlFiles = jobsDir.getChildren(JobXmlFilter.INSTANCE)
                         .stream()
-                        .collect(Collectors.toMap(VirtualFile::getName,  (f) -> f));
+                        .collect(Collectors.toMap(VirtualFile::getName, (f) -> f));
                 jobXmlResolver = new WildFlyJobXmlResolver(classLoader, xmlFiles);
-                // Initialize this instance
-                jobXmlResolver.init();
             } catch (IOException e) {
                 throw BatchLogger.LOGGER.errorProcessingBatchJobsDir(e);
             }
         } else {
             // This is likely not a batch deployment, creates a no-op service
-            jobXmlResolver = new WildFlyJobXmlResolver();
+            jobXmlResolver = new WildFlyJobXmlResolver(classLoader, Collections.emptyMap());
         }
+        // Initialize this instance
+        jobXmlResolver.init();
         deploymentUnit.putAttachment(JOB_XML_RESOLVER, jobXmlResolver);
         return jobXmlResolver;
     }
