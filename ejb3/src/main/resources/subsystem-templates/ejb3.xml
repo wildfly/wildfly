@@ -39,6 +39,7 @@
        </thread-pools>
        <?IIOP?>
        <default-security-domain value="other"/>
+       <?ELYTRON?>
        <default-missing-method-permissions-deny-access value="true" />
        <log-system-exceptions value="true" />
 
@@ -65,4 +66,14 @@
       </replacement>
    </supplement>
    <supplement name="full-ha" includes="full ha"/>
+   <supplement name="elytron" includes="default">
+      <replacement placeholder="ELYTRON">
+         <application-security-domains>
+             <application-security-domain name="other" security-domain="ApplicationDomain"/>
+         </application-security-domains>
+       </replacement>
+   </supplement>
+   <supplement name="full-elytron" includes="full elytron"/>
+   <supplement name="ha-elytron" includes="ha elytron"/>
+   <supplement name="full-ha-elytron" includes="full-ha elytron"/>
 </config>

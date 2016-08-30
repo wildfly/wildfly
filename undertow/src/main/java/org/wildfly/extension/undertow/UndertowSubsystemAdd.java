@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.function.Predicate;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -69,10 +71,12 @@ import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
  */
 class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final UndertowSubsystemAdd INSTANCE = new UndertowSubsystemAdd();
 
-    private UndertowSubsystemAdd() {
+    private final Predicate<String> knownSecurityDomain;
+
+    UndertowSubsystemAdd(Predicate<String> knownSecurityDomain) {
         super(UndertowRootDefinition.ATTRIBUTES);
+        this.knownSecurityDomain = knownSecurityDomain;
     }
 
     /**
@@ -133,7 +137,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
 
-                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new UndertowDeploymentProcessor(defaultVirtualHost, defaultContainer, defaultServer, defaultSecurityDomain));
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new UndertowDeploymentProcessor(defaultVirtualHost, defaultContainer, defaultServer, defaultSecurityDomain, knownSecurityDomain));
 
             }
         }, OperationContext.Stage.RUNTIME);

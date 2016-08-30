@@ -44,6 +44,7 @@
          <xs:element name="security-management" type="securityManagementType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="vault" type="vaultType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="elytron-integration" type="elytronIntegrationType" minOccurs="0" maxOccurs="1"/>
       </xs:all>
    </xs:complexType>
 
@@ -420,4 +421,115 @@
       </xs:sequence>
       <xs:attribute name="code" type="xs:string" use="optional"/>
    </xs:complexType>
+
+   <!-- ELYTRON INTEGRATION SCHEMA -->
+   <xs:complexType name="elytronIntegrationType">
+       <xs:annotation>
+           <xs:documentation>
+               <![CDATA[
+                    This type specifies the elements and attributes used to configure the integration of the legacy
+                    security subsystem with the new security framework provided by the Elytron project.
+                ]]>
+           </xs:documentation>
+       </xs:annotation>
+       <xs:sequence>
+           <xs:element name="security-realms" type="securityRealmsType" minOccurs="0" maxOccurs="1"/>
+           <xs:element name="tls" type="tlsType" minOccurs="0" maxOccurs="1"/>
+       </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="securityRealmsType">
+       <xs:annotation>
+           <xs:documentation>
+               <![CDATA[
+                   This type specifies the elements and attributes used to configure the Elytron compatible realms that
+                   are to be exported by the legacy subsystem. Each realm delegates the authentication decision to a
+                   legacy JAAS-based security domain.
+               ]]>
+           </xs:documentation>
+       </xs:annotation>
+       <xs:sequence>
+           <xs:element name="elytron-realm" type="elytronRealmType" minOccurs="0" maxOccurs="unbounded"/>
+       </xs:sequence>
+   </xs:complexType>
+
+    <xs:complexType name="elytronRealmType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                    The elytron-realm element allows for the configuration of Elytron-compatible realms that delegate
+                    the authentication process to legacy security domains exposed by the legacy security subsystem. These
+                    realms provide a bridge between the new Elytron security domains and the legacy JAAS-based security
+                    domains and are meant to ease the migration process to Elytron by allowing users to start using Elytron
+                    without having to immediately switch their JAAS-based login modules to the new Elytron realms.
+
+                    The realms are exported as capabilities and can be consumed in the Elytron subsystem without requiring
+                    any extra wiring between the subsystems (i.e. no dependencies to the legacy subsystem), which promotes
+                    a separation that will ease the removal of the legacy subsystem in the future.
+
+                    The export-realm element contains the following attributes:
+
+                     * name - the name of the realm that will be exported. It must be unique and must not match any of
+                     the realms already declared in the Elytron subsystem.
+
+                     * legacy-jaas-config - the name of the legacy security domain to which the exported realm will delegate
+                     the authentication decision.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="legacy-jaas-config" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="tlsType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                    This type specifies the elements used to configure the Elytron-compatible TLS entities that are to
+                    be exported by the legacy subsystem. A legacy security domain can be used to export TLS entities such
+                    as key/trust stores and key/trust managers when it has a JSSE configuration that enables the legacy
+                    domain to produce these entities.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="elytron-key-store" type="tlsEntityType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="elytron-trust-store" type="tlsEntityType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="elytron-key-manager" type="tlsEntityType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="elytron-trust-manager" type="tlsEntityType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="tlsEntityType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                    This type contains the attributes used to export Elytron-compatible TLS entities (key/trust stores
+                    and key/trust managers).
+
+                    The entities are exported as capabilities and can be consumed in the Elytron subsystem without requiring
+                    any extra wiring between the subsystems (i.e. no dependencies to the legacy subsystem), which promotes
+                    a separation that will ease the removal of the legacy subsystem in the future.
+
+                    This type contains the following attributes:
+
+                    * name - the name of the entity being exported. It must be unique and must not match any of the entities
+                    of the same type already declared in the Elytron subsystem.
+
+                    NOTE: the Elytron subsystem uses the same key-store element to refer to both key stores and trust stores
+                    and they are both exported as the same kind of capability. So care must be taken when exporting legacy
+                    key stores and trust stores as the name used must be unique across all exported key stores and trust stores.
+
+                    * legacy-jsse-config - the name of the legacy security domain that contains a JSSE configuration that
+                    is capable of producing the entity being exported. For example, if a key store is being exported then the
+                    legacy-jsse-config attribute must point to a legacy domain that contains a JSSE section that configures
+                    a key store.
+
+
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="legacy-jsse-config" type="xs:string" use="required"/>
+    </xs:complexType>
 </xs:schema>

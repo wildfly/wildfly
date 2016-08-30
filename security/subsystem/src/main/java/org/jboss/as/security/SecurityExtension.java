@@ -33,6 +33,9 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -51,7 +54,6 @@ import org.jboss.msc.service.ServiceName;
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
-    private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
     static final PathElement PATH_IDENTITY_TRUST_CLASSIC = PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC);
     static final PathElement PATH_JASPI_AUTH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
@@ -68,12 +70,12 @@ import org.jboss.msc.service.ServiceName;
     static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1,3,0);
 
     @SuppressWarnings("deprecation")
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+    public static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
     }
 
     @SuppressWarnings("deprecation")
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+    public static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder();
         for (String kp : keyPrefix) {
             if (prefix.length() > 0) {
@@ -95,7 +97,6 @@ import org.jboss.msc.service.ServiceName;
 
         final ManagementResourceRegistration securityDomain = registration.registerSubModel(new SecurityDomainResourceDefinition(registerRuntimeOnly));
         securityDomain.registerSubModel(JASPIAuthenticationResourceDefinition.INSTANCE);
-
         securityDomain.registerSubModel(ClassicAuthenticationResourceDefinition.INSTANCE);
         securityDomain.registerSubModel(AuthorizationResourceDefinition.INSTANCE);
         securityDomain.registerSubModel(MappingResourceDefinition.INSTANCE);
@@ -104,17 +105,40 @@ import org.jboss.msc.service.ServiceName;
         securityDomain.registerSubModel(IdentityTrustResourceDefinition.INSTANCE);
         securityDomain.registerSubModel(JSSEResourceDefinition.INSTANCE);
         registration.registerSubModel(VaultResourceDefinition.INSTANCE);
-        subsystem.registerXMLElementWriter(PARSER);
+        // register the elytron integration resources.
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronRealmResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronKeyStoreResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronTrustStoreResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronKeyManagersResourceDefinition());
+        registration.registerSubModel(ElytronIntegrationResourceDefinitions.getElytronTrustManagersResourceDefinition());
+        // register the subsystem XML persister.
+        subsystem.registerXMLElementWriter(SecuritySubsystemPersister.INSTANCE);
 
-        //no need to register transformers as eap 6.2+ uses 1.3 version which is same as current
+        if (context.isRegisterTransformers()) {
+            registerTransformers(subsystem);
+        }
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), PARSER);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), PARSER);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), PARSER);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), SecuritySubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), SecuritySubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), SecuritySubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), SecuritySubsystemParser_3_0.INSTANCE);
     }
 
+    private void registerTransformers(SubsystemRegistration subsystemRegistration) {
+        // only register transformers for model version 1.3.0 (EAP 6.2+).
+        registerTransformers_1_3_0(subsystemRegistration);
+    }
+
+    private void registerTransformers_1_3_0(SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_REALM));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_STORE));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_STORE));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_MANAGER));
+        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER));
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 3, 0));
+    }
 }

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -67,6 +68,8 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             .setAllowedValues("default", "infinispan")
             .build();
 
+    public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {CACHE_TYPE};
+
     private final boolean registerRuntimeOnly;
     private final List<AccessConstraintDefinition> accessConstraints;
 
@@ -77,13 +80,13 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         this.registerRuntimeOnly = registerRuntimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
-        this.accessConstraints = Arrays.asList((AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN, acd);
+        this.accessConstraints = Arrays.asList(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN, acd);
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler(CACHE_TYPE));
+        resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler());
     }
 
     @Override

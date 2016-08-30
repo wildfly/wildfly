@@ -106,12 +106,19 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             URL roles = getClass().getResource("cert/roles.properties");
 
             final List<ModelNode> updates = new ArrayList<ModelNode>();
-            PathAddress address = PathAddress.pathAddress().append(SUBSYSTEM, "security")
+
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
+
+            final ModelNode domainSteps = compositeOp.get(STEPS);
+            PathAddress address = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
                     .append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
 
-            updates.add(Util.createAddOperation(address));
+            domainSteps.add(Util.createAddOperation(address));
             address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
-            updates.add(Util.createAddOperation(address));
+            domainSteps.add(Util.createAddOperation(address));
 
             ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "CertificateRoles"));
             loginModule.get(CODE).set("CertificateRoles");
@@ -120,20 +127,17 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             moduleOptions.add("securityDomain", APP_SECURITY_DOMAIN);
             moduleOptions.add("rolesProperties", roles.getPath());
             loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-            updates.add(loginModule);
+            domainSteps.add(loginModule);
 
             // Add the JSSE security domain.
             address = PathAddress.pathAddress().append(SUBSYSTEM, "security").append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
-
             ModelNode op = Util.createAddOperation(address.append(JSSE, Constants.CLASSIC));
-
             op.get(TRUSTSTORE, PASSWORD).set("changeit");
-
             op.get(TRUSTSTORE, URL).set(keystore.getPath());
             op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
+            domainSteps.add(op);
 
+            updates.add(compositeOp);
             // Add the HTTPS socket binding.
             op = new ModelNode();
             op.get(OP).set(ADD);

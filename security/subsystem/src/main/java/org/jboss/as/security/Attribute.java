@@ -70,7 +70,10 @@ public enum Attribute {
     TRUSTSTORE_TYPE("truststore-type"),
     TRUSTSTORE_URL("truststore-url"),
     TYPE("type"),
-    VALUE("value");
+    VALUE("value"),
+    // ELYTRON INTEGRATION ATTRIBUTES
+    LEGACY_JAAS_CONFIG(Constants.LEGACY_JAAS_CONFIG),
+    LEGACY_JSSE_CONFIG(Constants.LEGACY_JSSE_CONFIG);
 
     private final String name;
 

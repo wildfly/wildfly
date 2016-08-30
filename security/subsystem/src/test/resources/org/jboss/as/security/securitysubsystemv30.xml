@@ -23,48 +23,48 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:security:3.0">
-   <security-domains>
-      <security-domain name="other" cache-type="default">
-             <authentication>
+    <security-domains>
+        <security-domain name="other" cache-type="default">
+            <authentication>
                 <login-module code="Remoting" flag="${test.prop:optional}" module="test-authentication">
-                  <module-option name="password-stacking" value="${test.prop:useFirstPass}"/>
+                    <module-option name="password-stacking" value="${test.prop:useFirstPass}"/>
                 </login-module>
-                 <login-module code="Duplicate" flag="optional" />
-                 <login-module name="duplicate-module" code="Duplicate" flag="optional" />
+                <login-module code="Duplicate" flag="optional" />
+                <login-module name="duplicate-module" code="Duplicate" flag="optional" />
                 <login-module code="Anon" flag="optional"/>
                 <login-module code="RealmUsersRoles" flag="required">
-                  <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
-                  <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
-                  <module-option name="realm" value="ApplicationRealm"/>
-                  <module-option name="password-stacking" value="useFirstPass"/>
+                    <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                    <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                    <module-option name="realm" value="ApplicationRealm"/>
+                    <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
-              </authentication>
-         <authorization>
-            <policy-module code="DenyAll" flag="${test.prop:required}" module="test-auth">
-                 <module-option name="a" value="${test.prop:c}"/>
-               </policy-module>
-         </authorization>
-         <acl>
-            <acl-module name="acl" code="AclThingy" flag="${test.prop:required}" module="test">
-                 <module-option name="d" value="${test.prop:r}"/>
-            </acl-module>
-         </acl>
-         <mapping>
-           <mapping-module name="test" code="SimpleRoles" type="${test.prop:role}" module="test-mapping">
-                 <module-option name="d" value="${test.prop:e}"/>
-           </mapping-module>
-         </mapping>
-         <audit>
-                 <provider-module code="customModule">
-                   <module-option name="d" value="${test.prop:r}"/>
-                 </provider-module>
-         </audit>
-         <identity-trust>
-             <trust-module code="IdentityThingy" flag="${test.prop:required}" module="test-identity">
-                 <module-option name="d" value="${test.prop:r}"/>
-             </trust-module>
-         </identity-trust>
-         <jsse truststore-url="${test.prop:keystore.jks}"
+            </authentication>
+            <authorization>
+                <policy-module code="DenyAll" flag="${test.prop:required}" module="test-auth">
+                    <module-option name="a" value="${test.prop:c}"/>
+                </policy-module>
+            </authorization>
+            <acl>
+                <acl-module name="acl" code="AclThingy" flag="${test.prop:required}" module="test">
+                    <module-option name="d" value="${test.prop:r}"/>
+                </acl-module>
+            </acl>
+            <mapping>
+                <mapping-module name="test" code="SimpleRoles" type="${test.prop:role}" module="test-mapping">
+                    <module-option name="d" value="${test.prop:e}"/>
+                </mapping-module>
+            </mapping>
+            <audit>
+                <provider-module code="customModule">
+                    <module-option name="d" value="${test.prop:r}"/>
+                </provider-module>
+            </audit>
+            <identity-trust>
+                <trust-module code="IdentityThingy" flag="${test.prop:required}" module="test-identity">
+                    <module-option name="d" value="${test.prop:r}"/>
+                </trust-module>
+            </identity-trust>
+            <jsse truststore-url="${test.prop:keystore.jks}"
                   truststore-password="${test.prop:rmi+ssl}"
                   truststore-type="${test.prop:jks}"
                   truststore-provider="${test.prop:truststore.jks}"
@@ -85,8 +85,8 @@
                   cipher-suites="${test.prop:aaa,bbb,ccc}"
                   protocols="${test.prop:one,two,three}">
                 <property name="name" value="${some.prop:default}"/>
-         </jsse>
-      </security-domain>
+            </jsse>
+        </security-domain>
         <security-domain name="jaspi-test" cache-type="default">
             <authentication-jaspi>
                 <login-module-stack name="lm-stack">
@@ -97,8 +97,8 @@
                 </login-module-stack>
                 <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
                              flag="${test.prop:optional}" module="test-jaspi">
-                   <module-option name="x" value="${test.prop:y}"/>
-                   <module-option name="p" value="${test.prop:r}"/>
+                    <module-option name="x" value="${test.prop:y}"/>
+                    <module-option name="p" value="${test.prop:r}"/>
                 </auth-module>
             </authentication-jaspi>
         </security-domain>
@@ -132,10 +132,21 @@
         <security-domain name="jboss-empty-jsse" >
             <jsse server-alias="silent.planet" />
         </security-domain>
-       <security-domain name="legacy-domain" cache-type="none" />
     </security-domains>
-   <vault code="somevault">
-     <vault-option name="xyz" value="zxc"/>
-     <vault-option name="abc" value="def"/>
+    <vault code="somevault">
+        <vault-option name="xyz" value="zxc"/>
+        <vault-option name="abc" value="def"/>
     </vault>
+    <elytron-integration>
+        <security-realms>
+            <elytron-realm name="LegacyRealm1" legacy-jaas-config="other"/>
+            <elytron-realm name="LegacyRealm2" legacy-jaas-config="other2"/>
+        </security-realms>
+        <tls>
+            <elytron-key-store name="LegacyKeyStore" legacy-jsse-config="other"/>
+            <elytron-trust-store name="LegacyTrustStore" legacy-jsse-config="other"/>
+            <elytron-key-manager name="LegacyKeyManager" legacy-jsse-config="other"/>
+            <elytron-trust-manager name="LegacyTrustManager" legacy-jsse-config="other"/>
+        </tls>
+    </elytron-integration>
 </subsystem>

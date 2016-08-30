@@ -224,10 +224,24 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
-        // default-security-domain element
         if (model.hasDefined(DEFAULT_SECURITY_DOMAIN)) {
+            // default-security-domain element
             writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_SECURITY_DOMAIN.getLocalName());
             writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DEFAULT_SECURITY_DOMAIN).asString());
+            writer.writeEndElement();
+        }
+
+        // application-security-domains element
+        if (model.hasDefined(APPLICATION_SECURITY_DOMAIN)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.APPLICATION_SECURITY_DOMAINS.getLocalName());
+            writeApplicationSecurityDomains(writer, model);
+            writer.writeEndElement();
+        }
+
+        // identity element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(IDENTITY) && model.get(SERVICE, IDENTITY).hasDefined(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getName())) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.IDENTITY.getLocalName());
+            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getAttributeMarshaller().marshallAsAttribute(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, model.get(SERVICE, IDENTITY), false, writer);
             writer.writeEndElement();
         }
 
@@ -582,6 +596,20 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             }
             writer.writeEndElement();
         }
+    }
+
+    private void writeApplicationSecurityDomains(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        List<Property> applicationSecurityDomains = model.get(APPLICATION_SECURITY_DOMAIN).asPropertyList();
+        for (Property property : applicationSecurityDomains) {
+            writeApplicationSecurityDomain(writer, property);
+        }
+    }
+
+    private void writeApplicationSecurityDomain(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {
+        writer.writeStartElement(APPLICATION_SECURITY_DOMAIN);
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+        ApplicationSecurityDomainDefinition.SECURITY_DOMAIN.marshallAsAttribute(property.getValue(), writer);
+        writer.writeEndElement();
     }
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {

@@ -50,32 +50,47 @@ import org.xnio.SslClientAuthMode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class HttpsListenerResourceDefinition extends ListenerResourceDefinition {
+
+    static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
+
     protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
 
-    protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)
-            .setAllowNull(false)
+    protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
+            .setAlternatives(Constants.SECURITY_REALM)
+            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, LISTENER_CAPABILITY_NAME, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
+
+    protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING, true)
+            .setAlternatives(Constants.SSL_CONTEXT)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new StringLengthValidator(1))
+            .setDeprecated(ModelVersion.create(4, 0, 0))
+            .build();
+
     protected static final OptionAttributeDefinition VERIFY_CLIENT = OptionAttributeDefinition.builder(Constants.VERIFY_CLIENT, SSL_CLIENT_AUTH_MODE)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<SslClientAuthMode>(SslClientAuthMode.class, true, true))
             .setDefaultValue(new ModelNode(SslClientAuthMode.NOT_REQUESTED.name()))
+            .setDeprecated(ModelVersion.create(4, 0, 0))
             .build();
 
     protected static final OptionAttributeDefinition ENABLED_CIPHER_SUITES = OptionAttributeDefinition.builder(Constants.ENABLED_CIPHER_SUITES, Options.SSL_ENABLED_CIPHER_SUITES)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .setDeprecated(ModelVersion.create(4, 0, 0))
             .build();
 
     protected static final OptionAttributeDefinition ENABLED_PROTOCOLS = OptionAttributeDefinition.builder(Constants.ENABLED_PROTOCOLS, Options.SSL_ENABLED_PROTOCOLS)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .setDeprecated(ModelVersion.create(4, 0, 0))
             .build();
 
     protected static final OptionAttributeDefinition ENABLE_HTTP2 = OptionAttributeDefinition.builder(Constants.ENABLE_HTTP2, UndertowOptions.ENABLE_HTTP2)
@@ -103,6 +118,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         Collection<AttributeDefinition> res = new LinkedList<>(super.getAttributes());
+        res.add(SSL_CONTEXT);
         res.add(SECURITY_REALM);
         res.add(VERIFY_CLIENT);
         res.add(ENABLED_CIPHER_SUITES);

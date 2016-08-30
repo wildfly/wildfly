@@ -71,6 +71,7 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -119,6 +120,8 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 class SecurityDomainAdd extends AbstractAddStepHandler {
     private static final String CACHE_CONTAINER_NAME = "security";
 
+    private static final String DEFAULT_MODULE = "org.picketbox";
+
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
 
     /**
@@ -127,10 +130,14 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     private SecurityDomainAdd() {
     }
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        SecurityDomainResourceDefinition.CACHE_TYPE.validateAndSet(operation, model);
+        for (AttributeDefinition attribute : SecurityDomainResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
@@ -166,7 +173,6 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             builder.addDependency(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
         }
-
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 
@@ -210,8 +216,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             applicationPolicy.setMappingInfo(mappingType, mappingInfo);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                mappingInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                mappingInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                mappingInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
 
@@ -235,8 +243,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             identityTrustInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                identityTrustInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                identityTrustInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                identityTrustInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
@@ -257,8 +267,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             auditInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                auditInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                auditInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                auditInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setAuditInfo(auditInfo);
@@ -282,8 +294,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             aclInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                aclInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                aclInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                aclInfo.addJBossModuleName(DEFAULT_MODULE);
             }
 
         }
@@ -308,8 +322,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             authzInfo.add(authzModuleEntry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authzInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                authzInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                authzInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
 
@@ -335,6 +351,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                 authenticationInfo.add(holder);
                 if (stackNode.hasDefined(LOGIN_MODULE)) {
                     processLoginModules(context, stackNode.get(LOGIN_MODULE), authenticationInfo, new LoginModuleContainer() {
+                        @Override
                         public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                             holder.addAppConfigurationEntry(entry);
                         }
@@ -364,8 +381,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             authenticationInfo.add(entry);
 
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, authModule);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authenticationInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                authenticationInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                authenticationInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
         applicationPolicy.setAuthenticationInfo(authenticationInfo);
@@ -394,6 +413,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final AuthenticationInfo authenticationInfo = new AuthenticationInfo(securityDomain);
         if (node.hasDefined(Constants.LOGIN_MODULE)) {
             processLoginModules(context, node.get(LOGIN_MODULE), authenticationInfo, new LoginModuleContainer() {
+                @Override
                 public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                     authenticationInfo.add(entry);
                 }
@@ -420,8 +440,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
             container.addAppConfigurationEntry(entry);
             ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
-            if (moduleName.isDefined() && moduleName.asString().length() > 0) {
-                authInfo.setJBossModuleName(moduleName.asString());
+            if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
+                authInfo.addJBossModuleName(moduleName.asString());
+            } else {
+                authInfo.addJBossModuleName(DEFAULT_MODULE);
             }
         }
     }
@@ -439,64 +461,78 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
 
         processKeyStore(context, node, KEYSTORE, new KeyStoreConfig() {
+            @Override
             public void setKeyStorePassword(String value) throws Exception {
                 jsseSecurityDomain.setKeyStorePassword(value);
             }
 
+            @Override
             public void setKeyStoreType(String value) {
                 jsseSecurityDomain.setKeyStoreType(value);
             }
 
+            @Override
             public void setKeyStoreURL(String value) throws IOException {
                 jsseSecurityDomain.setKeyStoreURL(value);
             }
 
+            @Override
             public void setKeyStoreProvider(String value) {
                 jsseSecurityDomain.setKeyStoreProvider(value);
             }
 
+            @Override
             public void setKeyStoreProviderArgument(String value) {
                 jsseSecurityDomain.setKeyStoreProviderArgument(value);
             }
         });
 
         processKeyStore(context, node, Constants.TRUSTSTORE, new KeyStoreConfig() {
+            @Override
             public void setKeyStorePassword(String value) throws Exception {
                 jsseSecurityDomain.setTrustStorePassword(value);
             }
 
+            @Override
             public void setKeyStoreType(String value) {
                 jsseSecurityDomain.setTrustStoreType(value);
             }
 
+            @Override
             public void setKeyStoreURL(String value) throws IOException {
                 jsseSecurityDomain.setTrustStoreURL(value);
             }
 
+            @Override
             public void setKeyStoreProvider(String value) {
                 jsseSecurityDomain.setTrustStoreProvider(value);
             }
 
+            @Override
             public void setKeyStoreProviderArgument(String value) {
                 jsseSecurityDomain.setTrustStoreProviderArgument(value);
             }
         });
 
         processKeyManager(context, node, Constants.KEY_MANAGER, new KeyManagerConfig() {
+            @Override
             public void setKeyManagerFactoryAlgorithm(String value) {
                 jsseSecurityDomain.setKeyManagerFactoryAlgorithm(value);
             }
 
+            @Override
             public void setKeyManagerFactoryProvider(String value) {
                 jsseSecurityDomain.setKeyManagerFactoryProvider(value);
             }
         });
 
         processKeyManager(context, node, Constants.TRUST_MANAGER, new KeyManagerConfig() {
+            @Override
             public void setKeyManagerFactoryAlgorithm(String value) {
                 jsseSecurityDomain.setTrustManagerFactoryAlgorithm(value);
             }
 
+            @Override
             public void setKeyManagerFactoryProvider(String value) {
                 jsseSecurityDomain.setTrustManagerFactoryProvider(value);
             }

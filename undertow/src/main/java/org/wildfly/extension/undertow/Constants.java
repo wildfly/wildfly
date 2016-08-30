@@ -39,6 +39,7 @@ public interface Constants {
     String SETTING = "setting";
     String SECURITY_REALM = "security-realm";
     String SOCKET_BINDING = "socket-binding";
+    String SSL_CONTEXT = "ssl-context";
     String PATH = "path";
     String HTTP_LISTENER = "http-listener";
     String HTTPS_LISTENER = "https-listener";
@@ -223,5 +224,12 @@ public interface Constants {
     String STATISTICS_ENABLED = "statistics-enabled";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
 
+    // Elytron Integration
+    String APPLICATION_SECURITY_DOMAIN = "application-security-domain";
+    String APPLICATION_SECURITY_DOMAINS = "application-security-domains";
+    String HTTP_AUTHENITCATION_FACTORY = "http-authentication-factory";
+    String OVERRIDE_DEPLOYMENT_CONFIG = "override-deployment-config";
+    String REFERENCING_DEPLOYMENTS = "referencing-deployments";
+    String SECURITY_DOMAIN = "security-domain";
 
 }

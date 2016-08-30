@@ -40,14 +40,13 @@
         <module name="javax.security.jacc.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.transaction.api"/>
+        <module name="org.apache.commons.cli" optional="true"/>
         <module name="org.infinispan" optional="true"/>
         <module name="org.infinispan.commons" optional="true"/>
-        <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
         <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
-        <module name="org.wildfly.security.elytron"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.transactions" optional="true"/>
@@ -62,7 +61,9 @@
         <module name="org.jboss.security.negotiation" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.picketbox"/>
-        <module name="org.apache.commons.cli" optional="true"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="sun.jdk"/>
     </dependencies>
 </module>

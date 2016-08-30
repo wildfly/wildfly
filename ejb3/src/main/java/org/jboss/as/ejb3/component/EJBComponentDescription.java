@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
+import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
@@ -42,7 +43,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -83,7 +88,14 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
+import org.jboss.as.ejb3.security.IdentityOutflowInterceptorFactory;
+import org.jboss.as.ejb3.security.PolicyContextIdInterceptor;
+import org.jboss.as.ejb3.security.RoleAddingInterceptor;
+import org.jboss.as.ejb3.security.RunAsPrincipalInterceptor;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
+import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.security.deployment.SecurityAttachments;
@@ -99,6 +111,7 @@ import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.PrivilegedWithCombinerInterceptor;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
@@ -107,6 +120,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.security.SecurityConstants;
+import org.wildfly.security.authz.Roles;
+import org.wildfly.security.authz.RoleMapper;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -132,6 +147,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The default security domain to use if no explicit security domain is configured for this bean
      */
     private String defaultSecurityDomain;
+
+    /**
+     * A predicate that returns whether or not a given security domain name has been mapped to an
+     * Elytron security domain
+     */
+    private Predicate<String> knownSecurityDomain = null;
 
     /**
      * The @DeclareRoles (a.k.a security-role-ref) for the bean
@@ -256,6 +277,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
 
+    private BooleanSupplier outflowSecurityDomainsConfigured;
+
     /**
      * Construct a new instance.
      *
@@ -299,12 +322,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
-                policyContextID = SecurityContextInterceptorFactory.contextIdForDeployment(context.getDeploymentUnit());
+                final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                String contextID = deploymentUnit.getName();
+                if (deploymentUnit.getParent() != null) {
+                    contextID = deploymentUnit.getParent().getName() + "!" + contextID;
+                }
+                policyContextID = contextID;
                 //make sure java:comp/env is always available, even if nothing is bound there
                 if (description.getNamingMode() == ComponentNamingMode.CREATE) {
                     description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
                 }
-                final List<SetupAction> ejbSetupActions = context.getDeploymentUnit().getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
+                final List<SetupAction> ejbSetupActions = deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS);
 
                 if (description.isTimerServiceRequired()) {
 
@@ -319,7 +347,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
-                    if(context.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
+                    if (((EJBComponentDescription) description).isSecurityDomainKnown()) {
+                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID);
+                        elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
+                    } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
                         configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                     final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
@@ -561,12 +592,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
-                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
-                    @Override
-                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
-                    }
-                });
+                if (! ((EJBComponentDescription) description).isSecurityDomainKnown()) {
+                    componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                        @Override
+                        public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
+                            serviceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
+                        }
+                    });
+                }
             }
         });
     }
@@ -659,6 +692,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setDefaultSecurityDomain(final String defaultSecurityDomain) {
         this.defaultSecurityDomain = defaultSecurityDomain;
+    }
+
+    public void setKnownSecurityDomainPredicate(final Predicate<String> knownSecurityDomain) {
+        this.knownSecurityDomain = knownSecurityDomain;
+    }
+
+    public boolean isSecurityDomainKnown() {
+        return knownSecurityDomain == null ? false : knownSecurityDomain.test(getSecurityDomain());
+    }
+
+    public void setOutflowSecurityDomainsConfigured(final BooleanSupplier outflowSecurityDomainsConfigured) {
+        this.outflowSecurityDomainsConfigured = outflowSecurityDomainsConfigured;
+    }
+
+    public boolean isOutflowSecurityDomainsConfigured() {
+        return outflowSecurityDomainsConfigured.getAsBoolean();
     }
 
     /**
@@ -847,12 +896,25 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
                 @Override
                 public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
+                    final EJBComponentCreateService ejbComponentCreateService = (EJBComponentCreateService) service;
                     final String securityDomainName = SecurityDomainDependencyConfigurator.this.ejbComponentDescription.getSecurityDomain();
-                    if (securityDomainName != null && !securityDomainName.isEmpty()) {
-                        final ServiceName securityDomainServiceName = SecurityDomainService.SERVICE_NAME.append(securityDomainName);
-                        serviceBuilder.addDependency(securityDomainServiceName);
+                    if (SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isSecurityDomainKnown()) {
+                        final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                        final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                        if (securityDomainName != null && ! securityDomainName.isEmpty()) {
+                            serviceBuilder.addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, securityDomainName),
+                                    ApplicationSecurityDomain.class, ejbComponentCreateService.getApplicationSecurityDomainInjector());
+                        }
+                        if (SecurityDomainDependencyConfigurator.this.ejbComponentDescription.isOutflowSecurityDomainsConfigured()) {
+                            serviceBuilder.addDependency(support.getCapabilityServiceName(IDENTITY_CAPABILITY), Function.class, ejbComponentCreateService.getIdentityOutflowFunctionInjector());
+                        }
+                    } else {
+                        if (securityDomainName != null && !securityDomainName.isEmpty()) {
+                            final ServiceName securityDomainServiceName = SecurityDomainService.SERVICE_NAME.append(securityDomainName);
+                            serviceBuilder.addDependency(securityDomainServiceName);
+                        }
+                        serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(SecurityConstants.DEFAULT_EJB_APPLICATION_POLICY));
                     }
-                    serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(SecurityConstants.DEFAULT_EJB_APPLICATION_POLICY));
                 }
             });
         }
@@ -1049,5 +1111,47 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return getClass().getName() + "{" +
                 "serviceName=" + getServiceName() +
                 '}' + "@" + Integer.toHexString(hashCode());
+    }
+
+    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(final String policyContextID) {
+        final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
+        final Set<String> roles = new HashSet<>();
+
+        // First interceptor: security domain association
+        interceptorFactories.put(InterceptorOrder.View.SECURITY_CONTEXT, SecurityDomainInterceptorFactory.INSTANCE);
+
+        // Next interceptor: policy context ID
+        interceptorFactories.put(InterceptorOrder.View.POLICY_CONTEXT, new ImmediateInterceptorFactory(new PolicyContextIdInterceptor(policyContextID)));
+
+        // Next interceptor: run-as-principal
+        // Switch users if there's a run-as principal
+        if (runAsPrincipal != null) {
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(runAsPrincipal)));
+
+            // Next interceptor: extra principal roles
+            final Set<String> extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
+            if (! extraRoles.isEmpty()) {
+                interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(extraRoles)))));
+                roles.addAll(extraRoles);
+            }
+        }
+
+        // Next interceptor: run-as-role
+        if (runAsRole != null) {
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_ROLE, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(Collections.singleton(runAsRole))))));
+            roles.add(runAsRole);
+        }
+
+        // Next interceptor: security identity outflow
+        if (! roles.isEmpty()) {
+            interceptorFactories.put(InterceptorOrder.View.SECURITY_IDENTITY_OUTFLOW, new IdentityOutflowInterceptorFactory("ejb", RoleMapper.constant(Roles.fromSet(roles))));
+        } else {
+            interceptorFactories.put(InterceptorOrder.View.SECURITY_IDENTITY_OUTFLOW, IdentityOutflowInterceptorFactory.INSTANCE);
+        }
+
+        // Ignoring declared roles
+        RoleMapper.constant(Roles.fromSet(getDeclaredRoles()));
+
+        return interceptorFactories;
     }
 }

@@ -45,6 +45,7 @@
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="filters" type="filterType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="application-security-domains" type="applicationSecurityDomainsType" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="default-server" type="xs:string" default="default-server"/>
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
@@ -163,6 +164,15 @@
     <xs:complexType name="https-listener-type">
         <xs:complexContent>
             <xs:extension base="listener-type">
+                <xs:attribute name="ssl-context" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Reference to the SSLContext that should be used by this listener.
+
+                            If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
                     <xs:annotation>
                         <xs:documentation>
@@ -182,7 +192,15 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="security-realm" use="required" type="xs:string"/>
+                <xs:attribute name="security-realm" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Reference to the legacy security realm to use to obtain an SSLContext.
+
+                            If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="verify-client" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-cipher-suites" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-protocols" use="optional" type="xs:string"/>
@@ -583,4 +601,43 @@
         <xs:attribute name="http2-max-frame-size" type="xs:int" use="optional" />
         <xs:attribute name="http2-max-header-list-size" type="xs:int" use="optional" />
     </xs:complexType>
+    
+    <xs:complexType name="applicationSecurityDomainsType">
+        <xs:annotation>
+            <xs:documentation>
+                Listing of security domains from applications that should be mapped to an Elytron
+                backed authentication policy.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="application-security-domain" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="security-domain" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The name of the security domain as specified in deployments.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="http-authentication-factory" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Reference to the HttpAuthenticationFactory that should be used.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="override-deployment-config" type="xs:boolean" default="false">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The references HttpServerAuthenticationMechanismFactory contains it's own policy configuration
+                                to control the authentication mechanisms it supports, if this attribute is set to 'true'
+                                that policy will override the methods specified within the deployment. 
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
 </xs:schema>

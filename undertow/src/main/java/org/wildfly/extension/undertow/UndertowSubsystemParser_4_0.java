@@ -94,6 +94,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
                                                 // xsd https-listener-type
                                                 .addAttributes(
+                                                        HttpsListenerResourceDefinition.SSL_CONTEXT,
                                                         HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
                                                         HttpListenerResourceDefinition.CERTIFICATE_FORWARDING,
                                                         HttpsListenerResourceDefinition.SECURITY_REALM,
@@ -304,6 +305,12 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         .addAttributes(RewriteFilterDefinition.TARGET, RewriteFilterDefinition.REDIRECT)
                         )
 
+                )
+                .addChild(
+                        builder(ApplicationSecurityDomainDefinition.INSTANCE)
+                            .setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS)
+                            .setNameAttributeName(Constants.SECURITY_DOMAIN)
+                            .addAttributes(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY, ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG)
                 )
                  //here to make sure we always add filters & handlers path to mgmt model
                 .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {

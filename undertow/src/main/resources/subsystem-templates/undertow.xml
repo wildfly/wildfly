@@ -49,10 +49,28 @@
             <response-header name="server-header" header-name="Server" header-value="WildFly/10"/>
             <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow/1"/>
         </filters>
+        <?ELYTRON?>
     </subsystem>
     <supplement name="ha">
         <replacement placeholder="AJP">
             <ajp-listener name="ajp" socket-binding="ajp" />
+        </replacement>
+    </supplement>
+    <supplement name="elytron">
+        <replacement placeholder="ELYTRON">
+            <application-security-domains>
+                <application-security-domain security-domain="other" http-authentication-factory="application-http-authentication"/>
+            </application-security-domains>
+        </replacement>
+    </supplement>
+    <supplement name="ha-elytron">
+        <replacement placeholder="AJP">
+            <ajp-listener name="ajp" socket-binding="ajp" />
+        </replacement>
+        <replacement placeholder="ELYTRON">
+            <application-security-domains>
+                <application-security-domain security-domain="other" http-authentication-factory="application-http-authentication"/>
+            </application-security-domains>
         </replacement>
     </supplement>
     <socket-binding name="http" port="${jboss.http.port:8080}"/>

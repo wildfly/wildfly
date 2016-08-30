@@ -850,4 +850,20 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = NONE, value = "Action not specified")
     String actionNotSpecified();
 
+    /**
+     * Creates an exception indicating the inability to find a JSSE-enabled security domain with the specified name.
+     *
+     * @return a {@link StartException} instance.
+     */
+    @Message(id = 100, value = "Legacy security domain %s doesn't contain a valid JSSE configuration")
+    StartException unableToLocateJSSEConfig(final String legacyDomainName);
+
+    /**
+     * Creates an exception indicating the inability to find a component (keystore, truststore, keymanager, etc) in
+     * the specified JSSE-enabled domain.
+     *
+     * @return a {@link StartException} instance.
+     */
+    @Message(id = 101, value = "Unable to find a %s configuration in JSSE-enabled domain %s")
+    StartException unableToLocateComponentInJSSEDomain(final String componentName, final String legacyDomainName);
 }

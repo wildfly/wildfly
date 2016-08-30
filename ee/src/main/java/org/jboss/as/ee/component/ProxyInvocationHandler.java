@@ -70,6 +70,7 @@ public final class ProxyInvocationHandler implements InvocationHandler {
         context.setMethod(method);
         // setup the public context data
         context.setContextData(new HashMap<String, Object>());
+        context.setBlockingCaller(true);
         return interceptor.processInvocation(context);
     }
 }
