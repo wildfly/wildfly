@@ -288,6 +288,10 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
 
     private Collection<? extends ModelNode> replaceUndertowWithWeb(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
+
+        // First we remove mod_cluster due to capabilities/requirements
+        list.add(createRemoveOperation(subsystem.getParent().append(SUBSYSTEM, "modcluster")));
+
         //Undertow does not exist, remove it and the extension
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.undertow")));
@@ -316,6 +320,15 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         addVirtualServer.get("enable-welcome-root").set(true);
         addVirtualServer.get("alias").add("localhost").add("example.com");
         list.add(addVirtualServer);
+
+        // Now we mod_cluster back
+        final PathAddress modClusterAddress = subsystem.getParent().append(SUBSYSTEM, "modcluster");
+        final ModelNode addModCluster = Util.createAddOperation(modClusterAddress);
+        list.add(addModCluster);
+        ModelNode modClusterConfig = Util.createAddOperation(modClusterAddress.append("mod-cluster-config", "configuration"));
+        modClusterConfig.get("connector").set("ajp");
+        modClusterConfig.get("advertise-socket").set("modcluster");
+        list.add(modClusterConfig);
 
         return list;
     }

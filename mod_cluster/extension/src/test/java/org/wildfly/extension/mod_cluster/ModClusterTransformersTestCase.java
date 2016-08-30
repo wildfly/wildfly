@@ -24,6 +24,10 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -35,6 +39,10 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.extension.undertow.ListenerService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Radoslav Husar
@@ -47,15 +55,15 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.wildfly:wildfly-mod_cluster-extension:%s", version);
+        return formatArtifact("%s:wildfly-mod_cluster-extension:%s", version);
     }
 
     private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.jboss.as:jboss-as-modcluster:%s", version);
+        return formatArtifact("%s:jboss-as-modcluster:%s", version);
     }
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
-        return String.format(pattern, version.getMavenGavVersion());
+        return String.format(pattern, version.getMavenGroupId(), version.getMavenGavVersion());
     }
 
     @Test
@@ -85,6 +93,15 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         );
     }
 
+    @Test
+    public void testTransformerEAP_7_0_0() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_7_0_0;
+        this.testTransformation(ModClusterModel.VERSION_4_0_0, version,
+                formatSubsystemArtifact(version),
+                "org.jboss.mod_cluster:mod_cluster-core:1.3.2.Final-redhat-1"
+        );
+    }
+
     private void testTransformation(ModClusterModel model, ModelTestControllerVersion controllerVersion, String... dependencies) throws Exception {
         String subsystemXml = readResource("subsystem-transform.xml");
         ModelVersion modelVersion = model.getVersion();
@@ -94,6 +111,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL(dependencies)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .setExtensionClassName(extensionClassName);
 
         KernelServices mainServices = builder.build();
@@ -133,6 +151,15 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         );
     }
 
+    @Test
+    public void testRejectionsEAP_7_0_0() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_7_0_0;
+        this.testRejections(ModClusterModel.VERSION_4_0_0, version,
+                formatSubsystemArtifact(version),
+                "org.jboss.mod_cluster:mod_cluster-core:1.3.2.Final-redhat-1"
+        );
+    }
+
     private void testRejections(ModClusterModel model, ModelTestControllerVersion controllerVersion, String... dependencies) throws Exception {
         String subsystemXml = readResource("subsystem-reject.xml");
         ModelVersion modelVersion = model.getVersion();
@@ -140,6 +167,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .addMavenResourceURL(dependencies)
                 .setExtensionClassName(extensionClassName);
 
@@ -254,9 +282,22 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 super.setupController(controllerInitializer);
 
                 controllerInitializer.addSocketBinding("modcluster", 0); // "224.0.1.105", "23364"
+                controllerInitializer.addSocketBinding("ajp", 8009);
                 controllerInitializer.addRemoteOutboundSocketBinding("proxy1", "localhost", 6666);
                 controllerInitializer.addRemoteOutboundSocketBinding("proxy2", "localhost", 6766);
                 controllerInitializer.addRemoteOutboundSocketBinding("proxy3", "localhost", 6866);
+            }
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
+
+                // The capability base name comes from org.wildfly.extension.undertow.ListenerResourceDefinition
+                // AJP is used because it's the specified connector for the test subsystem
+                Map<String, Class> capabilities = new HashMap<>();
+                capabilities.put("org.wildfly.undertow.listener.ajp", ListenerService.class);
+
+                AdditionalInitialization.registerServiceCapabilities(capabilityRegistry, capabilities);
             }
         };
     }
