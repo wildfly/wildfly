@@ -376,6 +376,7 @@
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
         </dependency>
+        
     </dependencies>
 
     <build>
@@ -427,7 +428,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
