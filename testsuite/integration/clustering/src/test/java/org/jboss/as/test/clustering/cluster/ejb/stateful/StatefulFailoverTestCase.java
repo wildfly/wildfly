@@ -58,7 +58,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -173,7 +172,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
      * Validates failover on redeploy of a simple @Stateful bean
      */
     @Test
-    @Ignore("WFLY-835 @Resource UserTransaction error when file passivation store is selected")
     public void persistenceFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
