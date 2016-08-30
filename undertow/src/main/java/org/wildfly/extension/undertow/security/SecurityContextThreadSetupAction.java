@@ -22,8 +22,10 @@
 
 package org.wildfly.extension.undertow.security;
 
-import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.ThreadSetupAction;
+import java.security.PrivilegedAction;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
@@ -32,10 +34,7 @@ import org.jboss.security.mapping.MappingContext;
 import org.jboss.security.mapping.MappingManager;
 import org.jboss.security.mapping.MappingType;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import java.security.PrivilegedAction;
-import java.util.Map;
-import java.util.Set;
+import io.undertow.servlet.api.ThreadSetupHandler;
 
 /**
  * Thread setup action that sets up the security context. If it already exists then it will be re-used, otherwise
@@ -43,23 +42,11 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-public class SecurityContextThreadSetupAction implements ThreadSetupAction {
+public class SecurityContextThreadSetupAction implements ThreadSetupHandler {
 
     private final String securityDomain;
     private final SecurityDomainContext securityDomainContext;
     private final Map<String, Set<String>> principleVsRoleMap;
-
-    private static final Handle TEAR_DOWN_ACTION = new Handle() {
-        @Override
-        public void tearDown() {
-            if(WildFlySecurityManager.isChecking()) {
-                WildFlySecurityManager.doUnchecked(TEAR_DOWN_PA);
-            } else {
-                SecurityActions.clearSecurityContext();
-                SecurityRolesAssociation.setSecurityRoles(null);
-            }
-        }
-    };
 
     private static final PrivilegedAction<Object> TEAR_DOWN_PA = new PrivilegedAction<Object>() {
         @Override
@@ -78,41 +65,52 @@ public class SecurityContextThreadSetupAction implements ThreadSetupAction {
     }
 
     @Override
-    public Handle setup(HttpServerExchange exchange) {
-        SecurityContext sc = null;
-        if(exchange != null) {
-            sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
-        }
-        if (sc == null) {
-            sc = SecurityActions.createSecurityContext(securityDomain);
-            if(exchange != null) {
-                exchange.putAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT, sc);
+    public <T, C> Action<T, C> create(Action<T, C> action) {
+        return (exchange, context) -> {
+            SecurityContext sc = null;
+            if (exchange != null) {
+                sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
             }
-        }
-        SecurityActions.setSecurityContextOnAssociation(sc);
-        final MappingManager mappingManager = securityDomainContext.getMappingManager();
-
-        if (mappingManager != null) {
-            if(WildFlySecurityManager.isChecking()) {
-                WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
-                    @Override
-                    public Object run() {
-                        // if there are mapping modules let them handle the role mapping
-                        MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-                        if (mc != null && mc.hasModules()) {
-                            SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
-                        }
-                        return null;
-                    }
-                });
-            } else {
-                // if there are mapping modules let them handle the role mapping
-                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-                if (mc != null && mc.hasModules()) {
-                    SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
+            if (sc == null) {
+                sc = SecurityActions.createSecurityContext(securityDomain);
+                if (exchange != null) {
+                    exchange.putAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT, sc);
                 }
             }
-        }
-        return TEAR_DOWN_ACTION;
+            SecurityActions.setSecurityContextOnAssociation(sc);
+            final MappingManager mappingManager = securityDomainContext.getMappingManager();
+
+            if (mappingManager != null) {
+                if (WildFlySecurityManager.isChecking()) {
+                    WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                        @Override
+                        public Object run() {
+                            // if there are mapping modules let them handle the role mapping
+                            MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                            if (mc != null && mc.hasModules()) {
+                                SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
+                            }
+                            return null;
+                        }
+                    });
+                } else {
+                    // if there are mapping modules let them handle the role mapping
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc != null && mc.hasModules()) {
+                        SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
+                    }
+                }
+            }
+            try {
+                return action.call(exchange, context);
+            } finally {
+                if (WildFlySecurityManager.isChecking()) {
+                    WildFlySecurityManager.doUnchecked(TEAR_DOWN_PA);
+                } else {
+                    SecurityActions.clearSecurityContext();
+                    SecurityRolesAssociation.setSecurityRoles(null);
+                }
+            }
+        };
     }
 }

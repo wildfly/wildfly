@@ -55,7 +55,7 @@ import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.api.ServletSessionConfig;
 import io.undertow.servlet.api.SessionManagerFactory;
-import io.undertow.servlet.api.ThreadSetupAction;
+import io.undertow.servlet.api.ThreadSetupHandler;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
@@ -227,7 +227,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final List<HandlerWrapper> initialHandlerChainWrappers;
     private final List<HandlerWrapper> innerHandlerChainWrappers;
     private final List<HandlerWrapper> outerHandlerChainWrappers;
-    private final List<ThreadSetupAction> threadSetupActions;
+    private final List<ThreadSetupHandler> threadSetupActions;
     private final List<ServletExtension> servletExtensions;
     private final SharedSessionManagerConfig sharedSessionManagerConfig;
     private final boolean explodedDeployment;
@@ -247,7 +247,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final File tempDir;
     private final List<File> externalResources;
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, String topLevelDeploymentName, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, String topLevelDeploymentName, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -401,7 +401,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (threadSetupActions != null) {
-                for (ThreadSetupAction threadSetupAction : threadSetupActions) {
+                for (ThreadSetupHandler threadSetupAction : threadSetupActions) {
                     deploymentInfo.addThreadSetupAction(threadSetupAction);
                 }
             }
@@ -1494,7 +1494,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private List<HandlerWrapper> initialHandlerChainWrappers;
         private List<HandlerWrapper> innerHandlerChainWrappers;
         private List<HandlerWrapper> outerHandlerChainWrappers;
-        private List<ThreadSetupAction> threadSetupActions;
+        private List<ThreadSetupHandler> threadSetupActions;
         private List<ServletExtension> servletExtensions;
         private SharedSessionManagerConfig sharedSessionManagerConfig;
         private boolean explodedDeployment;
@@ -1592,7 +1592,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
-        public Builder setThreadSetupActions(List<ThreadSetupAction> threadSetupActions) {
+        public Builder setThreadSetupActions(List<ThreadSetupHandler> threadSetupActions) {
             this.threadSetupActions = threadSetupActions;
             return this;
         }
@@ -1645,25 +1645,24 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
     }
 
-    private static class UndertowThreadSetupAction implements ThreadSetupAction {
+    private static class UndertowThreadSetupAction implements ThreadSetupHandler {
 
-        private final Handle handle;
         private final SetupAction action;
 
-        public UndertowThreadSetupAction(SetupAction action) {
+        private UndertowThreadSetupAction(SetupAction action) {
             this.action = action;
-            handle = new Handle() {
-                @Override
-                public void tearDown() {
-                    UndertowThreadSetupAction.this.action.teardown(Collections.<String, Object>emptyMap());
-                }
-            };
         }
 
         @Override
-        public Handle setup(final HttpServerExchange exchange) {
-            action.setup(Collections.<String, Object>emptyMap());
-            return handle;
+        public <T, C> Action<T, C> create(Action<T, C> action) {
+            return (exchange, context) -> {
+                UndertowThreadSetupAction.this.action.setup(Collections.emptyMap());
+                try {
+                    return action.call(exchange, context);
+                } finally {
+                    UndertowThreadSetupAction.this.action.teardown(Collections.emptyMap());
+                }
+            };
         }
     }
 }
