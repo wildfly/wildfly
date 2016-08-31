@@ -82,13 +82,6 @@
             <state-transfer timeout="60000" chunk-size="10000"/>
         </distributed-cache>
         <replicated-cache name="cache-with-binary-keyed-store" mode="ASYNC" statistics-enabled="true">
-
-            <!-- Workaround WFLY-5794 -->
-            <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
-            <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer timeout="60000" chunk-size="10000"/>
-
             <binary-keyed-jdbc-store data-source="ExampleDS">
                 <binary-keyed-table prefix="ispn_entry" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
@@ -98,13 +91,6 @@
             </binary-keyed-jdbc-store>
         </replicated-cache>
         <replicated-cache name="cache-with-string-keyed-store" mode="ASYNC" statistics-enabled="true">
-
-            <!-- Workaround WFLY-5794 -->
-            <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
-            <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer timeout="60000" chunk-size="10000"/>
-
             <string-keyed-jdbc-store data-source="ExampleDS">
                 <string-keyed-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
