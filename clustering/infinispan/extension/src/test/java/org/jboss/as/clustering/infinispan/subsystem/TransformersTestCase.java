@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.extension.ExtensionRegistryType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -201,7 +203,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices(controller, version, dependencies);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, version, null, false);
+        checkSubsystemModelTransformation(services, version, createModelFixer(version), false);
 
         ModelNode transformed = services.readTransformedModel(version);
 
@@ -218,6 +220,22 @@ public class TransformersTestCase extends OperationTestCaseBase {
             // Test properties operations
             propertiesMapOperationsTest(services, version);
         }
+    }
+
+    private static ModelFixer createModelFixer(ModelVersion version) {
+        return (ModelNode model) -> {
+            if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+                // Fix the legacy model to expect new default values applied in StateTransferResourceDefinition#buildTransformation
+                Arrays.asList("cache-with-string-keyed-store", "cache-with-binary-keyed-store").forEach(cacheName -> {
+                    ModelNode cache = model.get("cache-container", "maximal", "replicated-cache", cacheName);
+                    assertFalse(cache.hasDefined(StateTransferResourceDefinition.LEGACY_PATH.getKeyValuePair()));
+                    ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.LEGACY_PATH.getKeyValuePair());
+                    stateTransfer.get(StateTransferResourceDefinition.Attribute.CHUNK_SIZE.getDefinition().getName()).set(StateTransferResourceDefinition.Attribute.CHUNK_SIZE.getDefinition().getDefaultValue());
+                    stateTransfer.get(StateTransferResourceDefinition.Attribute.TIMEOUT.getDefinition().getName()).set(StateTransferResourceDefinition.Attribute.TIMEOUT.getDefinition().getDefaultValue());
+                });
+            }
+            return model;
+        };
     }
 
     private void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
