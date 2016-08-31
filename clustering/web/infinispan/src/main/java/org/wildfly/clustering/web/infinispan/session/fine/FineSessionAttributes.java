@@ -23,6 +23,8 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.NotSerializableException;
@@ -40,13 +42,19 @@ import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
  * @author Paul Ferraro
  */
 public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> implements SessionAttributes {
+    private final AtomicInteger sequence;
+    private final ConcurrentMap<String, Integer> names;
+    private final Mutator namesMutator;
     private final Cache<SessionAttributeKey, V> cache;
     private final Map<String, Mutator> mutations = new ConcurrentHashMap<>();
     private final Marshaller<Object, V, MarshallingContext> marshaller;
     private final CacheProperties properties;
 
-    public FineSessionAttributes(String id, Cache<SessionAttributeKey, V> cache, Marshaller<Object, V, MarshallingContext> marshaller, CacheProperties properties) {
-        super(id, cache, marshaller);
+    public FineSessionAttributes(String id, AtomicInteger sequence, ConcurrentMap<String, Integer> names, Mutator namesMutator, Cache<SessionAttributeKey, V> cache, Marshaller<Object, V, MarshallingContext> marshaller, CacheProperties properties) {
+        super(id, names, cache, marshaller);
+        this.sequence = sequence;
+        this.names = names;
+        this.namesMutator = namesMutator;
         this.cache = cache;
         this.marshaller = marshaller;
         this.properties = properties;
@@ -54,7 +62,10 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
 
     @Override
     public Object removeAttribute(String name) {
-        SessionAttributeKey key = this.createKey(name);
+        Integer attributeId = this.names.remove(name);
+        if (attributeId == null) return null;
+        this.namesMutator.mutate();
+        SessionAttributeKey key = this.createKey(attributeId);
         Object result = this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(key));
         this.mutations.remove(name);
         return result;
@@ -68,8 +79,13 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (this.properties.isMarshalling() && !this.marshaller.getContext().isMarshallable(attribute)) {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
-        SessionAttributeKey key = this.createKey(name);
         V value = this.marshaller.write(attribute);
+        int currentId = this.sequence.get();
+        int attributeId = this.names.computeIfAbsent(name, key -> this.sequence.incrementAndGet());
+        if (attributeId > currentId) {
+            this.namesMutator.mutate();
+        }
+        SessionAttributeKey key = this.createKey(attributeId);
         Object result = this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(key, value));
         this.mutations.remove(name);
         return result;
@@ -77,7 +93,9 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
 
     @Override
     public Object getAttribute(String name) {
-        SessionAttributeKey key = this.createKey(name);
+        Integer attributeId = this.names.get(name);
+        if (attributeId == null) return null;
+        SessionAttributeKey key = this.createKey(attributeId);
         V value = this.cache.get(key);
         Object attribute = this.read(name, value);
         if (attribute != null) {
@@ -96,7 +114,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
     @Override
     public void close() {
         if (!this.properties.isTransactional()) {
-            this.mutations.values().forEach(mutator -> mutator.mutate());
+            this.mutations.values().forEach(Mutator::mutate);
         }
         this.mutations.clear();
     }

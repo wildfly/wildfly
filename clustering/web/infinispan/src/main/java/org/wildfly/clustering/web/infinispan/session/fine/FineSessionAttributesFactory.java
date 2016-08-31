@@ -22,12 +22,20 @@
 
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
@@ -39,78 +47,92 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**
  * {@link SessionAttributesFactory} for fine granularity sessions.
- * A given session's attributes are mapped to N co-located cache entries, where N is the number of session attributes.
+ * A given session's attributes are mapped to N+1 co-located cache entries, where N is the number of session attributes.
+ * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory implements SessionAttributesFactory<Object> {
+public class FineSessionAttributesFactory implements SessionAttributesFactory<Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> {
 
-    private static final Object VALUE = new Object();
-
-    private final Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> cache;
+    private final Cache<SessionAttributeNamesKey, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> namesCache;
+    private final Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
     private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller;
-    private final Predicate<Map.Entry<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>>> invalidAttribute;
     private final CacheProperties properties;
 
-    public FineSessionAttributesFactory(Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> cache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
-        this.cache = cache;
+    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> namesCache, Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
+        this.namesCache = namesCache;
+        this.attributeCache = attributeCache;
         this.marshaller = marshaller;
         this.properties = properties;
-        this.invalidAttribute = entry -> {
-            try {
-                this.marshaller.read(entry.getValue());
-                return false;
-            } catch (InvalidSerializedFormException e) {
-                InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, entry.getKey().getValue(), entry.getKey().getAttribute());
-                return true;
+    }
+
+    @Override
+    public Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> createValue(String id, Void context) {
+        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.getAttributeNames(id, key -> this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(key, k -> new AbstractMap.SimpleImmutableEntry<>(new AtomicInteger(), new ConcurrentHashMap<>())));
+        return (entry != null) ? entry : this.createValue(id, context);
+    }
+
+    @Override
+    public Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> findValue(String id) {
+        return this.getAttributeNames(id, key -> this.namesCache.get(key));
+    }
+
+    private Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> getAttributeNames(String id, Function<SessionAttributeNamesKey, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> provider) {
+        SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
+        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = provider.apply(key);
+        if (entry != null) {
+            ConcurrentMap<String, Integer> names = entry.getValue();
+            Map<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));
+            Predicate<Map.Entry<String, MarshalledValue<Object, MarshallingContext>>> invalidAttribute = attribute -> {
+                try {
+                    this.marshaller.read(attribute.getValue());
+                    return false;
+                } catch (InvalidSerializedFormException e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, attribute.getKey());
+                    return true;
+                }
+            };
+            if (names.entrySet().stream().map(name -> new AbstractMap.SimpleImmutableEntry<>(name.getKey(), attributes.get(new SessionAttributeKey(id, name.getValue())))).anyMatch(invalidAttribute)) {
+                // If any attributes are invalid - remove them all
+                this.remove(id);
+                return null;
             }
-        };
-    }
-
-    @Override
-    public Object createValue(String id, Void context) {
-        // Preemptively read all attributes to detect invalid session attributes
-        if (this.cache.getAdvancedCache().getGroup(id).entrySet().stream().filter(entry -> ((Map.Entry<?, ?>) entry).getKey() instanceof SessionAttributeKey).anyMatch(this.invalidAttribute)) {
-            // If any attributes are invalid - remove them all
-            this.remove(id);
         }
-        return VALUE;
-    }
-
-    @Override
-    public Object findValue(String id) {
-        // Preemptively read all attributes to detect invalid session attributes
-        if (this.cache.getAdvancedCache().getGroup(id).entrySet().stream().filter(entry -> ((Map.Entry<?, ?>) entry).getKey() instanceof SessionAttributeKey).anyMatch(this.invalidAttribute)) {
-            // Invalidate
-            this.remove(id);
-            return null;
-        }
-        return VALUE;
+        return entry;
     }
 
     @Override
     public boolean remove(String id) {
-        this.cache.getAdvancedCache().removeGroup(id);
+        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
+        if (entry == null) return false;
+        entry.getValue().values().forEach(attributeId -> this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId)));
         return true;
     }
 
     @Override
     public void evict(String id) {
-        this.cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).getGroup(id).keySet().stream().filter((Object key) -> key instanceof SessionAttributeKey).forEach(key -> {
-            try {
-                this.cache.evict(key);
-            } catch (Throwable e) {
-                InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, key.getAttribute());
-            }
-        });
+        SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
+        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.namesCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(key);
+        if (entry != null) {
+            entry.getValue().entrySet().stream().forEach(attribute -> {
+                try {
+                    this.attributeCache.evict(new SessionAttributeKey(id, attribute.getValue()));
+                } catch (Throwable e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, attribute.getKey());
+                }
+            });
+            this.namesCache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).evict(key);
+        }
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Object value) {
-        return new FineSessionAttributes<>(id, this.cache, this.marshaller, this.properties);
+    public SessionAttributes createSessionAttributes(String id, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry) {
+        SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
+        Mutator mutator = this.properties.isTransactional() && this.namesCache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.namesCache, key, entry);
+        return new FineSessionAttributes<>(id, entry.getKey(), entry.getValue(), mutator, this.attributeCache, this.marshaller, this.properties);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Object value) {
-        return new FineImmutableSessionAttributes<>(id, this.cache, this.marshaller);
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry) {
+        return new FineImmutableSessionAttributes<>(id, entry.getValue(), this.attributeCache, this.marshaller);
     }
 }
