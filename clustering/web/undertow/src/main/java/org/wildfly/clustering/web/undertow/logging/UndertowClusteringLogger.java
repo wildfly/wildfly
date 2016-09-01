@@ -34,4 +34,7 @@ public interface UndertowClusteringLogger extends BasicLogger {
 
     @Message(id = 1, value = "Session %s is invalid")
     IllegalStateException sessionIsInvalid(String sessionId);
+
+    @Message(id = 2, value = "Session %s already exists")
+    IllegalStateException sessionAlreadyExists(String sessionId);
 }

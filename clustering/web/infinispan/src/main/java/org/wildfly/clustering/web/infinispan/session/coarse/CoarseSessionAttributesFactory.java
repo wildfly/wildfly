@@ -26,7 +26,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -60,18 +59,15 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
 
     @Override
     public Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> createValue(String id, Void context) {
-        Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> value = this.getValue(id, key -> this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(key, k -> this.marshaller.write(this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>())));
-        return (value != null) ? value : this.createValue(id, context);
+        Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
+        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.marshaller.write(attributes);
+        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
+        return new SimpleImmutableEntry<>(attributes, value);
     }
 
     @Override
     public Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> findValue(String id) {
-        return this.getValue(id, key -> this.cache.get(key));
-    }
-
-    private Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> getValue(String id, Function<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> supplier) {
-        SessionAttributesKey key = new SessionAttributesKey(id);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = supplier.apply(key);
+        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
                 Map<String, Object> attributes = this.marshaller.read(value);
