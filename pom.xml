@@ -261,6 +261,8 @@
         <!-- Location relative to root that will be used for the cached legacy classpaths used by subsystem-test and core-model-test-->
         <org.jboss.model.test.classpath.cache>target/model-test-classpath-cache</org.jboss.model.test.classpath.cache>
         <version.com.github.spullara.mustache>0.8.13</version.com.github.spullara.mustache>
+        <version.wise-gwt-gui>1.0.0.Final</version.wise-gwt-gui>
+
     </properties>
 
     <modules>
@@ -308,6 +310,7 @@
         <module>servlet-feature-pack</module>
         <module>webservices</module>
         <module>weld</module>
+        <module>wise</module>
         <module>xts</module>
         <module>rts</module>
         <module>testsuite/shared</module>
@@ -6097,6 +6100,17 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-wise</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.wise</groupId>
+                <artifactId>wise-gwt-gui</artifactId>
+                <version>${version.wise-gwt-gui}</version>
+                <type>war</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

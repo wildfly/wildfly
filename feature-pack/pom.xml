@@ -2764,6 +2764,22 @@
             <artifactId>picketlink-wildfly8</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-wise</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.wise</groupId>
+            <artifactId>wise-gwt-gui</artifactId>
+            <type>war</type>
+        </dependency>
     </dependencies>
 
     <profiles>

@@ -158,6 +158,7 @@
             <filter pattern="lib/*" include="true" />
             <filter pattern="*" include="false"/>
         </copy-artifact>
+        <copy-artifact artifact="org.jboss.wise:wise-gwt-gui" to-location="modules/system/layers/base/org/wildfly/extension/wise/main/deployments/wise.war"/>
     </copy-artifacts>
     <mkdirs>
         <dir name="domain/data/content"/>

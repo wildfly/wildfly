@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
@@ -49,53 +48,48 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
     }
 
     @Override
-    public ClassLoader get(Set<String> configuredModules) {
+    public ClassLoader get(String key) {
         try {
-            List<ClassLoader> classLoaders = new ArrayList<>();
-            for (String module : configuredModules) {
-                if (module != null && !module.isEmpty()) {
-                    classLoaders.add(SecurityActions.getModuleClassLoader(moduleLoader, module));
-                }
-            }
-            classLoaders.add(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+            ClassLoader moduleClassLoader = SecurityActions.getModuleClassLoader(moduleLoader, key);
+            ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             /**
              * A Login Module can be in a custom user module.
              * The local resources (such as users.properties) can be present in a web deployment,
              * whose CL is available on the TCCL.
              */
-            return new CombinedClassLoader(classLoaders.toArray(new ClassLoader[classLoaders.size()]));
+            return new CombinedClassLoader(moduleClassLoader, tccl);
         } catch (ModuleLoadException e) {
             throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
         }
     }
-    /** A Classloader that takes an array of Classloaders to delegate to */
+    /** A Classloader that takes in two Classloaders to delegate to */
     public class CombinedClassLoader extends SecureClassLoader{
-        private ClassLoader[] loaders;
+        private ClassLoader first;
+        private ClassLoader second;
 
-        public CombinedClassLoader(ClassLoader... loaders){
-            this.loaders = loaders;
+        public CombinedClassLoader(ClassLoader firstCL, ClassLoader secondCL){
+            this.first = firstCL;
+            this.second = secondCL;
         }
 
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
-            for (ClassLoader loader : loaders) {
-                try {
-                    return loader.loadClass(name);
-                } catch(ClassNotFoundException ce){
-                    // do nothing, see if another loader can do this.
-                }
+            Class<?> theClass = null;
+            try {
+                theClass = first.loadClass(name);
+            } catch(ClassNotFoundException ce){
+                theClass = second.loadClass(name);
             }
-            throw new ClassNotFoundException(name);
+
+            return theClass;
         }
 
         @Override
         public URL getResource(String name) {
             URL resource = null;
-            for (ClassLoader loader : loaders) {
-                resource = loader.getResource(name);
-                if(resource != null){
-                    break;
-                }
+            resource = first.getResource(name);
+            if(resource == null){
+                resource = second.getResource(name);
             }
             return resource;
         }
@@ -103,11 +97,9 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
         @Override
         public InputStream getResourceAsStream(String name) {
             InputStream is = null;
-            for (ClassLoader loader : loaders) {
-                is = loader.getResourceAsStream(name);
-                if (is != null) {
-                    break;
-                }
+            is = first.getResourceAsStream(name);
+            if(is == null){
+                is = second.getResourceAsStream(name);
             }
             return is;
         }
@@ -115,9 +107,8 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
             List<URL> combinedList = new ArrayList<URL>();
-            for (ClassLoader loader : loaders) {
-                combinedList.addAll(Collections.list(loader.getResources(name)));
-            }
+            combinedList.addAll(Collections.list(first.getResources(name)));
+            combinedList.addAll(Collections.list(second.getResources(name)));
             return Collections.enumeration(combinedList);
         }
     }
