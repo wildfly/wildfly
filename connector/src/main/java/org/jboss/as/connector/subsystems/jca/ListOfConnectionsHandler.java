@@ -54,13 +54,24 @@ public class ListOfConnectionsHandler implements OperationStepHandler {
 
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
-                    Map<String, String> map= ccm.listConnections();
                     ModelNode result = new ModelNode();
+
+                    CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
+                    Map<String, String> map = ccm.listConnections();
+                    ModelNode txResult = new ModelNode();
                     for (Map.Entry<String, String> entry : map.entrySet()) {
-                        result.add(entry.getKey(), entry.getValue());
+                        txResult.add(entry.getKey(), entry.getValue());
                     }
 
+                    ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.NON_TX_CCM_SERVICE).getValue();
+                    map= ccm.listConnections();
+                    ModelNode nonTxResult = new ModelNode();
+                    for (Map.Entry<String, String> entry : map.entrySet()) {
+                        nonTxResult.add(entry.getKey(), entry.getValue());
+                    }
+
+                    result.get(Constants.TX).set(txResult);
+                    result.get(Constants.NON_TX).set(nonTxResult);
                     context.getResult().set(result);
                     context.stepCompleted();
                 }
