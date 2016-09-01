@@ -52,6 +52,7 @@ public class CommandLineMain {
     private static final Options options = new Options();
     private static final HelpFormatter formatter = new HelpFormatter();
     private static final String usage = "jdr.{sh,bat,ps1} [options]";
+    private static final String NEW_LINE = String.format("%n");
 
     static {
         options.addOption("h", "help", false, JdrLogger.ROOT_LOGGER.jdrHelpMessage());
@@ -76,7 +77,7 @@ public class CommandLineMain {
             CommandLine line = parser.parse(options, args, false);
 
             if (line.hasOption("help")) {
-                formatter.printHelp(usage, options);
+                formatter.printHelp(usage, NEW_LINE + JdrLogger.ROOT_LOGGER.jdrDescriptionMessage(), options, null);
                 return;
             }
             if (line.hasOption("host")) {
