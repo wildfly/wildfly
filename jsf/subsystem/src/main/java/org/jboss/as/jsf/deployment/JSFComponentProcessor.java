@@ -61,7 +61,7 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
+public class JSFComponentProcessor implements DeploymentUnitProcessor {
 
     public static final DotName MANAGED_BEAN_ANNOTATION = DotName.createSimple("javax.faces.bean.ManagedBean");
 
@@ -69,6 +69,8 @@ public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
 
     private static final String MANAGED_BEAN = "managed-bean";
     private static final String MANAGED_BEAN_CLASS = "managed-bean-class";
+    private static final String LIFECYCLE = "lifecycle";
+    private static final String PHASE_LISTENER = "phase-listener";
 
     private static final String CONFIG_FILES = "javax.faces.CONFIG_FILES";
 
@@ -91,6 +93,7 @@ public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
         final Set<String> managedBeanClasses = new HashSet<String>();
         handleAnnotations(index, managedBeanClasses);
         processXmlManagedBeans(deploymentUnit, managedBeanClasses);
+        processPhaseListeners(deploymentUnit, managedBeanClasses);
         for (String managedBean : managedBeanClasses) {
             //try and load the class, and skip the class if it cannot be loaded
             //this is not ideal, but we are not allowed to let the deployment
@@ -161,6 +164,69 @@ public class JSFManagedBeanProcessor implements DeploymentUnitProcessor {
                 }
             } catch (Exception e) {
                 JSFLogger.ROOT_LOGGER.managedBeansConfigParseFailed(facesConfig);
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
+    }
+
+    /**
+     * WFLY-6617
+     * According to  JSF 2.2 spec, it should be possible to inject beans using @EJB annotation into
+     * PhaseListeners.
+     */
+    private void processPhaseListeners(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
+        for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
+            InputStream is = null;
+            try {
+                is = facesConfig.openStream();
+                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                inputFactory.setXMLResolver(NoopXMLResolver.create());
+                XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
+                StringBuilder phaseListenerName = null;
+                int indent = 0;
+                boolean lifecycle = false;
+                boolean phaseListener = false;
+                while (true) {
+                    int event = parser.next();
+                    if (event == XMLStreamConstants.END_DOCUMENT) {
+                        parser.close();
+                        break;
+                    }
+                    if (event == XMLStreamConstants.START_ELEMENT) {
+                        indent++;
+                        if (indent == 2) {
+                            if(parser.getLocalName().equals(LIFECYCLE)){
+                                lifecycle = true;
+                            }
+                        } else if (indent == 3 && lifecycle) {
+                            if(parser.getLocalName().equals(PHASE_LISTENER)){
+                                phaseListener = true;
+                                phaseListenerName = new StringBuilder();
+                            }
+                        }
+                    } else if (event == XMLStreamConstants.END_ELEMENT) {
+                        indent--;
+                        phaseListener = false;
+                        if (indent == 1) {
+                            lifecycle = false;
+                        }
+                        if(phaseListenerName != null){
+                            managedBeanClasses.add(phaseListenerName.toString().trim());
+                            phaseListenerName = null;
+                        }
+                    } else if (phaseListener && event == XMLStreamConstants.CHARACTERS) {
+                        phaseListenerName.append(parser.getText());
+                    }
+                }
+            } catch (Exception e) {
+                JSFLogger.ROOT_LOGGER.phaseListenersConfigParseFailed(facesConfig);
             } finally {
                 try {
                     if (is != null) {
