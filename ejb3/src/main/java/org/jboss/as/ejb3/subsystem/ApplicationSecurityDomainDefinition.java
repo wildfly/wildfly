@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -77,9 +75,8 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
     private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
 
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SECURITY_DOMAIN, ModelType.STRING, false)
-            .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1))
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
             .build();
 
@@ -134,7 +131,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             ServiceBuilder<ApplicationSecurityDomain> serviceBuilder = context.getServiceTarget().addService(serviceName, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
             serviceBuilder.addDependency(context.getCapabilityServiceName(
-                    buildDynamicCapabilityName(SECURITY_DOMAIN_CAPABILITY, securityDomain), SecurityDomain.class),
+                            SECURITY_DOMAIN_CAPABILITY, securityDomain, SecurityDomain.class),
                     SecurityDomain.class, applicationSecurityDomainService.getSecurityDomainInjector());
             serviceBuilder.install();
         }
