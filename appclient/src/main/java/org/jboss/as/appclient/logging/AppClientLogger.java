@@ -150,6 +150,14 @@ public interface AppClientLogger extends BasicLogger {
     String argSecMgr();
 
     /**
+     * A general description of the appclient usage.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "The appclient script starts an application client which can be used to test and access the deployed EJBs.")
+    String usageDescription();
+
+    /**
      * A message indicating that you must specify an application client to execute.
      *
      * @return the message.

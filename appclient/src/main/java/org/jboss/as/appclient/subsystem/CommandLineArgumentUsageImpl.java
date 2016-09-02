@@ -58,6 +58,7 @@ public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
 
     public static void printUsage(final PrintStream out) {
         init();
+        out.print(AppClientLogger.ROOT_LOGGER.usageDescription());
         out.print(usage("appclient"));
     }
 }
