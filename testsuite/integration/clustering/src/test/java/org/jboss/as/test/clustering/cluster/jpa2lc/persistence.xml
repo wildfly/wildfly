@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <persistence-unit name="MainPU">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <shared-cache-mode>ALL</shared-cache-mode>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.region.factory_class" value="org.jboss.as.jpa.hibernate5.infinispan.SharedInfinispanRegionFactory"/>
+            <property name="hibernate.cache.infinispan.entity.cfg" value="entity-replicated"/>
+        </properties>
+    </persistence-unit>
+</persistence>
