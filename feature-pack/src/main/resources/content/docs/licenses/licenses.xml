@@ -386,8 +386,8 @@
       <artifactId>dom4j</artifactId>
       <licenses>
         <license>
-          <name>The BSD License</name>
-          <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <name>The Dom4j License</name>
+          <url>https://raw.githubusercontent.com/dom4j/dom4j/master/LICENSE</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
