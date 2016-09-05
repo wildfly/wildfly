@@ -21,13 +21,22 @@
  */
 package org.wildfly.extension.undertow;
 
-import io.undertow.server.ListenerRegistry;
+import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT_CAPABILITY;
+
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.OptionMap;
+
+import io.undertow.server.ListenerRegistry;
 
 /**
  * Add handler for HTTPS listeners.
@@ -63,8 +72,48 @@ public class HttpsListenerAdd extends ListenerAdd {
     @Override
     void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         serviceBuilder.addDependency(HttpListenerAdd.REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
-        final String securityRealm = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model).asString();
-        SecurityRealm.ServiceUtil.addDependency(serviceBuilder, ((HttpsListenerService) service).getSecurityRealm(), securityRealm, false);
+
+        ModelNode sslContextModel = HttpsListenerResourceDefinition.SSL_CONTEXT.resolveModelAttribute(context, model);
+        ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
+
+        final String sslContextRef = sslContextModel.isDefined() ? sslContextModel.asString() : null;
+        final String securityRealmRef = securityRealmModel.isDefined() ? securityRealmModel.asString() : null;
+
+        final InjectedValue<SSLContext> sslContextInjector = new InjectedValue<>();
+        final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<>();
+
+        if (securityRealmRef != null) {
+            SecurityRealm.ServiceUtil.addDependency(serviceBuilder, securityRealmInjector, securityRealmRef, false);
+        }
+
+        if (sslContextRef != null) {
+            String runtimeCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextRef);
+            ServiceName sslContextServiceName = context.getCapabilityServiceName(runtimeCapability, SSLContext.class);
+
+            serviceBuilder.addDependency(sslContextServiceName, SSLContext.class, sslContextInjector);
+        }
+
+        ((HttpsListenerService)service).setSSLContextSupplier(()-> {
+            if (sslContextRef != null) {
+                return sslContextInjector.getValue();
+            }
+
+            if (securityRealmRef != null) {
+                 SSLContext sslContext = securityRealmInjector.getValue().getSSLContext();
+
+                 if (sslContext == null) {
+                     throw UndertowLogger.ROOT_LOGGER.noSslContextInSecurityRealm(securityRealmRef);
+                 }
+                 return sslContext;
+            }
+
+            try {
+                return SSLContext.getDefault();
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        });
+
     }
 
 }

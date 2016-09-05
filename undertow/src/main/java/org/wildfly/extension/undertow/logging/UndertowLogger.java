@@ -336,8 +336,8 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 77, value = "Error invoking secure response")
     void errorInvokingSecureResponse(@Cause Exception e);
 
-    @Message(id = 79, value = "No SSL Context available from security realm. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
-    IllegalStateException noSslContextInSecurityRealm();
+    @Message(id = 79, value = "No SSL Context available from security realm '%s'. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
+    IllegalStateException noSslContextInSecurityRealm(String securityRealm);
 
     @LogMessage(level = WARN)
     @Message(id = 80, value = "Valves are no longer supported, %s is not activated.")
@@ -352,4 +352,14 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 83, value = "%s is not allowed to be null")
     String nullNotAllowed(String name);
+
+    @Message(id = 84, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
+    IllegalStateException noMechanismsAvailable();
+
+    @Message(id = 85, value = "The required mechanism '%s' is not available from the HttpAuthenticationFactory.")
+    IllegalStateException requiredMechanismNotAvailable(String mechanismName);
+
+    @Message(id = 86, value = "No authentication mechanisms have been selected.")
+    IllegalStateException noMechanismsSelected();
+
 }

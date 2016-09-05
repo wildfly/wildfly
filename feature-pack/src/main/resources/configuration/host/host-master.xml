@@ -5,6 +5,7 @@
    and does not itself directly control any servers.
 -->
 <host name="master" xmlns="urn:jboss:domain:5.0">
+
     <extensions>
         <?EXTENSIONS?>
     </extensions>

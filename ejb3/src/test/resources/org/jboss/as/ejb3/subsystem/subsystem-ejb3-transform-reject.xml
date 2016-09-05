@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ejb3:4.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:5.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -77,6 +77,12 @@
     <in-vm-remote-interface-invocation pass-by-value="false"/>
     <default-distinct-name value="myname"/>
     <default-security-domain value="domain"/>
+    <!-- should be rejected -->
+    <application-security-domains>
+        <application-security-domain name="domain" security-domain="ApplicationDomain"/>
+    </application-security-domains>
+    <!-- should be rejected -->
+    <identity outflow-security-domains="ApplicationDomain"/>
     <default-missing-method-permissions-deny-access value="true" />
     <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />

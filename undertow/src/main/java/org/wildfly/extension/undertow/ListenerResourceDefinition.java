@@ -70,7 +70,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     static final String IO_BUFFER_POOL_CAPABILITY = "org.wildfly.io.buffer-pool";
     static final String SOCKET_CAPABILITY = "org.wildfly.network.socket-binding";
 
-    private static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
+    protected static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
     static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(LISTENER_CAPABILITY_NAME, true, ListenerService.class)
             .build();
 

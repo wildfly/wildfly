@@ -3123,4 +3123,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 487, value = "Unexpected invocation state %s")
     void unexpectedInvocationState(int state);
+
+    @Message(id = 488, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
+    SecurityException ejbAuthenticationRequired();
+
 }

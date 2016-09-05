@@ -73,6 +73,7 @@ import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
+import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -97,6 +98,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -104,8 +107,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     private final String defaultHost;
     private final String defaultContainer;
     private final String defaultSecurityDomain;
+    private final Predicate<String> knownSecurityDomain;
 
-    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, String defaultSecurityDomain) {
+    public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, String defaultSecurityDomain, Predicate<String> knownSecurityDomain) {
         this.defaultHost = defaultHost;
         this.defaultSecurityDomain = defaultSecurityDomain;
         if (defaultHost == null) {
@@ -113,6 +117,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
+        this.knownSecurityDomain = knownSecurityDomain;
     }
 
     @Override
@@ -295,7 +300,16 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue())
                 .addDependencies(additionalDependencies);
         if(securityDomain != null) {
-            infoBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue());
+            if (knownSecurityDomain.test(securityDomain)) {
+                infoBuilder.addDependency(
+                        deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
+                                .getCapabilityServiceName(
+                                        ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY,
+                                        securityDomain),
+                        Function.class, undertowDeploymentInfoService.getSecurityFunctionInjector());
+            } else {
+                infoBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue());
+            }
         }
 
         if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)){

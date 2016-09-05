@@ -31,6 +31,7 @@ import java.util.Map;
 public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
 
+    ALIAS("alias"),
     ALIASES("aliases"),
     ALLOW_EXECUTION("allow-execution"),
 
@@ -98,7 +99,11 @@ public enum EJB3SubsystemXMLAttribute {
 
     ACTIVE("active"),
 
-    EXECUTE_IN_WORKER("execute-in-worker")
+    EXECUTE_IN_WORKER("execute-in-worker"),
+
+    // Elytron integration
+    OUTFLOW_SECURITY_DOMAINS("outflow-security-domains"),
+    SECURITY_DOMAIN("security-domain")
     ;
 
     private final String name;

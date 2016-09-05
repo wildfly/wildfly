@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -34,15 +35,16 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
 import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -82,13 +84,15 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN};
+    static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
+    static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
     static final PersistentResourceDefinition[] CHILDREN = {
             BufferCacheDefinition.INSTANCE,
             ServerDefinition.INSTANCE,
             ServletContainerDefinition.INSTANCE,
             HandlerDefinitions.INSTANCE,
-            FilterDefinitions.INSTANCE
+            FilterDefinitions.INSTANCE,
+            APPLICATION_SECURITY_DOMAIN
     };
 
     public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
@@ -96,7 +100,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     private UndertowRootDefinition() {
         super(UndertowExtension.SUBSYSTEM_PATH,
                 UndertowExtension.getResolver(),
-                UndertowSubsystemAdd.INSTANCE,
+                new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
@@ -116,6 +120,16 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
 
     private static void registerTransformers_EAP_7_0_0(SubsystemRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        // Version 4.0.0 adds the new SSL_CONTEXT attribute, however it is mutually exclusive to the SECURITY_REALM attribute, both of which can
+        // now be set to 'undefined' so instead of rejecting a defined SSL_CONTEXT, reject an undefined SECURITY_REALM as that covers the
+        // two new combinations.
+        builder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
+            .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                .end();
+
+        builder.discardChildResource(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, UndertowExtension.MODEL_VERSION_EAP7_0_0);
     }

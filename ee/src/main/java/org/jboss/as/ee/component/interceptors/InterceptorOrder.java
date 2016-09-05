@@ -180,7 +180,12 @@ public class InterceptorOrder {
         // other JBoss specific container interceptors like the security interceptor
         public static final int USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS = 0x249;
         public static final int SECURITY_CONTEXT = 0x250;
+        public static final int POLICY_CONTEXT = 0x260;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
+        public static final int RUN_AS_PRINCIPAL = 0x310;
+        public static final int EXTRA_PRINCIPAL_ROLES = 0x320;
+        public static final int RUN_AS_ROLE = 0x330;
+        public static final int SECURITY_IDENTITY_OUTFLOW = 0x340;
         // after security we take note of the invocation
         public static final int EJB_WAIT_TIME_INTERCEPTOR = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
@@ -203,6 +208,7 @@ public class InterceptorOrder {
         public static final int TO_STRING = 0x100;
         public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x110;
         public static final int LOCAL_ASYNC_LOG_SAVE = 0x180;
+        public static final int LOCAL_ASYNC_SECURITY_CONTEXT = 0x190;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
         public static final int LOCAL_ASYNC_LOG_RESTORE = 0x280;
         public static final int ASSOCIATING_INTERCEPTOR = 0x300;
