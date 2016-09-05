@@ -17,8 +17,9 @@
       <artifactId>asm</artifactId>
       <licenses>
         <license>
-          <name>The BSD License</name>
-          <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <name>The Asm BSD License</name>
+          <url>http://asm.ow2.org/license.html</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
