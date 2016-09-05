@@ -60,6 +60,9 @@ public class AS7Plugin implements JdrPlugin {
             new CollectFiles("*gc.log.*"),
             new CollectFiles("*.properties").sanitizer(passwordSanitizer),
             new CollectFiles("*.xml").sanitizer(xmlSanitizer),
+            new CollectFiles("*/modules/system/*/.overlays/.overlays"),
+            new CollectFiles("*/.installation/*.conf"),
+            new CollectFiles("*/.installation/*.txt"),
             new SystemProperties(),
             new DeploymentDependencies(),
             new LocalModuleDependencies()
