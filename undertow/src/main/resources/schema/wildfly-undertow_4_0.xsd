@@ -370,7 +370,6 @@
 
     <xs:complexType name="filterType">
         <xs:sequence>
-            <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="request-limit" type="request-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
