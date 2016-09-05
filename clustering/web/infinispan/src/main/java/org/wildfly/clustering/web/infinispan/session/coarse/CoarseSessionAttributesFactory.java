@@ -59,16 +59,10 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
 
     @Override
     public Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> createValue(String id, Void context) {
-        SessionAttributesKey attributesKey = new SessionAttributesKey(id);
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(attributesKey, key -> this.marshaller.write(this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>()));
-        try {
-            Map<String, Object> attributes = this.marshaller.read(value);
-            return new SimpleImmutableEntry<>(attributes, value);
-        } catch (InvalidSerializedFormException e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToActivateSession(e, id);
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(attributesKey);
-            return this.createValue(id, context);
-        }
+        Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
+        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.marshaller.write(attributes);
+        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
+        return new SimpleImmutableEntry<>(attributes, value);
     }
 
     @Override

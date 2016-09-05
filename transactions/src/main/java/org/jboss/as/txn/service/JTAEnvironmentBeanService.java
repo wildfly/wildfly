@@ -49,7 +49,7 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
 
     public JTAEnvironmentBeanService(final String nodeIdentifier) {
         this.nodeIdentifier = nodeIdentifier;
-        this.useActionStatusServiceRecoveryFilter = Boolean.valueOf(System.getProperty("org.jboss.narayana.wildfly.useActionStatusServiceRecoveryFilter.deprecated", "false"));
+        this.useActionStatusServiceRecoveryFilter = Boolean.valueOf(System.getProperty("org.jboss.narayana.wildfly.useActionStatusServiceRecoveryFilter.deprecated", "true"));
     }
 
     @Override

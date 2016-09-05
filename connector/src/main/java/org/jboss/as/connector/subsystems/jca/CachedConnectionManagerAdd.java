@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.as.connector.deployers.ra.processors.CachedConnectionManagerSetupProcessor;
 import org.jboss.as.connector.services.jca.CachedConnectionManagerService;
+import org.jboss.as.connector.services.jca.NonTxCachedConnectionManagerService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -74,6 +75,11 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         ccmService.getTransactionIntegrationInjector())
                 .install();
+
+        NonTxCachedConnectionManagerService noTxCcm = new NonTxCachedConnectionManagerService(debug, error, ignoreUnknownConnections);
+        serviceTarget
+            .addService(ConnectorServices.NON_TX_CCM_SERVICE, noTxCcm)
+            .install();
 
     }
 }

@@ -6,7 +6,7 @@
   ~ distribution for a full listing of individual contributors.
   ~
   ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License asel
+  ~ under the terms of the GNU Lesser General Public License as
   ~ published by the Free Software Foundation; either version 2.1 of
   ~ the License, or (at your option) any later version.
   ~
@@ -102,7 +102,7 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.3</version.groovy-all>
         <version.httpunit>1.7</version.httpunit>
-        <version.io.netty>4.0.33.Final</version.io.netty>
+        <version.io.netty>4.0.35.Final</version.io.netty>
         <version.io.undertow.jastow>2.0.1.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
@@ -162,7 +162,7 @@
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.3.4.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>2.0.3.Final</version.org.jboss.jandex>
-        <version.org.jboss.jboss-transaction-spi>7.3.0.Final</version.org.jboss.jboss-transaction-spi>
+        <version.org.jboss.jboss-transaction-spi>7.3.3.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.metadata>10.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.narayana>5.3.3.Final</version.org.jboss.narayana>
         <version.org.jboss.mod_cluster>1.3.3.Final</version.org.jboss.mod_cluster>
@@ -217,7 +217,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Alpha5</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.0.Alpha7</version.org.wildfly.core>
         <version.org.wildfly.arquillian>2.0.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha9</version.org.wildfly.security.elytron-subsystem>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
@@ -261,8 +261,6 @@
         <!-- Location relative to root that will be used for the cached legacy classpaths used by subsystem-test and core-model-test-->
         <org.jboss.model.test.classpath.cache>target/model-test-classpath-cache</org.jboss.model.test.classpath.cache>
         <version.com.github.spullara.mustache>0.8.13</version.com.github.spullara.mustache>
-        <version.wise-gwt-gui>1.0.0.Final</version.wise-gwt-gui>
-
     </properties>
 
     <modules>
@@ -310,7 +308,6 @@
         <module>servlet-feature-pack</module>
         <module>webservices</module>
         <module>weld</module>
-        <module>wise</module>
         <module>xts</module>
         <module>rts</module>
         <module>testsuite/shared</module>
@@ -6100,17 +6097,6 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-wise</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.wise</groupId>
-                <artifactId>wise-gwt-gui</artifactId>
-                <version>${version.wise-gwt-gui}</version>
-                <type>war</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

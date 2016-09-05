@@ -91,8 +91,6 @@ import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServic
 
 import javax.security.jacc.PolicyConfiguration;
 
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
-
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
@@ -305,9 +303,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             if (knownSecurityDomain.test(securityDomain)) {
                 infoBuilder.addDependency(
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
-                                .getCapabilityServiceName(buildDynamicCapabilityName(
+                                .getCapabilityServiceName(
                                         ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY,
-                                        securityDomain)),
+                                        securityDomain),
                         Function.class, undertowDeploymentInfoService.getSecurityFunctionInjector());
             } else {
                 infoBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue());

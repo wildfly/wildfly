@@ -56,10 +56,12 @@ import org.junit.Assert;
 public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static final String STANDARD_DOMAIN_CONFIG = "copied-master-config/domain.xml";
+    private static final String JBOSS_DOMAIN_SERVER_ARGS = "jboss.domain.server.args";
 
     private final Version.AsVersion version;
     private final boolean adjustDomain;
     private final boolean legacyConfig;
+
 
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
                                    String jbossHome, boolean adjustDomain, boolean legacyConfig)
@@ -137,7 +139,15 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private void startAndAdjust() {
 
+        String jbossDomainServerArgsValue = null;
         try {
+            if (version.isEAP6Version()) {
+                jbossDomainServerArgsValue = System.getProperty(JBOSS_DOMAIN_SERVER_ARGS);
+                if (jbossDomainServerArgsValue != null) {
+                    System.setProperty(JBOSS_DOMAIN_SERVER_ARGS, "-DnotUsed");
+                }
+            }
+
             //Start the master in admin only  and reconfigure the domain with what
             //we want to test in the mixed domain and have the DomainAdjuster
             //strip down the domain model to something more workable. The domain
@@ -167,6 +177,10 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            if (version.isEAP6Version() && jbossDomainServerArgsValue != null) {
+                System.setProperty(JBOSS_DOMAIN_SERVER_ARGS, jbossDomainServerArgsValue);
+            }
         }
     }
 

@@ -174,7 +174,7 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
 
         switch (this.config.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
             case FINE: {
-                return new FineSessionAttributesFactory(this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
+                return new FineSessionAttributesFactory(this.config.getCache(), this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
             }
             case COARSE: {
                 return new CoarseSessionAttributesFactory(this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);

@@ -19,35 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.wise;
 
-import java.io.IOException;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+package org.jboss.as.test.clustering.cluster.jpa2lc;
+
+import java.util.Collections;
+import java.util.Set;
+import javax.ws.rs.ApplicationPath;
 
 /**
- * @author rsearls
+ * @author Jan Martiska
  */
-public class WiseSubsystemTestCase extends AbstractSubsystemBaseTest {
-
-    public WiseSubsystemTestCase() {
-        super(WiseExtension.SUBSYSTEM_NAME, new WiseExtension());
-    }
+@ApplicationPath("/")
+public class DummyEntityControllingApplication extends javax.ws.rs.core.Application {
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns=\"urn:jboss:domain:wise:1.0\"/>";
+    public Set<Class<?>> getClasses() {
+        return Collections.singleton(DummyEntityRESTResource.class);
     }
 
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-wise_1_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-            "/subsystem-templates/wise.xml"
-        };
-    }
 }
-

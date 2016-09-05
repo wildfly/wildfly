@@ -19,21 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.wise;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.MessageLogger;
+import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
 /**
- *
+ * Externalizer for {@link SessionAttributeNamesKey}.
+ * @author Paul Ferraro
  */
-@MessageLogger(projectCode = "WFLYWSW", length = 4)
-public interface WiseLogger extends BasicLogger {
+public class SessionAttributeNamesKeyExternalizer extends SessionKeyExternalizer<SessionAttributeNamesKey> {
 
-   /**
-    * A logger with a category of the package name.
-    */
-   WiseLogger ROOT_LOGGER = Logger.getMessageLogger(WiseLogger.class, "org.wildfly.extension.wise");
-
+    public SessionAttributeNamesKeyExternalizer() {
+        super(SessionAttributeNamesKey.class, SessionAttributeNamesKey::new);
+    }
 }

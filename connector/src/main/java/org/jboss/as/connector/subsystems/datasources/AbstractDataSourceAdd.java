@@ -172,7 +172,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector());
 
         } else {
-            dataSourceServiceBuilder.addDependency(ConnectorServices.NON_JTA_DS_RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector());
+            dataSourceServiceBuilder.addDependency(ConnectorServices.NON_JTA_DS_RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
+                    .addDependency(ConnectorServices.NON_TX_CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector());
 
         }
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources

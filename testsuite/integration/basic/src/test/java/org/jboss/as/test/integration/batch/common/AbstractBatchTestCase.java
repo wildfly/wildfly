@@ -42,6 +42,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -68,13 +69,25 @@ public abstract class AbstractBatchTestCase {
                                 .exportAsString()))
                 .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "permissions.xml");
         for (String jobXml : jobXmls) {
-            deployment.addAsWebInfResource(pkg, jobXml, "classes/META-INF/batch-jobs/" + jobXml);
+            addJobXml(pkg, deployment, jobXml);
         }
         return deployment;
     }
 
     protected static String performCall(final String url) throws ExecutionException, IOException, TimeoutException {
-        return HttpRequest.get(url, 10, TimeUnit.MINUTES); // TODO (jrp) way to long only set for debugging
+        return HttpRequest.get(url, TimeoutUtil.adjust(10), TimeUnit.SECONDS);
+    }
+
+    protected static WebArchive addJobXml(final Package pkg, final WebArchive deployment, final String jobXml) {
+        return addJobXml(pkg, deployment, jobXml, jobXml);
+    }
+
+    protected static WebArchive addJobXml(final Package pkg, final WebArchive deployment, final String fileName, final String jobXml) {
+        return deployment.addAsWebInfResource(pkg, fileName, "classes/META-INF/batch-jobs/" + jobXml);
+    }
+
+    protected static WebArchive addJobXml(final WebArchive deployment, final Asset asset, final String jobXml) {
+        return deployment.addAsWebInfResource(asset, "classes/META-INF/batch-jobs/" + jobXml);
     }
 
     public static class UrlBuilder {

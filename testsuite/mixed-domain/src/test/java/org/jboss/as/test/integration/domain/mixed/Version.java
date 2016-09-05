@@ -72,8 +72,13 @@ public @interface Version {
         public String getFullVersionName() {
             return basename + version;
         }
+
         public String getZipFileName() {
             return  getFullVersionName() + ".zip";
+        }
+
+        public boolean isEAP6Version() {
+            return (this == EAP_6_2_0 || this == EAP_6_3_0 || this == EAP_6_4_0);
         }
 
         public int getMajor() {

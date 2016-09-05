@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
@@ -58,6 +59,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.metadata.merge.Merger;
@@ -156,7 +158,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
 
-    public static ServiceBuilder process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader,
+    public static ServiceBuilder<ResourceAdapterDeployment> process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader,
                                          final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName,
                                          final ManagementResourceRegistration registration, Resource deploymentResource) throws DeploymentUnitProcessingException {
 
@@ -190,28 +192,37 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(activation, cmd);
             }
 
+            TransactionSupportEnum transactionSupport = TransactionSupportEnum.NoTransaction;
+            if (cmd != null && cmd.getResourceadapter() != null && cmd.getResourceadapter().getOutboundResourceadapter() != null) {
+                transactionSupport = cmd.getResourceadapter().getOutboundResourceadapter().getTransactionSupport();
+            }
+            if (activation != null && activation.getTransactionSupport() != null) {
+                transactionSupport = activation.getTransactionSupport();
+            }
             final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
             final ResourceAdapterDeploymentService raDeploymentService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, activation, classLoader, deployerServiceName, duServiceName, registration, deploymentResource);
 
             // Create the service
-            return Services.addServerExecutorDependency(
-                        serviceTarget.addService(deployerServiceName, raDeploymentService),
-                        raDeploymentService.getExecutorServiceInjector(), false)
-                    .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, raDeploymentService.getMdrInjector())
-                    .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
-                    .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())
-                    .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
-                    .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
-                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
-                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager())
-                    .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector())
-                    .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
-                    .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
-                    .addDependency(NamingService.SERVICE_NAME);
-
-
-
+            ServiceBuilder<ResourceAdapterDeployment> builder = Services.addServerExecutorDependency(
+                    serviceTarget.addService(deployerServiceName, raDeploymentService),
+                    raDeploymentService.getExecutorServiceInjector(), false)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, raDeploymentService.getMdrInjector())
+                .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
+                .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
+                .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())
+                .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
+                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
+                .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
+                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager())
+                .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
+                .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
+                .addDependency(NamingService.SERVICE_NAME);
+            if (transactionSupport == null || transactionSupport.equals(TransactionSupportEnum.NoTransaction)) {
+                builder.addDependency(ConnectorServices.NON_TX_CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
+            } else {
+                builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
+            }
+            return builder;
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }

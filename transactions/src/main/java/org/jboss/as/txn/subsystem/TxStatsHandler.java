@@ -55,7 +55,9 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
         NUMBER_OF_INFLIGHT_TRANSACTIONS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_INFLIGHT_TRANSACTIONS, ModelType.LONG, true)),
         NUMBER_OF_TIMED_OUT_TRANSACTIONS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_TIMED_OUT_TRANSACTIONS, ModelType.LONG, true)),
         NUMBER_OF_APPLICATION_ROLLBACKS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_APPLICATION_ROLLBACKS, ModelType.LONG, true)),
-        NUMBER_OF_RESOURCE_ROLLBACKS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_RESOURCE_ROLLBACKS, ModelType.LONG, true));
+        NUMBER_OF_RESOURCE_ROLLBACKS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_RESOURCE_ROLLBACKS, ModelType.LONG, true)),
+        NUMBER_OF_SYSTEM_ROLLBACKS(new SimpleAttributeDefinition(CommonAttributes.NUMBER_OF_SYSTEM_ROLLBACKS, ModelType.LONG, true)),
+        AVERAGE_COMMIT_TIME(new SimpleAttributeDefinition(CommonAttributes.AVERAGE_COMMIT_TIME, ModelType.LONG, true));
 
         private static final Map<String, TxStat> MAP = new HashMap<String, TxStat>();
         static {
@@ -121,6 +123,12 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
                     break;
                 case NUMBER_OF_RESOURCE_ROLLBACKS:
                     result.set(txStats.getNumberOfResourceRollbacks());
+                    break;
+                case NUMBER_OF_SYSTEM_ROLLBACKS:
+                    result.set(txStats.getNumberOfSystemRollbacks());
+                    break;
+                case AVERAGE_COMMIT_TIME:
+                    result.set(txStats.getAverageCommitTime());
                     break;
                 default:
                     throw new IllegalStateException(TransactionLogger.ROOT_LOGGER.unknownMetric(stat));

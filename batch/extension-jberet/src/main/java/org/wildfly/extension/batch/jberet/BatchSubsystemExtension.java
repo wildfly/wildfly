@@ -35,7 +35,7 @@ import org.wildfly.extension.batch.jberet.deployment.BatchJobResourceDefinition;
 public class BatchSubsystemExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     /**

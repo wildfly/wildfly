@@ -83,6 +83,8 @@ interface CommonAttributes {
     String NUMBER_OF_TIMED_OUT_TRANSACTIONS = "number-of-timed-out-transactions";
     String NUMBER_OF_APPLICATION_ROLLBACKS = "number-of-application-rollbacks";
     String NUMBER_OF_RESOURCE_ROLLBACKS = "number-of-resource-rollbacks";
+    String NUMBER_OF_SYSTEM_ROLLBACKS = "number-of-system-rollbacks";
+    String AVERAGE_COMMIT_TIME = "average-commit-time";
 
 
     String PARTICIPANT = "participant";

@@ -29,29 +29,29 @@ import org.wildfly.clustering.infinispan.spi.distribution.Key;
  */
 public class SessionAttributeKey extends Key<String> {
 
-    private final String attribute;
+    private final int attributeId;
 
-    public SessionAttributeKey(String id, String attribute) {
-        super(id);
-        this.attribute = attribute;
+    public SessionAttributeKey(String sessionId, int attributeId) {
+        super(sessionId);
+        this.attributeId = attributeId;
     }
 
-    public String getAttribute() {
-        return this.attribute;
+    public int getAttributeId() {
+        return this.attributeId;
     }
 
     @Override
     public int hashCode() {
-        return (31 * super.hashCode()) + this.attribute.hashCode();
+        return (31 * super.hashCode()) + this.attributeId;
     }
 
     @Override
     public boolean equals(Object object) {
-        return super.equals(object) && (object instanceof SessionAttributeKey) && this.attribute.equals(((SessionAttributeKey) object).attribute);
+        return super.equals(object) && (object instanceof SessionAttributeKey) && (this.attributeId == ((SessionAttributeKey) object).attributeId);
     }
 
     @Override
     public String toString() {
-        return String.format("%s->%s", this.getValue(), this.attribute);
+        return String.format("%s(%s[%d])", SessionAttributeKey.class.getSimpleName(), this.getValue(), this.attributeId);
     }
 }

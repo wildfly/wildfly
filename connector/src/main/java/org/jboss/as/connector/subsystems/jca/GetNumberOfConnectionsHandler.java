@@ -52,10 +52,16 @@ public class GetNumberOfConnectionsHandler implements OperationStepHandler {
 
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
-                    int number = ccm.getNumberOfConnections();
                     ModelNode result = new ModelNode();
-                    result.add(number);
+
+                    CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
+                    ModelNode txResult = new ModelNode().set(ccm.getNumberOfConnections());
+
+                    ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.NON_TX_CCM_SERVICE).getValue();
+                    ModelNode nonTxResult = new ModelNode().set(ccm.getNumberOfConnections());
+
+                    result.get(Constants.TX).set(txResult);
+                    result.get(Constants.NON_TX).set(nonTxResult);
 
                     context.getResult().set(result);
                     context.stepCompleted();

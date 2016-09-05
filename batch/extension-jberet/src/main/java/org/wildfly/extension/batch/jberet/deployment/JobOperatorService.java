@@ -23,7 +23,6 @@
 package org.wildfly.extension.batch.jberet.deployment;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -58,7 +57,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * deployments.
  * <p>
  * Note that for each method the job name, or derived job name, must exist for the deployment. The allowed job names and
- * job XML files are determined at deployment time.
+ * job XML descriptor are determined at deployment time.
  * </p>
  * <p>
  * This implementation does change some of the API's contracts however it's only intended to be used by management
@@ -74,14 +73,10 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
 
     private ClassLoader classLoader;
     private JobOperator delegate;
-    // Guarded by this
-    private final Set<String> allowedJobNames;
-    // Guarded by this
-    private final Set<String> allowedJobXmlNames;
+    private final DeploymentJobDescriptors jobDescriptors;
 
     public JobOperatorService() {
-        allowedJobNames = new LinkedHashSet<>();
-        allowedJobXmlNames = new LinkedHashSet<>();
+        jobDescriptors = new DeploymentJobDescriptors();
     }
 
     @Override
@@ -111,9 +106,7 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     @Override
     public Set<String> getJobNames() throws JobSecurityException {
         checkState();
-        synchronized (this) {
-            return new LinkedHashSet<>(allowedJobNames);
-        }
+        return jobDescriptors.getJobNames();
     }
 
     /**
@@ -211,12 +204,8 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
             } else {
                 jobXml = jobXMLName + ".xml";
             }
-            final boolean valid;
-            synchronized (this) {
-                valid = allowedJobXmlNames.contains(jobXml);
-            }
-            if (valid) {
-                return delegate.start(jobXMLName, jobParameters);
+            if (jobDescriptors.isValidJobXmlName(jobXml)) {
+                return delegate.start(jobXml, jobParameters);
             }
             throw BatchLogger.LOGGER.couldNotFindJobXml(jobXMLName);
         } finally {
@@ -324,12 +313,11 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     /**
      * Adds the job XML and the job name to the allowed resources to use.
      *
-     * @param jobXml  the job XML file name
+     * @param jobXml  the job XML descriptor name
      * @param jobName the job name
      */
-    protected synchronized void addAllowedJob(final String jobXml, final String jobName) {
-        allowedJobXmlNames.add(jobXml);
-        allowedJobNames.add(jobName);
+    void addAllowedJob(final String jobXml, final String jobName) {
+        jobDescriptors.add(jobXml, jobName);
     }
 
     /**
@@ -339,6 +327,15 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
      */
     Injector<BatchEnvironment> getBatchEnvironmentInjector() {
         return batchEnvironmentInjector;
+    }
+
+    /**
+     * Returns the deployment job descriptor associated with this job operator.
+     *
+     * @return the job descriptor for this job operator
+     */
+    DeploymentJobDescriptors getJobDescriptors() {
+        return jobDescriptors;
     }
 
     private void checkState() {
@@ -355,7 +352,7 @@ public class JobOperatorService implements JobOperator, Service<JobOperator> {
     }
 
     private synchronized void validateJob(final String name) {
-        if (!allowedJobNames.contains(name)) {
+        if (!jobDescriptors.isValidJobName(name)) {
             throw BatchLogger.LOGGER.noSuchJobException(name);
         }
     }

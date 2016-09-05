@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import static io.undertow.util.StatusCodes.OK;
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
 import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
@@ -155,6 +154,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        knownApplicationSecurityDomains.clear(); // If we are registering, time for a clean start.
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
     }
@@ -213,9 +213,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             ServiceBuilder<Function<DeploymentInfo, Registration>> serviceBuilder = context.getServiceTarget().addService(serviceName, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
 
-            serviceBuilder.addDependency(context.getCapabilityServiceName(
-                    buildDynamicCapabilityName(HTTP_AUTHENITCATION_FACTORY_CAPABILITY, httpServerMechanismFactory), HttpAuthenticationFactory.class),
-                    HttpAuthenticationFactory.class, applicationSecurityDomainService.getHttpAuthenticationFactoryInjector());
+            serviceBuilder.addDependency(context.getCapabilityServiceName(HTTP_AUTHENITCATION_FACTORY_CAPABILITY,
+                    httpServerMechanismFactory, HttpAuthenticationFactory.class), HttpAuthenticationFactory.class, applicationSecurityDomainService.getHttpAuthenticationFactoryInjector());
 
             serviceBuilder.install();
         }
