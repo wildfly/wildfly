@@ -224,11 +224,6 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     }
 
     @Override
-    public boolean containsSession(String id) {
-        return this.cache.containsKey(new SessionCreationMetaDataKey(id));
-    }
-
-    @Override
     public Session<L> findSession(String id) {
         Map.Entry<MV, AV> value = this.factory.findValue(id);
         if (value == null) {
@@ -254,7 +249,9 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
     @Override
     public Session<L> createSession(String id) {
-        Session<L> session = this.factory.createSession(id, this.factory.createValue(id, null));
+        Map.Entry<MV, AV> entry = this.factory.createValue(id, null);
+        if (entry == null) return null;
+        Session<L> session = this.factory.createSession(id, entry);
         session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
         return new SchedulableSession(session, session);
     }

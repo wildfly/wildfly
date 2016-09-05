@@ -50,8 +50,12 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     @Override
     public InfinispanSessionMetaData<L> createValue(String id, Void context) {
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(new SessionCreationMetaDataKey(id), key -> new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData()));
-        SessionAccessMetaData accessMetaData = this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(new SessionAccessMetaDataKey(id), key -> new SimpleSessionAccessMetaData());
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData());
+        if (this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(new SessionCreationMetaDataKey(id), creationMetaDataEntry) != null) {
+            return null;
+        }
+        SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
+        this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAccessMetaDataKey(id), accessMetaData);
         return new InfinispanSessionMetaData<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
     }
 

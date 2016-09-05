@@ -50,6 +50,7 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
     @Override
     public Map.Entry<InfinispanSessionMetaData<L>, V> createValue(String id, Void context) {
         InfinispanSessionMetaData<L> metaDataValue = this.metaDataFactory.createValue(id, context);
+        if (metaDataValue == null) return null;
         V attributesValue = this.attributesFactory.createValue(id, context);
         return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
     }

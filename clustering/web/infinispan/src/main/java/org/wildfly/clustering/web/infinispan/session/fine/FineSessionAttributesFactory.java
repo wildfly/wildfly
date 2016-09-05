@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -67,18 +66,14 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ma
 
     @Override
     public Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> createValue(String id, Void context) {
-        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.getAttributeNames(id, key -> this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(key, k -> new AbstractMap.SimpleImmutableEntry<>(new AtomicInteger(), new ConcurrentHashMap<>())));
-        return (entry != null) ? entry : this.createValue(id, context);
+        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = new AbstractMap.SimpleImmutableEntry<>(new AtomicInteger(), new ConcurrentHashMap<>());
+        this.namesCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributeNamesKey(id), entry);
+        return entry;
     }
 
     @Override
     public Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> findValue(String id) {
-        return this.getAttributeNames(id, key -> this.namesCache.get(key));
-    }
-
-    private Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> getAttributeNames(String id, Function<SessionAttributeNamesKey, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> provider) {
-        SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
-        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = provider.apply(key);
+        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (entry != null) {
             ConcurrentMap<String, Integer> names = entry.getValue();
             Map<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));

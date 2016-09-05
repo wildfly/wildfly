@@ -38,14 +38,13 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 
 /**
  * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
  * @author Paul Ferraro
  */
 public class DistributableSessionManager implements UndertowSessionManager {
-
-    private static final int MAX_SESSION_ID_GENERATION_ATTEMPTS = 10;
 
     private final String deploymentName;
     private final SessionListeners listeners;
@@ -93,21 +92,16 @@ public class DistributableSessionManager implements UndertowSessionManager {
         @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
-            String id = config.findSessionId(exchange);
-
-            if (id == null) {
-                int attempts = 0;
-                do {
-                    if (++attempts > MAX_SESSION_ID_GENERATION_ATTEMPTS) {
-                        throw UndertowMessages.MESSAGES.couldNotGenerateUniqueSessionId();
-                    }
-                    id = this.manager.createIdentifier();
-                } while (this.manager.containsSession(id));
-
+            String requestedSessionId = config.findSessionId(exchange);
+            String id = (requestedSessionId == null) ? this.manager.createIdentifier() : requestedSessionId;
+            Session<LocalSessionContext> session = this.manager.createSession(id);
+            if (session == null) {
+                throw UndertowClusteringLogger.ROOT_LOGGER.sessionAlreadyExists(id);
+            }
+            if (requestedSessionId == null) {
                 config.setSessionId(exchange, id);
             }
 
-            Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batcher.suspendBatch());
             this.listeners.sessionCreated(adapter, exchange);
             if (this.statistics != null) {

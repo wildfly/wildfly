@@ -31,13 +31,6 @@ import org.wildfly.clustering.web.IdentifierFactory;
 public interface SessionManager<L, B extends Batch> extends IdentifierFactory<String>, ActiveSessionStatistics {
 
     /**
-     * Indicates whether or not the session with the specified identifier is known to this session manager.
-     * @param id a unique session identifier
-     * @return true, if the session is known to the manager, false otherwise
-     */
-    boolean containsSession(String id);
-
-    /**
      * Returns the session with the specified identifier, or null if none exists.
      * Sessions returned by this method must be closed via {@link Session#close()}.
      * This method is intended to be invoked within the context of a batch.
@@ -47,11 +40,11 @@ public interface SessionManager<L, B extends Batch> extends IdentifierFactory<St
     Session<L> findSession(String id);
 
     /**
-     * Returns the session with the specified identifier, creating one if necessary
+     * Creates a session using the specified identifier.
      * Sessions returned by this method must be closed via {@link Session#close()}.
      * This method is intended to be invoked within the context of a batch.
      * @param id a session identifier
-     * @return a new or existing web session
+     * @return a new web session, or null if a session with the specified identifier already exists.
      */
     Session<L> createSession(String id);
 

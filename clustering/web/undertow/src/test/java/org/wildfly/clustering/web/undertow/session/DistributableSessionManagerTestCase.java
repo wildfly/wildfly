@@ -41,6 +41,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batch;
@@ -99,11 +100,8 @@ public class DistributableSessionManagerTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
-        String existingSessionId = "existing";
 
-        when(this.manager.createIdentifier()).thenReturn(existingSessionId, sessionId);
-        when(this.manager.containsSession(existingSessionId)).thenReturn(true);
-        when(this.manager.containsSession(sessionId)).thenReturn(false);
+        when(this.manager.createIdentifier()).thenReturn(sessionId);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
@@ -135,7 +133,6 @@ public class DistributableSessionManagerTestCase {
         String sessionId = "session";
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
-        when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
@@ -154,6 +151,32 @@ public class DistributableSessionManagerTestCase {
 
         String result = sessionAdapter.getId();
         assertSame(expected, result);
+    }
+
+    @Test
+    public void createSessionAlreadyExists() {
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        SessionConfig config = mock(SessionConfig.class);
+        String sessionId = "session";
+
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
+        when(this.manager.createSession(sessionId)).thenReturn(null);
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+
+        IllegalStateException exception = null;
+        try {
+            this.adapter.createSession(exchange, config);
+        } catch (IllegalStateException e) {
+            exception = e;
+        }
+
+        assertNotNull(exception);
+
+        verify(batch).discard();
+        verify(batch).close();
     }
 
     @Test
