@@ -36,8 +36,8 @@
                 <json-formatter name="json-formatter"/>
             </formatters>
             <handlers>
-                <file-handler name="host-file" formatter="json-formatter" relative-to="jboss.domain.data.dir" path="audit-log.log"/>
-                <file-handler name="server-file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+                <file-handler name="host-file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.domain.data.dir"/>
+                <file-handler name="server-file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
             <logger log-boot="true" log-read-only="false" enabled="false">
                 <handlers>
@@ -74,6 +74,10 @@
         <interface name="public">
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
+        <interface name="private">
+            <!-- Used for JGroups sockets in the standard configuration. -->
+            <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
+        </interface>
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
@@ -84,9 +88,10 @@
     <jvms>
         <jvm name="default">
             <heap size="64m" max-size="256m"/>
-            <permgen size="256m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
+                <option value="-XX:MetaspaceSize=96m"/>
+                <option value="-XX:MaxMetaspaceSize=256m"/>
             </jvm-options>
         </jvm>
     </jvms>
