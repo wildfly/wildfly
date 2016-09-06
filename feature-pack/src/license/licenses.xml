@@ -397,7 +397,7 @@
       <artifactId>java-getopt</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 3</name>
+          <name>GNU Library General Public License, Version 2</name>
           <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
           <distribution>repo</distribution>
         </license>
