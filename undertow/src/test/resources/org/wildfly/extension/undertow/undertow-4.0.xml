@@ -108,7 +108,6 @@
         </reverse-proxy>
     </handlers>
     <filters>
-        <!--<basic-auth name="security-other" security-domain="other"/>-->
         <request-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip"/>
@@ -119,7 +118,7 @@
                      connection-idle-timeout="10" health-check-interval="600"
                      management-access-predicate="method[GET]"
                      management-socket-binding="test3" max-request-time="1000"
-                     security-realm="foo"
+                     ssl-context="foo"
                      name="mod-cluster" security-key="password"/>
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
         <expression-filter name="requestDumper" expression="dump-request" />

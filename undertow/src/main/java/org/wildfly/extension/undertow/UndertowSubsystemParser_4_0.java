@@ -283,6 +283,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD,
                                         ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
                                         ModClusterDefinition.REQUEST_QUEUE_SIZE,
+                                        ModClusterDefinition.SSL_CONTEXT,
                                         ModClusterDefinition.SECURITY_REALM,
                                         ModClusterDefinition.USE_ALIAS,
                                         ModClusterDefinition.ENABLE_HTTP2,

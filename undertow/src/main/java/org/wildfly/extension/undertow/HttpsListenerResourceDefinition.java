@@ -60,7 +60,6 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY, LISTENER_CAPABILITY_NAME, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
-            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
 
     protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING, true)
@@ -68,6 +67,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDeprecated(ModelVersion.create(4, 0, 0))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
 
     protected static final OptionAttributeDefinition VERIFY_CLIENT = OptionAttributeDefinition.builder(Constants.VERIFY_CLIENT, SSL_CLIENT_AUTH_MODE)
