@@ -103,7 +103,7 @@
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true" case-sensitive="false" follow-symlink="true" safe-symlink-paths="/path/to/folder /second/path"/>
         <reverse-proxy connection-idle-timeout="60"
                        connections-per-thread="30" name="reverse-proxy">
-            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test" security-realm="foo"/>
+            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test" ssl-context="foo"/>
             <!-- ajp://localhost:8080 -->
         </reverse-proxy>
     </handlers>

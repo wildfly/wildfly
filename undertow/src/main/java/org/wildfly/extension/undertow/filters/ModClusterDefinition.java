@@ -62,7 +62,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  */
 public class ModClusterDefinition extends AbstractHandlerDefinition {
 
-    protected static final String MOD_CLUSTER_FILTER_CAPABILITY_NAME = "org.wildfly.undertow.mod_cluster_filter";
+    private static final String MOD_CLUSTER_FILTER_CAPABILITY_NAME = "org.wildfly.undertow.mod_cluster_filter";
     static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
