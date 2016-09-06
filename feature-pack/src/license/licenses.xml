@@ -476,8 +476,7 @@
       <licenses>
         <license>
           <name>Creative Commons Attribution 2.5</name>
-          <url>http://repository.jboss.org/licenses/jcip-cc-by-2.5.txt</url>
-          <distribution>repo</distribution>
+          <url>https://creativecommons.org/licenses/by/2.5/legalcode</url>
         </license>
       </licenses>
     </dependency>
