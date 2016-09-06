@@ -1718,8 +1718,8 @@
       <artifactId>infinispan-cachestore-jdbc</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1729,8 +1729,8 @@
       <artifactId>infinispan-cachestore-remote</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1740,8 +1740,8 @@
       <artifactId>infinispan-client-hotrod</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1762,8 +1762,8 @@
       <artifactId>infinispan-core</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
