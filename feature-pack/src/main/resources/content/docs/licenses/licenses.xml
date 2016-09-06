@@ -418,9 +418,8 @@
       <artifactId>undertow-js</artifactId>
       <licenses>
         <license>
-          <name>Public Domain</name>
-          <url>http://repository.jboss.org/licenses/cc0-1.0.txt</url>
-          <distribution>repo</distribution>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
         </license>
       </licenses>
     </dependency>
