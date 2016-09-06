@@ -23,15 +23,18 @@
 package org.jboss.as.test.integration.ejb.interceptor.regex;
 
 import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
 /**
  * @author Stuart Douglas
  */
+@Interceptor
 public class RegexInterceptor {
+    public static final String MESSAGE = "-regex";
 
     @AroundInvoke
     public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
-        return invocationContext.proceed() + "-regex";
+        return invocationContext.proceed() + MESSAGE;
     }
 }

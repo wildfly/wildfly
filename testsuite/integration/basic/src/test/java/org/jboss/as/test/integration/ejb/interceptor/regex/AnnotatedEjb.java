@@ -21,26 +21,14 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.regex;
 
-import javax.interceptor.ExcludeClassInterceptors;
-import javax.interceptor.ExcludeDefaultInterceptors;
+import javax.ejb.Stateless;
 
 /**
- * @author Stuart Douglas
+ * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
-public class TestEjb {
-    public static final String MESSAGE = "test";
-
+@Stateless(name = "org.jboss.as.test.integration.ejb.interceptor.regex.AnnotatedEjb")
+public class AnnotatedEjb {
     public String test() {
-        return MESSAGE;
-    }
-
-    @ExcludeDefaultInterceptors
-    public String testIgnoreDefault() {
-        return MESSAGE;
-    }
-
-    @ExcludeClassInterceptors
-    public String testIgnoreClass() {
-        return MESSAGE;
+        return TestEjb.MESSAGE;
     }
 }

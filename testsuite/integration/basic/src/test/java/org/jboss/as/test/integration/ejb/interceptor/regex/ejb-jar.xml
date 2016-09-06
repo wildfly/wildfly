@@ -38,18 +38,57 @@
             <session-type>Stateless</session-type>
         </session>
         <session>
+            <ejb-name>.AnotherTest</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>YetAnotherTest</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>OrderingTest</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
             <ejb-name>Production</ejb-name>
             <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
             <session-type>Stateless</session-type>
         </session>
     </enterprise-beans>
 
-       
-   <assembly-descriptor>
-      <interceptor-binding>
-         <ejb-name>Test.*</ejb-name>
-         <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
-      </interceptor-binding>
-   </assembly-descriptor>
-   
+    <assembly-descriptor>
+        <interceptor-binding>
+            <ejb-name>Test.*</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>org.jboss.as.test.integration.ejb.interceptor.regex.AnnotatedEjb</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>\.[A-C][^r]*rTest</ejb-name>  <!-- should match bean named '.AnotherTest' -->
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+            <method>
+                <method-name>testIgnoreClass</method-name>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>YetA[A-Za-z]*</ejb-name> <!-- should match bean named 'YetAnotherTest' -->
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+            <method>
+                <method-name>test</method-name>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>OrderingTest</ejb-name>
+            <interceptor-order>
+                <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+                <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+            </interceptor-order>
+        </interceptor-binding>
+    </assembly-descriptor>
+
 </ejb-jar>
