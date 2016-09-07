@@ -126,6 +126,6 @@
     </filters>
 
     <application-security-domains>
-        <application-security-domain security-domain="other" http-authentication-factory="elytron-factory" override-deployment-config="true" />
+        <application-security-domain name="other" http-authentication-factory="elytron-factory" override-deployment-config="true" />
     </application-security-domains>
 </subsystem>

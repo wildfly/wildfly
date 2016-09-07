@@ -613,7 +613,7 @@
         <xs:sequence>
             <xs:element name="application-security-domain" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="security-domain" type="xs:string" use="required">
+                    <xs:attribute name="name" type="xs:string" use="required">
                         <xs:annotation>
                             <xs:documentation>
                                 The name of the security domain as specified in deployments.
