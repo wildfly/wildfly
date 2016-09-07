@@ -1,5 +1,6 @@
 package org.wildfly.extension.undertow.filters;
 
+import static org.wildfly.extension.undertow.filters.ModClusterDefinition.SSL_CONTEXT_CAPABILITY;
 import io.undertow.Handlers;
 import io.undertow.UndertowOptions;
 import io.undertow.client.UndertowClient;
@@ -48,6 +49,7 @@ public class ModClusterService extends FilterService {
     private final InjectedValue<SocketBinding> managementSocketBinding = new InjectedValue<>();
     private final InjectedValue<SocketBinding> advertiseSocketBinding = new InjectedValue<>();
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
+    private final InjectedValue<SSLContext> sslContext = new InjectedValue<>();
     private final long healthCheckInterval;
     private final int maxRequestTime;
     private final long removeBrokenNodes;
@@ -102,16 +104,21 @@ public class ModClusterService extends FilterService {
     public synchronized void start(StartContext context) throws StartException {
         super.start(context);
 
-        SecurityRealm realm = securityRealm.getOptionalValue();
+        SSLContext sslContext = this.sslContext.getOptionalValue();
+        if (sslContext == null) {
+            SecurityRealm realm = securityRealm.getOptionalValue();
+            if (realm != null) {
+                sslContext = realm.getSSLContext();
+            }
+        }
 
         //TODO: SSL support for the client
         //TODO: wire up idle timeout when new version of undertow arrives
         final ModCluster.Builder modClusterBuilder;
         final XnioWorker worker = workerInjectedValue.getValue();
-        if(realm == null) {
+        if(sslContext == null) {
             modClusterBuilder = ModCluster.builder(worker);
         } else {
-            SSLContext sslContext = realm.getSSLContext();
             OptionMap.Builder builder = OptionMap.builder();
             builder.set(Options.USE_DIRECT_BUFFERS, true);
             OptionMap combined = builder.getMap();
@@ -216,6 +223,7 @@ public class ModClusterService extends FilterService {
         if(managementAccessPredicateString != null) {
             managementAccessPredicate = PredicateParser.parse(managementAccessPredicateString, ModClusterService.class.getClassLoader());
         }
+        final ModelNode sslContext = ModClusterDefinition.SSL_CONTEXT.resolveModelAttribute(operationContext, model);
         final ModelNode securityRealm = ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(operationContext, model);
 
         final ModelNode packetSizeNode = ModClusterDefinition.MAX_AJP_PACKET_SIZE.resolveModelAttribute(operationContext, model);
@@ -250,6 +258,9 @@ public class ModClusterService extends FilterService {
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);
         serviceBuilder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
 
+        if (sslContext.isDefined()) {
+            serviceBuilder.addDependency(operationContext.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, sslContext.asString(), SSLContext.class), SSLContext.class, service.sslContext);
+        }
         if(securityRealm.isDefined()) {
             SecurityRealm.ServiceUtil.addDependency(serviceBuilder, service.securityRealm, securityRealm.asString(), false);
         }

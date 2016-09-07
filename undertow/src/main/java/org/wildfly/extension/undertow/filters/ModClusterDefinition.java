@@ -28,6 +28,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -60,6 +61,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  * @author Stuart Douglas
  */
 public class ModClusterDefinition extends AbstractHandlerDefinition {
+
+    private static final String MOD_CLUSTER_FILTER_CAPABILITY_NAME = "org.wildfly.undertow.mod_cluster_filter";
+    static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
@@ -117,7 +121,6 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setDefaultValue(new ModelNode("default"))
             .build();
 
-
     public static final AttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder(Constants.MAX_REQUEST_TIME, ModelType.INT)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
@@ -157,14 +160,21 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setDefaultValue(new ModelNode(1000))
             .build();
 
+    public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
+            .setAlternatives(Constants.SECURITY_REALM)
+            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, MOD_CLUSTER_FILTER_CAPABILITY_NAME, true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new StringLengthValidator(1))
+            .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)
+            .setAlternatives(Constants.SSL_CONTEXT)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
+            .setDeprecated(ModelVersion.create(4, 0, 0))
             .build();
-
 
     public static final SimpleAttributeDefinition USE_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.USE_ALIAS, ModelType.BOOLEAN)
             .setAllowNull(true)
@@ -228,7 +238,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
                 ADVERTISE_PATH, ADVERTISE_FREQUENCY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
-            CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
+            CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
             HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH));
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 

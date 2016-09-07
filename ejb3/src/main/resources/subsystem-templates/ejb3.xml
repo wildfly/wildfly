@@ -74,6 +74,6 @@
        </replacement>
    </supplement>
    <supplement name="full-elytron" includes="full elytron"/>
-   <supplement name="ha-elytron" includes="ha elytron"/>
-   <supplement name="full-ha-elytron" includes="full-ha elytron"/>
+   <supplement name="ha-elytron" includes="elytron ha"/>
+   <supplement name="full-ha-elytron" includes="elytron full-ha"/>
 </config>

@@ -37,7 +37,7 @@
                <json-formatter name="json-formatter"/>
             </formatters>        
             <handlers>
-               <file-handler name="file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+               <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
             <logger log-boot="true" log-read-only="false" enabled="false">
                <handlers>
@@ -75,6 +75,8 @@
         <interface name="public">
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
+
+        <?INTERFACES?>
     </interfaces>
 
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">

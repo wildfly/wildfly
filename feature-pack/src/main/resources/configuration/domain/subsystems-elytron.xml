@@ -60,6 +60,7 @@
       <subsystem supplement="domain">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
+      <subsystem>singleton.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="ha-elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
@@ -130,6 +131,7 @@
       <subsystem supplement="domain">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
+      <subsystem>singleton.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="ha-elytron">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
