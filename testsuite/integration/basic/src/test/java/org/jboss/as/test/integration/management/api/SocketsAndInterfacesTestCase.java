@@ -75,12 +75,12 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     @ArquillianResource
     URL url;
     private NetworkInterface testNic;
-    private  String testHost;
-    private static final int TEST_PORT = 9091;
+    private String testHost;
+    private static final int TEST_PORT = 9695;
 
     @Deployment
     public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
+        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "SocketsAndInterfacesTestCase-dummy.jar");
         ja.addClass(SocketsAndInterfacesTestCase.class);
         return ja;
     }
@@ -89,12 +89,12 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     public void before() throws IOException {
         testNic = getNonDefaultNic();
         // test the connector
-        testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostName());
+        testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostAddress());
     }
 
     @After
     public void after() throws Exception{
-     // remove connector
+        // remove connector
         ModelNode op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
         ModelNode result = executeOperation(op);
 
@@ -104,12 +104,12 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
                     "http", testHost, TEST_PORT, "/").toString()));
         } finally {
             // remove socket binding
-            op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", REMOVE);
+            op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
             result = executeOperation(op);
 
             ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
             // remove interface
-            op = createOpNode("interface=test-interface", REMOVE);
+            op = createOpNode("interface=test123-interface", REMOVE);
             result = executeOperation(op);
             ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
         }
@@ -124,28 +124,32 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         }
 
         // add interface
-        ModelNode op = createOpNode("interface=test-interface", ADD);
+        ModelNode op = createOpNode("interface=test123-interface", ADD);
         op.get("nic").set(testNic.getName());
+        op.get("inet-address").set(testHost);
         ModelNode result = executeOperation(op);
 
         // add socket binding using created interface
-        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", ADD);
-        op.get("interface").set("test-interface");
+        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", ADD);
+        op.get("interface").set("test123-interface");
         op.get("port").set(TEST_PORT);
         result = executeOperation(op);
 
 
         // add a web connector so we can test the interface
         op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", ADD);
-        op.get("socket-binding").set("test-binding");
+        op.get("socket-binding").set("test123-binding");
+        result = executeOperation(op);
+        op = createOpNode("/", "read-resource");
+        op.get("recursive").set(true);
+        op.get("include-runtime").set(true);
         result = executeOperation(op);
 
-
-        Assert.assertTrue("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
-                "http", testHost, TEST_PORT, "/").toString()));
+        final URL url =new URL("http", testHost, TEST_PORT, "/");
+        Assert.assertTrue("Could not connect to created connector: "+url+"<>"+InetAddress.getByName(url.getHost())+"..."+getNonDefaultNic()+".>"+result,WebUtil.testHttpURL(url.toString()));
 
         // change socket binding port
-        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", WRITE_ATTRIBUTE_OPERATION);
+        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set("port");
         op.get(VALUE).set(TEST_PORT + 1);
         result = executeOperation(op, false);
@@ -174,12 +178,12 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
                 "http", testHost, TEST_PORT, "/").toString()));
 
         // try to remove the interface while the socket binding is still  bound to it - should fail
-        op = createOpNode("interface=test-interface", REMOVE);
+        op = createOpNode("interface=test123-interface", REMOVE);
         result = executeOperation(op, false);
         Assert.assertFalse("Removed interface with socket binding bound to it.", SUCCESS.equals(result.get(OUTCOME).asString()));
 
         // try to remove socket binding while the connector is still using it - should fail
-        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", REMOVE);
+        op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
         result = executeOperation(op, false);
         Assert.assertFalse("Removed socked binding with connector still using it.", SUCCESS.equals(result.get(OUTCOME).asString()));
 
@@ -188,7 +192,6 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     }
 
     private NetworkInterface getNonDefaultNic() throws SocketException, UnknownHostException {
-
         InetAddress defaultAddr = InetAddress.getByName(url.getHost());
 
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -203,5 +206,4 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         }
         return null; // no interface found
     }
-
 }
