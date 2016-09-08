@@ -50,14 +50,14 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory implements SessionAttributesFactory<Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> {
+public class FineSessionAttributesFactory implements SessionAttributesFactory<SessionAttributeNamesEntry> {
 
-    private final Cache<SessionAttributeNamesKey, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> namesCache;
+    private final Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache;
     private final Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
     private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller;
     private final CacheProperties properties;
 
-    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>>> namesCache, Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
+    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache, Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
         this.namesCache = namesCache;
         this.attributeCache = attributeCache;
         this.marshaller = marshaller;
@@ -65,17 +65,17 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ma
     }
 
     @Override
-    public Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> createValue(String id, Void context) {
-        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = new AbstractMap.SimpleImmutableEntry<>(new AtomicInteger(), new ConcurrentHashMap<>());
+    public SessionAttributeNamesEntry createValue(String id, Void context) {
+        SessionAttributeNamesEntry entry = new SessionAttributeNamesEntry(new AtomicInteger(), new ConcurrentHashMap<>());
         this.namesCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributeNamesKey(id), entry);
         return entry;
     }
 
     @Override
-    public Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> findValue(String id) {
-        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.namesCache.get(new SessionAttributeNamesKey(id));
+    public SessionAttributeNamesEntry findValue(String id) {
+        SessionAttributeNamesEntry entry = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (entry != null) {
-            ConcurrentMap<String, Integer> names = entry.getValue();
+            ConcurrentMap<String, Integer> names = entry.getNames();
             Map<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));
             Predicate<Map.Entry<String, MarshalledValue<Object, MarshallingContext>>> invalidAttribute = attribute -> {
                 try {
@@ -97,18 +97,18 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ma
 
     @Override
     public boolean remove(String id) {
-        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
+        SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
         if (entry == null) return false;
-        entry.getValue().values().forEach(attributeId -> this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId)));
+        entry.getNames().values().forEach(attributeId -> this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId)));
         return true;
     }
 
     @Override
     public void evict(String id) {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
-        Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry = this.namesCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(key);
+        SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(key);
         if (entry != null) {
-            entry.getValue().entrySet().stream().forEach(attribute -> {
+            entry.getNames().entrySet().stream().forEach(attribute -> {
                 try {
                     this.attributeCache.evict(new SessionAttributeKey(id, attribute.getValue()));
                 } catch (Throwable e) {
@@ -120,14 +120,14 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Ma
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry) {
+    public SessionAttributes createSessionAttributes(String id, SessionAttributeNamesEntry entry) {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
         Mutator mutator = this.properties.isTransactional() && this.namesCache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.namesCache, key, entry);
-        return new FineSessionAttributes<>(id, entry.getKey(), entry.getValue(), mutator, this.attributeCache, this.marshaller, this.properties);
+        return new FineSessionAttributes<>(id, entry.getSequence(), entry.getNames(), mutator, this.attributeCache, this.marshaller, this.properties);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<AtomicInteger, ConcurrentMap<String, Integer>> entry) {
-        return new FineImmutableSessionAttributes<>(id, entry.getValue(), this.attributeCache, this.marshaller);
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, SessionAttributeNamesEntry entry) {
+        return new FineImmutableSessionAttributes<>(id, entry.getNames(), this.attributeCache, this.marshaller);
     }
 }
