@@ -25,12 +25,14 @@ import java.util.Set;
 
 import org.jboss.jbossts.star.service.TMApplication;
 
+import javax.ws.rs.core.Application;
+
 /**
  *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  *
  */
-public final class CoordinatorApplication extends AbstractRTSApplication {
+public final class CoordinatorApplication extends Application {
 
     private final TMApplication tmApplication;
 
@@ -40,17 +42,11 @@ public final class CoordinatorApplication extends AbstractRTSApplication {
 
     @Override
     public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = super.getClasses();
-        classes.addAll(tmApplication.getClasses());
-
-        return classes;
+        return tmApplication.getClasses();
     }
 
     @Override
     public Set<Object> getSingletons() {
-        Set<Object> singletons = super.getSingletons();
-        singletons.addAll(tmApplication.getSingletons());
-
-        return singletons;
+        return tmApplication.getSingletons();
     }
 }

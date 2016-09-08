@@ -23,6 +23,9 @@ package org.wildfly.extension.rts.jaxrs;
 
 import org.jboss.narayana.rest.integration.VolatileParticipantResource;
 
+import javax.ws.rs.core.Application;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -30,15 +33,11 @@ import java.util.Set;
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  *
  */
-public final class VolatileParticipantApplication extends AbstractRTSApplication {
+public final class VolatileParticipantApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = super.getClasses();
-
-        classes.add(VolatileParticipantResource.class);
-
-        return classes;
+        return new HashSet<>(Arrays.asList(VolatileParticipantResource.class));
     }
 
 }

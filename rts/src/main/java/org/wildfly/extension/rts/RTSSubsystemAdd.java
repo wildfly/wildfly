@@ -83,7 +83,8 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<InboundBridgeService> inboundBridgeServiceBuilder = context
                 .getServiceTarget()
                 .addService(RTSSubsystemExtension.INBOUND_BRIDGE, inboundBridgeService)
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
+                .addDependency(RTSSubsystemExtension.PARTICIPANT);
 
         inboundBridgeServiceBuilder
                 .setInitialMode(ServiceController.Mode.ACTIVE)
