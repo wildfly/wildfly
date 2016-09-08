@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -45,10 +46,16 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
     private final DeploymentModuleIdentifier identifier;
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
     private final Map<String, EjbDeploymentInformation> ejbs;
+    private final StartupCountdown startupCountdown;
 
     public ModuleDeployment(DeploymentModuleIdentifier identifier, Map<String, EjbDeploymentInformation> ejbs) {
+        this(identifier, ejbs, null);
+    }
+
+    public ModuleDeployment(DeploymentModuleIdentifier identifier, Map<String, EjbDeploymentInformation> ejbs, StartupCountdown startupCountdown) {
         this.identifier = identifier;
         this.ejbs = Collections.unmodifiableMap(ejbs);
+        this.startupCountdown = startupCountdown;
     }
 
 
@@ -66,12 +73,27 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        deploymentRepository.getValue().add(identifier, this);
+        Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                deploymentRepository.getValue().add(identifier, ModuleDeployment.this);
+            }
+        };
+        if (startupCountdown == null) action.run();
+        else startupCountdown.addCallback(action);
     }
 
     @Override
     public void stop(StopContext context) {
-        deploymentRepository.getValue().remove(identifier);
+        Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                deploymentRepository.getValue().remove(identifier);
+            }
+        };
+        if (startupCountdown == null) action.run();
+        else startupCountdown.addCallback(action);
+
     }
 
     @Override
@@ -86,14 +108,23 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
 
         private final DeploymentModuleIdentifier identifier;
         private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
+        private final StartupCountdown countdown;
 
-        public ModuleDeploymentStartService(DeploymentModuleIdentifier identifier) {
+        public ModuleDeploymentStartService(DeploymentModuleIdentifier identifier, StartupCountdown countdown) {
             this.identifier = identifier;
+            this.countdown = countdown;
         }
 
         @Override
         public void start(StartContext startContext) throws StartException {
-            deploymentRepository.getValue().startDeployment(identifier);
+            Runnable action = new Runnable() {
+                @Override
+                public void run() {
+                    deploymentRepository.getValue().startDeployment(identifier);
+                }
+            };
+            if (countdown == null) action.run();
+            else countdown.addCallback(action);
         }
 
         @Override

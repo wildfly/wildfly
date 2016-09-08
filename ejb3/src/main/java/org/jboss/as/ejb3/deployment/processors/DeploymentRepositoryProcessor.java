@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -117,7 +118,8 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap);
+        final StartupCountdown countdown = deploymentUnit.getAttachment(Attachments.STARTUP_COUNTDOWN);
+        final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap, countdown);
         ServiceName moduleDeploymentService = deploymentUnit.getServiceName().append(ModuleDeployment.SERVICE_NAME);
         final ServiceBuilder<ModuleDeployment> builder = phaseContext.getServiceTarget().addService(moduleDeploymentService, deployment);
         for (Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
@@ -126,7 +128,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
         builder.install();
 
-        final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier);
+        final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier, countdown);
         final ServiceBuilder<Void> startBuilder = phaseContext.getServiceTarget().addService(deploymentUnit.getServiceName().append(ModuleDeployment.START_SERVICE_NAME), deploymentStart);
         startBuilder.addDependencies(componentStartServices);
         startBuilder.addDependency(moduleDeploymentService);
