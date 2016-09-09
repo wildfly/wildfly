@@ -31,11 +31,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
@@ -67,7 +67,12 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder server = builder.addChildResource(MessagingExtension.SERVER_PATH);
-
+        // reject journal-datasource, journal-bindings-table introduced in management version 2.0.0 if it is defined and different from the default value.
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_DATASOURCE,
+                ServerDefinition.JOURNAL_MESSAGES_TABLE,
+                ServerDefinition.JOURNAL_BINDINGS_TABLE,
+                ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
+                ServerDefinition.JOURNAL_SQL_PROVIDER_FACTORY);
         ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.PRODUCER_WINDOW_SIZE);
@@ -94,6 +99,16 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         for (AttributeDefinition attr : attrs) {
             builder.getAttributeBuilder()
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(attr.getDefaultValue()), attr)
+                    .addRejectCheck(DEFINED, attr);
+        }
+    }
+
+    /**
+     * Reject the attributes if they are defined.
+     */
+    private static void rejectDefinedAttribute(ResourceTransformationDescriptionBuilder builder, AttributeDefinition... attrs) {
+        for (AttributeDefinition attr : attrs) {
+            builder.getAttributeBuilder()
                     .addRejectCheck(DEFINED, attr);
         }
     }

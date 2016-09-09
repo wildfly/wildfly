@@ -85,6 +85,9 @@
 
             <xs:element name="journal" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="sql-provider-factory-class" type="classType" minOccurs="0" maxOccurs="1" />
+                    </xs:sequence>
                     <xs:attribute name="type">
                         <xs:simpleType>
                             <xs:restriction base="xs:string">
@@ -106,6 +109,10 @@
                     <xs:attribute name="max-io" type="xs:int" />
                     <xs:attribute name="create-bindings-dir" type="xs:boolean" />
                     <xs:attribute name="create-journal-dir" type="xs:boolean" />
+                    <xs:attribute name="datasource" type="xs:string" />
+                    <xs:attribute name="messages-table" type="xs:string" />
+                    <xs:attribute name="bindings-table" type="xs:string" />
+                    <xs:attribute name="large-messages-table" type="xs:string" />
                 </xs:complexType>
             </xs:element>
 

@@ -30,6 +30,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -170,6 +172,58 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
+    // TODO: if this attribute is set, warn/error if any fs-related journal attribute is set.
+    // TODO: add capability for data-source https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/data-source/capability.adoc
+    public static final SimpleAttributeDefinition JOURNAL_DATASOURCE = create("journal-datasource", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("datasource")
+            .setAllowNull(true)
+            // references another resource
+            .setAllowExpression(false)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition JOURNAL_BINDINGS_TABLE  = create("journal-bindings-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("bindings-table")
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBindingsTableName()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition JOURNAL_LARGE_MESSAGES_TABLE  = create("journal-large-messages-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("large-messages-table")
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultLargeMessagesTableName()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition JOURNAL_MESSAGES_TABLE = create("journal-messages-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("messages-table")
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMessageTableName()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final AttributeDefinition JOURNAL_SQL_PROVIDER_FACTORY = ObjectTypeAttributeDefinition.Builder.of("journal-sql-provider-factory-class",
+            create(CommonAttributes.NAME, ModelType.STRING, false)
+                    .setAllowExpression(false)
+                    .build(),
+            create(CommonAttributes.MODULE, ModelType.STRING, false)
+                    .setAllowExpression(false)
+                    .build())
+            .setAttributeGroup("journal")
+            .setXmlName("sql-provider-factory-class")
+            .setAllowExpression(false)
+            .setAllowNull(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition JOURNAL_FILE_SIZE = create("journal-file-size", LONG)
             .setAttributeGroup("journal")
             .setXmlName("file-size")
@@ -448,7 +502,9 @@ public class ServerDefinition extends PersistentResourceDefinition {
             CommonAttributes.INCOMING_INTERCEPTORS, CommonAttributes.OUTGOING_INTERCEPTORS,
             PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
-            JOURNAL_BUFFER_SIZE, JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
+            JOURNAL_BUFFER_SIZE,
+            JOURNAL_DATASOURCE, JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_SQL_PROVIDER_FACTORY,
+            JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
     };
