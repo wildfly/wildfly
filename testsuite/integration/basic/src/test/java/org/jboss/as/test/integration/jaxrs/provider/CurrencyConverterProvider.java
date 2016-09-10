@@ -26,10 +26,10 @@ import java.util.Currency;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.StringConverter;
 
 /**
  * A RestEasy {@link StringConverter} test implementation for Currency.
@@ -38,7 +38,7 @@ import org.jboss.resteasy.spi.StringConverter;
  */
 @Provider
 @Path("/")
-public class CurrencyConverterProvider implements StringConverter<Currency> {
+public class CurrencyConverterProvider implements ParamConverter<Currency> {
 
     private static Logger LOGGER = Logger.getLogger(CurrencyConverterProvider.class);
 
