@@ -123,7 +123,7 @@ public enum IndexExternalizer implements Externalizer<Integer> {
     public abstract void writeData(DataOutput output, int index) throws IOException;
 
     @Override
-    public Integer readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public Integer readObject(ObjectInput input) throws IOException {
         return Integer.valueOf(this.readData(input));
     }
 
