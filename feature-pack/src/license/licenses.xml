@@ -6,8 +6,8 @@
       <artifactId>antlr</artifactId>
       <licenses>
         <license>
-          <name>The BSD License</name>
-          <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <name>The Antlr 2.7.7 License</name>
+          <url>http://www.antlr2.org/download/antlr-2.7.7.tar.gz</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -17,8 +17,9 @@
       <artifactId>asm</artifactId>
       <licenses>
         <license>
-          <name>The BSD License</name>
-          <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <name>The Asm BSD License</name>
+          <url>http://asm.ow2.org/license.html</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -69,6 +70,28 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>
@@ -385,8 +408,8 @@
       <artifactId>dom4j</artifactId>
       <licenses>
         <license>
-          <name>The BSD License</name>
-          <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <name>The Dom4j License</name>
+          <url>https://raw.githubusercontent.com/dom4j/dom4j/master/LICENSE</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -396,7 +419,7 @@
       <artifactId>java-getopt</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 3</name>
+          <name>GNU Library General Public License, Version 2</name>
           <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
           <distribution>repo</distribution>
         </license>
@@ -417,9 +440,8 @@
       <artifactId>undertow-js</artifactId>
       <licenses>
         <license>
-          <name>Public Domain</name>
-          <url>http://repository.jboss.org/licenses/cc0-1.0.txt</url>
-          <distribution>repo</distribution>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
         </license>
       </licenses>
     </dependency>
@@ -476,8 +498,7 @@
       <licenses>
         <license>
           <name>Creative Commons Attribution 2.5</name>
-          <url>http://repository.jboss.org/licenses/jcip-cc-by-2.5.txt</url>
-          <distribution>repo</distribution>
+          <url>https://creativecommons.org/licenses/by/2.5/legalcode</url>
         </license>
       </licenses>
     </dependency>
@@ -712,6 +733,17 @@
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-databinding-jaxb</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-features-clustering</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>
@@ -1719,8 +1751,8 @@
       <artifactId>infinispan-cachestore-jdbc</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1730,8 +1762,8 @@
       <artifactId>infinispan-cachestore-remote</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1741,8 +1773,8 @@
       <artifactId>infinispan-client-hotrod</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1763,8 +1795,8 @@
       <artifactId>infinispan-core</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1791,6 +1823,10 @@
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
           <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+        </license>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
         </license>
       </licenses>
     </dependency>
@@ -3048,8 +3084,9 @@
       <artifactId>jboss-jsf-api_2.2_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>GNU General Public License, Version 2</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0.txt</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -3058,8 +3095,9 @@
       <artifactId>jboss-jms-api_2.0_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -3120,8 +3158,9 @@
       <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -3150,8 +3189,9 @@
       <artifactId>jboss-saaj-api_1.3_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -3160,8 +3200,14 @@
       <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Common Development and Distribution License</name>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -3366,8 +3412,8 @@
       <artifactId>jgroups</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
         </license>
       </licenses>
     </dependency>
