@@ -204,11 +204,6 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-spi</artifactId>
         </dependency>
-        
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
@@ -219,8 +214,10 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-						<type>pom</type>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
+
 </project>
