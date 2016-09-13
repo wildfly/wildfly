@@ -28,6 +28,10 @@ import java.util.Collections;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -48,5 +52,15 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptyList();
+    }
+
+    public static void registerTransformers(SubsystemRegistration subsystemRegistration) {
+        registerTransformers_EAP_7_0_0(subsystemRegistration);
+    }
+
+    private static void registerTransformers_EAP_7_0_0(SubsystemRegistration subsystemRegistration) {
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
     }
 }
