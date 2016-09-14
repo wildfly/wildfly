@@ -370,7 +370,6 @@
 
     <xs:complexType name="filterType">
         <xs:sequence>
-            <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="request-limit" type="request-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
@@ -467,6 +466,7 @@
         <xs:attribute name="scheme" use="optional" type="xs:string" default="http"/>
         <xs:attribute name="path" use="optional" type="xs:string" default=""/>
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
+        <xs:attribute name="ssl-context" type="xs:string" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
     </xs:complexType>
 
@@ -590,6 +590,7 @@
         <xs:attribute name="cached-connections-per-thread" type="xs:int" use="optional" />
         <xs:attribute name="connection-idle-timeout" type="xs:int" use="optional" />
         <xs:attribute name="request-queue-size" type="xs:int" use="optional" />
+        <xs:attribute name="ssl-context" type="xs:string" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
         <xs:attribute name="use-alias" type="xs:string" use="optional" default="false" />
         <xs:attribute name="enable-http2" type="xs:string" use="optional" default="false" />
@@ -612,7 +613,7 @@
         <xs:sequence>
             <xs:element name="application-security-domain" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="security-domain" type="xs:string" use="required">
+                    <xs:attribute name="name" type="xs:string" use="required">
                         <xs:annotation>
                             <xs:documentation>
                                 The name of the security domain as specified in deployments.

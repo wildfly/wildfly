@@ -129,6 +129,19 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
                 .end();
 
+        builder.addChildResource(UndertowExtension.PATH_FILTERS)
+            .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER))
+                .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
+                    .end();
+
+        builder.addChildResource(UndertowExtension.PATH_HANDLERS)
+            .addChildResource(PathElement.pathElement(Constants.REVERSE_PROXY))
+                .addChildResource(PathElement.pathElement(Constants.HOST))
+                    .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
+                        .end();
+
         builder.discardChildResource(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, UndertowExtension.MODEL_VERSION_EAP7_0_0);

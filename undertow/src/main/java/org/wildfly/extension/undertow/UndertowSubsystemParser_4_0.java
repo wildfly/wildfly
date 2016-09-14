@@ -246,6 +246,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                                 ReverseProxyHandlerHost.SCHEME,
                                                                 ReverseProxyHandlerHost.PATH,
                                                                 ReverseProxyHandlerHost.INSTANCE_ID,
+                                                                ReverseProxyHandlerHost.SSL_CONTEXT,
                                                                 ReverseProxyHandlerHost.SECURITY_REALM))
                                 )
 
@@ -283,6 +284,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.CACHED_CONNECTIONS_PER_THREAD,
                                         ModClusterDefinition.CONNECTION_IDLE_TIMEOUT,
                                         ModClusterDefinition.REQUEST_QUEUE_SIZE,
+                                        ModClusterDefinition.SSL_CONTEXT,
                                         ModClusterDefinition.SECURITY_REALM,
                                         ModClusterDefinition.USE_ALIAS,
                                         ModClusterDefinition.ENABLE_HTTP2,
@@ -309,7 +311,6 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                 .addChild(
                         builder(ApplicationSecurityDomainDefinition.INSTANCE)
                             .setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS)
-                            .setNameAttributeName(Constants.SECURITY_DOMAIN)
                             .addAttributes(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY, ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG)
                 )
                  //here to make sure we always add filters & handlers path to mgmt model
