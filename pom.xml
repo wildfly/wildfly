@@ -6001,6 +6001,7 @@
                 <version>${version.org.picketlink}</version>
             </dependency>
 
+            <!-- This dependency is no longer used as a module. However it is required for client the JMS client library -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
