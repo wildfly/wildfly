@@ -78,6 +78,11 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Se
             ConcurrentMap<String, Integer> names = entry.getNames();
             Map<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));
             Predicate<Map.Entry<String, MarshalledValue<Object, MarshallingContext>>> invalidAttribute = attribute -> {
+                MarshalledValue<Object, MarshallingContext> value = attribute.getValue();
+                if (value == null) {
+                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getKey());
+                    return true;
+                }
                 try {
                     this.marshaller.read(attribute.getValue());
                     return false;
