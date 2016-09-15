@@ -26,6 +26,10 @@
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
+    
+    <dependencies>
+        <module name="javax.api"/>
+    </dependencies>
 
     <resources>
         <artifact name="${org.jboss.common:jboss-common-beans}"/>
