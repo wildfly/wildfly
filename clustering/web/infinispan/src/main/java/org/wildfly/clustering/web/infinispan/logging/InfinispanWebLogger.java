@@ -81,4 +81,8 @@ public interface InfinispanWebLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10, value = "Failed to activate authentication for single sign on %s")
     void failedToActivateAuthentication(@Cause Throwable cause, String ssoId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Session %s is missing cache entry for attribute %s")
+    void missingSessionAttributeCacheEntry(String sessionId, String attribute);
 }
