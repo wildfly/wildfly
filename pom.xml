@@ -356,6 +356,12 @@
                                 <JBossAS-Release-Codename>${jboss.as.release.codename}</JBossAS-Release-Codename>
                             </manifestEntries>
                         </archive>
+                        <!-- Do not package the generated logging properties as the generated binaries will be packaged -->
+                        <!-- These files are not required at runtime -->
+                        <excludes>
+                            <exclude>**/*.i18n.properties</exclude>
+                            <exclude>**/*.i18n_*.properties</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
