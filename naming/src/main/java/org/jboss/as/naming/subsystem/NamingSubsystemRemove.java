@@ -34,11 +34,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class NamingSubsystemRemove extends AbstractRemoveStepHandler {
 
-    public static final NamingSubsystemRemove INSTANCE = new NamingSubsystemRemove();
-
-    private NamingSubsystemRemove() {
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // This subsystem registers DUPs, so we can't remove it from the runtime without a reload
