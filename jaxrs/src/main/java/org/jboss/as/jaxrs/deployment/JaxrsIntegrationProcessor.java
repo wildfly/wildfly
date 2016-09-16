@@ -23,6 +23,8 @@
 package org.jboss.as.jaxrs.deployment;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,6 +52,7 @@ import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
@@ -298,6 +301,35 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
+        //Horrible hack to work around class loader leak in jackson databind
+        //see https://issues.jboss.org/browse/WFLY-7037
+        //see https://github.com/FasterXML/jackson-databind/issues/1363
+        //this should be removed when the issue is fixed
+
+        Module module = context.getAttachment(Attachments.MODULE);
+
+        try {
+            Class<?> classUtils = module.getClassLoader().loadClass("com.fasterxml.jackson.databind.util.ClassUtil");
+            Field sCachedField = classUtils.getDeclaredField("sCached");
+            sCachedField.setAccessible(true);
+            Object sCached = sCachedField.get(null);
+            Method clear = sCached.getClass().getDeclaredMethod("clear");
+            clear.setAccessible(true);
+            clear.invoke(sCached);
+
+            Class<?> typeFactoryClass = module.getClassLoader().loadClass("com.fasterxml.jackson.databind.type.TypeFactory");
+            Field instanceField = typeFactoryClass.getDeclaredField("instance");
+            instanceField.setAccessible(true);
+            Object typeFactory = instanceField.get(null);
+            Field cacheField = typeFactoryClass.getDeclaredField("_typeCache");
+            cacheField.setAccessible(true);
+            Object cache = cacheField.get(typeFactory);
+            clear.invoke(cache);
+
+        } catch (Exception e) {
+            JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
+        }
+
     }
 
     protected void setFilterInitParam(FilterMetaData filter, String name, String value) {

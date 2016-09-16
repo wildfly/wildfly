@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
@@ -110,6 +111,16 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             } else {
                 beanName = null;
             }
+            component.getConfigurators().add((context, description, configuration) -> {
+
+                //add interceptor to activate the request scope if required
+                final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(weldBootstrapService);
+
+                for(ViewConfiguration view : configuration.getViews()) {
+                    view.addViewInterceptor(requestFactory, InterceptorOrder.View.CDI_REQUEST_SCOPE);
+                }
+                configuration.addTimeoutViewInterceptor(requestFactory, InterceptorOrder.View.CDI_REQUEST_SCOPE);
+            });
             component.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -165,9 +176,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
             final ServiceName bindingServiceName = addWeldInterceptorBindingService(target, configuration, componentClass, beanName, weldServiceName, weldStartService, beanDeploymentArchiveId);
 
-            //add interceptor to activate the request scope if required
-            final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
-            configuration.addComponentInterceptor(requestFactory, InterceptorOrder.Component.CDI_REQUEST_SCOPE, false);
 
             addJsr299BindingsCreateInterceptor(configuration, description, beanName, weldServiceName, builder, bindingServiceName);
 

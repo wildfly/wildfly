@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.rts.jaxrs;
 
-import java.util.Set;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.jboss.jbossts.star.service.TMApplication;
-
-import javax.ws.rs.core.Application;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
- * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
- *
+ * Cache entry containing the names of the attributes of a session.
+ * @author Paul Ferraro
  */
-public final class CoordinatorApplication extends Application {
+public class SessionAttributeNamesEntry {
+    private final AtomicInteger sequence;
+    private final ConcurrentMap<String, Integer> names;
 
-    private final TMApplication tmApplication;
-
-    public CoordinatorApplication() {
-        tmApplication = new TMApplication();
+    public SessionAttributeNamesEntry(AtomicInteger sequence, ConcurrentMap<String, Integer> names) {
+        this.sequence = sequence;
+        this.names = names;
     }
 
-    @Override
-    public Set<Class<?>> getClasses() {
-        return tmApplication.getClasses();
+    public AtomicInteger getSequence() {
+        return this.sequence;
     }
 
-    @Override
-    public Set<Object> getSingletons() {
-        return tmApplication.getSingletons();
+    public ConcurrentMap<String, Integer> getNames() {
+        return this.names;
     }
 }

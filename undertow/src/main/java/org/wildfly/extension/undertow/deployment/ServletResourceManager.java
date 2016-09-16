@@ -44,10 +44,10 @@ public class ServletResourceManager implements ResourceManager {
     private final Collection<VirtualFile> overlays;
     private final boolean explodedDeployment;
 
-    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment, boolean followSymlink) throws IOException {
+    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment, boolean followSymlink, boolean disableFileWatchService) throws IOException {
         this.explodedDeployment = explodedDeployment;
         Path physicalFile = resourcesRoot.getPhysicalFile().toPath().toRealPath();
-        deploymentResourceManager = new PathResourceManager(physicalFile, 1024 * 1024, followSymlink, "/"); //TODO: enable safe paths support
+        deploymentResourceManager = new PathResourceManager(physicalFile, 1024 * 1024, true, followSymlink,!disableFileWatchService, "/"); //TODO: enable safe paths support
         this.overlays = overlays;
     }
 

@@ -223,6 +223,7 @@ public interface Constants {
     String MAX_AJP_PACKET_SIZE = "max-ajp-packet-size";
     String STATISTICS_ENABLED = "statistics-enabled";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
+    String DISABLE_FILE_WATCH_SERVICE = "disable-file-watch-service";
 
     // Elytron Integration
     String APPLICATION_SECURITY_DOMAIN = "application-security-domain";

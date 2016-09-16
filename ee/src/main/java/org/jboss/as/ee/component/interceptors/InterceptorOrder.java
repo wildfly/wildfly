@@ -37,7 +37,6 @@ public class InterceptorOrder {
 
         public static final int INITIAL_INTERCEPTOR = 0x100;
         public static final int CONCURRENT_CONTEXT = 0x180;
-        public static final int CDI_REQUEST_SCOPE = 0x320;
         public static final int SYNCHRONIZATION_INTERCEPTOR = 0x500;
         public static final int REENTRANCY_INTERCEPTOR = 0x501;
         public static final int BMT_TRANSACTION_INTERCEPTOR = 0x520;
@@ -191,6 +190,7 @@ public class InterceptorOrder {
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;
+        public static final int CDI_REQUEST_SCOPE = 0x480;
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;
         public static final int HOME_METHOD_INTERCEPTOR = 0x600;
         public static final int ASSOCIATING_INTERCEPTOR = 0x700;
