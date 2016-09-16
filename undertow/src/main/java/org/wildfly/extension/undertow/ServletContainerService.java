@@ -77,11 +77,12 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final boolean proactiveAuth;
     private final Map<String, AuthenticationMechanismFactory> authenticationMechanisms;
     private final Integer maxSessions;
+    private final boolean disableFileWatchService;
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
                                    String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
                                    boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, Map<String, String> mimeMappings,
-                                   List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth, int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions, CrawlerSessionManagerConfig crawlerSessionManagerConfig) {
+                                   List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth, int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions, CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
@@ -98,6 +99,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.proactiveAuth = proactiveAuth;
         this.maxSessions = maxSessions;
         this.crawlerSessionManagerConfig = crawlerSessionManagerConfig;
+        this.disableFileWatchService = disableFileWatchService;
         this.welcomeFiles = new ArrayList<>(welcomeFiles);
         this.mimeMappings = new HashMap<>(mimeMappings);
         this.sessionIdLength = sessionIdLength;
@@ -222,6 +224,10 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public Integer getMaxSessions() {
         return maxSessions;
+    }
+
+    public boolean isDisableFileWatchService() {
+        return disableFileWatchService;
     }
 
     public CrawlerSessionManagerConfig getCrawlerSessionManagerConfig() {
