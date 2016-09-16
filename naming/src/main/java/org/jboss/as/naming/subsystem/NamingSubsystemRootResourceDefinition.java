@@ -22,12 +22,17 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelType;
 
@@ -39,6 +44,20 @@ import org.jboss.dmr.ModelType;
 public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     public static final NamingSubsystemRootResourceDefinition INSTANCE = new NamingSubsystemRootResourceDefinition();
+
+    enum Capability {
+        NAMING_STORE("org.wildfly.naming", NamingStore.class),
+        ;
+        private final RuntimeCapability<?> definition;
+
+        Capability(String name, Class<?> type) {
+            this.definition = RuntimeCapability.Builder.of(name, type).build();
+        }
+
+        RuntimeCapability<?> getDefinition() {
+            return this.definition;
+        }
+    }
 
     static final SimpleOperationDefinition JNDI_VIEW = new SimpleOperationDefinitionBuilder(JndiViewOperation.OPERATION_NAME, NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME))
             .addAccessConstraint(NamingExtension.JNDI_VIEW_CONSTRAINT)
@@ -53,5 +72,8 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
                 NamingSubsystemAdd.INSTANCE, NamingSubsystemRemove.INSTANCE);
     }
 
-
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration registration) {
+        EnumSet.allOf(Capability.class).forEach(capability -> registration.registerCapability(capability.getDefinition()));
+    }
 }

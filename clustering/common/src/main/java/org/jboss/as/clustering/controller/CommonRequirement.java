@@ -24,6 +24,7 @@ package org.jboss.as.clustering.controller;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.naming.NamingStore;
 import org.wildfly.clustering.service.Requirement;
 
 /**
@@ -32,6 +33,7 @@ import org.wildfly.clustering.service.Requirement;
  */
 public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {
     MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
+    NAMING_STORE("org.wildfly.naming", NamingStore.class),
     ;
     private final String name;
     private final Class<?> type;
