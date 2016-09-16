@@ -22,13 +22,11 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.unsync;
 
-import static javax.ejb.TransactionAttributeType.REQUIRED;
-
 import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.persistence.PersistenceProperty;
 
 /**
  * CMT stateful bean
@@ -38,10 +36,25 @@ import javax.persistence.PersistenceContextType;
 @Stateful
 public class CMTPCStatefulBean {
     @PersistenceContext(type = PersistenceContextType.TRANSACTION, unitName = "mypc")
-    EntityManager em;
+    private EntityManager em;
 
-    @TransactionAttribute(REQUIRED)
+    @PersistenceContext(type = PersistenceContextType.TRANSACTION, unitName = "mypc", properties={@PersistenceProperty(name="wildfly.jpa.allowjoinedunsync", value="true")})
+    private EntityManager allowjoinedunsyncEm;
+
+    @PersistenceContext(type = PersistenceContextType.TRANSACTION, unitName = "allowjoinedunsyncPU")
+    private EntityManager allowjoinedunsyncEmViaPersistenceXml;
+
+
     public Employee getEmp(int id) {
         return em.find(Employee.class, id);
     }
+
+    public Employee getEmpAllowJoinedUnsync(int id) {
+        return allowjoinedunsyncEm.find(Employee.class, id);
+    }
+
+    public Employee getEmpAllowJoinedUnsyncPersistenceXML(int id) {
+        return allowjoinedunsyncEmViaPersistenceXml.find(Employee.class, id);
+    }
+
 }

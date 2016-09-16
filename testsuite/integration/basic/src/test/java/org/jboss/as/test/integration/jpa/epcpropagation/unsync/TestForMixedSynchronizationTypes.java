@@ -91,6 +91,18 @@ public class TestForMixedSynchronizationTypes {
         }
     }
 
+    @Test
+    public void testAllowjoinedunsyncEm() throws Exception {
+        BMTEPCStatefulBean stateful = lookup("BMTEPCStatefulBean", BMTEPCStatefulBean.class);
+        stateful.allowjoinedunsync();
+    }
+
+    @Test
+    public void testAllowjoinedunsyncEmPersistenceXML() throws Exception {
+        BMTEPCStatefulBean stateful = lookup("BMTEPCStatefulBean", BMTEPCStatefulBean.class);
+        stateful.allowjoinedunsyncPersistenceXML();
+    }
+
     private String messages(Throwable exception) {
         String message = exception.getMessage();
         while(exception != null) {

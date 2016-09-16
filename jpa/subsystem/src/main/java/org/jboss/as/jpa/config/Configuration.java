@@ -25,6 +25,8 @@ package org.jboss.as.jpa.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.EntityManagerFactory;
+
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 
@@ -171,6 +173,10 @@ public class Configuration {
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
 
+    public static final String ALLOWJOINEDUNSYNCPC = "wildfly.jpa.allowjoinedunsync";
+
+    public static final String SKIPMIXEDSYNCTYPECHECKING = "wildfly.jpa.skipmixedsynctypechecking";
+
     /**
      * name of the Hibernate Search module name configuration setting in persistence unit definition
      */
@@ -312,5 +318,46 @@ public class Configuration {
             return (String)name;
         }
         return null;
+    }
+
+    /**
+     * Allow the mixed synchronization checking to be skipped for backward compatibility with WildFly 10.1.0
+     *
+     *
+     * @param emf
+     * @param targetEntityManagerProperties
+     * @return
+     */
+    public static boolean skipMixedSynchronizationTypeCheck(EntityManagerFactory emf, Map targetEntityManagerProperties) {
+        boolean result = false;
+        // EntityManager properties will take priority over persistence.xml level (emf) properties
+        if(targetEntityManagerProperties != null && targetEntityManagerProperties.containsKey(SKIPMIXEDSYNCTYPECHECKING)) {
+            result = Boolean.parseBoolean((String) targetEntityManagerProperties.get(SKIPMIXEDSYNCTYPECHECKING));
+        }
+        else if(emf.getProperties() != null && emf.getProperties().containsKey(SKIPMIXEDSYNCTYPECHECKING)) {
+            result = Boolean.parseBoolean((String) emf.getProperties().get(SKIPMIXEDSYNCTYPECHECKING));
+        }
+        return result;
+    }
+
+    /**
+     * Allow an unsynchronized persistence context that is joined to the transaction, be treated the same as a synchronized
+     * persistence context, with respect to the checking for mixed unsync/sync types.
+     *
+     *
+     * @param emf
+     * @param targetEntityManagerProperties
+     * @return
+     */
+    public static boolean allowJoinedUnsyncPersistenceContext(EntityManagerFactory emf, Map targetEntityManagerProperties) {
+        boolean result = false;
+        // EntityManager properties will take priority over persistence.xml (emf) properties
+        if(targetEntityManagerProperties != null && targetEntityManagerProperties.containsKey(ALLOWJOINEDUNSYNCPC)) {
+            result = Boolean.parseBoolean((String) targetEntityManagerProperties.get(ALLOWJOINEDUNSYNCPC));
+        }
+        else if(emf.getProperties() != null && emf.getProperties().containsKey(ALLOWJOINEDUNSYNCPC)) {
+            result = Boolean.parseBoolean((String) emf.getProperties().get(ALLOWJOINEDUNSYNCPC));
+        }
+        return result;
     }
 }
