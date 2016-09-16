@@ -262,7 +262,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     @Override // SynchronizationTypeAccess
     public SynchronizationType getSynchronizationType() {
-        return SynchronizationType.SYNCHRONIZED;
+        return synchronizationType;
     }
 
     @Override
