@@ -58,6 +58,9 @@ public class BMTEPCStatefulBean {
     @PersistenceContext(synchronization= SynchronizationType.UNSYNCHRONIZED, type = PersistenceContextType.EXTENDED, unitName = "mypc")
     EntityManager em;
 
+    @PersistenceContext(synchronization= SynchronizationType.UNSYNCHRONIZED, type = PersistenceContextType.EXTENDED, unitName = "allowjoinedunsyncPU")
+    EntityManager emAllowjoinedunsyncPU;
+
     @Resource
     SessionContext sessionContext;
 
@@ -70,10 +73,32 @@ public class BMTEPCStatefulBean {
         UserTransaction userTxn = sessionContext.getUserTransaction();
         userTxn.begin();
         try {
-            //Join Transaction to force unsynchronized persistence context to be associated with jta tx
-            // em.joinTransaction();
             cmtpcStatefulBean.getEmp(1);    // show throw IllegalStateException
             throw new RuntimeException("did not get expected IllegalStateException when transaction scoped entity manager used existing unsynchronized xpc");
+        } finally {
+            userTxn.rollback();
+        }
+    }
+
+    public void allowjoinedunsync() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        UserTransaction userTxn = sessionContext.getUserTransaction();
+        userTxn.begin();
+        try {
+            //Join Transaction to force unsynchronized persistence context to be associated with jta tx
+            em.joinTransaction();
+            cmtpcStatefulBean.getEmpAllowJoinedUnsync(1);
+        } finally {
+            userTxn.rollback();
+        }
+    }
+
+    public void allowjoinedunsyncPersistenceXML()  throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        UserTransaction userTxn = sessionContext.getUserTransaction();
+        userTxn.begin();
+        try {
+            //Join Transaction to force unsynchronized persistence context to be associated with jta tx
+            emAllowjoinedunsyncPU.joinTransaction();
+            cmtpcStatefulBean.getEmpAllowJoinedUnsyncPersistenceXML(1);
         } finally {
             userTxn.rollback();
         }
