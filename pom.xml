@@ -6144,9 +6144,10 @@
             </activation>
             <properties>
                 <!-- [WFCORE-1431] remove SASL workaround -->
-                <modular.jdk.args>-XaddExports:java.security.sasl/com.sun.security.sasl.digest=ALL-UNNAMED
-                    -XaddExports:java.security.sasl/com.sun.security.sasl=ALL-UNNAMED -XaddExports:jdk.unsupported/sun.reflect=ALL-UNNAMED
-                    -XaddExports:jdk.unsupported/sun.misc=ALL-UNNAMED
+                <modular.jdk.args>--add-exports java.security.sasl/com.sun.security.sasl.digest=ALL-UNNAMED
+                    --add-exports java.security.sasl/com.sun.security.sasl=ALL-UNNAMED
+                    --add-exports jdk.unsupported/sun.reflect=ALL-UNNAMED
+                    --add-exports jdk.unsupported/sun.misc=ALL-UNNAMED
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
                 <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true</modular.jdk.props>
@@ -6163,7 +6164,7 @@
                             <!-- fork is needed so compiler args can be used -->
                             <fork>true</fork>
                             <compilerArgs>
-                                <arg>-J-addmods</arg>
+                                <arg>-J--add-modules</arg>
                                 <arg>-Jjava.annotations.common</arg>
                             </compilerArgs>
                         </configuration>
