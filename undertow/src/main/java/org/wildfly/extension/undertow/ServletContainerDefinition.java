@@ -139,6 +139,14 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+
+    protected static final AttributeDefinition DISABLE_FILE_WATCH_SERVICE =
+            new SimpleAttributeDefinitionBuilder(Constants.DISABLE_FILE_WATCH_SERVICE, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -153,7 +161,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             DIRECTORY_LISTING,
             PROACTIVE_AUTHENTICATION,
             SESSION_ID_LENGTH,
-            MAX_SESSIONS
+            MAX_SESSIONS,
+            DISABLE_FILE_WATCH_SERVICE
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
