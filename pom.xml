@@ -229,7 +229,7 @@
         <version.xom>1.2.10</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
-        <version.org.zanata.plugin>3.1.1</version.org.zanata.plugin>
+        <version.org.zanata.plugin>3.9.1</version.org.zanata.plugin>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
         <version.properties.plugin>2.0.1</version.properties.plugin>
@@ -329,6 +329,8 @@
                  <srcDir>target/classes</srcDir>
                  <transDir>src/main/resources</transDir>
                  <includes>**/*.i18n.properties,**/LocalDescriptions.properties</includes>
+                 <!-- In previous versions, 3.8.0 and lower, this defaulted to true -->
+                 <copyTrans>true</copyTrans>
               </configuration>
             </plugin>
             <plugin>
@@ -354,6 +356,12 @@
                                 <JBossAS-Release-Codename>${jboss.as.release.codename}</JBossAS-Release-Codename>
                             </manifestEntries>
                         </archive>
+                        <!-- Do not package the generated logging properties as the generated binaries will be packaged -->
+                        <!-- These files are not required at runtime -->
+                        <excludes>
+                            <exclude>**/*.i18n.properties</exclude>
+                            <exclude>**/*.i18n_*.properties</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
