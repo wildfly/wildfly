@@ -23,6 +23,7 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
+import static org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.ACTIVEMQ_SERVER_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.FACTORY_CLASS;
@@ -342,10 +343,12 @@ public class TransportConfigOperationHandlers {
 
                 final String binding = HTTPConnectorDefinition.SOCKET_BINDING.resolveModelAttribute(context, config).asString();
                 bindings.add(binding);
+                // ARTEMIS-803 Artemis knows that is must not offset the HTTP port when it is used by colocated backups
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, HTTPConnectorDefinition.ENDPOINT.resolveModelAttribute(context, config).asString());
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
+                parameters.put(ACTIVEMQ_SERVER_NAME, configuration.getName());
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
