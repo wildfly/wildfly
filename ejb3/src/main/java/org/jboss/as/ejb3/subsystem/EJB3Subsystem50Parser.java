@@ -46,6 +46,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+import java.util.EnumSet;
+
 /**
  * Parser for ejb3:5.0 namespace.
  *
@@ -72,6 +74,10 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
             }
             case IDENTITY: {
                 parseIdentity(reader, operations);
+                break;
+            }
+            case ALLOW_EJB_NAME_REGEX: {
+                parseAllowEjbNameRegex(reader, ejb3SubsystemAddOperation);
                 break;
             }
             default: {
@@ -126,6 +132,29 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(APPLICATION_SECURITY_DOMAIN, applicationSecurityDomain));
         operation.get(OP_ADDR).set(address.toModelNode());
         operations.add(operation);
+    }
+
+    private void parseAllowEjbNameRegex(XMLExtendedStreamReader reader, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.VALUE);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case VALUE:
+                    EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.VALUE);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
     }
 
     private void parseIdentity(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {

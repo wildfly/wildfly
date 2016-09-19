@@ -35,6 +35,7 @@ public enum EJB3SubsystemXMLElement {
     UNKNOWN(null),
 
     ASYNC("async"),
+    ALLOW_EJB_NAME_REGEX("allow-ejb-name-regex"),
 
     BEAN_INSTANCE_POOLS("bean-instance-pools"),
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
