@@ -152,10 +152,16 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER))
                 .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1)), Constants.MAX_RETRIES)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
                     .end();
 
         builder.addChildResource(UndertowExtension.PATH_HANDLERS)
             .addChildResource(PathElement.pathElement(Constants.REVERSE_PROXY))
+                .getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1)), Constants.MAX_RETRIES)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
+                    .end()
                 .addChildResource(PathElement.pathElement(Constants.HOST))
                     .getAttributeBuilder()
                         .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)

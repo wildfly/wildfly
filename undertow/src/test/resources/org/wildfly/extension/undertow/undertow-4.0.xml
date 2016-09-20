@@ -102,7 +102,7 @@
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true" case-sensitive="false" follow-symlink="true" safe-symlink-paths="/path/to/folder /second/path"/>
         <reverse-proxy connection-idle-timeout="60"
-                       connections-per-thread="30" name="reverse-proxy">
+                       connections-per-thread="30" name="reverse-proxy" max-retries="10">
             <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test" ssl-context="foo"/>
             <!-- ajp://localhost:8080 -->
         </reverse-proxy>
@@ -119,7 +119,8 @@
                      management-access-predicate="method[GET]"
                      management-socket-binding="test3" max-request-time="1000"
                      ssl-context="foo"
-                     name="mod-cluster" security-key="password"/>
+                     name="mod-cluster" security-key="password"
+                     max-retries="10"/>
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
         <expression-filter name="requestDumper" expression="dump-request" />
         <rewrite name="redirects" target="'/foo/'" redirect="true" />
