@@ -127,6 +127,19 @@ public class PersistenceContextRefTestCase {
         }
     }
 
+    @Test
+    public void testUnsynchronizedPCisNotJoinedToTransaction() throws NamingException {
+        PcManagedBean bean = getManagedBean();
+        boolean isJoined = bean.unsynchronizedIsNotJoinedToTX();
+        Assert.assertFalse("Unsynchronized entity manager should not of been joined to the JTA transaction but was",isJoined);
+    }
+
+    @Test
+    public void testSynchronizedPCisJoinedToTransaction() throws NamingException {
+        PcManagedBean bean = getManagedBean();
+        boolean isJoined = bean.synchronizedIsJoinedToTX();
+        Assert.assertTrue("Synchronized entity manager should of been joined to the JTA transaction but was not",isJoined);
+    }
 
     private PcManagedBean getManagedBean() throws NamingException {
         InitialContext initialContext = new InitialContext();
@@ -148,6 +161,11 @@ public class PersistenceContextRefTestCase {
                 "    <persistence-context-ref>\n" +
                 "        <persistence-context-ref-name>otherPcBinding</persistence-context-ref-name>\n" +
                 "        <persistence-unit-name>otherpc</persistence-unit-name>\n" +
+                "    </persistence-context-ref>\n" + "\n" +
+                "    <persistence-context-ref>\n" +
+                "        <persistence-context-ref-name>unsyncPcBinding</persistence-context-ref-name>\n" +
+                "        <persistence-unit-name>otherpc</persistence-unit-name>\n" +
+                "        <persistence-context-synchronization>Unsynchronized</persistence-context-synchronization>\n" +
                 "    </persistence-context-ref>\n" + "\n" +
                 "    <persistence-context-ref>\n" +
                 "        <persistence-context-ref-name>AnotherPuBinding</persistence-context-ref-name>\n" +

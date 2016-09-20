@@ -54,6 +54,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.metadata.javaee.spec.PersistenceContextReferenceMetaData;
 import org.jboss.metadata.javaee.spec.PersistenceContextReferencesMetaData;
+import org.jboss.metadata.javaee.spec.PersistenceContextSynchronizationType;
 import org.jboss.metadata.javaee.spec.PersistenceContextTypeDescription;
 import org.jboss.metadata.javaee.spec.PersistenceUnitReferenceMetaData;
 import org.jboss.metadata.javaee.spec.PersistenceUnitReferencesMetaData;
@@ -183,11 +184,9 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                             }
                         }
                         PersistenceContextType type = (puRef.getPersistenceContextType() == null || puRef.getPersistenceContextType() == PersistenceContextTypeDescription.TRANSACTION) ? PersistenceContextType.TRANSACTION : PersistenceContextType.EXTENDED ;
-                        // create an EE 7 branch of
-                        SynchronizationType synchronizationType =  SynchronizationType.SYNCHRONIZED;
-//                                (puRef.()== null || SynchronizationType.SYNCHRONIZED.name().equals(stType.asString()))?
-//                                        SynchronizationType.SYNCHRONIZED: SynchronizationType.UNSYNCHRONIZED;
-
+                        SynchronizationType synchronizationType =
+                                (puRef.getPersistenceContextSynchronization() == null || PersistenceContextSynchronizationType.Synchronized.equals(puRef.getPersistenceContextSynchronization()))?
+                                        SynchronizationType.SYNCHRONIZED: SynchronizationType.UNSYNCHRONIZED;
                         InjectionSource pcBindingSource = this.getPersistenceContextBindingSource(deploymentUnit, persistenceUnitName, type, synchronizationType, map);
                         bindingConfiguration = new BindingConfiguration(name, pcBindingSource);
                     }
