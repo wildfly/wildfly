@@ -1875,9 +1875,8 @@
       <artifactId>artemis-wildfly-integration</artifactId>
       <licenses>
         <license>
-          <name>Public Domain</name>
-          <url>http://repository.jboss.org/licenses/cc0-1.0.txt</url>
-          <distribution>repo</distribution>
+          <name>GNU Lesser General Public License, Version 2.1</name>
+          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
         </license>
       </licenses>
     </dependency>
