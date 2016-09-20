@@ -275,9 +275,9 @@ public class EJBClientClusterConfigurationTestCase {
 
     private static String getServerAddress(final String container) {
         if (JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION.equals(container)) {
-            return TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node1", "localhost"));
+            return TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddressNode1());
         }
-        return TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0", "localhost"));
+        return TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress());
     }
 
 
