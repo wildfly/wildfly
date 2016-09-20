@@ -420,7 +420,7 @@
       <licenses>
         <license>
           <name>GNU Library General Public License, Version 2</name>
-          <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
+          <url>http://repository.jboss.org/licenses/lgpl-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
