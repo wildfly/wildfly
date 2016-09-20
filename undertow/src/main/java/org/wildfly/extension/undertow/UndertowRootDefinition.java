@@ -35,6 +35,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -127,6 +128,14 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
         builder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
+                .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
+                .end();
+
+        builder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH)
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
+                .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
                 .end();
 
         builder.addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)

@@ -105,6 +105,13 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .build();
 
+    protected static final OptionAttributeDefinition REQUIRE_HOST_HTTP11 = OptionAttributeDefinition.builder("require-host-http11", UndertowOptions.REQUIRE_HOST_HTTP11)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
     private HttpListenerResourceDefinition() {
         super(UndertowExtension.HTTP_LISTENER_PATH);
     }
@@ -126,6 +133,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
         attrs.add(HTTP2_MAX_CONCURRENT_STREAMS);
         attrs.add(HTTP2_MAX_HEADER_LIST_SIZE);
         attrs.add(HTTP2_MAX_FRAME_SIZE);
+        attrs.add(REQUIRE_HOST_HTTP11);
         return attrs;
     }
 }
