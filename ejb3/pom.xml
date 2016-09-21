@@ -224,5 +224,10 @@ projects that depend on this project.-->
             <artifactId>jboss-rmi-api_1.0_spec</artifactId>
             <scope>test</scope>
       </dependency>
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-transaction-spi</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
