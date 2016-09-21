@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.tm.ImportedTransaction;
 
 /**
  * @author Jaikiran Pai
@@ -41,7 +41,7 @@ class XidTransactionBeforeCompletionTask extends XidTransactionManagementTask {
 
     @Override
     protected void manageTransaction() throws Throwable {
-        final SubordinateTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
+        final ImportedTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if (subordinateTransaction == null) {
             throw EjbLogger.ROOT_LOGGER.noSubordinateTransactionPresentForXid(this.xidTransactionID.getXid());
         }

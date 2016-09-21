@@ -23,12 +23,11 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.tm.ImportedTransaction;
 import org.xnio.IoUtils;
 
 import javax.transaction.HeuristicCommitException;
@@ -86,7 +85,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
 
 
     private int prepareTransaction() throws Throwable {
-        final SubordinateTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
+        final ImportedTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if (subordinateTransaction == null) {
             // check the recovery store - it's possible that the "prepare" is coming in as part of recovery operation and the subordinate
             // tx may not yet be in memory, but might be in the recovery store
@@ -109,7 +108,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
                 case TwoPhaseOutcome.PREPARE_READONLY:
                     // TODO: Would it be fine to not remove the xid? (Need to understand how the subsequent
                     // flow works)
-                    SubordinationManager.getTransactionImporter().removeImportedTransaction(this.xidTransactionID.getXid());
+                    getXAT().removeImportedTransaction(this.xidTransactionID.getXid());
                     return XAResource.XA_RDONLY;
 
                 case TwoPhaseOutcome.PREPARE_OK:
@@ -139,7 +138,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
                         xaExceptionCode = XAException.XAER_RMERR;
                     }
                     // remove the transaction
-                    SubordinationManager.getTransactionImporter().removeImportedTransaction(this.xidTransactionID.getXid());
+                    getXAT().removeImportedTransaction(this.xidTransactionID.getXid());
                     final XAException xaException = new XAException(xaExceptionCode);
                     if (initCause != null) {
                         xaException.initCause(initCause);
