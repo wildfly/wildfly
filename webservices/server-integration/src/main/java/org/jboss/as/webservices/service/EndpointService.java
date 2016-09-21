@@ -28,7 +28,10 @@ import java.util.List;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -37,7 +40,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.security.EJBMethodSecurityAttributesAdaptor;
-import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
+import org.jboss.as.webservices.security.ElytronSecurityDomainContextImpl;
+import org.jboss.as.webservices.security.SecurityDomainContextImpl;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
@@ -68,6 +72,7 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.management.EndpointMetricsFactory;
 import org.jboss.wsf.spi.security.EJBMethodSecurityAttributeProvider;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
@@ -78,17 +83,24 @@ import org.jboss.wsf.spi.security.EJBMethodSecurityAttributeProvider;
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class EndpointService implements Service<Endpoint> {
-
+    static final String ELYTRON_DOMAIN_CAPABILITY_NAME = "org.wildfly.security.security-domain";
+    static final RuntimeCapability<Void> ELYTRON_DOMAIN_CAPABILITY =
+            RuntimeCapability.Builder.of(ELYTRON_DOMAIN_CAPABILITY_NAME, true, SecurityDomain.class).build();
+    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.ejb3.application-security-domain";
+    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
+            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, ApplicationSecurityDomain.class)
+            .build();
     private final Endpoint endpoint;
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<AbstractServerConfig> serverConfigServiceValue = new InjectedValue<AbstractServerConfig>();
+    private final InjectedValue<ApplicationSecurityDomainService.ApplicationSecurityDomain> ejbApplicationSecurityDomainValue = new InjectedValue<ApplicationSecurityDomainService.ApplicationSecurityDomain>();
     private final InjectedValue<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeServiceValue = new InjectedValue<EJBViewMethodSecurityAttributesService>();
+    private final InjectedValue<SecurityDomain> elytronSecurityDomain = new InjectedValue<>();
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;
         this.name = name;
     }
-
     @Override
     public Endpoint getValue() {
         return endpoint;
@@ -105,7 +117,15 @@ public final class EndpointService implements Service<Endpoint> {
     @Override
     public void start(final StartContext context) throws StartException {
         WSLogger.ROOT_LOGGER.starting(name);
-        endpoint.setSecurityDomainContext(new SecurityDomainContextAdaptor(securityDomainContextValue.getValue()));
+        if (isElytronSecurityDomain(endpoint)) {
+            if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
+                endpoint.setSecurityDomainContext(new ElytronSecurityDomainContextImpl(this.ejbApplicationSecurityDomainValue.getValue().getSecurityDomain()));
+            } else {
+                endpoint.setSecurityDomainContext(new ElytronSecurityDomainContextImpl(this.elytronSecurityDomain.getValue()));
+            }
+        } else {
+            endpoint.setSecurityDomainContext(new SecurityDomainContextImpl(securityDomainContextValue.getValue()));
+        }
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             final EJBViewMethodSecurityAttributesService ejbMethodSecurityAttributeService = ejbMethodSecurityAttributeServiceValue.getValue();
             endpoint.addAttachment(EJBMethodSecurityAttributeProvider.class, new EJBMethodSecurityAttributesAdaptor(ejbMethodSecurityAttributeService));
@@ -198,8 +218,15 @@ public final class EndpointService implements Service<Endpoint> {
         return securityDomainContextValue;
     }
 
+    public Injector<SecurityDomain> getElytronSecurityDomainInjector() {
+        return elytronSecurityDomain;
+    }
+
     public Injector<AbstractServerConfig> getAbstractServerConfigInjector() {
         return serverConfigServiceValue;
+    }
+    public Injector<ApplicationSecurityDomainService.ApplicationSecurityDomain> getEjbApplicationSeruityDomainInjector() {
+        return ejbApplicationSecurityDomainValue;
     }
 
     public Injector<EJBViewMethodSecurityAttributesService> getEJBMethodSecurityAttributeServiceInjector() {
@@ -215,9 +242,25 @@ public final class EndpointService implements Service<Endpoint> {
         final ServiceBuilder<Endpoint> builder = serviceTarget.addService(serviceName, service);
         final ServiceName alias = WSServices.ENDPOINT_SERVICE.append(context.toString()).append(propEndpoint);
         builder.addAliases(alias);
-        builder.addDependency(DependencyType.REQUIRED,
-                SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
-                SecurityDomainContext.class, service.getSecurityDomainContextInjector());
+        if (isElytronSecurityDomain(endpoint)) {
+            if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
+                ServiceName ejbSecurityDomainServiceName = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY
+                        .getCapabilityServiceName(getDeploymentSecurityDomainName(endpoint),
+                                ApplicationSecurityDomainService.ApplicationSecurityDomain.class);
+                builder.addDependency(ejbSecurityDomainServiceName,
+                        ApplicationSecurityDomainService.ApplicationSecurityDomain.class,
+                        service.getEjbApplicationSeruityDomainInjector());
+            } else {
+                ServiceName elytronDomainName = ELYTRON_DOMAIN_CAPABILITY.getCapabilityServiceName(
+                        getDeploymentSecurityDomainName(endpoint), SecurityDomain.class);
+                builder.addDependency(elytronDomainName, SecurityDomain.class, service.getElytronSecurityDomainInjector());
+            }
+        } else {
+            // This is still picketbox jaas securityDomainContext
+            builder.addDependency(
+                    SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
+                    SecurityDomainContext.class, service.getSecurityDomainContextInjector());
+        }
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, AbstractServerConfig.class,
                 service.getAbstractServerConfigInjector());
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
@@ -275,6 +318,15 @@ public final class EndpointService implements Service<Endpoint> {
             return CurrentServiceContainer.getServiceContainer();
         }
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    }
+
+    private static boolean isElytronSecurityDomain(Endpoint endpoint) {
+        String domianName = getDeploymentSecurityDomainName(endpoint);
+        ServiceName serviceName = ELYTRON_DOMAIN_CAPABILITY.getCapabilityServiceName(domianName, SecurityDomain.class);
+        if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
+            serviceName = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(domianName, ApplicationSecurityDomainService.ApplicationSecurityDomain.class);
+        }
+        return currentServiceContainer().getService(serviceName) != null;
     }
 
 }

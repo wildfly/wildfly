@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import javax.management.MBeanException;
 import javax.xml.ws.soap.SOAPFaultException;
@@ -41,6 +42,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.Invocation;
+import org.jboss.wsf.spi.security.SecurityDomainContext;
 
 /**
  * Invocation abstraction for all endpoint types
@@ -101,50 +103,56 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
     * @param wsInvocation web service invocation
     * @throws Exception if any error occurs
     */
-   public void invoke(final Endpoint endpoint, final Invocation wsInvocation) throws Exception {
-      try {
-         // prepare for invocation
-         onBeforeInvocation(wsInvocation);
-         // prepare invocation data
-         final ComponentView componentView = getComponentView();
-         Component component = componentView.getComponent();
-         //in case of @FactoryType annotation we don't need to go into EE interceptors
-         final boolean forceTargetBean = (wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null);
-         if (forceTargetBean) {
-             this.reference = new ManagedReference() {
-                 public void release() {
-                 }
+    public void invoke(final Endpoint endpoint, final Invocation wsInvocation) throws Exception {
+        try {
+            SecurityDomainContext securityDomainContext = endpoint.getSecurityDomainContext();
+            securityDomainContext.runAs((Callable<Void>) () -> {
+                invokeInternal(endpoint, wsInvocation);
+                return null;
+            });
+        } catch (Throwable t) {
+            handleInvocationException(t);
+        } finally {
+            onAfterInvocation(wsInvocation);
+        }
+    }
 
-                 public Object getInstance() {
-                     return wsInvocation.getInvocationContext().getTargetBean();
-                 }
-             };
-             if (component instanceof WSComponent) {
-                 ((WSComponent) component).setReference(reference);
-             }
-         }
-         final Method method = getComponentViewMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
-         final InterceptorContext context = new InterceptorContext();
-         prepareForInvocation(context, wsInvocation);
-         context.setMethod(method);
-         context.setParameters(wsInvocation.getArgs());
-         context.putPrivateData(Component.class, component);
-         context.putPrivateData(ComponentView.class, componentView);
-         if(forceTargetBean) {
-             context.putPrivateData(ManagedReference.class, reference);
-         }
-         // invoke method
-         final Object retObj = componentView.invoke(context);
-         // set return value
-         wsInvocation.setReturnValue(retObj);
-      }
-      catch (Throwable t) {
-         handleInvocationException(t);
-      }
-      finally {
-         onAfterInvocation(wsInvocation);
-      }
-   }
+    public void invokeInternal(final Endpoint endpoint, final Invocation wsInvocation) throws Exception {
+        // prepare for invocation
+        onBeforeInvocation(wsInvocation);
+        // prepare invocation data
+        final ComponentView componentView = getComponentView();
+        Component component = componentView.getComponent();
+        // in case of @FactoryType annotation we don't need to go into EE interceptors
+        final boolean forceTargetBean = (wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null);
+        if (forceTargetBean) {
+            this.reference = new ManagedReference() {
+                public void release() {
+                }
+
+                public Object getInstance() {
+                    return wsInvocation.getInvocationContext().getTargetBean();
+                }
+            };
+            if (component instanceof WSComponent) {
+                ((WSComponent) component).setReference(reference);
+            }
+        }
+        final Method method = getComponentViewMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
+        final InterceptorContext context = new InterceptorContext();
+        prepareForInvocation(context, wsInvocation);
+        context.setMethod(method);
+        context.setParameters(wsInvocation.getArgs());
+        context.putPrivateData(Component.class, component);
+        context.putPrivateData(ComponentView.class, componentView);
+        if (forceTargetBean) {
+            context.putPrivateData(ManagedReference.class, reference);
+        }
+        // invoke method
+        final Object retObj = componentView.invoke(context);
+        // set return value
+        wsInvocation.setReturnValue(retObj);
+    }
 
    protected void prepareForInvocation(final InterceptorContext context, final Invocation wsInvocation) {
       // does nothing
