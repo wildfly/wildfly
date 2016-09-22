@@ -378,6 +378,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                                 moduleName, installedDriver.getDriverClassName(),
                                 installedDriver.getDataSourceClassName(), installedDriver.getXaDataSourceClassName());
                         drivers.put(driverName, driver);
+                        if(installedDriver.getDataSourceClassName() != null && (dataSourceConfig.getConnectionProperties() == null || dataSourceConfig.getConnectionProperties().isEmpty())) {
+                            ConnectorLogger.DS_DEPLOYER_LOGGER.usingDatasourceClassWithoutConnectionProperties(dsName, installedDriver.getDataSourceClassName());
+                        }
                     }
                     dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
                 } else if (xaDataSourceConfig != null) {
@@ -391,6 +394,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                                 installedDriver.getDriverClassName(),
                                 installedDriver.getDataSourceClassName(), installedDriver.getXaDataSourceClassName());
                         drivers.put(driverName, driver);
+                        if(installedDriver.getXaDataSourceClassName() != null && (xaDataSourceConfig.getXaDataSourceProperty() == null || xaDataSourceConfig.getXaDataSourceProperty().isEmpty())) {
+                            ConnectorLogger.DS_DEPLOYER_LOGGER.usingDatasourceClassWithoutConnectionProperties(dsName, installedDriver.getXaDataSourceClassName());
+                        }
                     }
                     dataSources = new DatasourcesImpl(null, Arrays.asList(xaDataSourceConfig), drivers);
                 }
