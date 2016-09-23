@@ -163,7 +163,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
             TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager, transactionSynchronizationRegistry);
         }
         else {
-            testForMixedSynchronizationTypes(entityManager, puScopedName, synchronizationType);
+            testForMixedSynchronizationTypes(emf, entityManager, puScopedName, synchronizationType, properties);
             if (ROOT_LOGGER.isDebugEnabled()) {
                 ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
                         TransactionUtil.getTransaction(transactionManager).toString());
@@ -206,11 +206,20 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     /**
      * throw error if jta transaction already has an UNSYNCHRONIZED persistence context and a SYNCHRONIZED persistence context
      * is requested.  We are only fussy in this test, if the target component persistence context is SYNCHRONIZED.
+     *
+     * WFLY-7075 introduces two extensions, allow a (transaction) joined UNSYNCHRONIZED persistence context to be treated as SYNCHRONIZED,
+     * allow the checking for mixed SynchronizationType to be skipped.
      */
-    private static void testForMixedSynchronizationTypes(EntityManager entityManager, String scopedPuName, final SynchronizationType targetSynchronizationType) {
-        if (SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType) &&
-                entityManager instanceof SynchronizationTypeAccess &&
-                SynchronizationType.UNSYNCHRONIZED.equals(((SynchronizationTypeAccess)entityManager).getSynchronizationType())) {
+    private static void testForMixedSynchronizationTypes(EntityManagerFactory emf, EntityManager entityManagerFromJTA, String scopedPuName, final SynchronizationType targetSynchronizationType, Map targetProperties) {
+
+        boolean skipMixedSyncTypeChecking = Configuration.skipMixedSynchronizationTypeCheck(emf, targetProperties);  // extension to allow skipping of check based on properties of target entity manager
+        boolean allowJoinedUnsyncPersistenceContext = Configuration.allowJoinedUnsyncPersistenceContext(emf, targetProperties); // extension to allow joined unsync persistence context to be treated as sync persistence context
+
+        if (!skipMixedSyncTypeChecking &&
+                SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType) &&
+                entityManagerFromJTA instanceof SynchronizationTypeAccess &&
+                SynchronizationType.UNSYNCHRONIZED.equals(((SynchronizationTypeAccess) entityManagerFromJTA).getSynchronizationType())
+                && (!allowJoinedUnsyncPersistenceContext || !entityManagerFromJTA.isJoinedToTransaction())) {
             throw JpaLogger.ROOT_LOGGER.badSynchronizationTypeCombination(scopedPuName);
         }
     }

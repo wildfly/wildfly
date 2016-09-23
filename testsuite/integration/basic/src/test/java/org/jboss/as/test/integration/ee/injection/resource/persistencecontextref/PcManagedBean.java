@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ee.injection.resource.persistencecontextref;
 
 import javax.annotation.ManagedBean;
+import javax.ejb.EJB;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -39,6 +40,10 @@ public class PcManagedBean {
     @PersistenceContext(unitName = "mypc", name = "otherPcBinding")
     private EntityManager otherpc;
 
+    @EJB
+    SFSB sfsb;
+
+
     //this one is injected via deployment descriptor
     private EntityManager mypc2;
 
@@ -53,4 +58,13 @@ public class PcManagedBean {
     public EntityManager getOtherpc() {
         return otherpc;
     }
+
+    public boolean unsynchronizedIsNotJoinedToTX() {
+        return sfsb.unsynchronizedIsNotJoinedToTX();
+    }
+
+    public boolean synchronizedIsJoinedToTX() {
+        return sfsb.synchronizedIsJoinedToTX();
+    }
+
 }
