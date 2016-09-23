@@ -132,6 +132,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
         builder.addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.DISABLE_FILE_WATCH_SERVICE)
+                .end()
+                .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
+                    .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.PER_MESSAGE_DEFLATE)
                 .end();
 
         builder.addChildResource(UndertowExtension.PATH_FILTERS)

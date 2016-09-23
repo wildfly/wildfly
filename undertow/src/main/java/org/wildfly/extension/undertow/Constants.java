@@ -224,6 +224,7 @@ public interface Constants {
     String STATISTICS_ENABLED = "statistics-enabled";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DISABLE_FILE_WATCH_SERVICE = "disable-file-watch-service";
+    String PER_MESSAGE_DEFLATE = "per-message-deflate";
 
     // Elytron Integration
     String APPLICATION_SECURITY_DOMAIN = "application-security-domain";
