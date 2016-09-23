@@ -20,7 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.3" name="org.jboss.genericjms">
+<module xmlns="urn:jboss:module:1.5" name="org.jboss.genericjms">
     <resources>
        <resource-root path="."/>
         <artifact name="${org.jboss.genericjms:generic-jms-ra-jar}"/>

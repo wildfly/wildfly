@@ -25,7 +25,7 @@
 <!-- Hibernate Search Engine: the fulltext indexing and query capabilities
      without the ORM integration bits. This is reused by several other project
      outside of the Hibernate group. -->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.search.engine">
+<module xmlns="urn:jboss:module:1.5" name="org.hibernate.search.engine">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

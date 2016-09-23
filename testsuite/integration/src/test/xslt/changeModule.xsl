@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ml="urn:jboss:module:1.0">
+                xmlns:ml="urn:jboss:module:1.5">
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:param name="ds.jdbc.driver.resource" select="'fred'"/>
