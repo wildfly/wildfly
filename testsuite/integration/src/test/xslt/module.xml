@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
  
-<module xmlns="urn:jboss:module:1.0" name="module-name">
+<module xmlns="urn:jboss:module:1.5" name="module-name">
   <resources>
     <resource-root path="resource-path"/>
   </resources>

@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="javax.faces.api" slot="myfaces2">
+<module xmlns="urn:jboss:module:1.5" name="javax.faces.api" slot="myfaces2">
     <dependencies>
         <module name="javax.el.api" export="true"/>
         <module name="javax.servlet.api" export="true"/>
