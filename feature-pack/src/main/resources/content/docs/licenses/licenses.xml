@@ -420,7 +420,7 @@
       <licenses>
         <license>
           <name>GNU Library General Public License, Version 2</name>
-          <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
+          <url>http://repository.jboss.org/licenses/lgpl-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1875,9 +1875,8 @@
       <artifactId>artemis-wildfly-integration</artifactId>
       <licenses>
         <license>
-          <name>Public Domain</name>
-          <url>http://repository.jboss.org/licenses/cc0-1.0.txt</url>
-          <distribution>repo</distribution>
+          <name>GNU Lesser General Public License, Version 2.1</name>
+          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
         </license>
       </licenses>
     </dependency>
@@ -1916,9 +1915,8 @@
       <artifactId>jipijapa-hibernate5</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-          <distribution>repo</distribution>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
         </license>
       </licenses>
     </dependency>
@@ -3074,8 +3072,9 @@
       <artifactId>jboss-ejb-api_3.2_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
