@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import javax.transaction.Status;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
@@ -28,6 +31,7 @@ import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.ejb.client.Affinity;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.RemoveListener;
@@ -47,11 +51,13 @@ import org.wildfly.clustering.ejb.RemoveListener;
 public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>> implements Cache<K, V> {
     private final BeanManager<K, V, Batch> manager;
     private final StatefulObjectFactory<V> factory;
+    private final TransactionSynchronizationRegistry tsr;
     private final RemoveListener<V> listener;
 
-    public DistributableCache(BeanManager<K, V, Batch> manager, StatefulObjectFactory<V> factory) {
+    public DistributableCache(BeanManager<K, V, Batch> manager, StatefulObjectFactory<V> factory, TransactionSynchronizationRegistry tsr) {
         this.manager = manager;
         this.factory = factory;
+        this.tsr = tsr;
         this.listener = new RemoveListenerAdapter<>(factory);
     }
 
@@ -104,31 +110,56 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public V get(K id) {
+        Batcher<Batch> batcher = this.manager.getBatcher();
+        boolean transactional = (this.tsr.getTransactionKey() != null);
+        // Batch may already be associated with this tx
+        Batch existingBatch = transactional ? (Batch) this.tsr.getResource(Batch.class) : null;
         // Batch is not closed here - it will be closed during release(...) or discard(...)
-        @SuppressWarnings("resource")
-        Batch batch = this.manager.getBatcher().createBatch();
-        try {
+        Batch batch = (existingBatch == null) ? batcher.createBatch() : existingBatch;
+        if (transactional && (existingBatch == null)) {
+            // Leverage TSR to propagate Batch reference across calls to Cache.get(...) by different threads for the same tx
+            this.tsr.putResource(Batch.class, batch);
+        }
+        // Batch is not closed here - it will be closed during release(...) or discard(...)
+        try (BatchContext context = transactional ? batcher.resumeBatch(batch) : null) {
+            if (existingBatch != null) {
+                batch = batcher.createBatch();
+            }
             Bean<K, V> bean = this.manager.findBean(id);
             if (bean == null) {
                 batch.close();
+                if (transactional) {
+                    this.tsr.putResource(Batch.class, null);
+                }
                 return null;
             }
             V result = bean.acquire();
             result.setCacheContext(batch);
+            // store the first SFSB instance accessed by a transaction in the TSR to manage delayed call to release() performed by a synchronization, if any
+            // used to keep the Batch reference in the session instance until this delayed call to release() is performed
+            if (transactional && (this.tsr.getResource(Object.class) == null)) {
+                this.tsr.putResource(Object.class, result);
+            }
             return result;
         } catch (RuntimeException | Error e) {
             batch.discard();
             batch.close();
+            if (transactional) {
+                this.tsr.putResource(Batch.class, null);
+            }
             throw e;
         }
     }
 
     @Override
     public void release(V value) {
+        Object tsrInstance = getSessionInstanceInTSR();
+        boolean valueMatchesInstanceInTSR = (tsrInstance != null) ? (tsrInstance == value) : false ;
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
-            try (Batch batch = value.getCacheContext()) {
+            try (Batch batch = valueMatchesInstanceInTSR ? value.getCacheContext() : value.removeCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
                     if (bean != null) {
@@ -161,8 +192,10 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void discard(V value) {
+        Object tsrInstance = getSessionInstanceInTSR();
+        boolean valueMatchesInstanceInTSR = (tsrInstance != null) ? (tsrInstance == value) : false ;
         try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
-            try (Batch batch = value.getCacheContext()) {
+            try (Batch batch = valueMatchesInstanceInTSR ? value.getCacheContext() : value.removeCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
                     if (bean != null) {
@@ -211,5 +244,21 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     @Override
     public boolean isRemotable(Throwable throwable) {
         return this.manager.isRemotable(throwable);
+    }
+
+    /**
+     * The StatefulSessionSynchronizationInterceptor delays the call to release for the first method invocation
+     * until afterCompletion of the enclosing transaction, if any. This means that for that first invocation,
+     * we cannot allow release() to clear the cacheContext holding a reference to the current Batch.
+     *
+     * THis method retrieves the stored SFSB instance.
+     *
+     * @return  the SFSB instance associated with the first invocation in a (user) transaction
+     */
+    private Object getSessionInstanceInTSR() {
+        if (this.tsr.getTransactionStatus() == Status.STATUS_ACTIVE) {
+            return this.tsr.getResource(Object.class);
+        }
+        return null;
     }
 }
