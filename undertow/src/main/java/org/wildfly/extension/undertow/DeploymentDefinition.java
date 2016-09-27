@@ -102,13 +102,12 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                 return;
             }
 
-            final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
             SessionStat stat = SessionStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
-
             if (stat == null) {
                 context.getFailureDescription().set(UndertowLogger.ROOT_LOGGER.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
             } else {
                 ModelNode result = new ModelNode();
+                UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
                 Deployment deployment = deploymentService.getDeployment();
                 SessionManager sessionManager = deployment.getSessionManager();
                 SessionManagerStatistics sms = sessionManager.getStatistics();
