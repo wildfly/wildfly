@@ -61,7 +61,7 @@ public class SiteBuilder extends ComponentBuilder<SiteConfiguration> implements 
 
     @Override
     public Builder<SiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String channel = ModelNodes.asString(CHANNEL.resolveModelAttribute(context, model));
+        String channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channel), ChannelFactory.class);
         return this;
     }

@@ -30,6 +30,8 @@ import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SHARED;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SINGLETON;
 
+import java.util.Properties;
+
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
@@ -70,12 +72,14 @@ public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfigura
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.storeBuilder = this.createStore(context, model);
         this.storeBuilder.persistence().passivation(PASSIVATION.resolveModelAttribute(context, model).asBoolean());
+        Properties properties = new Properties();
+        ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(list -> list.forEach(property -> properties.setProperty(property.getName(), property.getValue().asString())));
         this.storeBuilder.fetchPersistentState(FETCH_STATE.resolveModelAttribute(context, model).asBoolean())
                 .preload(PRELOAD.resolveModelAttribute(context, model).asBoolean())
                 .purgeOnStartup(PURGE.resolveModelAttribute(context, model).asBoolean())
                 .shared(SHARED.resolveModelAttribute(context, model).asBoolean())
                 .singleton().enabled(SINGLETON.resolveModelAttribute(context, model).asBoolean())
-                .withProperties(ModelNodes.asProperties(PROPERTIES.resolveModelAttribute(context, model)))
+                .withProperties(properties)
         ;
         return this;
     }

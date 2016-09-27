@@ -67,7 +67,8 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
     B createStore(OperationContext context, ModelNode model) throws OperationFailedException {
         String dataSource = DATA_SOURCE.resolveModelAttribute(context, model).asString();
         this.dataSourceDepencency = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
-        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass).dialect(ModelNodes.asEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class));
+        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass);
+        ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).ifPresent(dialect -> storeBuilder.dialect(dialect));
         storeBuilder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
         return storeBuilder;
     }

@@ -48,6 +48,7 @@ import org.jboss.msc.value.InjectedValue;
 public class FileStoreBuilder extends StoreBuilder {
 
     private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
+    private final String containerName;
 
     private volatile SingleFileStoreConfigurationBuilder builder;
     private volatile String relativePath;
@@ -55,7 +56,7 @@ public class FileStoreBuilder extends StoreBuilder {
 
     FileStoreBuilder(PathAddress cacheAddress) {
         super(cacheAddress);
-        this.relativePath = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + cacheAddress.getParent().getLastElement().getValue();
+        this.containerName = cacheAddress.getParent().getLastElement().getValue();
     }
 
     @Override
@@ -71,10 +72,7 @@ public class FileStoreBuilder extends StoreBuilder {
 
     @Override
     StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        String relativePath = ModelNodes.asString(RELATIVE_PATH.resolveModelAttribute(context, model));
-        if (relativePath != null) {
-            this.relativePath = relativePath;
-        }
+        this.relativePath = ModelNodes.optionalString(RELATIVE_PATH.resolveModelAttribute(context, model)).orElse(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
         this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
         this.builder = new ConfigurationBuilder().persistence().addSingleFileStore();
         return this.builder;

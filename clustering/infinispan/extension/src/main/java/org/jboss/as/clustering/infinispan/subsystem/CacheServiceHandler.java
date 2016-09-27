@@ -89,10 +89,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();
         BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class);
-        String jndiName = ModelNodes.asString(CacheResourceDefinition.Attribute.JNDI_NAME.resolveModelAttribute(context, model));
-        if (jndiName != null) {
-            bindingBuilder.alias(ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName()));
-        }
+        ModelNodes.optionalString(JNDI_NAME.resolveModelAttribute(context, model)).map(jndiName -> ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName())).ifPresent(aliasBinding -> bindingBuilder.alias(aliasBinding));
         bindingBuilder.build(target).install();
 
         for (CacheGroupBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {

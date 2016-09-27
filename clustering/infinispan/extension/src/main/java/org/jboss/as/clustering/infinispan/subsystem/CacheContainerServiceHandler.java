@@ -91,11 +91,8 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         new KeyAffinityServiceFactoryBuilder(address).build(target).install();
 
-        String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.Attribute.JNDI_NAME.resolveModelAttribute(context, model));
         BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheContainerBinding(name), containerBuilder.getServiceName(), CacheContainer.class);
-        if (jndiName != null) {
-            bindingBuilder.alias(ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName()));
-        }
+        ModelNodes.optionalString(JNDI_NAME.resolveModelAttribute(context, model)).map(jndiName -> ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName())).ifPresent(aliasBinding -> bindingBuilder.alias(aliasBinding));
         bindingBuilder.build(target).install();
 
         String defaultCache = containerBuilder.getDefaultCache();
@@ -121,8 +118,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         String name = context.getCurrentAddressValue();
         CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
-        String defaultCache = ModelNodes.asString(DEFAULT_CACHE.resolveModelAttribute(context, model));
-        if (defaultCache != null) {
+        ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).ifPresent(defaultCache -> {
             if (!defaultCache.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
                 for (CacheGroupAliasBuilderProvider provider : ServiceLoader.load(CacheGroupAliasBuilderProvider.class, CacheGroupAliasBuilderProvider.class.getClassLoader())) {
                     for (Builder<?> builder : provider.getBuilders(support, name, null, defaultCache)) {
@@ -135,7 +131,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
             }
 
             DEFAULT_CAPABILITIES.values().forEach(capability -> context.removeService(capability.getServiceName(address)));
-        }
+        });
 
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 

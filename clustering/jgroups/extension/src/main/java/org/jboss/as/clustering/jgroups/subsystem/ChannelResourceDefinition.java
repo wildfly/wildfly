@@ -33,7 +33,6 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
@@ -235,11 +234,10 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
                 // Register runtime resource children for channel protocols
                 if (ChannelResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
                     String name = context.getCurrentAddressValue();
-                    String stack = ModelNodes.asString(Attribute.STACK.resolveModelAttribute(context, resource.getModel()));
+                    String stack = Attribute.STACK.resolveModelAttribute(context, resource.getModel()).asString();
 
                     PathAddress address = context.getCurrentAddress();
                     PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);
-                    // Lookup the name of the default stack if necessary
                     PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement(stack));
 
                     context.addStep(new ProtocolResourceRegistrationHandler(name, stackAddress), OperationContext.Stage.MODEL);

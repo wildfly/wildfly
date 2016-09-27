@@ -25,6 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.BackupForResourceDefinition.Attribute.CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.BackupForResourceDefinition.Attribute.SITE;
 
+import java.util.Optional;
+
 import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -49,9 +51,9 @@ public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> i
 
     @Override
     public Builder<BackupForConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String site = ModelNodes.asString(SITE.resolveModelAttribute(context, model));
-        if (site != null) {
-            this.builder.remoteSite(site).remoteCache(CACHE.resolveModelAttribute(context, model).asString());
+        Optional<String> site = ModelNodes.optionalString(SITE.resolveModelAttribute(context, model));
+        if (site.isPresent()) {
+            this.builder.remoteSite(site.get()).remoteCache(CACHE.resolveModelAttribute(context, model).asString());
         }
         return this;
     }
