@@ -54,10 +54,10 @@ public class ThreadPoolBuilder extends ComponentBuilder<ThreadPoolConfiguration>
     @Override
     public Builder<ThreadPoolConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         ThreadPoolExecutorFactory<?> factory = new BlockingThreadPoolExecutorFactory(
-                this.definition.getMaxThreads().getDefinition().resolveModelAttribute(context, model).asInt(),
-                this.definition.getMinThreads().getDefinition().resolveModelAttribute(context, model).asInt(),
-                this.definition.getQueueLength().getDefinition().resolveModelAttribute(context, model).asInt(),
-                this.definition.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asLong()
+                this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt(),
+                this.definition.getMinThreads().resolveModelAttribute(context, model).asInt(),
+                this.definition.getQueueLength().resolveModelAttribute(context, model).asInt(),
+                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong()
         ) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {

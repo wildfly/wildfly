@@ -227,7 +227,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     String attributeName = Operations.getAttributeName(operation);
-                    if (Attribute.ALIASES.getDefinition().getName().equals(attributeName)) {
+                    if (Attribute.ALIASES.getName().equals(attributeName)) {
                         ModelNode value = Operations.getAttributeValue(operation);
                         PathAddress address = Operations.getPathAddress(operation);
                         ModelNode transformedOperation = Util.createOperation(ALIAS_ADD, address);
@@ -243,7 +243,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     String attributeName = Operations.getAttributeName(operation);
-                    if (Attribute.ALIASES.getDefinition().getName().equals(attributeName)) {
+                    if (Attribute.ALIASES.getName().equals(attributeName)) {
                         ModelNode value = Operations.getAttributeValue(operation);
                         PathAddress address = Operations.getPathAddress(operation);
                         ModelNode transformedOperation = Util.createOperation(ALIAS_REMOVE, address);

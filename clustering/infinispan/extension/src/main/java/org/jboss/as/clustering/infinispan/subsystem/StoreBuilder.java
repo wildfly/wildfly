@@ -69,13 +69,13 @@ public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfigura
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.storeBuilder = this.createStore(context, model);
-        this.storeBuilder.persistence().passivation(PASSIVATION.getDefinition().resolveModelAttribute(context, model).asBoolean());
-        this.storeBuilder.fetchPersistentState(FETCH_STATE.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .preload(PRELOAD.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .purgeOnStartup(PURGE.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .shared(SHARED.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .singleton().enabled(SINGLETON.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .withProperties(ModelNodes.asProperties(PROPERTIES.getDefinition().resolveModelAttribute(context, model)))
+        this.storeBuilder.persistence().passivation(PASSIVATION.resolveModelAttribute(context, model).asBoolean());
+        this.storeBuilder.fetchPersistentState(FETCH_STATE.resolveModelAttribute(context, model).asBoolean())
+                .preload(PRELOAD.resolveModelAttribute(context, model).asBoolean())
+                .purgeOnStartup(PURGE.resolveModelAttribute(context, model).asBoolean())
+                .shared(SHARED.resolveModelAttribute(context, model).asBoolean())
+                .singleton().enabled(SINGLETON.resolveModelAttribute(context, model).asBoolean())
+                .withProperties(ModelNodes.asProperties(PROPERTIES.resolveModelAttribute(context, model)))
         ;
         return this;
     }

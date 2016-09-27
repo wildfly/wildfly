@@ -136,7 +136,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
-                        containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()).asBoolean());
+                        containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
 
                 for (String key : containerProp.getValue().keys()) {
                     if (key.endsWith("-cache") && !key.equals("default-cache")) {
@@ -144,7 +144,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                         if (caches.isDefined()) {
                             for (Property cacheProp : caches.asPropertyList()) {
                                 Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                        containerProp.getValue().get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getDefinition().getName()).asBoolean());
+                                        containerProp.getValue().get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
                             }
                         }
                     }

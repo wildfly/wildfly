@@ -78,9 +78,9 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
 
     @Override
     public Builder<SingletonPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.containerName = CACHE_CONTAINER.getDefinition().resolveModelAttribute(context, model).asString();
-        this.cacheName = ModelNodes.asString(CACHE.getDefinition().resolveModelAttribute(context, model));
-        this.quorum = QUORUM.getDefinition().resolveModelAttribute(context, model).asInt();
+        this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
+        this.cacheName = ModelNodes.asString(CACHE.resolveModelAttribute(context, model));
+        this.quorum = QUORUM.resolveModelAttribute(context, model).asInt();
         return this;
     }
 

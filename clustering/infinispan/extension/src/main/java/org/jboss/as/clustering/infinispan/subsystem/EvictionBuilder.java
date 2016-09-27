@@ -51,10 +51,10 @@ public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> imp
 
     @Override
     public Builder<EvictionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        EvictionStrategy strategy = ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(context, model), EvictionStrategy.class);
+        EvictionStrategy strategy = ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, model), EvictionStrategy.class);
         this.builder.strategy(strategy);
         if (strategy.isEnabled()) {
-            this.builder.type(EvictionType.COUNT).size(MAX_ENTRIES.getDefinition().resolveModelAttribute(context, model).asLong());
+            this.builder.type(EvictionType.COUNT).size(MAX_ENTRIES.resolveModelAttribute(context, model).asLong());
         }
         return this;
     }

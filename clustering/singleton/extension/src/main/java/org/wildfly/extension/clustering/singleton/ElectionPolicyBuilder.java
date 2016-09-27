@@ -83,12 +83,12 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
     public Builder<SingletonElectionPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.preferences.clear();
         this.dependencies.clear();
-        for (String bindingName : ModelNodes.asStringList(SOCKET_BINDING_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
+        for (String bindingName : ModelNodes.asStringList(SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model))) {
             InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, bindingName), OutboundSocketBinding.class);
             this.preferences.add(new OutboundSocketBindingPreference(binding));
             this.dependencies.add(binding);
         }
-        for (String nodeName : ModelNodes.asStringList(NAME_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
+        for (String nodeName : ModelNodes.asStringList(NAME_PREFERENCES.resolveModelAttribute(context, model))) {
             this.preferences.add(new NamePreference(nodeName));
         }
         return this;

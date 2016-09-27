@@ -57,10 +57,10 @@ public class LockingBuilder extends ComponentBuilder<LockingConfiguration> imple
 
     @Override
     public Builder<LockingConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.lockAcquisitionTimeout(ACQUIRE_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
-        this.builder.concurrencyLevel(CONCURRENCY.getDefinition().resolveModelAttribute(context, model).asInt());
-        this.builder.isolationLevel(ModelNodes.asEnum(ISOLATION.getDefinition().resolveModelAttribute(context, model), IsolationLevel.class));
-        this.builder.useLockStriping(STRIPING.getDefinition().resolveModelAttribute(context, model).asBoolean());
+        this.builder.lockAcquisitionTimeout(ACQUIRE_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        this.builder.concurrencyLevel(CONCURRENCY.resolveModelAttribute(context, model).asInt());
+        this.builder.isolationLevel(ModelNodes.asEnum(ISOLATION.resolveModelAttribute(context, model), IsolationLevel.class));
+        this.builder.useLockStriping(STRIPING.resolveModelAttribute(context, model).asBoolean());
         return this;
     }
 }

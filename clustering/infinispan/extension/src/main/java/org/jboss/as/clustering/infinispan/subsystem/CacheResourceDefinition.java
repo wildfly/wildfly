@@ -165,10 +165,10 @@ public class CacheResourceDefinition extends ChildResourceDefinition {
                     PathAddress transactionAddress = address.append(TransactionResourceDefinition.PATH);
                     try {
                         ModelNode transaction = context.readResourceFromRoot(transactionAddress).getModel();
-                        if (transaction.hasDefined(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName())) {
-                            ModelNode mode = transaction.get(TransactionResourceDefinition.Attribute.MODE.getDefinition().getName());
+                        if (transaction.hasDefined(TransactionResourceDefinition.Attribute.MODE.getName())) {
+                            ModelNode mode = transaction.get(TransactionResourceDefinition.Attribute.MODE.getName());
                             if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
-                                resource.getModel().get(DeprecatedAttribute.BATCHING.getDefinition().getName()).set(true);
+                                resource.getModel().get(DeprecatedAttribute.BATCHING.getName()).set(true);
                             }
                         }
                     } catch (NoSuchElementException e) {

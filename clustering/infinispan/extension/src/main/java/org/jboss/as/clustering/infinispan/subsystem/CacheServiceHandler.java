@@ -76,7 +76,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
         ServiceName moduleServiceName = CacheComponent.MODULE.getServiceName(cacheAddress);
-        if (model.hasDefined(MODULE.getDefinition().getName())) {
+        if (model.hasDefined(MODULE.getName())) {
             new ModuleBuilder(moduleServiceName, MODULE).configure(context, model).build(target).install();
         } else {
             new AliasServiceBuilder<>(moduleServiceName, CacheContainerComponent.MODULE.getServiceName(containerAddress), Module.class).build(target).install();
@@ -89,7 +89,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();
         BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class);
-        String jndiName = ModelNodes.asString(CacheResourceDefinition.Attribute.JNDI_NAME.getDefinition().resolveModelAttribute(context, model));
+        String jndiName = ModelNodes.asString(CacheResourceDefinition.Attribute.JNDI_NAME.resolveModelAttribute(context, model));
         if (jndiName != null) {
             bindingBuilder.alias(ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName()));
         }

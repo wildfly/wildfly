@@ -49,9 +49,9 @@ public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> i
 
     @Override
     public Builder<BackupForConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String site = ModelNodes.asString(SITE.getDefinition().resolveModelAttribute(context, model));
+        String site = ModelNodes.asString(SITE.resolveModelAttribute(context, model));
         if (site != null) {
-            this.builder.remoteSite(site).remoteCache(CACHE.getDefinition().resolveModelAttribute(context, model).asString());
+            this.builder.remoteSite(site).remoteCache(CACHE.resolveModelAttribute(context, model).asString());
         }
         return this;
     }

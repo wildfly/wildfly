@@ -83,7 +83,7 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
                     ModelNode value = new ModelNode();
                     for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.ColumnAttribute.class)) {
                         for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
-                            String name = attribute.getDefinition().getName();
+                            String name = attribute.getName();
                             if (operation.hasDefined(name)) {
                                 value.get(name).set(operation.get(name));
                             }

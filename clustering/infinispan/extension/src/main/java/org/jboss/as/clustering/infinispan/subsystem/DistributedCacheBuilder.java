@@ -71,17 +71,17 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.getDefinition().resolveModelAttribute(context, model), ConsistentHashStrategy.class);
+        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, model), ConsistentHashStrategy.class);
 
         ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering();
 
         this.hash = builder.hash()
-                .capacityFactor(CAPACITY_FACTOR.getDefinition().resolveModelAttribute(context, model).asInt())
-                .numOwners(OWNERS.getDefinition().resolveModelAttribute(context, model).asInt())
-                .numSegments(SEGMENTS.getDefinition().resolveModelAttribute(context, model).asInt())
+                .capacityFactor(CAPACITY_FACTOR.resolveModelAttribute(context, model).asInt())
+                .numOwners(OWNERS.resolveModelAttribute(context, model).asInt())
+                .numSegments(SEGMENTS.resolveModelAttribute(context, model).asInt())
                 .create();
 
-        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
+        long l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
         this.l1 = builder.l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan).create();
 
         this.global = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.containerName), GlobalConfiguration.class);
