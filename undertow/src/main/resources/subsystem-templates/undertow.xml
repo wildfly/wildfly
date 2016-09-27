@@ -69,7 +69,7 @@
         </replacement>
         <replacement placeholder="ELYTRON">
             <application-security-domains>
-                <application-security-domain security-domain="other" http-authentication-factory="application-http-authentication"/>
+                <application-security-domain name="other" http-authentication-factory="application-http-authentication"/>
             </application-security-domains>
         </replacement>
     </supplement>
