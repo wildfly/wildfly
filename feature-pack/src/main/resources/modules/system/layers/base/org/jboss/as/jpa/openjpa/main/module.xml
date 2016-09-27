@@ -23,7 +23,7 @@
   -->
 
 <!-- contains the JPA integration classes for OpenJPA 2.x --> 
-<module xmlns="urn:jboss:module:1.3" name="org.jboss.as.jpa.openjpa">
+<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jpa.openjpa">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

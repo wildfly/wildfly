@@ -36,7 +36,7 @@
     <copy file="${org.wildfly:jipijapa-eclipselink:jar}"           tofile="${tests.output.dir}/modules/org/eclipse/persistence/test/jipijapa-eclipselink.jar"/>
 
     <echo file="${tests.output.dir}/modules/org/eclipse/persistence/test/module.xml" append="false">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;module xmlns="urn:jboss:module:1.1" name="org.eclipse.persistence" slot="test"&gt;
+&lt;module xmlns="urn:jboss:module:1.5" name="org.eclipse.persistence" slot="test"&gt;
 &lt;resources&gt;
 
 &lt;resource-root path="eclipselink.jar"&gt;
@@ -72,7 +72,7 @@
     <copy file="${org.apache.openjpa:openjpa-all:jar}"         tofile="${tests.output.dir}/modules/org/apache/openjpa/test/openjpa-all.jar"/>
     <copy file="${org.wildfly:jipijapa-openjpa:jar}"      tofile="${tests.output.dir}/modules/org/apache/openjpa/test/jipijapa-openjpa.jar"/>
     <echo file="${tests.output.dir}/modules/org/apache/openjpa/test/module.xml" append="false">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;module xmlns="urn:jboss:module:1.1" name="org.apache.openjpa" slot="test"&gt;
+&lt;module xmlns="urn:jboss:module:1.5" name="org.apache.openjpa" slot="test"&gt;
 &lt;resources&gt;
 
 &lt;resource-root path="openjpa-all.jar"&gt;

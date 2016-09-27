@@ -1,4 +1,4 @@
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.test.extension">
+<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.test.extension">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

@@ -1,4 +1,4 @@
-<module xmlns="urn:jboss:module:1.1" name="org.wildfly.extension.blocker-test">
+<module xmlns="urn:jboss:module:1.5" name="org.wildfly.extension.blocker-test">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

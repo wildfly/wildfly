@@ -23,7 +23,7 @@
   -->
 
 <!-- Represents the Hibernate 4.0.x module-->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.commons-annotations">
+<module xmlns="urn:jboss:module:1.5" name="org.hibernate.commons-annotations">
     <resources>
         <artifact name="${org.hibernate.common:hibernate-commons-annotations}"/>
     </resources>
