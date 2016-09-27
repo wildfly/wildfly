@@ -22,14 +22,11 @@
 
 package org.jboss.as.clustering.dmr;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -42,28 +39,6 @@ import org.jboss.modules.ModuleIdentifier;
 public class ModelNodes {
 
     /**
-     * Returns the value of the node as a string, or null if the node is undefined.
-     * @param value a model node
-     * @return the value of the node as a string, or null if the node is undefined.
-     * @deprecated Use {@link #optionalString(ModelNode)} instead.
-     */
-    @Deprecated
-    public static String asString(ModelNode value) {
-        return optionalString(value).orElse(null);
-    }
-
-    /**
-     * Returns the value of the node as a string, or the specified default value if the node is undefined.
-     * @param value a model node
-     * @return the value of the node as a string, or the specified default value if the node is undefined.
-     * @deprecated Use {@link #optionalString(ModelNode)} instead.
-     */
-    @Deprecated
-    public static String asString(ModelNode value, String defaultValue) {
-        return optionalString(value).orElse(defaultValue);
-    }
-
-    /**
      * Returns the value of the node as a float.
      * @param value a model node
      * @return the value of the node as a float.
@@ -73,52 +48,21 @@ public class ModelNodes {
     }
 
     /**
-     * Returns the value of the node as an Enum value, or null if the node is undefined.
+     * Returns the value of the node as an Enum value.
      * @param value a model node
-     * @return the value of the node as an Enum, or null if the node is undefined.
+     * @return the value of the node as an Enum.
      */
     public static <E extends Enum<E>> E asEnum(ModelNode value, Class<E> targetClass) {
-        return optionalEnum(value, targetClass).orElse(null);
+        return Enum.valueOf(targetClass, value.asString());
     }
 
     /**
-     * Returns the value of the node as a module identifier, or null if the node is undefined.
+     * Returns the value of the node as a module identifier.
      * @param value a model node
-     * @return the value of the node as a module identifier, or null if the node is undefined.
+     * @return the value of the node as a module identifier.
      */
     public static ModuleIdentifier asModuleIdentifier(ModelNode value) {
-        return optionalModuleIdentifier(value).orElse(null);
-    }
-
-    /**
-     * Returns the value of the node as a property list, returning an empty list if the node is undefined.
-     * @param value a model node
-     * @return the value of the node as a property list, returning an empty list if the node is undefined.
-     * @deprecated Use {@link #optionalPropertyList(ModelNode)} instead.
-     */
-    @Deprecated
-    public static List<Property> asPropertyList(ModelNode value) {
-        return value.isDefined() ? value.asPropertyList() : Collections.<Property>emptyList();
-    }
-
-    /**
-     * Returns the value of the node as a list of strings, returning an empty list if the node is undefined.
-     * @param value a model node
-     * @return the value of the node as a list of strings, returning an empty list if the node is undefined.
-     */
-    public static List<String> asStringList(ModelNode value) {
-        return optionalList(value).map(nodes -> nodes.stream().map(ModelNode::asString).collect(Collectors.toList())).orElse(Collections.emptyList());
-    }
-
-    /**
-     * Returns the value of the node as a properties map, returning an empty properties map if the node is undefined.
-     * @param value a model node
-     * @return the value of the node as a properties map, returning an empty properties map if the node is undefined.
-     */
-    public static Properties asProperties(ModelNode value) {
-        Properties properties = new Properties();
-        optionalPropertyList(value).ifPresent(list -> list.forEach(property -> properties.setProperty(property.getName(), property.getValue().asString())));
-        return properties;
+        return ModuleIdentifier.fromString(value.asString());
     }
 
     /**
@@ -208,7 +152,7 @@ public class ModelNodes {
      * @return an optional value
      */
     public static <E extends Enum<E>> Optional<E> optionalEnum(ModelNode value, Class<E> targetClass) {
-        return value.isDefined() ? Optional.of(Enum.valueOf(targetClass, value.asString())) : Optional.empty();
+        return value.isDefined() ? Optional.of(asEnum(value, targetClass)) : Optional.empty();
     }
 
     /**
@@ -217,7 +161,7 @@ public class ModelNodes {
      * @return an optional value
      */
     public static Optional<ModuleIdentifier> optionalModuleIdentifier(ModelNode value) {
-        return value.isDefined() ? Optional.of(ModuleIdentifier.fromString(value.asString())) : Optional.empty();
+        return value.isDefined() ? Optional.of(asModuleIdentifier(value)) : Optional.empty();
     }
 
     private ModelNodes() {

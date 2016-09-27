@@ -86,11 +86,12 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
 
     @Override
     public CacheContainerBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        List<String> aliases = ModelNodes.asStringList(ALIASES.resolveModelAttribute(context, model));
         this.aliases.clear();
-        aliases.forEach(alias -> this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias)));
+        ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).ifPresent(aliases -> {
+            aliases.stream().map(ModelNode::asString).forEach(alias -> this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias)));
+        });
         this.configuration = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.name), GlobalConfiguration.class);
-        this.defaultCache = ModelNodes.asString(DEFAULT_CACHE.resolveModelAttribute(context, model));
+        this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).orElse(null);
         return this;
     }
 

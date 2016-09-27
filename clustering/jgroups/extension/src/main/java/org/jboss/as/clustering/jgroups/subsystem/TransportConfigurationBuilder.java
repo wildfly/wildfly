@@ -25,6 +25,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
 
 import java.util.EnumSet;
+import java.util.Optional;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -68,32 +69,29 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
 
     @Override
     public Builder<TransportConfiguration> configure(OperationContext context, ModelNode transport) throws OperationFailedException {
-        final String machine = ModelNodes.asString(MACHINE.resolveModelAttribute(context, transport));
-        final String rack = ModelNodes.asString(RACK.resolveModelAttribute(context, transport));
-        final String site = ModelNodes.asString(SITE.resolveModelAttribute(context, transport));
-        if ((site != null) || (rack != null) || (machine != null)) {
+        Optional<String> machine = ModelNodes.optionalString(MACHINE.resolveModelAttribute(context, transport));
+        Optional<String> rack = ModelNodes.optionalString(RACK.resolveModelAttribute(context, transport));
+        Optional<String> site = ModelNodes.optionalString(SITE.resolveModelAttribute(context, transport));
+        if (site.isPresent() || rack.isPresent() || machine.isPresent()) {
             this.topology = new Topology() {
                 @Override
                 public String getMachine() {
-                    return machine;
+                    return machine.orElse(null);
                 }
 
                 @Override
                 public String getRack() {
-                    return rack;
+                    return rack.orElse(null);
                 }
 
                 @Override
                 public String getSite() {
-                    return site;
+                    return site.orElse(null);
                 }
             };
         }
 
-        String diagnosticsBinding = ModelNodes.asString(DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport));
-        if (diagnosticsBinding != null) {
-            this.diagnosticsSocketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsBinding), SocketBinding.class);
-        }
+        this.diagnosticsSocketBinding = ModelNodes.optionalString(DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)).map(diagnosticsBinding -> new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsBinding), SocketBinding.class)).orElse(null);
 
         for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
             String prefix = pool.getPrefix();

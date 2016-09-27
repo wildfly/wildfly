@@ -47,7 +47,7 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress containerAddress = context.getCurrentAddress().getParent();
         String name = containerAddress.getLastElement().getValue();
-        String channel = ModelNodes.asString(CHANNEL.resolveModelAttribute(context, model));
+        String channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
         ServiceTarget target = context.getServiceTarget();
 
         new JGroupsTransportBuilder(containerAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
@@ -65,7 +65,7 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress containerAddress = context.getCurrentAddress().getParent();
         String name = containerAddress.getLastElement().getValue();
-        String channel = ModelNodes.asString(CHANNEL.resolveModelAttribute(context, model));
+        String channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {

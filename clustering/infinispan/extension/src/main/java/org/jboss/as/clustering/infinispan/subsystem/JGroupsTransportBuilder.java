@@ -67,7 +67,7 @@ public class JGroupsTransportBuilder extends ComponentBuilder<TransportConfigura
     @Override
     public JGroupsTransportBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.lockTimeout = LOCK_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        this.channel = ModelNodes.asString(CHANNEL.resolveModelAttribute(context, model));
+        this.channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, this.channel), ChannelFactory.class);
         return this;
     }
