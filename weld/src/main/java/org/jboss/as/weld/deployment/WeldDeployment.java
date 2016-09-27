@@ -31,12 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.inject.spi.Extension;
 
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
-import org.jboss.as.weld.discovery.WeldAnnotationDiscovery;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
 import org.jboss.modules.Module;
@@ -49,7 +46,6 @@ import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.resources.spi.AnnotationDiscovery;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -104,11 +100,6 @@ public class WeldDeployment implements CDI11Deployment {
         // add static services
         this.serviceRegistry.add(ProxyServices.class, new ProxyServicesImpl(module));
         this.serviceRegistry.add(ResourceLoader.class, new WeldModuleResourceLoader(module));
-
-        CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if (index != null) {
-            this.serviceRegistry.add(AnnotationDiscovery.class, new WeldAnnotationDiscovery(index));
-        }
 
         calculateAccessibilityGraph(this.beanDeploymentArchives);
         makeTopLevelBdasVisibleFromStaticModules();

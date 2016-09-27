@@ -1,12 +1,12 @@
 package org.jboss.as.weld.deployment.processors;
 
-import static com.google.common.collect.Collections2.filter;
-import static com.google.common.collect.Collections2.transform;
 import static org.jboss.as.weld.discovery.AnnotationType.FOR_CLASSINFO;
 import static org.jboss.as.weld.util.Indices.ANNOTATION_PREDICATE;
 import static org.jboss.as.weld.util.Indices.getAnnotatedClasses;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.transaction.TransactionScoped;
 
@@ -19,6 +19,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.CdiAnnotations;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.discovery.AnnotationType;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 
@@ -68,7 +69,13 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
     }
 
     private Collection<AnnotationType> getAnnotationsAnnotatedWith(CompositeIndex index, DotName annotationName) {
-        return transform(filter(getAnnotatedClasses(index.getAnnotations(annotationName)), ANNOTATION_PREDICATE), FOR_CLASSINFO);
+        Set<AnnotationType> annotations = new HashSet<>();
+        for (ClassInfo classInfo : getAnnotatedClasses(index.getAnnotations(annotationName))) {
+            if (ANNOTATION_PREDICATE.test(classInfo)) {
+                annotations.add(FOR_CLASSINFO.apply(classInfo));
+            }
+        }
+        return annotations;
     }
 
     @Override

@@ -37,8 +37,6 @@
     </resources>
 
     <dependencies>
-        <module name="ch.qos.cal10n" />
-        <module name="com.google.guava"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.ejb.api" />
@@ -82,8 +80,6 @@
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />
         <module name="org.omg.api"/>
-        <module name="org.slf4j" />
-        <module name="org.slf4j.ext" />
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->
