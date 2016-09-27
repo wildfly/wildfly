@@ -52,8 +52,8 @@ public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfigur
 
     @Override
     public Builder<AsyncStoreConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.modificationQueueSize(MODIFICATION_QUEUE_SIZE.getDefinition().resolveModelAttribute(context, model).asInt());
-        this.builder.threadPoolSize(THREAD_POOL_SIZE.getDefinition().resolveModelAttribute(context, model).asInt());
+        this.builder.modificationQueueSize(MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, model).asInt());
+        this.builder.threadPoolSize(THREAD_POOL_SIZE.resolveModelAttribute(context, model).asInt());
         return this;
     }
 }

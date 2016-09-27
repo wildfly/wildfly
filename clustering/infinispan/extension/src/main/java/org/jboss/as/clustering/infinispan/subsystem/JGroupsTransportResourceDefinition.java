@@ -167,13 +167,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                     PathAddress subsystemAddress = rootAddress.append(JGroupsSubsystemResourceDefinition.PATH);
                     ModelNode subsystemModel = context.readResourceFromRoot(subsystemAddress).getModel();
                     String channelName = null;
-                    if (model.hasDefined(Attribute.CHANNEL.getDefinition().getName())) {
-                        ModelNode channel = model.get(Attribute.CHANNEL.getDefinition().getName());
+                    if (model.hasDefined(Attribute.CHANNEL.getName())) {
+                        ModelNode channel = model.get(Attribute.CHANNEL.getName());
                         if (channel.getType() == ModelType.STRING) {
                             channelName = channel.asString();
                         }
-                    } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
-                        ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName());
+                    } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName())) {
+                        ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName());
                         if (defaultChannel.getType() == ModelType.STRING) {
                             channelName = defaultChannel.asString();
                         }
@@ -183,13 +183,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                     PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                     try {
                         ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
-                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
-                            ModelNode stack = channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName());
+                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
+                            ModelNode stack = channel.get(ChannelResourceDefinition.Attribute.STACK.getName());
                             if (stack.getType() == ModelType.STRING) {
                                 stackName = stack.asString();
                             }
-                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
-                            ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
+                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
+                            ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName());
                             if (defaultStack.getType() == ModelType.STRING) {
                                 stackName = defaultStack.asString();
                             }
@@ -214,13 +214,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                         PathAddress subsystemAddress = rootAddress.append(JGroupsSubsystemResourceDefinition.PATH);
                         ModelNode subsystemModel = context.readResourceFromRoot(subsystemAddress).getModel();
                         String channelName = null;
-                        if (model.hasDefined(Attribute.CHANNEL.getDefinition().getName())) {
-                            ModelNode channel = model.get(Attribute.CHANNEL.getDefinition().getName());
+                        if (model.hasDefined(Attribute.CHANNEL.getName())) {
+                            ModelNode channel = model.get(Attribute.CHANNEL.getName());
                             if (channel.getType() == ModelType.STRING) {
                                 channelName = channel.asString();
                             }
-                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
-                            ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName());
+                        } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName())) {
+                            ModelNode defaultChannel = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName());
                             if (defaultChannel.getType() == ModelType.STRING) {
                                 channelName = defaultChannel.asString();
                             }
@@ -229,13 +229,13 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                             PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                             try {
                                 ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
-                                if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
-                                    ModelNode stack = channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName());
+                                if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
+                                    ModelNode stack = channel.get(ChannelResourceDefinition.Attribute.STACK.getName());
                                     if (stack.getType() == ModelType.STRING) {
                                         value.set(stack.asString());
                                     }
-                                } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
-                                    ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
+                                } else if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
+                                    ModelNode defaultStack = subsystemModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName());
                                     if (defaultStack.getType() == ModelType.STRING) {
                                         value.set(defaultStack.asString());
                                     }

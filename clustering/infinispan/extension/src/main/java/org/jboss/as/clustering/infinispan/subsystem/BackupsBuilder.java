@@ -78,13 +78,13 @@ public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> impleme
                 ModelNode backup = property.getValue();
                 BackupConfigurationBuilder backupBuilder = builder.addBackup();
                 backupBuilder.site(siteName)
-                        .enabled(ENABLED.getDefinition().resolveModelAttribute(context, backup).asBoolean())
-                        .backupFailurePolicy(ModelNodes.asEnum(FAILURE_POLICY.getDefinition().resolveModelAttribute(context, backup), BackupFailurePolicy.class))
-                        .replicationTimeout(TIMEOUT.getDefinition().resolveModelAttribute(context, backup).asLong())
-                        .strategy(ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(context, backup), BackupStrategy.class))
+                        .enabled(ENABLED.resolveModelAttribute(context, backup).asBoolean())
+                        .backupFailurePolicy(ModelNodes.asEnum(FAILURE_POLICY.resolveModelAttribute(context, backup), BackupFailurePolicy.class))
+                        .replicationTimeout(TIMEOUT.resolveModelAttribute(context, backup).asLong())
+                        .strategy(ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, backup), BackupStrategy.class))
                         .takeOffline()
-                            .afterFailures(AFTER_FAILURES.getDefinition().resolveModelAttribute(context, backup).asInt())
-                            .minTimeToWait(MIN_WAIT.getDefinition().resolveModelAttribute(context, backup).asLong())
+                            .afterFailures(AFTER_FAILURES.resolveModelAttribute(context, backup).asInt())
+                            .minTimeToWait(MIN_WAIT.resolveModelAttribute(context, backup).asLong())
                 ;
                 this.backups.put(siteName, backupBuilder.create());
             }

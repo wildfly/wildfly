@@ -71,11 +71,11 @@ public class FileStoreBuilder extends StoreBuilder {
 
     @Override
     StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        String relativePath = ModelNodes.asString(RELATIVE_PATH.getDefinition().resolveModelAttribute(context, model));
+        String relativePath = ModelNodes.asString(RELATIVE_PATH.resolveModelAttribute(context, model));
         if (relativePath != null) {
             this.relativePath = relativePath;
         }
-        this.relativeTo = RELATIVE_TO.getDefinition().resolveModelAttribute(context, model).asString();
+        this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
         this.builder = new ConfigurationBuilder().persistence().addSingleFileStore();
         return this.builder;
     }

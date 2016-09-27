@@ -152,7 +152,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
                 }
             };
             builder.getAttributeBuilder()
-                    .addRename(Attribute.DATA_SOURCE.getDefinition().getName(), DeprecatedAttribute.DATASOURCE.getDefinition().getName())
+                    .addRename(Attribute.DATA_SOURCE.getName(), DeprecatedAttribute.DATASOURCE.getName())
                     .setValueConverter(new SimpleAttributeConverter(converter), Attribute.DATA_SOURCE.getDefinition())
             ;
         }
@@ -173,12 +173,12 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     }
 
     static void translateAddOperation(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName())) {
-            if (operation.hasDefined(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getDefinition().getName())) {
+        if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName())) {
+            if (operation.hasDefined(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getName())) {
                 // Translate JNDI name into pool name
-                String jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getDefinition().resolveModelAttribute(context, operation).asString();
+                String jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.resolveModelAttribute(context, operation).asString();
                 String poolName = findPoolName(context, jndiName);
-                operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName()).set(poolName);
+                operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName()).set(poolName);
             } else {
                 throw ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
             }

@@ -64,7 +64,7 @@ public class SingletonServiceHandler implements ResourceServiceHandler {
         };
         context.addStep(step, OperationContext.Stage.RUNTIME);
 
-        String defaultPolicy = DEFAULT.getDefinition().resolveModelAttribute(context, model).asString();
+        String defaultPolicy = DEFAULT.resolveModelAttribute(context, model).asString();
         ServiceName serviceName = DEFAULT_POLICY.getServiceName(context.getCurrentAddress());
         ServiceName targetServiceName = SingletonServiceNameFactory.SINGLETON_POLICY.getServiceName(context, defaultPolicy);
         new AliasServiceBuilder<>(serviceName, targetServiceName, SingletonPolicy.class).build(context.getServiceTarget()).install();

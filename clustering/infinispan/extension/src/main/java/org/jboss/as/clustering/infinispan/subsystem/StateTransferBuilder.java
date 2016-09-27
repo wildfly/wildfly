@@ -53,9 +53,9 @@ public class StateTransferBuilder extends ComponentBuilder<StateTransferConfigur
 
     @Override
     public Builder<StateTransferConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.chunkSize(CHUNK_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
+        this.builder.chunkSize(CHUNK_SIZE.resolveModelAttribute(context, model).asInt())
                 .fetchInMemoryState(true)
-                .timeout(TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong())
+                .timeout(TIMEOUT.resolveModelAttribute(context, model).asLong())
         ;
         return this;
     }

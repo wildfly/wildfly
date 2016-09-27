@@ -53,19 +53,19 @@ public class TableBuilder extends ComponentBuilder<TableManipulationConfiguratio
 
     @Override
     public Builder<TableManipulationConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        ModelNode idModel = ID.getDefinition().resolveModelAttribute(context, model);
-        ModelNode dataModel = DATA.getDefinition().resolveModelAttribute(context, model);
-        ModelNode timestampModel = TIMESTAMP.getDefinition().resolveModelAttribute(context, model);
+        ModelNode idModel = ID.resolveModelAttribute(context, model);
+        ModelNode dataModel = DATA.resolveModelAttribute(context, model);
+        ModelNode timestampModel = TIMESTAMP.resolveModelAttribute(context, model);
 
-        this.builder.idColumnName(ID.getColumnName().getDefinition().resolveModelAttribute(context, idModel).asString())
-                .idColumnType(ID.getColumnType().getDefinition().resolveModelAttribute(context, idModel).asString())
-                .dataColumnName(DATA.getColumnName().getDefinition().resolveModelAttribute(context, dataModel).asString())
-                .dataColumnType(DATA.getColumnType().getDefinition().resolveModelAttribute(context, dataModel).asString())
-                .timestampColumnName(TIMESTAMP.getColumnName().getDefinition().resolveModelAttribute(context, timestampModel).asString())
-                .timestampColumnType(TIMESTAMP.getColumnType().getDefinition().resolveModelAttribute(context, timestampModel).asString())
-                .batchSize(BATCH_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
-                .fetchSize(FETCH_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
-                .tableNamePrefix(this.prefixAttribute.getDefinition().resolveModelAttribute(context, model).asString())
+        this.builder.idColumnName(ID.getColumnName().resolveModelAttribute(context, idModel).asString())
+                .idColumnType(ID.getColumnType().resolveModelAttribute(context, idModel).asString())
+                .dataColumnName(DATA.getColumnName().resolveModelAttribute(context, dataModel).asString())
+                .dataColumnType(DATA.getColumnType().resolveModelAttribute(context, dataModel).asString())
+                .timestampColumnName(TIMESTAMP.getColumnName().resolveModelAttribute(context, timestampModel).asString())
+                .timestampColumnType(TIMESTAMP.getColumnType().resolveModelAttribute(context, timestampModel).asString())
+                .batchSize(BATCH_SIZE.resolveModelAttribute(context, model).asInt())
+                .fetchSize(FETCH_SIZE.resolveModelAttribute(context, model).asInt())
+                .tableNamePrefix(this.prefixAttribute.resolveModelAttribute(context, model).asString())
         ;
         return this;
     }

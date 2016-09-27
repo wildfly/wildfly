@@ -99,15 +99,15 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
 
                     final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
                     if (binaryTableModel != null && binaryTableModel.isDefined()) {
-                        model.get(DeprecatedAttribute.BINARY_TABLE.getDefinition().getName()).set(binaryTableModel);
+                        model.get(DeprecatedAttribute.BINARY_TABLE.getName()).set(binaryTableModel);
                     }
 
                     final ModelNode stringTableModel = Resource.Tools.readModel(resource.removeChild(StringTableResourceDefinition.PATH));
                     if (stringTableModel != null && stringTableModel.isDefined()) {
-                        model.get(DeprecatedAttribute.STRING_TABLE.getDefinition().getName()).set(stringTableModel);
+                        model.get(DeprecatedAttribute.STRING_TABLE.getName()).set(stringTableModel);
                     }
 
-                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getName());
                     final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
 
                     LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
@@ -158,9 +158,9 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
             }
 
             private void addTableStep(OperationContext context, ModelNode operation, DeprecatedAttribute attribute, PathElement path, ResourceServiceBuilderFactory<TableManipulationConfiguration> provider) {
-                if (operation.hasDefined(attribute.getDefinition().getName())) {
+                if (operation.hasDefined(attribute.getName())) {
                     ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(path));
-                    ModelNode parameters = operation.get(attribute.getDefinition().getName());
+                    ModelNode parameters = operation.get(attribute.getName());
                     for (Property parameter : parameters.asPropertyList()) {
                         addTableOperation.get(parameter.getName()).set(parameter.getValue());
                     }

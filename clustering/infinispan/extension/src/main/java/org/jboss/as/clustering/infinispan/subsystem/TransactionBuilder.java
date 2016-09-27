@@ -87,9 +87,9 @@ public class TransactionBuilder extends ComponentBuilder<TransactionConfiguratio
 
     @Override
     public Builder<TransactionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.mode = ModelNodes.asEnum(MODE.getDefinition().resolveModelAttribute(context, model), TransactionMode.class);
-        this.builder.lockingMode(ModelNodes.asEnum(LOCKING.getDefinition().resolveModelAttribute(context, model), LockingMode.class));
-        this.builder.cacheStopTimeout(STOP_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), TransactionMode.class);
+        this.builder.lockingMode(ModelNodes.asEnum(LOCKING.resolveModelAttribute(context, model), LockingMode.class));
+        this.builder.cacheStopTimeout(STOP_TIMEOUT.resolveModelAttribute(context, model).asLong());
         this.builder.transactionMode((this.mode == TransactionMode.NONE) ? org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL);
         this.builder.useSynchronization(this.mode == TransactionMode.NON_XA);
         this.builder.recovery().enabled(this.mode == TransactionMode.FULL_XA);

@@ -91,7 +91,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         new KeyAffinityServiceFactoryBuilder(address).build(target).install();
 
-        String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.Attribute.JNDI_NAME.getDefinition().resolveModelAttribute(context, model));
+        String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.Attribute.JNDI_NAME.resolveModelAttribute(context, model));
         BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheContainerBinding(name), containerBuilder.getServiceName(), CacheContainer.class);
         if (jndiName != null) {
             bindingBuilder.alias(ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName()));
@@ -121,7 +121,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         String name = context.getCurrentAddressValue();
         CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
-        String defaultCache = ModelNodes.asString(DEFAULT_CACHE.getDefinition().resolveModelAttribute(context, model));
+        String defaultCache = ModelNodes.asString(DEFAULT_CACHE.resolveModelAttribute(context, model));
         if (defaultCache != null) {
             if (!defaultCache.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
                 for (CacheGroupAliasBuilderProvider provider : ServiceLoader.load(CacheGroupAliasBuilderProvider.class, CacheGroupAliasBuilderProvider.class.getClassLoader())) {

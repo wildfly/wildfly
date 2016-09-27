@@ -49,9 +49,9 @@ public class ExpirationBuilder extends ComponentBuilder<ExpirationConfiguration>
 
     @Override
     public Builder<ExpirationConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.wakeUpInterval(INTERVAL.getDefinition().resolveModelAttribute(context, model).asLong());
-        this.builder.lifespan(LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong());
-        this.builder.maxIdle(MAX_IDLE.getDefinition().resolveModelAttribute(context, model).asLong());
+        this.builder.wakeUpInterval(INTERVAL.resolveModelAttribute(context, model).asLong());
+        this.builder.lifespan(LIFESPAN.resolveModelAttribute(context, model).asLong());
+        this.builder.maxIdle(MAX_IDLE.resolveModelAttribute(context, model).asLong());
         return this;
     }
 

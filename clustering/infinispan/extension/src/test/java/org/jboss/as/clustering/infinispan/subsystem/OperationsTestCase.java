@@ -123,21 +123,21 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // create a string-keyed-table complex attribute
         ModelNode stringKeyedTable = new ModelNode().setEmptyObject();
-        stringKeyedTable.get(StringTableResourceDefinition.Attribute.PREFIX.getDefinition().getName()).set("ispn_bucket");
-        stringKeyedTable.get(TableResourceDefinition.Attribute.BATCH_SIZE.getDefinition().getName()).set(100);
-        stringKeyedTable.get(TableResourceDefinition.Attribute.FETCH_SIZE.getDefinition().getName()).set(100);
+        stringKeyedTable.get(StringTableResourceDefinition.Attribute.PREFIX.getName()).set("ispn_bucket");
+        stringKeyedTable.get(TableResourceDefinition.Attribute.BATCH_SIZE.getName()).set(100);
+        stringKeyedTable.get(TableResourceDefinition.Attribute.FETCH_SIZE.getName()).set(100);
 
-        ModelNode idColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.ID.getDefinition().getName()).setEmptyObject();
-        idColumn.get(TableResourceDefinition.ColumnAttribute.ID.getColumnName().getDefinition().getName()).set("id");
-        idColumn.get(TableResourceDefinition.ColumnAttribute.ID.getColumnType().getDefinition().getName()).set("VARCHAR");
+        ModelNode idColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.ID.getName()).setEmptyObject();
+        idColumn.get(TableResourceDefinition.ColumnAttribute.ID.getColumnName().getName()).set("id");
+        idColumn.get(TableResourceDefinition.ColumnAttribute.ID.getColumnType().getName()).set("VARCHAR");
 
-        ModelNode dataColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.DATA.getDefinition().getName()).setEmptyObject();
-        dataColumn.get(TableResourceDefinition.ColumnAttribute.DATA.getColumnName().getDefinition().getName()).set("datum");
-        dataColumn.get(TableResourceDefinition.ColumnAttribute.DATA.getColumnType().getDefinition().getName()).set("BINARY");
+        ModelNode dataColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.DATA.getName()).setEmptyObject();
+        dataColumn.get(TableResourceDefinition.ColumnAttribute.DATA.getColumnName().getName()).set("datum");
+        dataColumn.get(TableResourceDefinition.ColumnAttribute.DATA.getColumnType().getName()).set("BINARY");
 
-        ModelNode timestampColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getDefinition().getName()).setEmptyObject();
-        timestampColumn.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getColumnName().getDefinition().getName()).set("version");
-        timestampColumn.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getColumnType().getDefinition().getName()).set("BIGINT");
+        ModelNode timestampColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getName()).setEmptyObject();
+        timestampColumn.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getColumnName().getName()).set("version");
+        timestampColumn.get(TableResourceDefinition.ColumnAttribute.TIMESTAMP.getColumnType().getName()).set("BIGINT");
 
         return stringKeyedTable;
     }

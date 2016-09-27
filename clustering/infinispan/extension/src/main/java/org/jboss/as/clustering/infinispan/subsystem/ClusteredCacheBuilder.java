@@ -53,11 +53,11 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        Mode mode = ModelNodes.asEnum(ClusteredCacheResourceDefinition.Attribute.MODE.getDefinition().resolveModelAttribute(context, model), Mode.class);
+        Mode mode = ModelNodes.asEnum(ClusteredCacheResourceDefinition.Attribute.MODE.resolveModelAttribute(context, model), Mode.class);
         ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering().cacheMode(mode.apply(this.mode));
 
         if (mode.isSynchronous()) {
-            builder.sync().replTimeout(REMOTE_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
+            builder.sync().replTimeout(REMOTE_TIMEOUT.resolveModelAttribute(context, model).asLong());
         } else {
             builder.async();
         }

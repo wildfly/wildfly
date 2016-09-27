@@ -53,7 +53,7 @@ public class PartitionHandlingBuilder extends ComponentBuilder<PartitionHandling
 
     @Override
     public Builder<PartitionHandlingConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.enabled(ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean());
+        this.builder.enabled(ENABLED.resolveModelAttribute(context, model).asBoolean());
         return this;
     }
 }

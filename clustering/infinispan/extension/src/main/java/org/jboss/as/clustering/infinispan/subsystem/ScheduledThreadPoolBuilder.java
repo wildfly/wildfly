@@ -55,8 +55,8 @@ public class ScheduledThreadPoolBuilder extends ComponentBuilder<ThreadPoolConfi
     @Override
     public Builder<ThreadPoolConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
-        int maxThreads = this.definition.getMaxThreads().getDefinition().resolveModelAttribute(context, model).asInt();
-        long keepAliveTime = this.definition.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asLong();
+        int maxThreads = this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt();
+        long keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
 
         ThreadPoolExecutorFactory<?> factory = new ThreadPoolExecutorFactory<ScheduledExecutorService>() {
             @Override
