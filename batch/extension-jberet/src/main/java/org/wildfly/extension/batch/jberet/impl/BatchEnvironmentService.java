@@ -102,14 +102,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         BatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
-        suspendControllerInjector.getValue().registerActivity(serverActivity);
-        final RequestController requestController = requestControllerInjector.getOptionalValue();
-        if (requestController != null) {
-            // Create the entry point
-            controlPoint = requestController.getControlPoint(deploymentName, "batch-executor-service");
-        } else {
-            controlPoint = null;
-        }
         final BatchConfiguration batchConfiguration = batchConfigurationInjector.getValue();
         // Find the job executor to use
         JobExecutor jobExecutor = jobExecutorInjector.getOptionalValue();
@@ -128,6 +120,15 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
+
+        suspendControllerInjector.getValue().registerActivity(serverActivity);
+        final RequestController requestController = requestControllerInjector.getOptionalValue();
+        if (requestController != null) {
+            // Create the entry point
+            controlPoint = requestController.getControlPoint(deploymentName, "batch-executor-service");
+        } else {
+            controlPoint = null;
+        }
     }
 
     @Override
