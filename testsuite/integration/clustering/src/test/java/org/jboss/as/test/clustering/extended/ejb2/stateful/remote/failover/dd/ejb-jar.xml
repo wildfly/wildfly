@@ -32,13 +32,5 @@
             <session-type>Stateful</session-type>
             <transaction-type>Container</transaction-type>
         </session>
-        <session>
-            <ejb-name>ViewChangeListenerBean</ejb-name>
-            <home>org.jboss.as.test.clustering.ViewChangeListenerHome</home>
-            <remote>org.jboss.as.test.clustering.ViewChangeListener</remote>
-            <ejb-class>org.jboss.as.test.clustering.ViewChangeListenerBean</ejb-class>
-            <session-type>Stateless</session-type>
-            <transaction-type>Bean</transaction-type>
-        </session>
     </enterprise-beans>
 </ejb-jar>

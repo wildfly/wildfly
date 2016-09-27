@@ -26,19 +26,16 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterBaseBean;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemote;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemoteHome;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterResult;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.RemoteEJBClientStatefulFailoverTestBase;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,7 +45,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBClientStatefulFailoverTestBase {
-    private static final Logger log = Logger.getLogger(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class);
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -80,21 +76,16 @@ public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBCli
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
-        log.info(jar.toString(true));
         return jar;
     }
 
-    @Ignore("JBPAPP-8726")
     @Override
-    @InSequence(1)
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
         failoverFromRemoteClient(false);
     }
 
-    @Ignore("JBPAPP-8726")
     @Override
-    @InSequence(2)
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeUndeploys() throws Exception {
         failoverFromRemoteClient(true);
