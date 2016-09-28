@@ -22,21 +22,23 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.AbstractMap;
+import java.util.Map;
+
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
- * Service that provides the {@link RegistryEntryProvider} for the routing {@link org.wildfly.clustering.registry.Registry}.
+ * Service that provides the {@link Map.Entry} for the routing {@link org.wildfly.clustering.registry.Registry}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderBuilder implements Builder<RegistryEntryProvider<String, Void>> {
+public class RouteRegistryEntryProviderBuilder implements Builder<Map.Entry<String, Void>> {
 
     private final Value<? extends Value<String>> route;
 
@@ -50,8 +52,8 @@ public class RouteRegistryEntryProviderBuilder implements Builder<RegistryEntryP
     }
 
     @Override
-    public ServiceBuilder<RegistryEntryProvider<String, Void>> build(ServiceTarget target) {
-        Value<RegistryEntryProvider<String, Void>> value = () -> new RouteRegistryEntryProvider(this.route.getValue());
+    public ServiceBuilder<Map.Entry<String, Void>> build(ServiceTarget target) {
+        Value<Map.Entry<String, Void>> value = () -> new AbstractMap.SimpleImmutableEntry<>(this.route.getValue().getValue(), null);
         return target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }
