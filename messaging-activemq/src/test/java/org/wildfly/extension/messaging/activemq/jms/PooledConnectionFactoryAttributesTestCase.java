@@ -41,7 +41,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
         KNOWN_ATTRIBUTES.add(Pooled.SETUP_ATTEMPTS_PROP_NAME);
         KNOWN_ATTRIBUTES.add(Pooled.SETUP_INTERVAL_PROP_NAME);
         KNOWN_ATTRIBUTES.add(Pooled.USE_JNDI_PROP_NAME);
-
+        KNOWN_ATTRIBUTES.add(Pooled.REBALANCE_CONNECTIONS_PROP_NAME);
     }
 
     @Test

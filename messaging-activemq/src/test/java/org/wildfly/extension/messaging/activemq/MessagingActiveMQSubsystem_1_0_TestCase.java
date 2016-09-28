@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.junit.Test;
 
 /**
@@ -48,10 +49,8 @@ public class MessagingActiveMQSubsystem_1_0_TestCase extends AbstractSubsystemBa
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/messaging-activemq.xml"
-        };
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Override
@@ -68,6 +67,6 @@ public class MessagingActiveMQSubsystem_1_0_TestCase extends AbstractSubsystemBa
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_1_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_1_0_ha-policy.xml", false);
     }
 }
