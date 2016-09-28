@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,29 +26,28 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.ExtendedJBossXATerminator;
 
 /**
- * The XATerminator service.
+ * The ExtendedJBossXATerminator service.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
-public final class XATerminatorService implements Service<JBossXATerminator> {
+public final class ExtendedJBossXATerminatorService implements Service<ExtendedJBossXATerminator> {
 
-    private final JBossXATerminator value;
+    private final ExtendedJBossXATerminator value;
 
-    public XATerminatorService(final JBossXATerminator value) {
+    public ExtendedJBossXATerminatorService(ExtendedJBossXATerminator value) {
         this.value = value;
     }
 
-    public void start(final StartContext context) throws StartException {
+    public void start(StartContext context) throws StartException {
     }
 
-    public void stop(final StopContext context) {
+    public void stop(StopContext context) {
     }
 
-    public JBossXATerminator getValue() throws IllegalStateException {
+    public ExtendedJBossXATerminator getValue() throws IllegalStateException {
         return TxnServices.notNull(value);
     }
 }
