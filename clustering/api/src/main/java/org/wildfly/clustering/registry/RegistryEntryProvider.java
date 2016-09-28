@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.registry;
 
+import java.util.Map;
+
 /**
  * Provides the registry entry for the local node.
  *
@@ -28,19 +30,11 @@ package org.wildfly.clustering.registry;
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro
  */
-public interface RegistryEntryProvider<K, V> {
+@Deprecated
+public interface RegistryEntryProvider<K, V> extends Map.Entry<K, V> {
 
-    /**
-     * Supplies the unique key for this node's registry entry.
-     *
-     * @return a registry entry key
-     */
-    K getKey();
-
-    /**
-     * Supplies the value for this node's registry entry.
-     *
-     * @return a registry entry value
-     */
-    V getValue();
+    @Override
+    default V setValue(V value) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -21,14 +21,12 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
 
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 
 /**
  * Non-clustered {@link Registry} implementation.
@@ -42,10 +40,10 @@ public class LocalRegistry<K, V> implements Registry<K, V> {
     private final Runnable closeTask;
     private volatile Map.Entry<K, V> entry;
 
-    public LocalRegistry(Group group, RegistryEntryProvider<K, V> provider, Runnable closeTask) {
+    public LocalRegistry(Group group, Map.Entry<K, V> entry, Runnable closeTask) {
         this.group = group;
         this.closeTask = closeTask;
-        this.entry = new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue());
+        this.entry = entry;
     }
 
     @Override

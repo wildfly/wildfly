@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.registry;
 
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -35,7 +36,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
@@ -57,7 +57,7 @@ public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<
     @SuppressWarnings("rawtypes")
     private volatile ValueDependency<RegistryFactory> factory;
     @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<RegistryEntryProvider> provider;
+    private volatile ValueDependency<Map.Entry> entry;
 
     public RegistryBuilder(ServiceName name, String containerName, String cacheName) {
         this.name = name;
@@ -73,16 +73,16 @@ public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<
     @Override
     public Builder<Registry<K, V>> configure(CapabilityServiceSupport support) {
         this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName), RegistryFactory.class);
-        this.provider = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), RegistryEntryProvider.class);
+        this.entry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), Map.Entry.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<Registry<K, V>> build(ServiceTarget target) {
-        Supplier<Registry<K, V>> supplier = () -> this.factory.getValue().createRegistry(this.provider.getValue());
+        Supplier<Registry<K, V>> supplier = () -> this.factory.getValue().createRegistry(this.entry.getValue());
         Service<Registry<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Consumers.close());
         ServiceBuilder<Registry<K, V>> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.factory, this.provider).forEach(dependency -> dependency.register(builder));
+        Stream.of(this.factory, this.entry).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 }

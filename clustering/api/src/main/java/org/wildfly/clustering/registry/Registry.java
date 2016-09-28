@@ -99,7 +99,7 @@ public interface Registry<K, V> extends AutoCloseable {
     Map.Entry<K, V> getEntry(Node node);
 
     /**
-     * Returns the local registry entry from the {@link RegistryEntryProvider}.
+     * Returns the local registry entry.
      *
      * @return the registry entry of the local node
      * @deprecated Use {@link #getEntry(Node)} instead.

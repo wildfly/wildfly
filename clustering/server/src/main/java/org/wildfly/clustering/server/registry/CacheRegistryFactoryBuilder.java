@@ -84,7 +84,7 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
 
     @Override
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
-        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((provider, closeTask) -> new CacheRegistry<>(this, provider, closeTask));
+        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((entry, closeTask) -> new CacheRegistry<>(this, entry, closeTask));
         ServiceBuilder<RegistryFactory<K, V>> builder = target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
         Stream.of(this.cache, this.factory, this.group).forEach(dependency -> dependency.register(builder));
         return builder;

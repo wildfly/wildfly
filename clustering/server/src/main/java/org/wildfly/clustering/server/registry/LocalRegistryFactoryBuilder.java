@@ -69,7 +69,7 @@ public class LocalRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
 
     @Override
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
-        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((provider, closeTask) -> new LocalRegistry<>(this.group.getValue(), provider, closeTask));
+        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((entry, closeTask) -> new LocalRegistry<>(this.group.getValue(), entry, closeTask));
         return this.group.register(target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

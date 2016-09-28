@@ -22,11 +22,11 @@
 
 package org.wildfly.clustering.server.registry;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 
 /**
@@ -34,19 +34,19 @@ import org.wildfly.clustering.registry.RegistryFactory;
  */
 public class FunctionalRegistryFactory<K, V> implements RegistryFactory<K, V> {
 
-    private final AtomicReference<RegistryEntryProvider<K, V>> provider = new AtomicReference<>();
-    private final BiFunction<RegistryEntryProvider<K, V>, Runnable, Registry<K, V>> factory;
+    private final AtomicReference<Map.Entry<K, V>> entry = new AtomicReference<>();
+    private final BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>> factory;
 
-    public FunctionalRegistryFactory(BiFunction<RegistryEntryProvider<K, V>, Runnable, Registry<K, V>> factory) {
+    public FunctionalRegistryFactory(BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>> factory) {
         this.factory = factory;
     }
 
     @Override
-    public Registry<K, V> createRegistry(RegistryEntryProvider<K, V> provider) {
+    public Registry<K, V> createRegistry(Map.Entry<K, V> entry) {
         // Ensure only one registry is created at a time
-        if (!this.provider.compareAndSet(null, provider)) {
+        if (!this.entry.compareAndSet(null, entry)) {
             throw new IllegalStateException();
         }
-        return this.factory.apply(provider, () -> this.provider.set(null));
+        return this.factory.apply(entry, () -> this.entry.set(null));
     }
 }
