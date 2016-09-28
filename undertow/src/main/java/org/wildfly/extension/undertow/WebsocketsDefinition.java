@@ -68,10 +68,18 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
+    protected static final SimpleAttributeDefinition PER_MESSAGE_DEFLATE =
+            new SimpleAttributeDefinitionBuilder(Constants.PER_MESSAGE_DEFLATE, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
             BUFFER_POOL,
             WORKER,
-            DISPATCH_TO_WORKER
+            DISPATCH_TO_WORKER,
+            PER_MESSAGE_DEFLATE
     };
     static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
 
@@ -99,10 +107,12 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             return null;
         }
         boolean dispatchToWorker = DISPATCH_TO_WORKER.resolveModelAttribute(context, model).asBoolean();
+        boolean perMessageDefault = PER_MESSAGE_DEFLATE.resolveModelAttribute(context, model).asBoolean();
         String bufferPool = BUFFER_POOL.resolveModelAttribute(context, model).asString();
         String worker = WORKER.resolveModelAttribute(context, model).asString();
 
-        return new WebSocketInfo(worker, bufferPool, dispatchToWorker);
+
+        return new WebSocketInfo(worker, bufferPool, dispatchToWorker, perMessageDefault);
     }
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
@@ -149,12 +159,14 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         private final String worker;
         private final String bufferPool;
         private final boolean dispatchToWorker;
+        private final boolean perMessageDeflate;
 
 
-        public WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker) {
+        public WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker, boolean perMessageDeflate) {
             this.worker = worker;
             this.bufferPool = bufferPool;
             this.dispatchToWorker = dispatchToWorker;
+            this.perMessageDeflate = perMessageDeflate;
         }
 
         public String getWorker() {
@@ -167,6 +179,10 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
         public boolean isDispatchToWorker() {
             return dispatchToWorker;
+        }
+
+        public boolean isPerMessageDeflate() {
+            return perMessageDeflate;
         }
     }
 }

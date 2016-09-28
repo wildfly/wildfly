@@ -311,6 +311,7 @@
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
+        <xs:attribute name="per-message-deflate" use="optional" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="crawler-session-managementType">
