@@ -35,7 +35,7 @@
         <https-listener name="https" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true"/>
         <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1"/>
 
-        <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
+        <host name="default-host" alias="localhost, some.host" default-web-module="something-else.war">
             <location name="/" handler="welcome-content">
                 <!--<filter-ref name="security-other"/>-->
                 <filter-ref name="limit-connections"/>

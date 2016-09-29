@@ -37,8 +37,9 @@ import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -48,13 +49,12 @@ import org.jboss.logging.Logger;
 /**
  * @author lbarreiro@redhat.com
  */
-public class RootContextUtil {
+    public class RootContextUtil {
 
     private static Logger log = Logger.getLogger(RootContextUtil.class);
     private static String SERVER = "server";
     private static String HOST = "host";
 
-    private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
     private static final String WEB_SUBSYSTEM_NAME = "undertow";
 
     public static void createVirutalHost(ModelControllerClient client, String virtualHost) throws Exception {
@@ -65,6 +65,7 @@ public class RootContextUtil {
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
         op.get(OP_ADDR).add(SERVER, "default-server");
         op.get(OP_ADDR).add(HOST, virtualHost);
+        op.get("default-web-module").set("somewar.war");
 
         updates.add(op);
 
@@ -115,7 +116,7 @@ public class RootContextUtil {
      */
     public static String hitRootContext(Logger log, URL url, String serverName) throws Exception {
         HttpGet httpget = new HttpGet(url.toURI());
-        DefaultHttpClient httpclient = new DefaultHttpClient();
+        HttpClient httpclient = HttpClients.createDefault();
         httpget.setHeader("Host", serverName);
 
         log.info("executing request" + httpget.getRequestLine());
