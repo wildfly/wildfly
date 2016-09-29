@@ -98,14 +98,14 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         // Version prior to 4_0 schema did not require stack being defined,
         // thus iterate over channel add operations and set the stack explicitly.
         if (!this.schema.since(JGroupsSchema.VERSION_4_0)) {
-            ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName());
+            ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName());
 
             for (Map.Entry<PathAddress, ModelNode> entry : channelOperations.entrySet()) {
                 PathAddress opAddr = entry.getKey();
                 if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
                     ModelNode op = entry.getValue();
-                    if (!op.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
-                        op.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).set(defaultStack);
+                    if (!op.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
+                        op.get(ChannelResourceDefinition.Attribute.STACK.getName()).set(defaultStack);
                     }
                 }
             }
@@ -493,7 +493,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        if (!operation.hasDefined(RelayResourceDefinition.Attribute.SITE.getDefinition().getName())) {
+        if (!operation.hasDefined(RelayResourceDefinition.Attribute.SITE.getName())) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.SITE));
         }
 
@@ -555,10 +555,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         ModelNode channelOperation = operations.get(channelAddress);
                         if (channelOperation != null) {
                             String stack;
-                            if (channelOperation.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
-                                stack = channelOperation.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).asString();
+                            if (channelOperation.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
+                                stack = channelOperation.get(ChannelResourceDefinition.Attribute.STACK.getName()).asString();
                             } else {
-                                stack = operations.get(subsystemAddress).get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).asString();
+                                stack = operations.get(subsystemAddress).get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()).asString();
                             }
                             setAttribute(reader, stack, operation, RemoteSiteResourceDefinition.DeprecatedAttribute.STACK);
                         }
@@ -572,11 +572,11 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
 
         if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
-            if (!operation.hasDefined(RemoteSiteResourceDefinition.Attribute.CHANNEL.getDefinition().getName())) {
+            if (!operation.hasDefined(RemoteSiteResourceDefinition.Attribute.CHANNEL.getName())) {
                 throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.CHANNEL));
             }
         } else {
-            if (!operation.hasDefined(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK.getDefinition().getName())) {
+            if (!operation.hasDefined(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK.getName())) {
                 throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.STACK));
             }
             String channel = (cluster != null) ? cluster : site;
@@ -586,7 +586,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
             PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channel));
             ModelNode channelOperation = Util.createAddOperation(channelAddress);
-            String stack = operation.get(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK.getDefinition().getName()).asString();
+            String stack = operation.get(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK.getName()).asString();
             setAttribute(reader, stack, channelOperation, ChannelResourceDefinition.Attribute.STACK);
             operations.put(channelAddress, channelOperation);
         }

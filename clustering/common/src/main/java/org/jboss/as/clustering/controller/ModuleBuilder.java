@@ -74,7 +74,7 @@ public class ModuleBuilder implements ResourceServiceBuilder<Module>, Service<Mo
 
     @Override
     public Builder<Module> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.identifier = ModelNodes.asModuleIdentifier(this.attribute.getDefinition().resolveModelAttribute(context, model));
+        this.identifier = ModelNodes.asModuleIdentifier(this.attribute.resolveModelAttribute(context, model));
         return this;
     }
 

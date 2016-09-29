@@ -168,8 +168,8 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
                                 } else {
                                     // In that case, if this were the default channel, it can be discarded too
                                     ModelNode subsystem = context.readResourceFromRoot(address.subAddress(0, address.size() - 1)).getModel();
-                                    if (subsystem.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
-                                        if (subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getDefinition().getName()).asString().equals(channelName)) {
+                                    if (subsystem.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName())) {
+                                        if (subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName()).asString().equals(channelName)) {
                                             return DiscardPolicy.SILENT;
                                         }
                                     }
@@ -224,18 +224,18 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
-                if (!operation.hasDefined(Attribute.STACK.getDefinition().getName())) {
+                if (!operation.hasDefined(Attribute.STACK.getName())) {
                     ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
                     // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
-                    if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName())) {
-                        operation.get(Attribute.STACK.getDefinition().getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()));
+                    if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
+                        operation.get(Attribute.STACK.getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()));
                     }
                 }
                 super.populateModel(context, operation, resource);
                 // Register runtime resource children for channel protocols
                 if (ChannelResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
                     String name = context.getCurrentAddressValue();
-                    String stack = ModelNodes.asString(Attribute.STACK.getDefinition().resolveModelAttribute(context, resource.getModel()));
+                    String stack = ModelNodes.asString(Attribute.STACK.resolveModelAttribute(context, resource.getModel()));
 
                     PathAddress address = context.getCurrentAddress();
                     PathAddress subsystemAddress = address.subAddress(0, address.size() - 1);

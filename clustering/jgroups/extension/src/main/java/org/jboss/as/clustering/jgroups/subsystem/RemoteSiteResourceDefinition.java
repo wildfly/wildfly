@@ -142,19 +142,19 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
                 @Override
                 public void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
                     ModelNode remoteSite = context.readResourceFromRoot(address).getModel();
-                    String channelName = remoteSite.get(Attribute.CHANNEL.getDefinition().getName()).asString();
-                    if (DeprecatedAttribute.STACK.getDefinition().getName().equals(name)) {
+                    String channelName = remoteSite.get(Attribute.CHANNEL.getName()).asString();
+                    if (DeprecatedAttribute.STACK.getName().equals(name)) {
                         PathAddress subsystemAddress = address.subAddress(0, address.size() - 3);
                         PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                         ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
 
-                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
-                            value.set(channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).asString());
+                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
+                            value.set(channel.get(ChannelResourceDefinition.Attribute.STACK.getName()).asString());
                         } else {
                             ModelNode subsystem = context.readResourceFromRoot(subsystemAddress).getModel();
-                            value.set(subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).asString());
+                            value.set(subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()).asString());
                         }
-                    } else if (DeprecatedAttribute.CLUSTER.getDefinition().getName().equals(name)) {
+                    } else if (DeprecatedAttribute.CLUSTER.getName().equals(name)) {
                         value.set(channelName);
                     } else {
                         throw new IllegalStateException();
