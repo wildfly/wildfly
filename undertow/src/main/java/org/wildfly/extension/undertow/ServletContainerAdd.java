@@ -100,7 +100,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
 
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
-        WebsocketsDefinition.WebSocketInfo webSocketInfo = WebsocketsDefinition.INSTANCE.getConfig(context, fullModel.get(WebsocketsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        WebsocketsDefinition.WebSocketInfo info = WebsocketsDefinition.INSTANCE.getConfig(context, model);
 
         final Map<String, String> mimeMappings = new HashMap<>();
         if (fullModel.hasDefined(Constants.MIME_MAPPING)) {
@@ -131,8 +131,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 ignoreFlush,
                 eagerFilterInit,
                 sessionTimeout,
-                disableCachingForSecuredPages, webSocketInfo != null, webSocketInfo != null && webSocketInfo.isDispatchToWorker(),
-                webSocketInfo != null && webSocketInfo.isPerMessageDeflate(), webSocketInfo == null ? -1 : webSocketInfo.getDeflaterLevel(),
+                disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker(),
                 mimeMappings,
                 welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService);
 
@@ -144,9 +143,9 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         if(persistentSessions) {
             builder.addDependency(AbstractPersistentSessionManager.SERVICE_NAME, SessionPersistenceManager.class, container.getSessionPersistenceManagerInjectedValue());
         }
-        if(webSocketInfo != null) {
-            builder.addDependency(IOServices.WORKER.append(webSocketInfo.getWorker()), XnioWorker.class, container.getWebsocketsWorker());
-            builder.addDependency(IOServices.BUFFER_POOL.append(webSocketInfo.getBufferPool()), Pool.class, (InjectedValue) container.getWebsocketsBufferPool());
+        if(info != null) {
+            builder.addDependency(IOServices.WORKER.append(info.getWorker()), XnioWorker.class, container.getWebsocketsWorker());
+            builder.addDependency(IOServices.BUFFER_POOL.append(info.getBufferPool()), Pool.class, (InjectedValue) container.getWebsocketsBufferPool());
         }
 
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND)

@@ -72,9 +72,6 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final InjectedValue<Pool<ByteBuffer>> websocketsBufferPool = new InjectedValue<>();
     private final InjectedValue<XnioWorker> websocketsWorker = new InjectedValue<>();
     private final boolean dispatchWebsocketInvocationToWorker;
-    private final boolean perMessageDeflate;
-    private final int deflaterLevel;
-
     private final Map<String, String> mimeMappings;
     private final List<String> welcomeFiles;
     private final boolean proactiveAuth;
@@ -84,11 +81,8 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
                                    String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
-                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, boolean perMessageDeflate,
-                                   int deflaterLevel, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth,
-                                   int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions,
-                                   CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService) {
-
+                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, Map<String, String> mimeMappings,
+                                   List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth, int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions, CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
@@ -101,8 +95,6 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.disableCachingForSecuredPages = disableCachingForSecuredPages;
         this.websocketsEnabled = websocketsEnabled;
         this.dispatchWebsocketInvocationToWorker = dispatchWebsocketInvocationToWorker;
-        this.perMessageDeflate = perMessageDeflate;
-        this.deflaterLevel = deflaterLevel;
         this.directoryListingEnabled = directoryListingEnabled;
         this.proactiveAuth = proactiveAuth;
         this.maxSessions = maxSessions;
@@ -175,14 +167,6 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public InjectedValue<Pool<ByteBuffer>> getWebsocketsBufferPool() {
         return websocketsBufferPool;
-    }
-
-    public boolean isPerMessageDeflate() {
-        return perMessageDeflate;
-    }
-
-    public int getDeflaterLevel() {
-        return deflaterLevel;
     }
 
     public boolean isWebsocketsEnabled() {

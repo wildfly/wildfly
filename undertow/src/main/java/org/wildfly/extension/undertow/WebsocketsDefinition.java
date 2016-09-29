@@ -31,7 +31,6 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -69,27 +68,10 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
-    protected static final SimpleAttributeDefinition PER_MESSAGE_DEFLATE =
-            new SimpleAttributeDefinitionBuilder("per-message-deflate", ModelType.BOOLEAN, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
-                    .build();
-
-    protected static final SimpleAttributeDefinition DEFLATER_LEVEL =
-            new SimpleAttributeDefinitionBuilder("deflater-level", ModelType.INT, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(0, 9, true, true))
-                    .setDefaultValue(new ModelNode(0))
-                    .build();
-
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
             BUFFER_POOL,
             WORKER,
-            DISPATCH_TO_WORKER,
-            PER_MESSAGE_DEFLATE,
-            DEFLATER_LEVEL
+            DISPATCH_TO_WORKER
     };
     static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
 
@@ -119,10 +101,8 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         boolean dispatchToWorker = DISPATCH_TO_WORKER.resolveModelAttribute(context, model).asBoolean();
         String bufferPool = BUFFER_POOL.resolveModelAttribute(context, model).asString();
         String worker = WORKER.resolveModelAttribute(context, model).asString();
-        boolean perMessageDeflate = PER_MESSAGE_DEFLATE.resolveModelAttribute(context, model).asBoolean();
-        int deflaterLevel = DEFLATER_LEVEL.resolveModelAttribute(context, model).asInt();
 
-        return new WebSocketInfo(worker, bufferPool, dispatchToWorker, perMessageDeflate, deflaterLevel);
+        return new WebSocketInfo(worker, bufferPool, dispatchToWorker);
     }
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
@@ -169,16 +149,12 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         private final String worker;
         private final String bufferPool;
         private final boolean dispatchToWorker;
-        private final boolean perMessageDeflate;
-        private final int deflaterLevel;
 
-        public WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker, boolean perMessageDeflate,
-                int deflaterLevel) {
+
+        public WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker) {
             this.worker = worker;
             this.bufferPool = bufferPool;
             this.dispatchToWorker = dispatchToWorker;
-            this.perMessageDeflate = perMessageDeflate;
-            this.deflaterLevel = deflaterLevel;
         }
 
         public String getWorker() {
@@ -191,14 +167,6 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
         public boolean isDispatchToWorker() {
             return dispatchToWorker;
-        }
-
-        public boolean isPerMessageDeflate() {
-            return perMessageDeflate;
-        }
-
-        public int getDeflaterLevel() {
-            return deflaterLevel;
         }
     }
 }
