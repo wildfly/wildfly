@@ -52,7 +52,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
-        String stack = STACK.getDefinition().resolveModelAttribute(context, model).asString();
+        String stack = STACK.resolveModelAttribute(context, model).asString();
 
         ServiceTarget target = context.getServiceTarget();
 

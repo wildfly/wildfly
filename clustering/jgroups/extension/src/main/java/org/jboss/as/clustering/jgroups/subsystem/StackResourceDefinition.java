@@ -154,12 +154,12 @@ public class StackResourceDefinition extends ChildResourceDefinition {
                 PathAddress address = context.getCurrentAddress();
                 if (operation.hasDefined(TRANSPORT.getName())) {
                     ModelNode transport = operation.get(TRANSPORT.getName());
-                    String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().resolveModelAttribute(context, transport).asString();
+                    String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, transport).asString();
                     PathElement transportPath = TransportResourceDefinition.pathElement(type);
                     PathAddress transportAddress = address.append(transportPath);
                     ModelNode transportOperation = Util.createAddOperation(transportAddress);
                     for (TransportResourceDefinition.Attribute attribute : TransportResourceDefinition.Attribute.values()) {
-                        String name = attribute.getDefinition().getName();
+                        String name = attribute.getName();
                         if (transport.hasDefined(name)) {
                             transportOperation.get(name).set(transport.get(name));
                         }
@@ -168,12 +168,12 @@ public class StackResourceDefinition extends ChildResourceDefinition {
                 }
                 if (operation.hasDefined(PROTOCOLS.getName())) {
                     for (ModelNode protocol : operation.get(PROTOCOLS.getName()).asList()) {
-                        String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().resolveModelAttribute(context, protocol).asString();
+                        String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, protocol).asString();
                         PathElement protocolPath = ProtocolResourceDefinition.pathElement(type);
                         PathAddress protocolAddress = address.append(protocolPath);
                         ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
                         for (ProtocolResourceDefinition.Attribute attribute : ProtocolResourceDefinition.Attribute.values()) {
-                            String name = attribute.getDefinition().getName();
+                            String name = attribute.getName();
                             if (protocol.hasDefined(name)) {
                                 protocolOperation.get(name).set(protocol.get(name));
                             }
@@ -198,12 +198,12 @@ public class StackResourceDefinition extends ChildResourceDefinition {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress();
-                String protocol = operation.require(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().getName()).asString();
+                String protocol = operation.require(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).asString();
                 PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
                 PathAddress protocolAddress = address.append(protocolPath);
                 ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
                 for (ProtocolResourceDefinition.Attribute attribute : ProtocolResourceDefinition.Attribute.values()) {
-                    String name = attribute.getDefinition().getName();
+                    String name = attribute.getName();
                     if (operation.hasDefined(name)) {
                         protocolOperation.get(name).set(operation.get(name));
                     }
@@ -222,7 +222,7 @@ public class StackResourceDefinition extends ChildResourceDefinition {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress();
-                String protocol = operation.require(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().getName()).asString();
+                String protocol = operation.require(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).asString();
                 PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
                 PathAddress protocolAddress = address.append(protocolPath);
                 ModelNode removeOperation = Util.createRemoveOperation(protocolAddress);

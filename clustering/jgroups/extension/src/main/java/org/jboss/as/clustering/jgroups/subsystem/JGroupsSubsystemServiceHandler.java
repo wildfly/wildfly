@@ -56,7 +56,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
         new ProtocolDefaultsBuilder().build(target).install();
 
-        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model));
+        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.resolveModelAttribute(context, model));
 
         if (defaultChannel != null) {
             CAPABILITIES.entrySet().forEach(entry -> new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, defaultChannel), entry.getKey().getType()).build(target).install());
@@ -77,7 +77,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
-        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.getDefinition().resolveModelAttribute(context, model));
+        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.resolveModelAttribute(context, model));
 
         if (defaultChannel != null) {
             for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {

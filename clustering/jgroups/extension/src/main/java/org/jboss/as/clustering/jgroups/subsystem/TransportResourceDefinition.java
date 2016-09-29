@@ -317,7 +317,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                         // TODO doesn't cover the admin-only modes
                         if (context.getProcessType().isServer()) {
                             for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
-                                if (conf.hasDefined(attribute.getDefinition().getName())) {
+                                if (conf.hasDefined(attribute.getName())) {
                                     // That is not supported.
                                     throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
                                 }

@@ -99,7 +99,7 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
 
         ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         String protocolName = context.getCurrentAddressValue();
-        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.Attribute.MODULE.getDefinition().resolveModelAttribute(context, operation));
+        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, operation));
         Class<? extends Protocol> protocolClass = ProtocolResourceRegistrationHandler.findProtocolClass(context, protocolName, module);
 
         final Map<String, Attribute> attributes = ProtocolMetricsHandler.findProtocolAttributes(protocolClass);

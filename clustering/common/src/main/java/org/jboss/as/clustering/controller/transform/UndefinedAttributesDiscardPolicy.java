@@ -51,7 +51,7 @@ public class UndefinedAttributesDiscardPolicy implements DynamicDiscardPolicy {
     public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
         ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(address));
         for (Attribute attribute : this.attributes) {
-            if (model.hasDefined(attribute.getDefinition().getName())) {
+            if (model.hasDefined(attribute.getName())) {
                 return DiscardPolicy.REJECT_AND_WARN;
             }
         }

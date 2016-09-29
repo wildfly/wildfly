@@ -78,12 +78,12 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
 
     @Override
     public Builder<P> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
-        String binding = ModelNodes.asString(SOCKET_BINDING.getDefinition().resolveModelAttribute(context, model));
+        this.module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, model));
+        String binding = ModelNodes.asString(SOCKET_BINDING.resolveModelAttribute(context, model));
         if (binding != null) {
             this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, binding), SocketBinding.class);
         }
-        for (Property property : ModelNodes.asPropertyList(PROPERTIES.getDefinition().resolveModelAttribute(context, model))) {
+        for (Property property : ModelNodes.asPropertyList(PROPERTIES.resolveModelAttribute(context, model))) {
             this.properties.put(property.getName(), property.getValue().asString());
         }
         return this;

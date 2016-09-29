@@ -68,7 +68,7 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
     @Override
     public Builder<RelayConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.sites.clear();
-        this.siteName = SITE.getDefinition().resolveModelAttribute(context, model).asString();
+        this.siteName = SITE.resolveModelAttribute(context, model).asString();
         if (model.hasDefined(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property remoteSiteProperty: model.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 String remoteSiteName = remoteSiteProperty.getName();

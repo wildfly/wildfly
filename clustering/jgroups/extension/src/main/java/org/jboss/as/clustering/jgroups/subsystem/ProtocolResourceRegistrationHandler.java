@@ -133,7 +133,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         for (String name: stackResource.getChildrenNames(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
             PathAddress transportAddress = this.stackAddress.append(TransportResourceDefinition.pathElement(name));
             ModelNode transport = context.readResourceFromRoot(transportAddress, false).getModel();
-            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, transport));
+            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, transport));
             Class<? extends Protocol> transportClass = findProtocolClass(context, name, module);
             registration.registerSubModel(this.createProtocolResourceDefinition(name, transportClass));
             resource.registerChild(ProtocolResourceDefinition.pathElement(name), PlaceholderResource.INSTANCE);
@@ -141,7 +141,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
 
         for (String name: stackResource.getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
             Resource protocolResource = context.readResourceFromRoot(this.stackAddress.append(ProtocolResourceDefinition.pathElement(name)), false);
-            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, protocolResource.getModel()));
+            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, protocolResource.getModel()));
             Class<? extends Protocol> protocolClass = findProtocolClass(context, name, module);
             registration.registerSubModel(this.createProtocolResourceDefinition(name, protocolClass));
             resource.registerChild(ProtocolResourceDefinition.pathElement(name), PlaceholderResource.INSTANCE);

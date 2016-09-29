@@ -77,7 +77,7 @@ public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<Re
 
     @Override
     public Builder<RemoteSiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String channel = CHANNEL.getDefinition().resolveModelAttribute(context, model).asString();
+        String channel = CHANNEL.resolveModelAttribute(context, model).asString();
         this.cluster = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel), String.class);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channel), ChannelFactory.class);
         return this;
