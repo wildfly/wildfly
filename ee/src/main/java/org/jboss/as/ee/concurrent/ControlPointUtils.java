@@ -22,9 +22,7 @@
 
 package org.jboss.as.ee.concurrent;
 
-import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
-import org.wildfly.extension.requestcontroller.RunResult;
 
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedTask;
@@ -60,34 +58,19 @@ public class ControlPointUtils {
         }
         try {
             controlPoint.forceBeginRequest();
-            final ControlledCallable controlledCallable = new ControlledCallable(callable, controlPoint);
-            return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledCallable, (ManagedTask) callable) : controlledCallable;
+            final ControlledCallable<T> controlledCallable = new ControlledCallable<>(callable, controlPoint);
+            return callable instanceof ManagedTask ? new ControlledManagedCallable<>(controlledCallable, (ManagedTask) callable) : controlledCallable;
         } catch (Exception e) {
             throw new RejectedExecutionException(e);
         }
     }
 
-    public static Runnable doScheduledWrap(Runnable runnable, ControlPoint controlPoint) {
-        if (controlPoint == null || runnable == null) {
-            return runnable;
-        } else {
-            final ControlledScheduledRunnable controlledScheduledRunnable = new ControlledScheduledRunnable(runnable, controlPoint);
-            return runnable instanceof ManagedTask ? new ControlledManagedRunnable(controlledScheduledRunnable, (ManagedTask) runnable) : controlledScheduledRunnable;
-        }
-    }
-
-    public static <T> Callable<T> doScheduledWrap(Callable<T> callable, ControlPoint controlPoint) {
-        if (controlPoint == null || callable == null) {
-            return callable;
-        } else {
-            final ControlledScheduledCallable controlledScheduledCallable = new ControlledScheduledCallable(callable, controlPoint);
-            return callable instanceof ManagedTask ? new ControlledManagedCallable(controlledScheduledCallable, (ManagedTask) callable) : controlledScheduledCallable;
-        }
+    public static Runnable doWrapMangedTask(final Runnable runnable, final ManagedTask managedTask) {
+        return new ControlledManagedRunnable(runnable, managedTask);
     }
 
     /**
      * Runnable that wraps a runnable to allow server suspend/resume to work correctly.
-     *
      */
     static class ControlledRunnable implements Runnable {
 
@@ -129,77 +112,6 @@ public class ControlPointUtils {
                 return callable.call();
             } finally {
                 controlPoint.requestComplete();
-            }
-        }
-    }
-
-    /**
-     * Runnable that wraps a runnable to be scheduled, which allows server suspend/resume to work correctly.
-     *
-     */
-    static class ControlledScheduledRunnable implements Runnable {
-
-        private final Runnable runnable;
-        private final ControlPoint controlPoint;
-
-        ControlledScheduledRunnable(Runnable runnable, ControlPoint controlPoint) {
-            this.runnable = runnable;
-            this.controlPoint = controlPoint;
-        }
-
-        @Override
-        public void run() {
-            if (controlPoint == null) {
-                runnable.run();
-            } else
-                try {
-                    if (controlPoint.beginRequest() == RunResult.RUN) {
-                        try {
-                            runnable.run();
-                        } finally {
-                            controlPoint.requestComplete();
-                        }
-                        return;
-                    } else {
-                        throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(runnable);
-                    }
-                } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
-                }
-        }
-    }
-
-    /**
-     * Runnable that wraps a callable to be scheduled, which allows server suspend/resume to work correctly.
-     *
-     */
-    static class ControlledScheduledCallable<T> implements Callable<T> {
-
-        private final Callable<T> callable;
-        private final ControlPoint controlPoint;
-
-        ControlledScheduledCallable(Callable<T> callable, ControlPoint controlPoint) {
-            this.callable = callable;
-            this.controlPoint = controlPoint;
-        }
-
-        @Override
-        public T call() throws Exception {
-            if (controlPoint == null) {
-                return callable.call();
-            } else  {
-                try {
-                    if (controlPoint.beginRequest() == RunResult.RUN) {
-                        try {
-                            return callable.call();
-                        } finally {
-                            controlPoint.requestComplete();
-                        }
-                    }
-                } catch (Exception e) {
-                    EeLogger.ROOT_LOGGER.failedToRunTask(e);
-                }
-                throw EeLogger.ROOT_LOGGER.cannotRunScheduledTask(callable);
             }
         }
     }

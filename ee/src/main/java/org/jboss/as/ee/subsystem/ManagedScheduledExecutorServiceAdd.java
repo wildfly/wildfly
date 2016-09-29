@@ -31,15 +31,17 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ee.concurrent.ControlledTaskManager;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
+import org.jboss.as.ee.concurrent.service.ControlledTaskManagerService;
 import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.common.cpu.ProcessorInfo;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 /**
  * @author Eduardo Martins
@@ -54,8 +56,6 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
 
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
@@ -76,8 +76,20 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         final long threadLifeTime = 0L;
         final AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.valueOf(ManagedScheduledExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
+        // Configure the task manager service
+        final ControlledTaskManagerService taskManager = new ControlledTaskManagerService("managed-scheduled-executor-service", name);
+        final ServiceName taskManagerServiceName = context.getCapabilityServiceName(Capabilities.CONTROLLED_SCHEDULED_TASK_MANAGER_CAPABILITY.getName(), name, ControlledTaskManager.class);
+        final ServiceBuilder<ControlledTaskManager> tmServiceBuilder = context.getServiceTarget()
+                .addService(taskManagerServiceName, taskManager)
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, taskManager.getSuspendControllerInjector());
+        if (context.hasOptionalCapability(Capabilities.REQUEST_CONTROLLER_CAPABILITY_NAME, Capabilities.CONTROLLED_SCHEDULED_TASK_MANAGER_CAPABILITY.getDynamicName(name), null)) {
+            tmServiceBuilder.addDependency(context.getCapabilityServiceName(Capabilities.REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class), RequestController.class, taskManager.getRequestControllerInjector());
+        }
+        tmServiceBuilder.install();
+
         final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy);
         final ServiceBuilder<ManagedScheduledExecutorServiceAdapter> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedScheduledExecutorServiceServiceName(name), service);
+        serviceBuilder.addDependency(taskManagerServiceName, ControlledTaskManager.class, service.getTaskManagerInjector());
 
         String contextService = null;
         if(model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
@@ -92,9 +104,6 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         }
         if (threadFactory != null) {
             serviceBuilder.addDependency(ConcurrentServiceNames.getManagedThreadFactoryServiceName(threadFactory), ManagedThreadFactoryImpl.class, service.getManagedThreadFactoryInjector());
-        }
-        if(rcPresent) {
-            serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestController());
         }
 
         serviceBuilder.install();
