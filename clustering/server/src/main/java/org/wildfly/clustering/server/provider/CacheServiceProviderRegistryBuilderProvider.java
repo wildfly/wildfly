@@ -39,9 +39,6 @@ public class CacheServiceProviderRegistryBuilderProvider extends ServiceProvider
         }
     };
 
-    /**
-     * @param factory
-     */
     public CacheServiceProviderRegistryBuilderProvider() {
         super(FACTORY);
     }
