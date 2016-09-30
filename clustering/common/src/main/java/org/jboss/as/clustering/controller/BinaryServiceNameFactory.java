@@ -22,31 +22,31 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.stream.Stream;
 
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Provides a capability definition provider built from a unary requirement.
+ * Factory for generating a {@link ServiceName} for a binary requirement.
  * @author Paul Ferraro
  */
-public class UnaryRequirementCapability implements Capability {
-
-    private final RuntimeCapability<Void> definition;
+public interface BinaryServiceNameFactory {
+    /**
+     * Creates a {@link ServiceName} appropriate for the specified name.
+     * @param context an operation context
+     * @param parent a parent resource name
+     * @param child a child resource name
+     * @return a {@link ServiceName}
+     */
+    ServiceName getServiceName(OperationContext context, String parent, String child);
 
     /**
-     * Creates a new capability based on the specified unary requirement
-     * @param requirement the unary requirement basis
-     * @param requirements a list of requirements of this capability
+     * Creates a {@link ServiceName} appropriate for the specified name.
+     * @param support support for capability services
+     * @param parent a parent resource name
+     * @param child a child resource name
+     * @return a {@link ServiceName}
      */
-    public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
-    }
-
-    @Override
-    public RuntimeCapability<Void> getDefinition() {
-        return this.definition;
-    }
+    ServiceName getServiceName(CapabilityServiceSupport support, String parent, String child);
 }

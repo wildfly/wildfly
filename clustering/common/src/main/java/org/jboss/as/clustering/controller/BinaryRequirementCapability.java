@@ -22,31 +22,35 @@
 
 package org.jboss.as.clustering.controller;
 
+
 import java.util.stream.Stream;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Provides a capability definition provider built from a unary requirement.
+ * Provides a capability definition provider built from a binary requirement.
  * @author Paul Ferraro
  */
-public class UnaryRequirementCapability implements Capability {
+public class BinaryRequirementCapability implements Capability {
 
     private final RuntimeCapability<Void> definition;
+    private final BinaryRequirement requirement;
 
-    /**
-     * Creates a new capability based on the specified unary requirement
-     * @param requirement the unary requirement basis
-     * @param requirements a list of requirements of this capability
-     */
-    public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
+    public BinaryRequirementCapability(BinaryRequirement requirement, Requirement... requirements) {
         this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
+        this.requirement = requirement;
     }
 
     @Override
     public RuntimeCapability<Void> getDefinition() {
         return this.definition;
+    }
+
+    @Override
+    public RuntimeCapability<Void> resolve(PathAddress address) {
+        return RuntimeCapability.Builder.of(this.requirement.resolve(address.getParent().getLastElement().getValue(), address.getLastElement().getValue()), this.definition.getCapabilityServiceValueType()).build();
     }
 }
