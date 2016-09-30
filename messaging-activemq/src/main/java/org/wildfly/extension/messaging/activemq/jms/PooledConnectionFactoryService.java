@@ -227,6 +227,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         }
     }
 
+    static ServiceName getResourceAdapterActivatorsServiceName(String name) {
+        return ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name);
+    }
+
     public static void installService(ServiceTarget serviceTarget,
                                       String name,
                                       String serverName,
@@ -411,7 +415,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             ServiceController<ResourceAdapterDeployment> controller =
                     Services.addServerExecutorDependency(
-                        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator),
+                        serviceTarget.addService(getResourceAdapterActivatorsServiceName(name), activator),
                             activator.getExecutorServiceInjector(), false)
                     .addDependency(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,

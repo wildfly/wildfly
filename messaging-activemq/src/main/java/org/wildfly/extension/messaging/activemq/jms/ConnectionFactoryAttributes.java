@@ -42,6 +42,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
@@ -437,6 +438,12 @@ public interface ConnectionFactoryAttributes {
                 .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
                 .build();
 
+        SimpleAttributeDefinition STATISTICS_ENABLED = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
+                .setDefaultValue(new ModelNode(false))
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                .build();
+
         /**
          * Attributes are defined in the <em>same order than in the XSD schema</em>
          */
@@ -449,6 +456,7 @@ public interface ConnectionFactoryAttributes {
                 create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true, true),
                 create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true, true),
 
+                create(STATISTICS_ENABLED, null, false),
                 create(TRANSACTION, null, false),
                 create(USER, "userName", true),
                 create(PASSWORD, "password", true),

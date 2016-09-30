@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
@@ -34,6 +33,7 @@ import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttr
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -41,6 +41,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.AlternativeAttributeCheckHandler;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
@@ -56,20 +58,26 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    protected void populateModel(ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
 
         AlternativeAttributeCheckHandler.checkAlternatives(operation, Common.CONNECTORS.getName(), Common.DISCOVERY_GROUP.getName(), false);
 
         for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             attribute.validateAndSet(operation, model);
         }
+
+        // register the runtime statistics=pool child resource
+        PooledConnectionFactoryStatisticsService.registerStatisticsResources(resource);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
 
-        ModelNode opAddr = operation.require(OP_ADDR);
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
+        ModelNode model = resource.getModel();
+        PathAddress address = context.getCurrentAddress();
+        final String name = context.getCurrentAddressValue();
 
         final ModelNode resolvedModel = model.clone();
         for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
@@ -124,6 +132,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         PooledConnectionFactoryService.installService(serviceTarget,
                 name, serverAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
                 adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+
+        boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+
+        if (statsEnabled) {
+            installStatistics(context, name);
+        }
     }
 
     static String getDiscoveryGroup(final ModelNode model) {
@@ -147,5 +161,14 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             }
         }
         return configs;
+    }
+
+    private void installStatistics(OperationContext context, String name) {
+        ServiceName raActivatorsServiceName = PooledConnectionFactoryService.getResourceAdapterActivatorsServiceName(name);
+        PooledConnectionFactoryStatisticsService statsService = new PooledConnectionFactoryStatisticsService(context.getResourceRegistrationForUpdate(), true);
+        context.getServiceTarget().addService(raActivatorsServiceName.append("statistics"), statsService)
+                .addDependency(raActivatorsServiceName, ResourceAdapterDeployment.class, statsService.getRADeploymentInjector())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 }

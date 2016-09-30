@@ -388,7 +388,8 @@
                                    use-global-pools="${use.global.pools:true}"
                                    scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                                    thread-pool-max-size="${thread.pool.max.size:48}"
-                                   group-id="${group.id:myGroup}">
+                                   group-id="${group.id:myGroup}"
+                                   statistics-enabled="false">
             <inbound-config
                     use-jndi="${use.jndi:false}"
                     jndi-params="${jndi.params:whatever}"
