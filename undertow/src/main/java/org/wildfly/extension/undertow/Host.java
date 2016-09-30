@@ -186,7 +186,7 @@ public class Host implements Service<Host>, FilterLocation {
         String path = getDeployedContextPath(deploymentInfo);
         registerHandler(path, handler);
         deployments.add(deployment);
-        UndertowLogger.ROOT_LOGGER.registerWebapp(path, getServer().getName());
+        UndertowLogger.ROOT_LOGGER.registerWebapp(path);
         undertowService.getValue().fireEvent(new EventInvoker() {
             @Override
             public void invoke(UndertowEventListener listener) {
@@ -206,7 +206,7 @@ public class Host implements Service<Host>, FilterLocation {
         });
         unregisterHandler(path);
         deployments.remove(deployment);
-        UndertowLogger.ROOT_LOGGER.unregisterWebapp(path, getServer().getName());
+        UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
     }
 
     public void registerHandler(String path, HttpHandler handler) {
