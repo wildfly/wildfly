@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,7 +31,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -37,9 +38,9 @@ import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvide
 class HostRemove extends AbstractRemoveStepHandler {
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = context.getCurrentAddress();
-        final PathAddress parent = address.getParent();
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress parent = address.subAddress(0, address.size() - 1);
         final String name = address.getLastElement().getValue();
         final String serverName = parent.getLastElement().getValue();
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
@@ -48,8 +49,6 @@ class HostRemove extends AbstractRemoveStepHandler {
         context.removeService(consoleRedirectName);
         final ServiceName commonHostName = WebHost.SERVICE_NAME.append(name);
         context.removeService(commonHostName);
-        final String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
-        DefaultDeploymentMappingProvider.instance().removeMapping(defaultWebModule);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
