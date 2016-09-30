@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.arjuna.ats.internal.jta.recovery.jts.JCAServerTransactionRecoveryModule;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -130,6 +131,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
             recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
             recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
+            recoveryExtensions.add(JCAServerTransactionRecoveryModule.class.getName());
             recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());
             expiryScanners.add(ExpiredContactScanner.class.getName());
             expiryScanners.add(ExpiredToplevelScanner.class.getName());
