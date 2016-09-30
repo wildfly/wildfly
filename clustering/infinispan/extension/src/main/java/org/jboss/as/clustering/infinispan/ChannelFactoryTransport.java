@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 
+import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
@@ -34,7 +35,6 @@ import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.remoting.transport.jgroups.MarshallerAdapter;
-import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -42,7 +42,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Custom {@link JGroupsTransport} that uses a provided channel.
  * @author Paul Ferraro
  */
-public class ChannelTransport extends JGroupsTransport {
+public class ChannelFactoryTransport extends JGroupsTransport {
 
     static {
         // WFLY-6926 Staggered-gets are buggy, disable them for now
@@ -53,15 +53,10 @@ public class ChannelTransport extends JGroupsTransport {
         WildFlySecurityManager.doUnchecked(action);
     }
 
-    private final Channel channel;
     private final ChannelFactory factory;
 
-    public ChannelTransport(Channel channel, ChannelFactory factory) {
-        this.channel = channel;
+    public ChannelFactoryTransport(ChannelFactory factory) {
         this.factory = factory;
-        this.connectChannel = true;
-        this.disconnectChannel = true;
-        this.closeChannel = false;
     }
 
     @Inject
@@ -94,7 +89,7 @@ public class ChannelTransport extends JGroupsTransport {
         MarshallerAdapter adapter = new MarshallerAdapter(this.marshaller) {
             @Override
             public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
-                return ChannelTransport.this.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length)) ? CacheNotFoundResponse.INSTANCE : super.objectFromBuffer(buffer, offset, length);
+                return ChannelFactoryTransport.this.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length)) ? CacheNotFoundResponse.INSTANCE : super.objectFromBuffer(buffer, offset, length);
             }
         };
         this.dispatcher.setRequestMarshaller(adapter);
@@ -108,8 +103,11 @@ public class ChannelTransport extends JGroupsTransport {
 
     @Override
     protected void initChannel() {
-        // This is necessary because JGroupsTransport nulls its channel reference in stop()
-        super.channel = this.channel;
-        super.channel.setDiscardOwnMessages(false);
+        try {
+            this.channel = this.factory.createChannel(this.configuration.globalJmxStatistics().cacheManagerName());
+            this.channel.setDiscardOwnMessages(false);
+        } catch (Exception e) {
+            throw new CacheException(e);
+        }
     }
 }

@@ -86,7 +86,7 @@ public class StackProtocolResourceDefinition extends ProtocolResourceDefinition 
                     String protocol = address.getLastElement().getValue();
                     PathAddress stackAddress = address.subAddress(0, address.size() - 1);
                     ModelNode legacyOperation = Util.createOperation("remove-protocol", stackAddress);
-                    legacyOperation.get(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition().getName()).set(protocol);
+                    legacyOperation.get(ProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).set(protocol);
                     return legacyOperation;
                 }
             };
@@ -110,7 +110,7 @@ public class StackProtocolResourceDefinition extends ProtocolResourceDefinition 
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ProtocolConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ProtocolConfigurationBuilder(address));
         new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
 

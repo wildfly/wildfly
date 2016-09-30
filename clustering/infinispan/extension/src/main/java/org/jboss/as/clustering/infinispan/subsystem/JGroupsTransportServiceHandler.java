@@ -28,22 +28,12 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsBindingFactory;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.Channel;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ChannelBuilder;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
-import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.GroupServiceNameFactory;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 
 /**
@@ -56,19 +46,14 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         String name = context.getCurrentAddress().getParent().getLastElement().getValue();
         ServiceTarget target = context.getServiceTarget();
 
-        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model), GroupServiceNameFactory.DEFAULT_GROUP);
+        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
 
         new JGroupsTransportBuilder(name).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         new SiteBuilder(name).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
-        new ChannelBuilder(name).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
-        // Do not install a channel connector - the transport will perform connect/disconnect
-        new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
-
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(name, channel)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
                 builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
         }
@@ -78,16 +63,12 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddress().getParent().getLastElement().getValue();
 
-        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model), GroupServiceNameFactory.DEFAULT_GROUP);
+        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(name, channel)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
                 context.removeService(builder.getServiceName());
             }
-        }
-
-        for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
-            context.removeService(factory.getServiceName(name));
         }
 
         for (CacheContainerComponent factory : CacheContainerComponent.values()) {

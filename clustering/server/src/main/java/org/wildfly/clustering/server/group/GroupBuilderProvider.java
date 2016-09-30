@@ -27,9 +27,9 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.server.GroupBuilderFactory;
 import org.wildfly.clustering.service.Builder;
@@ -47,12 +47,9 @@ public class GroupBuilderProvider implements org.wildfly.clustering.spi.GroupBui
         this.factory = factory;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Collection<Builder<?>> getBuilders(String group, ModuleIdentifier module) {
-        Builder<Group> builder = this.factory.createBuilder(group, module);
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group) {
+        Builder<Group> builder = this.factory.createBuilder(support, group);
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.GROUP.toString(), group).getAbsoluteName());
         Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), Group.class);
         return Arrays.asList(builder, bindingBuilder);

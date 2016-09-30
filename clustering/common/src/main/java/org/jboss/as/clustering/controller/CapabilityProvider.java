@@ -36,12 +36,12 @@ public interface CapabilityProvider extends Capability {
     Capability getCapability();
 
     @Override
-    default RuntimeCapability<Void> getDefinition() {
+    default RuntimeCapability<?> getDefinition() {
         return this.getCapability().getDefinition();
     }
 
     @Override
-    default RuntimeCapability<Void> resolve(PathAddress address) {
+    default RuntimeCapability<?> resolve(PathAddress address) {
         return this.getCapability().resolve(address);
     }
 

@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
-import org.jgroups.Channel;
-
 /**
  * Configuration of a channel to a remote site, used by the RELAY2 protocol.
  * @author Paul Ferraro
@@ -30,7 +28,7 @@ import org.jgroups.Channel;
 public interface RemoteSiteConfiguration {
     String getName();
 
-    Channel getChannel();
+    ChannelFactory getChannelFactory();
 
     String getClusterName();
 }

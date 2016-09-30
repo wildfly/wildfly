@@ -57,7 +57,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization().require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2");
+        return new JGroupsSubsystemInitialization()
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
+                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS", "new-datasource")
+                ;
     }
 
     // cache container access

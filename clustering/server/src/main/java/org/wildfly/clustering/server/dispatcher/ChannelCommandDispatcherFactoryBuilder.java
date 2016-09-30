@@ -24,12 +24,11 @@ package org.wildfly.clustering.server.dispatcher;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.Services;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -42,7 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
@@ -87,28 +86,30 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
     private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
     private final InjectedValue<Channel> channel = new InjectedValue<>();
     private final InjectedValue<JGroupsNodeFactory> nodeFactory = new InjectedValue<>();
+    private final InjectedValue<Module> module = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
-    private final ModuleIdentifier moduleId;
+    private final CapabilityServiceSupport support;
 
-    private volatile Module module = null;
     private volatile MarshallingContext marshallingContext = null;
     private volatile ChannelCommandDispatcherFactory factory = null;
     private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
 
-    public ChannelCommandDispatcherFactoryBuilder(String group, ModuleIdentifier moduleId) {
+    public ChannelCommandDispatcherFactoryBuilder(CapabilityServiceSupport support, String group) {
         super(group);
-        this.moduleId = moduleId;
+        this.support = support;
     }
 
     @Override
     public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
+        ServiceBuilder<CommandDispatcherFactory> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
                 .addDependency(GroupServiceName.NODE_FACTORY.getServiceName(this.group), JGroupsNodeFactory.class, this.nodeFactory)
-                .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.group), Channel.class, this.channel)
-                .addDependency(ChannelServiceName.FACTORY.getServiceName(this.group), ChannelFactory.class, this.channelFactory)
+                .addDependency(JGroupsRequirement.CHANNEL.getServiceName(this.support, this.group), Channel.class, this.channel)
+                .addDependency(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(this.support, this.group), ChannelFactory.class, this.channelFactory)
+                .addDependency(JGroupsRequirement.CHANNEL_MODULE.getServiceName(this.support, this.group), Module.class, this.module)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
+        return builder;
     }
 
     public ChannelCommandDispatcherFactoryBuilder timeout(long value, TimeUnit unit) {
@@ -118,13 +119,7 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
 
     @Override
     public void start(StartContext context) throws StartException {
-        try {
-            this.module = this.getModuleLoader().loadModule(this.moduleId);
-        } catch (ModuleLoadException e) {
-            throw new StartException(e);
-        }
-
-        this.marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.module.getClassLoader());
+        this.marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this), this.getModule().getClassLoader());
         this.factory = new ChannelCommandDispatcherFactory(this);
     }
 
@@ -142,7 +137,7 @@ public class ChannelCommandDispatcherFactoryBuilder extends CommandDispatcherFac
 
     @Override
     public Module getModule() {
-        return this.module;
+        return this.module.getValue();
     }
 
     @Override

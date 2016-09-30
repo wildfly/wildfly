@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -29,7 +30,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -39,20 +41,19 @@ import org.wildfly.clustering.service.Builder;
 public class ChannelNodeFactoryBuilder extends GroupNodeFactoryServiceNameProvider implements Builder<JGroupsNodeFactory>, Service<JGroupsNodeFactory> {
 
     private final InjectedValue<Channel> channel = new InjectedValue<>();
+    private final CapabilityServiceSupport support;
 
     private volatile ChannelNodeFactory factory;
 
-    public ChannelNodeFactoryBuilder(String group) {
+    public ChannelNodeFactoryBuilder(CapabilityServiceSupport support, String group) {
         super(group);
+        this.support = support;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), this)
-                .addDependency(ChannelServiceName.CONNECTOR.getServiceName(this.group), Channel.class, this.channel)
+                .addDependency(JGroupsRequirement.CHANNEL.getServiceName(this.support, this.group), Channel.class, this.channel)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
     }
 

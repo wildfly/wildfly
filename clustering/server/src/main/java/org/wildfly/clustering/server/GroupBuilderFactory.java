@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.server;
 
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -29,5 +29,5 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 public interface GroupBuilderFactory<T> {
-    Builder<T> createBuilder(String group, ModuleIdentifier module);
+    Builder<T> createBuilder(CapabilityServiceSupport support, String group);
 }

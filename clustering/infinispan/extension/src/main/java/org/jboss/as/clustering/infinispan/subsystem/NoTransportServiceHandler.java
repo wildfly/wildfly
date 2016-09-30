@@ -48,7 +48,7 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
         new SiteBuilder(name).build(target).install();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(name, LocalGroupBuilderProvider.LOCAL)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, LocalGroupBuilderProvider.LOCAL)) {
                 builder.build(target).install();
             }
         }
@@ -59,7 +59,7 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
         String name = context.getCurrentAddress().getParent().getLastElement().getValue();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(name, LocalGroupBuilderProvider.LOCAL)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, LocalGroupBuilderProvider.LOCAL)) {
                 context.removeService(builder.getServiceName());
             }
         }

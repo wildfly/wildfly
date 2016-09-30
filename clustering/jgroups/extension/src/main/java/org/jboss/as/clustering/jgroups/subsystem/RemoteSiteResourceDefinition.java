@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -29,10 +30,12 @@ import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -41,6 +44,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
 /**
@@ -56,13 +60,36 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
         return PathElement.pathElement("remote-site", name);
     }
 
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        RELAY_CHANNEL_SOURCE("org.wildfly.clustering.jgroups.stack.relay.site-channel-source"),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> resolve(PathAddress address) {
+            return this.definition.fromBaseCapability(address.getParent().getParent().getLastElement().getValue() + "." + address.getLastElement().getValue());
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHANNEL("channel", ModelType.STRING),
+        CHANNEL("channel", ModelType.STRING, new CapabilityReference(Capability.RELAY_CHANNEL_SOURCE, JGroupsRequirement.CHANNEL_SOURCE)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type) {
-            this.definition = createBuilder(name, type).setAllowNull(false).build();
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type)
+                    .setAllowNull(false)
+                    .setCapabilityReference(reference)
+                    .build();
         }
 
         @Override
@@ -115,19 +142,19 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
                 @Override
                 public void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
                     ModelNode remoteSite = context.readResourceFromRoot(address).getModel();
-                    String channelName = remoteSite.get(Attribute.CHANNEL.getDefinition().getName()).asString();
-                    if (DeprecatedAttribute.STACK.getDefinition().getName().equals(name)) {
+                    String channelName = remoteSite.get(Attribute.CHANNEL.getName()).asString();
+                    if (DeprecatedAttribute.STACK.getName().equals(name)) {
                         PathAddress subsystemAddress = address.subAddress(0, address.size() - 3);
                         PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
                         ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
 
-                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName())) {
-                            value.set(channel.get(ChannelResourceDefinition.Attribute.STACK.getDefinition().getName()).asString());
+                        if (channel.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
+                            value.set(channel.get(ChannelResourceDefinition.Attribute.STACK.getName()).asString());
                         } else {
                             ModelNode subsystem = context.readResourceFromRoot(subsystemAddress).getModel();
-                            value.set(subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).asString());
+                            value.set(subsystem.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()).asString());
                         }
-                    } else if (DeprecatedAttribute.CLUSTER.getDefinition().getName().equals(name)) {
+                    } else if (DeprecatedAttribute.CLUSTER.getName().equals(name)) {
                         value.set(channelName);
                     } else {
                         throw new IllegalStateException();
@@ -155,8 +182,9 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteSiteConfigurationBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RemoteSiteConfigurationBuilder(address.getParent(), address.getLastElement().getValue()));
         new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
     }

@@ -122,7 +122,7 @@ public final class Operations {
     public static ModelNode createAddOperation(PathAddress address, Map<Attribute, ModelNode> parameters) {
         ModelNode operation = Util.createAddOperation(address);
         for (Map.Entry<Attribute, ModelNode> entry : parameters.entrySet()) {
-            operation.get(entry.getKey().getDefinition().getName()).set(entry.getValue());
+            operation.get(entry.getKey().getName()).set(entry.getValue());
         }
         return operation;
     }
@@ -147,7 +147,7 @@ public final class Operations {
         ModelNode operation = Util.createAddOperation(address);
         operation.get(ModelDescriptionConstants.ADD_INDEX).set(index);
         for (Map.Entry<Attribute, ModelNode> entry : parameters.entrySet()) {
-            operation.get(entry.getKey().getDefinition().getName()).set(entry.getValue());
+            operation.get(entry.getKey().getName()).set(entry.getValue());
         }
         return operation;
     }
@@ -187,7 +187,7 @@ public final class Operations {
 
     private static ModelNode createAttributeOperation(String operationName, PathAddress address, Attribute attribute) {
         ModelNode operation = Util.createOperation(operationName, address);
-        operation.get(ModelDescriptionConstants.NAME).set(attribute.getDefinition().getName());
+        operation.get(ModelDescriptionConstants.NAME).set(attribute.getName());
         return operation;
     }
 
@@ -248,7 +248,7 @@ public final class Operations {
 
     public static ModelNode createMapClearOperation(PathAddress address, Attribute attribute) {
         ModelNode operation = Util.createOperation(MapOperations.MAP_CLEAR_DEFINITION, address);
-        operation.get(ModelDescriptionConstants.NAME).set(attribute.getDefinition().getName());
+        operation.get(ModelDescriptionConstants.NAME).set(attribute.getName());
         return operation;
     }
 

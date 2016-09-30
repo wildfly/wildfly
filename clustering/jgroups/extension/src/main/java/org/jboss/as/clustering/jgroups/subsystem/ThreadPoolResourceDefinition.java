@@ -24,11 +24,9 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
@@ -41,13 +39,9 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +53,7 @@ import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration> {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider {
 
     DEFAULT("default", "thread_pool", 20, 300, 100, 60000L),
     OOB("oob", "oob_thread_pool", 20, 300, 0, 60000L),
@@ -73,18 +67,16 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
         return PathElement.pathElement("thread-pool", name);
     }
 
-    private final String name;
+    private final SimpleResourceDefinition definition;
     private final String prefix;
-    private final ResourceDescriptionResolver descriptionResolver;
     private final Attribute minThreads;
     private final Attribute maxThreads;
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
 
     ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
-        this.name = name;
+        this.definition = new SimpleResourceDefinition(pathElement(name), new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE)));
         this.prefix = prefix;
-        this.descriptionResolver = new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE));
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
@@ -103,54 +95,18 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinition, Registra
     }
 
     @Override
-    public PathElement getPathElement() {
-        return pathElement(this.name);
-    }
-
-    @Override
-    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration registration) {
-        return new DefaultResourceDescriptionProvider(registration, this.descriptionResolver);
+    public ResourceDefinition getDefinition() {
+        return this.definition;
     }
 
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this.definition);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.descriptionResolver).addAttributes(this.getAttributes());
-        ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = new TransportConfigurationBuilderFactory();
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
+        ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = address -> new TransportConfigurationBuilder(address);
         new RestartParentResourceAddStepHandler<>(transportBuilderFactory, descriptor).register(registration);
         new RestartParentResourceRemoveStepHandler<>(transportBuilderFactory, descriptor).register(registration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-    }
-
-    @Override
-    public void registerNotifications(ManagementResourceRegistration registration) {
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-    }
-
-    @Override
-    public List<AccessConstraintDefinition> getAccessConstraints() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isRuntime() {
-        return false;
-    }
-
-    @Override
-    public boolean isOrderedChild() {
-        return false;
     }
 
     Collection<Attribute> getAttributes() {

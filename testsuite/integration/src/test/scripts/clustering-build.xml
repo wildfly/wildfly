@@ -73,10 +73,6 @@
             <param name="cacheMode" value="SYNC"/>
             <param name="stack" value="tcp"/>
         </antcall>
-        <antcall target="add-cache">
-            <param name="cacheMode" value="SYNC" />
-            <param name="stack" value="tcp"/>
-        </antcall>
     </target>
 
     <!-- Build remaining configs for extended tests -->

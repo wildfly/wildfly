@@ -24,7 +24,7 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
@@ -34,12 +34,9 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
  */
 public class LocalNodeFactoryBuilderProvider implements LocalGroupBuilderProvider {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Collection<Builder<?>> getBuilders(String group, ModuleIdentifier module) {
-        return Collections.<Builder<?>>singleton(new LocalNodeFactoryBuilder(group));
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group) {
+        return Collections.singleton(new LocalNodeFactoryBuilder(group));
     }
 
     @Override

@@ -38,7 +38,9 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -47,6 +49,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 
 /**
  * Handler for adding a discovery group.
@@ -59,6 +62,16 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
     private DiscoveryGroupAdd() {
         super(DiscoveryGroupDefinition.ATTRIBUTES);
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        ModelNode model = resource.getModel();
+        if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !DiscoveryGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
+            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(DiscoveryGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), context.getCurrentAddressValue()), DiscoveryGroupDefinition.JGROUPS_STACK.getName());
+        }
     }
 
     @Override

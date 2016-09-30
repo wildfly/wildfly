@@ -25,14 +25,15 @@ package org.jboss.as.clustering.subsystem;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * {@link AdditionalInitialization} extension that simplifies setup of required capabilities.
@@ -62,10 +63,13 @@ public class AdditionalInitialization extends org.jboss.as.subsystem.test.Additi
         registerCapabilities(capabilityRegistry, this.requirements.stream().toArray(String[]::new));
     }
 
-    public AdditionalInitialization require(Requirement requirement, String... names) {
-        for (String name : names) {
-            this.requirements.add(RuntimeCapability.buildDynamicCapabilityName(requirement.getName(), name));
-        }
+    public AdditionalInitialization require(Requirement requirement) {
+        this.requirements.add(requirement.getName());
+        return this;
+    }
+
+    public AdditionalInitialization require(UnaryRequirement requirement, String... names) {
+        Stream.of(names).forEach(name -> this.requirements.add(requirement.resolve(name)));
         return this;
     }
 }

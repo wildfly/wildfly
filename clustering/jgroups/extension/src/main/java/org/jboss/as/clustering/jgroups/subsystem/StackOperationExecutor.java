@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
  * @author Paul Ferraro
@@ -44,7 +44,7 @@ public class StackOperationExecutor implements OperationExecutor<ChannelFactory>
         String stackName = context.getCurrentAddressValue();
 
         ServiceRegistry registry = context.getServiceRegistry(false);
-        ServiceName serviceName = ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(stackName);
+        ServiceName serviceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, stackName);
         try {
             ServiceController<ChannelFactory> controller = ServiceContainerHelper.getService(registry, serviceName);
             ServiceController.Mode mode = controller.getMode();

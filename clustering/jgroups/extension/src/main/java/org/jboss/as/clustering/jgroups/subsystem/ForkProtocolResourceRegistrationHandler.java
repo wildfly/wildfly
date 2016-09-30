@@ -47,10 +47,9 @@ import org.jgroups.Channel;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 
 /**
  * Operation handler for registration of fork protocol runtime resources.
@@ -59,18 +58,20 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 public class ForkProtocolResourceRegistrationHandler implements OperationStepHandler, ProtocolMetricsHandler.ProtocolLocator {
 
     @Override
-    public Protocol findProtocol(ServiceRegistry registry, PathAddress address) throws ClassNotFoundException, ModuleLoadException {
+    public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
+        PathAddress address = context.getCurrentAddress();
         String channelName = address.getElement(address.size() - 3).getValue();
         String forkName = address.getElement(address.size() - 2).getValue();
         String protocolName = address.getElement(address.size() - 1).getValue();
 
-        ServiceController<?> controller = registry.getService(ChannelServiceName.CHANNEL.getServiceName(channelName));
+        ServiceRegistry registry = context.getServiceRegistry(false);
+        ServiceController<?> controller = registry.getService(JGroupsRequirement.CHANNEL.getServiceName(context, channelName));
         if (controller != null) {
             Channel channel = (Channel) controller.getValue();
             if (channel != null) {
                 FORK fork = (FORK) channel.getProtocolStack().findProtocol(FORK.class);
                 if (fork != null) {
-                    controller = registry.getService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channelName));
+                    controller = registry.getService(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channelName));
                     if (controller != null) {
                         ChannelFactory factory = (ChannelFactory) controller.getValue();
                         if (factory != null) {
@@ -98,7 +99,7 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
 
         ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         String protocolName = context.getCurrentAddressValue();
-        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.Attribute.MODULE.getDefinition().resolveModelAttribute(context, operation));
+        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, operation));
         Class<? extends Protocol> protocolClass = ProtocolResourceRegistrationHandler.findProtocolClass(context, protocolName, module);
 
         final Map<String, Attribute> attributes = ProtocolMetricsHandler.findProtocolAttributes(protocolClass);

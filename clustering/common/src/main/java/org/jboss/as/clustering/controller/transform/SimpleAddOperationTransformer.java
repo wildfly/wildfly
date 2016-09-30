@@ -75,7 +75,7 @@ public class SimpleAddOperationTransformer implements org.jboss.as.controller.tr
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
         ModelNode legacyOperation = this.transformer.transformOperation(operation);
         for (Attribute attribute: this.attributes) {
-            String name = attribute.getDefinition().getName();
+            String name = attribute.getName();
             if (operation.hasDefined(name)) {
                 legacyOperation.get(name).set(operation.get(name));
             }

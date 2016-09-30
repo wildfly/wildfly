@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.jgroups.spi.service;
 
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.GroupServiceNameFactory;
+package org.jboss.as.clustering.controller;
+
+import java.util.Optional;
+
+import org.wildfly.clustering.service.DefaultableUnaryRequirement;
 
 /**
- * Factory for creating service names for channel-based services
  * @author Paul Ferraro
  */
-public interface ChannelServiceNameFactory extends GroupServiceNameFactory {
+public class DefaultableCapabilityReference extends CapabilityReference {
 
     /**
-     * Returns an appropriate service name for the default channel
-     * @return
+     * Creates a new reference between the specified capability and the specified requirement
+     * @param capability the capability referencing the specified requirement
+     * @param requirement the requirement of the specified capability
      */
-    ServiceName getServiceName();
+    public DefaultableCapabilityReference(Capability capability, DefaultableUnaryRequirement requirement) {
+        super(capability, requirement, (context, value) -> Optional.of((value != null) ? requirement.resolve(value) : requirement.getDefaultRequirement().getName()));
+    }
 }
