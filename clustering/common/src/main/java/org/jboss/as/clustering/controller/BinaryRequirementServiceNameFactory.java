@@ -22,31 +22,31 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.stream.Stream;
 
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.BinaryRequirement;
 
 /**
- * Provides a capability definition provider built from a unary requirement.
+ * Factory for generating a {@link ServiceName} for a {@link BinaryRequirement}.
  * @author Paul Ferraro
  */
-public class UnaryRequirementCapability implements Capability {
+public class BinaryRequirementServiceNameFactory implements BinaryServiceNameFactory {
 
-    private final RuntimeCapability<Void> definition;
+    private final BinaryRequirement requirement;
 
-    /**
-     * Creates a new capability based on the specified unary requirement
-     * @param requirement the unary requirement basis
-     * @param requirements a list of requirements of this capability
-     */
-    public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
+    public BinaryRequirementServiceNameFactory(BinaryRequirement requirement) {
+        this.requirement = requirement;
     }
 
     @Override
-    public RuntimeCapability<Void> getDefinition() {
-        return this.definition;
+    public ServiceName getServiceName(OperationContext context, String parent, String child) {
+        return context.getCapabilityServiceName(this.requirement.resolve(parent, child), this.requirement.getType());
+    }
+
+    @Override
+    public ServiceName getServiceName(CapabilityServiceSupport support, String parent, String child) {
+        return support.getCapabilityServiceName(this.requirement.resolve(parent, child));
     }
 }

@@ -20,33 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.clustering.service;
 
-import java.util.stream.Stream;
-
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Provides a capability definition provider built from a unary requirement.
+ * Identifies a requirement that provides a service and can reference some default requirement.
  * @author Paul Ferraro
  */
-public class UnaryRequirementCapability implements Capability {
-
-    private final RuntimeCapability<Void> definition;
-
-    /**
-     * Creates a new capability based on the specified unary requirement
-     * @param requirement the unary requirement basis
-     * @param requirements a list of requirements of this capability
-     */
-    public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
-    }
+public interface DefaultableBinaryRequirement extends BinaryRequirement {
+    UnaryRequirement getDefaultRequirement();
 
     @Override
-    public RuntimeCapability<Void> getDefinition() {
-        return this.definition;
+    default Class<?> getType() {
+        return this.getDefaultRequirement().getType();
     }
 }
