@@ -21,19 +21,20 @@
  */
 package org.wildfly.clustering.infinispan.spi.service;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SuppliedValueService;
 
 /**
  * Service that provides a cache and handles its lifecycle
@@ -41,16 +42,11 @@ import org.wildfly.clustering.service.Builder;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class CacheBuilder<K, V> implements Service<Cache<K, V>>, Builder<Cache<K, V>> {
-
-    // No logger interface for this module and no reason to create one for this class only
-    private static final Logger log = Logger.getLogger(CacheBuilder.class);
+public class CacheBuilder<K, V> implements Builder<Cache<K, V>> {
 
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
     private final String containerName;
     private final String cacheName;
-
-    private volatile Cache<K, V> cache = null;
 
     public CacheBuilder(String containerName, String cacheName) {
         this.containerName = containerName;
@@ -64,30 +60,15 @@ public class CacheBuilder<K, V> implements Service<Cache<K, V>>, Builder<Cache<K
 
     @Override
     public ServiceBuilder<Cache<K, V>> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
+        Supplier<Cache<K, V>> supplier = () -> {
+            Cache<K, V> cache = this.container.getValue().getCache(this.cacheName);
+            cache.start();
+            return cache;
+        };
+        Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Cache::stop);
+        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target)
                 .addDependency(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(this.containerName), EmbeddedCacheManager.class, this.container)
                 .addDependency(CacheServiceName.CONFIGURATION.getServiceName(this.containerName, this.cacheName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public Cache<K, V> getValue() {
-        return this.cache;
-    }
-
-    @Override
-    public void start(StartContext context) {
-        this.cache = this.container.getValue().getCache(this.cacheName);
-        this.cache.start();
-
-        log.debugf("%s %s cache started", this.cacheName, this.containerName);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.cache.stop();
-        this.cache = null;
-
-        log.debugf("%s %s cache stopped", this.cacheName, this.containerName);
     }
 }

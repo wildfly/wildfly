@@ -42,10 +42,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     private final BatcherFactory batcherFactory;
     private final String defaultCacheName;
 
-    public DefaultCacheContainer(String name, EmbeddedCacheManager container, String defaultCacheName) {
-        this(name, container, defaultCacheName, new InfinispanBatcherFactory());
-    }
-
     public DefaultCacheContainer(String name, EmbeddedCacheManager container, String defaultCacheName, BatcherFactory batcherFactory) {
         super(container);
         this.name = name;

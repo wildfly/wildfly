@@ -24,28 +24,27 @@ package org.wildfly.clustering.service.concurrent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossExecutors;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SuppliedValueService;
 
 /**
  * Service that provides an {@link Executor} that uses a cached thread pool.
  * @author Paul Ferraro
  */
-public class CachedThreadPoolExecutorServiceBuilder implements Builder<ExecutorService>, Service<ExecutorService> {
+public class CachedThreadPoolExecutorServiceBuilder implements Builder<ExecutorService> {
 
     private final ServiceName name;
     private final ThreadFactory factory;
-
-    private volatile ExecutorService executor;
 
     public CachedThreadPoolExecutorServiceBuilder(ServiceName name, ThreadFactory factory) {
         this.name = name;
@@ -59,22 +58,9 @@ public class CachedThreadPoolExecutorServiceBuilder implements Builder<ExecutorS
 
     @Override
     public ServiceBuilder<ExecutorService> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.name, this).startSynchronously().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public ExecutorService getValue() {
-        return JBossExecutors.protectedExecutorService(this.executor);
-    }
-
-    @Override
-    public void start(StartContext context) {
-        this.executor = Executors.newCachedThreadPool(this.factory);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.executor.shutdown();
-        this.executor = null;
+        Function<ExecutorService, ExecutorService> mapper = executor -> JBossExecutors.protectedExecutorService(executor);
+        Supplier<ExecutorService> supplier = () -> Executors.newCachedThreadPool(this.factory);
+        Service<ExecutorService> service = new SuppliedValueService<>(mapper, supplier, ExecutorService::shutdown);
+        return new AsynchronousServiceBuilder<>(this.name, service).startSynchronously().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }
