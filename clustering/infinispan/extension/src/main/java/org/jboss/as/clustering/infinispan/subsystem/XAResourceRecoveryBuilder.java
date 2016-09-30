@@ -22,6 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import javax.transaction.xa.XAResource;
 
 import org.infinispan.Cache;
@@ -31,27 +35,23 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SuppliedValueService;
 
 /**
  * Builder for a {@link XAResourceRecovery} registration.
  * @author Paul Ferraro
  */
-public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery>, Service<XAResourceRecovery> {
+public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery> {
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<XAResourceRecoveryRegistry> registry = new InjectedValue<>();
     private final String containerName;
     private final String cacheName;
-
-    private volatile XAResourceRecovery recovery = null;
 
     /**
      * Constructs a new {@link XAResourceRecovery} builder.
@@ -68,31 +68,24 @@ public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery>, S
 
     @Override
     public ServiceBuilder<XAResourceRecovery> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this)
+        Supplier<XAResourceRecovery> supplier = () -> {
+            Cache<?, ?> cache = this.cache.getValue();
+            XAResourceRecovery recovery = cache.getCacheConfiguration().transaction().recovery().enabled() ? new InfinispanXAResourceRecovery(cache) : null;
+            if (recovery != null) {
+                this.registry.getValue().addXAResourceRecovery(recovery);
+            }
+            return recovery;
+        };
+        Consumer<XAResourceRecovery> destroyer = recovery -> {
+            if (recovery != null) {
+                this.registry.getValue().addXAResourceRecovery(recovery);
+            }
+        };
+        Service<XAResourceRecovery> service = new SuppliedValueService<>(Function.identity(), supplier, destroyer);
+        return target.addService(this.getServiceName(), service)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, this.registry)
                 .addDependency(CacheServiceName.CACHE.getServiceName(this.containerName), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
-    }
-
-    @Override
-    public XAResourceRecovery getValue() {
-        return this.recovery;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        Cache<?, ?> cache = this.cache.getValue();
-        if (cache.getCacheConfiguration().transaction().recovery().enabled()) {
-            this.recovery = new InfinispanXAResourceRecovery(cache);
-            this.registry.getValue().addXAResourceRecovery(this.recovery);
-        }
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        if (this.recovery != null) {
-            this.registry.getValue().removeXAResourceRecovery(this.recovery);
-        }
     }
 
     private static class InfinispanXAResourceRecovery implements XAResourceRecovery {
