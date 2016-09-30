@@ -204,7 +204,9 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         WebsocketsDefinition.WORKER,
                                                         WebsocketsDefinition.BUFFER_POOL,
-                                                        WebsocketsDefinition.DISPATCH_TO_WORKER
+                                                        WebsocketsDefinition.DISPATCH_TO_WORKER,
+                                                        WebsocketsDefinition.PER_MESSAGE_DEFLATE,
+                                                        WebsocketsDefinition.DEFLATER_LEVEL
                                                 )
                                 )
                                 .addChild(builder(MimeMappingDefinition.INSTANCE)
