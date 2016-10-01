@@ -22,6 +22,12 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.DISTRIBUTED_WORKMANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+
+import java.util.EnumSet;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -31,6 +37,7 @@ import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,10 +48,7 @@ import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.connector.subsystems.jca.Constants.DISTRIBUTED_WORKMANAGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -88,6 +92,11 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
 
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration registration) {
+        EnumSet.allOf(DWmCapabilities.class).forEach(capability -> registration.registerCapability(capability.getRuntimeCapability()));
+    }
+
     static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DISTRIBUTED_WORK_MANAGER);
         builder.addOperationTransformationOverride("add")
@@ -103,7 +112,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 }).end();
     }
 
-    public static enum DWmParameters {
+    enum DWmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
                 .setAllowNull(false)
@@ -172,6 +181,20 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         }
 
         private AttributeDefinition attribute;
+    }
+
+    enum DWmCapabilities {
+        CHANNEL_FACTORY(RuntimeCapability.Builder.of("org.wildfly.connector.workmanager").addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName()).build());
+
+        private final RuntimeCapability<Void> capability;
+
+        DWmCapabilities(RuntimeCapability<Void> capability) {
+            this.capability = capability;
+        }
+
+        RuntimeCapability<Void> getRuntimeCapability() {
+            return this.capability;
+        }
     }
 
     public static enum PolicyValue {

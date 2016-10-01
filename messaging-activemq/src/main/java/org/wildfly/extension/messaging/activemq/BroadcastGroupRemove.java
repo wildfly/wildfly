@@ -25,7 +25,10 @@ package org.wildfly.extension.messaging.activemq;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 
 /**
  * Removes a broadcast group.
@@ -38,6 +41,16 @@ public class BroadcastGroupRemove extends AbstractRemoveStepHandler {
 
     private BroadcastGroupRemove() {
         super();
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        ModelNode model = resource.getModel();
+        if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
+            context.deregisterCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), context.getCurrentAddressValue()));
+        }
     }
 
     @Override

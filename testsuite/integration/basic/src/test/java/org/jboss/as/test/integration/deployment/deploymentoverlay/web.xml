@@ -29,7 +29,7 @@
     <env-entry>
         <env-entry-name>simpleString</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>NON OVERRIDDEN</env-entry-value>
+        <env-entry-value>UPDATED</env-entry-value>
     </env-entry>
 
 

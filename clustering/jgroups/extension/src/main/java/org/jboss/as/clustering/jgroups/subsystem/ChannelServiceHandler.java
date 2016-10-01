@@ -23,25 +23,21 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.*;
 
+import java.util.EnumSet;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.Channel;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.service.ChannelBuilder;
-import org.wildfly.clustering.jgroups.spi.service.ChannelConnectorBuilder;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceName;
-import org.wildfly.clustering.jgroups.spi.service.ChannelServiceNameFactory;
-import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
@@ -54,36 +50,24 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
-        String stack = ModelNodes.asString(STACK.getDefinition().resolveModelAttribute(context, model));
-
-        ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
+        String stack = STACK.resolveModelAttribute(context, model).asString();
 
         ServiceTarget target = context.getServiceTarget();
 
-        // Install channel factory alias
-        new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(stack), ChannelFactory.class).build(target).install();
+        new ChannelClusterBuilder(JCHANNEL_CLUSTER.getServiceName(address), name).configure(context, model).build(target).install();
+        new ChannelBuilder(JCHANNEL.getServiceName(address), name).configure(context, model).build(target).install();
+        new AliasServiceBuilder<>(JCHANNEL_FACTORY.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, stack), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
+        new ForkChannelFactoryBuilder(FORK_CHANNEL_FACTORY.getServiceName(address), name).configure(context, model).build(target).install();
+        new ModuleBuilder(JCHANNEL_MODULE.getServiceName(address), MODULE).configure(context, model).build(target).install();
 
-        // Install channel
-        new ChannelBuilder(name).build(target).install();
-
-        String cluster = ModelNodes.asString(CLUSTER.getDefinition().resolveModelAttribute(context, model), name);
-
-        // Install channel connector
-        new ChannelConnectorBuilder(name, cluster).build(target).install();
-
-        // Install channel jndi binding
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
-
-        // Install fork channel factory
-        new ForkChannelFactoryBuilder(name).build(target).install();
-
-        // Install fork channel factory jndi binding
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name), ChannelFactory.class).build(target).install();
+        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name), JGroupsRequirement.CHANNEL.getType()).build(target).install();
+        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
 
         // Install group services for channel
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(name, module)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", builder.getServiceName(), name);
                 builder.build(target).install();
             }
@@ -92,19 +76,16 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
 
+        EnumSet.allOf(ChannelResourceDefinition.Capability.class).forEach(capability -> capability.getServiceName(address));
+
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
-
-        for (ChannelServiceNameFactory factory : ChannelServiceName.values()) {
-            context.removeService(factory.getServiceName(name));
-        }
-
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
-        context.removeService(ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(name));
 
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(name, null)) {
+            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Removing %s for channel %s", builder.getServiceName(), name);
                 context.removeService(builder.getServiceName());
             }

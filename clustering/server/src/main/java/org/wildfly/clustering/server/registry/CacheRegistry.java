@@ -70,18 +70,23 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     private final Batcher<? extends Batch> batcher;
     private final Group group;
     private final NodeFactory<Address> factory;
-    private final CacheRegistryFilter filter = new CacheRegistryFilter();
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
+    private final Map.Entry<K, V> registryEntry;
 
     public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
         this.factory = config.getNodeFactory();
+        this.registryEntry = new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue());
+        this.populateRegistry();
+        this.cache.addListener(this, new CacheRegistryFilter());
+    }
+
+    private void populateRegistry() {
         try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue()));
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), registryEntry);
         }
-        this.cache.addListener(this, this.filter);
     }
 
     @Override
@@ -135,13 +140,13 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         this.executor.execute(() -> {
             ConsistentHash hash = event.getConsistentHashAtEnd();
             List<Address> members = hash.getMembers();
+            Address localAddress = event.getCache().getCacheManager().getAddress();
 
             // Determine which nodes have left the cache view
             Set<Address> addresses = new HashSet<>(event.getConsistentHashAtStart().getMembers());
             addresses.removeAll(members);
 
             if (!addresses.isEmpty()) {
-                Address localAddress = event.getCache().getCacheManager().getAddress();
                 // We're only interested in the entries for which we are the primary owner
                 List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
 
@@ -162,6 +167,15 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                     if (!removed.isEmpty()) {
                         this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
                     }
+                }
+            } else {
+                // This is a merge after cluster split: re-populate the cache registry with lost registry entries
+                if (!event.getConsistentHashAtStart().getMembers().contains(localAddress)) {
+                    // If this node is not a member at merge start, its mapping is lost and needs to be recreated and listeners notified
+                    this.populateRegistry();
+
+                    // Invoke listeners outside above tx context
+                    this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, registryEntry);
                 }
             }
         });

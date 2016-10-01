@@ -27,7 +27,7 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.service.AliasServiceBuilder;
@@ -41,11 +41,11 @@ import org.wildfly.clustering.spi.GroupServiceName;
 public class CommandDispatcherFactoryAliasBuilderProvider implements GroupAliasBuilderProvider {
 
     @Override
-    public Collection<Builder<?>> getBuilders(String aliasGroup, String targetGroup) {
-        Builder<CommandDispatcherFactory> builder = new AliasServiceBuilder<>(GroupServiceName.COMMAND_DISPATCHER.getServiceName(aliasGroup), GroupServiceName.COMMAND_DISPATCHER.getServiceName(targetGroup), CommandDispatcherFactory.class);
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String aliasGroup, String targetGroup) {
+        Builder<?> builder = new AliasServiceBuilder<>(GroupServiceName.COMMAND_DISPATCHER.getServiceName(aliasGroup), GroupServiceName.COMMAND_DISPATCHER.getServiceName(targetGroup), CommandDispatcherFactory.class);
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), aliasGroup).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
-        return Arrays.asList(builder, bindingBuilder);
+        Builder<?> binderBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
+        return Arrays.asList(builder, binderBuilder);
     }
 
     @Override

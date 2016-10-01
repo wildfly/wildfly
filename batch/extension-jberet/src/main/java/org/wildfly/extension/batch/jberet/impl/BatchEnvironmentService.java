@@ -85,7 +85,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final BatchJobServerActivity serverActivity;
     private final Boolean restartJobsOnResume;
     private BatchEnvironment batchEnvironment = null;
-    private ControlPoint controlPoint;
+    private volatile ControlPoint controlPoint;
 
     public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName) {
         this(classLoader, jobXmlResolver, deploymentName, null);
@@ -102,14 +102,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         BatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
-        suspendControllerInjector.getValue().registerActivity(serverActivity);
-        final RequestController requestController = requestControllerInjector.getOptionalValue();
-        if (requestController != null) {
-            // Create the entry point
-            controlPoint = requestController.getControlPoint(deploymentName, "batch-executor-service");
-        } else {
-            controlPoint = null;
-        }
         final BatchConfiguration batchConfiguration = batchConfigurationInjector.getValue();
         // Find the job executor to use
         JobExecutor jobExecutor = jobExecutorInjector.getOptionalValue();
@@ -124,10 +116,19 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
                 jobExecutor, transactionManagerInjector.getValue(),
-                jobRepository, jobXmlResolver, controlPoint);
+                jobRepository, jobXmlResolver);
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
+
+        suspendControllerInjector.getValue().registerActivity(serverActivity);
+        final RequestController requestController = requestControllerInjector.getOptionalValue();
+        if (requestController != null) {
+            // Create the entry point
+            controlPoint = requestController.getControlPoint(deploymentName, "batch-executor-service");
+        } else {
+            controlPoint = null;
+        }
     }
 
     @Override
@@ -201,19 +202,16 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         private final TransactionManager transactionManager;
         private final JobRepository jobRepository;
         private final JobXmlResolver jobXmlResolver;
-        private final ControlPoint controlPoint;
 
         WildFlyBatchEnvironment(final BeanManager beanManager,
                                 final JobExecutor jobExecutor,
                                 final TransactionManager transactionManager,
                                 final JobRepository jobRepository,
-                                final JobXmlResolver jobXmlResolver,
-                                final ControlPoint controlPoint) {
+                                final JobXmlResolver jobXmlResolver) {
             this.jobXmlResolver = jobXmlResolver;
             artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.jobExecutor = jobExecutor;
             this.transactionManager = transactionManager;
-            this.controlPoint = controlPoint;
             this.jobRepository = jobRepository;
         }
 

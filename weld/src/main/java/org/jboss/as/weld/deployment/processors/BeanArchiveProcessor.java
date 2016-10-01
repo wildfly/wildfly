@@ -66,6 +66,7 @@ import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.util.Indices;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
@@ -74,11 +75,8 @@ import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
-
-import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
+import org.jboss.weld.util.collections.Multimap;
+import org.jboss.weld.util.collections.SetMultimap;
 
 /**
  * Deployment processor that builds bean archives and attaches them to the deployment
@@ -132,7 +130,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         /*
          * Finish EE component processing
          */
-        for (Map.Entry<ResourceRoot, ComponentDescription> entry : components.componentDescriptions.entries()) {
+        for (Entry<ResourceRoot, Collection<ComponentDescription>> entry : components.componentDescriptions.entrySet()) {
             BeanDeploymentArchiveImpl bda = bdaMap.get(entry.getKey());
             String id = null;
             if (bda != null) {
@@ -140,7 +138,9 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             } else {
                 id = deploymentUnit.getAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE).getId();
             }
-            entry.getValue().setBeanDeploymentArchiveId(id);
+            for (ComponentDescription componentDescription : entry.getValue()) {
+                componentDescription.setBeanDeploymentArchiveId(id);
+            }
         }
 
         final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
@@ -163,8 +163,8 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
      */
     private static class Components {
 
-        private final Multimap<ResourceRoot, ComponentDescription> componentDescriptions = HashMultimap.create();
-        private final Multimap<ResourceRoot, EJBComponentDescription> ejbComponentDescriptions = HashMultimap.create();
+        private final Multimap<ResourceRoot, ComponentDescription> componentDescriptions = SetMultimap.newSetMultimap();
+        private final Multimap<ResourceRoot, EJBComponentDescription> ejbComponentDescriptions = SetMultimap.newSetMultimap();
         private final List<ComponentDescription> implicitComponentDescriptions = new ArrayList<ComponentDescription>();
 
         public Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
@@ -311,7 +311,9 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             Set<String> implicitBeanClasses = new HashSet<String>();
             for (AnnotationType beanDefiningAnnotation : beanDefiningAnnotations) {
                 List<AnnotationInstance> annotationInstances = index.getAnnotations(beanDefiningAnnotation.getName());
-                implicitBeanClasses.addAll(Lists.transform(Indices.getAnnotatedClasses(annotationInstances), Indices.CLASS_INFO_TO_FQCN));
+                for (ClassInfo classInfo : Indices.getAnnotatedClasses(annotationInstances)) {
+                    implicitBeanClasses.add(Indices.CLASS_INFO_TO_FQCN.apply(classInfo));
+                }
             }
             // Make all explicit components into implicit beans so they will support injection
             for(ComponentDescription description : components.componentDescriptions.get(resourceRoot)) {
@@ -327,7 +329,9 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             Set<String> classNames = new HashSet<String>();
             // index may be null if a war has a beans.xml but no WEB-INF/classes
             if (index != null) {
-                classNames.addAll(Collections2.transform(index.getKnownClasses(), Indices.CLASS_INFO_TO_FQCN));
+                for (ClassInfo classInfo : index.getKnownClasses()) {
+                    classNames.add(Indices.CLASS_INFO_TO_FQCN.apply(classInfo));
+                }
             }
 
             String beanArchiveId = getDeploymentUnitId(deploymentUnit);

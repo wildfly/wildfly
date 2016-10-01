@@ -50,7 +50,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getSubsystemAddOperation(String defaultStack) {
         ModelNode operation = Util.createAddOperation(getSubsystemAddress());
-        operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getDefinition().getName()).set(defaultStack);
+        operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()).set(defaultStack);
         return operation;
     }
 

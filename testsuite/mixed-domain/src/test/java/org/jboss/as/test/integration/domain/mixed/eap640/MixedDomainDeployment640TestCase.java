@@ -37,4 +37,9 @@ public class MixedDomainDeployment640TestCase extends MixedDomainDeploymentTest 
     public static void beforeClass() {
         MixedDomain640TestSuite.initializeDomain();
     }
+
+    @Override
+    protected boolean supportManagedExplodedDeployment() {
+        return false;
+    }
 }

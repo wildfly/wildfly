@@ -116,6 +116,12 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        if (!deployed)
+            resourceRegistration.registerCapability(Capabilities.DATA_SOURCE_CAPABILITY);
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         if (deployed) {
             for (final SimpleAttributeDefinition attribute : XA_DATASOURCE_ATTRIBUTE) {

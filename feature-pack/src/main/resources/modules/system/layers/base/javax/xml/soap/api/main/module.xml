@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="javax.xml.soap.api">
+<module xmlns="urn:jboss:module:1.5" name="javax.xml.soap.api">
     <dependencies>
         <module name="javax.activation.api" export="true"/>
         <module name="javax.api"/>

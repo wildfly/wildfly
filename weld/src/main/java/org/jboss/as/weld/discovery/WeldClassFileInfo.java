@@ -19,7 +19,6 @@ package org.jboss.as.weld.discovery;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import javax.enterprise.inject.Vetoed;
 import javax.inject.Inject;
@@ -33,8 +32,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.weld.resources.spi.ClassFileInfo;
-
-import com.google.common.cache.LoadingCache;
+import org.jboss.weld.util.cache.ComputingCache;
 
 /**
  *
@@ -60,7 +58,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private final boolean hasCdiConstructor;
 
-    private final LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache;
+    private final ComputingCache<DotName, Set<String>> annotationClassAnnotationsCache;
 
     private final ClassLoader classLoader;
 
@@ -70,7 +68,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
      * @param index
      * @param annotationClassAnnotationsCache
      */
-    public WeldClassFileInfo(String className, CompositeIndex index, LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache, ClassLoader classLoader) {
+    public WeldClassFileInfo(String className, CompositeIndex index, ComputingCache<DotName, Set<String>> annotationClassAnnotationsCache, ClassLoader classLoader) {
         this.index = index;
         this.annotationClassAnnotationsCache = annotationClassAnnotationsCache;
         this.classInfo = index.getClassByName(DotName.createSimple(className));
@@ -268,12 +266,8 @@ public class WeldClassFileInfo implements ClassFileInfo {
         }
         // Meta-annotations
         for (DotName annotation : classInfo.annotations().keySet()) {
-            try {
-                if (annotationClassAnnotationsCache.get(annotation).contains(requiredAnnotationName.toString())) {
-                    return true;
-                }
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
+            if (annotationClassAnnotationsCache.getValue(annotation).contains(requiredAnnotationName.toString())) {
+                return true;
             }
         }
         // Superclass

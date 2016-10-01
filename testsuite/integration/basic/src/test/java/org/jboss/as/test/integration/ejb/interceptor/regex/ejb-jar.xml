@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2016, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+         version="3.0">
+
+    <enterprise-beans>
+        <session>
+            <ejb-name>Test1</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>Test2</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>.AnotherTest</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>YetAnotherTest</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>OrderingTest</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
+            <ejb-name>Production</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.interceptor.regex.TestEjb</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+    </enterprise-beans>
+
+    <assembly-descriptor>
+        <interceptor-binding>
+            <ejb-name>Test.*</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>org.jboss.as.test.integration.ejb.interceptor.regex.AnnotatedEjb</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>\.[A-C][^r]*rTest</ejb-name>  <!-- should match bean named '.AnotherTest' -->
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+            <method>
+                <method-name>testIgnoreClass</method-name>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>YetA[A-Za-z]*</ejb-name> <!-- should match bean named 'YetAnotherTest' -->
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+            <method>
+                <method-name>test</method-name>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>OrderingTest</ejb-name>
+            <interceptor-order>
+                <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+                <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.regex.RegexInterceptor</interceptor-class>
+            </interceptor-order>
+        </interceptor-binding>
+    </assembly-descriptor>
+
+</ejb-jar>

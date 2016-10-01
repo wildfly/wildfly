@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.1">
+    <server name="default">
+        <pooled-connection-factory name="hornetq-ra-local"
+                                   transaction="local"
+                                   user="alice"
+                                   password="alicepassword"
+                                   connectors="in-vm"
+                                   entries="java:/JmsLocal"
+                                   statistics-enabled="true">
+        <inbound-config
+                rebalance-connections="true" />
+        </pooled-connection-factory>
+    </server>
+</subsystem>

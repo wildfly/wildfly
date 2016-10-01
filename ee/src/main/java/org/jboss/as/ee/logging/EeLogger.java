@@ -39,6 +39,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -500,7 +501,7 @@ public interface EeLogger extends BasicLogger {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 43, value = "Component is stopped")
-    IllegalStateException componentIsStopped();
+    ComponentIsStoppedException componentIsStopped();
 
     /**
      * Creates an exception indicating the component is not available.

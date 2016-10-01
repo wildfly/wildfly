@@ -21,10 +21,6 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.modules.ModuleIdentifier;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.GroupBuilderFactory;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
@@ -33,14 +29,7 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
  */
 public class LocalCommandDispatcherFactoryBuilderProvider extends CommandDispatcherFactoryBuilderProvider implements LocalGroupBuilderProvider {
 
-    private static final GroupBuilderFactory<CommandDispatcherFactory> FACTORY = new GroupBuilderFactory<CommandDispatcherFactory>() {
-        @Override
-        public Builder<CommandDispatcherFactory> createBuilder(String group, ModuleIdentifier module) {
-            return new LocalCommandDispatcherFactoryBuilder(group);
-        }
-    };
-
     public LocalCommandDispatcherFactoryBuilderProvider() {
-        super(FACTORY);
+        super((support, group) -> new LocalCommandDispatcherFactoryBuilder(group));
     }
 }

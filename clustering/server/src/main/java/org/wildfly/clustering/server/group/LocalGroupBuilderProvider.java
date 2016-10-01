@@ -21,10 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.GroupBuilderFactory;
-import org.wildfly.clustering.service.Builder;
 
 /**
  * Provides the requisite builders for a non-clustered {@link Group} service.
@@ -32,17 +29,7 @@ import org.wildfly.clustering.service.Builder;
  */
 public class LocalGroupBuilderProvider extends GroupBuilderProvider implements org.wildfly.clustering.spi.LocalGroupBuilderProvider {
 
-    private static final GroupBuilderFactory<Group> FACTORY = new GroupBuilderFactory<Group>() {
-        @Override
-        public Builder<Group> createBuilder(String group, ModuleIdentifier module) {
-            return new LocalGroupBuilder(group);
-        }
-    };
-
-    /**
-     * @param factory
-     */
     public LocalGroupBuilderProvider() {
-        super(FACTORY);
+        super((support, group) -> new LocalGroupBuilder(group));
     }
 }

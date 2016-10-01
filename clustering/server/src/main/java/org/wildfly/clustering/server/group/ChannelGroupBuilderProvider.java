@@ -21,10 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.GroupBuilderFactory;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
 /**
@@ -33,14 +30,7 @@ import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
  */
 public class ChannelGroupBuilderProvider extends GroupBuilderProvider implements DistributedGroupBuilderProvider {
 
-    private static final GroupBuilderFactory<Group> FACTORY = new GroupBuilderFactory<Group>() {
-        @Override
-        public Builder<Group> createBuilder(String group, ModuleIdentifier module) {
-            return new ChannelGroupBuilder(group);
-        }
-    };
-
     public ChannelGroupBuilderProvider() {
-        super(FACTORY);
+        super((support, group) -> new ChannelGroupBuilder(group));
     }
 }

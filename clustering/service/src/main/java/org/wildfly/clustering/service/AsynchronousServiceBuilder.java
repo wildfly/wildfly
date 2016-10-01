@@ -42,7 +42,7 @@ import org.jboss.msc.value.InjectedValue;
 public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
 
     private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
-    final Service<T> service;
+    private final Service<T> service;
     private final ServiceName name;
     private volatile boolean startAsynchronously = true;
     private volatile boolean stopAsynchronously = true;
@@ -95,17 +95,14 @@ public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
     @Override
     public void start(final StartContext context) throws StartException {
         if (this.startAsynchronously) {
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        AsynchronousServiceBuilder.this.service.start(context);
-                        context.complete();
-                    } catch (StartException e) {
-                        context.failed(e);
-                    } catch (Throwable e) {
-                        context.failed(new StartException(e));
-                    }
+            Runnable task = () -> {
+                try {
+                    this.service.start(context);
+                    context.complete();
+                } catch (StartException e) {
+                    context.failed(e);
+                } catch (Throwable e) {
+                    context.failed(new StartException(e));
                 }
             };
             try {
@@ -123,14 +120,11 @@ public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
     @Override
     public void stop(final StopContext context) {
         if (this.stopAsynchronously) {
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        AsynchronousServiceBuilder.this.service.stop(context);
-                    } finally {
-                        context.complete();
-                    }
+            Runnable task = () -> {
+                try {
+                    this.service.stop(context);
+                } finally {
+                    context.complete();
                 }
             };
             try {

@@ -21,14 +21,21 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -36,16 +43,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.DiscardPolicy;
-import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
  * The root resource of the JGroups subsystem.
@@ -56,14 +59,19 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
 
     public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
 
+    static final Map<JGroupsRequirement, Capability> CAPABILITIES = new EnumMap<>(JGroupsRequirement.class);
+    static {
+        EnumSet.allOf(JGroupsRequirement.class).forEach(requirement -> CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement())));
+    }
+
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT_CHANNEL("default-channel", ModelType.STRING),
+        DEFAULT_CHANNEL("default-channel", ModelType.STRING, new CapabilityReference(CAPABILITIES.get(JGroupsRequirement.CHANNEL_FACTORY), JGroupsRequirement.CHANNEL_FACTORY)),
         @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type) {
-            this.definition = createBuilder(name, type).build();
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
+            this.definition = createBuilder(name, type).setCapabilityReference(reference).build();
         }
 
         Attribute(String name, ModelType type, JGroupsModel deprecation) {
@@ -95,61 +103,9 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
                     // The attribute is always discarded, the children will drive rejection/discardation
                     .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.DEFAULT_CHANNEL.getDefinition())
                     .end();
-
-            DynamicDiscardPolicy channelDiscardRejectPolicy = new DynamicDiscardPolicy() {
-                @Override
-                public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
-                    // Check whether all channel resources are used by the infinispan subsystem, and transformed
-                    // by its corresponding transformers; reject otherwise
-
-                    // n.b. we need to hard-code the values because otherwise we would end up with cyclical dependency
-
-                    String channelName = address.getLastElement().getValue();
-
-                    PathAddress rootAddress = address.subAddress(0, address.size() - 2);
-                    PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"));
-
-                    Resource infinispanResource;
-                    try {
-                        infinispanResource = context.readResourceFromRoot(subsystemAddress);
-                    } catch (Resource.NoSuchResourceException ex) {
-                        return DiscardPolicy.REJECT_AND_WARN;
-                    }
-                    ModelNode infinispanModel = Resource.Tools.readModel(infinispanResource);
-
-                    if (infinispanModel.hasDefined("cache-container")) {
-                        for (ModelNode container : infinispanModel.get("cache-container").asList()) {
-                            ModelNode cacheContainer = container.get(0);
-                            if (cacheContainer.hasDefined("transport")) {
-                                ModelNode transport = cacheContainer.get("transport").get("jgroups");
-                                if (transport.hasDefined("channel")) {
-                                    String channel = transport.get("channel").asString();
-                                    if (channel.equals(channelName)) {
-                                        return DiscardPolicy.SILENT;
-                                    }
-                                } else {
-                                    // In that case, if this were the default channel, it can be discarded too
-                                    ModelNode subsystem = context.readResourceFromRoot(address.subAddress(0, address.size() - 1)).getModel();
-                                    if (subsystem.hasDefined(Attribute.DEFAULT_CHANNEL.getDefinition().getName())) {
-                                        if (subsystem.get(Attribute.DEFAULT_CHANNEL.getDefinition().getName()).asString().equals(channelName)) {
-                                            return DiscardPolicy.SILENT;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // No references to this channel, we need to reject it.
-                    return DiscardPolicy.REJECT_AND_WARN;
-                }
-            };
-            builder.addChildResource(ChannelResourceDefinition.WILDCARD_PATH, channelDiscardRejectPolicy);
-
-        } else {
-            ChannelResourceDefinition.buildTransformation(version, builder);
         }
 
+        ChannelResourceDefinition.buildTransformation(version, builder);
         StackResourceDefinition.buildTransformation(version, builder);
 
         return builder.build();
@@ -166,7 +122,10 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
 
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addCapabilities(CAPABILITIES.values())
+                ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

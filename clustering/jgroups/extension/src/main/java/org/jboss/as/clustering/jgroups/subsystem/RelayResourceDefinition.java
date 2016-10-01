@@ -81,7 +81,7 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<RelayConfiguration> builderFactory = new RelayConfigurationBuilderFactory();
+    private final ResourceServiceBuilderFactory<RelayConfiguration> builderFactory = address -> new RelayConfigurationBuilder(address);
 
     RelayResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(new Parameters(PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), parentBuilderFactory);

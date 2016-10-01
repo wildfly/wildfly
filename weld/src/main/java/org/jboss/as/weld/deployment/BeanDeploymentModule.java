@@ -27,8 +27,7 @@ import java.util.Set;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
-
-import com.google.common.collect.ImmutableSet;
+import org.jboss.weld.util.collections.ImmutableSet;
 
 /**
  * A collection of Bean Deployment archives that share similar bean visibility.

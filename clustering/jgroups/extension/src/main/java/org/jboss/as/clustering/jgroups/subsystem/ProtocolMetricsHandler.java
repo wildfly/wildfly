@@ -36,11 +36,9 @@ import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
@@ -56,7 +54,7 @@ import org.jgroups.util.Util;
 public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
     interface ProtocolLocator {
-        Protocol findProtocol(ServiceRegistry registry, PathAddress address) throws ClassNotFoundException, ModuleLoadException;
+        Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException;
     }
 
     interface Attribute {
@@ -238,13 +236,12 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
     }
 
     @Override
-    protected void executeRuntimeStep(final OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        PathAddress address = context.getCurrentAddress();
         String name = Operations.getAttributeName(operation);
 
         try {
-            Protocol protocol = this.locator.findProtocol(context.getServiceRegistry(false), address);
+            Protocol protocol = this.locator.findProtocol(context);
             if (protocol != null) {
                 Attribute attribute = getAttribute(protocol.getClass(), name);
                 if (attribute != null) {

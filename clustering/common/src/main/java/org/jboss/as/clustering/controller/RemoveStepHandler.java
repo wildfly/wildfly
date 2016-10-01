@@ -77,7 +77,7 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
         registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
                 .filter(access -> access != null)
                 .map(access -> access.getAttributeDefinition())
-                    .filter(attribute -> (attribute != null) && (model.hasDefined(attribute.getName()) || attribute.hasCapabilityRequirements()))
+                    .filter(attribute -> (attribute != null) && attribute.hasCapabilityRequirements())
                     .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
     }
 

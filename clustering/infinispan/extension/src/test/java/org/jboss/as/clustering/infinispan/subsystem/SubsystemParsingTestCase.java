@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
  * Tests parsing / booting / marshalling of Infinispan configurations.
@@ -82,6 +83,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         return new InfinispanSubsystemInitialization()
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
+                .require(JGroupsRequirement.CHANNEL, "maximal-channel")
                 ;
     }
 

@@ -222,7 +222,7 @@ public class ClusteredJPA2LCTestCase {
 
     protected static ModelControllerClient createClient1() throws UnknownHostException {
         return ModelControllerClient.Factory
-                .create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
+                .create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
                         TestSuiteEnvironment.getServerPort() + 100,
                         Authentication.getCallbackHandler());
     }

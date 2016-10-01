@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.jboss.weld.core">
+<module xmlns="urn:jboss:module:1.5" name="org.jboss.weld.core">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -33,8 +33,6 @@
     </resources>
 
     <dependencies>
-        <module name="ch.qos.cal10n" />
-        <module name="com.google.guava"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.ejb.api" />

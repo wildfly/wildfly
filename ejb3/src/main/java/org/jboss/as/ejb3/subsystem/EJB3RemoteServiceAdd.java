@@ -53,8 +53,6 @@ import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -125,9 +123,8 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
         if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
             // Install services that would normally be installed by this container/cache
-            ModuleIdentifier module = Module.forClass(this.getClass()).getIdentifier();
             for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(clientMappingsClusterName, module)) {
+                for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), clientMappingsClusterName)) {
                     builder.build(target).install();
                 }
             }

@@ -151,7 +151,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
 
         ModelNode model = resource.getModel();
         this.attributes.stream()
-                .filter(attribute -> model.hasDefined(attribute.getName()) || attribute.hasCapabilityRequirements())
+                .filter(attribute -> attribute.hasCapabilityRequirements())
                 .forEach(attribute -> attribute.addCapabilityRequirements(context, model.get(attribute.getName())));
     }
 

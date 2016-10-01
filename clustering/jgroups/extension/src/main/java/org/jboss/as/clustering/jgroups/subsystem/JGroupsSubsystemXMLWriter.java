@@ -160,7 +160,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     }
 
     private static boolean hasDefined(ModelNode model, Collection<? extends Attribute> attributes) {
-        return attributes.stream().anyMatch(attribute -> model.hasDefined(attribute.getDefinition().getName()));
+        return attributes.stream().anyMatch(attribute -> model.hasDefined(attribute.getName()));
     }
 
     private static <A extends Enum<A> & Attribute> void writeAttributes(XMLExtendedStreamWriter writer, ModelNode model, Class<A> attributeClass) throws XMLStreamException {

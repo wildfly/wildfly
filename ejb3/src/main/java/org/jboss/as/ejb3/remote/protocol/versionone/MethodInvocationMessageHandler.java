@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -205,6 +206,10 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                             // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
                             if (throwable instanceof EJBComponentUnavailableException) {
                                 EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component unavailability exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
+                                MethodInvocationMessageHandler.this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
+                                // WFLY-7139
+                            } else if (throwable instanceof ComponentIsStoppedException) {
+                                EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component stopped exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
                                 MethodInvocationMessageHandler.this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
                             } else {
                                 // write out the failure
