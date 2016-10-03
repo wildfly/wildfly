@@ -28,18 +28,19 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 /**
- * Simple {@link ServiceProviderRegistration} implementation that delegates
- * {@link #getProviders()} back to the factory.
+ * Simple {@link ServiceProviderRegistration} implementation that delegates {@link #getProviders()} back to the factory.
  * @author Paul Ferraro
  */
-public abstract class AbstractServiceProviderRegistration<T> implements ServiceProviderRegistration<T> {
+public class SimpleServiceProviderRegistration<T> implements ServiceProviderRegistration<T> {
 
     private final T service;
     private final ServiceProviderRegistry<T> registry;
+    private final Runnable closeTask;
 
-    public AbstractServiceProviderRegistration(T service, ServiceProviderRegistry<T> registry) {
+    public SimpleServiceProviderRegistration(T service, ServiceProviderRegistry<T> registry, Runnable closeTask) {
         this.service = service;
         this.registry = registry;
+        this.closeTask = closeTask;
     }
 
     @Override
@@ -50,5 +51,10 @@ public abstract class AbstractServiceProviderRegistration<T> implements ServiceP
     @Override
     public Set<Node> getProviders() {
         return this.registry.getProviders(this.service);
+    }
+
+    @Override
+    public void close() {
+        this.closeTask.run();
     }
 }

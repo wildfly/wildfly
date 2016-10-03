@@ -22,8 +22,8 @@
 package org.wildfly.clustering.server.provider;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
@@ -37,8 +37,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
  */
 public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<T> {
 
-    final Set<T> services = Collections.synchronizedSet(new HashSet<>());
-
+    private final Set<T> services = ConcurrentHashMap.newKeySet();
     private final Group group;
 
     public LocalServiceProviderRegistry(Group group) {
@@ -53,12 +52,7 @@ public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<
     @Override
     public ServiceProviderRegistration<T> register(T service) {
         this.services.add(service);
-        return new AbstractServiceProviderRegistration<T>(service, this) {
-            @Override
-            public void close() {
-                LocalServiceProviderRegistry.this.services.remove(service);
-            }
-        };
+        return new SimpleServiceProviderRegistration<>(service, this, () -> this.services.remove(service));
     }
 
     @Override
@@ -68,7 +62,7 @@ public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @Override
     public Set<Node> getProviders(T service) {
-        return this.services.contains(service) ? Collections.singleton(this.getGroup().getLocalNode()) : Collections.<Node>emptySet();
+        return this.services.contains(service) ? Collections.singleton(this.getGroup().getLocalNode()) : Collections.emptySet();
     }
 
     @Override

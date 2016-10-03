@@ -58,10 +58,9 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 @org.infinispan.notifications.Listener(sync = false)
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, Group.Listener, AutoCloseable {
 
-    final ConcurrentMap<T, Listener> listeners = new ConcurrentHashMap<>();
-    final Batcher<? extends Batch> batcher;
-    final Cache<T, Set<Node>> cache;
-
+    private final ConcurrentMap<T, Listener> listeners = new ConcurrentHashMap<>();
+    private final Batcher<? extends Batch> batcher;
+    private final Cache<T, Set<Node>> cache;
     private final Group group;
     private final CommandDispatcher<Set<T>> dispatcher;
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
@@ -102,25 +101,22 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         try (Batch batch = this.batcher.createBatch()) {
             this.register(this.group.getLocalNode(), service);
         }
-        return new AbstractServiceProviderRegistration<T>(service, this) {
-            @Override
-            public void close() {
-                Node node = CacheServiceProviderRegistry.this.getGroup().getLocalNode();
-                try (Batch batch = CacheServiceProviderRegistry.this.batcher.createBatch()) {
-                    Set<Node> nodes = CacheServiceProviderRegistry.this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(service);
-                    if ((nodes != null) && nodes.remove(node)) {
-                        Cache<T, Set<Node>> cache = CacheServiceProviderRegistry.this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
-                        if (nodes.isEmpty()) {
-                            cache.remove(service);
-                        } else {
-                            cache.replace(service, nodes);
-                        }
+        return new SimpleServiceProviderRegistration<>(service, this, () -> {
+            Node node = this.getGroup().getLocalNode();
+            try (Batch batch = this.batcher.createBatch()) {
+                Set<Node> nodes = this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(service);
+                if ((nodes != null) && nodes.remove(node)) {
+                    Cache<T, Set<Node>> cache = this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
+                    if (nodes.isEmpty()) {
+                        cache.remove(service);
+                    } else {
+                        cache.replace(service, nodes);
                     }
-                } finally {
-                    CacheServiceProviderRegistry.this.listeners.remove(service);
                 }
+            } finally {
+                this.listeners.remove(service);
             }
-        };
+        });
     }
 
     void register(Node node, T service) {
@@ -133,7 +129,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     @Override
     public Set<Node> getProviders(final T service) {
         Set<Node> nodes = this.cache.get(service);
-        return (nodes != null) ? Collections.unmodifiableSet(nodes) : Collections.<Node>emptySet();
+        return (nodes != null) ? Collections.unmodifiableSet(nodes) : Collections.emptySet();
     }
 
     @Override
