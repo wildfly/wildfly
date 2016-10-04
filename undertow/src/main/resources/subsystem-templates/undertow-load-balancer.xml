@@ -43,7 +43,7 @@
     <socket-binding name="http" port="${jboss.http.port:8080}"/>
     <socket-binding name="https" port="${jboss.https.port:8443}"/>
     <socket-binding name="mcmp-management" interface="private" port="${jboss.mcmp.port:8090}" />
-    <socket-binding name="modcluster" interface="private" multicast-address="224.0.1.105" multicast-port="23364"/>
+    <socket-binding name="modcluster" interface="private" multicast-address="${jboss.modcluster.multicast.address:224.0.1.105}" multicast-port="23364"/>
     <interface name="private">
         <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
     </interface>
