@@ -70,8 +70,8 @@
         </replacement>
         <replacement placeholder="REMOTE-CONNECTION-FACTORY">
             <connection-factory name="RemoteConnectionFactory"
-                                connectors="http-connector"
-                                entries="java:jboss/exported/jms/RemoteConnectionFactory" />
+                                entries="java:jboss/exported/jms/RemoteConnectionFactory"
+                                connectors="http-connector" />
         </replacement>
     </supplement>
     <supplement name="ha">
