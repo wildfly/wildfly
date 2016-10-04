@@ -43,7 +43,7 @@ public interface CommandDispatcher<C> extends AutoCloseable {
      * @return the result of the command execution
      * @throws CommandDispatcherException if the command could not be sent
      */
-    <R> CommandResponse<R> executeOnNode(Command<R, C> command, Node node) throws CommandDispatcherException;
+    <R> CommandResponse<R> executeOnNode(Command<R, ? super C> command, Node node) throws CommandDispatcherException;
 
     /**
      * Execute the specified command on all nodes in the group, excluding the specified nodes
@@ -54,7 +54,7 @@ public interface CommandDispatcher<C> extends AutoCloseable {
      * @return a map of command execution results per node
      * @throws CommandDispatcherException if the command could not be broadcast
      */
-    <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, C> command, Node... excludedNodes) throws CommandDispatcherException;
+    <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException;
 
     /**
      * Submits the specified command on the specified node for execution.
@@ -65,7 +65,7 @@ public interface CommandDispatcher<C> extends AutoCloseable {
      * @return the result of the command execution
      * @throws CommandDispatcherException if the command could not be sent
      */
-    <R> Future<R> submitOnNode(Command<R, C> command, Node node) throws CommandDispatcherException;
+    <R> Future<R> submitOnNode(Command<R, ? super C> command, Node node) throws CommandDispatcherException;
 
     /**
      * Submits the specified command on all nodes in the group, excluding the specified nodes.
@@ -76,7 +76,7 @@ public interface CommandDispatcher<C> extends AutoCloseable {
      * @return a map of command execution results per node.
      * @throws CommandDispatcherException if the command could not be broadcast
      */
-    <R> Map<Node, Future<R>> submitOnCluster(Command<R, C> command, Node... excludedNodes) throws CommandDispatcherException;
+    <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException;
 
     /**
      * Closes any resources used by this dispatcher.

@@ -73,7 +73,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> CommandResponse<R> executeOnNode(Command<R, C> command, Node node) {
+    public <R> CommandResponse<R> executeOnNode(Command<R, ? super C> command, Node node) {
         if (!this.node.equals(node)) {
             throw new UnreachableException((Address) null);
         }
@@ -85,7 +85,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, C> command, Node... excludedNodes) {
+    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super C> command, Node... excludedNodes) {
         Map<Node, CommandResponse<R>> results = new HashMap<>();
         if ((excludedNodes == null) || (excludedNodes.length == 0) || !Arrays.asList(excludedNodes).contains(this.node)) {
             results.put(this.node, this.executeOnNode(command, this.node));
@@ -94,7 +94,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> Future<R> submitOnNode(final Command<R, C> command, Node node) {
+    public <R> Future<R> submitOnNode(final Command<R, ? super C> command, Node node) {
         Callable<R> task = new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -105,7 +105,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, C> command, Node... excludedNodes) {
+    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super C> command, Node... excludedNodes) {
         Map<Node, Future<R>> results = new HashMap<>();
         if ((excludedNodes == null) || (excludedNodes.length == 0) || !Arrays.asList(excludedNodes).contains(this.node)) {
             results.put(this.node, this.submitOnNode(command, this.node));
