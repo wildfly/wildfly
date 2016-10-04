@@ -58,7 +58,7 @@ import static java.security.AccessController.doPrivileged;
 public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServiceFactory> {
 
     private final String containerName;
-    private volatile int bufferSize = 10;
+    private volatile int bufferSize = 100;
 
     public KeyAffinityServiceFactoryBuilder(String containerName) {
         this.containerName = containerName;
