@@ -95,10 +95,8 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public synchronized void start(final StartContext context) throws StartException {
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
-        thread = new Thread(new Runnable() {
+        thread = new Thread(() -> {
 
-            @Override
-            public void run() {
                 final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
                     try {
@@ -146,17 +144,14 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                 } finally {
                     serviceContainer.shutdown();
                 }
-            }
         });
         thread.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if(serviceContainer != null) {
                     serviceContainer.shutdown();
                 }
             }
-        }));
+        ));
 
     }
 
