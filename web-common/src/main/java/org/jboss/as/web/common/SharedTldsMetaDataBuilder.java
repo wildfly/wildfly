@@ -67,14 +67,15 @@ public class SharedTldsMetaDataBuilder {
         try {
             ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
             for (String tld : JSTL_TAGLIBS) {
-                InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
-                if (is != null) {
-                    TldMetaData tldMetaData = parseTLD(tld, is);
-                    jstlTlds.add(tldMetaData);
+                try (InputStream is = jstl.getResourceAsStream("META-INF/" + tld)) {
+                    if (is != null) {
+                        TldMetaData tldMetaData = parseTLD(tld, is);
+                        jstlTlds.add(tldMetaData);
+                    }
+                } catch (IOException e) {
+                    // Ignore exception from is.close() method
                 }
             }
-        } catch (ModuleLoadException e) {
-            // Ignore
         } catch (Exception e) {
             // Ignore
         }
@@ -94,20 +95,10 @@ public class SharedTldsMetaDataBuilder {
 
     private TldMetaData parseTLD(String tld, InputStream is)
     throws Exception {
-        try {
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLResolver(NoopXMLResolver.create());
-            XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-            return TldMetaDataParser.parse(xmlReader    );
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException e) {
-                // Ignore
-            }
-        }
+        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
+        XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
+        return TldMetaDataParser.parse(xmlReader);
     }
 
 }
