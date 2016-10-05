@@ -24,7 +24,6 @@ package org.wildfly.clustering.singleton;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.Builder;
 
 /**
  * Defines a singleton policy.
@@ -36,5 +35,11 @@ public interface SingletonPolicy {
      */
     @Deprecated String CAPABILITY_NAME = SingletonRequirement.SINGLETON_POLICY.getName();
 
-    <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
+    /**
+     * Creates a singleton service builder.
+     * @param name the name of the service
+     * @param service the service to run when elected as the primary node
+     * @return a builder
+     */
+    <T> SingletonBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
 }

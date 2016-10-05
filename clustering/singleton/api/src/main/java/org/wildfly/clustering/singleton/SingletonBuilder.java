@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.singleton;
+
+import org.jboss.msc.service.Service;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public interface Singleton {
+public interface SingletonBuilder<T> extends Builder<T> {
     /**
-     * @deprecated Use {@link #isPrimary()} instead.
+     * Defines an optional service to run while this node is not the primary singleton provider.
+     * @param service a service
+     * @return this builder
      */
-    @Deprecated
-    default boolean isMaster() {
-        return this.isPrimary();
-    }
-
-    /**
-     * Indicates whether this node is the primary provider of the singleton.
-     * @return true, if this node is the primary node, false if it is a backup node.
-     */
-    boolean isPrimary();
+    SingletonBuilder<T> backupService(Service<T> service);
 }

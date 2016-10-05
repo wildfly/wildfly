@@ -32,8 +32,8 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
  */
 public class CacheSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
 
-    final String containerName;
-    final String cacheName;
+    private final String containerName;
+    private final String cacheName;
 
     public CacheSingletonServiceBuilderFactory(String containerName, String cacheName) {
         this.containerName = containerName;
@@ -41,7 +41,7 @@ public class CacheSingletonServiceBuilderFactory implements SingletonServiceBuil
     }
 
     @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, Service<T> service) {
+    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
         return new CacheSingletonServiceBuilder<>(name, service, this.containerName, this.cacheName);
     }
 }

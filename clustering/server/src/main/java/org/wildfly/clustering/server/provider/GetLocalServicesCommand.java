@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.provider;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import org.wildfly.clustering.dispatcher.Command;
@@ -31,11 +31,11 @@ import org.wildfly.clustering.dispatcher.Command;
  * Command to obtain the service providers known to a node.
  * @author Paul Ferraro
  */
-public class GetLocalServicesCommand<T> implements Command<List<T>, Set<T>> {
+public class GetLocalServicesCommand<T> implements Command<Collection<T>, Set<T>> {
     private static final long serialVersionUID = -6038614943434229434L;
 
     @Override
-    public List<T> execute(Set<T> services) {
+    public Collection<T> execute(Set<T> services) {
         return new ArrayList<>(services);
     }
 }
