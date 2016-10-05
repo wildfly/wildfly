@@ -47,7 +47,7 @@ import org.wildfly.clustering.spi.GroupServiceName;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
-public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
+public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     private static ServiceName getCacheServiceName(String cacheName) {
@@ -90,21 +90,18 @@ public class InfinispanSessionManagerFactoryBuilder implements Builder<SessionMa
                 .addAliases(InfinispanRouteLocatorBuilder.getCacheServiceAlias(cacheName))
                 .install();
 
-        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), NodeFactory.class).build(target).install();
-        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getRegistryServiceAlias(cacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, RouteCacheGroupBuilderProvider.CACHE_NAME), Registry.class).build(target).install();
+        String serverName = this.configuration.getServerName();
+        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), CacheGroupServiceName.NODE_FACTORY.getServiceName(containerName, serverName), NodeFactory.class).build(target).install();
+        new AliasServiceBuilder<>(InfinispanRouteLocatorBuilder.getRegistryServiceAlias(cacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, serverName), Registry.class).build(target).install();
 
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        Value<SessionManagerFactory<TransactionBatch>> value = () -> new InfinispanSessionManagerFactory(this);
+        return target.addService(this.getServiceName(), new ValueService<>(value))
                 .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
                 .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addDependency(InfinispanRouteLocatorBuilder.getNodeFactoryServiceAlias(cacheName), NodeFactory.class, this.nodeFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
-    }
-
-    @Override
-    public SessionManagerFactory<TransactionBatch> getValue() {
-        return new InfinispanSessionManagerFactory(this);
     }
 
     @Override

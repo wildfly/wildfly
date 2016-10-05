@@ -21,8 +21,22 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.value.Value;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 import org.wildfly.clustering.web.session.RouteLocator;
 import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
 
@@ -38,7 +52,27 @@ public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilde
     }
 
     @Override
-    public Builder<?> getRouteLocatorConfigurationBuilder(Value<? extends Value<String>> route) {
-        return new RouteRegistryEntryProviderBuilder(route);
+    public Collection<CapabilityServiceBuilder<?>> getRouteLocatorConfigurationBuilders(String serverName) {
+        String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
+
+        List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
+
+        builders.add(new RouteRegistryEntryProviderBuilder(serverName));
+
+        if (!serverName.equals(CacheServiceName.DEFAULT_CACHE)) {
+            Consumer<ConfigurationBuilder> consumer = builder -> {
+                CacheMode mode = builder.clustering().cacheMode();
+                builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+                builder.persistence().clearStores();
+            };
+            builders.add(new SimpleCapabilityServiceBuilder<>(new TemplateConfigurationBuilder(containerName, serverName, CacheServiceName.DEFAULT_CACHE, consumer)));
+            builders.add(new SimpleCapabilityServiceBuilder<>(new CacheBuilder<>(containerName, serverName)));
+
+            for (CacheGroupBuilderProvider provider : ServiceLoader.load(DistributedCacheGroupBuilderProvider.class, DistributedCacheGroupBuilderProvider.class.getClassLoader())) {
+                provider.getBuilders(containerName, serverName).stream().map(builder -> new SimpleCapabilityServiceBuilder<>(builder)).forEach(builder -> builders.add(builder));
+            }
+        }
+
+        return builders;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,16 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.jboss.as.clustering.controller;
 
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.wildfly.clustering.service.Builder;
 
 /**
+ * Builds a capability-dependent service.
  * @author Paul Ferraro
  */
-public class LocalRouteCacheGroupBuilderProvider extends RouteCacheGroupBuilderProvider implements LocalCacheGroupBuilderProvider {
+public interface CapabilityServiceBuilder<T> extends Builder<T> {
+    default Builder<T> configure(CapabilityServiceSupport support) {
+        return this;
+    }
 
-    public LocalRouteCacheGroupBuilderProvider() {
-        super(LocalCacheGroupBuilderProvider.class);
+    default Builder<T> configure(OperationContext context) {
+        return this.configure(context.getCapabilityServiceSupport());
     }
 }

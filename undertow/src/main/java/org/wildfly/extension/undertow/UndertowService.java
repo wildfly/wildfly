@@ -73,7 +73,7 @@ public class UndertowService implements Service<UndertowService> {
     private final String defaultVirtualHost;
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
-    private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
+    private final String instanceId;
     private final boolean statistics;
 
     protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean statistics) {
@@ -220,10 +220,6 @@ public class UndertowService implements Service<UndertowService> {
 
     public String getInstanceId() {
         return instanceId;
-    }
-
-    public void setInstanceId(String instanceId) {
-        this.instanceId = instanceId;
     }
 
     public boolean isStatisticsEnabled() {

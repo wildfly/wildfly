@@ -21,6 +21,12 @@
  */
 package org.wildfly.extension.undertow.session;
 
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.stream.StreamSupport;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -31,6 +37,9 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Paul Ferraro
  */
 public interface DistributableSessionIdentifierCodecBuilder {
+
+    Optional<DistributableSessionIdentifierCodecBuilder> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionIdentifierCodecBuilder.class, DistributableSessionIdentifierCodecBuilder.class.getClassLoader()).spliterator(), false).findFirst();
+
     /**
      * Builds a {@link SessionIdentifierCodec} service.
      * @param target a service target
@@ -38,12 +47,12 @@ public interface DistributableSessionIdentifierCodecBuilder {
      * @param deploymentServiceName the service name of the deployment
      * @return a service builder
      */
-    ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, String deploymentName);
+    ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String serverName, String deploymentName);
 
     /**
      * Builds cross-deployment dependencies needed for route handling
      * @param target the service target
      * @return a service builder
      */
-    ServiceBuilder<?> buildServerDependency(ServiceTarget target);
+    void buildServerDependencies(ServiceTarget target, OperationContext context, String serverName);
 }

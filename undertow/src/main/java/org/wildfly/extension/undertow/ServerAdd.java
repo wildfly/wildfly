@@ -34,6 +34,8 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -55,9 +57,10 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, resource.getModel()).asString();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context,subsystemModel).asString();
 
+        final ServiceTarget target = context.getServiceTarget();
         final ServiceName serverName = UndertowService.SERVER.append(name);
         final Server service = new Server(name, defaultHost);
-        final ServiceBuilder<Server> builder = context.getServiceTarget().addService(serverName, service)
+        final ServiceBuilder<Server> builder = target.addService(serverName, service)
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainer), ServletContainerService.class, service.getServletContainerInjector())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
 
@@ -79,6 +82,17 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
 
         }
         builder.install();
+
+        ServiceBuilder<String> routeBuilder = new RouteBuilder(name).build(target);
+        if (isDefaultServer) {
+            routeBuilder.addAliases(UndertowRootDefinition.DEFAULT_ROUTE_CAPABILITY.getCapabilityServiceName());
+        }
+        routeBuilder.install();
+
+        if (DistributableSessionIdentifierCodecBuilder.INSTANCE.isPresent()) {
+            DistributableSessionIdentifierCodecBuilder codecBuilder = DistributableSessionIdentifierCodecBuilder.INSTANCE.get();
+            codecBuilder.buildServerDependencies(target, context, name);
+        }
     }
 
 

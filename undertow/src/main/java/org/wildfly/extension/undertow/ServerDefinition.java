@@ -31,13 +31,17 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class ServerDefinition extends PersistentResourceDefinition {
+public class ServerDefinition extends PersistentResourceDefinition {
+
+    public static final String ROUTE_CAPABILITY_NAME = "org.wildfly.undertow.server.route";
+    static final RuntimeCapability<Void> ROUTE_CAPABILITY = RuntimeCapability.Builder.of(ROUTE_CAPABILITY_NAME, true, String.class).addRequirements(UndertowRootDefinition.DEFAULT_ROUTE_CAPABILITY.getName()).build();
 
     static final SimpleAttributeDefinition DEFAULT_HOST = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_HOST, ModelType.STRING)
             .setAllowNull(true)
@@ -58,7 +62,10 @@ class ServerDefinition extends PersistentResourceDefinition {
     static final ServerDefinition INSTANCE = new ServerDefinition();
 
     private ServerDefinition() {
-        super(UndertowExtension.SERVER_PATH, UndertowExtension.getResolver(Constants.SERVER), new ServerAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new Parameters(UndertowExtension.SERVER_PATH, UndertowExtension.getResolver(Constants.SERVER))
+                .setAddHandler(new ServerAdd())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(ROUTE_CAPABILITY));
     }
 
     @Override

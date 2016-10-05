@@ -39,7 +39,7 @@ import org.wildfly.clustering.web.session.RouteLocator;
  * Service providing an Infinispan-based {@link RouteLocator}.
  * @author Paul Ferraro
  */
-public class InfinispanRouteLocatorBuilder implements Builder<RouteLocator>, Value<RouteLocator>, InfinispanRouteLocatorConfiguration {
+public class InfinispanRouteLocatorBuilder implements Builder<RouteLocator>, InfinispanRouteLocatorConfiguration {
 
     private static ServiceName getServiceName(String deploymentName) {
         return ServiceName.JBOSS.append("clustering", "web", "locator", deploymentName);
@@ -77,17 +77,13 @@ public class InfinispanRouteLocatorBuilder implements Builder<RouteLocator>, Val
 
     @Override
     public ServiceBuilder<RouteLocator> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
+        Value<RouteLocator> value = () -> new InfinispanRouteLocator(this);
+        return target.addService(this.getServiceName(), new ValueService<>(value))
                 .addDependency(getNodeFactoryServiceAlias(this.deploymentName), NodeFactory.class, this.factory)
                 .addDependency(getRegistryServiceAlias(this.deploymentName), Registry.class, this.registry)
                 .addDependency(getCacheServiceAlias(this.deploymentName), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
-    }
-
-    @Override
-    public RouteLocator getValue() {
-        return new InfinispanRouteLocator(this);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+package org.wildfly.clustering.web;
+
+import org.jboss.as.clustering.controller.RequirementServiceNameFactory;
+import org.jboss.as.clustering.controller.ServiceNameFactory;
+import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
+import org.wildfly.clustering.service.Requirement;
 
 /**
- * Provides the local {@link Registry} entry containing the route identifier.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProvider implements RegistryEntryProvider<String, Void> {
+public enum DefaultServerRequirement implements Requirement, ServiceNameFactoryProvider {
+    ROUTE("org.wildfly.undertow.default-server.route", String.class),
+    ;
+    private final String name;
+    private final Class<?> type;
+    private final ServiceNameFactory factory;
 
-    private final String route;
-
-    public RouteRegistryEntryProvider(String route) {
-        this.route = route;
+    DefaultServerRequirement(String name, Class<?> type) {
+        this.name = name;
+        this.type = type;
+        this.factory = new RequirementServiceNameFactory(this);
     }
 
     @Override
-    public String getKey() {
-        return this.route;
+    public String getName() {
+        return this.name;
     }
 
     @Override
-    public Void getValue() {
-        return null;
+    public Class<?> getType() {
+        return this.type;
+    }
+
+    @Override
+    public ServiceNameFactory getServiceNameFactory() {
+        return this.factory;
     }
 }

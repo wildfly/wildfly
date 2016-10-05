@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -51,6 +52,9 @@ import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class UndertowRootDefinition extends PersistentResourceDefinition {
+
+    static final RuntimeCapability<Void> DEFAULT_ROUTE_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.undertow.default-server.route", String.class).build();
+
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -99,10 +103,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
 
     private UndertowRootDefinition() {
-        super(UndertowExtension.SUBSYSTEM_PATH,
-                UndertowExtension.getResolver(),
-                new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new Parameters(UndertowExtension.SUBSYSTEM_PATH, UndertowExtension.getResolver())
+                .setAddHandler(new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()))
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(DEFAULT_ROUTE_CAPABILITY));
     }
 
     @Override

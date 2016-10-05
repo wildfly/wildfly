@@ -22,38 +22,43 @@
 
 package org.wildfly.extension.undertow.session;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+import org.wildfly.extension.undertow.ServerDefinition;
 
 /**
  * Service providing a non-distributable {@link SessionIdentifierCodec} implementation.
  * @author Paul Ferraro
  */
-public class SimpleSessionIdentifierCodecService extends AbstractService<SessionIdentifierCodec> {
+public class SimpleSessionIdentifierCodecBuilder {
 
-    public static ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name) {
-        SimpleSessionIdentifierCodecService service = new SimpleSessionIdentifierCodecService();
-        return target.addService(name, service)
-                .addDependency(RouteValueService.SERVICE_NAME, RouteValue.class, service.route)
-        ;
-    }
-
-    private final InjectedValue<RouteValue> route = new InjectedValue<>();
+    private final ServiceName name;
+    private final CapabilityServiceSupport support;
+    private final String serverName;
+    private final InjectedValue<String> route = new InjectedValue<>();
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    private SimpleSessionIdentifierCodecService() {
-        // Hide
+    public SimpleSessionIdentifierCodecBuilder(ServiceName name, CapabilityServiceSupport support, String serverName) {
+        this.name = name;
+        this.support = support;
+        this.serverName = serverName;
     }
 
-    @Override
-    public SessionIdentifierCodec getValue() {
-        return new SimpleSessionIdentifierCodec(this.routing, this.route.getValue());
+    public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target) {
+        Value<SessionIdentifierCodec> value = () -> new SimpleSessionIdentifierCodec(this.routing, this.route.getValue());
+        return target.addService(this.name, new ValueService<>(value))
+                .addDependency(this.support.getCapabilityServiceName(ServerDefinition.ROUTE_CAPABILITY_NAME, this.serverName), String.class, this.route)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                ;
     }
 }

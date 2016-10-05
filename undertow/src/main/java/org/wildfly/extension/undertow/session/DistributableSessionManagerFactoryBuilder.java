@@ -23,6 +23,10 @@ package org.wildfly.extension.undertow.session;
 
 import io.undertow.servlet.api.SessionManagerFactory;
 
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.stream.StreamSupport;
+
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -32,6 +36,9 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Paul Ferraro
  */
 public interface DistributableSessionManagerFactoryBuilder {
+
+    Optional<DistributableSessionManagerFactoryBuilder> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionManagerFactoryBuilder.class, DistributableSessionManagerFactoryBuilder.class.getClassLoader()).spliterator(), false).findFirst();
+
     /**
      * Builds a {@link SessionManagerFactory} service.
      * @param target the service target

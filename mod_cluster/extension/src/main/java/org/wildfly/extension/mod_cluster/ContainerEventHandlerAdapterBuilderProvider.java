@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2016, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,29 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.extension.mod_cluster;
 
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+import java.time.Duration;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 
 /**
- * Provides the local {@link Registry} entry containing the route identifier.
+ * Creates builder of a service that integrates container events with {@link org.jboss.modcluster.container.ContainerEventHandler}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProvider implements RegistryEntryProvider<String, Void> {
-
-    private final String route;
-
-    public RouteRegistryEntryProvider(String route) {
-        this.route = route;
-    }
-
-    @Override
-    public String getKey() {
-        return this.route;
-    }
-
-    @Override
-    public Void getValue() {
-        return null;
-    }
+public interface ContainerEventHandlerAdapterBuilderProvider {
+    CapabilityServiceBuilder<?> getBuilder(String connector, Duration statusInterval);
 }

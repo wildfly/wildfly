@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,38 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.session;
 
-import org.jboss.msc.service.AbstractService;
+package org.jboss.as.clustering.controller;
+
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.clustering.service.Builder;
 
 /**
- * Service that exposes instance id of the server as the route.
+ * Simple {@link CapabilityServiceBuilder} that delegates to an existing {@link Builder}.
  * @author Paul Ferraro
  */
-public class RouteValueService extends AbstractService<RouteValue> {
+public class SimpleCapabilityServiceBuilder<T> implements CapabilityServiceBuilder<T> {
 
-    public static final ServiceName SERVICE_NAME = UndertowService.SERVER.append("route");
+    private final Builder<T> builder;
 
-    public static ServiceBuilder<RouteValue> build(ServiceTarget target) {
-        RouteValueService service = new RouteValueService();
-        return target.addService(SERVICE_NAME, service)
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.service)
-        ;
-    }
-
-    private final InjectedValue<UndertowService> service = new InjectedValue<>();
-
-    private RouteValueService() {
-        // Hide
+    public SimpleCapabilityServiceBuilder(Builder<T> builder) {
+        this.builder = builder;
     }
 
     @Override
-    public RouteValue getValue() {
-        return new RouteValue(this.service.getValue());
+    public ServiceName getServiceName() {
+        return this.builder.getServiceName();
+    }
+
+    @Override
+    public ServiceBuilder<T> build(ServiceTarget target) {
+        return this.builder.build(target);
     }
 }
