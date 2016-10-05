@@ -21,11 +21,25 @@
  */
 package org.jboss.as.jpa.hibernate4.infinispan;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.hibernate.cache.CacheException;
+import org.hibernate.cache.infinispan.impl.BaseRegion;
+import org.hibernate.cache.infinispan.util.CacheCommandFactory;
+import org.hibernate.cache.spi.CacheDataDescription;
+import org.hibernate.cache.spi.CollectionRegion;
+import org.hibernate.cache.spi.EntityRegion;
+import org.hibernate.cache.spi.NaturalIdRegion;
+import org.hibernate.cache.spi.QueryResultsRegion;
+import org.hibernate.cache.spi.Region;
+import org.hibernate.cache.spi.TimestampsRegion;
 import org.hibernate.cfg.AvailableSettings;
-import org.infinispan.AdvancedCache;
+import org.infinispan.commands.module.ModuleCommandFactory;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.jpa.hibernate4.HibernateSecondLevelCache;
 import org.jipijapa.cache.spi.Classification;
@@ -46,12 +60,44 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
 
     private volatile Wrapper wrapper;
 
+    private final Collection<BaseRegion> regions = new LinkedList<>();
+
     public InfinispanRegionFactory() {
         super();
     }
 
     public InfinispanRegionFactory(Properties props) {
         super(props);
+    }
+
+    @Override
+    public CollectionRegion buildCollectionRegion(String regionName, Properties properties, CacheDataDescription metadata) throws CacheException {
+        return this.addRegion(super.buildCollectionRegion(regionName, properties, metadata));
+    }
+
+    @Override
+    public EntityRegion buildEntityRegion(String regionName, Properties properties, CacheDataDescription metadata) throws CacheException {
+        return this.addRegion(super.buildEntityRegion(regionName, properties, metadata));
+    }
+
+    @Override
+    public NaturalIdRegion buildNaturalIdRegion(String regionName, Properties properties, CacheDataDescription metadata) throws CacheException {
+        return this.addRegion(super.buildNaturalIdRegion(regionName, properties, metadata));
+    }
+
+    @Override
+    public QueryResultsRegion buildQueryResultsRegion(String regionName, Properties properties) throws CacheException {
+        return this.addRegion(super.buildQueryResultsRegion(regionName, properties));
+    }
+
+    @Override
+    public TimestampsRegion buildTimestampsRegion(String regionName, Properties properties) throws CacheException {
+        return this.addRegion(super.buildTimestampsRegion(regionName, properties));
+    }
+
+    private <R extends Region> R addRegion(R region) {
+        this.regions.add((BaseRegion) region);
+        return region;
     }
 
     @Override
@@ -84,9 +130,22 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
         Notification.stopCache(Classification.INFINISPAN, wrapper, false );
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
-        return cache;
+    protected void stopCacheRegions() {
+        // Workaround HHH-10545 - Don't invoke super implementation - it will start the default cache!
+        this.getCacheCommandFactory().clearRegions(this.regions.stream().map(region -> region.getName()).collect(Collectors.toList()));
+        // Workaround HHH-10546
+        this.regions.forEach(region -> {
+            region.getCache().stop();
+            this.getCacheManager().undefineConfiguration(region.getCache().getName());
+        });
+        this.regions.clear();
+    }
+
+    private CacheCommandFactory getCacheCommandFactory() {
+        GlobalComponentRegistry components = this.getCacheManager().getGlobalComponentRegistry();
+        @SuppressWarnings("unchecked")
+        Map<Byte, ModuleCommandFactory> factories = (Map<Byte, ModuleCommandFactory>) components.getComponent("org.infinispan.modules.command.factories");
+        return factories.values().stream().filter(factory -> factory instanceof CacheCommandFactory).map(factory -> (CacheCommandFactory) factory).findFirst().orElseThrow(() -> new IllegalStateException());
     }
 }

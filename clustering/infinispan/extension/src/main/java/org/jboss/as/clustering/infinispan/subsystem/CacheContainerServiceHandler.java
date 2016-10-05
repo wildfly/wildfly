@@ -81,8 +81,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         new GlobalConfigurationBuilder(name).configure(context, model).build(target).install();
 
-        String defaultCache = ModelNodes.asString(DEFAULT_CACHE.getDefinition().resolveModelAttribute(context, model));
-        new CacheContainerBuilder(name).setDefaultCache(defaultCache).configure(context, model).build(target).install();
+        new CacheContainerBuilder(name).configure(context, model).build(target).install();
 
         new KeyAffinityServiceFactoryBuilder(name).build(target).install();
 
@@ -93,6 +92,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         }
         bindingBuilder.build(target).install();
 
+        String defaultCache = ModelNodes.asString(DEFAULT_CACHE.getDefinition().resolveModelAttribute(context, model));
         if ((defaultCache != null) && !defaultCache.equals(CacheServiceName.DEFAULT_CACHE)) {
             for (SubGroupServiceNameFactory nameFactory : CacheServiceName.values()) {
                 new AliasServiceBuilder<>(nameFactory.getServiceName(name), nameFactory.getServiceName(name, defaultCache), Object.class).build(target).install();
