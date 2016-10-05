@@ -65,9 +65,12 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
 
     private final VirtualFile deploymentRoot;
 
+    private final boolean warModule;
 
-    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot, Module module) {
+
+    public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot, Module module, boolean warModule) {
         super(serviceRegistry, moduleDescription, module);
+        this.warModule = warModule;
         if (serviceRegistry == null) {
             throw WeldLogger.ROOT_LOGGER.parameterCannotBeNull("serviceRegistry");
         }
@@ -187,7 +190,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
 
     @Override
     protected BindInfo getBindInfo(String result) {
-        return ContextNames.bindInfoFor(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getModuleName(), result);
+        return ContextNames.bindInfoForEnvEntry(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getModuleName(), !warModule, result);
     }
 
     @Override

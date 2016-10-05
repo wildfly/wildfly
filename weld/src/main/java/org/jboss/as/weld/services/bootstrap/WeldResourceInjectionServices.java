@@ -79,6 +79,19 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
 
     private final Context context;
 
+
+    private final boolean warModule;
+
+    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription, Module module, boolean warModule) {
+        super(serviceRegistry, moduleDescription, module);
+        this.warModule = warModule;
+        try {
+            this.context = new InitialContext();
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
         if (injectionPoint.getType() instanceof Class<?>) {
             final Class<?> type = (Class<?>) injectionPoint.getType();
@@ -125,15 +138,6 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
             }
         }
         return proposedName;
-    }
-
-    public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription, Module module) {
-        super(serviceRegistry, moduleDescription, module);
-        try {
-            this.context = new InitialContext();
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     protected String getResourceName(InjectionPoint injectionPoint) {
@@ -186,7 +190,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     @Override
     protected BindInfo getBindInfo(String result) {
         return ContextNames.bindInfoForEnvEntry(moduleDescription.getApplicationName(), moduleDescription.getModuleName(),
-                moduleDescription.getModuleName(), false, result);
+                moduleDescription.getModuleName(), !warModule, result);
     }
 
     @Override
