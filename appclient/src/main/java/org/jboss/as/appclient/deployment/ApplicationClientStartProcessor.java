@@ -132,19 +132,9 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
                     url = new URL(connectionPropertiesUrl);
                 }
                 Properties properties = new Properties();
-                InputStream stream = null;
-                try {
-                    stream = url.openStream();
+                try (InputStream stream = url.openStream()) {
                     properties.load(stream);
-                } finally {
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (IOException e) {
-                            //ignore
-                        }
-                    }
-                }
+                } 
                 final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
