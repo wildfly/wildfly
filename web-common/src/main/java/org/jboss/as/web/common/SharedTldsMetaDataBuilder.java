@@ -38,7 +38,6 @@ import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 
 /**
  * Internal helper creating a shared TLD metadata list based on the domain configuration.
@@ -73,8 +72,6 @@ public class SharedTldsMetaDataBuilder {
                     jstlTlds.add(tldMetaData);
                 }
             }
-        } catch (ModuleLoadException e) {
-            // Ignore
         } catch (Exception e) {
             // Ignore
         }
