@@ -24,6 +24,7 @@ package org.wildfly.clustering.server.provider;
 import java.util.Set;
 
 import org.infinispan.Cache;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -37,7 +38,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
@@ -54,6 +55,7 @@ public class CacheServiceProviderRegistryBuilder<T> extends ServiceProviderRegis
     private final InjectedValue<Group> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private final CapabilityServiceSupport support;
 
     private volatile CacheServiceProviderRegistry<T> factory = null;
 
@@ -61,14 +63,15 @@ public class CacheServiceProviderRegistryBuilder<T> extends ServiceProviderRegis
      * @param containerName
      * @param cacheName
      */
-    public CacheServiceProviderRegistryBuilder(String containerName, String cacheName) {
+    public CacheServiceProviderRegistryBuilder(CapabilityServiceSupport support, String containerName, String cacheName) {
         super(containerName, cacheName);
+        this.support = support;
     }
 
     @Override
     public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
         return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
-                .addDependency(CacheServiceName.CACHE.getServiceName(this.containerName, this.cacheName), Cache.class, this.cache)
+                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, this.containerName, this.cacheName), Cache.class, this.cache)
                 .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
                 .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.controller;
 
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
+import org.wildfly.clustering.service.BinaryRequirement;
 
 /**
- * Provides the service name for the configuration of a cache component
+ * Factory for generating a {@link ServiceName} for a {@link BinaryRequirement}.
  * @author Paul Ferraro
  */
-public class CacheComponentServiceNameProvider implements ServiceNameProvider {
+public class BinaryRequirementServiceNameFactory implements BinaryServiceNameFactory {
 
-    private final SubGroupServiceNameFactory factory;
-    private final String containerName;
-    private final String cacheName;
+    private final BinaryRequirement requirement;
 
-    public CacheComponentServiceNameProvider(SubGroupServiceNameFactory factory, String containerName, String cacheName) {
-        this.factory = factory;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    public BinaryRequirementServiceNameFactory(BinaryRequirement requirement) {
+        this.requirement = requirement;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.factory.getServiceName(this.containerName, this.cacheName);
+    public ServiceName getServiceName(OperationContext context, String parent, String child) {
+        return context.getCapabilityServiceName(this.requirement.resolve(parent, child), this.requirement.getType());
+    }
+
+    @Override
+    public ServiceName getServiceName(CapabilityServiceSupport support, String parent, String child) {
+        return support.getCapabilityServiceName(this.requirement.resolve(parent, child));
     }
 }

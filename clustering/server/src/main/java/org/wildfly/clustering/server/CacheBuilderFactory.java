@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -29,5 +30,5 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 public interface CacheBuilderFactory<T> {
-    Builder<T> createBuilder(String containerName, String cacheName);
+    Builder<T> createBuilder(CapabilityServiceSupport support, String containerName, String cacheName);
 }

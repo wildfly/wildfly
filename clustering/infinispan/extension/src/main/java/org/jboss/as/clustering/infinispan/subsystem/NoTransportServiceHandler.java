@@ -22,11 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
@@ -40,12 +42,13 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        String name = context.getCurrentAddress().getParent().getLastElement().getValue();
+        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        String name = containerAddress.getLastElement().getValue();
 
         ServiceTarget target = context.getServiceTarget();
 
-        new NoTransportBuilder(name).build(target).install();
-        new SiteBuilder(name).build(target).install();
+        new NoTransportBuilder(containerAddress).build(target).install();
+        new SiteBuilder(containerAddress).build(target).install();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, LocalGroupBuilderProvider.LOCAL)) {
@@ -56,7 +59,8 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) {
-        String name = context.getCurrentAddress().getParent().getLastElement().getValue();
+        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        String name = containerAddress.getLastElement().getValue();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, LocalGroupBuilderProvider.LOCAL)) {
@@ -64,8 +68,6 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        for (CacheContainerComponent factory : CacheContainerComponent.values()) {
-            context.removeService(factory.getServiceName(name));
-        }
+        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(containerAddress)).forEach(serviceName -> context.removeService(serviceName));
     }
 }

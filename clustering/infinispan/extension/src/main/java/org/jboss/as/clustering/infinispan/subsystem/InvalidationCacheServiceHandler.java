@@ -28,6 +28,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 public class InvalidationCacheServiceHandler extends ClusteredCacheServiceHandler {
 
     InvalidationCacheServiceHandler() {
-        super(new InvalidationCacheBuilderFactory());
+        super(address -> new InvalidationCacheBuilder(address));
     }
 }

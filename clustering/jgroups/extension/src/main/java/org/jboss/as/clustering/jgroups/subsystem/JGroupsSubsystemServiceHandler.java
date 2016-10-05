@@ -56,9 +56,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
         new ProtocolDefaultsBuilder().build(target).install();
 
-        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.resolveModelAttribute(context, model));
-
-        if (defaultChannel != null) {
+        ModelNodes.optionalString(DEFAULT_CHANNEL.resolveModelAttribute(context, model)).ifPresent(defaultChannel -> {
             CAPABILITIES.entrySet().forEach(entry -> new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, defaultChannel), entry.getKey().getType()).build(target).install());
 
             if (!defaultChannel.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
@@ -71,15 +69,13 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
                     }
                 }
             }
-        }
+        });
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
-        String defaultChannel = ModelNodes.asString(DEFAULT_CHANNEL.resolveModelAttribute(context, model));
-
-        if (defaultChannel != null) {
+        ModelNodes.optionalString(DEFAULT_CHANNEL.resolveModelAttribute(context, model)).ifPresent(defaultChannel -> {
             for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
                 for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), null, defaultChannel)) {
                     context.removeService(builder.getServiceName());
@@ -92,7 +88,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
             }
 
             CAPABILITIES.values().forEach(capability -> context.removeService(capability.getServiceName(address)));
-        }
+        });
 
         context.removeService(ProtocolDefaultsBuilder.SERVICE_NAME);
     }

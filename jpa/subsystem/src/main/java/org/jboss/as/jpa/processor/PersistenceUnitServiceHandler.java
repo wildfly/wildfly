@@ -48,6 +48,7 @@ import javax.validation.ValidatorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
@@ -338,6 +339,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         TransactionManager transactionManager = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER);
         TransactionSynchronizationRegistry transactionSynchronizationRegistry = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
+        CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         try {
             ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
@@ -407,11 +409,11 @@ public class PersistenceUnitServiceHandler {
 
             try {
                 // save a thread local reference to the builder for setting up the second level cache dependencies
-                CacheDeploymentListener.setInternalDeploymentServiceBuilder(builder);
+                CacheDeploymentListener.setInternalDeploymentSupport(builder, capabilitySupport);
                 adaptor.addProviderDependencies(pu);
             }
             finally {
-                CacheDeploymentListener.clearInternalDeploymentServiceBuilder();
+                CacheDeploymentListener.clearInternalDeploymentSupport();
             }
 
             /**
@@ -462,6 +464,7 @@ public class PersistenceUnitServiceHandler {
             final ModuleClassLoader classLoader,
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
+        CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         pu.setClassLoader(classLoader);
         try {
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
@@ -529,11 +532,11 @@ public class PersistenceUnitServiceHandler {
 
             try {
                 // save a thread local reference to the builder for setting up the second level cache dependencies
-                CacheDeploymentListener.setInternalDeploymentServiceBuilder(builder);
+                CacheDeploymentListener.setInternalDeploymentSupport(builder, capabilitySupport);
                 adaptor.addProviderDependencies(pu);
             }
             finally {
-                CacheDeploymentListener.clearInternalDeploymentServiceBuilder();
+                CacheDeploymentListener.clearInternalDeploymentSupport();
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
@@ -576,6 +579,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
         TransactionManager transactionManager = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER);
         TransactionSynchronizationRegistry transactionSynchronizationRegistry = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
+        CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         pu.setClassLoader(classLoader);
         try {
             ValidatorFactory validatorFactory = null;
@@ -652,11 +656,11 @@ public class PersistenceUnitServiceHandler {
 
             try {
                 // save a thread local reference to the builder for setting up the second level cache dependencies
-                CacheDeploymentListener.setInternalDeploymentServiceBuilder(builder);
+                CacheDeploymentListener.setInternalDeploymentSupport(builder, capabilitySupport);
                 adaptor.addProviderDependencies(pu);
             }
             finally {
-                CacheDeploymentListener.clearInternalDeploymentServiceBuilder();
+                CacheDeploymentListener.clearInternalDeploymentSupport();
             }
 
 

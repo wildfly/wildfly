@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
 
-import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.CacheMode;
@@ -43,21 +42,21 @@ import org.infinispan.distribution.group.Grouper;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.Services;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds a cache configuration from its components.
@@ -70,28 +69,48 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
     private final InjectedValue<LockingConfiguration> locking = new InjectedValue<>();
     private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
     private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
-    private final InjectedValue<GlobalConfiguration> global = new InjectedValue<>();
-    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
+    private final InjectedValue<Module> module = new InjectedValue<>();
 
+    private final PathAddress address;
     private final String containerName;
     private final String cacheName;
 
+    private volatile Builder<Configuration> builder;
+    private volatile ValueDependency<GlobalConfiguration> global;
     private volatile JMXStatisticsConfiguration statistics;
-    private volatile ModuleIdentifier module;
 
-    CacheConfigurationBuilder(String containerName, String cacheName) {
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    CacheConfigurationBuilder(PathAddress address) {
+        this.address = address;
+        this.containerName = address.getParent().getLastElement().getValue();
+        this.cacheName = address.getLastElement().getValue();
     }
 
     @Override
     public ServiceName getServiceName() {
-        return CacheServiceName.CONFIGURATION.getServiceName(this.containerName, this.cacheName);
+        return CacheResourceDefinition.Capability.CONFIGURATION.getServiceName(this.address);
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(this.containerName, this.cacheName, this.andThen(builder -> {
+        ServiceBuilder<Configuration> builder = this.builder.build(target)
+                .addDependency(CacheComponent.EVICTION.getServiceName(this.address), EvictionConfiguration.class, this.eviction)
+                .addDependency(CacheComponent.EXPIRATION.getServiceName(this.address), ExpirationConfiguration.class, this.expiration)
+                .addDependency(CacheComponent.LOCKING.getServiceName(this.address), LockingConfiguration.class, this.locking)
+                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.address), PersistenceConfiguration.class, this.persistence)
+                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.address), TransactionConfiguration.class, this.transaction)
+                .addDependency(CacheComponent.MODULE.getServiceName(this.address), Module.class, this.module)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                ;
+        return this.global.register(builder);
+    }
+
+    @Override
+    public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        boolean enabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(enabled).available(enabled).create();
+
+        this.global = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.containerName), GlobalConfiguration.class);
+        this.builder = new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, this.containerName, this.cacheName), this.containerName, this.cacheName, this.andThen(builder -> {
             CacheMode mode = builder.clustering().cacheMode();
 
             if (mode.isSynchronous() && (this.transaction.getValue().lockingMode() == LockingMode.OPTIMISTIC) && (this.locking.getValue().isolationLevel() == IsolationLevel.REPEATABLE_READ)) {
@@ -100,25 +119,8 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
             }
 
             GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
-            ServiceLoader.load(Grouper.class, this.getClassLoader()).forEach(grouper -> groupsBuilder.addGrouper(grouper));
-        })).build(target)
-                .addDependency(CacheComponent.EVICTION.getServiceName(this.containerName, this.cacheName), EvictionConfiguration.class, this.eviction)
-                .addDependency(CacheComponent.EXPIRATION.getServiceName(this.containerName, this.cacheName), ExpirationConfiguration.class, this.expiration)
-                .addDependency(CacheComponent.LOCKING.getServiceName(this.containerName, this.cacheName), LockingConfiguration.class, this.locking)
-                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.containerName, this.cacheName), PersistenceConfiguration.class, this.persistence)
-                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.containerName, this.cacheName), TransactionConfiguration.class, this.transaction)
-                .addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.containerName), GlobalConfiguration.class, this.global)
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-                ;
-    }
-
-    @Override
-    public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.module = ModelNodes.asModuleIdentifier(MODULE.getDefinition().resolveModelAttribute(context, model));
-
-        boolean enabled = STATISTICS_ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean();
-        this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(enabled).available(enabled).create();
-
+            this.module.getValue().loadService(Grouper.class).forEach(grouper -> groupsBuilder.addGrouper(grouper));
+        })).configure(context);
         return this;
     }
 
@@ -130,16 +132,5 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
         builder.persistence().read(this.persistence.getValue());
         builder.transaction().read(this.transaction.getValue());
         builder.jmxStatistics().read(this.statistics);
-    }
-
-    private ClassLoader getClassLoader() {
-        if (this.module != null) {
-            try {
-                return this.loader.getValue().loadModule(this.module).getClassLoader();
-            } catch (ModuleLoadException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-        return this.global.getValue().classLoader();
     }
 }

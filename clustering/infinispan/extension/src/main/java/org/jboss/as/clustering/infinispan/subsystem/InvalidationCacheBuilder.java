@@ -23,13 +23,14 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.PathAddress;
 
 /**
  * @author Paul Ferraro
  */
 public class InvalidationCacheBuilder extends ClusteredCacheBuilder {
 
-    InvalidationCacheBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName, CacheMode.INVALIDATION_SYNC);
+    InvalidationCacheBuilder(PathAddress address) {
+        super(address, CacheMode.INVALIDATION_SYNC);
     }
 }

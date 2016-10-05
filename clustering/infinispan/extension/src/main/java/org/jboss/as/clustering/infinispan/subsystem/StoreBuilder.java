@@ -30,6 +30,8 @@ import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SHARED;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SINGLETON;
 
+import java.util.Properties;
+
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
@@ -37,6 +39,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -46,37 +49,37 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public abstract class StoreBuilder extends CacheComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration> {
+public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration> {
 
     private final InjectedValue<AsyncStoreConfiguration> async = new InjectedValue<>();
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress cacheAddress;
 
     private volatile StoreConfigurationBuilder<?, ?> storeBuilder;
 
-    StoreBuilder(String containerName, String cacheName) {
-        super(CacheComponent.PERSISTENCE, containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    StoreBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.PERSISTENCE, cacheAddress);
+        this.cacheAddress = cacheAddress;
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
         return super.build(target)
-                .addDependency(CacheComponent.STORE_WRITE.getServiceName(this.containerName, this.cacheName), AsyncStoreConfiguration.class, this.async)
+                .addDependency(CacheComponent.STORE_WRITE.getServiceName(this.cacheAddress), AsyncStoreConfiguration.class, this.async)
         ;
     }
 
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.storeBuilder = this.createStore(context, model);
-        this.storeBuilder.persistence().passivation(PASSIVATION.getDefinition().resolveModelAttribute(context, model).asBoolean());
-        this.storeBuilder.fetchPersistentState(FETCH_STATE.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .preload(PRELOAD.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .purgeOnStartup(PURGE.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .shared(SHARED.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .singleton().enabled(SINGLETON.getDefinition().resolveModelAttribute(context, model).asBoolean())
-                .withProperties(ModelNodes.asProperties(PROPERTIES.getDefinition().resolveModelAttribute(context, model)))
+        this.storeBuilder.persistence().passivation(PASSIVATION.resolveModelAttribute(context, model).asBoolean());
+        Properties properties = new Properties();
+        ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(list -> list.forEach(property -> properties.setProperty(property.getName(), property.getValue().asString())));
+        this.storeBuilder.fetchPersistentState(FETCH_STATE.resolveModelAttribute(context, model).asBoolean())
+                .preload(PRELOAD.resolveModelAttribute(context, model).asBoolean())
+                .purgeOnStartup(PURGE.resolveModelAttribute(context, model).asBoolean())
+                .shared(SHARED.resolveModelAttribute(context, model).asBoolean())
+                .singleton().enabled(SINGLETON.resolveModelAttribute(context, model).asBoolean())
+                .withProperties(properties)
         ;
         return this;
     }

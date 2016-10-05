@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -79,13 +78,8 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
     @Override
     public Builder<P> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, model));
-        String binding = ModelNodes.asString(SOCKET_BINDING.resolveModelAttribute(context, model));
-        if (binding != null) {
-            this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, binding), SocketBinding.class);
-        }
-        for (Property property : ModelNodes.asPropertyList(PROPERTIES.resolveModelAttribute(context, model))) {
-            this.properties.put(property.getName(), property.getValue().asString());
-        }
+        this.socketBinding = ModelNodes.optionalString(SOCKET_BINDING.resolveModelAttribute(context, model)).map(binding -> new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, binding), SocketBinding.class)).orElse(null);
+        ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(properties -> properties.forEach(property -> this.properties.put(property.getName(), property.getValue().asString())));
         return this;
     }
 

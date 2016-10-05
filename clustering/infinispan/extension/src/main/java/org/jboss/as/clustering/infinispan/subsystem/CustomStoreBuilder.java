@@ -29,6 +29,7 @@ import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,13 +37,13 @@ import org.jboss.dmr.ModelNode;
  */
 public class CustomStoreBuilder extends StoreBuilder {
 
-    CustomStoreBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    CustomStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress);
     }
 
     @Override
     StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        String className = CLASS.getDefinition().resolveModelAttribute(context, model).asString();
+        String className = CLASS.resolveModelAttribute(context, model).asString();
         try {
             return new ConfigurationBuilder().persistence().addStore(this.getClass().getClassLoader().loadClass(className).asSubclass(StoreConfigurationBuilder.class));
         } catch (ClassNotFoundException | ClassCastException e) {

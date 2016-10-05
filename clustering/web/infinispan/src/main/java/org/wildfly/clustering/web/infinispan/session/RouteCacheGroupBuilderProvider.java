@@ -28,10 +28,11 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
 
@@ -50,24 +51,24 @@ public class RouteCacheGroupBuilderProvider implements CacheGroupBuilderProvider
     }
 
     @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
         List<Builder<?>> builders = new LinkedList<>();
-        if (cacheName.equals(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) {
-            builders.add(new TemplateConfigurationBuilder(containerName, CACHE_NAME, cacheName, builder -> {
+        if (cacheName == null) {
+            builders.add(new TemplateConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, containerName, CACHE_NAME), containerName, CACHE_NAME, cacheName, builder -> {
                 CacheMode mode = builder.clustering().cacheMode();
                 builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
                 builder.persistence().clearStores();
-            }));
-            builders.add(new CacheBuilder<>(containerName, CACHE_NAME));
+            }).configure(support));
+            builders.add(new CacheBuilder<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, CACHE_NAME), containerName, CACHE_NAME).configure(support));
             for (CacheGroupBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-                builders.addAll(provider.getBuilders(containerName, CACHE_NAME));
+                builders.addAll(provider.getBuilders(support, containerName, CACHE_NAME));
             }
         }
         return builders;
     }
 
     @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String aliasCacheName, String targetCacheName) {
-        return this.getBuilders(containerName, aliasCacheName);
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
+        return this.getBuilders(support, containerName, aliasCacheName);
     }
 }

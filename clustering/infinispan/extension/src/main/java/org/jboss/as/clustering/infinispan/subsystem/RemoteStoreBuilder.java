@@ -36,6 +36,7 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -55,8 +56,8 @@ public class RemoteStoreBuilder extends StoreBuilder {
 
     private volatile RemoteStoreConfigurationBuilder storeBuilder;
 
-    public RemoteStoreBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    public RemoteStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress);
     }
 
     @Override
@@ -84,11 +85,11 @@ public class RemoteStoreBuilder extends StoreBuilder {
     @Override
     StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
         this.storeBuilder = new ConfigurationBuilder().persistence().addStore(RemoteStoreConfigurationBuilder.class)
-                .remoteCacheName(CACHE.getDefinition().resolveModelAttribute(context, model).asString())
-                .socketTimeout(SOCKET_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong())
-                .tcpNoDelay(TCP_NO_DELAY.getDefinition().resolveModelAttribute(context, model).asBoolean())
+                .remoteCacheName(CACHE.resolveModelAttribute(context, model).asString())
+                .socketTimeout(SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong())
+                .tcpNoDelay(TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean())
         ;
-        for (String binding : StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.getDefinition().resolveModelAttribute(context, model))) {
+        for (String binding : StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model))) {
             this.bindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class));
         }
         return this.storeBuilder;

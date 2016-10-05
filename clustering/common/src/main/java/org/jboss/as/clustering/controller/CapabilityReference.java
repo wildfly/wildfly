@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
+import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -48,6 +49,15 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      */
     public CapabilityReference(Capability capability, UnaryRequirement requirement) {
         this(capability, requirement, (context, value) -> (value != null) ? Optional.of(requirement.resolve(value)) : Optional.empty());
+    }
+
+    /**
+     * Creates a new reference between the specified capability and the specified requirement
+     * @param capability the capability referencing the specified requirement
+     * @param requirement the requirement of the specified capability
+     */
+    public CapabilityReference(Capability capability, BinaryRequirement requirement) {
+        this(capability, requirement, (context, value) -> (value != null) ? Optional.of(requirement.resolve(context.getCurrentAddressValue(), value)) : Optional.empty());
     }
 
     CapabilityReference(Capability capability, Requirement requirement, BiFunction<OperationContext, String, Optional<String>> requirementResolver) {

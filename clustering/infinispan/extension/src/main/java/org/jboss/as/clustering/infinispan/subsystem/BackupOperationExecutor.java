@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 
 /**
  * Operation handler for backup site operations.
@@ -47,7 +47,7 @@ public class BackupOperationExecutor implements OperationExecutor<BackupOperatio
         String cacheName = cacheAddress.getLastElement().getValue();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
 
-        final Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(true), CacheServiceName.CACHE.getServiceName(containerName, cacheName));
+        final Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName));
 
         BackupOperationContext operationContext = new BackupOperationContext() {
             @Override

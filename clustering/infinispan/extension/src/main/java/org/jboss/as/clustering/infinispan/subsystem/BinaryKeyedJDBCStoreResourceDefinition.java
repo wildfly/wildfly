@@ -105,10 +105,10 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
                     final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
                     if (binaryTableModel != null && binaryTableModel.isDefined()) {
-                        model.get(DeprecatedAttribute.TABLE.getDefinition().getName()).set(binaryTableModel);
+                        model.get(DeprecatedAttribute.TABLE.getName()).set(binaryTableModel);
                     }
 
-                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getDefinition().getName());
+                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getName());
                     final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
 
                     LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
@@ -144,8 +144,8 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
             ModelNode table = Operations.getAttributeValue(operation);
             for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(BinaryTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class)) {
                 for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
-                    ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(address, attribute, table.get(attribute.getDefinition().getName()));
-                    context.addStep(writeAttributeOperation, context.getResourceRegistration().getAttributeAccess(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), attribute.getDefinition().getName()).getWriteHandler(), context.getCurrentStage());
+                    ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(address, attribute, table.get(attribute.getName()));
+                    context.addStep(writeAttributeOperation, context.getResourceRegistration().getAttributeAccess(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), attribute.getName()).getWriteHandler(), context.getCurrentStage());
                 }
             }
         }
@@ -165,15 +165,15 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryKeyedJDBCStoreBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler) {
             @Override
             protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
                 translateAddOperation(context, operation);
-                if (operation.hasDefined(DeprecatedAttribute.TABLE.getDefinition().getName())) {
+                if (operation.hasDefined(DeprecatedAttribute.TABLE.getName())) {
                     // Translate deprecated TABLE attribute into separate add table operation
                     ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH));
-                    ModelNode parameters = operation.get(DeprecatedAttribute.TABLE.getDefinition().getName());
+                    ModelNode parameters = operation.get(DeprecatedAttribute.TABLE.getName());
                     for (Property parameter : parameters.asPropertyList()) {
                         addTableOperation.get(parameter.getName()).set(parameter.getValue());
                     }

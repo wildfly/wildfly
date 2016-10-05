@@ -129,6 +129,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                 .addAttributes(ClusteredCacheResourceDefinition.DeprecatedAttribute.class)
                 .addAttributes(CacheResourceDefinition.Attribute.class)
                 .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
+                .addCapabilities(CacheResourceDefinition.Capability.class)
                 .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
                 .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)
                 .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)

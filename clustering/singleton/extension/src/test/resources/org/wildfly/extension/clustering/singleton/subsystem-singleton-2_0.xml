@@ -1,0 +1,14 @@
+<subsystem xmlns="urn:jboss:domain:singleton:2.0">
+    <singleton-policies default="simple">
+        <singleton-policy name="simple" cache-container="container" cache="cache" quorum="2">
+            <simple-election-policy position="-1">
+                <name-preferences>node0 node1</name-preferences>
+            </simple-election-policy>
+        </singleton-policy>
+        <singleton-policy name="random" cache-container="container">
+            <random-election-policy>
+                <socket-binding-preferences>binding0 binding1</socket-binding-preferences>
+            </random-election-policy>
+        </singleton-policy>
+    </singleton-policies>
+</subsystem>

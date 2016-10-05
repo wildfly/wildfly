@@ -21,28 +21,15 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryBuilderProvider implements LocalCacheGroupBuilderProvider {
+public class LocalSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements LocalCacheGroupBuilderProvider {
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String cacheName) {
-        return Collections.<Builder<?>>singleton(new LocalSingletonServiceBuilderFactoryBuilder<>(containerName, cacheName));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public LocalSingletonServiceBuilderFactoryBuilderProvider() {
+        super((support, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(containerName, cacheName));
     }
 }

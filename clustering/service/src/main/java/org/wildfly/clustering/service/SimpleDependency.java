@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.service;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
+ * Simple {@link Dependency} that does not provide a value.
  * @author Paul Ferraro
  */
-public class DistributedCacheBuilderFactory implements ResourceServiceBuilderFactory<Configuration> {
+public class SimpleDependency implements Dependency {
 
-    @Override
-    public ResourceServiceBuilder<Configuration> createBuilder(PathAddress address) {
-        String containerName = address.getParent().getLastElement().getValue();
-        String cacheName = address.getLastElement().getValue();
+    private final ServiceName name;
 
-        return new DistributedCacheBuilder(containerName, cacheName);
+    public SimpleDependency(ServiceName name) {
+        this.name = name;
     }
 
+    @Override
+    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
+        return builder.addDependency(this.name);
+    }
 }

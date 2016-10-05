@@ -83,14 +83,16 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
     public Builder<SingletonElectionPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.preferences.clear();
         this.dependencies.clear();
-        for (String bindingName : ModelNodes.asStringList(SOCKET_BINDING_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
-            InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, bindingName), OutboundSocketBinding.class);
-            this.preferences.add(new OutboundSocketBindingPreference(binding));
-            this.dependencies.add(binding);
-        }
-        for (String nodeName : ModelNodes.asStringList(NAME_PREFERENCES.getDefinition().resolveModelAttribute(context, model))) {
-            this.preferences.add(new NamePreference(nodeName));
-        }
+        ModelNodes.optionalList(SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model)).ifPresent(bindings -> {
+            bindings.stream().map(ModelNode::asString).forEach(bindingName -> {
+                InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, bindingName), OutboundSocketBinding.class);
+                this.preferences.add(new OutboundSocketBindingPreference(binding));
+                this.dependencies.add(binding);
+            });
+        });
+        ModelNodes.optionalList(NAME_PREFERENCES.resolveModelAttribute(context, model)).ifPresent(names -> {
+            names.stream().map(ModelNode::asString).forEach(name -> this.preferences.add(new NamePreference(name)));
+        });
         return this;
     }
 }

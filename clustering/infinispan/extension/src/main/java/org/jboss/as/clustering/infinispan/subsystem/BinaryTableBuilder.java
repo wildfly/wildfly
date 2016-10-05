@@ -22,13 +22,15 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.PathAddress;
+
 /**
  * Builds a service providing a {@link org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration}.
  * @author Paul Ferraro
  */
 public class BinaryTableBuilder extends TableBuilder {
 
-    BinaryTableBuilder(String containerName, String cacheName) {
-        super(BinaryTableResourceDefinition.Attribute.PREFIX, CacheComponent.BINARY_TABLE, containerName, cacheName);
+    BinaryTableBuilder(PathAddress cacheAddress) {
+        super(BinaryTableResourceDefinition.Attribute.PREFIX, CacheComponent.BINARY_TABLE, cacheAddress);
     }
 }

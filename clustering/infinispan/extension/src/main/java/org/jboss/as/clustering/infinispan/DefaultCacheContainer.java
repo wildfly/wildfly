@@ -30,7 +30,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
@@ -41,10 +40,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     private final String name;
     private final BatcherFactory batcherFactory;
     private final String defaultCacheName;
-
-    public DefaultCacheContainer(String name, EmbeddedCacheManager container, String defaultCacheName) {
-        this(name, container, defaultCacheName, new InfinispanBatcherFactory());
-    }
 
     public DefaultCacheContainer(String name, EmbeddedCacheManager container, String defaultCacheName, BatcherFactory batcherFactory) {
         super(container);
@@ -98,10 +93,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this.cm.getCacheConfiguration(this.getCacheName(name));
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.CacheContainer#getCache()
-     */
     @Override
     public <K, V> Cache<K, V> getCache() {
         return this.getCache(this.defaultCacheName);
@@ -181,7 +172,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private String getCacheName(String name) {
-        return ((name == null) || name.equals(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP)) ? this.defaultCacheName : name;
+        return (name != null) ? name : this.defaultCacheName;
     }
 
     /**

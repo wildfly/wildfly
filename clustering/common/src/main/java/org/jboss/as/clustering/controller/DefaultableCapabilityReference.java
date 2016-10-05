@@ -24,9 +24,12 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Optional;
 
+import org.wildfly.clustering.service.DefaultableBinaryRequirement;
 import org.wildfly.clustering.service.DefaultableUnaryRequirement;
 
 /**
+ * {@link org.jboss.as.controller.CapabilityReferenceRecorder} that delegates to {@link Capability#resolve(org.jboss.as.controller.PathAddress)} to generate the name of the dependent capability
+ * and uses a default requirement if the associated attribute is undefined.
  * @author Paul Ferraro
  */
 public class DefaultableCapabilityReference extends CapabilityReference {
@@ -38,5 +41,14 @@ public class DefaultableCapabilityReference extends CapabilityReference {
      */
     public DefaultableCapabilityReference(Capability capability, DefaultableUnaryRequirement requirement) {
         super(capability, requirement, (context, value) -> Optional.of((value != null) ? requirement.resolve(value) : requirement.getDefaultRequirement().getName()));
+    }
+
+    /**
+     * Creates a new reference between the specified capability and the specified requirement
+     * @param capability the capability referencing the specified requirement
+     * @param requirement the requirement of the specified capability
+     */
+    public DefaultableCapabilityReference(Capability capability, DefaultableBinaryRequirement requirement) {
+        super(capability, requirement, (context, value) -> Optional.of((value != null) ? requirement.resolve(context.getCurrentAddressValue(), value) : requirement.getDefaultRequirement().resolve(context.getCurrentAddressValue())));
     }
 }

@@ -24,13 +24,11 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
@@ -40,23 +38,19 @@ import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 
 /**
  * Scheduled thread pool resource definitions for Infinispan subsystem.
@@ -67,7 +61,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
  * @author Radoslav Husar
  * @version Mar 2015
  */
-public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition, Registration<ManagementResourceRegistration>, ScheduledThreadPoolDefinition {
+public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionProvider, ScheduledThreadPoolDefinition {
 
     EXPIRATION("expiration", 1, 60000), // called eviction prior to Infinispan 8
     ;
@@ -78,14 +72,13 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
         return PathElement.pathElement("thread-pool", name);
     }
 
-    private final String name;
-    private final ResourceDescriptionResolver descriptionResolver;
-    private final SimpleAttribute maxThreads;
-    private final SimpleAttribute keepAliveTime;
+    private final SimpleResourceDefinition definition;
+    private final Attribute maxThreads;
+    private final Attribute keepAliveTime;
 
     ScheduledThreadPoolResourceDefinition(String name, int defaultMaxThreads, long defaultKeepaliveTime) {
-        this.name = name;
-        this.descriptionResolver = new InfinispanResourceDescriptionResolver(pathElement(name), pathElement(PathElement.WILDCARD_VALUE));
+        PathElement path = pathElement(name);
+        this.definition = new SimpleResourceDefinition(path, new InfinispanResourceDescriptionResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
     }
@@ -102,61 +95,22 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
     }
 
     @Override
-    public PathElement getPathElement() {
-        return pathElement(this.name);
+    public ResourceDefinition getDefinition() {
+        return this.definition;
     }
 
     @Override
-    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration registration) {
-        return new DefaultResourceDescriptionProvider(registration, this.descriptionResolver);
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.descriptionResolver).addAttributes(this.getAttributes());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new ScheduledThreadPoolBuilderFactory(this));
+    public void register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ScheduledThreadPoolBuilder(this, address.getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        // No-op.
-    }
-
-    @Override
-    public void registerNotifications(ManagementResourceRegistration registration) {
-        // No-op.
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration registration) {
-        // No-op.
-    }
-
-    @Override
-    public List<AccessConstraintDefinition> getAccessConstraints() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isRuntime() {
-        return false;
-    }
-
-    @Override
-    public boolean isOrderedChild() {
-        return false;
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        registration.registerSubModel(this);
-    }
-
-    @Override
-    public ServiceName getServiceName(String containerName) {
-        return CacheContainerServiceName.CONFIGURATION.getServiceName(containerName).append(this.getPathElement().getKeyValuePair());
+    public ServiceName getServiceName(PathAddress containerAddress) {
+        return CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(containerAddress).append(this.getPathElement().getKeyValuePair());
     }
 
     @Override
@@ -180,5 +134,4 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinition,
     DynamicDiscardPolicy getDiscardPolicy() {
         return new UndefinedAttributesDiscardPolicy(this.getAttributes());
     }
-
 }
