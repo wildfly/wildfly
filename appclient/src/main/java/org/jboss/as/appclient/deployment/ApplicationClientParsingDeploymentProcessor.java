@@ -110,23 +110,13 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
             descriptor = deploymentRoot.getRoot().getChild(APP_XML);
         }
         if (descriptor.exists()) {
-            InputStream is = null;
-            try {
-                is = descriptor.openStream();
+            try (InputStream is = descriptor.openStream()) {
                 ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
             }
         } else {
             return null;
@@ -137,9 +127,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile appXml = deploymentRoot.getChild(JBOSS_CLIENT_XML);
         if (appXml.exists()) {
-            InputStream is = null;
-            try {
-                is = appXml.openStream();
+            try (InputStream is = appXml.openStream()) {
                 JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
@@ -147,14 +135,6 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
 
             } catch (IOException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
             }
         } else {
             //we may already have this info from jboss-all.xml
