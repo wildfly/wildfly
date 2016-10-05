@@ -52,8 +52,6 @@ import org.jboss.ejb.client.remoting.RemotingConnectionEJBReceiver;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -303,7 +301,8 @@ public abstract class AnnSBTest {
                 .with(
                         MatchRule.ALL,
                         AuthenticationConfiguration.EMPTY
-                                .useCallbackHandler(new AuthenticationCallbackHandler(username, password)));
+                                .useCallbackHandler(new AuthenticationCallbackHandler(username, password))
+                                .allowSaslMechanisms("JBOSS-LOCAL-USER", "DIGEST-MD5"));
         final IoFuture<Connection> futureConnection = endpoint.connect(connectionURI, builder.getMap(), authenticationContext);
         // wait for the connection to be established
         final Connection connection = IoFutureHelper.get(futureConnection, 5000, TimeUnit.MILLISECONDS);
