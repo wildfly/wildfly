@@ -155,5 +155,27 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
             store.remove(id);
             this.contextIdStore = store;
         }
+
+        /*
+         * Default implementation of the Weld 1.2 API
+         *
+         * This provides forward binary compatibility with Weld 1.2 (OSGi integration).
+         * It is OK to ignore the id parameter as TCCL is still used to identify the singleton in Java EE.
+         */
+        public T get(String id) {
+            return get();
+        }
+
+        public boolean isSet(String id) {
+            return isSet();
+        }
+
+        public void set(String id, T object) {
+            set(object);
+        }
+
+        public void clear(String id) {
+            clear();
+        }
     }
 }
