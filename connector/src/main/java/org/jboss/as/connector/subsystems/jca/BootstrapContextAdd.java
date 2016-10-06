@@ -59,13 +59,16 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
         String name = JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
         String workmanager = JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().resolveModelAttribute(context, model).asString();
         boolean usingDefaultWm = false;
-        if (DEFAULT_NAME.equals( workmanager)) {
+        CloneableBootstrapContext ctx;
+        if (DEFAULT_NAME.equals(workmanager)) {
             usingDefaultWm = true;
+            ctx = new NamedBootstrapContext(name);
+        } else {
+            ctx = new NamedBootstrapContext(name, workmanager);
         }
 
         ServiceTarget serviceTarget = context.getServiceTarget();
 
-        CloneableBootstrapContext ctx = new NamedBootstrapContext(name);
                 final BootStrapContextService bootCtxService = new BootStrapContextService(ctx, name, usingDefaultWm);
                 serviceTarget
                         .addService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(name), bootCtxService)
