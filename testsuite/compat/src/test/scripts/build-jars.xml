@@ -30,6 +30,7 @@
     <copy file="${dom4j:dom4j:jar}"                                 tofile="${tests.output.dir}/test-libs/dom4j.jar"/>
     <copy file="${org.wildfly:jipijapa-hibernate5:jar}"           tofile="${tests.output.dir}/test-libs/jipijapa-hibernate5.jar"/>
     <copy file="${antlr:antlr:jar}"                                 tofile="${tests.output.dir}/test-libs/antlr.jar"/>
+    <copy file="${com.fasterxml:classmate:jar}"                     tofile="${tests.output.dir}/test-libs/classmate.jar"/>
 
     <!-- create the eclipselink module to test with -->
     <copy file="${org.eclipse.persistence:eclipselink:jar}"         tofile="${tests.output.dir}/modules/org/eclipse/persistence/test/eclipselink.jar"/>
