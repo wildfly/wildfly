@@ -23,6 +23,8 @@ package org.wildfly.clustering.jgroups.spi;
 
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.jboss.as.network.SocketBinding;
 import org.jboss.modules.ModuleIdentifier;
 
@@ -43,4 +45,6 @@ public interface ProtocolConfiguration {
     SocketBinding getSocketBinding();
 
     ModuleIdentifier getModule();
+
+    DataSource getDataSource();
 }

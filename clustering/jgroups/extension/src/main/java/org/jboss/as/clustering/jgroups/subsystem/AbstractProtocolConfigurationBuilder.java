@@ -27,6 +27,8 @@ import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefiniti
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -57,6 +59,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
     private final Map<String, String> properties = new HashMap<>();
     private ModuleIdentifier module = ProtocolConfiguration.DEFAULT_MODULE;
     private ValueDependency<SocketBinding> socketBinding;
+    private ValueDependency<DataSource> dataSource;
 
     public AbstractProtocolConfigurationBuilder(PathAddress address) {
         this(address.getParent(), address.getLastElement().getValue());
@@ -73,6 +76,9 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
         if (this.socketBinding != null) {
             this.socketBinding.register(builder);
         }
+        if (this.dataSource != null) {
+            this.dataSource.register(builder);
+        }
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
@@ -82,6 +88,10 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
         String binding = ModelNodes.asString(SOCKET_BINDING.resolveModelAttribute(context, model));
         if (binding != null) {
             this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, binding), SocketBinding.class);
+        }
+        String dataSource = ModelNodes.asString(DATA_SOURCE.resolveModelAttribute(context, model));
+        if (dataSource != null) {
+            this.dataSource = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
         }
         for (Property property : ModelNodes.asPropertyList(PROPERTIES.resolveModelAttribute(context, model))) {
             this.properties.put(property.getName(), property.getValue().asString());
@@ -121,5 +131,10 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends ProtocolCon
     @Override
     public String toString() {
         return this.name;
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return (this.dataSource != null) ? this.dataSource.getValue() : null;
     }
 }
