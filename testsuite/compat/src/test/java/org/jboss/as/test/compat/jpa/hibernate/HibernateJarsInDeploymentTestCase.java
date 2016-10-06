@@ -60,12 +60,14 @@ public class HibernateJarsInDeploymentTestCase {
         File jipi = new File(testdir,"jipijapa-hibernate5.jar");
         File dom4j = new File(testdir, "dom4j.jar");
         File antlr = new File(testdir, "antlr.jar");
+        File classmate = new File(testdir, "classmate.jar");
         ear.addAsLibraries(
                 hibernatecore,
                 hibernateannotations,
                 hibernateentitymanager,
                 dom4j,
                 antlr,
+                classmate,
                 jipi
         );
     }
