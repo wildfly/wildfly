@@ -105,15 +105,12 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
             manager.addListener(this);
             manager.start();
             InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
-            manager.getGlobalComponentRegistry().start();
             return manager;
         };
         Consumer<EmbeddedCacheManager> destroyer = manager -> {
-            if (manager.getStatus().allowInvocations()) {
-                manager.stop();
-                InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
-            }
+            manager.stop();
             manager.removeListener(this);
+            InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
         };
         Service<CacheContainer> service = new SuppliedValueService<>(mapper, supplier, destroyer);
         ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), service)
