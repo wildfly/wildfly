@@ -26,7 +26,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,10 +47,10 @@ public class EjbInjectionIntoCdiBeanTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
-        jar.addPackage(EjbInjectionIntoCdiBeanTestCase.class.getPackage());
-        jar.addAsManifestResource(new StringAsset(""), "beans.xml");
-        return jar;
+        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        war.addPackage(EjbInjectionIntoCdiBeanTestCase.class.getPackage());
+        war.addAsWebInfResource(new StringAsset(""), "beans.xml");
+        return war;
     }
 
     @Inject
@@ -63,6 +63,7 @@ public class EjbInjectionIntoCdiBeanTestCase {
     public void testEjbInjection() {
         Assert.assertNotNull(bean.getBus());
         Assert.assertNotNull(bean.getLookupBus());
+        Assert.assertNotNull(bean.getLookupBus2());
     }
 
     @Test

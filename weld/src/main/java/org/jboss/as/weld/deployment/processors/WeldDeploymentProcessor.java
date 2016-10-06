@@ -40,6 +40,8 @@ import javax.transaction.UserTransaction;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.JavaNamespaceSetup;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
@@ -200,10 +202,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
             //we have to do this here as the aggregate components are not available in earlier phases
             final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, subDeploymentRoot.getRoot(), subDeploymentModule);
+            final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, subDeploymentRoot.getRoot(), subDeploymentModule, DeploymentTypeMarker.isType(DeploymentType.WAR, subDeployment));
             bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
 
-            final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, subDeploymentModule);
+            final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, subDeploymentModule, DeploymentTypeMarker.isType(DeploymentType.WAR, subDeployment));
             bdm.addService(ResourceInjectionServices.class, resourceInjectionServices);
 
             final CompositeIndex index = subDeployment.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
@@ -227,8 +229,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(),
-                eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot(), module);
-        final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, module);
+                eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot(), module, DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit));
+        final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, module, DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit));
         final WeldClassFileServices classFileServices = (rootIndex != null ? new WeldClassFileServices(rootIndex, module.getClassLoader()) : null);
 
 
