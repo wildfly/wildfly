@@ -22,6 +22,7 @@
 package org.wildfly.test.extension.rts;
 
 import java.io.File;
+import java.lang.reflect.ReflectPermission;
 import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,6 +75,9 @@ public final class ParticipantTestCase extends AbstractTestCase {
                         new PropertyPermission("management.address", "read"),
                         new PropertyPermission("node0", "read"),
                         new PropertyPermission("jboss.http.port", "read"),
+                        new PropertyPermission("arquillian.debug", "read"),
+                        new ReflectPermission("suppressAccessChecks"),
+                        new RuntimePermission("accessDeclaredMembers"),
                         // Permissions required to access SERVER_HOST_PORT
                         new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
                 ), "permissions.xml");
