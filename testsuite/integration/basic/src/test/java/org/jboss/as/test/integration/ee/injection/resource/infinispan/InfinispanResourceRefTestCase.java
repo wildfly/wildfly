@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
+import javax.management.MBeanPermission;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -37,6 +38,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.ReflectPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * @author Paul Ferraro
  */
@@ -51,6 +56,15 @@ public class InfinispanResourceRefTestCase {
                 Descriptors.create(ManifestDescriptor.class)
                         .attribute("Dependencies", "org.infinispan export")
                         .exportAsString()));
+
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new MBeanPermission("-#-[-]", "queryNames"),
+                new MBeanPermission("org.infinispan.*[jboss.infinispan:*,type=Cache]", "registerMBean"),
+                new ReflectPermission("suppressAccessChecks"),
+                new RuntimePermission("accessDeclaredMembers"),
+                new RuntimePermission("getClassLoader")
+        ), "permissions.xml");
+
         return war;
     }
 
