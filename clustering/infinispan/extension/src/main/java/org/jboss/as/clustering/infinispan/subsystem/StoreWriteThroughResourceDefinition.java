@@ -52,7 +52,7 @@ public class StoreWriteThroughResourceDefinition extends StoreWriteResourceDefin
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new StoreWriteThroughBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new StoreWriteThroughBuilder(address.getParent().getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }

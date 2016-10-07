@@ -32,6 +32,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -45,18 +46,18 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
 
     private volatile ClusteringConfiguration clustering;
 
-    ClusteredCacheBuilder(String containerName, String cacheName, CacheMode mode) {
-        super(containerName, cacheName);
+    ClusteredCacheBuilder(PathAddress address, CacheMode mode) {
+        super(address);
         this.mode = mode;
     }
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        Mode mode = ModelNodes.asEnum(ClusteredCacheResourceDefinition.Attribute.MODE.getDefinition().resolveModelAttribute(context, model), Mode.class);
+        Mode mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), Mode.class);
         ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering().cacheMode(mode.apply(this.mode));
 
         if (mode.isSynchronous()) {
-            builder.sync().replTimeout(REMOTE_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
+            builder.sync().replTimeout(REMOTE_TIMEOUT.resolveModelAttribute(context, model).asLong());
         } else {
             builder.async();
         }

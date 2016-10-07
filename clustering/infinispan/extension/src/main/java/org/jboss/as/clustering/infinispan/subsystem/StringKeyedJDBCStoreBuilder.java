@@ -28,6 +28,7 @@ import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigu
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -40,20 +41,18 @@ public class StringKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcStringBase
 
     private final InjectedValue<TableManipulationConfiguration> table = new InjectedValue<>();
 
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress cacheAddress;
 
     private volatile JdbcStringBasedStoreConfigurationBuilder builder;
 
-    public StringKeyedJDBCStoreBuilder(String containerName, String cacheName) {
-        super(JdbcStringBasedStoreConfigurationBuilder.class, containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    public StringKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
+        super(JdbcStringBasedStoreConfigurationBuilder.class, cacheAddress);
+        this.cacheAddress = cacheAddress;
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(CacheComponent.STRING_TABLE.getServiceName(this.containerName, this.cacheName), TableManipulationConfiguration.class, this.table);
+        return super.build(target).addDependency(CacheComponent.STRING_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.table);
     }
 
     @Override

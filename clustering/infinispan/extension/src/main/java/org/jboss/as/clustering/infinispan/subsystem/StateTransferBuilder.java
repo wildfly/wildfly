@@ -31,18 +31,19 @@ import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class StateTransferBuilder extends CacheComponentBuilder<StateTransferConfiguration> implements ResourceServiceBuilder<StateTransferConfiguration> {
+public class StateTransferBuilder extends ComponentBuilder<StateTransferConfiguration> implements ResourceServiceBuilder<StateTransferConfiguration> {
 
     private final StateTransferConfigurationBuilder builder = new ConfigurationBuilder().clustering().stateTransfer();
 
-    StateTransferBuilder(String containerName, String cacheName) {
-        super(CacheComponent.STATE_TRANSFER, containerName, cacheName);
+    StateTransferBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.STATE_TRANSFER, cacheAddress);
     }
 
     @Override
@@ -52,9 +53,9 @@ public class StateTransferBuilder extends CacheComponentBuilder<StateTransferCon
 
     @Override
     public Builder<StateTransferConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.chunkSize(CHUNK_SIZE.getDefinition().resolveModelAttribute(context, model).asInt())
+        this.builder.chunkSize(CHUNK_SIZE.resolveModelAttribute(context, model).asInt())
                 .fetchInMemoryState(true)
-                .timeout(TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong())
+                .timeout(TIMEOUT.resolveModelAttribute(context, model).asLong())
         ;
         return this;
     }

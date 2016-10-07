@@ -22,11 +22,12 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.infinispan.Cache;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -36,20 +37,21 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
+    private final CapabilityServiceSupport support;
     private final String host;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
 
-    public InfinispanSSOManagerFactoryBuilder(String host) {
+    public InfinispanSSOManagerFactoryBuilder(CapabilityServiceSupport support, String host) {
+        this.support = support;
         this.host = host;
     }
 
@@ -61,16 +63,16 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements Builder<SSOMana
     @Override
     public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
         String containerName = DEFAULT_CACHE_CONTAINER;
-        String templateCacheName = SubGroupServiceNameFactory.DEFAULT_SUB_GROUP;
+        String templateCacheName = null;
         String cacheName = this.host;
 
-        new TemplateConfigurationBuilder(containerName, cacheName, templateCacheName).build(target).install();
+        new TemplateConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(this.support, containerName, cacheName), containerName, cacheName, templateCacheName).configure(this.support).build(target).install();
 
-        new CacheBuilder<>(containerName, cacheName).build(target).install();
+        new CacheBuilder<>(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), containerName, cacheName).configure(this.support).build(target).install();
 
         return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class, this.cache)
-                .addDependency(CacheContainerServiceName.AFFINITY.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
+                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), Cache.class, this.cache)
+                .addDependency(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(this.support, containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
                 .addDependency(ServiceName.JBOSS.append("as", "service-module-loader"), ModuleLoader.class, this.loader)
         ;
     }

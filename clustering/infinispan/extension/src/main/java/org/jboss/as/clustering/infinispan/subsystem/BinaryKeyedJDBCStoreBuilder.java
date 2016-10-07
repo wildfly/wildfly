@@ -28,6 +28,7 @@ import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfiguratio
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -40,21 +41,18 @@ import org.jboss.msc.value.InjectedValue;
 public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStoreConfiguration, JdbcBinaryStoreConfigurationBuilder> {
 
     private final InjectedValue<TableManipulationConfiguration> table = new InjectedValue<>();
-
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress cacheAddress;
 
     private volatile JdbcBinaryStoreConfigurationBuilder builder;
 
-    BinaryKeyedJDBCStoreBuilder(String containerName, String cacheName) {
-        super(JdbcBinaryStoreConfigurationBuilder.class, containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    BinaryKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
+        super(JdbcBinaryStoreConfigurationBuilder.class, cacheAddress);
+        this.cacheAddress = cacheAddress;
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(CacheComponent.BINARY_TABLE.getServiceName(this.containerName, this.cacheName), TableManipulationConfiguration.class, this.table);
+        return super.build(target).addDependency(CacheComponent.BINARY_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.table);
     }
 
     @Override

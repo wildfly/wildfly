@@ -22,10 +22,13 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.transform.description.TransformationDescription;
 
 /**
  * Extension point for singleton subsystem.
@@ -41,12 +44,15 @@ public class SingletonExtension implements Extension {
 
         new SingletonResourceDefinition().register(registration);
         registration.registerXMLElementWriter(new SingletonXMLWriter());
+
+        if (context.isRegisterTransformers()) {
+            // Register transformers for all but the current model
+            EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT)).stream().map(model -> model.getVersion()).forEach(version -> TransformationDescription.Tools.register(SingletonResourceDefinition.buildTransformers(version), registration, version));
+        }
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (SingletonSchema schema: SingletonSchema.values()) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema));
-        }
+        EnumSet.allOf(SingletonSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema)));
     }
 }

@@ -31,6 +31,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -44,12 +45,12 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguration> implements ResourceServiceBuilder<SiteConfiguration> {
+public class SiteBuilder extends ComponentBuilder<SiteConfiguration> implements ResourceServiceBuilder<SiteConfiguration> {
 
     private volatile ValueDependency<ChannelFactory> factory;
 
-    public SiteBuilder(String containerName) {
-        super(CacheContainerComponent.SITE, containerName);
+    public SiteBuilder(PathAddress containerAddress) {
+        super(CacheContainerComponent.SITE, containerAddress);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class SiteBuilder extends CacheContainerComponentBuilder<SiteConfiguratio
 
     @Override
     public Builder<SiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
+        String channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channel), ChannelFactory.class);
         return this;
     }

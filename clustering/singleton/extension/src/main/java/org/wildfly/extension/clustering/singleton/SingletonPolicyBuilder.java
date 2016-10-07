@@ -26,6 +26,7 @@ import static org.wildfly.extension.clustering.singleton.SingletonPolicyResource
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability.*;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -77,9 +78,9 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
 
     @Override
     public Builder<SingletonPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.containerName = CACHE_CONTAINER.getDefinition().resolveModelAttribute(context, model).asString();
-        this.cacheName = CACHE.getDefinition().resolveModelAttribute(context, model).asString();
-        this.quorum = QUORUM.getDefinition().resolveModelAttribute(context, model).asInt();
+        this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
+        this.cacheName = ModelNodes.optionalString(CACHE.getDefinition().resolveModelAttribute(context, model)).orElse(null);
+        this.quorum = QUORUM.resolveModelAttribute(context, model).asInt();
         return this;
     }
 

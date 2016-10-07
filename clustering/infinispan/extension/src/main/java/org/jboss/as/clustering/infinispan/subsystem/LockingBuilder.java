@@ -35,18 +35,19 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class LockingBuilder extends CacheComponentBuilder<LockingConfiguration> implements ResourceServiceBuilder<LockingConfiguration> {
+public class LockingBuilder extends ComponentBuilder<LockingConfiguration> implements ResourceServiceBuilder<LockingConfiguration> {
 
     private final LockingConfigurationBuilder builder = new ConfigurationBuilder().locking();
 
-    LockingBuilder(String containerName, String cacheName) {
-        super(CacheComponent.LOCKING, containerName, cacheName);
+    LockingBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.LOCKING, cacheAddress);
     }
 
     @Override
@@ -56,10 +57,10 @@ public class LockingBuilder extends CacheComponentBuilder<LockingConfiguration> 
 
     @Override
     public Builder<LockingConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.lockAcquisitionTimeout(ACQUIRE_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong());
-        this.builder.concurrencyLevel(CONCURRENCY.getDefinition().resolveModelAttribute(context, model).asInt());
-        this.builder.isolationLevel(ModelNodes.asEnum(ISOLATION.getDefinition().resolveModelAttribute(context, model), IsolationLevel.class));
-        this.builder.useLockStriping(STRIPING.getDefinition().resolveModelAttribute(context, model).asBoolean());
+        this.builder.lockAcquisitionTimeout(ACQUIRE_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        this.builder.concurrencyLevel(CONCURRENCY.resolveModelAttribute(context, model).asInt());
+        this.builder.isolationLevel(ModelNodes.asEnum(ISOLATION.resolveModelAttribute(context, model), IsolationLevel.class));
+        this.builder.useLockStriping(STRIPING.resolveModelAttribute(context, model).asBoolean());
         return this;
     }
 }

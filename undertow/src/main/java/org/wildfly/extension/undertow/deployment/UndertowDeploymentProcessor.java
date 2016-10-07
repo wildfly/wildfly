@@ -28,6 +28,7 @@ import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
 import org.apache.jasper.Constants;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
@@ -349,7 +350,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
         } else {
-            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
+            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(support, serviceTarget, deploymentServiceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
             infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
 
             ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
@@ -412,7 +414,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         processManagement(deploymentUnit, metaData);
     }
 
-    private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
+    private static ServiceName installSessionManagerFactory(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
 
         Integer maxActiveSessions = metaData.getMaxActiveSessions();
         if(maxActiveSessions == null && servletContainerService != null) {
@@ -422,7 +424,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         if (metaData.getDistributable() != null) {
             DistributableSessionManagerFactoryBuilder sessionManagerFactoryBuilder = new DistributableSessionManagerFactoryBuilderValue().getValue();
             if (sessionManagerFactoryBuilder != null) {
-                sessionManagerFactoryBuilder.build(target, name, new SimpleDistributableSessionManagerConfiguration(maxActiveSessions, metaData.getReplicationConfig(), deploymentName, module))
+                sessionManagerFactoryBuilder.build(support, target, name, new SimpleDistributableSessionManagerConfiguration(maxActiveSessions, metaData.getReplicationConfig(), deploymentName, module))
                         .setInitialMode(Mode.ON_DEMAND)
                         .install()
                 ;

@@ -42,7 +42,7 @@ public class UnaryRequirementCapability implements Capability {
      * @param requirements a list of requirements of this capability
      */
     public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(r -> r.getName()).toArray(String[]::new)).build();
+        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
     }
 
     @Override

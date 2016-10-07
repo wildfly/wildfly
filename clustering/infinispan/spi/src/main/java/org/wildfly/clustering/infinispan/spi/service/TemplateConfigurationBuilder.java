@@ -24,22 +24,27 @@ package org.wildfly.clustering.infinispan.spi.service;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.Configuration;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds a cache configuration based on the configuration of a template cache.
  * @author Paul Ferraro
  */
-public class TemplateConfigurationBuilder implements Builder<Configuration> {
+public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Configuration> {
 
-    private final InjectedValue<Configuration> template = new InjectedValue<>();
-    private final Builder<Configuration> builder;
+    private final CapabilityServiceBuilder<Configuration> builder;
     private final String containerName;
     private final String templateCacheName;
+
+    private volatile ValueDependency<Configuration> template;
 
     /**
      * Constructs a new cache configuration builder.
@@ -47,13 +52,13 @@ public class TemplateConfigurationBuilder implements Builder<Configuration> {
      * @param cacheName the name of the target cache
      * @param templateCacheName the name of the template cache
      */
-    public TemplateConfigurationBuilder(String containerName, String cacheName, String templateCacheName) {
-        this(containerName, cacheName, templateCacheName, null);
+    public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName) {
+        this(name, containerName, cacheName, templateCacheName, null);
     }
 
-    public TemplateConfigurationBuilder(String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
+    public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
         Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> consumer = builder -> builder.read(this.template.getValue());
-        this.builder = new ConfigurationBuilder(containerName, cacheName, (templateConsumer != null) ? consumer.andThen(templateConsumer) : consumer);
+        this.builder = new ConfigurationBuilder(name, containerName, cacheName, (templateConsumer != null) ? consumer.andThen(templateConsumer) : consumer);
         this.containerName = containerName;
         this.templateCacheName = templateCacheName;
     }
@@ -64,7 +69,14 @@ public class TemplateConfigurationBuilder implements Builder<Configuration> {
     }
 
     @Override
+    public Builder<Configuration> configure(CapabilityServiceSupport support) {
+        this.template = new InjectedValueDependency<>(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.templateCacheName), Configuration.class);
+        this.builder.configure(support);
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return this.builder.build(target).addDependency(CacheServiceName.CONFIGURATION.getServiceName(this.containerName, this.templateCacheName), Configuration.class, this.template);
+        return this.template.register(this.builder.build(target));
     }
 }

@@ -40,6 +40,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -50,23 +51,21 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class BackupsBuilder extends CacheComponentBuilder<SitesConfiguration> implements ResourceServiceBuilder<SitesConfiguration> {
+public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> implements ResourceServiceBuilder<SitesConfiguration> {
 
     private final InjectedValue<BackupForConfiguration> backupFor = new InjectedValue<>();
     private final Map<String, BackupConfiguration> backups = new HashMap<>();
 
-    private final String containerName;
-    private final String cacheName;
+    private final PathAddress cacheAddress;
 
-    BackupsBuilder(String containerName, String cacheName) {
-        super(CacheComponent.BACKUPS, containerName, cacheName);
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+    BackupsBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.BACKUPS, cacheAddress);
+        this.cacheAddress = cacheAddress;
     }
 
     @Override
     public ServiceBuilder<SitesConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.containerName, this.cacheName), BackupForConfiguration.class, this.backupFor);
+        return super.build(target).addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.cacheAddress), BackupForConfiguration.class, this.backupFor);
     }
 
     @Override
@@ -79,13 +78,13 @@ public class BackupsBuilder extends CacheComponentBuilder<SitesConfiguration> im
                 ModelNode backup = property.getValue();
                 BackupConfigurationBuilder backupBuilder = builder.addBackup();
                 backupBuilder.site(siteName)
-                        .enabled(ENABLED.getDefinition().resolveModelAttribute(context, backup).asBoolean())
-                        .backupFailurePolicy(ModelNodes.asEnum(FAILURE_POLICY.getDefinition().resolveModelAttribute(context, backup), BackupFailurePolicy.class))
-                        .replicationTimeout(TIMEOUT.getDefinition().resolveModelAttribute(context, backup).asLong())
-                        .strategy(ModelNodes.asEnum(STRATEGY.getDefinition().resolveModelAttribute(context, backup), BackupStrategy.class))
+                        .enabled(ENABLED.resolveModelAttribute(context, backup).asBoolean())
+                        .backupFailurePolicy(ModelNodes.asEnum(FAILURE_POLICY.resolveModelAttribute(context, backup), BackupFailurePolicy.class))
+                        .replicationTimeout(TIMEOUT.resolveModelAttribute(context, backup).asLong())
+                        .strategy(ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, backup), BackupStrategy.class))
                         .takeOffline()
-                            .afterFailures(AFTER_FAILURES.getDefinition().resolveModelAttribute(context, backup).asInt())
-                            .minTimeToWait(MIN_WAIT.getDefinition().resolveModelAttribute(context, backup).asLong())
+                            .afterFailures(AFTER_FAILURES.resolveModelAttribute(context, backup).asInt())
+                            .minTimeToWait(MIN_WAIT.resolveModelAttribute(context, backup).asLong())
                 ;
                 this.backups.put(siteName, backupBuilder.create());
             }

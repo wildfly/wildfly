@@ -169,7 +169,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new RemoteStoreBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RemoteStoreBuilder(address.getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
 

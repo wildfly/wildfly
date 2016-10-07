@@ -25,7 +25,10 @@ package org.wildfly.clustering.service;
 import org.jboss.msc.service.ServiceName;
 
 public interface SubGroupServiceNameFactory extends GroupServiceNameFactory {
-    String DEFAULT_SUB_GROUP = DEFAULT_GROUP;
-
     ServiceName getServiceName(String group, String subGroup);
+
+    @Override
+    default ServiceName getServiceName(String group) {
+        return this.getServiceName(group, null);
+    }
 }

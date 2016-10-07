@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
@@ -35,16 +37,15 @@ import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.SuppliedValueService;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 
 import static java.security.AccessController.doPrivileged;
@@ -54,14 +55,13 @@ import static java.security.AccessController.doPrivileged;
  * Returns a trivial implementation if the specified cache is not distributed.
  * @author Paul Ferraro
  */
-public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServiceFactory>, Service<KeyAffinityServiceFactory>, KeyAffinityServiceFactory {
+public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServiceFactory> {
 
-    private final String containerName;
-    private volatile int bufferSize = 10;
-    private volatile ExecutorService executor;
+    private final PathAddress address;
+    private volatile int bufferSize = 100;
 
-    public KeyAffinityServiceFactoryBuilder(String containerName) {
-        this.containerName = containerName;
+    public KeyAffinityServiceFactoryBuilder(PathAddress address) {
+        this.address = address;
     }
 
     public KeyAffinityServiceFactoryBuilder setBufferSize(int size) {
@@ -71,43 +71,28 @@ public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServ
 
     @Override
     public ServiceName getServiceName() {
-        return CacheContainerServiceName.AFFINITY.getServiceName(this.containerName);
+        return CacheContainerResourceDefinition.Capability.KEY_AFFINITY_FACTORY.getServiceName(this.address);
     }
 
     @Override
     public ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), this).startSynchronously().build(target)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public KeyAffinityServiceFactory getValue() {
-        return this;
-    }
-
-    @Override
-    public void start(StartContext context) {
-        final ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
-        final String namePattern = "KeyAffinityService Thread Pool -- %t";
-        final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+        int bufferSize = this.bufferSize;
+        Function<ExecutorService, KeyAffinityServiceFactory> mapper = executor -> new KeyAffinityServiceFactory() {
             @Override
-            public JBossThreadFactory run() {
-                return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+            public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
+                CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
+                return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
             }
-        });
-
-        this.executor = Executors.newCachedThreadPool(threadFactory);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.executor.shutdown();
-    }
-
-    @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-        CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
-        return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+        };
+        Supplier<ExecutorService> supplier = () -> {
+            ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
+            String namePattern = "KeyAffinityService Thread Pool -- %t";
+            PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+            return Executors.newCachedThreadPool(doPrivileged(action));
+        };
+        Service<KeyAffinityServiceFactory> service = new SuppliedValueService<>(mapper, supplier, ExecutorService::shutdown);
+        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).startSynchronously().build(target)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {

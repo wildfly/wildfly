@@ -37,6 +37,7 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DataSourceConnectionFactoryConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
@@ -52,8 +53,8 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
 
     private volatile ValueDependency<DataSource> dataSourceDepencency;
 
-    JDBCStoreBuilder(Class<B> builderClass, String containerName, String cacheName) {
-        super(containerName, cacheName);
+    JDBCStoreBuilder(Class<B> builderClass, PathAddress cacheAddress) {
+        super(cacheAddress);
         this.builderClass = builderClass;
     }
 
@@ -64,9 +65,10 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
 
     @Override
     B createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        String dataSource = DATA_SOURCE.getDefinition().resolveModelAttribute(context, model).asString();
+        String dataSource = DATA_SOURCE.resolveModelAttribute(context, model).asString();
         this.dataSourceDepencency = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
-        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass).dialect(ModelNodes.asEnum(DIALECT.getDefinition().resolveModelAttribute(context, model), DatabaseType.class));
+        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass);
+        ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).ifPresent(dialect -> storeBuilder.dialect(dialect));
         storeBuilder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
         return storeBuilder;
     }
