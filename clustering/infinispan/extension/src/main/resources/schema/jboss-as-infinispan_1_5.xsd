@@ -383,7 +383,7 @@
                         <xs:documentation>In ASYNC mode, this attribute controls how often the asynchronous thread used to flush the replication queue runs. This should be a positive integer which represents thread wakeup time in milliseconds.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="remote-timeout" type="xs:long" default="17500">
+                <xs:attribute name="remote-timeout" type="xs:long" default="10000">
                     <xs:annotation>
                         <xs:documentation>In SYNC mode, the timeout (in ms) used to wait for an acknowledgment when making a remote call, after which the call is aborted and an exception is thrown.</xs:documentation>
                     </xs:annotation>
