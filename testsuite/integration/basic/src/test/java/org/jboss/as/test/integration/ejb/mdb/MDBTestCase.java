@@ -42,6 +42,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -138,6 +139,7 @@ public class MDBTestCase {
      * Test a deployment descriptor based MDB
      * @throws Exception
      */
+    @Ignore("WFLY-7303")
     @Test
     public void testSuspendResumeWithMDB() throws Exception {
         boolean resumed = false;
