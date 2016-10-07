@@ -73,7 +73,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             deploy(DEPLOYMENT_2);
 
-            Thread.sleep(VIEW_CHANGE_WAIT);
+            Thread.sleep(VIEW_CHANGE_WAIT); //NOPMD
 
             topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
@@ -91,7 +91,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             start(CONTAINER_1);
 
-            Thread.sleep(VIEW_CHANGE_WAIT);
+            Thread.sleep(VIEW_CHANGE_WAIT); //NOPMD
 
             topology = bean.getClusterTopology();
             assertEquals(topology.getNodes().toString(), 2, topology.getNodes().size());

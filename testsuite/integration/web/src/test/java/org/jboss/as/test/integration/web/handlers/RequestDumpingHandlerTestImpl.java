@@ -177,7 +177,7 @@ public abstract class RequestDumpingHandlerTestImpl {
                 hasFound = true;
                 break;
             }
-            Thread.sleep(SLEEP_TIMEOUT);
+            Thread.sleep(SLEEP_TIMEOUT); //NOPMD
         } while (currTime - startTime < TOTAL_DELAY);
 
         log.info("I have read following content of the file '" + logFilePath + "':\n" + content + "\n---END-OF-FILE-OUTPUT---");

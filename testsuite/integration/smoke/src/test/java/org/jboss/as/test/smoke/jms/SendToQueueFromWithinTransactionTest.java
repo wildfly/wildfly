@@ -85,7 +85,7 @@ public class SendToQueueFromWithinTransactionTest {
     public void sendSuccessfully() throws Exception {
         try {
             sender.sendToQueueSuccessfully();
-            Thread.sleep(2000);
+            Thread.sleep(2000); //NOPMD
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -96,7 +96,7 @@ public class SendToQueueFromWithinTransactionTest {
     public void sendAndRollback() {
         try {
             sender2.sendToQueueAndRollback();
-            Thread.sleep(2000);
+            Thread.sleep(2000); //NOPMD
         } catch (Exception ex) {
             ex.printStackTrace();
         }
