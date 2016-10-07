@@ -41,5 +41,6 @@
         <module name="org.yaml.snakeyaml"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>
