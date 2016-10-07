@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,9 +57,6 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
 
 /**
  * Processor that finds jax-rs classes in the deployment
@@ -169,13 +165,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
         if (contextParams != null) {
             for (ParamValueMetaData param : contextParams) {
-                if (param.getParamName().equals(RESTEASY_SCAN)) {
-                    resteasyDeploymentData.setScanAll(valueOf(RESTEASY_SCAN, param.getParamValue()));
-                } else if (param.getParamName().equals(ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS)) {
-                    resteasyDeploymentData.setScanProviders(valueOf(RESTEASY_SCAN_PROVIDERS, param.getParamValue()));
-                } else if (param.getParamName().equals(RESTEASY_SCAN_RESOURCES)) {
-                    resteasyDeploymentData.setScanResources(valueOf(RESTEASY_SCAN_RESOURCES, param.getParamValue()));
-                } else if (param.getParamName().equals(ResteasyContextParameters.RESTEASY_UNWRAPPED_EXCEPTIONS)) {
+                if (param.getParamName().equals(ResteasyContextParameters.RESTEASY_UNWRAPPED_EXCEPTIONS)) {
                     resteasyDeploymentData.setUnwrappedExceptionsParameterSet(true);
                 }
             }
@@ -309,19 +299,4 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         }
         return null;
     }
-
-
-    private boolean valueOf(String paramName, String value) throws DeploymentUnitProcessingException {
-        if (value == null) {
-            throw JaxrsLogger.JAXRS_LOGGER.invalidParamValue(paramName, value);
-        }
-        if (value.toLowerCase(Locale.ENGLISH).equals("true")) {
-            return true;
-        } else if (value.toLowerCase(Locale.ENGLISH).equals("false")) {
-            return false;
-        } else {
-            throw JaxrsLogger.JAXRS_LOGGER.invalidParamValue(paramName, value);
-        }
-    }
-
 }

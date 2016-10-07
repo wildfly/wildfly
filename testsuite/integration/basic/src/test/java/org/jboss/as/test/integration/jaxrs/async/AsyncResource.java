@@ -24,11 +24,10 @@ package org.jboss.as.test.integration.jaxrs.async;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.annotations.Suspend;
-import org.jboss.resteasy.spi.AsynchronousResponse;
 
 /**
  * @author Stuart Douglas
@@ -38,13 +37,12 @@ public class AsyncResource {
     @GET
     @Path("basic")
     @Produces("text/plain")
-    public void getBasic(@Suspend(10000) final AsynchronousResponse response) throws Exception {
+    public void getBasic(@Suspended final AsyncResponse response) throws Exception {
         Thread t = new Thread() {
             @Override
             public void run() {
                 try {
-                    Response jaxrs = Response.ok("basic").type(MediaType.TEXT_PLAIN).build();
-                    response.setResponse(jaxrs);
+                    response.resume(Response.ok("basic").type(MediaType.TEXT_PLAIN).build());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
