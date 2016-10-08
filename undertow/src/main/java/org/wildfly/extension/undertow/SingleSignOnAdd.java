@@ -80,6 +80,9 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         } else {
             target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }
+        // keep track that SSO is enabled for the target host
+        final Host host = (Host) context.getServiceRegistry(true).getRequiredService(virtualHostServiceName).getService();
+        host.setSSOEnabled(true);
 
         final SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
         target.addService(serviceName, service)
