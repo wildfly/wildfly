@@ -53,6 +53,7 @@ public class StatefulComponentSessionIdGeneratingInterceptor implements Intercep
             clientInstance.setViewInstanceData(SessionID.class, existing);
         } else {
             StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
+            statefulComponent.waitForComponentStart();
             StatefulSessionComponentInstance statefulSessionComponentInstance = statefulComponent.getCache().create();
             clientInstance.setViewInstanceData(SessionID.class, statefulSessionComponentInstance.getId());
         }
