@@ -22,29 +22,22 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceAddHandler;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
-import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 
 /**
  * @author Pedro Silva
  */
-public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
+public class IDMConfigAddStepHandler extends AbstractAddStepHandler {
 
     private final AttributeDefinition[] attributes;
     private final List<ModelValidationStepHandler> modelValidators = new ArrayList<ModelValidationStepHandler>();
@@ -54,7 +47,6 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
     }
 
     IDMConfigAddStepHandler(ModelValidationStepHandler[] modelValidators, final AttributeDefinition... attributes) {
-        super(ModelElement.PARTITION_MANAGER.getName());
         this.attributes = attributes != null ? attributes : new AttributeDefinition[0];
         configureModelValidators(modelValidators);
     }
@@ -70,23 +62,14 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
 
         if (!alternativeAttributes.isEmpty()) {
             this.modelValidators.add(new AlternativeAttributeValidationStepHandler(
-                alternativeAttributes.toArray(new AttributeDefinition[alternativeAttributes.size()]), isAlternativesRequired()));
+                    alternativeAttributes.toArray(new AttributeDefinition[alternativeAttributes.size()]), isAlternativesRequired()));
         }
 
         if (modelValidators != null) {
             this.modelValidators.addAll(Arrays.asList(modelValidators));
         }
 
-        this.modelValidators.add(new ModelValidationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
-                Resource resource = context.readResourceFromRoot(address);
-                final ModelNode parentModel = Resource.Tools.readModel(resource);
 
-                PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
-            }
-        });
     }
 
     protected boolean isAlternativesRequired() {
@@ -103,19 +86,6 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
         for (ModelValidationStepHandler validatonStepHandler : this.modelValidators) {
             context.addStep(validatonStepHandler, OperationContext.Stage.MODEL);
         }
-    }
-
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        final String federationName = parentAddress.getLastElement().getValue();
-        PartitionManagerRemoveHandler.INSTANCE.removeIdentityStoreServices(context, parentModel, federationName);
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
-            .getValue(), parentModel, false);
-    }
-
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return PartitionManagerService.createServiceName(parentAddress.getLastElement().getValue());
     }
 
     @Override

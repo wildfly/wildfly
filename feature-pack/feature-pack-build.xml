@@ -123,10 +123,6 @@
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-genericjms.xml"
                 output-file="docs/examples/configs/standalone-genericjms.xml"/>
-        <standalone
-                template="configuration/standalone/template.xml"
-                subsystems="configuration/examples/subsystems-picketlink.xml"
-                output-file="docs/examples/configs/standalone-picketlink.xml"/>
         <domain
                 template="configuration/domain/template.xml"
                 subsystems="configuration/domain/subsystems.xml"

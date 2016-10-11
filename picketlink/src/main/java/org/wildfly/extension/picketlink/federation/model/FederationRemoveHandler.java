@@ -23,12 +23,6 @@
 package org.wildfly.extension.picketlink.federation.model;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.FederationService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -40,14 +34,5 @@ public class FederationRemoveHandler extends AbstractRemoveStepHandler {
     private FederationRemoveHandler() {
     }
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-        removeFederationService(context, operation);
-    }
 
-    private void removeFederationService(OperationContext context, ModelNode operation) {
-        String alias = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        context.removeService(FederationService.createServiceName(alias));
-    }
 }

@@ -1,5 +1,5 @@
 <subsystem xmlns="urn:jboss:domain:picketlink-identity-management:2.0">
-  <partition-manager jndi-name="picketlink/FileBasedPartitionManager" name="file.based.partition.manager">
+ <!-- <partition-manager jndi-name="picketlink/FileBasedPartitionManager" name="file.based.partition.manager">
     <identity-configuration name="file.config">
       <file-store working-dir="/tmp/pl-idm-complete" always-create-files="true" async-write="true"
                   async-write-thread-pool="10">
@@ -35,7 +35,7 @@
         </supported-types>
       </jpa-store>
     </identity-configuration>
-  </partition-manager>
+  </partition-manager>-->
 
   <partition-manager jndi-name="picketlink/LDAPBasedPartitionManager" name="ldap.based.partition.manager">
     <identity-configuration name="ldap.config">
@@ -52,27 +52,6 @@
                    object-classes="account">
             <attribute name="loginName" ldap-name="uid" is-identifier="true"/>
             <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
-          </mapping>
-          <mapping name="User" class-name="org.picketlink.idm.model.basic.User" base-dn-suffix="ou=People,dc=jboss,dc=org"
-                   object-classes="inetOrgPerson, organizationalPerson">
-            <attribute name="loginName" ldap-name="uid" is-identifier="true"/>
-            <attribute name="firstName" ldap-name="cn"/>
-            <attribute name="lastName" ldap-name="sn" read-only="false"/>
-            <attribute name="email" ldap-name="uid"/>
-            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
-          </mapping>
-          <mapping name="Role" class-name="org.picketlink.idm.model.basic.Role" base-dn-suffix="ou=Roles,dc=jboss,dc=org"
-                   object-classes="groupOfNames">
-            <attribute name="name" ldap-name="cn" is-identifier="true"/>
-            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
-          </mapping>
-          <mapping name="Group" class-name="org.picketlink.idm.model.basic.Group" base-dn-suffix="ou=Groups,dc=jboss,dc=org"
-                   object-classes="groupOfNames" parent-membership-attribute-name="member">
-            <attribute name="name" ldap-name="cn" is-identifier="true"/>
-            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
-          </mapping>
-          <mapping name="Grant" class-name="org.picketlink.idm.model.basic.Grant" relates-to="org.picketlink.idm.model.basic.Role">
-            <attribute name="assignee" ldap-name="member"/>
           </mapping>
         </mappings>
       </ldap-store>

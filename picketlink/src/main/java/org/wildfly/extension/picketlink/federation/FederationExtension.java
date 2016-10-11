@@ -23,24 +23,18 @@
 package org.wildfly.extension.picketlink.federation;
 
 import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
-import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_1;
 import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_0;
+import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_1;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.wildfly.extension.picketlink.federation.model.FederationResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.keystore.KeyResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.parser.FederationSubsystemWriter;
 
 /**
@@ -55,8 +49,9 @@ public class FederationExtension implements Extension {
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(CURRENT.getMajor(), CURRENT.getMinor());
 
     //deprecated in EAP 6.4
-    public static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2,0,0);
+    public static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2, 0, 0);
 
+    @SuppressWarnings("deprecation")
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, FederationExtension.class.getClassLoader(), true, true);
     }
@@ -65,24 +60,9 @@ public class FederationExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
-        subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition(context));
+        subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition());
         subsystemRegistration.registerXMLElementWriter(FederationSubsystemWriter.INSTANCE);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers_1_0(context, subsystemRegistration);
-        }
-    }
-
-    private void registerTransformers_1_0(ExtensionContext context, SubsystemRegistration subsystemRegistration) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder federationTransfDescBuilder = builder
-            .addChildResource(new FederationResourceDefinition(context));
-        ResourceTransformationDescriptionBuilder keyStoreTransfDescBuilder = federationTransfDescBuilder
-            .addChildResource(KeyStoreProviderResourceDefinition.INSTANCE);
-
-        keyStoreTransfDescBuilder.rejectChildResource(KeyResourceDefinition.INSTANCE.getPathElement());
-
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
     }
 
     @Override

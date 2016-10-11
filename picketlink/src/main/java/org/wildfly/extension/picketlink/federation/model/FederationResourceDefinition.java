@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.picketlink.federation.model;
 
-import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -49,19 +48,16 @@ public class FederationResourceDefinition extends AbstractFederationResourceDefi
 
     public static final SimpleAttributeDefinition[] ATTRIBUTE_DEFINITIONS = new SimpleAttributeDefinition[0];
 
-    private final ExtensionContext extensionContext;
-
-    public FederationResourceDefinition(ExtensionContext extensionContext) {
+    public FederationResourceDefinition() {
         super(ModelElement.FEDERATION, FederationAddHandler.INSTANCE, FederationRemoveHandler.INSTANCE);
-        this.extensionContext = extensionContext;
         setDeprecated(FederationExtension.DEPRECATED_SINCE);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         addChildResourceDefinition(KeyStoreProviderResourceDefinition.INSTANCE, resourceRegistration);
-        addChildResourceDefinition(new IdentityProviderResourceDefinition(this.extensionContext), resourceRegistration);
-        addChildResourceDefinition(new ServiceProviderResourceDefinition(this.extensionContext), resourceRegistration);
+        addChildResourceDefinition(new IdentityProviderResourceDefinition(), resourceRegistration);
+        addChildResourceDefinition(new ServiceProviderResourceDefinition(), resourceRegistration);
         addChildResourceDefinition(SAMLResourceDefinition.INSTANCE, resourceRegistration);
     }
 

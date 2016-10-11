@@ -22,15 +22,6 @@
 package org.wildfly.extension.picketlink.federation.model;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.wildfly.extension.picketlink.federation.service.FederationService;
-import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -39,22 +30,7 @@ public class FederationAddHandler extends AbstractAddStepHandler {
 
     static final FederationAddHandler INSTANCE = new FederationAddHandler();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (SimpleAttributeDefinition attribute : FederationResourceDefinition.ATTRIBUTE_DEFINITIONS) {
-            attribute.validateAndSet(operation, model);
-        }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        String alias = pathAddress.getLastElement().getValue();
-        FederationService service = new FederationService(alias);
-        context.getServiceTarget().addService(FederationService.createServiceName(alias), service)
-                .addDependency(UndertowService.UNDERTOW)
-                .setInitialMode(Mode.ACTIVE)
-                .install();
+    public FederationAddHandler() {
+        super(FederationResourceDefinition.ATTRIBUTE_DEFINITIONS);
     }
 }

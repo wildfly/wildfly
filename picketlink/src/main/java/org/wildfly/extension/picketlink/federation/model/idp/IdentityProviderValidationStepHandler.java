@@ -21,14 +21,14 @@
  */
 package org.wildfly.extension.picketlink.federation.model.idp;
 
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.ElementMaxOccurrenceValidationStepHandler;
-
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Igor
@@ -52,7 +52,7 @@ public class IdentityProviderValidationStepHandler extends ElementMaxOccurrenceV
 
         if (!external && !securityDomain.isDefined()) {
             throw ROOT_LOGGER.requiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), ModelElement.IDENTITY_PROVIDER
-                .getName());
+                    .getName());
         }
     }
 }

@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
@@ -36,9 +39,6 @@ import org.junit.Test;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 /**
  * @author Pedro Igor
  */
@@ -50,19 +50,21 @@ public class IDMSubsystem_1_0_TransformerUnitTestCase extends AbstractSubsystemT
 
     @Test
     public void testTransformerEAP_6_3() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectionExpressions(ModelTestControllerVersion.EAP_6_3_0, "2.5.3.SP10-redhat-1");
     }
 
     private void testRejectionExpressions(ModelTestControllerVersion controllerVersion, String picketLinkJBossAs7Version) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
-            .setExtensionClassName(IDMExtension.class.getName())
-            .addMavenResourceURL("org.wildfly:wildfly-picketlink:" + controllerVersion.getMavenGavVersion())
-            .addMavenResourceURL("org.picketlink.distribution:picketlink-jbas7:" + picketLinkJBossAs7Version)
-            .dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, oldVersion)
+                .setExtensionClassName(IDMExtension.class.getName())
+                .addMavenResourceURL("org.wildfly:wildfly-picketlink:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.picketlink.distribution:picketlink-jbas7:" + picketLinkJBossAs7Version)
+                .addMavenResourceURL("org.picketlink:picketlink-idm-api:" + picketLinkJBossAs7Version)
+                .addMavenResourceURL("org.picketlink:picketlink-idm-impl:" + picketLinkJBossAs7Version)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
@@ -100,10 +102,14 @@ public class IDMSubsystem_1_0_TransformerUnitTestCase extends AbstractSubsystemT
 
     }
 
-    private static ModelNode createOperation(String name, String...addressElements) {
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.ADMIN_ONLY_HC;
+    }
+
+    private static ModelNode createOperation(String name, String... addressElements) {
         final ModelNode addr = new ModelNode();
         addr.add(SUBSYSTEM, IDMExtension.SUBSYSTEM_NAME);
-        for (int i = 0 ; i < addressElements.length ; i++) {
+        for (int i = 0; i < addressElements.length; i++) {
             addr.add(addressElements[i], addressElements[++i]);
         }
         return Util.getEmptyOperation(name, addr);

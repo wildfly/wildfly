@@ -22,63 +22,34 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 import java.util.Set;
 
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
 /**
  * @author Pedro Silva
  */
-public class IdentityConfigurationRemoveStepHandler extends RestartParentResourceRemoveHandler {
+public class IdentityConfigurationRemoveStepHandler extends AbstractRemoveStepHandler {
 
     static final IdentityConfigurationRemoveStepHandler INSTANCE = new IdentityConfigurationRemoveStepHandler();
 
     private IdentityConfigurationRemoveStepHandler() {
-        super(ModelElement.PARTITION_MANAGER.getName());
     }
 
     @Override
-    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress partitionManagerAddress = getParentAddress(context.getCurrentAddress());
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRemove(context, operation, model);
+        PathAddress partitionManagerAddress = context.getCurrentAddress().getParent();
         Resource partitionManagerResource = context.readResourceFromRoot(partitionManagerAddress);
-
         checkIfLastConfiguration(partitionManagerResource);
-
-        ModelNode originalParentModel = Resource.Tools.readModel(partitionManagerResource);
-
-        super.updateModel(context, operation);
-
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                PartitionManagerRemoveHandler.INSTANCE
-                    .removeIdentityStoreServices(context, originalParentModel, partitionManagerAddress.getLastElement().getValue(), context.getCurrentAddressValue());
-
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-            }
-        }, OperationContext.Stage.RUNTIME);
-    }
-
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
-            .getValue(), parentModel, false);
-    }
-
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return PartitionManagerService.createServiceName(parentAddress.getLastElement().getValue());
     }
 
     private void checkIfLastConfiguration(Resource partitionManagerResource) throws OperationFailedException {
@@ -88,4 +59,5 @@ public class IdentityConfigurationRemoveStepHandler extends RestartParentResourc
             throw ROOT_LOGGER.idmNoIdentityConfigurationProvided();
         }
     }
+
 }

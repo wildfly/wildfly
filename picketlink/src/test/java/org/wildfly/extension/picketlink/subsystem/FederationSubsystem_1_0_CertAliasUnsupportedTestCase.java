@@ -46,7 +46,7 @@ public class FederationSubsystem_1_0_CertAliasUnsupportedTestCase extends Abstra
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("federation-subsystem-1.0.xml");
 
-        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC)
                 .setSubsystemXml(subsystemXml)
                 .build();
         PathAddress address = PathAddress.pathAddress(
@@ -67,7 +67,7 @@ public class FederationSubsystem_1_0_CertAliasUnsupportedTestCase extends Abstra
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("federation-subsystem-1.0.xml");
 
-        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC)
                 .setSubsystemXml(subsystemXml)
                 .build();
 

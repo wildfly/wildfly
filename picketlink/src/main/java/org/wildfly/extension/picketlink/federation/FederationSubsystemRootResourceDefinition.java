@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.picketlink.federation;
 
-import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -36,19 +35,16 @@ import org.wildfly.extension.picketlink.federation.model.FederationResourceDefin
  */
 public class FederationSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    private final ExtensionContext extensionContext;
-
-    FederationSubsystemRootResourceDefinition(ExtensionContext extensionContext) {
+    FederationSubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, FederationExtension.SUBSYSTEM_NAME),
                  FederationExtension.getResourceDescriptionResolver(FederationExtension.SUBSYSTEM_NAME),
                  FederationSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
         setDeprecated(FederationExtension.DEPRECATED_SINCE);
-        this.extensionContext = extensionContext;
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new FederationResourceDefinition(this.extensionContext));
+        resourceRegistration.registerSubModel(new FederationResourceDefinition());
     }
 
     @Override

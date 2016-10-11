@@ -22,42 +22,40 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import java.io.IOException;
+import java.util.Set;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 /**
  * @author Pedro Igor
  */
-public class IDMSubsystem_1_0_UnitTestCase extends AbstractSubsystemTest {
+public class IDMSubsystem_1_0_UnitTestCase extends AbstractSubsystemBaseTest {
 
     public IDMSubsystem_1_0_UnitTestCase() {
         super(IDMExtension.SUBSYSTEM_NAME, new IDMExtension());
     }
 
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("identity-management-subsystem-1.0.xml");
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("identity-management-subsystem-1.0.xml");
+    }
 
-        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml)
-                .build();
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        servicesA.shutdown();
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        //do not compare it
+    }
 
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(marshalled)
-                .build();
-        ModelNode modelB = servicesB.readWholeModel();
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
+    @Override
+    protected void assertRemoveSubsystemResources(KernelServices kernelServices, Set<PathAddress> ignoredChildAddresses) {
+        // we can not remove resources and leave subsystem in invalid state
+    }
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.ADMIN_ONLY_HC;
     }
 }

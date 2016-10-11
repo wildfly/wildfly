@@ -22,9 +22,6 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator;
-import org.picketlink.identity.federation.core.impl.EmptyRoleGenerator;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,8 +33,8 @@ import java.util.Map;
  */
 public enum RoleGeneratorTypeEnum {
 
-    UNDERTOW_ROLE_GENERATOR("UndertowRoleGenerator", UndertowRoleGenerator.class.getName()),
-    EMPTY_ROLE_GENERATOR("EmptyRoleGenerator", EmptyRoleGenerator.class.getName());
+    UNDERTOW_ROLE_GENERATOR("UndertowRoleGenerator", "org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator"),
+    EMPTY_ROLE_GENERATOR("EmptyRoleGenerator", "org.picketlink.identity.federation.core.impl.EmptyRoleGenerator");
 
     private static final Map<String, RoleGeneratorTypeEnum> types = new HashMap<String, RoleGeneratorTypeEnum>();
 
