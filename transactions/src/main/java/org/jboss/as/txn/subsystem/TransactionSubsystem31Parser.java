@@ -31,6 +31,7 @@ class TransactionSubsystem31Parser extends TransactionSubsystem30Parser {
 
     private TransactionSubsystem31Parser() {
         super(Namespace.TRANSACTIONS_3_1);
+        this.relativeToHasDefaultValue = false;
     }
 
 }

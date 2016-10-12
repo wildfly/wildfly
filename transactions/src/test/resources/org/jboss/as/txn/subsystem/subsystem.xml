@@ -6,7 +6,7 @@
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
     <coordinator-environment default-timeout="300"/>
-    <object-store path="tx-object-store"/>
+    <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
     <jts/>
     <use-journal-store/>
 </subsystem>

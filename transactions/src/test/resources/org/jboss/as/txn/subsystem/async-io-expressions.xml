@@ -5,5 +5,6 @@
         </process-id>
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+    <object-store relative-to="jboss.server.data.dir"/>
     <use-hornetq-store enable-async-io="${test.enable.async.io:true}"/>
 </subsystem>
