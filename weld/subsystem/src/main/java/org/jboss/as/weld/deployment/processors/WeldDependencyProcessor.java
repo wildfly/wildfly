@@ -49,7 +49,6 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier WELD_PROBE_ID = ModuleIdentifier.create("org.jboss.weld.probe");
     private static final ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static final ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
-    private static final ModuleIdentifier CDI_BEAN_VALIDATION_ID = ModuleIdentifier.create("org.hibernate.validator.cdi");
     private static final ModuleIdentifier JAVAX_ENTERPRISE_API = ModuleIdentifier.create("javax.enterprise.api");
     private static final ModuleIdentifier JAVAX_INJECT_API = ModuleIdentifier.create("javax.inject.api");
 
@@ -86,9 +85,6 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         weldEjbDependency.addImportFilter(PathFilters.is("org/jboss/as/weld/ejb"), true);
         weldEjbDependency.addImportFilter(PathFilters.acceptAll(), false);
         moduleSpecification.addSystemDependency(weldEjbDependency);
-
-        ModuleDependency cdiBeanValidationDep = new ModuleDependency(moduleLoader, CDI_BEAN_VALIDATION_ID, false, false, true, false);
-        moduleSpecification.addSystemDependency(cdiBeanValidationDep);
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,

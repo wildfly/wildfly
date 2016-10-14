@@ -1,1 +1,2 @@
 org.jboss.as.weld.deployment.processor.CdiBeanValidationFactoryProcessorProvider
+org.jboss.as.weld.deployment.processor.WeldBeanValidationDependencyProcessorProvider
