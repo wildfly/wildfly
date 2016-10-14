@@ -110,7 +110,11 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         WeldLogger.DEPLOYMENT_LOGGER.startingWeldService(deploymentName);
         // set up injected services
         addWeldService(SecurityServices.class, securityServices.getValue());
-        addWeldService(TransactionServices.class, weldTransactionServices.getValue());
+
+        TransactionServices transactionServices = weldTransactionServices.getOptionalValue();
+        if (transactionServices != null) {
+            addWeldService(TransactionServices.class, transactionServices);
+        }
 
         if (!deployment.getServices().contains(ExecutorServices.class)) {
             addWeldService(ExecutorServices.class, executorServices.getValue());

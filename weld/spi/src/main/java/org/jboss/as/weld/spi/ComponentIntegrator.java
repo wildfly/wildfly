@@ -64,7 +64,7 @@ public interface ComponentIntegrator {
             DefaultInterceptorIntegrationAction integrationAction, ComponentInterceptorSupport interceptorSupport);
 
     /**
-     * NOTE: If performed exactly one implementation of {@link ComponentInterceptorSupport} must be available.
+     * NOTE: If performed, exactly one implementation of {@link ComponentInterceptorSupport} must be available.
      */
     @FunctionalInterface
     interface DefaultInterceptorIntegrationAction {
