@@ -2,7 +2,6 @@ package org.jboss.as.weld.ejb;
 
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.spi.ComponentInterceptorSupport;
-import org.jboss.as.weld.util.ServiceLoaders;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,11 +32,11 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldInterceptorBindingsService");
 
-    public WeldInterceptorBindingsService(String beanArchiveId, String ejbName, Class<?> componentClass) {
+    public WeldInterceptorBindingsService(String beanArchiveId, String ejbName, Class<?> componentClass, ComponentInterceptorSupport componentInterceptorSupport) {
         this.beanArchiveId = beanArchiveId;
         this.ejbName = ejbName;
         this.componentClass = componentClass;
-        this.interceptorSupport = ServiceLoaders.loadSingle(ComponentInterceptorSupport.class, WeldInterceptorBindingsService.class);
+        this.interceptorSupport = componentInterceptorSupport;
     }
 
     @Override

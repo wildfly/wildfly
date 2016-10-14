@@ -63,6 +63,9 @@ public interface ComponentIntegrator {
             ServiceBuilder<?> weldComponentServiceBuilder, Supplier<ServiceName> bindingServiceNameSupplier,
             DefaultInterceptorIntegrationAction integrationAction, ComponentInterceptorSupport interceptorSupport);
 
+    /**
+     * NOTE: If performed exactly one implementation of {@link ComponentInterceptorSupport} must be available.
+     */
     @FunctionalInterface
     interface DefaultInterceptorIntegrationAction {
 

@@ -247,4 +247,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 52, value = "Using deployment classloader to load proxy classes for module %s. Package-private access will not work. To fix this the module should declare dependencies on %s")
     void loadingProxiesUsingDeploymentClassLoader(ModuleIdentifier moduleIdentifier, String dependencies);
 
+    @Message(id = 53, value = "Component interceptor support not available for: %s")
+    IllegalStateException componentInterceptorSupportNotAvailable(Object componentClass);
+
 }

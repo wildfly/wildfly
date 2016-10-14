@@ -27,7 +27,6 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.spi.ComponentInterceptorSupport;
 import org.jboss.as.weld.spi.InterceptorInstances;
-import org.jboss.as.weld.util.ServiceLoaders;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
@@ -52,10 +51,10 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
     private final ComponentInterceptorSupport interceptorSupport;
     private volatile BeanManagerImpl beanManager;
 
-    public Jsr299BindingsCreateInterceptor(String beanArchiveId, String ejbName) {
+    public Jsr299BindingsCreateInterceptor(String beanArchiveId, String ejbName, ComponentInterceptorSupport interceptorSupport) {
         this.beanArchiveId = beanArchiveId;
         this.ejbName = ejbName;
-        this.interceptorSupport = ServiceLoaders.loadSingle(ComponentInterceptorSupport.class, Jsr299BindingsCreateInterceptor.class);
+        this.interceptorSupport = interceptorSupport;
     }
 
     private void addInterceptorInstance(Interceptor<Object> interceptor, BeanManagerImpl beanManager, Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> instances, final CreationalContext<Object> creationalContext) {

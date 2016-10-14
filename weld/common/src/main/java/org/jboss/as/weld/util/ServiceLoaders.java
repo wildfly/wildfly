@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ public final class ServiceLoaders {
      * @param loaderClass
      * @return
      */
-    public static <T> T loadSingle(Class<T> serviceClass, Class<?> loaderClass) {
+    public static <T> Optional<T> loadSingle(Class<T> serviceClass, Class<?> loaderClass) {
         Iterator<T> iterator = ServiceLoader.load(serviceClass, WildFlySecurityManager.getClassLoaderPrivileged(loaderClass)).iterator();
         T service = null;
         while (iterator.hasNext()) {
@@ -65,10 +66,7 @@ public final class ServiceLoaders {
             }
             service = iterator.next();
         }
-        if (service == null) {
-            throw new IllegalStateException("No service provider found for: " + serviceClass);
-        }
-        return service;
+        return Optional.ofNullable(service);
     }
 
     /**

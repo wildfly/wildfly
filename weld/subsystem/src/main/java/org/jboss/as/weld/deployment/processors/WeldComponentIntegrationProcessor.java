@@ -27,6 +27,7 @@ import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.InterceptionType;
 
@@ -65,6 +66,7 @@ import org.jboss.as.weld.injection.WeldManagedReferenceFactory;
 import org.jboss.as.weld.interceptors.Jsr299BindingsCreateInterceptor;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.spi.ComponentIntegrator;
+import org.jboss.as.weld.spi.ComponentIntegrator.DefaultInterceptorIntegrationAction;
 import org.jboss.as.weld.spi.ComponentInterceptorSupport;
 import org.jboss.as.weld.util.ServiceLoaders;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -103,7 +105,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         final Iterable<ComponentIntegrator> componentIntegrators = ServiceLoader.load(ComponentIntegrator.class,
                 WildFlySecurityManager.getClassLoaderPrivileged(WeldComponentIntegrationProcessor.class));
         final ComponentInterceptorSupport componentInterceptorSupport = ServiceLoaders.loadSingle(ComponentInterceptorSupport.class,
-                WeldComponentIntegrationProcessor.class);
+                WeldComponentIntegrationProcessor.class).orElse(null);
 
         WeldClassIntrospector.install(deploymentUnit, phaseContext.getServiceTarget());
 
@@ -192,17 +194,27 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
         boolean isComponentIntegrationPerformed = false;
         for (ComponentIntegrator componentIntegrator : componentIntegrators) {
-            if(componentIntegrator.integrate(beanManagerService, configuration, description, builder,
-                    () -> addWeldInterceptorBindingService(target, configuration, componentClass, beanName, weldServiceName, weldStartService,
-                            beanDeploymentArchiveId),
-                    (bindingServiceName) -> {
-                        addJsr299BindingsCreateInterceptor(configuration, description, beanName, weldServiceName, builder, bindingServiceName);
-                        addCommonLifecycleInterceptionSupport(configuration, builder, bindingServiceName, beanManagerService, componentInterceptorSupport);
-                        configuration.addComponentInterceptor(
-                                new UserInterceptorFactory(factory(InterceptionType.AROUND_INVOKE, builder, bindingServiceName, componentInterceptorSupport),
-                                        factory(InterceptionType.AROUND_TIMEOUT, builder, bindingServiceName, componentInterceptorSupport)),
-                                InterceptorOrder.Component.CDI_INTERCEPTORS, false);
-                    }, componentInterceptorSupport)) {
+            Supplier<ServiceName> bindingServiceNameSupplier = () -> {
+                if (componentInterceptorSupport == null) {
+                    WeldLogger.DEPLOYMENT_LOGGER.componentInterceptorSupportNotAvailable(componentClass);
+                }
+                return addWeldInterceptorBindingService(target, configuration, componentClass, beanName, weldServiceName, weldStartService,
+                        beanDeploymentArchiveId, componentInterceptorSupport);
+            };
+            DefaultInterceptorIntegrationAction integrationAction = (bindingServiceName) -> {
+                if (componentInterceptorSupport == null) {
+                    WeldLogger.DEPLOYMENT_LOGGER.componentInterceptorSupportNotAvailable(componentClass);
+                }
+                addJsr299BindingsCreateInterceptor(configuration, description, beanName, weldServiceName, builder, bindingServiceName,
+                        componentInterceptorSupport);
+                addCommonLifecycleInterceptionSupport(configuration, builder, bindingServiceName, beanManagerService, componentInterceptorSupport);
+                configuration.addComponentInterceptor(
+                        new UserInterceptorFactory(factory(InterceptionType.AROUND_INVOKE, builder, bindingServiceName, componentInterceptorSupport),
+                                factory(InterceptionType.AROUND_TIMEOUT, builder, bindingServiceName, componentInterceptorSupport)),
+                        InterceptorOrder.Component.CDI_INTERCEPTORS, false);
+            };
+            if (componentIntegrator.integrate(beanManagerService, configuration, description, builder, bindingServiceNameSupplier, integrationAction,
+                    componentInterceptorSupport)) {
                 isComponentIntegrationPerformed = true;
                 break;
             }
@@ -233,8 +245,8 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
     }
 
-    private static ServiceName addWeldInterceptorBindingService(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName weldServiceName, final ServiceName weldStartService, final String beanDeploymentArchiveId) {
-        final WeldInterceptorBindingsService weldInterceptorBindingsService = new WeldInterceptorBindingsService(beanDeploymentArchiveId, beanName, componentClass);
+    private static ServiceName addWeldInterceptorBindingService(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName weldServiceName, final ServiceName weldStartService, final String beanDeploymentArchiveId, final ComponentInterceptorSupport componentInterceptorSupport) {
+        final WeldInterceptorBindingsService weldInterceptorBindingsService = new WeldInterceptorBindingsService(beanDeploymentArchiveId, beanName, componentClass, componentInterceptorSupport);
         ServiceName bindingServiceName = configuration.getComponentDescription().getServiceName().append(WeldInterceptorBindingsService.SERVICE_NAME);
         target.addService(bindingServiceName, weldInterceptorBindingsService)
                 .addDependency(weldServiceName, WeldBootstrapService.class, weldInterceptorBindingsService.getWeldContainer())
@@ -243,9 +255,9 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         return bindingServiceName;
     }
 
-    private static void addJsr299BindingsCreateInterceptor(final ComponentConfiguration configuration, final ComponentDescription description, final String beanName, final ServiceName weldServiceName, ServiceBuilder<WeldComponentService> builder, final ServiceName bindingServiceName) {
+    private static void addJsr299BindingsCreateInterceptor(final ComponentConfiguration configuration, final ComponentDescription description, final String beanName, final ServiceName weldServiceName, ServiceBuilder<WeldComponentService> builder, final ServiceName bindingServiceName, final ComponentInterceptorSupport componentInterceptorSupport) {
         //add the create interceptor that creates the CDI interceptors
-        final Jsr299BindingsCreateInterceptor createInterceptor = new Jsr299BindingsCreateInterceptor(description.getBeanDeploymentArchiveId(), beanName);
+        final Jsr299BindingsCreateInterceptor createInterceptor = new Jsr299BindingsCreateInterceptor(description.getBeanDeploymentArchiveId(), beanName, componentInterceptorSupport);
         configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(createInterceptor), InterceptorOrder.ComponentPostConstruct.CREATE_CDI_INTERCEPTORS);
         builder.addDependency(weldServiceName, WeldBootstrapService.class, createInterceptor.getWeldContainer());
         builder.addDependency(bindingServiceName, InterceptorBindings.class, createInterceptor.getInterceptorBindings());
