@@ -23,12 +23,11 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.wildfly.clustering.service.GroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
  */
-public interface ThreadPoolDefinition extends GroupServiceNameFactory {
+public interface ThreadPoolDefinition extends ComponentServiceNameFactory {
 
     Attribute getMinThreads();
 

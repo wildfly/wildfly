@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.service;
 
-import org.infinispan.configuration.cache.StateTransferConfiguration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.controller.PathAddress;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
+ * Generic {@link org.jboss.msc.Service} whose provided value is a mapping of a supplied value.
  * @author Paul Ferraro
  */
-public class StateTransferBuilderFactory implements ResourceServiceBuilderFactory<StateTransferConfiguration> {
+public class SuppliedValueService<T, V> extends FunctionalValueService<T, V> {
 
-    @Override
-    public ResourceServiceBuilder<StateTransferConfiguration> createBuilder(PathAddress address) {
-        PathAddress cacheAddress = address.getParent();
-        PathAddress containerAddress = cacheAddress.getParent();
-
-        String containerName = containerAddress.getLastElement().getValue();
-        String cacheName = cacheAddress.getLastElement().getValue();
-
-        return new StateTransferBuilder(containerName, cacheName);
+    /**
+     * Constructs a new supplied value service.
+     * @param mapper a function that maps the supplied value to the service value
+     * @param supplier produces the supplied value
+     * @param destroyer a consumer that destroys the supplied value
+     */
+    public SuppliedValueService(Function<T, V> mapper, Supplier<T> supplier, Consumer<T> destroyer) {
+        super(mapper, context -> supplier.get(), (context, value) -> {
+            if (destroyer != null) {
+                destroyer.accept(value);
+            }
+        });
     }
 }

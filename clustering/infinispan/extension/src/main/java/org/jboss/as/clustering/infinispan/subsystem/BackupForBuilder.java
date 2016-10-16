@@ -25,12 +25,15 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.BackupForResourceDefinition.Attribute.CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.BackupForResourceDefinition.Attribute.SITE;
 
+import java.util.Optional;
+
 import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -38,19 +41,19 @@ import org.wildfly.clustering.service.Builder;
  * Builds a service that provides the {@link BackupForConfiguration} for a cache.
  * @author Paul Ferraro
  */
-public class BackupForBuilder extends CacheComponentBuilder<BackupForConfiguration> implements ResourceServiceBuilder<BackupForConfiguration> {
+public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> implements ResourceServiceBuilder<BackupForConfiguration> {
 
     private volatile org.infinispan.configuration.cache.BackupForBuilder builder = new ConfigurationBuilder().sites().backupFor();
 
-    BackupForBuilder(String containerName, String cacheName) {
-        super(CacheComponent.BACKUP_FOR, containerName, cacheName);
+    BackupForBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.BACKUP_FOR, cacheAddress);
     }
 
     @Override
     public Builder<BackupForConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String site = ModelNodes.asString(SITE.getDefinition().resolveModelAttribute(context, model));
-        if (site != null) {
-            this.builder.remoteSite(site).remoteCache(CACHE.getDefinition().resolveModelAttribute(context, model).asString());
+        Optional<String> site = ModelNodes.optionalString(SITE.resolveModelAttribute(context, model));
+        if (site.isPresent()) {
+            this.builder.remoteSite(site.get()).remoteCache(CACHE.resolveModelAttribute(context, model).asString());
         }
         return this;
     }

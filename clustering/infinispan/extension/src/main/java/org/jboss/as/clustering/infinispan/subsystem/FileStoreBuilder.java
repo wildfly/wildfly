@@ -34,6 +34,7 @@ import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
@@ -47,14 +48,15 @@ import org.jboss.msc.value.InjectedValue;
 public class FileStoreBuilder extends StoreBuilder {
 
     private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
+    private final String containerName;
 
     private volatile SingleFileStoreConfigurationBuilder builder;
     private volatile String relativePath;
     private volatile String relativeTo;
 
-    FileStoreBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
-        this.relativePath = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
+    FileStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress);
+        this.containerName = cacheAddress.getParent().getLastElement().getValue();
     }
 
     @Override
@@ -70,11 +72,8 @@ public class FileStoreBuilder extends StoreBuilder {
 
     @Override
     StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        String relativePath = ModelNodes.asString(RELATIVE_PATH.getDefinition().resolveModelAttribute(context, model));
-        if (relativePath != null) {
-            this.relativePath = relativePath;
-        }
-        this.relativeTo = RELATIVE_TO.getDefinition().resolveModelAttribute(context, model).asString();
+        this.relativePath = ModelNodes.optionalString(RELATIVE_PATH.resolveModelAttribute(context, model)).orElse(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
+        this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
         this.builder = new ConfigurationBuilder().persistence().addSingleFileStore();
         return this.builder;
     }

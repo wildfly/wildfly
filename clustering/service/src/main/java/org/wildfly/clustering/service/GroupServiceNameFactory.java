@@ -29,7 +29,5 @@ import org.jboss.msc.service.ServiceName;
  * @author Paul Ferraro
  */
 public interface GroupServiceNameFactory {
-    String DEFAULT_GROUP = "default";
-
     ServiceName getServiceName(String group);
 }

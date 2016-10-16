@@ -23,6 +23,7 @@ package org.wildfly.extension.undertow.session;
 
 import io.undertow.servlet.api.SessionManagerFactory;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -41,5 +42,5 @@ public interface DistributableSessionManagerFactoryBuilder {
      * @param metaData the web application meta data
      * @return a session manager factory service builder
      */
-    ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, DistributableSessionManagerConfiguration configuration);
+    ServiceBuilder<SessionManagerFactory> build(CapabilityServiceSupport support, ServiceTarget target, ServiceName name, DistributableSessionManagerConfiguration configuration);
 }

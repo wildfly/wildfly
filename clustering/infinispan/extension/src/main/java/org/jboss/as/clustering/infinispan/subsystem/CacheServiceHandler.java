@@ -22,11 +22,16 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
+
+import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -34,14 +39,16 @@ import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceName;
+import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
 
 /**
@@ -66,21 +73,27 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         String cacheName = cacheAddress.getLastElement().getValue();
 
         ServiceTarget target = context.getServiceTarget();
+        CapabilityServiceSupport support = context.getCapabilityServiceSupport();
+
+        ServiceName moduleServiceName = CacheComponent.MODULE.getServiceName(cacheAddress);
+        if (model.hasDefined(MODULE.getName())) {
+            new ModuleBuilder(moduleServiceName, MODULE).configure(context, model).build(target).install();
+        } else {
+            new AliasServiceBuilder<>(moduleServiceName, CacheContainerComponent.MODULE.getServiceName(containerAddress), Module.class).build(target).install();
+        }
 
         this.builderFactory.createBuilder(cacheAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
-        new CacheBuilder<>(containerName, cacheName).build(target).install();
-        new XAResourceRecoveryBuilder(containerName, cacheName).build(target).install();
+        new CacheBuilder<>(CACHE.getServiceName(cacheAddress), containerName, cacheName).configure(context).build(target).install();
+        new XAResourceRecoveryBuilder(cacheAddress).build(target).install();
 
-        BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CacheServiceName.CACHE.getServiceName(containerName, cacheName), Cache.class);
-        String jndiName = ModelNodes.asString(CacheResourceDefinition.Attribute.JNDI_NAME.getDefinition().resolveModelAttribute(context, model));
-        if (jndiName != null) {
-            bindingBuilder.alias(ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName()));
-        }
+        new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();
+        BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class);
+        ModelNodes.optionalString(JNDI_NAME.resolveModelAttribute(context, model)).map(jndiName -> ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName())).ifPresent(aliasBinding -> bindingBuilder.alias(aliasBinding));
         bindingBuilder.build(target).install();
 
         for (CacheGroupBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(containerName, cacheName)) {
+            for (Builder<?> builder : provider.getBuilders(support, containerName, cacheName)) {
                 builder.build(target).install();
             }
         }
@@ -93,19 +106,19 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         String containerName = containerAddress.getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
+        CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
         for (CacheGroupBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(containerName, cacheName)) {
+            for (Builder<?> builder : provider.getBuilders(support, containerName, cacheName)) {
                 context.removeService(builder.getServiceName());
             }
         }
 
         context.removeService(InfinispanBindingFactory.createCacheBinding(containerName, cacheName).getBinderServiceName());
+        context.removeService(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName).getBinderServiceName());
 
-        for (SubGroupServiceNameFactory factory : CacheServiceName.values()) {
-            context.removeService(factory.getServiceName(containerName, cacheName));
-        }
+        context.removeService(new XAResourceRecoveryBuilder(cacheAddress).getServiceName());
 
-        context.removeService(this.builderFactory.createBuilder(cacheAddress).getServiceName());
+        EnumSet.allOf(CacheResourceDefinition.Capability.class).stream().map(capability -> capability.getServiceName(cacheAddress)).forEach(serviceName -> context.removeService(serviceName));
     }
 }

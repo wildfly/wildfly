@@ -27,6 +27,7 @@ import java.util.ServiceLoader;
 
 import io.undertow.servlet.api.SessionManagerFactory;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -74,7 +75,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
     }
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, final DistributableSessionManagerConfiguration config) {
+    public ServiceBuilder<SessionManagerFactory> build(CapabilityServiceSupport support, ServiceTarget target, ServiceName name, final DistributableSessionManagerConfiguration config) {
         SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
             @Override
             public int getMaxActiveSessions() {
@@ -101,7 +102,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
                 return config.getCacheName();
             }
         };
-        Builder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> builder = this.provider.getBuilder(configuration);
+        Builder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> builder = this.provider.getBuilder(support, configuration);
         builder.build(target).install();
         return target.addService(name, new ValueService<>(this))
                 .addDependency(builder.getServiceName(), org.wildfly.clustering.web.session.SessionManagerFactory.class, this.factory)

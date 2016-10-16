@@ -84,7 +84,7 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
                     ModelNode value = new ModelNode();
                     for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.ColumnAttribute.class)) {
                         for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
-                            String name = attribute.getDefinition().getName();
+                            String name = attribute.getName();
                             if (operation.hasDefined(name)) {
                                 value.get(name).set(operation.get(name));
                             }
@@ -119,7 +119,7 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
                 .addAttributes(TableResourceDefinition.Attribute.class)
                 .addAttributes(TableResourceDefinition.ColumnAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(new BinaryTableBuilderFactory());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryTableBuilder(address.getParent().getParent()));
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);
     }

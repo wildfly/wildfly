@@ -49,7 +49,6 @@ import org.infinispan.remoting.transport.Address;
 import org.junit.After;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * Unit test for {@link DefaultCacheContainer}.
@@ -109,12 +108,6 @@ public class DefaultCacheContainerTestCase {
         assertEquals(result, otherCache);
         assertSame(this.subject, result.getCacheManager());
 
-        result = this.subject.getCache(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP);
-
-        assertNotSame(defaultCache, result);
-        assertEquals(result, defaultCache);
-        assertSame(this.subject, result.getCacheManager());
-
         result = this.subject.getCache(null);
 
         assertNotSame(defaultCache, result);
@@ -137,12 +130,6 @@ public class DefaultCacheContainerTestCase {
 
         assertNotSame(otherCache, result);
         assertEquals(result, otherCache);
-        assertSame(this.subject, result.getCacheManager());
-
-        result = this.subject.getCache(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP, templateName);
-
-        assertNotSame(defaultCache, result);
-        assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
 
         result = this.subject.getCache(null, templateName);
@@ -201,11 +188,7 @@ public class DefaultCacheContainerTestCase {
         when(this.manager.defineConfiguration(DEFAULT_CACHE, defaultConfig)).thenReturn(defaultConfig);
         when(this.manager.defineConfiguration("other", otherConfig)).thenReturn(otherConfig);
 
-        Configuration result = this.subject.defineConfiguration(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP, defaultConfig);
-
-        assertSame(defaultConfig, result);
-
-        result = this.subject.defineConfiguration(null, otherConfig);
+        Configuration result = this.subject.defineConfiguration(null, defaultConfig);
 
         assertSame(defaultConfig, result);
 
@@ -324,10 +307,6 @@ public class DefaultCacheContainerTestCase {
 
         assertFalse(result);
 
-        result = this.subject.isRunning(SubGroupServiceNameFactory.DEFAULT_SUB_GROUP);
-
-        assertTrue(result);
-
         result = this.subject.isRunning(null);
 
         assertTrue(result);
@@ -346,7 +325,7 @@ public class DefaultCacheContainerTestCase {
     public void startCaches() {
         when(this.manager.startCaches("other", DEFAULT_CACHE)).thenReturn(this.manager);
 
-        EmbeddedCacheManager result = this.subject.startCaches("other", SubGroupServiceNameFactory.DEFAULT_SUB_GROUP);
+        EmbeddedCacheManager result = this.subject.startCaches("other", null);
 
         assertSame(this.subject, result);
     }

@@ -26,7 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 
 /**
  * A handler for cache-container metrics.
@@ -38,7 +38,7 @@ public class CacheContainerMetricExecutor implements MetricExecutor<EmbeddedCach
     @Override
     public ModelNode execute(OperationContext context, Metric<EmbeddedCacheManager> metric) throws OperationFailedException {
         String containerName = context.getCurrentAddressValue();
-        CacheContainer container = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheContainerServiceName.CACHE_CONTAINER.getServiceName(containerName));
+        CacheContainer container = ServiceContainerHelper.findValue(context.getServiceRegistry(false), InfinispanRequirement.CONTAINER.getServiceName(context, containerName));
         return (container != null) ? metric.execute(container) : null;
     }
 }

@@ -37,12 +37,14 @@ import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.infinispan.spi.service.CacheContainerServiceName;
+import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds the configuration for a distributed cache.
@@ -50,37 +52,39 @@ import org.wildfly.clustering.service.Builder;
  */
 public class DistributedCacheBuilder extends SharedStateCacheBuilder {
 
-    private final InjectedValue<GlobalConfiguration> container = new InjectedValue<>();
     private final String containerName;
 
+    private volatile ValueDependency<GlobalConfiguration> global;
     private volatile HashConfiguration hash;
     private volatile L1Configuration l1;
     private volatile ConsistentHashStrategy consistentHashStrategy;
 
-    DistributedCacheBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName, CacheMode.DIST_SYNC);
-        this.containerName = containerName;
+    DistributedCacheBuilder(PathAddress address) {
+        super(address, CacheMode.DIST_SYNC);
+        this.containerName = address.getParent().getLastElement().getValue();
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return super.build(target).addDependency(CacheContainerServiceName.CONFIGURATION.getServiceName(this.containerName), GlobalConfiguration.class, this.container);
+        return this.global.register(super.build(target));
     }
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.getDefinition().resolveModelAttribute(context, model), ConsistentHashStrategy.class);
+        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, model), ConsistentHashStrategy.class);
 
         ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering();
 
         this.hash = builder.hash()
-                .capacityFactor(CAPACITY_FACTOR.getDefinition().resolveModelAttribute(context, model).asInt())
-                .numOwners(OWNERS.getDefinition().resolveModelAttribute(context, model).asInt())
-                .numSegments(SEGMENTS.getDefinition().resolveModelAttribute(context, model).asInt())
+                .capacityFactor(CAPACITY_FACTOR.resolveModelAttribute(context, model).asInt())
+                .numOwners(OWNERS.resolveModelAttribute(context, model).asInt())
+                .numSegments(SEGMENTS.resolveModelAttribute(context, model).asInt())
                 .create();
 
-        long l1Lifespan = L1_LIFESPAN.getDefinition().resolveModelAttribute(context, model).asLong();
+        long l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
         this.l1 = builder.l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan).create();
+
+        this.global = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.containerName), GlobalConfiguration.class);
 
         return super.configure(context, model);
     }
@@ -95,7 +99,7 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
 
         // ConsistentHashStrategy.INTER_CACHE is Infinispan's default behavior
         if (this.consistentHashStrategy == ConsistentHashStrategy.INTRA_CACHE) {
-            hash.consistentHashFactory(this.container.getValue().transport().hasTopologyInfo() ? new TopologyAwareConsistentHashFactory() : new DefaultConsistentHashFactory());
+            hash.consistentHashFactory(this.global.getValue().transport().hasTopologyInfo() ? new TopologyAwareConsistentHashFactory() : new DefaultConsistentHashFactory());
         }
     }
 }

@@ -51,7 +51,7 @@ public class SimpleElectionPolicyBuilder extends ElectionPolicyBuilder {
 
     @Override
     public Builder<SingletonElectionPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.position = POSITION.getDefinition().resolveModelAttribute(context, model).asInt();
+        this.position = POSITION.resolveModelAttribute(context, model).asInt();
         return super.configure(context, model);
     }
 }

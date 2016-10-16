@@ -41,9 +41,14 @@ public class NamedBootstrapContext extends BaseCloneableBootstrapContext {
      * Constructor
      * @param name The name of the WorkManager
      */
-    public NamedBootstrapContext(String name) {
+    public NamedBootstrapContext(final String name) {
         super();
         setName(name);
+    }
+
+    public NamedBootstrapContext(final String name, final String workManagerName) {
+        this(name);
+        this.setWorkManagerName(workManagerName);
     }
 
     /**
@@ -66,7 +71,7 @@ public class NamedBootstrapContext extends BaseCloneableBootstrapContext {
     public CloneableBootstrapContext clone() throws CloneNotSupportedException {
         NamedBootstrapContext nbc = (NamedBootstrapContext)super.clone();
         nbc.setName(getName());
-
+        nbc.setWorkManagerName(getWorkManagerName());
         return nbc;
     }
 }

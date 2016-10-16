@@ -36,8 +36,9 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
     VERSION_4_0(4, 0),
+    VERSION_4_1(4, 1),
     ;
-    public static final JGroupsSchema CURRENT = VERSION_4_0;
+    public static final JGroupsSchema CURRENT = VERSION_4_1;
 
     private final int major;
     private final int minor;

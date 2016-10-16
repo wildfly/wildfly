@@ -56,17 +56,13 @@ public class ClusterTestUtil {
      * security manager:</em>
      *
      * <pre>{@code
-     * war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-     *     new ServerPermission("getCurrentServiceContainer")
-     * ), "permissions.xml");
+     * war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
      * }</pre>
      */
     public static <A extends Archive<A> & ClassContainer<A> & ManifestContainer<A>> A addTopologyListenerDependencies(A archive) {
         archive.addClasses(TopologyChangeListener.class, TopologyChangeListenerBean.class, TopologyChangeListenerServlet.class);
-        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.jboss.as.server, org.infinispan\n"));
-        archive.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
-                new ServerPermission("getCurrentServiceContainer")
-        ), "permissions.xml");
+        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jboss.as.controller, org.jboss.as.server, org.infinispan, org.wildfly.clustering.infinispan.spi\n"));
+        archive.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
         return archive;
     }
 

@@ -33,29 +33,30 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.ChannelFactoryTransport;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class JGroupsTransportBuilder extends CacheContainerComponentBuilder<TransportConfiguration> implements ResourceServiceBuilder<TransportConfiguration> {
+public class JGroupsTransportBuilder extends ComponentBuilder<TransportConfiguration> implements ResourceServiceBuilder<TransportConfiguration> {
 
     private final String containerName;
 
     private volatile ValueDependency<ChannelFactory> factory;
+    private volatile String channel;
     private volatile long lockTimeout;
 
-    public JGroupsTransportBuilder(String containerName) {
-        super(CacheContainerComponent.TRANSPORT, containerName);
-        this.containerName = containerName;
+    public JGroupsTransportBuilder(PathAddress containerAddress) {
+        super(CacheContainerComponent.TRANSPORT, containerAddress);
+        this.containerName = containerAddress.getLastElement().getValue();
     }
 
     @Override
@@ -64,10 +65,10 @@ public class JGroupsTransportBuilder extends CacheContainerComponentBuilder<Tran
     }
 
     @Override
-    public Builder<TransportConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.lockTimeout = LOCK_TIMEOUT.getDefinition().resolveModelAttribute(context, model).asLong();
-        String channel = ModelNodes.asString(CHANNEL.getDefinition().resolveModelAttribute(context, model));
-        this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channel), ChannelFactory.class);
+    public JGroupsTransportBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.lockTimeout = LOCK_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        this.channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
+        this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, this.channel), ChannelFactory.class);
         return this;
     }
 
@@ -85,5 +86,9 @@ public class JGroupsTransportBuilder extends CacheContainerComponentBuilder<Tran
             builder.siteId(topology.getSite()).rackId(topology.getRack()).machineId(topology.getMachine());
         }
         return builder.create();
+    }
+
+    String getChannel() {
+        return this.channel;
     }
 }

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -63,7 +64,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     private final JGroupsSchema schema;
 
     public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), String.format("subsystem-jgroups-%d_%d.xml", schema.major(), schema.minor()));
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), String.format(Locale.ROOT, "subsystem-jgroups-%d_%d.xml", schema.major(), schema.minor()));
         this.expectedOperationCount = expectedOperationCount;
         this.schema = schema;
     }
@@ -75,6 +76,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_2_0, 22 },
                 { JGroupsSchema.VERSION_3_0, 30 },
                 { JGroupsSchema.VERSION_4_0, 30 },
+                { JGroupsSchema.VERSION_4_1, 31 },
         };
         return Arrays.asList(data);
     }
@@ -239,8 +241,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      * the work being done for WFCORE-401. This work involves calculating the operations to bring the slave domain model
      * into sync with the master domain model. Without ordered resources, that would mean on reconnect if the master
      * had added a protocol somewhere in the middle, the protocol would get added to the end rather at the correct place.
-     *
-     * @throws Exception
      */
     @Test
     public void testIndexedAdds() throws Exception {

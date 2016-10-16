@@ -59,73 +59,59 @@ public class WildFlyDataSource implements DataSource, Serializable {
         this.jndiName = jndiName;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Connection getConnection() throws SQLException {
         return delegate.getConnection();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Connection getConnection(String username, String password) throws SQLException {
         return delegate.getConnection(username, password);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         throw new SQLException("Unwrap not supported");
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public PrintWriter getLogWriter() throws SQLException {
         return delegate.getLogWriter();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
         delegate.setLogWriter(out);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void setLoginTimeout(int seconds) throws SQLException {
         delegate.setLoginTimeout(seconds);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int getLoginTimeout() throws SQLException {
         return delegate.getLoginTimeout();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return delegate.getParentLogger();
     }
 
-   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-      out.defaultWriteObject();
-      out.writeObject(jndiName);
-   }
+    public String getJndiName() {
+        return jndiName;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(jndiName);
+    }
 
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {

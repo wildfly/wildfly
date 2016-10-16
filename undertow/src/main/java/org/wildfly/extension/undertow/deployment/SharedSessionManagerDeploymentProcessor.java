@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.servlet.api.SessionManagerFactory;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -60,8 +61,9 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         ServiceName managerServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
         DistributableSessionManagerFactoryBuilder builder = new DistributableSessionManagerFactoryBuilderValue().getValue();
         if (builder != null) {
+            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            builder.build(target, managerServiceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, deploymentUnit.getName(), module))
+            builder.build(support, target, managerServiceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, deploymentUnit.getName(), module))
                     .setInitialMode(Mode.ON_DEMAND)
                     .install();
         } else {

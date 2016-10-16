@@ -21,9 +21,6 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.CacheBuilderFactory;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
 
 /**
@@ -32,14 +29,7 @@ import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
  */
 public class CacheServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements DistributedCacheGroupBuilderProvider {
 
-    private static final CacheBuilderFactory<ServiceProviderRegistry<Object>> FACTORY = new CacheBuilderFactory<ServiceProviderRegistry<Object>>() {
-        @Override
-        public Builder<ServiceProviderRegistry<Object>> createBuilder(String containerName, String cacheName) {
-            return new CacheServiceProviderRegistryBuilder<>(containerName, cacheName);
-        }
-    };
-
     public CacheServiceProviderRegistryBuilderProvider() {
-        super(FACTORY);
+        super((support, containerName, cacheName) -> new CacheServiceProviderRegistryBuilder<>(support, containerName, cacheName));
     }
 }

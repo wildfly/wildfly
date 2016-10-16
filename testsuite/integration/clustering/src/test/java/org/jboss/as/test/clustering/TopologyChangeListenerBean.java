@@ -29,7 +29,6 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
@@ -39,6 +38,7 @@ import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 
 /**
  * EJB that establishes a stable topology.
@@ -53,14 +53,10 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
     public void establishTopology(String containerName, String cacheName, long timeout, String... nodes) throws InterruptedException {
         Set<String> expectedMembers = Stream.of(nodes).sorted().collect(Collectors.toSet());
         ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
-        ServiceName name = ServiceName.JBOSS.append("infinispan", containerName);
-        EmbeddedCacheManager cacheContainer = ServiceContainerHelper.findValue(registry, name);
-        if (cacheContainer == null) {
-            throw new IllegalStateException(String.format("Failed to locate %s", name));
-        }
-        Cache<?, ?> cache = cacheContainer.getCache(cacheName);
+        ServiceName name = ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName));
+        Cache<?, ?> cache = ServiceContainerHelper.findValue(registry, name);
         if (cache == null) {
-            throw new IllegalStateException(String.format("Cache %s not found", cacheName));
+            throw new IllegalStateException(String.format("Cache %s not found", name));
         }
         cache.addListener(this);
         try

@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.ClassLoaderThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -40,23 +41,23 @@ import org.wildfly.clustering.service.Builder;
  * @author Radoslav Husar
  * @version August 2015
  */
-public class ThreadPoolBuilder extends CacheContainerComponentBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
+public class ThreadPoolBuilder extends ComponentBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ThreadPoolDefinition definition;
 
-    ThreadPoolBuilder(ThreadPoolDefinition definition, String containerName) {
-        super(definition, containerName);
+    ThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress containerAddress) {
+        super(definition, containerAddress);
         this.definition = definition;
     }
 
     @Override
     public Builder<ThreadPoolConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         ThreadPoolExecutorFactory<?> factory = new BlockingThreadPoolExecutorFactory(
-                this.definition.getMaxThreads().getDefinition().resolveModelAttribute(context, model).asInt(),
-                this.definition.getMinThreads().getDefinition().resolveModelAttribute(context, model).asInt(),
-                this.definition.getQueueLength().getDefinition().resolveModelAttribute(context, model).asInt(),
-                this.definition.getKeepAliveTime().getDefinition().resolveModelAttribute(context, model).asLong()
+                this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt(),
+                this.definition.getMinThreads().resolveModelAttribute(context, model).asInt(),
+                this.definition.getQueueLength().resolveModelAttribute(context, model).asInt(),
+                this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong()
         ) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {

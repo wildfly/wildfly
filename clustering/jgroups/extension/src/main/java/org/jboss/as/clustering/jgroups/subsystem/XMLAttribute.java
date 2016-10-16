@@ -33,6 +33,7 @@ public enum XMLAttribute {
 
     CHANNEL(RemoteSiteResourceDefinition.Attribute.CHANNEL),
     CLUSTER(ChannelResourceDefinition.Attribute.CLUSTER),
+    DATA_SOURCE(ProtocolResourceDefinition.Attribute.DATA_SOURCE),
     @Deprecated DEFAULT_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.DEFAULT_EXECUTOR),
     DEFAULT("default"),
     @Deprecated DEFAULT_STACK("default-stack"),

@@ -34,11 +34,19 @@ public class BusStation {
     @EJB(lookup = "java:module/Bus")
     private Bus lookupBus;
 
+
+    @EJB(lookup = "java:comp/Bus")
+    private Bus lookupBus2;
+
     public Bus getBus() {
         return bus;
     }
 
     public Bus getLookupBus() {
         return lookupBus;
+    }
+
+    public Bus getLookupBus2() {
+        return lookupBus2;
     }
 }

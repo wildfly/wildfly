@@ -27,6 +27,7 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.registry.Registry;
@@ -45,7 +46,7 @@ public class RegistryFactoryAliasBuilderProvider implements CacheGroupAliasBuild
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Collection<Builder<?>> getBuilders(String containerName, String aliasCacheName, String targetCacheName) {
+    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
         Builder<RegistryFactory> factoryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(containerName, targetCacheName), RegistryFactory.class);
         Builder<Registry> registryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, targetCacheName), Registry.class);
         Builder<RegistryEntryProvider> entryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(containerName, targetCacheName), CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(containerName, aliasCacheName), RegistryEntryProvider.class);

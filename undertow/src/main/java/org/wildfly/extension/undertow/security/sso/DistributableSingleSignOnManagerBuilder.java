@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -47,5 +48,5 @@ public interface DistributableSingleSignOnManagerBuilder {
      * @param hostServiceName the service name of the host
      * @return a service builder
      */
-    ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, String serverName, String hostName);
+    ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String serverName, String hostName);
 }

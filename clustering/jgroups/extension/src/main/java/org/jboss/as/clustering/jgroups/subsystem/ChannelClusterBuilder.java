@@ -59,7 +59,7 @@ public class ChannelClusterBuilder implements ResourceServiceBuilder<String> {
 
     @Override
     public Builder<String> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.cluster = ModelNodes.asString(CLUSTER.resolveModelAttribute(context, model), this.name);
+        this.cluster = ModelNodes.optionalString(CLUSTER.resolveModelAttribute(context, model)).orElse(this.name);
         return this;
     }
 

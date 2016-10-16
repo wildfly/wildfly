@@ -150,6 +150,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeAttributes(writer, cache, EnumSet.allOf(CacheResourceDefinition.Attribute.class));
     }
 
+    @SuppressWarnings("deprecation")
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writeCacheAttributes(writer, name, cache);
         writeAttributes(writer, cache, ClusteredCacheResourceDefinition.Attribute.class);
@@ -318,8 +319,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttributes(writer, table, TableResourceDefinition.Attribute.class);
             writeAttribute(writer, table, prefixAttribute);
             for (TableResourceDefinition.ColumnAttribute attribute : TableResourceDefinition.ColumnAttribute.values()) {
-                if (table.hasDefined(attribute.getDefinition().getName())) {
-                    ModelNode column = table.get(attribute.getDefinition().getName());
+                if (table.hasDefined(attribute.getName())) {
+                    ModelNode column = table.get(attribute.getName());
                     writer.writeStartElement(attribute.getDefinition().getXmlName());
                     writeAttribute(writer, column, attribute.getColumnName());
                     writeAttribute(writer, column, attribute.getColumnType());
@@ -345,7 +346,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     private static boolean hasDefined(ModelNode model, Iterable<? extends Attribute> attributes) {
         for (Attribute attribute : attributes) {
-            if (model.hasDefined(attribute.getDefinition().getName())) return true;
+            if (model.hasDefined(attribute.getName())) return true;
         }
         return false;
     }

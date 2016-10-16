@@ -30,6 +30,7 @@ import org.infinispan.configuration.cache.PartitionHandlingConfigurationBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
@@ -37,12 +38,12 @@ import org.wildfly.clustering.service.Builder;
  * Builds a service providing a {@link PartitionHandlingConfiguration}.
  * @author Paul Ferraro
  */
-public class PartitionHandlingBuilder extends CacheComponentBuilder<PartitionHandlingConfiguration> implements ResourceServiceBuilder<PartitionHandlingConfiguration> {
+public class PartitionHandlingBuilder extends ComponentBuilder<PartitionHandlingConfiguration> implements ResourceServiceBuilder<PartitionHandlingConfiguration> {
 
     private final PartitionHandlingConfigurationBuilder builder = new ConfigurationBuilder().clustering().partitionHandling();
 
-    PartitionHandlingBuilder(String containerName, String cacheName) {
-        super(CacheComponent.PARTITION_HANDLING, containerName, cacheName);
+    PartitionHandlingBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.PARTITION_HANDLING, cacheAddress);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class PartitionHandlingBuilder extends CacheComponentBuilder<PartitionHan
 
     @Override
     public Builder<PartitionHandlingConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.enabled(ENABLED.getDefinition().resolveModelAttribute(context, model).asBoolean());
+        this.builder.enabled(ENABLED.resolveModelAttribute(context, model).asBoolean());
         return this;
     }
 }
