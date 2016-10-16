@@ -21,12 +21,10 @@
  */
 package org.jboss.as.jsf.deployment;
 
-import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.dmr.ModelNode;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
@@ -51,11 +49,8 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
      *
      * @param model The model for the JSF subsystem.
      */
-    public JSFVersionProcessor(ModelNode model) {
-        ModelNode defaultJSFSlot = model.get(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME);
-        if (defaultJSFSlot.isDefined()) {
-            JSFModuleIdFactory.getInstance().setDefaultSlot(defaultJSFSlot.asString());
-        }
+    public JSFVersionProcessor(String jsfSlot) {
+            JSFModuleIdFactory.getInstance().setDefaultSlot(jsfSlot);
     }
 
     @Override
