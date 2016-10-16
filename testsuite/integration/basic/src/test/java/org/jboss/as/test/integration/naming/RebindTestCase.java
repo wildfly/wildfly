@@ -38,7 +38,9 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.net.SocketPermission;
 import java.net.URL;
 import javax.ejb.EJB;
 
@@ -47,7 +49,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.naming.subsystem.NamingExtension;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -74,7 +78,18 @@ public class RebindTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "RebindTestCase.jar");
         jar.addClasses(RebindTestCase.class, BindingLookupBean.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, " +
+                "org.jboss.remoting3\n"
+        ), "MANIFEST.MF");
+
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new RemotingPermission("addConnectionProvider"),
+                new RemotingPermission("connect"),
+                new RemotingPermission("createEndpoint"),
+                new RuntimePermission("createXnioWorker"),
+                new SocketPermission(TestSuiteEnvironment.getServerAddress(), "connect,resolve")
+        ), "permissions.xml");
+
         return jar;
     }
 
