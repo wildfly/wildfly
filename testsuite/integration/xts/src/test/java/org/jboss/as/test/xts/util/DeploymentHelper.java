@@ -31,6 +31,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import java.io.File;
 import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
 import java.net.SocketPermission;
 import java.util.PropertyPermission;
 
@@ -71,17 +72,21 @@ public class DeploymentHelper {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, archiveName + ".war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"))
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new ReflectPermission("suppressAccessChecks"),
+                        new ReflectPermission("accessDeclaredMembers"),
                         // Permissions for port access
                         new PropertyPermission("management.address", "read"),
                         new PropertyPermission("node0", "read"),
                         new PropertyPermission("jboss.http.port", "read"),
                         new SocketPermission(serverHostPort, "connect,resolve"),
                         // Permissions for the new client creation
+                        new RuntimePermission("accessDeclaredMembers"),
+                        new RuntimePermission("createClassLoader"),
                         new RuntimePermission("getClassLoader"),
+                        new RuntimePermission("org.apache.cxf.permission"),
                         new FilePermission(javaHome + File.separator + "lib" + File.separator + "wsdl.properties", "read"),
                         new PropertyPermission("user.dir", "read"),
-                        new RuntimePermission("org.apache.cxf.permission"),
-                        new RuntimePermission("createClassLoader"),
+                        new PropertyPermission("arquillian.debug", "read"),
                         new FilePermission(System.getProperty("basedir") + File.separator + "target" + File.separator
                                 + "workdir" + File.separator + "xcatalog", "read")
                 ), "permissions.xml");
