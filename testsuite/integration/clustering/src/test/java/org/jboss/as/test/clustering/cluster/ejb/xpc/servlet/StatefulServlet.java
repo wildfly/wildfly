@@ -134,7 +134,7 @@ public class StatefulServlet extends HttpServlet {
         }
 
         Command command = Command.valueOf(req.getParameter(COMMAND));
-        log.info(StatefulServlet.class.getName() + ": command = " + command);
+        log.trace(StatefulServlet.class.getName() + ": command = " + command);
         String answer = null;
 
         switch (command) {
@@ -201,6 +201,6 @@ public class StatefulServlet extends HttpServlet {
         }
         resp.getWriter().write("Success");
         session.setAttribute(BEAN, bean);
-        log.info(StatefulServlet.class.getName() + ": command = " + command + " finished");
+        log.trace(StatefulServlet.class.getName() + ": command = " + command + " finished");
     }
 }

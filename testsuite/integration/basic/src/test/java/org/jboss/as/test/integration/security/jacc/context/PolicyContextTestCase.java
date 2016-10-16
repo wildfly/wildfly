@@ -50,7 +50,6 @@ public class PolicyContextTestCase {
 
     @Deployment(name = "ear")
     public static EnterpriseArchive createDeployment() {
-        LOGGER.info("Start EAR deployment");
         final String earName = "ear-jacc-context";
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, earName + ".ear");
@@ -61,9 +60,6 @@ public class PolicyContextTestCase {
 
         ear.addAsManifestResource(createPermissionsXmlAsset(new SecurityPermission("getPolicy")), "permissions.xml");
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(ear.toString(true));
-        }
         return ear;
     }
 
@@ -71,7 +67,7 @@ public class PolicyContextTestCase {
     public void testHttpServletRequestFromPolicyContext(@ArquillianResource URL webAppURL) throws Exception {
         String externalFormURL = webAppURL.toExternalForm();
         String servletURL = externalFormURL.substring(0, externalFormURL.length() - 1) + PolicyContextTestServlet.SERVLET_PATH;
-        LOGGER.info("Testing JACC permissions: " + servletURL);
+        LOGGER.trace("Testing JACC permissions: " + servletURL);
 
         String response = HttpRequest.get(servletURL, 1000, SECONDS);
         assertTrue(response.contains("EJB successfully retrieved HttpServletRequest reference from PolicyContext"));
@@ -87,9 +83,6 @@ public class PolicyContextTestCase {
     private static WebArchive createWar(final String warName) {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, warName + ".war");
         war.addClass(PolicyContextTestServlet.class);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 }

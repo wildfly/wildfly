@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.deployment.classloading.war.WebInfLibClass;
+import org.jboss.as.test.shared.ResourceListingUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,26 +79,26 @@ public class EarResourceListingTestCase {
 
     @Test()
     public void testRecursiveEARResourceRetrieval() {
-        log.info("Test non-recursive listing of resources in EAR deployment");
+        log.trace("Test non-recursive listing of resources in EAR deployment");
         doTestEARResourceRetrieval(true, "/");
 
     }
 
     @Test()
     public void testNonRecursiveEARResourceRetrieval() {
-        log.info("Test recursive listing of resources in EAR deployment");
+        log.trace("Test recursive listing of resources in EAR deployment");
         doTestEARResourceRetrieval(false, "/");
     }
 
     @Test()
     public void testRecursiveEARResourceRetrievalForSpecifiedRootDir() {
-        log.info("Test recursive listing of resources in EAR deployment for root dir /META-INF");
+        log.trace("Test recursive listing of resources in EAR deployment for root dir /META-INF");
         doTestEARResourceRetrieval(true, "/META-INF");
     }
 
     @Test()
     public void testNonRecursiveEARResourceRetrievalForSpecifiedRootDir() {
-        log.info("Test non-recursive listing of resources in EAR deployment for root dir /META-INF");
+        log.trace("Test non-recursive listing of resources in EAR deployment for root dir /META-INF");
         doTestEARResourceRetrieval(false, "/META-INF");
     }
 
@@ -117,13 +118,13 @@ public class EarResourceListingTestCase {
         Collections.sort(foundResources);
         Collections.sort(resourcesInDeployment);
 
-        log.info("List of expected resources:");
+        log.trace("List of expected resources:");
         for (String expectedResource : resourcesInDeployment) {
-            log.info(expectedResource);
+            log.trace(expectedResource);
         }
-        log.info("List of found resources: ");
+        log.trace("List of found resources: ");
         for (String foundResource : foundResources) {
-            log.info(foundResource);
+            log.trace(foundResource);
         }
 
         Assert.assertArrayEquals("Not all resources from EAR archive are correctly listed", resourcesInDeployment.toArray(), foundResources.toArray());

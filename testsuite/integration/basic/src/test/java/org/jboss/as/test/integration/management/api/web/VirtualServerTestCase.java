@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.management.api.web;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -95,7 +95,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
     public void addRemoveVirtualServer(@ArquillianResource Deployer deployer) throws Exception {
 
         if (! resolveHosts()) {
-            log.info("Unable to resolve alternate server host name.");
+            log.trace("Unable to resolve alternate server host name.");
             return;
         }
         addVirtualServer();

@@ -37,7 +37,6 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -52,7 +51,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class SingletonReentrantTestCase {
-    private static final Logger log = Logger.getLogger(SingletonReentrantTestCase.class);
     private static final String ARCHIVE_NAME = "reentrant-test";
     private static final int WAITING_S = 5;
 
@@ -65,7 +63,6 @@ public class SingletonReentrantTestCase {
         jar.addPackage(SingletonReentrantTestCase.class.getPackage());
         // Needed for ThreadPoolExecutor.shutdown()
         jar.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("modifyThread")), "permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

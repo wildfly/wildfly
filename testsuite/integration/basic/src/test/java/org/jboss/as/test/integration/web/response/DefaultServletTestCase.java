@@ -42,7 +42,6 @@ public class DefaultServletTestCase {
     public static WebArchive deployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT + ".war");
         war.addAsWebResource(DefaultServletTestCase.class.getPackage(), APP_XHTML_FILE_NAME, APP_XHTML_FILE_NAME);
-        logger.info("War " + WEB_APP_CONTEXT + ".war contents: " + war.toString(true));
         return war;
     }
 

@@ -56,7 +56,7 @@ public class SLSBLifecycleCallback implements IBeanLifecycleCallback {
     public void init() throws Exception {
         // on Stateless bean is not permitted to call getCallerPrincipal on @PostConstruct
         ITestResultsSingleton results = getSingleton();
-        log.info(SLSBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
+        log.trace(SLSBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
         Principal princ = null;
         try {
             princ = sessContext.getCallerPrincipal();
@@ -71,7 +71,7 @@ public class SLSBLifecycleCallback implements IBeanLifecycleCallback {
     public void tearDown() throws Exception {
         // on Stateless bean is not permitted to call getCallerPrincipal on @PreDestroy
         ITestResultsSingleton results = getSingleton();
-        log.info(SLSBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
+        log.trace(SLSBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
         Principal princ = null;
         try {
             princ = sessContext.getCallerPrincipal();

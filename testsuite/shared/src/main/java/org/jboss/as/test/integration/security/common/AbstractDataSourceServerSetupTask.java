@@ -71,7 +71,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         for (final DataSource config : dataSourceConfigurations) {
             final String name = config.getName();
-            LOGGER.info("Adding datasource " + name);
+            LOGGER.trace("Adding datasource " + name);
             final ModelNode dsNode = new ModelNode();
             dsNode.get(OP).set(ADD);
             dsNode.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_DATASOURCES);
@@ -117,7 +117,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         for (final DataSource config : dataSourceConfigurations) {
             final String name = config.getName();
-            LOGGER.info("Removing datasource " + name);
+            LOGGER.trace("Removing datasource " + name);
             final ModelNode op = new ModelNode();
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_DATASOURCES);

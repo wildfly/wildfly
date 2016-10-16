@@ -41,7 +41,6 @@ import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.MDBAcceptingObjectMessage;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.MDBAcceptingObjectMessageOfArrayType;
 import org.jboss.as.test.integration.ejb.mdb.objectmessage.SimpleMessageInEarLibJar;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -59,8 +58,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({ObjectMessageTestCase.JmsQueueSetup.class})
 public class ObjectMessageTestCase {
-
-    private static final Logger logger = Logger.getLogger(ObjectMessageTestCase.class);
 
     private static final String OBJECT_MESSAGE_ARRAY_TYPE_REPLY_QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/objectmessage-array-reply-queue";
 
@@ -87,7 +84,7 @@ public class ObjectMessageTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-queue", MDBAcceptingObjectMessage.QUEUE_JNDI_NAME);
             jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME);
             jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-queue", MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME);
@@ -125,20 +122,17 @@ public class ObjectMessageTestCase {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         ejbJar.addClasses(MDBAcceptingObjectMessageOfArrayType.class, JMSMessagingUtil.class, ObjectMessageTestCase.class, MDBAcceptingObjectMessage.class);
-        logger.info(ejbJar.toString(true));
 
         final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, "util.jar");
         libJar.addClasses(SimpleMessageInEarLibJar.class);
         libJar.addPackage(JMSOperations.class.getPackage());
         libJar.addClass(JmsQueueSetup.class);
-        logger.info(libJar.toString(true));
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "mdb-objectmessage-test.ear");
         ear.addAsModule(ejbJar);
         ear.addAsLibraries(libJar);
 
         ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
-        logger.info(ear.toString(true));
         return ear;
     }
 

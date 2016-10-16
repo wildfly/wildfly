@@ -129,38 +129,38 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to LON-0
-            System.out.println("Executing HTTP request: " + url1);
+            //System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // Lets wait for the session to replicate
             waitForReplication(GRACE_TIME_TO_REPLICATE);
 
             // do a get on LON-1
-            System.out.println("Executing HTTP request: " + url2);
+            //System.out.println("Executing HTTP request: " + url2);
             response = client.execute(new HttpGet(url2));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // do a get on NYC-0
-            System.out.println("Executing HTTP request: " + url3);
+            //System.out.println("Executing HTTP request: " + url3);
             response = client.execute(new HttpGet(url3));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // do a get on SFO-0
-            System.out.println("Executing HTTP request: " + url4);
+            //System.out.println("Executing HTTP request: " + url4);
             response = client.execute(new HttpGet(url4));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
         }
     }
 
@@ -184,21 +184,21 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to NYC-0
-            System.out.println("Executing HTTP request: " + url3);
+            //System.out.println("Executing HTTP request: " + url3);
             HttpResponse response = client.execute(new HttpGet(url3));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // Lets wait for the session to replicate
             waitForReplication(GRACE_TIME_TO_REPLICATE);
 
             // do a get on LON-1 - this should fail
-            System.out.println("Executing HTTP request: " + url1);
+            //System.out.println("Executing HTTP request: " + url1);
             response = client.execute(new HttpGet(url1));
             Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
         }
     }
 }

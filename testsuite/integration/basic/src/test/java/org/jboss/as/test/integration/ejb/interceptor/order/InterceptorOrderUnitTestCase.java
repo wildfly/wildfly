@@ -46,7 +46,6 @@ public class InterceptorOrderUnitTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "interceptor-descriptor-test.jar");
         jar.addPackage(InterceptorOrderUnitTestCase.class.getPackage());
         jar.addAsManifestResource(InterceptorOrderUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        //System.out.println(jar.toString(true));
         return jar;
     }
 

@@ -74,7 +74,7 @@ public class DDBasedMDB implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message " + message + " in MDB " + this.getClass().getName());
+        logger.trace("Received message " + message + " in MDB " + this.getClass().getName());
         Connection conn = null;
         try {
             final Destination replyTo = message.getJMSReplyTo();
@@ -82,7 +82,7 @@ public class DDBasedMDB implements MessageListener {
                 return;
             }
 
-            logger.info("Doing a DB operation using a DataSource");
+            logger.trace("Doing a DB operation using a DataSource");
             try {
                 conn = dataSource.getConnection();
                 final PreparedStatement preparedStatement = conn.prepareStatement("select upper('foo')");
@@ -90,10 +90,10 @@ public class DDBasedMDB implements MessageListener {
             } catch (SQLException e) {
                 throw  new RuntimeException(e);
             }
-            logger.info("Done invoking DB operation. Holding on to connection till this method completes");
-            logger.info("Invoking a BMT SLSB which will use UserTransaction");
+            logger.trace("Done invoking DB operation. Holding on to connection till this method completes");
+            logger.trace("Invoking a BMT SLSB which will use UserTransaction");
             bmtslsb.doSomethingWithUserTransaction();
-            logger.info("Sending a reply to destination " + replyTo);
+            logger.trace("Sending a reply to destination " + replyTo);
             jmsMessagingUtil.reply(message);
         } catch (JMSException e) {
             throw new RuntimeException(e);

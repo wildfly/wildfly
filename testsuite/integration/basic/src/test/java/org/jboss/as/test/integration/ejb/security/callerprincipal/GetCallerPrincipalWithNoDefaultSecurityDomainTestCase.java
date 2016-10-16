@@ -69,8 +69,7 @@ import static org.junit.Assert.fail;
 @ServerSetup({GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.DisableDefaultSecurityDomainSetupTask.class})
 @Category(CommonCriteria.class)
 public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
-
-    private static final Logger log = Logger.getLogger(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class);
+    private static final Logger LOGGER = Logger.getLogger(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class);
 
     private static final String ANONYMOUS = "anonymous"; //TODO: is this constant configured somewhere?
 
@@ -134,7 +133,6 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
                 .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsManifestResource(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class.getPackage(), "MANIFEST.MF-no-default-security-domain", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -151,8 +149,7 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
                     principal);
             assertEquals(ANONYMOUS, principal.getName());
         } catch (RuntimeException e) {
-            e.printStackTrace();
-            log.error(e.getStackTrace());
+            LOGGER.error("EJB 3.1 FR 17.6.5", e);
             fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method ("
                     + e.getMessage() + ")");
         }

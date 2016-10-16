@@ -53,7 +53,6 @@ public class AS835TestCase {
                 .addPackage(SimpleStatelessBean.class.getPackage())
                 .addPackage(Naming.class.getPackage())
                 .addAsWebInfResource(AS835TestCase.class.getPackage(), "ejb-jar-as835.xml", "ejb-jar.xml");
-        //System.out.println(deployment.toString(true));
         return deployment;
     }
 

@@ -50,12 +50,12 @@ public class PointLessMathBean implements PointlesMathInterface {
     @PostConstruct
     private void postConstruct() throws JMSException, NamingException {
         this.lifeCycleTracker.trackPostConstructOn(this.getClass().getName());
-        log.info("@PostConstruct invoked on " + this);
+        log.trace("@PostConstruct invoked on " + this);
     }
 
     @PreDestroy
     private void preDestroy() {
         lifeCycleTracker.trackPreDestroyOn(this.getClass().getName());
-        log.info("@PreDestroy invoked on " + this);
+        log.trace("@PreDestroy invoked on " + this);
     }
 }

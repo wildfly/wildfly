@@ -11,9 +11,9 @@ public class MyTestB implements MyTestRemoteB {
     MySession2RemoteB session23;
 
     public boolean doit() {
-        log.info("Calling MyTest...");
+        log.trace("Calling MyTest...");
         session23.doitSession();
-        log.info("Calling MyTest - after doit");
+        log.trace("Calling MyTest - after doit");
         return true;
     }
 }

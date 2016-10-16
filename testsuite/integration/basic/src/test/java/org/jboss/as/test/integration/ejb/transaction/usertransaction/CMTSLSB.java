@@ -69,7 +69,7 @@ public class CMTSLSB {
             throw new RuntimeException("UserTransaction lookup at " + utJndiName + " was expected to fail in a CMT bean");
         } catch (NamingException e) {
             // expected since it's in CMT
-            logger.info("Got the expected exception while looking up UserTransaction in CMT bean", e);
+            logger.trace("Got the expected exception while looking up UserTransaction in CMT bean", e);
         }
         // (spec mandated) java:comp/UserTransaction lookup string
         try {
@@ -78,7 +78,7 @@ public class CMTSLSB {
             throw new RuntimeException("UserTransaction lookup at " + utJavaCompJndiName + " was expected to fail in a CMT bean");
         } catch (NamingException e) {
             // expected since it's in CMT
-            logger.info("Got the expected exception while looking up UserTransaction in CMT bean", e);
+            logger.trace("Got the expected exception while looking up UserTransaction in CMT bean", e);
         }
         // try invoking EJBContext.getUserTransaction()
         try {
@@ -86,7 +86,7 @@ public class CMTSLSB {
             throw new RuntimeException("EJBContext.getUserTransaction() was expected to throw an exception when invoked from a CMT bean, but it didn't!");
         } catch (IllegalStateException ise) {
             // expected since it's in CMT
-            logger.info("Got the expected exception while looking up EJBContext.getUserTransaction() in CMT bean", ise);
+            logger.trace("Got the expected exception while looking up EJBContext.getUserTransaction() in CMT bean", ise);
         }
     }
 

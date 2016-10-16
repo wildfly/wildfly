@@ -112,7 +112,7 @@ public class ExternalContextBindingTestCase {
             ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
             Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(),
                     addResult.get(FAILURE_DESCRIPTION).isDefined());
-            LOGGER.info("Object factory bound.");
+            LOGGER.trace("Object factory bound.");
 
             address = createAddress("cache");
             bindingAdd = new ModelNode();
@@ -125,7 +125,7 @@ public class ExternalContextBindingTestCase {
             addResult = managementClient.getControllerClient().execute(bindingAdd);
             Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(),
                     addResult.get(FAILURE_DESCRIPTION).isDefined());
-            LOGGER.info("Object factory bound.");
+            LOGGER.trace("Object factory bound.");
 
             address = createAddress("ldap");
             bindingAdd = new ModelNode();
@@ -185,7 +185,7 @@ public class ExternalContextBindingTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
                     removeResult.get(FAILURE_DESCRIPTION)
                             .isDefined());
-            LOGGER.info("Object factory with uncached InitialContext unbound.");
+            LOGGER.trace("Object factory with uncached InitialContext unbound.");
 
             bindingRemove = new ModelNode();
             bindingRemove.get(OP).set(REMOVE);
@@ -195,7 +195,7 @@ public class ExternalContextBindingTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
                     removeResult.get(FAILURE_DESCRIPTION)
                             .isDefined());
-            LOGGER.info("Object factory with cached InitialContext unbound.");
+            LOGGER.trace("Object factory with cached InitialContext unbound.");
 
             bindingRemove = new ModelNode();
             bindingRemove.get(OP).set(REMOVE);
@@ -205,7 +205,7 @@ public class ExternalContextBindingTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
                     removeResult.get(FAILURE_DESCRIPTION)
                             .isDefined());
-            LOGGER.info("Object factory with uncached InitialDirContext unbound.");
+            LOGGER.trace("Object factory with uncached InitialDirContext unbound.");
 
             bindingRemove = new ModelNode();
             bindingRemove.get(OP).set(REMOVE);
@@ -215,7 +215,7 @@ public class ExternalContextBindingTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
                     removeResult.get(FAILURE_DESCRIPTION)
                             .isDefined());
-            LOGGER.info("Object factory with cached InitialDirContext unbound.");
+            LOGGER.trace("Object factory with cached InitialDirContext unbound.");
         }
     }
 

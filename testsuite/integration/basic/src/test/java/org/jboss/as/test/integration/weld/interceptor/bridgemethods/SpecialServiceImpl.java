@@ -12,6 +12,6 @@ import javax.ejb.Stateless;
 public class SpecialServiceImpl implements SpecialService {
 
     public void doSomething(String param) {
-        System.out.println("SpecialServiceImpl.doSomething");
+        //System.out.println("SpecialServiceImpl.doSomething");
     }
 }

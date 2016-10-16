@@ -51,7 +51,6 @@ public class AS859TestCase {
         WebArchive deployment = ShrinkWrap.create(WebArchive.class, "as859.war")
                 .addPackage(Child.class.getPackage())
                 .addPackage(Naming.class.getPackage());
-        //System.out.println(deployment.toString(true));
         return deployment;
     }
 

@@ -32,11 +32,11 @@ public class SimpleMDB implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            log.info(this + " received message " + message);
+            log.trace(this + " received message " + message);
             final Destination destination = message.getJMSReplyTo();
             // ignore messages that need no reply
             if (destination == null) {
-                log.info(this + " noticed that no reply-to destination has been set. Just returning");
+                log.trace(this + " noticed that no reply-to destination has been set. Just returning");
                 return;
             }
             final MessageProducer replyProducer = session.createProducer(destination);
@@ -52,14 +52,14 @@ public class SimpleMDB implements MessageListener {
     @PreDestroy
     protected void preDestroy() throws JMSException {
 
-        log.info("@PreDestroy on " + this);
+        log.trace("@PreDestroy on " + this);
         safeClose(this.connection);
 
     }
 
     @PostConstruct
     protected void postConstruct() throws JMSException, NamingException {
-        log.info(this + " MDB @PostConstructed");
+        log.trace(this + " MDB @PostConstructed");
 
         this.connection = this.factory.createConnection();
         this.session = this.connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -73,7 +73,7 @@ public class SimpleMDB implements MessageListener {
             connection.close();
         } catch (Throwable t) {
             // just log
-            log.info("Ignoring a problem which occurred while closing: " + connection, t);
+            log.trace("Ignoring a problem which occurred while closing: " + connection, t);
         }
     }
 }

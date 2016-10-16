@@ -32,9 +32,9 @@ public abstract class AbstractSlowBean {
 
     public void delay(final long delayInMilliSec) {
         try {
-            logger.info("Sleeping for " + delayInMilliSec + " milliseconds");
+            logger.trace("Sleeping for " + delayInMilliSec + " milliseconds");
             Thread.sleep(delayInMilliSec);
-            logger.info("Woke up after " + delayInMilliSec + " milliseconds");
+            logger.trace("Woke up after " + delayInMilliSec + " milliseconds");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

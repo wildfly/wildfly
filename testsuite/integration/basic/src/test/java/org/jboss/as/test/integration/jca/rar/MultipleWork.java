@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.jca.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.spi.work.Work;
 
 public class MultipleWork implements Work {
@@ -32,13 +32,13 @@ public class MultipleWork implements Work {
     @Override
     public void run() {
 
-        log.finest("Work is started");
+        log.trace("Work is started");
     }
 
     @Override
     public void release() {
 
-        log.finest("Work is done");
+        log.trace("Work is done");
     }
 
 }

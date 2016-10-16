@@ -91,7 +91,6 @@ public class SubDeploymentAvailableInClassPathTestCase {
         ear.addAsModule(ejbJar);
         ear.addAsModule(war);
 
-        logger.info(ear.toString(true));
         return ear;
     }
 
@@ -106,7 +105,6 @@ public class SubDeploymentAvailableInClassPathTestCase {
         final JavaArchive servletJar = ShrinkWrap.create(JavaArchive.class, "servlet.jar");
         servletJar.addClass(HelloWorldServlet.class);
         ear.add(servletJar, EXPLODED_WEB_APP_CONTEXT + ".war/WEB-INF/lib", ZipExporter.class);
-        logger.info(ear.toString(true));
         return ear;
     }
 
@@ -131,7 +129,6 @@ public class SubDeploymentAvailableInClassPathTestCase {
         ear.addAsModule(war);
         ear.addAsModule(otherWar);
 
-        logger.info(ear.toString(true));
         return ear;
     }
 

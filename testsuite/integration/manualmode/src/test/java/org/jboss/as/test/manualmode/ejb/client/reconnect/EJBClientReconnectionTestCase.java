@@ -95,9 +95,9 @@ public class EJBClientReconnectionTestCase {
         this.previousClientContextSelector = setupEJBClientContextSelector();
 
         controller.start(CONTAINER);
-        log.info("===appserver started===");
+        log.trace("===appserver started===");
         deployer.deploy(DEPLOYMENT);
-        log.info("===deployment deployed===");
+        log.trace("===deployment deployed===");
     }
 
     @After
@@ -112,10 +112,10 @@ public class EJBClientReconnectionTestCase {
                 controller.start(CONTAINER);
             }
             deployer.undeploy(DEPLOYMENT);
-            log.info("===deployment undeployed===");
+            log.trace("===deployment undeployed===");
         } finally {
             controller.stop(CONTAINER);
-            log.info("===appserver stopped===");
+            log.trace("===appserver stopped===");
         }
     }
 
@@ -127,9 +127,9 @@ public class EJBClientReconnectionTestCase {
         assertEquals("Hello!", echo);
 
         controller.stop(CONTAINER);
-        log.info("===appserver stopped===");
+        log.trace("===appserver stopped===");
         controller.start(CONTAINER);
-        log.info("===appserver started again===");
+        log.trace("===appserver started again===");
 
         SimpleCrashBeanRemote bean2 = lookup(SimpleCrashBeanRemote.class, SimpleCrashBean.class, DEPLOYMENT);
         assertNotNull(bean2);
@@ -150,9 +150,9 @@ public class EJBClientReconnectionTestCase {
         assertEquals("Hello!", echo);
 
         controller.stop(CONTAINER);
-        log.info("===appserver stopped===");
+        log.trace("===appserver stopped===");
         controller.start(CONTAINER);
-        log.info("===appserver started again===");
+        log.trace("===appserver started again===");
 
 
         final StatelessEJBLocator<SimpleCrashBeanRemote> locator2 = new StatelessEJBLocator(SimpleCrashBeanRemote.class, "", DEPLOYMENT, SimpleCrashBean.class.getSimpleName(), "");

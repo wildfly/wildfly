@@ -91,7 +91,7 @@ public class TransportGuaranteeTestCase {
     @Deployment(name = TG_ANN + WAR, order = 1, testable = false)
     public static WebArchive deployAnnWar() throws Exception {
 
-        log.info("starting deployAnnWar()");
+        log.trace("starting deployAnnWar()");
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, TG_ANN + WAR);
         war.addClass(TransportGuaranteeAnnotatedServlet.class);
@@ -157,7 +157,7 @@ public class TransportGuaranteeTestCase {
      */
     private boolean checkGetURL(String url, String responseSubstring, String user, String pass) throws Exception {
 
-        log.info("Checking URL=" + url);
+        log.trace("Checking URL=" + url);
 
         HttpClient httpClient;
         if (url.startsWith("https")) {
@@ -182,13 +182,13 @@ public class TransportGuaranteeTestCase {
 
         int statusCode = hr.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            log.info("statusCode not expected. statusCode=" + statusCode + ", URL=" + url);
+            log.trace("statusCode not expected. statusCode=" + statusCode + ", URL=" + url);
             return false;
         }
 
         if (responseSubstring == null) {
             // this indicates that negative test had problems
-            log.info("statusCode==200 on URL=" + url);
+            log.trace("statusCode==200 on URL=" + url);
             return true;
         }
 
@@ -196,7 +196,7 @@ public class TransportGuaranteeTestCase {
         if (response.indexOf(responseSubstring) != -1) {
             return true;
         } else {
-            log.info("Response doesn't contain expected substring (" + responseSubstring + ")");
+            log.trace("Response doesn't contain expected substring (" + responseSubstring + ")");
             return false;
         }
 
@@ -295,7 +295,7 @@ public class TransportGuaranteeTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            log.info("begin tidy up");
+            log.trace("begin tidy up");
             serverManager.removeListener(Listener.HTTPSJIO, httpsTestURL);
         }
     }

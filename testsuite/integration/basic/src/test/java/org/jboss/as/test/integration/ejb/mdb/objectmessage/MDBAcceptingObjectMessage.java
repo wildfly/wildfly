@@ -50,7 +50,7 @@ public class MDBAcceptingObjectMessage implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message: " + message);
+        logger.trace("Received message: " + message);
         if (message instanceof ObjectMessage == false) {
             throw new RuntimeException(this.getClass().getName() + " only accepts ObjectMessage. " + message + " isn't an ObjectMessage");
         }
@@ -58,7 +58,7 @@ public class MDBAcceptingObjectMessage implements MessageListener {
             // get the underlying message
             SimpleMessageInEarLibJar underlyingMessage = (SimpleMessageInEarLibJar) ((ObjectMessage) message).getObject();
             if (message.getJMSReplyTo() != null) {
-                logger.info("Replying to " + message.getJMSReplyTo());
+                logger.trace("Replying to " + message.getJMSReplyTo());
                 // create an ObjectMessage as a reply and send it to the reply queue
                 this.jmsMessagingUtil.sendObjectMessage(underlyingMessage, message.getJMSReplyTo(), null);
             }

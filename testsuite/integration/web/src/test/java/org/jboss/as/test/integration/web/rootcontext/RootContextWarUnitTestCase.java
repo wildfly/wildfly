@@ -31,7 +31,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -49,8 +48,6 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 @ServerSetup(RootContextWarUnitTestCase.RootContextWarSetup.class)
 public class RootContextWarUnitTestCase {
-
-    private static Logger log = Logger.getLogger(RootContextWarUnitTestCase.class);
 
     private static String HOST = "context-host";
 
@@ -85,7 +82,7 @@ public class RootContextWarUnitTestCase {
     @Test
     @OperateOnDeployment("root-context.war")
     public void testRootContextWAR(@ArquillianResource URL url) throws Exception {
-        String response = RootContextUtil.hitRootContext(log, url, HOST);
+        String response = RootContextUtil.hitRootContext(url, HOST);
         assertTrue(response.contains("A Root Context Page"));
     }
 

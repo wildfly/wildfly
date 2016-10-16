@@ -55,7 +55,7 @@ public class CurrencyConverterProvider implements StringConverter<Currency> {
      * @see org.jboss.resteasy.spi.StringConverter#fromString(java.lang.String)
      */
     public Currency fromString(String str) {
-        LOGGER.info("Converting to currency: " + str);
+        LOGGER.trace("Converting to currency: " + str);
         return Currency.getInstance(str);
     }
 
@@ -79,7 +79,7 @@ public class CurrencyConverterProvider implements StringConverter<Currency> {
     @GET
     @Path(PATH_CONVERTER)
     public String testCurrencyConverter(@PathParam(PARAM_CURRENCY) Currency currency) {
-        LOGGER.info("Returning currency symbol");
+        LOGGER.trace("Returning currency symbol");
         return currency.getSymbol();
     }
 

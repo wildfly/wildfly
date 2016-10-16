@@ -408,11 +408,11 @@ public abstract class SSOTestBase {
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
-            //log.info("+++ Update on " + client + ":\n" + update.toString());
+            //log.trace("+++ Update on " + client + ":\n" + update.toString());
             ModelNode result = client.execute(new OperationBuilder(update).build());
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
                 if (result.hasDefined("result"))
-                    log.info(result.get("result"));
+                    log.trace(result.get("result"));
             } else if (result.hasDefined("failure-description")) {
                 throw new RuntimeException(result.get("failure-description").toString());
             } else {
@@ -440,13 +440,13 @@ public abstract class SSOTestBase {
                         if ((result.hasDefined("result")) && (result.get("result").asString().equals("running")))
                             return true;
                     }
-                    log.info("Server is down.");
+                    log.trace("Server is down.");
                     throw new Exception("Connector not available.");
                 }
             });
         } catch (TimeoutException e) {
             throw new RuntimeException("Timeout on restart operation. " + e.getMessage());
         }
-        log.info("Server is up.");
+        log.trace("Server is up.");
     }
 }

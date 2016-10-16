@@ -45,7 +45,7 @@ public class SingletonBean {
 
     @Lock(LockType.WRITE)
     public Integer methodWithWriteLock(CountDownLatch downMe, CountDownLatch waitingForOther) throws Exception {
-        log.info("methodwith write lock is here!");
+        log.trace("methodwith write lock is here!");
         downMe.countDown();
         if (waitingForOther != null) {
             waitingForOther.await(AWAIT_TIME_S, TimeUnit.SECONDS);
@@ -53,7 +53,7 @@ public class SingletonBean {
             bean.reentrantRead();
             bean.reentrantWrite();
         }
-        log.info("methodWithWriteLock [" + called + "]");
+        log.trace("methodWithWriteLock [" + called + "]");
         return new Integer(++called);
     }
 
@@ -62,7 +62,7 @@ public class SingletonBean {
         waitingForOther.await(AWAIT_TIME_S, TimeUnit.SECONDS);
         SingletonBean bean = (SingletonBean) ctx.lookup("java:module/" + SingletonBean.class.getSimpleName());
         bean.reentrantRead();
-        log.info("methodWithReadLock [" + called + "]");
+        log.trace("methodWithReadLock [" + called + "]");
         return new Integer(++called);
     }
 
@@ -70,7 +70,7 @@ public class SingletonBean {
     public Integer methodWithReadLockException() throws Exception {
         SingletonBean bean = (SingletonBean) ctx.lookup("java:module/" + SingletonBean.class.getSimpleName());
         bean.reentrantWrite();
-        log.info("This should not occur [" + called + "]");
+        log.trace("This should not occur [" + called + "]");
         return new Integer(++called);
     }
 

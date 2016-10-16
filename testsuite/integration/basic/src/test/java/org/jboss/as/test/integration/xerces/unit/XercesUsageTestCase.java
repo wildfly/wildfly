@@ -86,7 +86,6 @@ public class XercesUsageTestCase {
         // add the xerces jar in the .ear/lib
         ear.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
 
-        logger.info(ear.toString(true));
         return ear;
     }
 
@@ -108,7 +107,6 @@ public class XercesUsageTestCase {
         // add the xerces jar in the .ear/lib
         ear.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
 
-        logger.info(ear.toString(true));
         return ear;
     }
 

@@ -214,7 +214,7 @@ public class PoolOverrideTestCase {
             firstBeanInvocationResult.get(5, TimeUnit.SECONDS);
         } catch (ExecutionException ee) {
             if (ee.getCause() instanceof EJBException) {
-                logger.info("Got EJBException for first invocation ", ee.getCause());
+                logger.trace("Got EJBException for first invocation ", ee.getCause());
                 firstInvocationFailed = true;
             } else {
                 throw ee;
@@ -224,7 +224,7 @@ public class PoolOverrideTestCase {
             secondBeanInvocationResult.get(5, TimeUnit.SECONDS);
         } catch (ExecutionException ee) {
             if (ee.getCause() instanceof EJBException) {
-                logger.info("Got EJBException for second invocation ", ee.getCause());
+                logger.trace("Got EJBException for second invocation ", ee.getCause());
                 secondInvocationFailed = true;
             } else {
                 throw ee;

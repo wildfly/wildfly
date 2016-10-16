@@ -133,7 +133,6 @@ public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        //System.out.println("////RA" + ids.toString());
         String piId = getElementContaining(ids, "MultipleResourceAdapter");
         assertNotNull(piId);
 
@@ -167,7 +166,6 @@ public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        //System.out.println("////MD" + ids.toString());
         String piId = getElementContaining(ids, "inflow2");
         assertNotNull(piId);
         assertNotNull(repository.getResourceAdapter(piId));

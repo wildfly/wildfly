@@ -84,12 +84,11 @@ public class AsynchronousSecurityTestCase {
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF")
                 .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml")
                 .addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
     protected <Q, T> Q lookupInterface(Class<T> bean, Class<Q> intf) throws NamingException {
-        log.info("initctx: " + iniCtx);
+        log.trace("initctx: " + iniCtx);
         return intf.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + bean.getSimpleName() + "!"
                 + intf.getName()));
     }

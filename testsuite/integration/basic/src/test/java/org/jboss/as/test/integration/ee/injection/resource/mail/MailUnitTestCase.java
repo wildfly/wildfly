@@ -26,7 +26,6 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -43,8 +42,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class MailUnitTestCase {
 
-    private static final Logger log = Logger.getLogger(MailUnitTestCase.class);
-
     @ArquillianResource
     InitialContext ctx;
 
@@ -53,7 +50,6 @@ public class MailUnitTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "mail-injection-test.jar");
         jar.addClasses(MailUnitTestCase.class, StatelessMail.class, StatelessMailBean.class);
         jar.addAsManifestResource(MailUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

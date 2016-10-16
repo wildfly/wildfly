@@ -159,20 +159,20 @@ public class LdapLoginModuleTestCase {
      */
     private void testAccess(@ArquillianResource URL webAppURL) throws Exception {
         final URL servletURL = new URL(webAppURL.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
-        LOGGER.info("Testing successful authentication - " + servletURL);
+        LOGGER.trace("Testing successful authentication - " + servletURL);
         assertEquals("Expected response body doesn't match the returned one.", SimpleSecuredServlet.RESPONSE_BODY,
                 Utils.makeCallWithBasicAuthn(servletURL, "jduke", "theduke", 200));
 
-        LOGGER.info("Testing failed authentication - " + servletURL);
+        LOGGER.trace("Testing failed authentication - " + servletURL);
         Utils.makeCallWithBasicAuthn(servletURL, "anil", "theduke", 401);
         Utils.makeCallWithBasicAuthn(servletURL, "jduke", "anil", 401);
         Utils.makeCallWithBasicAuthn(servletURL, "anil", "anil", 401);
 
-        LOGGER.info("Testing failed authorization - " + servletURL);
+        LOGGER.trace("Testing failed authorization - " + servletURL);
         Utils.makeCallWithBasicAuthn(servletURL, "tester", "password", 403);
 
         final URL unprotectedURL = new URL(webAppURL.toExternalForm() + SimpleServlet.SERVLET_PATH.substring(1));
-        LOGGER.info("Testing access to unprotected resource - " + unprotectedURL);
+        LOGGER.trace("Testing access to unprotected resource - " + unprotectedURL);
         assertEquals("Expected response body doesn't match the returned one.", SimpleServlet.RESPONSE_BODY,
                 Utils.makeCallWithBasicAuthn(unprotectedURL, null, null, 200));
     }
@@ -184,15 +184,12 @@ public class LdapLoginModuleTestCase {
      * @return
      */
     private static WebArchive createWar(final String securityDomain) {
-        LOGGER.info("Creating deployment: " + securityDomain);
+        LOGGER.trace("Creating deployment: " + securityDomain);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, securityDomain + ".war");
         war.addClasses(SimpleSecuredServlet.class, SimpleServlet.class);
         war.addAsWebInfResource(LdapLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
         war.addAsWebInfResource(new StringAsset("<jboss-web><security-domain>" + securityDomain
                 + "</security-domain></jboss-web>"), "jboss-web.xml");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 

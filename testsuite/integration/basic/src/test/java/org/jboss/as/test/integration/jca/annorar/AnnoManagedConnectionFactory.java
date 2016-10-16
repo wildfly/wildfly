@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.jca.annorar;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ConnectionDefinition;
@@ -132,7 +132,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
      */
     public Object createConnectionFactory(ConnectionManager cxManager)
             throws ResourceException {
-        log.finest("createConnectionFactory()");
+        log.trace("createConnectionFactory()");
         return new AnnoConnectionFactoryImpl(this, cxManager);
     }
 
@@ -159,7 +159,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
      */
     public ManagedConnection createManagedConnection(Subject subject,
                                                      ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        log.finest("createManagedConnection()");
+        log.trace("createManagedConnection()");
         return new AnnoManagedConnection(this);
     }
 
@@ -177,7 +177,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
     public ManagedConnection matchManagedConnections(Set connectionSet,
                                                      Subject subject, ConnectionRequestInfo cxRequestInfo)
             throws ResourceException {
-        log.finest("matchManagedConnections()");
+        log.trace("matchManagedConnections()");
         ManagedConnection result = null;
         Iterator it = connectionSet.iterator();
         while (result == null && it.hasNext()) {
@@ -197,7 +197,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
      * @throws ResourceException generic exception
      */
     public PrintWriter getLogWriter() throws ResourceException {
-        log.finest("getLogWriter()");
+        log.trace("getLogWriter()");
         return logwriter;
     }
 
@@ -208,7 +208,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
      * @throws ResourceException generic exception
      */
     public void setLogWriter(PrintWriter out) throws ResourceException {
-        log.finest("setLogWriter()");
+        log.trace("setLogWriter()");
         logwriter = out;
     }
 
@@ -218,7 +218,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
      * @return The handle
      */
     public ResourceAdapter getResourceAdapter() {
-        log.finest("getResourceAdapter()");
+        log.trace("getResourceAdapter()");
         return ra;
     }
 
@@ -228,7 +228,7 @@ public class AnnoManagedConnectionFactory implements ManagedConnectionFactory,
      * @param ra The handle
      */
     public void setResourceAdapter(ResourceAdapter ra) {
-        log.finest("setResourceAdapter()");
+        log.trace("setResourceAdapter()");
         this.ra = ra;
     }
 

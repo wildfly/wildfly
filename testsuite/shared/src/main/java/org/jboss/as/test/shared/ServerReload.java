@@ -200,7 +200,7 @@ public class ServerReload {
         private void reloadIfRequired(final ManagementClient managementClient) throws Exception {
             String runningState = getContainerRunningState(managementClient);
             if ("reload-required".equalsIgnoreCase(runningState)) {
-                log.info("Reloading in tearDown");
+                log.trace("Reloading in tearDown");
                 executeReloadAndWaitForCompletion(managementClient.getControllerClient());
             } else {
                 log.debugf("Not reloading in tearDown; server-state is %s", runningState);

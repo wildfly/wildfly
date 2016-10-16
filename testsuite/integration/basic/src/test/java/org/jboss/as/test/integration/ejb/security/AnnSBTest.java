@@ -84,7 +84,6 @@ public abstract class AnnSBTest {
            .addClass(AnnOnlyCheckSFSBForInjection.class);
         jar.addAsManifestResource(AnnSBTest.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
-        LOG.info(jar.toString(true));
         return jar;
     }
 
@@ -97,7 +96,7 @@ public abstract class AnnSBTest {
            SimpleAuthorizationRemote.class.getName(),
            isBeanClassStatefull(SB_CLASS));
 
-        log.info("JNDI name=" + myContext);
+        log.trace("JNDI name=" + myContext);
 
         return (SimpleAuthorizationRemote) ctx.lookup(myContext);
     }

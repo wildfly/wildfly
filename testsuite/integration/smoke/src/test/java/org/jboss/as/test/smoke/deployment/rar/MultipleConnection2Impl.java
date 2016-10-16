@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.smoke.deployment.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * MultipleConnection2Impl
@@ -62,7 +62,7 @@ public class MultipleConnection2Impl implements MultipleConnection2 {
      * @return String
      */
     public String test(String s) {
-        log.finest("test()");
+        log.trace("test()");
         return null;
 
     }

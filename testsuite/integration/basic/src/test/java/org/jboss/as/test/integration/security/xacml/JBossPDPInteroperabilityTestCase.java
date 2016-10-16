@@ -167,7 +167,7 @@ public class JBossPDPInteroperabilityTestCase {
             policyDir.mkdirs();
             final JBossPDP pdp = createPDPForMed(policyDir);
             final String requestTemplate = IOUtils.toString(requestIS, "UTF-8");
-            LOGGER.info("REQUEST template: " + requestTemplate);
+            LOGGER.trace("REQUEST template: " + requestTemplate);
             final Map<String, Object> substitutionMap = new HashMap<String, Object>();
 
             substitutionMap.put(XACMLTestUtils.SUBST_SUBJECT_ID, "josef@med.example.com");
@@ -263,7 +263,7 @@ public class JBossPDPInteroperabilityTestCase {
      */
     private int getDecision(PolicyDecisionPoint pdp, String requestFileLoc) throws Exception {
         final RequestContext request = RequestResponseContextFactory.createRequestCtx();
-        LOGGER.info("Creating request from " + requestFileLoc);
+        LOGGER.trace("Creating request from " + requestFileLoc);
         final InputStream requestStream = JBossPDPInteroperabilityTestCase.class
                 .getResourceAsStream(XACMLTestUtils.TESTOBJECTS_REQUESTS + "/" + requestFileLoc);
         if (requestStream == null) {

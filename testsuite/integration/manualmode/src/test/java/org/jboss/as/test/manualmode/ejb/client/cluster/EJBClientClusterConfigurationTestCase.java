@@ -190,7 +190,7 @@ public class EJBClientClusterConfigurationTestCase {
                 this.deployer.undeploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
                 SystemPropertySetup.INSTANCE.tearDown(createManagementClient(serverAClient, JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION), JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
             } catch (Exception e) {
-                logger.info("Exception during container shutdown", e);
+                logger.trace("Exception during container shutdown", e);
             } finally {
                 this.container.stop(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
             }
@@ -201,7 +201,7 @@ public class EJBClientClusterConfigurationTestCase {
                 }
                 this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
             } catch (Exception e) {
-                logger.info("Exception during container shutdown", e);
+                logger.trace("Exception during container shutdown", e);
             } finally {
                 this.container.stop(DEFAULT_JBOSSAS);
             }

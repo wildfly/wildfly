@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.smoke.deployment.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.ResourceException;
@@ -84,7 +84,7 @@ public class MultipleConnectionFactory2Impl implements MultipleConnectionFactory
      */
     @Override
     public MultipleConnection2 getConnection() throws ResourceException {
-        log.finest("getConnection()");
+        log.trace("getConnection()");
         return (MultipleConnection2) connectionManager.allocateConnection(mcf, null);
     }
 
@@ -96,7 +96,7 @@ public class MultipleConnectionFactory2Impl implements MultipleConnectionFactory
      */
     @Override
     public Reference getReference() throws NamingException {
-        log.finest("getReference()");
+        log.trace("getReference()");
         return reference;
     }
 
@@ -107,7 +107,7 @@ public class MultipleConnectionFactory2Impl implements MultipleConnectionFactory
      */
     @Override
     public void setReference(Reference reference) {
-        log.finest("setReference()");
+        log.trace("setReference()");
         this.reference = reference;
     }
 

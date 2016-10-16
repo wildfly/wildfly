@@ -91,7 +91,6 @@ public class MDBWithVaultedPropertiesTestCase {
             vaultHandler = new VaultHandler(VAULT_LOCATION);
             // store the destination lookup into the vault
             String vaultedProperty = vaultHandler.addSecuredAttribute("messaging", "destination", CLEAR_TEXT_DESTINATION_LOOKUP.toCharArray());
-            //System.out.println("vaultedProperty = " + vaultedProperty);
 
             addVaultConfiguration(managementClient);
 

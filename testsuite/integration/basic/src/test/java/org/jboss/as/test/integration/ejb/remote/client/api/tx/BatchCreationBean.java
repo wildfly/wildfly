@@ -47,7 +47,7 @@ public class BatchCreationBean implements RemoteBatch {
     public void createBatch(final String batchName) {
         final Batch batch = new Batch();
         batch.setBatchName(batchName);
-        logger.info("Persisting new batch " + batchName);
+        logger.trace("Persisting new batch " + batchName);
         this.entityManager.persist(batch);
     }
 

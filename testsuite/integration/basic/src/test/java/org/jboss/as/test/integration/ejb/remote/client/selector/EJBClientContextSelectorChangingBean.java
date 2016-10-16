@@ -52,7 +52,7 @@ public class EJBClientContextSelectorChangingBean {
             EJBClientContext.setSelector(new ConstantContextSelector<EJBClientContext>(clientContext));
         } catch (SecurityException se) {
             // expected
-            logger.info("Got the expected " + se + " while trying to call EJBClientContext.setSelector() on the server, from an EJB");
+            logger.trace("Got the expected " + se + " while trying to call EJBClientContext.setSelector() on the server, from an EJB");
             return;
         }
         throw new RuntimeException("EJBClientContext.setSelector() was expected to fail on server side");
@@ -63,7 +63,7 @@ public class EJBClientContextSelectorChangingBean {
             EJBClientContext.setConstantContext(clientContext);
         } catch (SecurityException se) {
             // expected
-            logger.info("Got the expected " + se + " while try to call EJBClientContext.setConstantContext() on the server, from an EJB");
+            logger.trace("Got the expected " + se + " while try to call EJBClientContext.setConstantContext() on the server, from an EJB");
             return;
         }
         throw new RuntimeException("EJBClientContext.setConstantContext() was expected to fail on server side");

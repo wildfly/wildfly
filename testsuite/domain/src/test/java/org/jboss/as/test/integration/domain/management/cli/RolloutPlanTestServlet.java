@@ -76,7 +76,7 @@ public class RolloutPlanTestServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         initDate = new Date();
         super.init(config);
-        log.info("RolloutServlet initialized: " + String.valueOf(initDate.getTime()));
+        log.trace("RolloutServlet initialized: " + String.valueOf(initDate.getTime()));
     }
 
     @Override
@@ -105,7 +105,7 @@ public class RolloutPlanTestServlet extends HttpServlet {
         try {
             socket = new ServerSocket();
             socket.bind(new InetSocketAddress(host, bindPort));
-            log.info("Bound to address " + host + " port " + bindPort + ".");
+            log.trace("Bound to address " + host + " port " + bindPort + ".");
         } catch (IOException ioe) {
             throw new ServletException("Bind failed.", ioe);
         }
@@ -117,7 +117,7 @@ public class RolloutPlanTestServlet extends HttpServlet {
         try {
             socket.close();
             socket = null;
-            log.info("Unbound from address " + host + " port " + bindPort + ".");
+            log.trace("Unbound from address " + host + " port " + bindPort + ".");
         } catch (IOException ioe) {
             throw new ServletException("Unbind failed.", ioe);
         }

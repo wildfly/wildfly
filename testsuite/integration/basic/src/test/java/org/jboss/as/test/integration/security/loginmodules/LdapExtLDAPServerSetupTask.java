@@ -184,7 +184,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         fixTransportAddress(createLdapServer, hostname);
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
         ldapServer1.start();
-        LOGGER.info("ldapServer1 = " + ldapServer1);
+        LOGGER.trace("ldapServer1 = " + ldapServer1);
     }
 
     //@formatter:off
@@ -251,7 +251,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         fixTransportAddress(createLdapServer, hostname);
         ldapServer2 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService2);
         ldapServer2.start();
-        LOGGER.info("ldapServer2 = " + ldapServer2);
+        LOGGER.trace("ldapServer2 = " + ldapServer2);
     }
 
     /**

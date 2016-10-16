@@ -80,13 +80,13 @@ public class IdentityLoginModuleTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            log.debug("adding module options");
+            log.trace("adding module options");
             Map<String, String> moduleOptionsMap = new HashMap<String, String>();
             moduleOptionsMap.put("roles", "role1,role2");
 
-            log.info("creating security domain: TestIdentityLoginDomain");
+            log.trace("creating security domain: TestIdentityLoginDomain");
             createSecurityDomain(IdentityLoginModule.class, moduleOptionsMap, managementClient.getControllerClient());
-            log.info("security domain created");
+            log.trace("security domain created");
         }
     }
 
@@ -100,14 +100,14 @@ public class IdentityLoginModuleTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
 
-            log.debug("adding module options");
+            log.trace("adding module options");
             Map<String, String> moduleOptionsMap = new HashMap<String, String>();
             moduleOptionsMap.put("roles", "role1,role2");
             moduleOptionsMap.put("principal", "SomeName");
 
-            log.info("creating security domain: TestIdentityLoginDomain");
+            log.trace("creating security domain: TestIdentityLoginDomain");
             createSecurityDomain(IdentityLoginModule.class, moduleOptionsMap, managementClient.getControllerClient());
-            log.info("security domain created");
+            log.trace("security domain created");
 
         }
     }
@@ -117,7 +117,7 @@ public class IdentityLoginModuleTestCase {
      */
     @Deployment(name = DEP1, order = 1)
     public static WebArchive appDeployment1() {
-        log.info("start" + DEP1 + "deployment");
+        log.trace("create" + DEP1 + "deployment");
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
         war.addClass(PrincipalPrintingServlet.class);
@@ -126,7 +126,6 @@ public class IdentityLoginModuleTestCase {
         war.addAsWebInfResource(
                 Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep1/jboss-web.xml"),
                 "jboss-web.xml");
-        log.debug(war.toString(true));
         return war;
     }
 
@@ -137,8 +136,6 @@ public class IdentityLoginModuleTestCase {
      */
     @Deployment(name = DEP2, order = 2)
     public static WebArchive appDeployment2() {
-        log.info("start" + DEP2 + "deployment");
-
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEP2 + ".war");
         war.addClass(PrincipalPrintingServlet.class);
         war.setWebXML(Utils
@@ -146,8 +143,6 @@ public class IdentityLoginModuleTestCase {
         war.addAsWebInfResource(
                 Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/IdentityLoginModule/dep2/jboss-web.xml"),
                 "jboss-web.xml");
-        log.debug(war.toString(true));
-
         return war;
     }
 

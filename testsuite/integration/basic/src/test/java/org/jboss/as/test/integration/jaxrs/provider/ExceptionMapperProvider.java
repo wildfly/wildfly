@@ -59,7 +59,7 @@ public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
      */
     @Override
     public Response toResponse(Exception exception) {
-        LOGGER.info("Mapped exception", exception);
+        LOGGER.trace("Mapped exception", exception);
         return Response.ok().entity(ERROR_MESSAGE).build();
     }
 
@@ -71,7 +71,7 @@ public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
     @GET
     @Path(PATH_EXCEPTION)
     public Response testExceptionMapper() {
-        LOGGER.info("Throwing exception");
+        LOGGER.trace("Throwing exception");
         throw new IllegalArgumentException("Exception expected.");
     }
 

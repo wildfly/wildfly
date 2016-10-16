@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.annorar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.spi.Activation;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ConfigProperty;
@@ -111,7 +111,7 @@ public class AnnoActivationSpec implements ActivationSpec {
      * @throws InvalidPropertyException indicates invalid configuration property settings.
      */
     public void validate() throws InvalidPropertyException {
-        log.finest("validate()");
+        log.trace("validate()");
     }
 
     /**
@@ -120,7 +120,7 @@ public class AnnoActivationSpec implements ActivationSpec {
      * @return The handle
      */
     public ResourceAdapter getResourceAdapter() {
-        log.finest("getResourceAdapter()");
+        log.trace("getResourceAdapter()");
         return ra;
     }
 
@@ -130,7 +130,7 @@ public class AnnoActivationSpec implements ActivationSpec {
      * @param ra The handle
      */
     public void setResourceAdapter(ResourceAdapter ra) {
-        log.finest("setResourceAdapter()");
+        log.trace("setResourceAdapter()");
         this.ra = ra;
     }
 

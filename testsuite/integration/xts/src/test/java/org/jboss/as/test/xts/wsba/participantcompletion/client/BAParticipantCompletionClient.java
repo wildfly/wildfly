@@ -50,7 +50,7 @@ public class BAParticipantCompletionClient {
 
     public static BAParticipantCompletion newInstance(String serviceUrl, String serviceNamespaceName) throws Exception {
         URL wsdlLocation = new URL("http://" + NODE0_ADDR + ":" + NODE0_PORT + "/" + BAParticipantCompletionTestCase.ARCHIVE_NAME + "/" + serviceUrl + "?wsdl");
-        log.info("wsdlLocation for service: " + wsdlLocation);
+        log.trace("wsdlLocation for service: " + wsdlLocation);
         QName serviceName = new QName(TARGET_NAMESPACE, serviceNamespaceName);
         QName portName = new QName(TARGET_NAMESPACE, DEFAULT_PORT_NAME);
 

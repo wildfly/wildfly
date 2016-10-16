@@ -84,7 +84,6 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
 
             Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
             // final String exitStatus = stepExecution0.getExitStatus();
-            // System.out.printf("Step exit status: %s%n", exitStatus);
             // Assert.assertTrue(exitStatus.startsWith("PASS"));
         }
 

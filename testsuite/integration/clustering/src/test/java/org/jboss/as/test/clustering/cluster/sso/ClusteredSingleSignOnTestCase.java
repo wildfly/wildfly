@@ -119,7 +119,7 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
     public void testFormAuthSingleSignOn(
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        log.info("+++ testFormAuthSingleSignOn");
+        log.trace("+++ testFormAuthSingleSignOn");
         SSOTestBase.executeFormAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
 
@@ -130,7 +130,7 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
     public void testNoAuthSingleSignOn(
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        log.info("+++ testNoAuthSingleSignOn");
+        log.trace("+++ testNoAuthSingleSignOn");
         SSOTestBase.executeNoAuthSingleSignOnTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
 
@@ -143,7 +143,7 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
     public void testSessionTimeoutDestroysSSO(
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        log.info("+++ testSessionTimeoutDestroysSSO");
+        log.trace("+++ testSessionTimeoutDestroysSSO");
         SSOTestBase.executeFormAuthSSOTimeoutTest(new URL(baseURL1, "/"), new URL(baseURL2, "/"), log);
     }
 

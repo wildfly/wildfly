@@ -68,7 +68,7 @@ public class MDBLifecycleCallback implements MessageDrivenBean, MessageListener 
     @PostConstruct
     public void init() throws Exception {
         ITestResultsSingleton results = this.getSingleton();
-        log.info(MDBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
+        log.trace(MDBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
 
         Principal princ = null;
         try {
@@ -85,7 +85,7 @@ public class MDBLifecycleCallback implements MessageDrivenBean, MessageListener 
     public void ejbRemove() throws EJBException {
         try {
             ITestResultsSingleton results = this.getSingleton();
-            log.info(MDBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
+            log.trace(MDBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
 
             Principal princ = null;
             try {
@@ -108,7 +108,7 @@ public class MDBLifecycleCallback implements MessageDrivenBean, MessageListener 
     }
 
     public void onMessage(Message message) {
-        //log.info("onMessage received msg: " + message.toString());
+        //log.trace("onMessage received msg: " + message.toString());
         try {
             try {
                 sendReply((Queue) message.getJMSReplyTo(), message.getJMSMessageID(), null);

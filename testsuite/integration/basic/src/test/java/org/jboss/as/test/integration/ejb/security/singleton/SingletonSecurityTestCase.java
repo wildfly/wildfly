@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.security.singleton;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
@@ -59,7 +59,6 @@ public class SingletonSecurityTestCase {
         jar.addPackage(SingletonSecurityTestCase.class.getPackage());
         jar.addPackage(CommonCriteria.class.getPackage());
         jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("org.jboss.security.setSecurityContext")), "META-INF/jboss-permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

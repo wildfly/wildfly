@@ -83,7 +83,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         ModelNode op = new ModelNode();
 
         // save original vault setting
-        LOGGER.info("Saving original vault setting");
+        LOGGER.trace("Saving original vault setting");
         op = Util.getReadAttributeOperation(VAULT_PATH, VAULT_OPTIONS);
         originalVault = (managementClient.getControllerClient().execute(new OperationBuilder(op).build())).get(RESULT);
 
@@ -94,7 +94,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         }
 
         // create new vault
-        LOGGER.info("Creating new vault");
+        LOGGER.trace("Creating new vault");
         String keystoreURL = vaultHandler.getKeyStore();
         String encryptionDirectory = new File(RESOURCE_LOCATION).getAbsolutePath();
         String salt = "87654321";
@@ -104,7 +104,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         nonInteractiveSession.startVaultSession(VAULT_ALIAS);
 
         // create security attributes
-        LOGGER.info("Inserting attribute " + VAULT_ATTRIBUTE + " to vault");
+        LOGGER.trace("Inserting attribute " + VAULT_ATTRIBUTE + " to vault");
         nonInteractiveSession.addSecuredAttribute(VAULT_BLOCK, ATTRIBUTE_NAME, VAULT_ATTRIBUTE.toCharArray());
 
         // create new vault setting in standalone

@@ -18,7 +18,7 @@ public class AppClientMain {
     private static AppClientSingletonRemote appClientSingletonRemote;
 
     public static void main(final String[] params) {
-        logger.info("Main method invoked");
+        logger.trace("Main method invoked");
 
         if(!appclient) {
             logger.error("InAppClientContainer was not true");
@@ -27,7 +27,7 @@ public class AppClientMain {
 
         try {
             appClientSingletonRemote.makeAppClientCall(params[0]);
-            logger.info("Main method invocation completed with success");
+            logger.trace("Main method invocation completed with success");
         } catch (Exception e) {
             logger.error("Main method failed", e);
         }

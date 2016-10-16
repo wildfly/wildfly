@@ -45,7 +45,7 @@ public class ReliableServiceImpl {
 
     @Oneway
     public void writeLogMessage() {
-        log.info("write method was invoked ...");
+        log.trace("write method was invoked ...");
     }
 
     public String sayHello(String name) {

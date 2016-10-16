@@ -41,13 +41,13 @@ public class InterceptorBean {
 
     @PostConstruct
     public void initializeInterceptor(InvocationContext context) {
-        log.info("Post constructing it");
+        log.trace("Post constructing it");
         name = "#InterceptorBean#";
     }
 
     @PreDestroy
     public void destroyInterceptor(InvocationContext context) {
-        log.info("Pre destroying it");
+        log.trace("Pre destroying it");
     }
 
     @AroundInvoke
@@ -55,7 +55,7 @@ public class InterceptorBean {
         if (!context.getMethod().getName().equals("echo")) {
             return context.proceed();
         }
-        log.info("-----> Intercepting call to " + context.getMethod().getDeclaringClass() + "." +  context.getMethod().getName() + "()");
+        log.trace("-----> Intercepting call to " + context.getMethod().getDeclaringClass() + "." +  context.getMethod().getName() + "()");
         return name + context.proceed();
     }
 

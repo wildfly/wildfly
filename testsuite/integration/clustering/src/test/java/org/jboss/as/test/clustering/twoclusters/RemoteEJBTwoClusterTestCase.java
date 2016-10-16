@@ -122,7 +122,6 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
         ejbJar.addPackage(ForwardingStatefulSBImpl.class.getPackage());
         // remote outbound connection configuration
         ejbJar.addAsManifestResource(RemoteEJBTwoClusterTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        log.info(ejbJar.toString(true));
         return ejbJar;
     }
 
@@ -136,7 +135,6 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
         ejbJar.addClass(NonTxForwardingStatefulSBImpl.class.getName());
         // remote outbound connection configuration
         ejbJar.addAsManifestResource(RemoteEJBTwoClusterTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        log.info(ejbJar.toString(true));
         return ejbJar;
     }
 
@@ -145,7 +143,6 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
         ejbJar.addPackage(CommonStatefulSB.class.getPackage());
         ejbJar.addPackage(RemoteStatefulSB.class.getPackage());
         ejbJar.addClass(SerialBean.class.getName());
-        log.info(ejbJar.toString(true));
         return ejbJar;
     }
 
@@ -217,12 +214,12 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 AtomicInteger count = new AtomicInteger();
 
                 // Allow sufficient time for client to receive full topology
-                logger.info("Waiting for clusters to form:");
+                logger.trace("Waiting for clusters to form:");
                 Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
 
                 int newSerialValue = bean.getSerialAndIncrement();
                 int newCountValue = count.getAndIncrement();
-                logger.info("First invocation: count = " + newCountValue + ", serial = " + newSerialValue);
+                logger.trace("First invocation: count = " + newCountValue + ", serial = " + newSerialValue);
 
                 //
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -237,45 +234,45 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                     // a few seconds of non-failure behaviour
                     Thread.sleep(FAILURE_FREE_TIME);
 
-                    logger.info("------ Shutdown clusterA-node0 -----");
+                    logger.trace("------ Shutdown clusterA-node0 -----");
                     // stop cluster A node 0
                     stop(CONTAINER_1);
                     // Let the server stay down for a while
                     Thread.sleep(SERVER_DOWN_TIME);
-                    logger.info("------ Startup clusterA-node0 -----");
+                    logger.trace("------ Startup clusterA-node0 -----");
                     start(CONTAINER_1);
 
                     // a few seconds of non-failure behaviour
                     Thread.sleep(FAILURE_FREE_TIME);
 
-                    logger.info("----- Shutdown clusterA-node1 -----");
+                    logger.trace("----- Shutdown clusterA-node1 -----");
                     // stop cluster A node 1
                     stop(CONTAINER_2);
                     // Let the server stay down for a while
                     Thread.sleep(SERVER_DOWN_TIME);
-                    logger.info("------ Startup clusterA-node1 -----");
+                    logger.trace("------ Startup clusterA-node1 -----");
                     start(CONTAINER_2);
 
                     // a few seconds of non-failure behaviour
                     Thread.sleep(FAILURE_FREE_TIME);
 
-                    logger.info("----- Shutdown clusterB-node0 -----");
+                    logger.trace("----- Shutdown clusterB-node0 -----");
                     // stop cluster B node 0
                     stop(CONTAINER_3);
                     // Let the server stay down for a while
                     Thread.sleep(SERVER_DOWN_TIME);
-                    logger.info("------ Startup clusterB-node0 -----");
+                    logger.trace("------ Startup clusterB-node0 -----");
                     start(CONTAINER_3);
 
                     // a few seconds of non-failure behaviour
                     Thread.sleep(FAILURE_FREE_TIME);
 
-                    logger.info("----- Shutdown clusterB-node1 -----");
+                    logger.trace("----- Shutdown clusterB-node1 -----");
                     // stop cluster B node 1
                     stop(CONTAINER_4);
                     // Let the server stay down for a while
                     Thread.sleep(SERVER_DOWN_TIME);
-                    logger.info("------ Startup clusterB-node1 -----");
+                    logger.trace("------ Startup clusterB-node1 -----");
                     start(CONTAINER_4);
 
                     // a few seconds of non-failure behaviour
@@ -286,20 +283,20 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                     try {
                         future.get();
                     } catch (CancellationException e) {
-                        logger.info("Could not cancel future: " + e.toString());
+                        logger.trace("Could not cancel future: " + e.toString());
                     }
 
                     // test is completed, report results
                     double invocations = client.getInvocationCount();
                     double exceptions = client.getExceptionCount();
-                    logger.info("Total invocations = " + invocations + ", total exceptions = " + exceptions);
+                    logger.trace("Total invocations = " + invocations + ", total exceptions = " + exceptions);
                     Assert.assertTrue("Too many exceptions! percentage = " + 100 * (exceptions/invocations), (exceptions/invocations) < EXCEPTION_PERCENTAGE);
 
                 } catch (Exception e) {
                     Assert.fail("Exception occurred on client: " + e.getMessage() + ", test did not complete successfully (inner)");
 
                 } finally {
-                    logger.info("Shutting down executor");
+                    logger.trace("Shutting down executor");
                     executor.shutdownNow();
                 }
 
@@ -348,7 +345,7 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
             try {
                 // make an invocation on the remote SFSB
                 this.invocationCount++;
-                logger.info("CLIENT: start invocation (" + this.invocationCount + ")");
+                logger.trace("CLIENT: start invocation (" + this.invocationCount + ")");
                 int value = this.bean.getSerialAndIncrement();
 
                 // check to see if the previous invocation was exceptional
@@ -356,14 +353,14 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                     // reset the value of the counter
                     this.count.set(value+1);
                     this.lastWasException = false;
-                    logger.info("CLIENT: made invocation (" + this.invocationCount + ") on bean, resetting count = " + (value+1));
+                    logger.trace("CLIENT: made invocation (" + this.invocationCount + ") on bean, resetting count = " + (value+1));
                 } else {
                     int count = this.count.getAndIncrement();
-                    logger.info("CLIENT: made invocation (" + this.invocationCount + ") on bean, count = " + count + ", value = " + value);
+                    logger.trace("CLIENT: made invocation (" + this.invocationCount + ") on bean, count = " + count + ", value = " + value);
                 }
             } catch (Exception e) {
                 // log the occurrence of the exception
-                logger.info("CLIENT: Exception invoking (" + this.invocationCount + ") on bean from client: " + e.getMessage());
+                logger.trace("CLIENT: Exception invoking (" + this.invocationCount + ") on bean from client: " + e.getMessage());
                 this.exceptionCount++;
                 this.lastWasException = true;
             } finally {

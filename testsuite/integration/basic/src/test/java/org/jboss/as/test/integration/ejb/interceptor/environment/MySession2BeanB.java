@@ -33,12 +33,12 @@ public class MySession2BeanB implements MySession2RemoteB {
     private static final Logger log = Logger.getLogger(MySession2BeanB.class);
 
     public boolean doit() {
-        log.info("Calling MySession2BeanB doit...");
+        log.trace("Calling MySession2BeanB doit...");
         return true;
     }
 
     public boolean doitSession() {
-        log.info("Calling MySession2BeanB doitSession...");
+        log.trace("Calling MySession2BeanB doitSession...");
         return true;
     }
 }

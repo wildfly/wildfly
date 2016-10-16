@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -51,7 +50,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class AsyncMethodTestCase {
-    private static final Logger log = Logger.getLogger(AsyncMethodTestCase.class);
     private static final String ARCHIVE_NAME = "AsyncTestCase";
     private static final Integer WAIT_TIME_S = 10;
 
@@ -67,7 +65,6 @@ public class AsyncMethodTestCase {
         jar.addPackage(AsyncMethodTestCase.class.getPackage());
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.addAsManifestResource(AsyncMethodTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

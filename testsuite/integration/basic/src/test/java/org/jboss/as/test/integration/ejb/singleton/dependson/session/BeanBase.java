@@ -42,13 +42,13 @@ public abstract class BeanBase implements Trigger {
 
     @PostConstruct
     public void postConstruct() {
-        this.logger.info("Session.postConstruct");
+        this.logger.trace("Session.postConstruct");
         this.counter.setPostConstruct();
     }
 
     @PreDestroy
     public void preDestroy() {
-        this.logger.info("Session.preDestroy");
+        this.logger.trace("Session.preDestroy");
         this.counter.setPreDestroy();
     }
 }

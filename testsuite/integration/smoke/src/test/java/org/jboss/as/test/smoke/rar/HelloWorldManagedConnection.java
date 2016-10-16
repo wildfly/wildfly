@@ -24,7 +24,7 @@ package org.jboss.as.test.smoke.rar;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;

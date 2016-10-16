@@ -124,7 +124,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
             bindingAdd.get(ENVIRONMENT).set(environment);
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
             Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-            LOGGER.info("Object factory bound.");
+            LOGGER.trace("Object factory bound.");
 
         }
 
@@ -146,10 +146,10 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
                 final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
                 Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
                         .isDefined());
-                LOGGER.info("Object factory unbound.");
+                LOGGER.trace("Object factory unbound.");
             } finally {
                 undeployModule();
-                LOGGER.info("Module undeployed.");
+                LOGGER.trace("Module undeployed.");
             }
         }
     }

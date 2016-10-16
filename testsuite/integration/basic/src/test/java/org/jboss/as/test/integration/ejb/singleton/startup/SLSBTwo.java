@@ -44,7 +44,7 @@ public class SLSBTwo implements DoSomethingView {
 
     @Override
     public void doSomething() {
-        logger.info(this.getClass().getName() + "#doSomething()");
+        logger.trace(this.getClass().getName() + "#doSomething()");
     }
 
 }

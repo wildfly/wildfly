@@ -112,7 +112,7 @@ public class ReuseAuthenticatedSubjectTestCase {
      */
     @Deployment(name = DEPLOYMENT_NAME)
     public static WebArchive deployment() {
-        LOGGER.info("Starting deployment " + DEPLOYMENT_NAME);
+        LOGGER.trace("Starting deployment " + DEPLOYMENT_NAME);
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war");
         war.addClasses(ReuseAuthenticatedSubjectServlet.class,

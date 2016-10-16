@@ -67,13 +67,11 @@ public class EarLibTestCase {
     public void testWSDL() throws Exception {
         String s = performCall("?wsdl");
         Assert.assertNotNull(s);
-        //System.out.println(s);
         Assert.assertTrue(s.contains("wsdl:definitions"));
     }
 
     private String performCall(String params) throws Exception {
         URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
-        //System.out.println(url.toExternalForm());
         return HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
     }
 }

@@ -77,7 +77,7 @@ public class CustomLoginModule extends UsernamePasswordLoginModule {
      */
     @Override
     public boolean login() throws LoginException {
-        LOGGER.info("Inside CustomLoginModule.login()");
+        LOGGER.trace("Inside CustomLoginModule.login()");
         loginCounter++;
         return super.login();
     }

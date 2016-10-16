@@ -30,8 +30,7 @@ import java.net.ProxySelector;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
@@ -128,11 +127,11 @@ public class ReloadWSDLPublisherTestCase {
         try {
             List<Proxy> proxies = ProxySelector.getDefault().select(wsdlURL.toURI());
             for(Proxy proxy : proxies) {
-                System.out.println("To connect to " + wsdlURL + " we are using proxy " + proxy);
+                //System.out.println("To connect to " + wsdlURL + " we are using proxy " + proxy);
                 proxyUsed.append("To connect to ").append(wsdlURL).append(" we are using proxy ").append(proxy).append("\r\n");
             }
         } catch (URISyntaxException ex) {
-            Logger.getLogger(ReloadWSDLPublisherTestCase.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ReloadWSDLPublisherTestCase.class.getName()).error(ex);
         }
         HttpURLConnection connection = (HttpURLConnection) wsdlURL.openConnection();
         try {

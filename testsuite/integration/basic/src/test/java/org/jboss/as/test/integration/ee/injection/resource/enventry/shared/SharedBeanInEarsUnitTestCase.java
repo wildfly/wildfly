@@ -70,7 +70,6 @@ public class SharedBeanInEarsUnitTestCase {
         ear.addAsModule(jarA);
         ear.addAsModule(jarAshared);
         ear.addAsManifestResource(SharedBeanInEarsUnitTestCase.class.getPackage(), "application-a.xml", "application.xml");
-        log.info(ear.toString(true));
         return ear;
     }
 
@@ -87,7 +86,6 @@ public class SharedBeanInEarsUnitTestCase {
         ear.addAsModule(jarB);
         ear.addAsModule(jarBshared);
         ear.addAsManifestResource(SharedBeanInEarsUnitTestCase.class.getPackage(), "application-b.xml", "application.xml");
-        log.info(ear.toString(true));
         return ear;
     }
 

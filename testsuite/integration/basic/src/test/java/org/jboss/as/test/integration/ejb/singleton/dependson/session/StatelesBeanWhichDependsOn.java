@@ -37,7 +37,7 @@ public class StatelesBeanWhichDependsOn extends BeanBase {
     // This is required to trigger purge - circumvents WFLY-817
     @Remove
     public void trigger() {
-        super.logger.info("Session.trigger");
+        super.logger.trace("Session.trigger");
         super.counter.setMessage();
     }
 }

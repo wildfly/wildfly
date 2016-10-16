@@ -124,7 +124,7 @@ public class TxControlUnitTestCase {
         HttpGet httpget = new HttpGet(url.toURI());
         DefaultHttpClient httpclient = new DefaultHttpClient();
 
-        log.info("executing request" + httpget.getRequestLine());
+        log.trace("executing request" + httpget.getRequestLine());
         HttpResponse response = httpclient.execute(httpget);
 
         int statusCode = response.getStatusLine().getStatusCode();

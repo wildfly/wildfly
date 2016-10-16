@@ -45,7 +45,7 @@ public class ConfigService implements ConfigServiceMBean {
     }
 
     public void setIntervalSeconds(int interval) {
-        log.info("Setting IntervalSeconds to " + interval);
+        log.trace("Setting IntervalSeconds to " + interval);
         this.interval = interval;
     }
 

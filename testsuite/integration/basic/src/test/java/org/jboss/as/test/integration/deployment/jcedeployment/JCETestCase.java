@@ -76,7 +76,7 @@ public class JCETestCase {
             signedJce = ShrinkWrap.create(ZipImporter.class, "jcetestsigned.jar")
                 .importFrom(signedJceJar).as(JavaArchive.class);
         } else {
-            log.info("skipping the test since it can run on Oracle JDK only");
+            log.trace("skipping the test since it can run on Oracle JDK only");
             signedJce = jce;
         }
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")

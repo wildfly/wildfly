@@ -12,13 +12,13 @@ public class MBeanInAModuleService implements MBeanInAModuleServiceMBean {
     private static final Logger logger = Logger.getLogger(MBeanInAModuleService.class);
 
     static {
-        logger.info("Static block of " + MBeanInAModuleService.class.getName() + " being loaded");
+        logger.trace("Static block of " + MBeanInAModuleService.class.getName() + " being loaded");
         // test TCCL in static block
         testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassAInSarDeployment");
     }
 
     public MBeanInAModuleService() {
-        logger.info("Constructing " + this);
+        logger.trace("Constructing " + this);
         // test TCCL in constructor
         testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassBInSarDeployment");
     }
@@ -29,25 +29,25 @@ public class MBeanInAModuleService implements MBeanInAModuleServiceMBean {
     }
 
     public void start() {
-        logger.info("Starting " + this);
+        logger.trace("Starting " + this);
         // test TCCL in lifecycle method
         testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassCInSarDeployment");
     }
 
     public void stop() {
-        logger.info("Stopping " + this);
+        logger.trace("Stopping " + this);
         // test TCCL in lifecycle method
         testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassDInSarDeployment");
     }
 
     private static void testClassLoadByTCCL(final String className) {
         final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        logger.info("Trying to load class " + className + " from TCCL " + tccl);
+        logger.trace("Trying to load class " + className + " from TCCL " + tccl);
         try {
             tccl.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        logger.info("Successfully loaded class " + className + " from TCCL " + tccl);
+        logger.trace("Successfully loaded class " + className + " from TCCL " + tccl);
     }
 }

@@ -138,7 +138,7 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     public static void printSystemProperties() {
         // Enable for debugging if you like:
         //Properties systemProperties = System.getProperties();
-        //log.info("System properties:\n" + systemProperties);
+        //log.trace("System properties:\n" + systemProperties);
     }
 
     public interface Lifecycle {

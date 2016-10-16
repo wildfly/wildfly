@@ -37,7 +37,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ws.wsse.EJBEncryptServiceImpl;
 import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
 import org.jboss.as.test.integration.ws.wsse.ServiceIface;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -61,7 +60,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class EJBSignEncryptMultipleClientsTestCase {
 
-    private static Logger log = Logger.getLogger(EJBSignEncryptMultipleClientsTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
 
@@ -76,8 +74,6 @@ public class EJBSignEncryptMultipleClientsTestCase {
                 addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-ejb-sign-encrypt.wsdl", "wsdl/SecurityService.wsdl").
                 addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
                 addAsManifestResource(EJBSignEncryptMultipleClientsTestCase.class.getPackage(), "multiple-clients-jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
-
-        log.info(jar.toString(true));
 
         return jar;
     }

@@ -93,11 +93,11 @@ public class TxControlServlet extends HttpServlet {
         ServletContext sc = getServletContext().getContext(forwardContext);
         if (sc != null) {
 //            if (log.isTraceEnabled())
-                log.info("Found ServletContext for: " + forwardContext);
+                log.trace("Found ServletContext for: " + forwardContext);
             RequestDispatcher rd = sc.getRequestDispatcher(forwardPath);
             if (rd != null) {
 //                if (log.isTraceEnabled())
-                    log.info("Found RequestDispatcher for: " + forwardPath);
+                    log.trace("Found RequestDispatcher for: " + forwardPath);
                 if (include) {
                     rd.include(request, response);
                 } else {

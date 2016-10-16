@@ -57,9 +57,7 @@ public class DAO2 {
     }
 
     public void myFunction() {
-        //System.out.println("DAO2 myfunction entered");
         em.find(Employee.class, 123);
-        //System.out.println("DAO2 myfunction returning");
     }
 
 }

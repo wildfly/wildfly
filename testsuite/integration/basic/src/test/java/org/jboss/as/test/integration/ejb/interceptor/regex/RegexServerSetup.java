@@ -31,8 +31,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 
 /**
  * Server setup task which set up ejb3 subsystem to allow regex
@@ -49,9 +51,11 @@ public class RegexServerSetup implements ServerSetupTask {
         node.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         node.get(NAME).set(EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX);
         node.get(VALUE).set(true);
-        ModelNode result = managementClient.getControllerClient().execute(node);
-        System.out.println(result);
 
+        final ModelNode result = managementClient.getControllerClient().execute(node);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.fail(Operations.getFailureDescription(result).asString());
+        }
     }
 
     @Override
@@ -60,6 +64,9 @@ public class RegexServerSetup implements ServerSetupTask {
         node.get(ADDRESS).set(PathAddress.parseCLIStyleAddress("/subsystem=ejb3").toModelNode());
         node.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
         node.get(NAME).set(EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX);
-        managementClient.getControllerClient().execute(node);
+        final ModelNode result = managementClient.getControllerClient().execute(node);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.fail(Operations.getFailureDescription(result).asString());
+        }
     }
 }

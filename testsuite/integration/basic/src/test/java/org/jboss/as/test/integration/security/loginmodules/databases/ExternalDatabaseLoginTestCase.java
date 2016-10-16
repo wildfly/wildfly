@@ -136,16 +136,13 @@ public class ExternalDatabaseLoginTestCase {
      * @return WebArchive deployment
      */
     private static WebArchive createWar(final String deployment) {
-        LOGGER.info("Starting deployment " + deployment);
+        LOGGER.trace("Starting deployment " + deployment);
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, deployment + ".war");
         war.addClasses(SimpleSecuredServlet.class, SimpleServlet.class, DatabaseCreatorBean.class);
         war.addAsWebInfResource(ExternalDatabaseLoginTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(deployment), "jboss-web.xml");
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 

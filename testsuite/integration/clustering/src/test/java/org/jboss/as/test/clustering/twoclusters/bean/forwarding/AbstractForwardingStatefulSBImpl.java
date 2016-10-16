@@ -8,8 +8,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class AbstractForwardingStatefulSBImpl {
@@ -35,7 +34,7 @@ public class AbstractForwardingStatefulSBImpl {
                 Context context = new InitialContext(props);
                 bean = (RemoteStatefulSB) context.lookup(EJB_NAME);
             } catch (Exception e) {
-                log.log(Level.INFO, "exception occurred looking up name " + EJB_NAME + " on forwarding node " + getCurrentNode());
+                log.info("exception occurred looking up name " + EJB_NAME + " on forwarding node " + getCurrentNode());
                 throw new RuntimeException(e);
             }
         }
@@ -43,17 +42,17 @@ public class AbstractForwardingStatefulSBImpl {
     }
 
     public int getSerial() {
-        log.log(Level.INFO, "getSerial() called on forwarding node " + getCurrentNode());
+        log.trace("getSerial() called on forwarding node " + getCurrentNode());
         return forward().getSerial();
     }
 
     public int getSerialAndIncrement() {
-        log.log(Level.INFO, "getSerialAndIncrement() called on forwarding node " + getCurrentNode());
+        log.trace("getSerialAndIncrement() called on forwarding node " + getCurrentNode());
         return forward().getSerialAndIncrement();
     }
 
     public byte[] getCargo() {
-        log.log(Level.INFO, "getCargo() called on forwarding node " + getCurrentNode());
+        log.trace("getCargo() called on forwarding node " + getCurrentNode());
         return forward().getCargo();
     }
 

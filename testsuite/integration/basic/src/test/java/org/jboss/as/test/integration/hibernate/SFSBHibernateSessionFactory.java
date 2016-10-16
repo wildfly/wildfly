@@ -46,10 +46,6 @@ public class SFSBHibernateSessionFactory {
 
     private static SessionFactory sessionFactory;
 
-    protected static final Class[] NO_CLASSES = new Class[0];
-    protected static final String NO_MAPPINGS = new String();
-
-
     public void cleanup() {
         sessionFactory.close();
     }
@@ -75,9 +71,7 @@ public class SFSBHibernateSessionFactory {
 
             sessionFactory = configuration.buildSessionFactory();
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
-            System.err.println("Initial SessionFactory creation failed." + ex);
-            // ex.printStackTrace();
-            throw new ExceptionInInitializerError(ex);
+            throw new RuntimeException("Could not setup config", ex);
         }
 
     }
@@ -99,10 +93,7 @@ public class SFSBHibernateSessionFactory {
             session.flush();
             session.close();
         } catch (Exception e) {
-
-            e.printStackTrace();
             throw new RuntimeException("transactional failure while persisting student entity", e);
-
         }
 
         return student;

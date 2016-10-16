@@ -517,7 +517,7 @@ public class EJBManagementUtil {
     private static ModelNode execute(final ModelControllerClient modelControllerClient, final ModelNode operation) throws IOException {
         final ModelNode result = modelControllerClient.execute(operation);
         if (result.hasDefined(ClientConstants.OUTCOME) && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
-            //logger.info("Operation " + operation.toString() + " successful");
+            //logger.trace("Operation " + operation.toString() + " successful");
             return result;
         } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
             final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();

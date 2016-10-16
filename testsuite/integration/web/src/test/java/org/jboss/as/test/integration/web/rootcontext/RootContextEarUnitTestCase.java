@@ -31,7 +31,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -50,8 +49,6 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 @ServerSetup(RootContextEarUnitTestCase.RootContextEarUnitTestCaseSetup.class)
 public class RootContextEarUnitTestCase {
-
-    private static Logger log = Logger.getLogger(RootContextEarUnitTestCase.class);
 
     static class RootContextEarUnitTestCaseSetup extends AbstractMgmtServerSetupTask {
 
@@ -85,14 +82,13 @@ public class RootContextEarUnitTestCase {
         ear.setApplicationXML(tccl.getResource(resourcesLocation + "application-root.xml"));
         ear.addAsModule(war);
 
-        log.info(ear.toString(true));
         return ear;
     }
 
     @Test
     @OperateOnDeployment("root-web.ear")
     public void testRootContextEAR(@ArquillianResource URL url) throws Exception {
-        String response = RootContextUtil.hitRootContext(log, url, HOST);
+        String response = RootContextUtil.hitRootContext(url, HOST);
         assertTrue(response.contains("A Root Context Page"));
     }
 

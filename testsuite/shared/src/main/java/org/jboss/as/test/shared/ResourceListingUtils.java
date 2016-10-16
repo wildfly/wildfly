@@ -1,10 +1,33 @@
-package org.jboss.as.test.integration.deployment.resourcelisting;
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2016, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.test.shared;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.Resource;
 
@@ -12,6 +35,7 @@ import org.jboss.modules.Resource;
  * @author: rhatlapa@redhat.com
  */
 public class ResourceListingUtils {
+    private static final Logger log = Logger.getLogger(ResourceListingUtils.class);
 
     /**
      * Lists resources in deployment using provided API for iterating resources
@@ -63,8 +87,8 @@ public class ResourceListingUtils {
                     if (resourceWithoutPrefix.startsWith("/")) {
                         resourceWithoutPrefix = resourceWithoutPrefix.substring(1);
                     }
-                    System.err.println("Original resource to check = " + resource);
-                    System.err.println("Resource without its rootDir = " + resourceWithoutPrefix);
+                    log.trace("Original resource to check = " + resource);
+                    log.trace("Resource without its rootDir = " + resourceWithoutPrefix);
                     if (resourceWithoutPrefix.contains("/")) {
                         it.remove();
                     }

@@ -32,7 +32,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -48,7 +51,6 @@ import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.ejb3.Hello;
 import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
 import org.jboss.as.test.integration.security.loginmodules.UsersRolesLoginModuleTestCase;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -65,7 +67,6 @@ import org.junit.runner.RunWith;
 @ServerSetup({JAASIdentityCachingTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 public class JAASIdentityCachingTestCase {
-    private static Logger LOGGER = Logger.getLogger(JAASIdentityCachingTestCase.class);
 
     private static final String TEST_NAME = "jaas-test";
     private static final String EAR_BASE_NAME = "ear-" + TEST_NAME;
@@ -80,8 +81,6 @@ public class JAASIdentityCachingTestCase {
      */
     @Deployment
     public static EnterpriseArchive earDeployment() {
-        LOGGER.info("Start EAR deployment");
-
         final JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, LM_LIB_NAME).addClasses(CustomLoginModule.class,
                 CustomPrincipal.class);
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, JAR_BASE_NAME + ".jar")
@@ -96,8 +95,6 @@ public class JAASIdentityCachingTestCase {
         ear.addAsModule(war);
         ear.addAsModule(ejbJar);
 
-        LOGGER.info(ear.toString(true));
-        //Utils.saveArchive(ear, "/tmp/" + ear.getName());
         return ear;
     }
 
@@ -114,9 +111,11 @@ public class JAASIdentityCachingTestCase {
                 + HelloEJBCallServlet.PARAM_JNDI_NAME + "="
                 + URLEncoder.encode("java:app/" + JAR_BASE_NAME + "/" + HelloBean.class.getSimpleName(), "UTF-8"));
         final URI counterUri = new URI(webAppURL.toExternalForm() + LMCounterServlet.SERVLET_PATH.substring(1));
-        LOGGER.info("Requesting URL " + greetingUri);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        try {
+        BasicCredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
+        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("admin", CustomLoginModule.PASSWORD);
+        credentialsProvider.setCredentials(new AuthScope(greetingUri.getHost(), greetingUri.getPort()),
+                            credentials);
+        try (final CloseableHttpClient httpClient = HttpClients.createDefault()){
             final HttpGet getCounter = new HttpGet(counterUri);
             final HttpGet getGreeting = new HttpGet(greetingUri);
             HttpResponse response = httpClient.execute(getGreeting);
@@ -124,24 +123,21 @@ public class JAASIdentityCachingTestCase {
             EntityUtils.consume(response.getEntity());
 
             //check if LoginModule #login() counter is initialized correctly
-            response = httpClient.execute(getCounter);
+            HttpClientContext context = HttpClientContext.create();
+                    context.setCredentialsProvider(credentialsProvider);
+            response = httpClient.execute(getCounter, context);
             assertEquals("0", EntityUtils.toString(response.getEntity()));
 
-            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("admin", CustomLoginModule.PASSWORD);
-            httpClient.getCredentialsProvider().setCredentials(new AuthScope(greetingUri.getHost(), greetingUri.getPort()),
-                    credentials);
 
             //make 2 calls to the servlet
-            response = httpClient.execute(getGreeting);
+            response = httpClient.execute(getGreeting, context);
             assertEquals("Hello Caller!", EntityUtils.toString(response.getEntity()));
-            response = httpClient.execute(getGreeting);
+            response = httpClient.execute(getGreeting, context);
             assertEquals("Hello Caller!", EntityUtils.toString(response.getEntity()));
 
             //There should be only one call to login() method
-            response = httpClient.execute(getCounter);
+            response = httpClient.execute(getCounter, context);
             assertEquals("1", EntityUtils.toString(response.getEntity()));
-        } finally {
-            httpClient.getConnectionManager().shutdown();
         }
     }
 

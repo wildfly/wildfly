@@ -354,7 +354,7 @@ public class UsersRolesLoginModuleTestCase {
      * @return
      */
     private static WebArchive createWar(final String deployment, Coding coding) {
-        LOGGER.info("Starting deployment " + deployment);
+        LOGGER.trace("Starting deployment " + deployment);
 
         final String users = ANIL + "=" + Utils.hashMD5(ANIL_PWD, coding) + "\n" + MARCUS + "="
                 + Utils.hashMD5(MARCUS_PWD, coding);
@@ -368,9 +368,6 @@ public class UsersRolesLoginModuleTestCase {
                 "<security-domain>" + deployment + "</security-domain>" + //
                 "</jboss-web>"), "jboss-web.xml");
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 

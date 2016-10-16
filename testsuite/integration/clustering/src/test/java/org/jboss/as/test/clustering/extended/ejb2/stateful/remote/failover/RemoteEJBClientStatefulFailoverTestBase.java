@@ -117,7 +117,7 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
             final int NUM_TIMES = 25;
             for (int i = 0; i < NUM_TIMES; i++) {
                 final CounterResult result = remoteCounter.increment();
-                log.info("Counter incremented to " + result.getCount() + " on node " + result.getNodeName());
+                log.trace("Counter incremented to " + result.getCount() + " on node " + result.getNodeName());
             }
             final CounterResult result = remoteCounter.getCount();
             Assert.assertNotNull("Result from remote stateful counter was null", result);
@@ -156,7 +156,7 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
                 resultAfterShuttingDownANode = remoteCounter.decrement();
                 Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", resultAfterShuttingDownANode);
                 Assert.assertEquals("Result was received from an unexpected node, after shutting down a node", aliveNode, resultAfterShuttingDownANode.getNodeName());
-                log.info("Counter decremented to " + resultAfterShuttingDownANode.getCount() + " on node " + resultAfterShuttingDownANode.getNodeName());
+                log.trace("Counter decremented to " + resultAfterShuttingDownANode.getCount() + " on node " + resultAfterShuttingDownANode.getNodeName());
             }
             final CounterResult finalResult = remoteCounter.getCount();
             Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", finalResult);

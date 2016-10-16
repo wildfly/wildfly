@@ -78,7 +78,6 @@ import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -111,8 +110,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class OutboundLdapConnectionTestCase {
-
-    private static Logger LOGGER = Logger.getLogger(OutboundLdapConnectionTestCase.class);
 
     private static final String KEYSTORE_PASSWORD = "123456";
     private static final String KEYSTORE_FILENAME_LDAPS = "ldaps.keystore";
@@ -252,16 +249,12 @@ public class OutboundLdapConnectionTestCase {
      * @return
      */
     private static WebArchive createDeployment(final String securityDomain) {
-        LOGGER.info("Creating deployment.");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, securityDomain + ".war");
         war.add(new StringAsset(TEST_FILE_CONTENT), TEST_FILE);
         war.addAsWebInfResource(OutboundLdapConnectionTestCase.class.getPackage(), OutboundLdapConnectionTestCase.class
                 .getSimpleName() + "-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(securityDomain), "jboss-web.xml");
         war.addAsResource(new StringAsset("jduke=Admin"), "roles.properties");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 

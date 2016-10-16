@@ -148,7 +148,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
                 Assert.fail("Invocation on bean when was expected to fail due to other server being down");
             } catch (Exception e) {
                 // expected
-                logger.info("Got the expected exception on invoking a bean when other server was down", e);
+                logger.trace("Got the expected exception on invoking a bean when other server was down", e);
             }
             // now start the main server
             this.container.start(JBOSSAS_NON_CLUSTERED);
@@ -224,7 +224,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
                 Assert.fail("Invocation on bean when was expected to fail due to other server being down");
             } catch (Exception e) {
                 // expected
-                logger.info("Got the expected exception on invoking a bean when other server was down", e);
+                logger.trace("Got the expected exception on invoking a bean when other server was down", e);
             }
 
             // now restart the main server

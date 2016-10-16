@@ -76,12 +76,12 @@ public abstract class ATSuperService implements AT {
             // Enlist the Durable Participant for this service
             TransactionManager transactionManager = TransactionManagerFactory.transactionManager();
             ATDurableParticipant durableParticipant = new ATDurableParticipant(serviceCommands, callName, eventLog, transactionId);
-            log.info("[SERVICE] Enlisting a Durable2PC participant into the AT");
+            log.trace("[SERVICE] Enlisting a Durable2PC participant into the AT");
             transactionManager.enlistForDurableTwoPhase(durableParticipant, "ATServiceDurable:" + new Uid().toString());
 
             // Enlist the Volatile Participant for this service
             ATVolatileParticipant volatileParticipant = new ATVolatileParticipant(serviceCommands, callName, eventLog, transactionId);
-            log.info("[SERVICE] Enlisting a VolatilePC participant into the AT");
+            log.trace("[SERVICE] Enlisting a VolatilePC participant into the AT");
             transactionManager.enlistForVolatileTwoPhase(volatileParticipant, "ATServiceVolatile:" + new Uid().toString());
         } catch (Exception e) {
             throw new RuntimeException("Error when enlisting participants", e);
@@ -92,7 +92,7 @@ public abstract class ATSuperService implements AT {
         }
 
         if (ServiceCommand.isPresent(ROLLBACK_ONLY, serviceCommands)) {
-            log.info("Intentionally the service settings transaction to rollback only - service command was set to: " + ROLLBACK_ONLY);
+            log.trace("Intentionally the service settings transaction to rollback only - service command was set to: " + ROLLBACK_ONLY);
             try {
                 userTransaction.rollback();
             } catch (Exception e) {
@@ -101,6 +101,6 @@ public abstract class ATSuperService implements AT {
         }
 
         // There will be some business logic here normally
-        log.info("|AT SERVICE] I'm working on nothing...");
+        log.trace("|AT SERVICE] I'm working on nothing...");
     }
 }

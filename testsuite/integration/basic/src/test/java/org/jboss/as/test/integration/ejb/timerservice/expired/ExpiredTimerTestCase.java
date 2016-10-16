@@ -58,7 +58,6 @@ public class ExpiredTimerTestCase {
     public static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "expired-timer-test.jar");
         jar.addPackage(ExpiredTimerTestCase.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -78,13 +77,13 @@ public class ExpiredTimerTestCase {
             bean.invokeTimeRemaining();
             Assert.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
         } catch (NoMoreTimeoutsException e) {
-            log.info("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getTimeRemaining");
+            log.trace("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getTimeRemaining");
         }
         try {
             bean.invokeGetNext();
             Assert.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
         } catch (NoMoreTimeoutsException e) {
-            log.info("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getNextTimeout");
+            log.trace("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getNextTimeout");
         }
 
         // the timeout can finish
@@ -100,7 +99,7 @@ public class ExpiredTimerTestCase {
                 Assert.fail("Expected to fail on invoking on an expired timer");
             } catch (NoSuchObjectLocalException nsole) {
                 // expected
-                log.info("Got the expected exception " + nsole);
+                log.trace("Got the expected exception " + nsole);
                 passed = true;
             } catch (NoMoreTimeoutsException e) {
                 //this will be thrown if the timer is still active

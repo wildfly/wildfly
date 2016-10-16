@@ -51,7 +51,7 @@ public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtens
                 if (c.getState() == State.STARTED && "custom".equalsIgnoreCase(c.getContainerConfiguration().getMode())) {
                     try {
                         c.stop();
-                        log.info("Stopped custom container: " + c.getName());
+                        log.trace("Stopped custom container: " + c.getName());
                     } catch (Exception e) {
                         log.error("Failed to stop custom container: " + c.getName(), e);
                     }

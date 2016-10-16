@@ -26,8 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 import org.hibernate.Session;
@@ -80,33 +78,10 @@ public class SessionFactoryTestCase {
     protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
         try {
             return interfaceType.cast(iniCtx.lookup(name));
-
-        } catch (NamingException e) {
-            dumpJndi("");
+    } catch (NamingException e) {
             throw e;
         }
     }
-
-    private void dumpJndi(String s) {
-        /*try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }*/
-    }
-
-    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
-        }
-    }
-
 
     // test that we didn't break the Hibernate hibernate.session_factory_name (bind Hibernate session factory to
     // specified jndi name) functionality.

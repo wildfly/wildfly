@@ -41,7 +41,7 @@ public abstract class TestPassivationBeanParent {
      * Overriding the ejbPassivate method of SessionBean on child class
      */
     public void ejbPassivate() throws EJBException, RemoteException {
-        log.info(this.toString() + " ejbPassivate [" + this.identificator + "]");
+        log.trace(this.toString() + " ejbPassivate [" + this.identificator + "]");
         this.beenPassivated = true;
     }
 
@@ -49,7 +49,7 @@ public abstract class TestPassivationBeanParent {
      * Overriding the ejbActivate method of SessionBean on child class
      */
     public void ejbActivate() throws EJBException, RemoteException {
-        log.info(this.toString() + " ejbActivate [" + this.identificator + "]");
+        log.trace(this.toString() + " ejbActivate [" + this.identificator + "]");
         this.beenActivated = true;
     }
 
@@ -57,6 +57,6 @@ public abstract class TestPassivationBeanParent {
      * Overriding the ejbRemove method of SessionBean on child class
      */
     public void ejbRemove() throws EJBException, RemoteException {
-        log.info("Bean [" + this.identificator + "] destroyed");
+        log.trace("Bean [" + this.identificator + "] destroyed");
     }
 }

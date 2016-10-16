@@ -27,8 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -131,7 +130,7 @@ public class SchemaLocationsRewriteTestCase {
 
     private List<String> getAttributeValues(URL url, String localPart) throws Exception {
         String document = IOUtils.toString(url.openStream());
-        log.log(Level.FINE, document);
+        log.trace(document);
 
         List<String> values = new ArrayList<>();
         XMLInputFactory xmlif = XMLInputFactory.newInstance();

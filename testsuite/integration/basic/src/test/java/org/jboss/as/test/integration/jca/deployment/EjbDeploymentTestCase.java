@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.jca.deployment;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -51,7 +50,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class EjbDeploymentTestCase {
-    private static final Logger log = Logger.getLogger(EjbDeploymentTestCase.class.getName());
 
     static final String deploymentName = "raractivation.ear";
     static final String rarDeploymentName = "eis.rar";
@@ -69,7 +67,6 @@ public class EjbDeploymentTestCase {
 
         raa.addAsManifestResource(EjbDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml");
 
-        log.info(raa.toString(true));
         return raa;
     }
 
@@ -82,7 +79,6 @@ public class EjbDeploymentTestCase {
 
         raa.addAsManifestResource(EjbDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml");
 
-        log.info(raa.toString(true));
         return raa;
     }
 
@@ -94,7 +90,6 @@ public class EjbDeploymentTestCase {
 
         //jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + rarDeploymentName + "\n"), "MANIFEST.MF");
 
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -120,7 +115,6 @@ public class EjbDeploymentTestCase {
         //ear.addAsManifestResource(EjbDeploymentTestCase.class.getPackage(), "application.xml", "application.xml");
         ear.addAsManifestResource(new StringAsset("Dependencies: deployment." + rarDeploymentName + "\n"), "MANIFEST.MF");
 
-        log.info(ear.toString(true));
         return ear;
     }
 

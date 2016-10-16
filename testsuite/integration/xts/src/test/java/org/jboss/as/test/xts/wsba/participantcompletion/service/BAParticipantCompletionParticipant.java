@@ -77,7 +77,7 @@ public class BAParticipantCompletionParticipant
         eventLog.addEvent(participantName, EventLogEvent.CLOSE);
         // The participant knows that this BA is now finished and can throw away any temporary state
         // nothing to do here as the item has already been added to the set
-        log.info("[BA PARTICIPANT COMPL SERVICE] Participant close() - logged: " + EventLogEvent.CLOSE);
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Participant close() - logged: " + EventLogEvent.CLOSE);
     }
 
     /**
@@ -91,7 +91,7 @@ public class BAParticipantCompletionParticipant
     public void cancel() throws WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.CANCEL);
         // The participant should compensate any work done within this BA
-        log.info("[BA PARTICIPANT COMPL SERVICE] Participant cancel() - logged: " + EventLogEvent.CANCEL);
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Participant cancel() - logged: " + EventLogEvent.CANCEL);
         // A compensate work will be carrying here
     }
 
@@ -105,19 +105,19 @@ public class BAParticipantCompletionParticipant
 
     public void compensate() throws FaultedException, WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.COMPENSATE);
-        log.info("[BA PARTICIPANT COMPL SERVICE] Participant compensate() - logged: " + EventLogEvent.COMPENSATE);
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Participant compensate() - logged: " + EventLogEvent.COMPENSATE);
         // A compensate work will be carrying here
     }
 
     @Deprecated
     public void unknown() throws SystemException {
         eventLog.addEvent(participantName, EventLogEvent.UNKNOWN);
-        log.info("[BA PARTICIPANT COMPL SERVICE] Participant unknown() - logged: " + EventLogEvent.UNKNOWN);
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Participant unknown() - logged: " + EventLogEvent.UNKNOWN);
     }
 
     public void error() throws SystemException {
         eventLog.addEvent(participantName, EventLogEvent.ERROR);
-        log.info("[BA PARTICIPANT COMPL SERVICE] Participant error() - logged: " + EventLogEvent.ERROR);
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Participant error() - logged: " + EventLogEvent.ERROR);
         // A compensate work will be carrying here
     }
 
@@ -129,14 +129,14 @@ public class BAParticipantCompletionParticipant
      *                  been written and changes should be rolled back
      */
     public void confirmCompleted(boolean confirmed) {
-        log.info("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(" + Boolean.toString(confirmed) + ")");
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(" + Boolean.toString(confirmed) + ")");
         if (confirmed) {
             // This tells the participant that compensation information has been logged and that it is safe to commit any changes
             eventLog.addEvent(participantName, EventLogEvent.CONFIRM_COMPLETED);
-            log.info("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(true) - logged: " + EventLogEvent.CONFIRM_COMPLETED);
+            log.trace("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(true) - logged: " + EventLogEvent.CONFIRM_COMPLETED);
         } else {
             eventLog.addEvent(participantName, EventLogEvent.CONFIRM_FAILED);
-            log.info("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(false) - logged: " + EventLogEvent.CONFIRM_FAILED);
+            log.trace("[BA PARTICIPANT COMPL SERVICE] Participant confirmCompleted(false) - logged: " + EventLogEvent.CONFIRM_FAILED);
         }
     }
 }

@@ -30,8 +30,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,8 +43,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
-import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.test.integration.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
+import org.jboss.as.test.integration.web.security.jaspi.WebSecurityJaspiTestCase;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.experimental.categories.Category;
@@ -57,6 +62,7 @@ import org.junit.runner.RunWith;
 @ServerSetup(WebTestsSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
 public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
+    private static final Logger log = Logger.getLogger(WebSecurityJaspiTestCase.class);
 
     @Deployment
     public static WebArchive deployment() throws Exception {
@@ -69,7 +75,6 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
         war.addAsResource(WebSecurityBASICTestCase.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(WebSecurityBASICTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
-        WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
 
@@ -78,30 +83,24 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
 
     @Override
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-            httpclient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()),
-                    new UsernamePasswordCredentials(user, pass));
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(url.getHost(), url.getPort()),
+                            new UsernamePasswordCredentials(user, pass));
+        try (CloseableHttpClient httpclient = HttpClients.custom()
+                        .setDefaultCredentialsProvider(credentialsProvider)
+                        .build()){
 
             HttpGet httpget = new HttpGet(url.toExternalForm() + "secured/");
 
-            System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
-            System.out.println("----------------------------------------");
             StatusLine statusLine = response.getStatusLine();
-            System.out.println(statusLine);
             if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
+                log.trace("Response content length: " + entity.getContentLength());
             }
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
             EntityUtils.consume(entity);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 }

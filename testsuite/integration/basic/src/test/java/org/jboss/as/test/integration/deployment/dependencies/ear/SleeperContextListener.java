@@ -42,7 +42,7 @@ public class SleeperContextListener implements ServletContextListener {
      * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
      */
     public void contextDestroyed(ServletContextEvent arg0) {
-        LOGGER.info("Context destroyed");
+        LOGGER.trace("Context destroyed");
     }
 
     /**
@@ -50,13 +50,13 @@ public class SleeperContextListener implements ServletContextListener {
      * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
      */
     public void contextInitialized(ServletContextEvent arg0) {
-        LOGGER.info("Context initialized - going to sleep");
+        LOGGER.trace("Context initialized - going to sleep");
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted!");
         }
-        LOGGER.info("Woke up");
+        LOGGER.trace("Woke up");
         Log.SB.append(getClass().getSimpleName());
     }
 

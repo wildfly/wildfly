@@ -24,7 +24,7 @@ package org.jboss.as.test.smoke.deployment.rar;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
@@ -91,7 +91,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      */
     public Object getConnection(Subject subject,
                                 ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        log.finest("getConnection()");
+        log.trace("getConnection()");
         connection = new MultipleConnection2Impl(this, mcf);
         return connection;
     }
@@ -104,7 +104,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void associateConnection(Object connection) throws ResourceException {
-        log.finest("associateConnection()");
+        log.trace("associateConnection()");
     }
 
     /**
@@ -113,7 +113,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void cleanup() throws ResourceException {
-        log.finest("cleanup()");
+        log.trace("cleanup()");
     }
 
     /**
@@ -122,7 +122,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void destroy() throws ResourceException {
-        log.finest("destroy()");
+        log.trace("destroy()");
     }
 
     /**
@@ -131,7 +131,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @param listener A new ConnectionEventListener to be registered
      */
     public void addConnectionEventListener(ConnectionEventListener listener) {
-        log.finest("addConnectionEventListener()");
+        log.trace("addConnectionEventListener()");
         if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.add(listener);
     }
@@ -142,7 +142,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @param listener already registered connection event listener to be removed
      */
     public void removeConnectionEventListener(ConnectionEventListener listener) {
-        log.finest("removeConnectionEventListener()");
+        log.trace("removeConnectionEventListener()");
         if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.remove(listener);
     }
@@ -168,7 +168,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public PrintWriter getLogWriter() throws ResourceException {
-        log.finest("getLogWriter()");
+        log.trace("getLogWriter()");
         return logwriter;
     }
 
@@ -179,7 +179,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void setLogWriter(PrintWriter out) throws ResourceException {
-        log.finest("setLogWriter()");
+        log.trace("setLogWriter()");
         logwriter = out;
     }
 
@@ -210,7 +210,7 @@ public class MultipleManagedConnection2 implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public ManagedConnectionMetaData getMetaData() throws ResourceException {
-        log.finest("getMetaData()");
+        log.trace("getMetaData()");
         return new Multiple2ManagedConnectionMetaData();
     }
 

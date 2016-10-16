@@ -45,7 +45,7 @@ public abstract class StatelessBeanBase {
     @javax.ejb.TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getNodeName() {
         String nodeName = NodeNameGetter.getNodeName();
-        log.info("StatelessBean.getNodeName() was called on node: " + nodeName);
+        log.trace("StatelessBean.getNodeName() was called on node: " + nodeName);
         return nodeName;
     }
 

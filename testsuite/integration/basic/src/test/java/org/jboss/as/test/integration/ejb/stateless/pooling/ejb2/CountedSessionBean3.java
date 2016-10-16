@@ -33,16 +33,16 @@ public class CountedSessionBean3 extends CountedSessionBean1 {
     private static final Logger log = Logger.getLogger(CountedSessionBean3.class);
 
     public CountedSessionBean3() {
-        log.info("CTOR3");
+        log.trace("CTOR3");
     }
 
     public void ejbCreate() throws RemoteException {
-        log.info("ejbCreate[3]: " + CounterSingleton.createCounter3.incrementAndGet());
+        log.trace("ejbCreate[3]: " + CounterSingleton.createCounter3.incrementAndGet());
     }
 
     public void ejbRemove() {
         try {
-            log.info("ejbRemove[3]: " + CounterSingleton.removeCounter3.incrementAndGet());
+            log.trace("ejbRemove[3]: " + CounterSingleton.removeCounter3.incrementAndGet());
         } catch (Exception e) {
             log.error("Ignored exception", e);
         }

@@ -41,6 +41,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,6 +56,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @RunWith(Arquillian.class)
 public class JMSResourceManagementTestCase {
+    private static final Logger LOGGER = Logger.getLogger(JMSResourceManagementTestCase.class);
 
     @ContainerResource
     private ManagementClient managementClient;
@@ -161,7 +163,6 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_app/myFactory4", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(4, result.get("min-pool-size").asInt());
         assertEquals(5, result.get("max-pool-size").asInt());
         assertEquals(6, result.get("initial-connect-attempts").asInt());
@@ -209,13 +210,13 @@ public class JMSResourceManagementTestCase {
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
             if (!"success".equals(outcome)) {
-                System.out.println(response);
+                LOGGER.trace(response);
             }
             assertEquals("success", outcome);
             return response.get("result");
         } else {
             if ("success".equals(outcome)) {
-                System.out.println(response);
+                LOGGER.trace(response);
             }
             assertEquals("failed", outcome);
             return response.get("failure-description");

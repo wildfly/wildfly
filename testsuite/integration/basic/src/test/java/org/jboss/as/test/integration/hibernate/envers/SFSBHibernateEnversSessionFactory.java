@@ -57,8 +57,6 @@ public class SFSBHibernateEnversSessionFactory {
         // static {
         try {
 
-            //System.out.println("Current dir : " + (new File(".")).getCanonicalPath());
-
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
@@ -73,8 +71,7 @@ public class SFSBHibernateEnversSessionFactory {
 
             sessionFactory = configuration.buildSessionFactory();
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
-            System.err.println("Initial SessionFactory creation failed." + ex);
-            throw new ExceptionInInitializerError(ex);
+            throw new RuntimeException("Could not setup config", ex);
         }
 
     }
@@ -97,10 +94,7 @@ public class SFSBHibernateEnversSessionFactory {
             trans.commit();
             session.close();
         } catch (Exception e) {
-
-            e.printStackTrace();
             throw new RuntimeException("Failure while persisting student entity", e);
-
         }
 
         return student;
@@ -108,9 +102,7 @@ public class SFSBHibernateEnversSessionFactory {
 
     // update student
     public StudentAudited updateStudent(String address, int id) {
-
         StudentAudited student;
-
         try {
             Session session = sessionFactory.openSession();
             Transaction trans = session.beginTransaction();
@@ -120,12 +112,8 @@ public class SFSBHibernateEnversSessionFactory {
             session.flush();
             trans.commit();
             session.close();
-
         } catch (Exception e) {
-
-            e.printStackTrace();
             throw new RuntimeException("Failure while persisting student entity", e);
-
         }
 
         // session.close();
@@ -138,7 +126,6 @@ public class SFSBHibernateEnversSessionFactory {
         StudentAudited student_rev = reader.find(StudentAudited.class, id, 1);
         List<Number> revlist = reader.getRevisions(StudentAudited.class, id);
         // this is for checking revision size hence not removing this S.o.p
-        //System.out.println("Size of revisionList:--" + revlist.size());
         return student_rev;
     }
 
