@@ -76,10 +76,6 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  */
 public class TransformersTestCase extends OperationTestCaseBase {
 
-    private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.wildfly:wildfly-clustering-infinispan:%s", version);
-    }
-
     private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.jboss.as:jboss-as-clustering-infinispan:%s", version);
     }
@@ -117,45 +113,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
                 ;
-    }
-
-    @Test
-    public void testTransformerWF800() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
-        this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
-                "org.infinispan:infinispan-core:6.0.1.Final",
-                "org.infinispan:infinispan-commons:6.0.1.Final",
-                "org.infinispan:infinispan-cachestore-jdbc:6.0.1.Final",
-                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
-                "org.jgroups:jgroups:3.4.2.Final"
-        );
-    }
-
-    @Test
-    public void testTransformerWF810() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
-        this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
-                "org.infinispan:infinispan-core:6.0.2.Final",
-                "org.infinispan:infinispan-commons:6.0.2.Final",
-                "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final",
-                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
-                "org.jgroups:jgroups:3.4.3.Final"
-        );
-    }
-
-    @Test
-    public void testTransformerWF820() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
-        this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
-                "org.infinispan:infinispan-core:6.0.2.Final",
-                "org.infinispan:infinispan-commons:6.0.2.Final",
-                "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final",
-                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
-                "org.jgroups:jgroups:3.4.5.Final"
-        );
     }
 
     @Test
@@ -354,33 +311,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
             checkMapResults(services, new ModelNode(), version, getCacheStoreGetPropertyOperation(storeAddress, testProperty2));
             checkMapModels(services, version, storeAddress, testProperty3, "false", testProperty4, "true");
         }
-    }
-
-    @Test
-    public void testRejectionsWF800() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
-        this.testRejections(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                "org.infinispan:infinispan-core:6.0.1.Final",
-                "org.infinispan:infinispan-cachestore-jdbc:6.0.1.Final"
-        );
-    }
-
-    @Test
-    public void testRejectionsWF810() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
-        this.testRejections(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                "org.infinispan:infinispan-core:6.0.2.Final",
-                "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final"
-        );
-    }
-
-    @Test
-    public void testRejectionsWF820() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
-        this.testRejections(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                "org.infinispan:infinispan-core:6.0.2.Final",
-                "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final"
-        );
     }
 
     @Test
