@@ -30,7 +30,7 @@
 
 
     <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-jettison-provider}"/>
+        <artifact name="${org.jboss.resteasy:resteasy-jettison-provider?jandex}"/>
     </resources>
 
     <dependencies>

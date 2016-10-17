@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-yaml-provider}"/>
+        <artifact name="${org.jboss.resteasy:resteasy-yaml-provider?jandex}"/>
     </resources>
 
     <dependencies>

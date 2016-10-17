@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-cdi}"/>
+        <artifact name="${org.jboss.resteasy:resteasy-cdi?jandex}"/>
     </resources>
 
     <dependencies>

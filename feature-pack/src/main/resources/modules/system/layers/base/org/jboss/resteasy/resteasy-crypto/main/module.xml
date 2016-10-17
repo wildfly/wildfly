@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-crypto}"/>
+        <artifact name="${org.jboss.resteasy:resteasy-crypto?jandex}"/>
     </resources>
 
     <dependencies>
