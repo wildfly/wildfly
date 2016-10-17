@@ -103,10 +103,18 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
             throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) injectionPoint.getMember());
         }
         if (!ejb.lookup().equals("")) {
+            if (ejb.lookup().startsWith("ejb:")) {
+                return new ResourceReferenceFactory<Object>() {
+                    @Override
+                    public ResourceReference<Object> createResource() {
+                        return new SimpleResourceReference<Object>(doLookup(ejb.lookup(), null));
+                    }
+                };
+            }
             return handleServiceLookup(ejb.lookup(), injectionPoint);
         } else {
             final ViewDescription viewDescription = getViewDescription(ejb, injectionPoint);
-            if(viewDescription != null) {
+            if (viewDescription != null) {
                 return handleServiceLookup(viewDescription, injectionPoint);
             } else {
 
@@ -140,7 +148,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
                 }
                 c = c.getSuperclass();
             }
-            if(!found) {
+            if (!found) {
                 throw BeanLogger.LOG.invalidResourceProducerType(injectionPoint.getAnnotated(), clazz.getName());
             }
             return new ComponentViewToResourceReferenceFactoryAdapter<Object>(view);
@@ -172,7 +180,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
                 viewService = applicationDescription.getComponents(ejb.beanName(), getType(injectionPoint.getType()).getName(), deploymentRoot);
             }
         }
-        if(injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
+        if (injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
             if (viewService.isEmpty()) {
                 throw WeldLogger.ROOT_LOGGER.ejbNotResolved(ejb, injectionPoint.getMember());
             } else if (viewService.size() > 1) {
@@ -234,7 +242,6 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
             }
         };
     }
-
 
     public Object doLookup(String jndiName, String mappedName) {
         String name = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
