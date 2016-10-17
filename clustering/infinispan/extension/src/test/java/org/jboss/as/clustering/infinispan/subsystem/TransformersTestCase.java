@@ -37,17 +37,9 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.extension.ExtensionRegistryType;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -76,8 +68,12 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  */
 public class TransformersTestCase extends OperationTestCaseBase {
 
-    private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
+    private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.jboss.as:jboss-as-clustering-infinispan:%s", version);
+    }
+
+    private static String formatEAP7SubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-extension:%s", version);
     }
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
@@ -89,24 +85,55 @@ public class TransformersTestCase extends OperationTestCaseBase {
         return readResource("infinispan-transformer.xml");
     }
 
+    private static InfinispanModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+        switch (controllerVersion) {
+            case EAP_6_2_0:
+                return InfinispanModel.VERSION_1_4_1;
+            case EAP_6_3_0:
+                return InfinispanModel.VERSION_1_5_0;
+            case EAP_6_4_0:
+            case EAP_6_4_7:
+                return InfinispanModel.VERSION_1_6_0;
+            case EAP_7_0_0:
+                return InfinispanModel.VERSION_4_0_0;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private static String[] getDependencies(ModelTestControllerVersion version) {
+        switch (version) {
+            case EAP_6_2_0:
+                return new String[] {formatEAP6SubsystemArtifact(version),
+                        "org.infinispan:infinispan-core:5.2.7.Final-redhat-2",
+                        "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2"};
+            case EAP_6_3_0:
+                return new String[] {formatEAP6SubsystemArtifact(version),
+                        "org.infinispan:infinispan-core:5.2.10.Final-redhat-1",
+                        "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1"};
+            case EAP_6_4_0:
+            case EAP_6_4_7:
+                return new String[] {formatEAP6SubsystemArtifact(version),
+                        "org.infinispan:infinispan-core:5.2.11.Final-redhat-2",
+                        "org.infinispan:infinispan-cachestore-jdbc:5.2.11.Final-redhat-2"};
+            case EAP_7_0_0:
+                return new String[] {formatEAP7SubsystemArtifact(version),
+                        "org.infinispan:infinispan-core:8.1.2.Final-redhat-1",
+                        "org.infinispan:infinispan-cachestore-jdbc:8.1.2.Final-redhat-1",
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        // Following are needed for LegacyControllerAdditionalInitialization
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version)};
+
+        }
+        throw new IllegalArgumentException();
+    }
+
     @Override
     AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization() {
-            @Override
-            protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration, RuntimeCapabilityRegistry capabilityRegistry) {
-                // Needed to test org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE conversion
-                new DataSourcesExtension().initialize(registry.getExtensionContext("datasources", registration, ExtensionRegistryType.MASTER));
-                Resource subsystem = Resource.Factory.create();
-                PathElement path = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME);
-                root.registerChild(path, subsystem);
-
-                Resource dataSource = Resource.Factory.create();
-                dataSource.getModel().get("jndi-name").set("java:jboss/jdbc/store");
-                subsystem.registerChild(PathElement.pathElement("data-source", "ExampleDS"), dataSource);
-
-                super.initializeExtraSubystemsAndModel(registry, root, registration, capabilityRegistry);
-            }
-        }
+        return new LegacyControllerAdditionalInitialization()
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 .require(CommonRequirement.MBEAN_SERVER)
@@ -117,29 +144,22 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testTransformerEAP620() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
-        this.testTransformation(InfinispanModel.VERSION_1_4_1, version, formatLegacySubsystemArtifact(version),
-                "org.infinispan:infinispan-core:5.2.7.Final-redhat-2",
-                "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2"
-        );
+        testTransformation(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
     public void testTransformerEAP630() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
-        this.testTransformation(InfinispanModel.VERSION_1_5_0, version, formatLegacySubsystemArtifact(version),
-                "org.infinispan:infinispan-core:5.2.10.Final-redhat-1",
-                "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1"
-        );
+        testTransformation(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
     public void testTransformerEAP640() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
-        this.testTransformation(InfinispanModel.VERSION_1_6_0, version, formatLegacySubsystemArtifact(version),
-                "org.infinispan:infinispan-core:5.2.11.Final-redhat-2",
-                "org.infinispan:infinispan-cachestore-jdbc:5.2.11.Final-redhat-2"
-        );
+        testTransformation(ModelTestControllerVersion.EAP_6_4_0);
+    }
+
+    @Test
+    public void testTransformerEAP700() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_0_0);
     }
 
     private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
@@ -161,8 +181,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @SuppressWarnings("deprecation")
-    private void testTransformation(InfinispanModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
-        ModelVersion version = model.getVersion();
+    private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
+        final ModelVersion version = getModelVersion(controller).getVersion();
+        final String[] dependencies = getDependencies(controller);
+
         KernelServices services = this.buildKernelServices(controller, version, dependencies);
 
         // check that both versions of the legacy model are the same and valid
@@ -316,39 +338,34 @@ public class TransformersTestCase extends OperationTestCaseBase {
     @Test
     @org.junit.Ignore("WFLY-6766")
     public void testRejectionsEAP620() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
-        this.testRejections(InfinispanModel.VERSION_1_4_1, version, formatLegacySubsystemArtifact(version),
-                "org.infinispan:infinispan-core:5.2.7.Final-redhat-2",
-                "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2"
-        );
+        testRejections(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
     public void testRejectionsEAP630() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
-        this.testRejections(InfinispanModel.VERSION_1_5_0, version, formatLegacySubsystemArtifact(version),
-                "org.infinispan:infinispan-core:5.2.10.Final-redhat-1",
-                "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1"
-        );
+        testRejections(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
     public void testRejectionsEAP640() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
-        this.testRejections(InfinispanModel.VERSION_1_6_0, version, formatLegacySubsystemArtifact(version),
-                "org.infinispan:infinispan-core:5.2.11.Final-redhat-2",
-                "org.infinispan:infinispan-cachestore-jdbc:5.2.11.Final-redhat-2"
-        );
+        testRejections(ModelTestControllerVersion.EAP_6_4_0);
     }
 
-    private void testRejections(InfinispanModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
-        ModelVersion version = model.getVersion();
+    @Test
+    public void testRejectionsEAP700() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    private void testRejections(final ModelTestControllerVersion controller) throws Exception {
+        final ModelVersion version = getModelVersion(controller).getVersion();
+        final String[] dependencies = getDependencies(controller);
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = this.createKernelServicesBuilder();
 
         // initialize the legacy services
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controller, version)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
+                .addSingleChildFirstClass(LegacyControllerAdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
