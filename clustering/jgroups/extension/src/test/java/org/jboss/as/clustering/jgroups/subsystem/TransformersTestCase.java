@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -44,6 +43,7 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -59,20 +59,50 @@ import org.junit.Test;
  */
 public class TransformersTestCase extends OperationTestCaseBase {
 
-    private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version);
+    private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.jboss.as:jboss-as-clustering-jgroups:%s", version);
     }
 
-    private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.jboss.as:jboss-as-clustering-jgroups:%s", version);
+    private static String formatEAP7SubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version);
     }
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization()
+    private static JGroupsModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+        switch (controllerVersion) {
+            case EAP_6_2_0:
+            case EAP_6_3_0:
+                return JGroupsModel.VERSION_1_2_0;
+            case EAP_6_4_0:
+            case EAP_6_4_7:
+                return JGroupsModel.VERSION_1_3_0;
+            case EAP_7_0_0:
+                return JGroupsModel.VERSION_4_0_0;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private static String[] getDependencies(ModelTestControllerVersion version) {
+        switch (version) {
+            case EAP_6_2_0:
+            case EAP_6_3_0:
+            case EAP_6_4_0:
+            case EAP_6_4_7:
+                return new String[] {formatEAP6SubsystemArtifact(version)};
+            case EAP_7_0_0:
+                return new String[] {formatEAP7SubsystemArtifact(version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version)};
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private AdditionalInitialization createAdditionalInitialization() {
+        return new LegacyControllerAdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
                 .require(CommonRequirement.MBEAN_SERVER)
                 ;
@@ -80,36 +110,37 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testTransformerEAP620() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
-        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+        testTransformation(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
     public void testTransformerEAP630() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
-        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+        testTransformation(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
     public void testTransformerEAP640() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
-        testTransformation(JGroupsModel.VERSION_1_3_0, version, formatLegacySubsystemArtifact(version));
+        testTransformation(ModelTestControllerVersion.EAP_6_4_0);
+    }
+
+    @Test
+    public void testTransformerEAP700() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_0_0);
     }
 
     /**
      * Tests transformation of model from current version into specified version.
-     *
-     * @throws Exception
      */
-    private void testTransformation(JGroupsModel model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version = model.getVersion();
+    private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
+        final ModelVersion version = getModelVersion(controller).getVersion();
+        final String[] dependencies = getDependencies(controller);
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem-jgroups-transform.xml");
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controller, version).addMavenResourceURL(mavenResourceURLs).skipReverseControllerCheck();
+        builder.createLegacyKernelServicesBuilder(null, controller, version).addMavenResourceURL(dependencies).skipReverseControllerCheck();
 
         KernelServices services = builder.build();
 
@@ -275,30 +306,34 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testRejectionsEAP620() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
-        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+        testRejections(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
     public void testRejectionsEAP630() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
-        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+        testRejections(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
     public void testRejectionsEAP640() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
-        this.testRejections(JGroupsModel.VERSION_1_3_0, version, formatLegacySubsystemArtifact(version));
+        testRejections(ModelTestControllerVersion.EAP_6_4_0);
     }
 
-    private void testRejections(JGroupsModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
-        ModelVersion version = model.getVersion();
+    @Test
+    public void testRejectionsEAP700() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    private void testRejections(final ModelTestControllerVersion controller) throws Exception {
+        final ModelVersion version = getModelVersion(controller).getVersion();
+        final String[] dependencies = getDependencies(controller);
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controller, version)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
+                .addSingleChildFirstClass(LegacyControllerAdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
                 .dontPersistXml();
 
