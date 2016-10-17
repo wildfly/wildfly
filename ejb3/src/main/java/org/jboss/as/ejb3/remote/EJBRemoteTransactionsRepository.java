@@ -40,6 +40,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.tm.ExtendedJBossXATerminator;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.resource.spi.XATerminator;
@@ -70,6 +71,8 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     private final InjectedValue<RecoveryManagerService> recoveryManagerService = new InjectedValue<>();
 
+    private final InjectedValue<ExtendedJBossXATerminator> xaTerminatorInjectedValue = new InjectedValue<>();
+
     private final Map<UserTransactionID, Uid> userTransactions = Collections.synchronizedMap(new HashMap<UserTransactionID, Uid>());
 
     private static final Xid[] NO_XIDS = new Xid[0];
@@ -96,6 +99,10 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     public TransactionManager getTransactionManager() {
         return this.transactionManagerInjectedValue.getValue();
+    }
+
+    public ExtendedJBossXATerminator getXATerminator() {
+        return this.xaTerminatorInjectedValue.getValue();
     }
 
     /**
@@ -210,6 +217,10 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     public Injector<RecoveryManagerService> getRecoveryManagerInjector() {
         return this.recoveryManagerService;
+    }
+
+    public Injector<ExtendedJBossXATerminator> getXATerminatorInjector() {
+        return this.xaTerminatorInjectedValue;
     }
 
 }

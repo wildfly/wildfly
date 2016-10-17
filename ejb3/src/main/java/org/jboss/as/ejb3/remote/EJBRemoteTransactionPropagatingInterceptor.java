@@ -28,6 +28,7 @@ import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.tm.ExtendedJBossXATerminator;
 
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -37,6 +38,7 @@ import javax.transaction.TransactionManager;
  * and propagating that transaction during the remaining part of the invocation
  *
  * @author Jaikiran Pai
+ * @author Flavia Rainone
  */
 class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
 
@@ -107,6 +109,14 @@ class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
 
     private void createOrResumeXidTransaction(final XidTransactionID xidTransactionID) throws Exception {
         final TransactionManager transactionManager = this.ejbRemoteTransactionsRepository.getTransactionManager();
+        // attempt to get an already existent transaction at this server
+        final ExtendedJBossXATerminator xaTerminator = this.ejbRemoteTransactionsRepository.getXATerminator();
+        final Transaction transaction = xaTerminator.getTransaction(xidTransactionID.getXid());
+        if (transaction != null) {
+            transactionManager.resume(transaction);
+            return;
+        }
+        // attempt to get an already imported transaction at this server
         final Transaction alreadyCreatedTx = this.ejbRemoteTransactionsRepository.getImportedTransaction(xidTransactionID);
         if (alreadyCreatedTx != null) {
             // resume the already created tx

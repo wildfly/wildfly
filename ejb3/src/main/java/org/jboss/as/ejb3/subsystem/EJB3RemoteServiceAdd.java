@@ -21,13 +21,7 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.ServiceLoader;
-import java.util.concurrent.ExecutorService;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,8 +30,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
@@ -60,6 +54,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
+import org.jboss.tm.ExtendedJBossXATerminator;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
@@ -69,7 +64,11 @@ import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+import java.util.ServiceLoader;
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -95,6 +94,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionsRepository.getTransactionManagerInjector())
                 .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, transactionsRepository.getUserTransactionInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, RecoveryManagerService.class, transactionsRepository.getRecoveryManagerInjector())
+                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, ExtendedJBossXATerminator.class, transactionsRepository.getXATerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 
