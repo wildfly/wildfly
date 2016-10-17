@@ -87,18 +87,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testTransformerWF800() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
-        testTransformation(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
-    }
-
-    @Test
-    public void testTransformerWF810() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
-        testTransformation(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
-    }
-
-    @Test
     public void testTransformerEAP620() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
         testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
@@ -325,18 +313,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // perform operation on the 1.1.1 model
         ModelNode mainResult = services.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-    }
-
-    @Test
-    public void testRejectionsWF800() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
-        this.testRejections(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
-    }
-
-    @Test
-    public void testRejectionsWF810() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
-        this.testRejections(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
     }
 
     @Test
