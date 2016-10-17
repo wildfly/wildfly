@@ -33,8 +33,6 @@ import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -42,18 +40,22 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Jaikiran Pai
  */
 public class EJBRemotingConnectorClientMappingsEntryProviderService implements CapabilityServiceBuilder<Map.Entry<String, List<ClientMapping>>>, Value<Map.Entry<String, List<ClientMapping>>> {
 
-    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo = new InjectedValue<>();
     private final ServiceName remotingServerInfoServiceName;
 
+    private volatile ValueDependency<Group> group;
     private volatile String clientMappingsClusterName;
     private volatile ServiceName name;
 
@@ -70,20 +72,21 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements C
     @Override
     public Builder<Map.Entry<String, List<ClientMapping>>> configure(OperationContext context) {
         this.name = ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(context, this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME);
+        this.group = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.clientMappingsClusterName), Group.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<Map.Entry<String, List<ClientMapping>>> build(ServiceTarget target) {
-        return target.addService(this.name, new ValueService<>(this))
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.serverEnvironment)
+        ServiceBuilder<Map.Entry<String, List<ClientMapping>>> builder = target.addService(this.name, new ValueService<>(this))
                 .addDependency(this.remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
-        ;
+                ;
+        return this.group.register(builder);
     }
 
     @Override
     public Map.Entry<String, List<ClientMapping>> getValue() {
-        return new AbstractMap.SimpleImmutableEntry<>(this.serverEnvironment.getValue().getNodeName(), this.getClientMappings());
+        return new AbstractMap.SimpleImmutableEntry<>(this.group.getValue().getLocalNode().getName(), this.getClientMappings());
     }
 
     List<ClientMapping> getClientMappings() {
