@@ -77,7 +77,7 @@ class HostAdd extends AbstractAddStepHandler {
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
 
-        builder.setInitialMode(Mode.ON_DEMAND);
+        builder.setInitialMode(Mode.ACTIVE);
 
         if (isDefaultHost) {
             addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
