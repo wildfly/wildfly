@@ -285,7 +285,6 @@
         <xs:attribute name="trim-spaces" default="false" type="xs:boolean"/>
         <xs:attribute name="tag-pooling" default="true" type="xs:boolean"/>
         <xs:attribute name="mapped-file" default="true" type="xs:boolean"/>
-        <xs:attribute name="check-interval" default="0" type="xs:int"/>
         <xs:attribute name="modification-test-interval" default="4" type="xs:int"/>
         <xs:attribute name="recompile-on-fail" default="false" type="xs:boolean"/>
         <xs:attribute name="smap" default="true" type="xs:boolean"/>
