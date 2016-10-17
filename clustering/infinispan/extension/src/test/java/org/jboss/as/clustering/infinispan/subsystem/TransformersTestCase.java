@@ -48,6 +48,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
@@ -209,6 +210,20 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     private static ModelFixer createModelFixer(ModelVersion version) {
         return (ModelNode model) -> {
+            if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
+                final ModelNode maximal = model.get("cache-container", "maximal");
+                maximal.asPropertyList().stream().filter(caches -> caches.getName().equals("distributed-cache") || caches.getName().equals("replicated-cache")).forEach(p -> {
+                    ModelNode caches = maximal.get(p.getName());
+                    final List<Property> cachesModel = caches.asPropertyList();
+                    for (Property cacheName : cachesModel) {
+                        final ModelNode cache = caches.get(cacheName.getName());
+                        if (cache.hasDefined("component")) {
+                            cache.get("component", "backups").set(new ModelNode());
+                        }
+                    }
+                });
+            }
+
             if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
                 // Fix the legacy model to expect new default values applied in StateTransferResourceDefinition#buildTransformation
                 Arrays.asList("cache-with-string-keyed-store", "cache-with-binary-keyed-store").forEach(cacheName -> {
