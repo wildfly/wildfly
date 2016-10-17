@@ -28,11 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
@@ -49,13 +46,9 @@ import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.byteman.contrib.bmunit.BMRule;
-import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Test cases for transformers used in the JGroups subsystem.
@@ -64,7 +57,6 @@ import org.junit.runner.RunWith;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
-@RunWith(BMUnitRunner.class)
 public class TransformersTestCase extends OperationTestCaseBase {
 
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
@@ -279,40 +271,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         op = services.executeInMainAndGetTheTransformedOperation(Util.getWriteAttributeOperation(protocolAddr, MODULE, "reject.this"), version);
         Assert.assertTrue(op.rejectOperation(success()));
-    }
-
-    /**
-     * Tests resolution of property expressions during performRuntime()
-     *
-     * This test uses Byteman to inject code into AbstractAddStepHandler.performRuntime() to
-     * resolve the value of an expression and check that expression resolution is working as expected.
-     *
-     * The test is currently broken due to an outstanding class loading problem with Byteman, but it is included
-     * here for re-enabling when the issue is resolved.
-     */
-    @Ignore
-    @Test
-    @BMRule(name="Test support for expression resolution",
-            targetClass="^org.jboss.as.controller.AbstractAddStepHandler",
-            targetMethod="performRuntime",
-            targetLocation="AT ENTRY",
-            binding="context:OperationContext = $1; operation:ModelNode = $2; model:ModelNode = $3",
-            condition="operation.hasDefined(\"name\") AND operation.hasDefined(\"value\")",
-            action="traceln(\"resolved value = \" + org.jboss.as.clustering.jgroups.subsystem.PropertyResourceDefinition.VALUE.resolveModelAttribute(context,model))")
-    public void testProtocolStackPropertyResolve() throws Exception {
-
-        // Parse and install the XML into the controller
-        String subsystemXml =  getSubsystemXml() ;
-        KernelServices services = createKernelServicesBuilder(null).setSubsystemXmlResource(subsystemXml).build();
-
-        // set a property to have an expression and let Byteman intercept the performRuntime call
-
-        // build an ADD command to add a transport property using expression value
-        ModelNode operation = getTransportPropertyAddOperation("maximal", "TCP", "bundler_type", "${the_bundler_type:new}");
-
-        // perform operation on the 1.1.1 model
-        ModelNode mainResult = services.executeOperation(operation);
-        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
     }
 
     @Test
