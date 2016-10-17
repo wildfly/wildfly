@@ -24,14 +24,10 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import java.util.List;
-
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
@@ -55,7 +51,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(UndertowRootDefinition.INSTANCE, Namespace.UNDERTOW_4_0.getUriString())
+        xmlDescription = builder(UndertowRootDefinition.INSTANCE.getPathElement(), Namespace.UNDERTOW_4_0.getUriString())
                 .addAttributes(
                         UndertowRootDefinition.DEFAULT_SERVER,
                         UndertowRootDefinition.DEFAULT_VIRTUAL_HOST,
@@ -64,10 +60,10 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN,
                         UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
-                        builder(BufferCacheDefinition.INSTANCE)
+                        builder(BufferCacheDefinition.INSTANCE.getPathElement())
                                 .addAttributes(BufferCacheDefinition.BUFFER_SIZE, BufferCacheDefinition.BUFFERS_PER_REGION, BufferCacheDefinition.MAX_REGIONS)
                 )
-                .addChild(builder(ServerDefinition.INSTANCE)
+                .addChild(builder(ServerDefinition.INSTANCE.getPathElement())
                                 .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                                 .addChild(
                                         listenerBuilder(AjpListenerResourceDefinition.INSTANCE)
@@ -114,14 +110,14 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
                                                         HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
                                 ).addChild(
-                                        builder(HostDefinition.INSTANCE)
+                                        builder(HostDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
                                                 .addChild(
-                                                        builder(LocationDefinition.INSTANCE)
+                                                        builder(LocationDefinition.INSTANCE.getPathElement())
                                                                 .addAttributes(LocationDefinition.HANDLER)
                                                                 .addChild(filterRefBuilder())
                                                 ).addChild(
-                                                builder(AccessLogDefinition.INSTANCE)
+                                                builder(AccessLogDefinition.INSTANCE.getPathElement())
                                                         .addAttributes(
                                                                 AccessLogDefinition.PATTERN,
                                                                 AccessLogDefinition.WORKER,
@@ -135,13 +131,13 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                                 AccessLogDefinition.PREDICATE)
                                         ).addChild(filterRefBuilder())
                                                 .addChild(
-                                                    builder(SingleSignOnDefinition.INSTANCE)
+                                                    builder(SingleSignOnDefinition.INSTANCE.getPathElement())
                                                         .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
                                         )
                                 )
                 )
                 .addChild(
-                        builder(ServletContainerDefinition.INSTANCE)
+                        builder(ServletContainerDefinition.INSTANCE.getPathElement())
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
                                 .addAttribute(ServletContainerDefinition.STACK_TRACE_ON_ERROR)
@@ -157,7 +153,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.MAX_SESSIONS)
                                 .addAttribute(ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
                                 .addChild(
-                                        builder(JspDefinition.INSTANCE)
+                                        builder(JspDefinition.INSTANCE.getPathElement())
                                                 .setXmlElementName(Constants.JSP_CONFIG)
                                                 .addAttributes(
                                                         JspDefinition.DISABLED,
@@ -182,7 +178,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         JspDefinition.OPTIMIZE_SCRIPTLETS)
                                 )
                                 .addChild(
-                                        builder(SessionCookieDefinition.INSTANCE)
+                                        builder(SessionCookieDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         SessionCookieDefinition.NAME,
                                                         SessionCookieDefinition.DOMAIN,
@@ -193,14 +189,14 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                 )
                                 )
                                 .addChild(
-                                        builder(PersistentSessionsDefinition.INSTANCE)
+                                        builder(PersistentSessionsDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PersistentSessionsDefinition.PATH,
                                                         PersistentSessionsDefinition.RELATIVE_TO
                                                 )
                                 )
                                 .addChild(
-                                        builder(WebsocketsDefinition.INSTANCE)
+                                        builder(WebsocketsDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         WebsocketsDefinition.WORKER,
                                                         WebsocketsDefinition.BUFFER_POOL,
@@ -209,21 +205,21 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         WebsocketsDefinition.DEFLATER_LEVEL
                                                 )
                                 )
-                                .addChild(builder(MimeMappingDefinition.INSTANCE)
+                                .addChild(builder(MimeMappingDefinition.INSTANCE.getPathElement())
                                         .setXmlWrapperElement("mime-mappings")
                                         .addAttributes(
                                                 MimeMappingDefinition.VALUE
                                         ))
-                                .addChild(builder(WelcomeFileDefinition.INSTANCE).setXmlWrapperElement("welcome-files"))
-                                .addChild(builder(CrawlerSessionManagementDefinition.INSTANCE)
+                                .addChild(builder(WelcomeFileDefinition.INSTANCE.getPathElement()).setXmlWrapperElement("welcome-files"))
+                                .addChild(builder(CrawlerSessionManagementDefinition.INSTANCE.getPathElement())
                                         .addAttributes(CrawlerSessionManagementDefinition.USER_AGENTS, CrawlerSessionManagementDefinition.SESSION_TIMEOUT))
                 )
                 .addChild(
-                        builder(HandlerDefinitions.INSTANCE)
+                        builder(HandlerDefinitions.INSTANCE.getPathElement())
                                 .setXmlElementName(Constants.HANDLERS)
                                 .setNoAddOperation(true)
                                 .addChild(
-                                        builder(FileHandler.INSTANCE)
+                                        builder(FileHandler.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         FileHandler.PATH,
                                                         FileHandler.CACHE_BUFFER_SIZE,
@@ -235,7 +231,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                 )
                                 )
                                 .addChild(
-                                        builder(ReverseProxyHandler.INSTANCE)
+                                        builder(ReverseProxyHandler.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ReverseProxyHandler.CONNECTIONS_PER_THREAD,
                                                         ReverseProxyHandler.SESSION_COOKIE_NAMES,
@@ -244,7 +240,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         ReverseProxyHandler.REQUEST_QUEUE_SIZE,
                                                         ReverseProxyHandler.CACHED_CONNECTIONS_PER_THREAD,
                                                         ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
-                                                .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
+                                                .addChild(builder(ReverseProxyHandlerHost.INSTANCE.getPathElement())
                                                         .setXmlElementName(Constants.HOST)
                                                         .addAttributes(
                                                                 ReverseProxyHandlerHost.OUTBOUND_SOCKET_BINDING,
@@ -258,22 +254,22 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
 
                 )
                 .addChild(
-                        builder(FilterDefinitions.INSTANCE)
+                        builder(FilterDefinitions.INSTANCE.getPathElement())
                                 .setXmlElementName(Constants.FILTERS)
                                 .setNoAddOperation(true)
                                 .addChild(
-                                        builder(RequestLimitHandler.INSTANCE)
+                                        builder(RequestLimitHandler.INSTANCE.getPathElement())
                                                 .addAttributes(RequestLimitHandler.MAX_CONCURRENT_REQUESTS, RequestLimitHandler.QUEUE_SIZE)
                                 ).addChild(
-                                builder(ResponseHeaderFilter.INSTANCE)
+                                builder(ResponseHeaderFilter.INSTANCE.getPathElement())
                                         .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
                         ).addChild(
-                                builder(GzipFilter.INSTANCE)
+                                builder(GzipFilter.INSTANCE.getPathElement())
                         ).addChild(
-                                builder(ErrorPageDefinition.INSTANCE)
+                                builder(ErrorPageDefinition.INSTANCE.getPathElement())
                                         .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
                         ).addChild(
-                                builder(ModClusterDefinition.INSTANCE)
+                                builder(ModClusterDefinition.INSTANCE.getPathElement())
                                 .addAttributes(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING,
                                         ModClusterDefinition.ADVERTISE_SOCKET_BINDING,
                                         ModClusterDefinition.SECURITY_KEY,
@@ -301,30 +297,27 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.HTTP2_MAX_FRAME_SIZE,
                                         ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                         ).addChild(
-                                builder(CustomFilterDefinition.INSTANCE)
+                                builder(CustomFilterDefinition.INSTANCE.getPathElement())
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
                                         .setXmlElementName("filter")
                         ).addChild(
-                                builder(ExpressionFilterDefinition.INSTANCE)
+                                builder(ExpressionFilterDefinition.INSTANCE.getPathElement())
                                         .addAttributes(ExpressionFilterDefinition.EXPRESSION, ExpressionFilterDefinition.MODULE)
                         ).addChild(
-                                builder(RewriteFilterDefinition.INSTANCE)
+                                builder(RewriteFilterDefinition.INSTANCE.getPathElement())
                                         .addAttributes(RewriteFilterDefinition.TARGET, RewriteFilterDefinition.REDIRECT)
                         )
 
                 )
                 .addChild(
-                        builder(ApplicationSecurityDomainDefinition.INSTANCE)
+                        builder(ApplicationSecurityDomainDefinition.INSTANCE.getPathElement())
                             .setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS)
                             .addAttributes(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY, ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG)
                 )
                  //here to make sure we always add filters & handlers path to mgmt model
-                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
-                        @Override
-                        public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
-                                operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
-                                operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
-                        }
+                .setAdditionalOperationsGenerator((address, addOperation, operations) -> {
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
                 })
                 .build();
     }
@@ -339,7 +332,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
 
     /** Registers attributes common across listener types */
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder listenerBuilder(PersistentResourceDefinition resource) {
-        return builder(resource)
+        return builder(resource.getPathElement())
                 // xsd socket-optionsType
                 .addAttributes(
                         ListenerResourceDefinition.RECEIVE_BUFFER,
@@ -376,7 +369,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
     }
 
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {
-        return builder(FilterRefDefinition.INSTANCE)
+        return builder(FilterRefDefinition.INSTANCE.getPathElement())
                 .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY);
     }
 }

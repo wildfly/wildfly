@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,16 +38,16 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class ServerAdd extends AbstractBoottimeAddStepHandler {
+class ServerAdd extends AbstractAddStepHandler {
 
     ServerAdd() {
         super(ServerDefinition.ATTRIBUTES);
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
-        final PathAddress parentAddress = address.subAddress(0, address.size() - 1);
+        final PathAddress parentAddress = address.getParent();
         final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(parentAddress));
 
         final String name = context.getCurrentAddressValue();
