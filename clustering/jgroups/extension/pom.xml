@@ -37,11 +37,6 @@
 
     <name>WildFly: JGroups Subsystem</name>
 
-    <properties>
-        <byteman.host>127.0.0.1</byteman.host>
-        <byteman.port>9091</byteman.port>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -55,35 +50,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- this is only needed on windows because of bug in byteman-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>properties</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useManifestOnlyJar>false</useManifestOnlyJar>
-                    <!-- the log manager needs to be setup before the agent this is only needed on windows!-->
-                    <argLine>-Xbootclasspath/a:"${org.jboss.logmanager:jboss-logmanager:jar}"
-                        -javaagent:"${org.jboss.byteman:byteman:jar}"=port:${byteman.port},address:${byteman.host},boot:"${org.jboss.byteman:byteman:jar}"
-                    </argLine>
-                    <systemPropertyVariables>
-                        <org.jboss.byteman.contrib.bmunit.agent.host>${byteman.host}</org.jboss.byteman.contrib.bmunit.agent.host>
-                        <org.jboss.byteman.contrib.bmunit.agent.port>${byteman.port}</org.jboss.byteman.contrib.bmunit.agent.port>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
         </plugins>
-
     </build>
 
     <dependencies>
@@ -162,9 +129,6 @@
                     <name>ipv6</name>
                 </property>
             </activation>
-            <properties>
-                <byteman.host>::1</byteman.host>
-            </properties>
         </profile>
     </profiles>
 </project>
