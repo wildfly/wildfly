@@ -130,6 +130,18 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         throw new UnsupportedOperationException();
     }
 
+    public ModelNode registerDeploymentSubsystemModel(final String subsystemName, final Resource resource) {
+        throw new UnsupportedOperationException();
+    }
+
+    public ModelNode getOrCreateDeploymentSubModel(final String subsystemName, final PathElement address) {
+        throw new UnsupportedOperationException();
+    }
+
+    public ModelNode getOrCreateDeploymentSubModel(final String subsystemName, final PathAddress address) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
         throw new UnsupportedOperationException();
