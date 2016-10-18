@@ -103,26 +103,38 @@ public class SessionOperationServlet extends HttpServlet {
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
         System.out.println(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
-        if (operation.equals(SET)) {
-            String name = getRequiredParameter(req, NAME);
-            String value = req.getParameter(VALUE);
-            session.setAttribute(name, (value != null) ? new SessionAttributeValue(value) : null);
-        } else if (operation.equals(REMOVE)) {
-            String name = getRequiredParameter(req, NAME);
-            session.removeAttribute(name);
-        } else if (operation.equals(INVALIDATE)) {
-            session.invalidate();
-        } else if (operation.equals(GET)) {
-            String name = getRequiredParameter(req, NAME);
-            SessionAttributeValue value = (SessionAttributeValue) session.getAttribute(name);
-            if (value != null) {
-                resp.setHeader(RESULT, value.getValue());
+        switch (operation) {
+            case SET: {
+                String name = getRequiredParameter(req, NAME);
+                String value = req.getParameter(VALUE);
+                session.setAttribute(name, (value != null) ? new SessionAttributeValue(value) : null);
+                break;
             }
-        } else if (operation.equals(TIMEOUT)) {
-            String timeout = getRequiredParameter(req, TIMEOUT);
-            session.setMaxInactiveInterval(Integer.parseInt(timeout));
-        } else {
-            throw new ServletException("Unrecognized operation: " + operation);
+            case REMOVE: {
+                String name = getRequiredParameter(req, NAME);
+                session.removeAttribute(name);
+                break;
+            }
+            case INVALIDATE: {
+                session.invalidate();
+                break;
+            }
+            case GET: {
+                String name = getRequiredParameter(req, NAME);
+                SessionAttributeValue value = (SessionAttributeValue) session.getAttribute(name);
+                if (value != null) {
+                    resp.setHeader(RESULT, value.getValue());
+                }
+                break;
+            }
+            case TIMEOUT: {
+                String timeout = getRequiredParameter(req, TIMEOUT);
+                session.setMaxInactiveInterval(Integer.parseInt(timeout));
+                break;
+            }
+            default: {
+                throw new ServletException("Unrecognized operation: " + operation);
+            }
         }
 
         List<Map.Entry<String, EventType>> events = new LinkedList<>();
