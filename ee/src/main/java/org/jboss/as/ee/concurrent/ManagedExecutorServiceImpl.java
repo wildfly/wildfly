@@ -24,8 +24,8 @@ package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.wildfly.extension.requestcontroller.ControlPoint;
 
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -38,35 +38,36 @@ import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
  */
 public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl {
 
-    private final ControlPoint controlPoint;
+    private final ControlledTaskManager taskManager;
 
-    public ManagedExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, ContextServiceImpl contextService, RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint) {
+    public ManagedExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, ContextServiceImpl contextService, RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlledTaskManager taskManager) {
         super(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService, rejectPolicy, queue);
-        this.controlPoint = controlPoint;
+        this.taskManager = taskManager;
     }
 
-    public ManagedExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, ContextServiceImpl contextService, RejectPolicy rejectPolicy, ControlPoint controlPoint) {
+    public ManagedExecutorServiceImpl(String name, ManagedThreadFactoryImpl managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, ContextServiceImpl contextService, RejectPolicy rejectPolicy, ControlledTaskManager taskManager) {
         super(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, contextService, rejectPolicy);
-        this.controlPoint = controlPoint;
+        this.taskManager = taskManager;
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return super.submit(doWrap(task, controlPoint));
+        return super.submit(doWrap(task, taskManager.getControlPoint()));
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return super.submit(doWrap(task, controlPoint), result);
+        return super.submit(doWrap(task, taskManager.getControlPoint()), result);
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return super.submit(doWrap(task, controlPoint));
+        return super.submit(doWrap(task, taskManager.getControlPoint()));
     }
 
     @Override
     public void execute(Runnable command) {
-        super.execute(doWrap(command, controlPoint));
+        Objects.requireNonNull(command);
+        taskManager.submitTask(command, ManagedExecutorServiceImpl.super::execute);
     }
 }

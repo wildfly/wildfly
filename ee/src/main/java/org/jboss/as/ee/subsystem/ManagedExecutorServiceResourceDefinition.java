@@ -142,7 +142,12 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final ManagedExecutorServiceResourceDefinition INSTANCE = new ManagedExecutorServiceResourceDefinition();
 
     private ManagedExecutorServiceResourceDefinition() {
-        super(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE), ManagedExecutorServiceAdd.INSTANCE, ManagedExecutorServiceRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE),
+                EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
+                .setAddHandler(ManagedExecutorServiceAdd.INSTANCE)
+                .setRemoveHandler(ManagedExecutorServiceRemove.INSTANCE)
+                .setCapabilities(Capabilities.CONTROLLED_TASK_MANAGER_CAPABILITY)
+        );
     }
 
     @Override
