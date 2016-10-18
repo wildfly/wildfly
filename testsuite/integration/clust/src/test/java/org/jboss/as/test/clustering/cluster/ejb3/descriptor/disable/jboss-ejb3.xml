@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<jboss xmlns="http://www.jboss.com/xml/ns/javaee"
+       xmlns:jee="http://java.sun.com/xml/ns/javaee"
+       xmlns:c="urn:clustering:1.0">
+
+
+    <jee:assembly-descriptor>
+        <c:clustering>
+            <jee:ejb-name>DisableClusteredAnnotationStateful</jee:ejb-name>
+            <c:clustered>false</c:clustered>
+        </c:clustering>
+                <c:clustering>
+            <jee:ejb-name>DisableClusteredAnnotationStateless</jee:ejb-name>
+            <c:clustered>false</c:clustered>
+        </c:clustering>
+    </jee:assembly-descriptor>
+</jboss>
