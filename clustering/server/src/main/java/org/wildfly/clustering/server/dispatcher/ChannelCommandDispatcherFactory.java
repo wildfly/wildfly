@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -117,7 +119,14 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 if (context == null) return NoSuchService.INSTANCE;
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
-                return command.execute(context.get());
+                Callable<Optional<Object>> task = new Callable<Optional<Object>>() {
+                    @Override
+                    public Optional<Object> call() throws Exception {
+                        // Wrap in an Optional, since command execution might return null
+                        return Optional.ofNullable(command.execute(context.get()));
+                    }
+                };
+                return this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
             }
         }
     }
