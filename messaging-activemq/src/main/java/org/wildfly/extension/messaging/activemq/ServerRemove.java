@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ACTIVEMQ_SERVER_CAPABILITY;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -30,12 +29,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.registry.Resource.ResourceEntry;
-import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 
 /**
  * Remove an ActiveMQ Server.
@@ -55,60 +52,32 @@ class ServerRemove extends AbstractRemoveStepHandler {
     }
 
     @Override
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
-        final Resource resource = context.removeResource(PathAddress.EMPTY_ADDRESS);
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        // add a runtime step to remove services related to broadcast-group/discovery-group that are started
+        // when the server is added.
         context.addStep(new OperationStepHandler() {
             @Override
-            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
-                // TODO should we make the runtime change by default, or require a header indicating that's valid?
-
-                final String serverName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-
-                removeActiveMQServer(serverName, context, resource);
-
-                context.completeStep(new OperationContext.RollbackHandler() {
-                    @Override
-                    public void handleRollback(OperationContext context, ModelNode operation) {
-                        //  TODO recover
-                    }
-                });
-
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final String serverName = context.getCurrentAddressValue();
+                final ServiceName serviceName = MessagingServices.getActiveMQServiceName(serverName);
+                for(final Resource.ResourceEntry broadcastGroup : resource.getChildren(CommonAttributes.BROADCAST_GROUP)) {
+                    context.removeService(GroupBindingService.getBroadcastBaseServiceName(serviceName).append(broadcastGroup.getName()));
+                }
+                for(final Resource.ResourceEntry divertGroup : resource.getChildren(CommonAttributes.DISCOVERY_GROUP)) {
+                    context.removeService(GroupBindingService.getDiscoveryBaseServiceName(serviceName).append(divertGroup.getName()));
+                }
             }
         }, OperationContext.Stage.RUNTIME);
+        super.performRemove(context, operation, model);
     }
 
-    static void removeActiveMQServer(String serverName, OperationContext context, Resource resource) {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
+        final String serverName = context.getCurrentAddressValue();
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(serverName);
-
-        for(final Resource.ResourceEntry jmsQueue : resource.getChildren(CommonAttributes.JMS_QUEUE)) {
-            context.removeService(JMSServices.getJmsQueueBaseServiceName(serviceName).append(jmsQueue.getName()));
-        }
-        for(final Resource.ResourceEntry jmsTopic : resource.getChildren(CommonAttributes.JMS_TOPIC)) {
-            context.removeService(JMSServices.getJmsTopicBaseServiceName(serviceName).append(jmsTopic.getName()));
-        }
-        for(final Resource.ResourceEntry cf : resource.getChildren(CommonAttributes.CONNECTION_FACTORY)) {
-            context.removeService(JMSServices.getConnectionFactoryBaseServiceName(serviceName).append(cf.getName()));
-        }
-        for(final Resource.ResourceEntry pcf : resource.getChildren(CommonAttributes.POOLED_CONNECTION_FACTORY)) {
-            context.removeService(JMSServices.getPooledConnectionFactoryBaseServiceName(serviceName).append(pcf.getName()));
-        }
-        for(final Resource.ResourceEntry queue : resource.getChildren(CommonAttributes.QUEUE)) {
-            context.removeService(MessagingServices.getQueueBaseServiceName(serviceName).append(queue.getName()));
-        }
-
         context.removeService(JMSServices.getJmsManagerBaseServiceName(serviceName));
         context.removeService(MessagingServices.getActiveMQServiceName(serverName));
-        for(final Resource.ResourceEntry broadcastGroup : resource.getChildren(CommonAttributes.BROADCAST_GROUP)) {
-            context.removeService(GroupBindingService.getBroadcastBaseServiceName(serviceName).append(broadcastGroup.getName()));
-        }
-        for(final Resource.ResourceEntry divertGroup : resource.getChildren(CommonAttributes.DISCOVERY_GROUP)) {
-            context.removeService(GroupBindingService.getDiscoveryBaseServiceName(serviceName).append(divertGroup.getName()));
-        }
-        for (ResourceEntry path : resource.getChildren(PATH)) {
-            context.removeService(serviceName.append(ServerAdd.PATH_BASE).append(path.getName()));
-        }
     }
 }

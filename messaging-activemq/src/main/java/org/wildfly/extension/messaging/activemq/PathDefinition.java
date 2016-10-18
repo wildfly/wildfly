@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -106,13 +107,14 @@ public class PathDefinition extends PersistentResourceDefinition {
         }
     };
 
-    static final OperationStepHandler PATH_REMOVE = new OperationStepHandler() {
+    static final OperationStepHandler PATH_REMOVE = new AbstractRemoveStepHandler() {
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.removeResource(PathAddress.EMPTY_ADDRESS);
+        protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+            super.performRemove(context, operation, model);
             reloadRequiredStep(context);
         }
+
     };
 
     private final PathElement path;
