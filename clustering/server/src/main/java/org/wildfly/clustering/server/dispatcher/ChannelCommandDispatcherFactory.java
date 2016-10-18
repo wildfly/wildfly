@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,11 +35,17 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.threads.JBossThreadFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.MembershipListener;
@@ -60,6 +67,7 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link MessageDispatcher} based {@link CommandDispatcherFactory}.
@@ -72,12 +80,18 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     final Map<Object, AtomicReference<Object>> contexts = new ConcurrentHashMap<>();
     final MarshallingContext marshallingContext;
 
+    private final ExecutorService viewExecutor = Executors.newSingleThreadExecutor(createThreadFactory());
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final AtomicReference<View> view = new AtomicReference<>();
     private final MessageDispatcher dispatcher;
     private final JGroupsNodeFactory nodeFactory;
     private final long timeout;
+
+    private static ThreadFactory createThreadFactory() {
+        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(ChannelCommandDispatcherFactory.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        return WildFlySecurityManager.doUnchecked(action);
+    }
 
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
         this.nodeFactory = config.getNodeFactory();
@@ -105,6 +119,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.executor.close(() -> {
             this.dispatcher.stop();
             this.dispatcher.getChannel().setUpHandler(null);
+            this.viewExecutor.shutdown();
         });
     }
 
@@ -220,21 +235,31 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public void viewAccepted(View view) {
-        View oldView = this.view.getAndSet(view);
-        if (oldView != null) {
-            List<Node> oldNodes = this.getNodes(oldView);
-            List<Node> newNodes = this.getNodes(view);
+        try {
+            this.viewExecutor.submit(() -> {
+                View oldView = this.view.getAndSet(view);
+                if (oldView != null) {
+                    List<Node> oldNodes = this.getNodes(oldView);
+                    List<Node> newNodes = this.getNodes(view);
 
-            List<Address> leftMembers = View.leftMembers(oldView, view);
-            if (leftMembers != null) {
-                this.nodeFactory.invalidate(leftMembers);
-            }
+                    List<Address> leftMembers = View.leftMembers(oldView, view);
+                    if (leftMembers != null) {
+                        this.nodeFactory.invalidate(leftMembers);
+                    }
 
-            this.executor.execute(() -> {
-                for (Listener listener: this.listeners) {
-                    listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+                    this.executor.execute(() -> {
+                        for (Listener listener: this.listeners) {
+                            try {
+                                listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+                            } catch (Throwable e) {
+                                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                            }
+                        }
+                    });
                 }
             });
+        } catch (RejectedExecutionException e) {
+            // Executor was shutdown
         }
     }
 
