@@ -46,7 +46,7 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
 
     public InMemoryJobRepositoryDefinition() {
         super(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME), new InMemoryAddHandler(),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY));
     }
 
     @Override
