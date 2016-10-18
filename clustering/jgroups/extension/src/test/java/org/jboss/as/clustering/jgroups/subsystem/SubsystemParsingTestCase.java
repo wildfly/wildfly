@@ -21,6 +21,7 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -127,6 +128,24 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         }
 
         return addresses;
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format("schema/jboss-as-jgroups_%d_%d.xsd", schema.major(), schema.minor());
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/jgroups.xml"
+        };
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        if (schema != JGroupsSchema.CURRENT) return;
+        super.testSchemaOfSubsystemTemplates();
     }
 
     /**

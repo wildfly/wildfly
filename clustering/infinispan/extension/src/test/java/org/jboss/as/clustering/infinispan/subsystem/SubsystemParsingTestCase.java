@@ -21,9 +21,11 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
@@ -36,6 +38,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -101,6 +104,33 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private static void purgeJGroupsModel(ModelNode model) {
         model.get(JGroupsSubsystemResourceDefinition.PATH.getKey()).remove(JGroupsSubsystemResourceDefinition.PATH.getValue());
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format("schema/jboss-as-infinispan_%d_%d.xsd", schema.major(), schema.minor());
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/infinispan.xml"
+        };
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("java.io.tmpdir", "/tmp");
+        return properties;
+    }
+
+    @Ignore("WFCORE-1677")
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        if (schema != InfinispanSchema.CURRENT) return;
+        super.testSchemaOfSubsystemTemplates();
     }
 
     /**
