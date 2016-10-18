@@ -55,9 +55,6 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
     }
 
     private static class InMemoryAddHandler extends AbstractAddStepHandler {
-        InMemoryAddHandler() {
-            super(Capabilities.JOB_REPOSITORY_CAPABILITY);
-        }
 
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {

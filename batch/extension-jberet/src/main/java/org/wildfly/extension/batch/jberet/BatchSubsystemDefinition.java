@@ -24,8 +24,6 @@ package org.wildfly.extension.batch.jberet;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.Collections;
-
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -159,7 +157,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
         private BatchSubsystemAdd() {
-            super(Collections.singleton(Capabilities.BATCH_CONFIGURATION_CAPABILITY), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME);
+            super(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME);
         }
 
         @Override

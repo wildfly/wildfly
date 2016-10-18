@@ -62,7 +62,7 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
 
     public JdbcJobRepositoryDefinition() {
         super(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME), new JdbcRepositoryAddHandler(),
-                new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY));
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
@@ -71,10 +71,15 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(DATA_SOURCE, null, new ReloadRequiredWriteAttributeHandler(DATA_SOURCE));
     }
 
+    @Override
+    public void registerCapabilities(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(Capabilities.JOB_REPOSITORY_CAPABILITY);
+    }
+
     private static class JdbcRepositoryAddHandler extends AbstractAddStepHandler {
 
         JdbcRepositoryAddHandler() {
-            super(Capabilities.JOB_REPOSITORY_CAPABILITY, DATA_SOURCE);
+            super(DATA_SOURCE);
         }
 
         @Override
