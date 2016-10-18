@@ -33,6 +33,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -46,7 +47,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODE("mode", ModelType.STRING, null, new EnumValidatorBuilder<>(Mode.class)),
-        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(17500L)),
+        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L)),
         ;
         private final AttributeDefinition definition;
 
@@ -94,6 +95,10 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+
+        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.REMOTE_TIMEOUT.getDefinition()), Attribute.REMOTE_TIMEOUT.getDefinition());
+        }
 
         CacheResourceDefinition.buildTransformation(version, builder);
     }

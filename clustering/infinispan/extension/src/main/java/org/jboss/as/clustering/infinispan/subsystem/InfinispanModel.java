@@ -37,8 +37,9 @@ public enum InfinispanModel implements Model {
     VERSION_3_0_0(3, 0, 0),
     VERSION_4_0_0(4, 0, 0),
     VERSION_4_1_0(4, 1, 0),
+    VERSION_4_2_0(4, 2, 0),
     ;
-    static final InfinispanModel CURRENT = VERSION_4_1_0;
+    static final InfinispanModel CURRENT = VERSION_4_2_0;
 
     private final ModelVersion version;
 
