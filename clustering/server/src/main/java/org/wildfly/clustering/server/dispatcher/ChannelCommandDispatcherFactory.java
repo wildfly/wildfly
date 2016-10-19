@@ -77,7 +77,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory, RequestHandler, AutoCloseable, Group, MembershipListener {
 
-    final Map<Object, AtomicReference<Object>> contexts = new ConcurrentHashMap<>();
+    final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
     final MarshallingContext marshallingContext;
 
     private final ExecutorService viewExecutor = Executors.newSingleThreadExecutor(createThreadFactory());
@@ -130,7 +130,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
-                AtomicReference<Object> context = this.contexts.get(clientId);
+                Optional<Object> context = this.contexts.get(clientId);
                 if (context == null) return NoSuchService.INSTANCE;
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
@@ -138,7 +138,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                     @Override
                     public Optional<Object> call() throws Exception {
                         // Wrap in an Optional, since command execution might return null
-                        return Optional.ofNullable(command.execute(context.get()));
+                        return Optional.ofNullable(command.execute(context.orElse(null)));
                     }
                 };
                 return this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
@@ -170,7 +170,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 }
             }
         };
-        this.contexts.put(id, new AtomicReference<Object>(context));
+        this.contexts.put(id, Optional.ofNullable(context));
         final CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalNode(), context);
         return new ChannelCommandDispatcher<C>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher) {
             @Override
