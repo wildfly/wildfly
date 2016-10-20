@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.dispatcher;
+package org.jboss.as.clustering.function;
 
-import org.wildfly.clustering.server.GroupServiceNameProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import java.util.function.Function;
 
 /**
+ * {@link Function} utility methods.
  * @author Paul Ferraro
  */
-public class CommandDispatcherFactoryServiceNameProvider extends GroupServiceNameProvider {
+public class Functions {
 
-    public CommandDispatcherFactoryServiceNameProvider(String group) {
-        super(GroupServiceName.COMMAND_DISPATCHER, group);
+    /**
+     * Returns a function that always returns its input argument.
+     *
+     * @param <T> the input type to the function
+     * @param <R> the output type of the function
+     * @return a function that always returns its input argument
+     * @see {@link Function#identity()}
+     */
+    public static <R, T extends R> Function<T, R> identity() {
+        return value -> value;
+    }
+
+    private Functions() {
+        // Hide
     }
 }

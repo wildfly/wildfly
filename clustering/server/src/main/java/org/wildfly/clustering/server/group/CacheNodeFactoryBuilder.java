@@ -21,38 +21,51 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.server.CacheServiceNameProvider;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Builds a {@link InfinispanNodeFactory} service for a cache.
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryBuilder extends CacheServiceNameProvider implements Builder<InfinispanNodeFactory>, Value<InfinispanNodeFactory> {
+public class CacheNodeFactoryBuilder implements CapabilityServiceBuilder<InfinispanNodeFactory> {
 
-    private final InjectedValue<JGroupsNodeFactory> factory = new InjectedValue<>();
+    private final ServiceName name;
+    private final String containerName;
 
-    public CacheNodeFactoryBuilder(String containerName, String cacheName) {
-        super(CacheGroupServiceName.NODE_FACTORY, containerName, cacheName);
+    private volatile ValueDependency<JGroupsNodeFactory> factory;
+
+    public CacheNodeFactoryBuilder(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName) {
+        this.name = registry.getServiceName(ClusteringCacheRequirement.NODE_FACTORY);
+        this.containerName = containerName;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<InfinispanNodeFactory> configure(CapabilityServiceSupport support) {
+        this.factory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(support, this.containerName), JGroupsNodeFactory.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<InfinispanNodeFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(GroupServiceName.NODE_FACTORY.getServiceName(this.containerName), JGroupsNodeFactory.class, this.factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public InfinispanNodeFactory getValue() {
-        return new CacheNodeFactory(this.factory.getValue());
+        Value<InfinispanNodeFactory> value = () -> new CacheNodeFactory(this.factory.getValue());
+        return this.factory.register(target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

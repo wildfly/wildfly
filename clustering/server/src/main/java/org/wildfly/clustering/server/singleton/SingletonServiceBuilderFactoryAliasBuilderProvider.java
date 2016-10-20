@@ -22,28 +22,15 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.singleton.SingletonServiceName;
-import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
+import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryAliasBuilderProvider implements CacheGroupAliasBuilderProvider {
+public class SingletonServiceBuilderFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
-        return Collections.<Builder<?>>singleton(new AliasServiceBuilder<>(SingletonServiceName.BUILDER.getServiceName(containerName, aliasCacheName), SingletonServiceName.BUILDER.getServiceName(containerName, targetCacheName), SingletonServiceBuilderFactory.class));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public SingletonServiceBuilderFactoryAliasBuilderProvider() {
+        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY);
     }
 }

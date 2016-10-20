@@ -28,8 +28,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.singleton.SingletonServiceName;
 import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
@@ -54,7 +54,7 @@ public class MyServiceActivator implements ServiceActivator {
     public void activate(ServiceActivatorContext context) {
         ServiceTarget target = context.getServiceTarget();
         try {
-            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(CONTAINER_NAME)).awaitValue();
+            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve(CONTAINER_NAME))).awaitValue();
             install(target, factory, DEFAULT_SERVICE_NAME, 1);
             install(target, factory, QUORUM_SERVICE_NAME, 2);
         } catch (InterruptedException e) {

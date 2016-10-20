@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.cache;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -37,7 +38,7 @@ import org.wildfly.clustering.ejb.BeanContext;
  */
 public interface CacheFactoryBuilder<K, V extends Identifiable<K>> {
 
-    void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName);
+    void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName);
 
     ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo timeout);
 

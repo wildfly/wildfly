@@ -21,42 +21,19 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.GroupBuilderFactory;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.server.GroupCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.GroupJndiNameFactory;
+import org.wildfly.clustering.server.GroupRequirementBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Provides the requisite builders for creating a {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} created from a specified factory..
  * @author Paul Ferraro
  */
-public class CommandDispatcherFactoryBuilderProvider implements GroupBuilderProvider {
+public class CommandDispatcherFactoryBuilderProvider extends GroupRequirementBuilderProvider<CommandDispatcherFactory> {
 
-    private final GroupBuilderFactory<CommandDispatcherFactory> factory;
-
-    public CommandDispatcherFactoryBuilderProvider(GroupBuilderFactory<CommandDispatcherFactory> factory) {
-        this.factory = factory;
-    }
-
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group) {
-        Builder<CommandDispatcherFactory> builder = this.factory.createBuilder(support, group);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, GroupServiceName.COMMAND_DISPATCHER.toString(), group).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), CommandDispatcherFactory.class);
-        return Arrays.asList(builder, bindingBuilder);
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    protected CommandDispatcherFactoryBuilderProvider(GroupCapabilityServiceBuilderFactory<CommandDispatcherFactory> factory) {
+        super(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY, factory, GroupJndiNameFactory.COMMAND_DISPATCHER_FACTORY);
     }
 }

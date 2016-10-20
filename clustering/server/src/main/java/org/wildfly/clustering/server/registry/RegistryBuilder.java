@@ -22,69 +22,67 @@
 
 package org.wildfly.clustering.server.registry;
 
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a {@link Registry} service.
  * @author Paul Ferraro
  */
-public class RegistryBuilder<K, V> implements Builder<Registry<K, V>>, Service<Registry<K, V>> {
+public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<K, V>> {
 
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<RegistryFactory> factory = new InjectedValue<>();
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<RegistryEntryProvider> provider = new InjectedValue<>();
+    private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    private volatile Registry<K, V> registry;
+    @SuppressWarnings("rawtypes")
+    private volatile ValueDependency<RegistryFactory> factory;
+    @SuppressWarnings("rawtypes")
+    private volatile ValueDependency<Map.Entry> entry;
 
-    public RegistryBuilder(String containerName, String cacheName) {
+    public RegistryBuilder(ServiceName name, String containerName, String cacheName) {
+        this.name = name;
         this.containerName = containerName;
         this.cacheName = cacheName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return CacheGroupServiceName.REGISTRY.getServiceName(this.containerName, this.cacheName);
+        return this.name;
+    }
+
+    @Override
+    public Builder<Registry<K, V>> configure(CapabilityServiceSupport support) {
+        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName), RegistryFactory.class);
+        this.entry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), Map.Entry.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<Registry<K, V>> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target)
-                .addDependency(CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(this.containerName, this.cacheName), RegistryFactory.class, this.factory)
-                .addDependency(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(this.containerName, this.cacheName), RegistryEntryProvider.class, this.provider)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
-    }
-
-    @Override
-    public Registry<K, V> getValue() {
-        return this.registry;
-    }
-
-    @Override
-    public void start(StartContext context) {
-        RegistryFactory<K, V> factory = this.factory.getValue();
-        RegistryEntryProvider<K, V> provider = this.provider.getValue();
-        this.registry = factory.createRegistry(provider);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.registry.close();
+        Supplier<Registry<K, V>> supplier = () -> this.factory.getValue().createRegistry(this.entry.getValue());
+        Service<Registry<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Consumers.close());
+        ServiceBuilder<Registry<K, V>> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        Stream.of(this.factory, this.entry).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 }

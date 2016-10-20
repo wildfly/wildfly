@@ -19,30 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.server.provider;
 
-package org.wildfly.clustering.server.group;
+import java.util.Set;
 
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.group.NodeFactory}.
+ * Simple {@link ServiceProviderRegistration} implementation that delegates {@link #getProviders()} back to the factory.
  * @author Paul Ferraro
  */
-public class GroupNodeFactoryServiceNameProvider implements ServiceNameProvider {
+public class SimpleServiceProviderRegistration<T> implements ServiceProviderRegistration<T> {
 
-    protected final String group;
+    private final T service;
+    private final ServiceProviderRegistry<T> registry;
+    private final Runnable closeTask;
 
-    public GroupNodeFactoryServiceNameProvider(String group) {
-        this.group = group;
+    public SimpleServiceProviderRegistration(T service, ServiceProviderRegistry<T> registry, Runnable closeTask) {
+        this.service = service;
+        this.registry = registry;
+        this.closeTask = closeTask;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public ServiceName getServiceName() {
-        return GroupServiceName.NODE_FACTORY.getServiceName(this.group);
+    public T getService() {
+        return this.service;
+    }
+
+    @Override
+    public Set<Node> getProviders() {
+        return this.registry.getProviders(this.service);
+    }
+
+    @Override
+    public void close() {
+        this.closeTask.run();
     }
 }

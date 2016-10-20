@@ -102,7 +102,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
                 return config.getCacheName();
             }
         };
-        Builder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> builder = this.provider.getBuilder(support, configuration);
+        Builder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> builder = this.provider.getBuilder(configuration).configure(support);
         builder.build(target).install();
         return target.addService(name, new ValueService<>(this))
                 .addDependency(builder.getServiceName(), org.wildfly.clustering.web.session.SessionManagerFactory.class, this.factory)

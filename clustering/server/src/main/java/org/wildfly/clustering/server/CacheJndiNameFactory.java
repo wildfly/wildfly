@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.provider;
 
-import java.util.Set;
+package org.wildfly.clustering.server;
 
-import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import java.util.function.BiFunction;
+
+import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.naming.deployment.JndiName;
 
 /**
- * Simple {@link ServiceProviderRegistration} implementation that delegates
- * {@link #getProviders()} back to the factory.
  * @author Paul Ferraro
  */
-public abstract class AbstractServiceProviderRegistration<T> implements ServiceProviderRegistration<T> {
+public enum CacheJndiNameFactory implements BiFunction<String, String, JndiName> {
+    REGISTRY_FACTORY("registry"),
+    SERVICE_PROVIDER_REGISTRY("providers"),
+    ;
+    private final String component;
 
-    private final T service;
-    private final ServiceProviderRegistry<T> registry;
-
-    public AbstractServiceProviderRegistration(T service, ServiceProviderRegistry<T> registry) {
-        this.service = service;
-        this.registry = registry;
+    CacheJndiNameFactory(String component) {
+        this.component = component;
     }
 
     @Override
-    public T getService() {
-        return this.service;
-    }
-
-    @Override
-    public Set<Node> getProviders() {
-        return this.registry.getProviders(this.service);
+    public JndiName apply(String containerName, String cacheName) {
+        return JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", this.component, containerName, cacheName);
     }
 }

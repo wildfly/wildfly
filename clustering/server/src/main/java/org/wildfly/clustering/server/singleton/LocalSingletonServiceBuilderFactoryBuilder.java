@@ -24,34 +24,34 @@ package org.wildfly.clustering.server.singleton;
 
 import java.io.Serializable;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
  * Builds a non-clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> extends SingletonServiceBuilderFactoryServiceNameProvider implements Builder<SingletonServiceBuilderFactory>, Value<SingletonServiceBuilderFactory> {
+public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> implements CapabilityServiceBuilder<SingletonServiceBuilderFactory> {
 
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public LocalSingletonServiceBuilderFactoryBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    private final ServiceName name;
+
+    public LocalSingletonServiceBuilderFactoryBuilder(ServiceName name) {
+        this.name = name;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
     }
 
     @Override
     public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this));
-    }
-
-    @Override
-    public SingletonServiceBuilderFactory getValue() {
-        return new LocalSingletonServiceBuilderFactory();
+        Value<SingletonServiceBuilderFactory> value = () -> new LocalSingletonServiceBuilderFactory();
+        return target.addService(this.name, new ValueService<>(value));
     }
 }

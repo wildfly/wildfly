@@ -21,46 +21,19 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.CacheBuilderFactory;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheJndiNameFactory;
+import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Provides the requisite builders for a {@link ServiceProviderRegistrationFactory} created from the specified factory.
  * @author Paul Ferraro
  */
-public class ServiceProviderRegistryBuilderProvider implements CacheGroupBuilderProvider {
+public class ServiceProviderRegistryBuilderProvider extends CacheRequirementBuilderProvider<ServiceProviderRegistry<Object>> {
 
-    private final CacheBuilderFactory<ServiceProviderRegistry<Object>> factory;
-
-    public ServiceProviderRegistryBuilderProvider(CacheBuilderFactory<ServiceProviderRegistry<Object>> factory) {
-        this.factory = factory;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
-        Builder<ServiceProviderRegistry<Object>> builder = this.factory.createBuilder(support, containerName, cacheName);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.toString(), containerName, cacheName).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), ServiceProviderRegistry.class);
-        return Arrays.asList(builder, bindingBuilder);
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public ServiceProviderRegistryBuilderProvider(CacheCapabilityServiceBuilderFactory<ServiceProviderRegistry<Object>> factory) {
+        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, factory, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
     }
 }

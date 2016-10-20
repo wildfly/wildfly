@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.singleton.SingletonServiceName;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
+ * Context for building singleton services.
  * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryServiceNameProvider extends CacheServiceNameProvider {
-
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public SingletonServiceBuilderFactoryServiceNameProvider(String containerName, String cacheName) {
-        super(SingletonServiceName.BUILDER, containerName, cacheName);
-    }
+public interface DistributedSingletonServiceBuilderContext {
+    @SuppressWarnings("rawtypes")
+    ValueDependency<ServiceProviderRegistry> getServiceProviderRegistryDependency();
+    ValueDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency();
 }

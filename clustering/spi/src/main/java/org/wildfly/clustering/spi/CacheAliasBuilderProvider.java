@@ -19,30 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.spi;
 
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+import java.util.Collection;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 
 /**
- * Provides the local {@link Registry} entry containing the route identifier.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProvider implements RegistryEntryProvider<String, Void> {
-
-    private final Value<String> route;
-
-    public RouteRegistryEntryProvider(Value<String> route) {
-        this.route = route;
-    }
-
-    @Override
-    public String getKey() {
-        return this.route.getValue();
-    }
-
-    @Override
-    public Void getValue() {
-        return null;
-    }
+public interface CacheAliasBuilderProvider {
+    Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName);
 }

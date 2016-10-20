@@ -21,55 +21,56 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds a channel-based {@link NodeFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelNodeFactoryBuilder extends GroupNodeFactoryServiceNameProvider implements Builder<JGroupsNodeFactory>, Service<JGroupsNodeFactory> {
+public class ChannelNodeFactoryBuilder implements CapabilityServiceBuilder<ChannelNodeFactory> {
 
-    private final InjectedValue<Channel> channel = new InjectedValue<>();
-    private final CapabilityServiceSupport support;
+    private final ServiceName name;
+    private final String group;
 
-    private volatile ChannelNodeFactory factory;
+    private volatile ValueDependency<Channel> channel;
 
-    public ChannelNodeFactoryBuilder(CapabilityServiceSupport support, String group) {
-        super(group);
-        this.support = support;
+    public ChannelNodeFactoryBuilder(ServiceName name, String group) {
+        this.name = name;
+        this.group = group;
     }
 
     @Override
-    public ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this)
-                .addDependency(JGroupsRequirement.CHANNEL.getServiceName(this.support, this.group), Channel.class, this.channel)
-                .setInitialMode(ServiceController.Mode.PASSIVE);
+    public ServiceName getServiceName() {
+        return this.name;
     }
 
     @Override
-    public JGroupsNodeFactory getValue() {
-        return this.factory;
+    public Builder<ChannelNodeFactory> configure(OperationContext context) {
+        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, this.group), Channel.class);
+        return this;
     }
 
     @Override
-    public void start(StartContext context) {
-        this.factory = new ChannelNodeFactory(this.channel.getValue());
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.factory.close();
-        this.factory = null;
+    public ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target) {
+        Supplier<ChannelNodeFactory> supplier = () -> new ChannelNodeFactory(this.channel.getValue());
+        Service<ChannelNodeFactory> service = new SuppliedValueService<>(Function.identity(), supplier, Consumers.close());
+        return this.channel.register(target.addService(this.name, service).setInitialMode(ServiceController.Mode.PASSIVE));
     }
 }

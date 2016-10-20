@@ -69,6 +69,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X
@@ -104,6 +105,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
     static final Map<InfinispanCacheRequirement, org.jboss.as.clustering.controller.Capability> DEFAULT_CAPABILITIES = new EnumMap<>(InfinispanCacheRequirement.class);
     static {
         EnumSet.allOf(InfinispanCacheRequirement.class).forEach(requirement -> DEFAULT_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement())));
+    }
+
+    static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> DEFAULT_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
+    static {
+        EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> DEFAULT_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement())));
     }
 
     @Deprecated
@@ -292,6 +298,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(DEFAULT_CAPABILITIES.values())
+                .addCapabilities(DEFAULT_CLUSTERING_CAPABILITIES.values())
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
                 .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.provider;
+package org.wildfly.clustering.server;
 
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import java.util.function.Function;
+
+import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.naming.deployment.JndiName;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.provider.ServiceProviderRegistrationFactory}.
  * @author Paul Ferraro
  */
-public class ServiceProviderRegistryServiceNameProvider extends CacheServiceNameProvider {
+public enum GroupJndiNameFactory implements Function<String, JndiName> {
+    COMMAND_DISPATCHER_FACTORY("dispatcher"),
+    GROUP("group"),
+    ;
+    private final String component;
 
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public ServiceProviderRegistryServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY, containerName, cacheName);
+    GroupJndiNameFactory(String component) {
+        this.component = component;
+    }
+
+    @Override
+    public JndiName apply(String group) {
+        return JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", this.component, group);
     }
 }

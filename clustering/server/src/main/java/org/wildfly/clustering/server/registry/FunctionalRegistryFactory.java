@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,31 @@
 
 package org.wildfly.clustering.server.registry;
 
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+
+import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.registry.RegistryFactory;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.registry.RegistryFactory}.
  * @author Paul Ferraro
  */
-public class RegistryFactoryServiceNameProvider extends CacheServiceNameProvider {
+public class FunctionalRegistryFactory<K, V> implements RegistryFactory<K, V> {
 
-    /**
-     * @param factory
-     * @param containerName
-     * @param cacheName
-     */
-    public RegistryFactoryServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.REGISTRY_FACTORY, containerName, cacheName);
+    private final AtomicReference<Map.Entry<K, V>> entry = new AtomicReference<>();
+    private final BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>> factory;
+
+    public FunctionalRegistryFactory(BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>> factory) {
+        this.factory = factory;
+    }
+
+    @Override
+    public Registry<K, V> createRegistry(Map.Entry<K, V> entry) {
+        // Ensure only one registry is created at a time
+        if (!this.entry.compareAndSet(null, entry)) {
+            throw new IllegalStateException();
+        }
+        return this.factory.apply(entry, () -> this.entry.set(null));
     }
 }

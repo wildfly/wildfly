@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalClientMappingsCacheBuilderProvider extends ClientMappingsCacheBuilderProvider implements LocalCacheGroupBuilderProvider {
+public class LocalClientMappingsCacheBuilderProvider extends ClientMappingsCacheBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalClientMappingsCacheBuilderProvider() {
-        super(LocalCacheGroupBuilderProvider.class);
+        super(LocalCacheBuilderProvider.class);
     }
 }

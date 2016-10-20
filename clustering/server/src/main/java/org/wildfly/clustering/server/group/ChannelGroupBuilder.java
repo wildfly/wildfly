@@ -21,38 +21,51 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a channel-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class ChannelGroupBuilder extends GroupServiceNameProvider implements Builder<Group>, Value<Group> {
+public class ChannelGroupBuilder implements CapabilityServiceBuilder<Group> {
 
-    private final InjectedValue<CommandDispatcherFactory> factory = new InjectedValue<>();
+    private final ServiceName name;
+    private final String group;
 
-    public ChannelGroupBuilder(String group) {
-        super(group);
+    private volatile ValueDependency<CommandDispatcherFactory> factory;
+
+    public ChannelGroupBuilder(ServiceName name, String group) {
+        this.name = name;
+        this.group = group;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<Group> configure(OperationContext context) {
+        this.factory = new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, this.group), CommandDispatcherFactory.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<Group> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.group), CommandDispatcherFactory.class, this.factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public Group getValue() {
-        return this.factory.getValue().getGroup();
+        Value<Group> value = () -> this.factory.getValue().getGroup();
+        return this.factory.register(target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

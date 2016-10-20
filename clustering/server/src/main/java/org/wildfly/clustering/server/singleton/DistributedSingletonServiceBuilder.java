@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -42,7 +43,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
@@ -52,29 +52,26 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceName;
 
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
 @SuppressWarnings("deprecation")
-public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
+public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<ServiceProviderRegistry> registry = new InjectedValue<>();
-    private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
+    private final ValueDependency<ServiceProviderRegistry> registry;
+    private final ValueDependency<CommandDispatcherFactory> dispatcherFactory;
     private final Service<T> service;
     final ServiceName targetServiceName;
     private final ServiceName singletonServiceName;
     private final AtomicBoolean master = new AtomicBoolean(false);
-    private final String containerName;
-    private final String cacheName;
 
     private volatile Group group;
     private volatile ServiceProviderRegistration<ServiceName> registration;
@@ -84,12 +81,12 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     private volatile ServiceRegistry serviceRegistry;
     private volatile int quorum = 1;
 
-    public CacheSingletonServiceBuilder(ServiceName serviceName, Service<T> service, String containerName, String cacheName) {
+    public DistributedSingletonServiceBuilder(DistributedSingletonServiceBuilderContext context, ServiceName serviceName, Service<T> service) {
+        this.registry = context.getServiceProviderRegistryDependency();
+        this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
         this.singletonServiceName = serviceName;
         this.targetServiceName = serviceName.append("service");
         this.service = service;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
     }
 
     @Override
@@ -103,7 +100,7 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
         ServiceListener<T> listener = new AbstractServiceListener<T>() {
             @Override
             public void serviceRemoveRequested(ServiceController<? extends T> controller) {
-                ServiceController<?> service = controller.getServiceContainer().getService(CacheSingletonServiceBuilder.this.targetServiceName);
+                ServiceController<?> service = controller.getServiceContainer().getService(DistributedSingletonServiceBuilder.this.targetServiceName);
                 if (service != null) {
                     service.setMode(ServiceController.Mode.REMOVE);
                     controller.removeListener(this);
@@ -111,13 +108,12 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
             }
         };
         target.addService(this.targetServiceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
-        return new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
-                .addAliases(this.singletonServiceName.append("singleton"))
-                .addDependency(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(this.containerName, this.cacheName), ServiceProviderRegistry.class, this.registry)
-                .addDependency(GroupServiceName.COMMAND_DISPATCHER.getServiceName(this.containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
+        ServiceBuilder<T> builder = new AsynchronousServiceBuilder<>(this.singletonServiceName, this).build(target)
                 .addListener(listener)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-        ;
+                ;
+        Stream.of(this.registry, this.dispatcherFactory).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override
@@ -182,12 +178,12 @@ public class CacheSingletonServiceBuilder<T> implements SingletonServiceBuilder<
             try {
                 if (elected != null) {
                     // Stop service on every node except elected node
-                    CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopCommand<>(), elected);
+                    DistributedSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopCommand<>(), elected);
                     // Start service on elected node
-                    CacheSingletonServiceBuilder.this.dispatcher.executeOnNode(new StartCommand<>(), elected);
+                    DistributedSingletonServiceBuilder.this.dispatcher.executeOnNode(new StartCommand<>(), elected);
                 } else {
                     // Stop service on every node
-                    CacheSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopCommand<>());
+                    DistributedSingletonServiceBuilder.this.dispatcher.executeOnCluster(new StopCommand<>());
                 }
             } catch (Exception e) {
                 throw new IllegalStateException(e);

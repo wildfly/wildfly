@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.BuilderAdapter;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceBuilder;
@@ -87,21 +89,21 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
     }
 
     @Override
-    public Collection<Builder<?>> getDeploymentBuilders(final ServiceName name) {
+    public Collection<CapabilityServiceBuilder<?>> getDeploymentBuilders(final ServiceName name) {
         String cacheName = getCacheName(name);
         String containerName = this.config.getContainerName();
         String templateCacheName = this.config.getCacheName();
 
-        List<Builder<?>> builders = new ArrayList<>(4);
-        builders.add(new TemplateConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(this.support, containerName, cacheName), containerName, cacheName, templateCacheName).configure(this.support));
-        builders.add(new CacheBuilder<Object, Object>(InfinispanCacheRequirement.CACHE.getServiceName(this.support, containerName, cacheName), containerName, cacheName) {
+        List<CapabilityServiceBuilder<?>> builders = new ArrayList<>(4);
+        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName));
+        builders.add(new CacheBuilder<Object, Object>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName) {
             @Override
             public ServiceBuilder<Cache<Object, Object>> build(ServiceTarget target) {
                 return super.build(target).addDependency(name.append("marshalling"));
             }
-        }.configure(this.support));
-        builders.add(new RemoveOnCancelScheduledExecutorServiceBuilder(name.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY));
-        builders.add(new CachedThreadPoolExecutorServiceBuilder(name.append(this.name, "eviction"), EVICTION_THREAD_FACTORY));
+        });
+        builders.add(new BuilderAdapter<>(new RemoveOnCancelScheduledExecutorServiceBuilder(name.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)));
+        builders.add(new BuilderAdapter<>(new CachedThreadPoolExecutorServiceBuilder(name.append(this.name, "eviction"), EVICTION_THREAD_FACTORY)));
         return builders;
     }
 

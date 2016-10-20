@@ -22,6 +22,10 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -44,6 +48,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Definition of a fork resource.
@@ -76,6 +81,11 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
         }
     }
 
+    static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
+    static {
+        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement)));
+    }
+
     private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
     final boolean allowRuntimeOnlyRegistration;
 
@@ -90,6 +100,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addCapabilities(Capability.class)
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new ForkServiceHandler(this.builderFactory);
         new AddStepHandler(descriptor, handler).register(registration);

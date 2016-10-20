@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.singleton;
 
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.service.DefaultableBinaryRequirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Provides the service name of a {@link org.wildfly.clustering.group.Group}.
  * @author Paul Ferraro
  */
-public class GroupServiceNameProvider extends org.wildfly.clustering.server.GroupServiceNameProvider {
+public enum SingletonCacheRequirement implements DefaultableBinaryRequirement {
 
-    public GroupServiceNameProvider(String group) {
-        super(GroupServiceName.GROUP, group);
+    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.singleton-service-builder-factory", SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    ;
+    private final String name;
+    private final UnaryRequirement defaultRequirement;
+
+    SingletonCacheRequirement(String name, UnaryRequirement defaultRequirement) {
+        this.name = name;
+        this.defaultRequirement = defaultRequirement;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public UnaryRequirement getDefaultRequirement() {
+        return this.defaultRequirement;
     }
 }

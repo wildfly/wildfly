@@ -30,7 +30,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Builds a alias to another service.
+ * Builds an alias to another service.
  * @author Paul Ferraro
  * @param <T> the type of the target service
  */

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
-
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+package org.wildfly.clustering.spi;
 
 /**
- * Service for building {@link CacheSingletonServiceBuilder} instances.
+ * Installer for clustered cache-based services.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
-
-    final String containerName;
-    final String cacheName;
-
-    public CacheSingletonServiceBuilderFactory(String containerName, String cacheName) {
-        this.containerName = containerName;
-        this.cacheName = cacheName;
-    }
-
-    @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, Service<T> service) {
-        return new CacheSingletonServiceBuilder<>(name, service, this.containerName, this.cacheName);
-    }
+public interface DistributedCacheBuilderProvider extends CacheBuilderProvider {
 }

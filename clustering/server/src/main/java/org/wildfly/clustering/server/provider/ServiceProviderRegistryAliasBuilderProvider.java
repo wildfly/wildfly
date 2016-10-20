@@ -22,37 +22,16 @@
 
 package org.wildfly.clustering.server.provider;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class ServiceProviderRegistryAliasBuilderProvider implements CacheGroupAliasBuilderProvider {
+public class ServiceProviderRegistryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
-        @SuppressWarnings("rawtypes")
-        Builder<ServiceProviderRegistry> builder = new AliasServiceBuilder<>(CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.getServiceName(containerName, targetCacheName), ServiceProviderRegistry.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.SERVICE_PROVIDER_REGISTRY.toString(), containerName, aliasCacheName).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), ServiceProviderRegistry.class);
-        return Arrays.asList(builder, bindingBuilder);
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public ServiceProviderRegistryAliasBuilderProvider() {
+        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, (containerName, cacheName) -> JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "providers", containerName, cacheName));
     }
 }

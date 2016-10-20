@@ -22,16 +22,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.TransportResourceDefinition.CLUSTERING_CAPABILITIES;
+
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
@@ -42,7 +46,8 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        PathAddress address = context.getCurrentAddress();
+        PathAddress containerAddress = address.getParent();
         String name = containerAddress.getLastElement().getValue();
 
         ServiceTarget target = context.getServiceTarget();
@@ -51,19 +56,20 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
         new SiteBuilder(containerAddress).build(target).install();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, LocalGroupBuilderProvider.LOCAL)) {
-                builder.build(target).install();
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, LocalGroupBuilderProvider.LOCAL)) {
+                builder.configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
         }
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) {
-        PathAddress containerAddress = context.getCurrentAddress().getParent();
+        PathAddress address = context.getCurrentAddress();
+        PathAddress containerAddress = address.getParent();
         String name = containerAddress.getLastElement().getValue();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, LocalGroupBuilderProvider.LOCAL)) {
+            for (ServiceNameProvider builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, LocalGroupBuilderProvider.LOCAL)) {
                 context.removeService(builder.getServiceName());
             }
         }

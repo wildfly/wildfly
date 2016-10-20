@@ -28,9 +28,9 @@ import org.wildfly.clustering.group.Group;
  * Provides the requisite builders for a clustered cache-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class DistributedCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider {
+public class DistributedCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements org.wildfly.clustering.spi.DistributedCacheBuilderProvider {
 
     public DistributedCacheGroupBuilderProvider() {
-        super((support, containerName, cacheName) -> new CacheGroupBuilder(support, containerName, cacheName));
+        super((name, containerName, cacheName) -> new CacheGroupBuilder(name, containerName, cacheName));
     }
 }

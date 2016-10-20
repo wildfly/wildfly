@@ -22,11 +22,13 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.*;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -70,8 +72,8 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
-                builder.build(target).install();
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {
+                builder.configure(context).build(target).install();
             }
         }
     }
@@ -84,7 +86,7 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
         String channel = address.getParent().getLastElement().getValue();
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name, channel)) {
+            for (Builder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {
                 context.removeService(builder.getServiceName());
             }
         }

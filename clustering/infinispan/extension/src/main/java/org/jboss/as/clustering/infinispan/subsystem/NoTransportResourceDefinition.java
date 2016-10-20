@@ -49,7 +49,9 @@ public class NoTransportResourceDefinition extends TransportResourceDefinition {
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                ;
         ResourceServiceHandler handler = new NoTransportServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);
         new RemoveStepHandler(descriptor, handler).register(registration);

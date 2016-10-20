@@ -27,7 +27,7 @@ import java.util.Collection;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
- * ClassTable contributor for a {@link CacheSingletonServiceBuilder}.
+ * ClassTable contributor for a {@link DistributedSingletonServiceBuilder}.
  * @author Paul Ferraro
  */
 public class SingletonClassTableContributor implements ClassTableContributor {

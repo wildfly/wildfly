@@ -2,6 +2,7 @@ package org.jboss.as.test.clustering.cluster.registry.bean;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.AbstractMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +15,6 @@ import javax.ejb.Startup;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 
 @Singleton
@@ -26,24 +26,17 @@ public class RegistryBean implements Registry<String, String>, Registry.Listener
     private RegistryFactory<String, String> factory;
     private Registry<String, String> registry;
 
+    private static String getLocalHost() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
+    }
+
     @PostConstruct
     public void init() {
-        RegistryEntryProvider<String, String> provider = new RegistryEntryProvider<String, String>() {
-            @Override
-            public String getKey() {
-                return System.getProperty("jboss.node.name");
-            }
-
-            @Override
-            public String getValue() {
-                try {
-                    return InetAddress.getLocalHost().getHostName();
-                } catch (UnknownHostException e) {
-                    return null;
-                }
-            }
-        };
-        this.registry = this.factory.createRegistry(provider);
+        this.registry = this.factory.createRegistry(new AbstractMap.SimpleImmutableEntry<>(System.getProperty("jboss.node.name"), getLocalHost()));
         this.registry.addListener(this);
     }
 

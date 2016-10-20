@@ -22,34 +22,70 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilder extends SingletonServiceBuilderFactoryServiceNameProvider implements Builder<SingletonServiceBuilderFactory>, Value<SingletonServiceBuilderFactory> {
+public class CacheSingletonServiceBuilderFactoryBuilder implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, DistributedSingletonServiceBuilderContext {
 
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public CacheSingletonServiceBuilderFactoryBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    private final ServiceName name;
+    private final String containerName;
+    private final String cacheName;
+
+    @SuppressWarnings("rawtypes")
+    private volatile Supplier<ValueDependency<ServiceProviderRegistry>> registry;
+    private volatile Supplier<ValueDependency<CommandDispatcherFactory>> dispatcherFactory;
+
+    public CacheSingletonServiceBuilderFactoryBuilder(ServiceName name, String containerName, String cacheName) {
+        this.name = name;
+        this.containerName = containerName;
+        this.cacheName = cacheName;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<SingletonServiceBuilderFactory> configure(CapabilityServiceSupport support) {
+        this.registry = () -> new InjectedValueDependency<>(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY.getServiceName(support, this.containerName, this.cacheName), ServiceProviderRegistry.class);
+        this.dispatcherFactory = () -> new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.containerName), CommandDispatcherFactory.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this));
+        Value<SingletonServiceBuilderFactory> value = () -> new DistributedSingletonServiceBuilderFactory(this);
+        return target.addService(this.name, new ValueService<>(value));
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public ValueDependency<ServiceProviderRegistry> getServiceProviderRegistryDependency() {
+        return this.registry.get();
     }
 
     @Override
-    public SingletonServiceBuilderFactory getValue() {
-        return new CacheSingletonServiceBuilderFactory(this.containerName, this.cacheName);
+    public ValueDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency() {
+        return this.dispatcherFactory.get();
     }
 }

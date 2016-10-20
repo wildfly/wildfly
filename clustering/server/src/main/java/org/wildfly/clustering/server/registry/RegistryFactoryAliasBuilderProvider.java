@@ -22,41 +22,32 @@
 
 package org.wildfly.clustering.server.registry;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
-import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.jboss.as.clustering.controller.BinaryRequirementAliasBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
  */
-public class RegistryFactoryAliasBuilderProvider implements CacheGroupAliasBuilderProvider {
+public class RegistryFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String aliasCacheName, String targetCacheName) {
-        Builder<RegistryFactory> factoryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.REGISTRY_FACTORY.getServiceName(containerName, targetCacheName), RegistryFactory.class);
-        Builder<Registry> registryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY.getServiceName(containerName, aliasCacheName), CacheGroupServiceName.REGISTRY.getServiceName(containerName, targetCacheName), Registry.class);
-        Builder<RegistryEntryProvider> entryBuilder = new AliasServiceBuilder<>(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(containerName, targetCacheName), CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(containerName, aliasCacheName), RegistryEntryProvider.class);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, aliasCacheName).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, factoryBuilder.getServiceName(), RegistryFactory.class);
-        return Arrays.asList(factoryBuilder, registryBuilder, entryBuilder, bindingBuilder);
+    public RegistryFactoryAliasBuilderProvider() {
+        super(ClusteringCacheRequirement.REGISTRY_FACTORY);
     }
 
     @Override
-    public String toString() {
-        return this.getClass().getName();
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
+        Collection<CapabilityServiceBuilder<?>> builders = super.getBuilders(registry, containerName, aliasCacheName, targetCacheName);
+        List<CapabilityServiceBuilder<?>> result = new ArrayList<>(builders.size() + 2);
+        result.addAll(builders);
+        result.add(new BinaryRequirementAliasBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), ClusteringCacheRequirement.REGISTRY, containerName, targetCacheName, ClusteringCacheRequirement.REGISTRY.getType()));
+        result.add(new BinaryRequirementAliasBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY_ENTRY), ClusteringCacheRequirement.REGISTRY_ENTRY, containerName, targetCacheName, ClusteringCacheRequirement.REGISTRY_ENTRY.getType()));
+        return result;
     }
 }

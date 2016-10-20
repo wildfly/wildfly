@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.singleton;
 
-import org.wildfly.clustering.server.CacheServiceNameProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * Provides the service name for a cache-based {@link org.wildfly.clustering.group.Group}.
  * @author Paul Ferraro
  */
-public class CacheGroupServiceNameProvider extends CacheServiceNameProvider {
+public enum SingletonDefaultCacheRequirement implements UnaryRequirement {
 
-    public CacheGroupServiceNameProvider(String containerName, String cacheName) {
-        super(CacheGroupServiceName.GROUP, containerName, cacheName);
+    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
+    ;
+    private final String name;
+    private final Class<?> type;
+
+    SingletonDefaultCacheRequirement(String name, Class<?> type) {
+        this.name = name;
+        this.type = type;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return this.type;
     }
 }
