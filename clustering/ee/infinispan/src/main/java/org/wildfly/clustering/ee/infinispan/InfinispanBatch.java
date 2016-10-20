@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
@@ -38,8 +39,9 @@ import org.infinispan.commons.CacheException;
 public class InfinispanBatch implements TransactionBatch {
 
     private final Transaction tx;
-    private volatile boolean rollback = false;
     private final AtomicInteger count = new AtomicInteger(0);
+
+    private volatile boolean active = true;
 
     public InfinispanBatch(Transaction tx) {
         this.tx = tx;
@@ -58,19 +60,56 @@ public class InfinispanBatch implements TransactionBatch {
 
     @Override
     public void discard() {
-        this.rollback = true;
+        // Allow additional cache operations prior to close, rather than call tx.setRollbackOnly()
+        this.active = false;
+    }
+
+    @Override
+    public State getState() {
+        try {
+            switch (this.tx.getStatus()) {
+                case Status.STATUS_ACTIVE: {
+                    if (this.active) {
+                        return State.ACTIVE;
+                    }
+                    // Otherwise fall through
+                }
+                case Status.STATUS_MARKED_ROLLBACK: {
+                    return State.DISCARDED;
+                }
+                default: {
+                    return State.CLOSED;
+                }
+            }
+        } catch (SystemException e) {
+            throw new CacheException(e);
+        }
     }
 
     @Override
     public void close() {
         if (this.count.getAndDecrement() == 0) {
             try {
-                if (this.rollback) {
-                    this.tx.rollback();
-                } else {
-                    this.tx.commit();
+                switch (this.tx.getStatus()) {
+                    case Status.STATUS_ACTIVE: {
+                        if (this.active) {
+                            try {
+                                this.tx.commit();
+                                break;
+                            } catch (RollbackException e) {
+                                throw new IllegalStateException(e);
+                            } catch (HeuristicMixedException | HeuristicRollbackException e) {
+                                throw new CacheException(e);
+                            }
+                        }
+                        // Otherwise fall through
+                    }
+                    case Status.STATUS_MARKED_ROLLBACK: {
+                        this.tx.rollback();
+                        break;
+                    }
                 }
-            } catch (RollbackException | HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+            } catch (SystemException e) {
                 throw new CacheException(e);
             }
         }
