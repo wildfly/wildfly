@@ -55,6 +55,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -115,9 +116,8 @@ public class JMXPropertyEditorsTestCase {
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
         final String address = managementClient.getMgmtAddress()+":"+managementClient.getMgmtPort();
-        connector = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:http-remoting-jmx://"+address));
+        connector = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:http-remoting-jmx://"+address), DefaultConfiguration.credentials());
         return connector.getMBeanServerConnection();
-
     }
 
     private static Asset createServiceAsset(String attributeName, String attributeValue) {

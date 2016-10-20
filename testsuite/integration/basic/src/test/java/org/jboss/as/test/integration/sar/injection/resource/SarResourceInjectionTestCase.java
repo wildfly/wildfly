@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -61,7 +62,7 @@ public final class SarResourceInjectionTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL(), DefaultConfiguration.credentials());
         try {
             final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
             final ObjectName objectName = new ObjectName("jboss:name=X");

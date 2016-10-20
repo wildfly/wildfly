@@ -35,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.system.ServiceMBean;
@@ -94,7 +95,7 @@ public class ServiceMBeanSupportTestCase {
     @Test
     public void testSarWithServiceMBeanSupport() throws Exception {
         // get mbean server
-        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL(), DefaultConfiguration.credentials());
         final MBeanServerConnection mBeanServerConnection = connector.getMBeanServerConnection();
         try {
             // deploy the unmanaged sar
@@ -120,5 +121,4 @@ public class ServiceMBeanSupportTestCase {
             Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
         }
     }
-
 }
