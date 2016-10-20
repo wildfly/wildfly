@@ -22,9 +22,13 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.EnumSet;
+import java.util.stream.Collectors;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.naming.subsystem.NamingSubsystemRootResourceDefinition.Capability;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,6 +41,7 @@ public class NamingSubsystemRemove extends AbstractRemoveStepHandler {
     public static final NamingSubsystemRemove INSTANCE = new NamingSubsystemRemove();
 
     private NamingSubsystemRemove() {
+        super(EnumSet.allOf(Capability.class).stream().map(Capability::getDefinition).collect(Collectors.toSet()));
     }
 
     @Override
