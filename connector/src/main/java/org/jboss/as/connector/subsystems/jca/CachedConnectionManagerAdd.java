@@ -25,7 +25,7 @@ import org.jboss.as.connector.deployers.ra.processors.CachedConnectionManagerSet
 import org.jboss.as.connector.services.jca.CachedConnectionManagerService;
 import org.jboss.as.connector.services.jca.NonTxCachedConnectionManagerService;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
+public class CachedConnectionManagerAdd extends AbstractBoottimeAddStepHandler {
 
     public static final CachedConnectionManagerAdd INSTANCE = new CachedConnectionManagerAdd();
 
@@ -51,7 +51,7 @@ public class CachedConnectionManagerAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final boolean debug = JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().resolveModelAttribute(context, model).asBoolean();
         final boolean error = JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();

@@ -36,7 +36,7 @@ import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -64,7 +64,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  */
-class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
+class SecurityManagerSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final SecurityManagerSubsystemAdd INSTANCE = new SecurityManagerSubsystemAdd();
 
@@ -76,7 +76,7 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model)
             throws OperationFailedException {
 
         // This needs to run after all child resources so that they can detect a fresh state
