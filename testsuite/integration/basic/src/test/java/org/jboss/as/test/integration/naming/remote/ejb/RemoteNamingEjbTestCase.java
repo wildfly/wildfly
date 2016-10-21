@@ -45,10 +45,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.shared.ServerSuspend;
 import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -203,9 +202,7 @@ public class RemoteNamingEjbTestCase {
     @Test
     public void testRemoteNamingGracefulShutdown() throws Exception {
 
-        ModelNode op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP).set("suspend");
-        managementClient.getControllerClient().execute(op);
+        ServerSuspend.suspend(managementClient.getControllerClient());
 
         Thread.currentThread().setContextClassLoader(Remote.class.getClassLoader());
 
@@ -233,9 +230,7 @@ public class RemoteNamingEjbTestCase {
             } catch (NamingException expected) {
             }
         } finally {
-            op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("resume");
-            managementClient.getControllerClient().execute(op);
+            ServerSuspend.resume(managementClient.getControllerClient());
 
             ctx.close();
             Thread.currentThread().setContextClassLoader(current);
