@@ -31,6 +31,8 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.remoting"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>
