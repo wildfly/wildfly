@@ -2,7 +2,7 @@
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
     <deployment>
         <dependencies>
-            <module name="org.jboss.remote-naming" />
+            <module name="org.wildfly.naming-client" services="import" />
             <module name="org.jboss.as.network" />
             <!--used to grant RemotingPermission-->
             <module name="org.jboss.remoting" />
