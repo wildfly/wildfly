@@ -34,6 +34,10 @@ import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -233,6 +237,14 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
 
     public Context getRemoteContext(ManagementClient managementClient) throws Exception {
+        // TODO Elytron - WFLY-7373
+        // This test relies on specifying the "jboss.naming.client.ejb.context" property during InitialContext creation in
+        // order to ensure that an EJBClientContext will get set up properly with an appropriate EJBReceiver. Since the new
+        // WildFly naming client doesn't currently handle this property, we need to manually set the EJBClientConfiguration
+        // in this test for now. We need to revisit this modification when the new WildFly naming client and EJB client are
+        // being integrated.
+        createEJBClientConfiguration(managementClient);
+
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
         URI webUri = managementClient.getWebUri();
@@ -244,4 +256,15 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         return new InitialContext(env);
     }
 
+    private void createEJBClientConfiguration(ManagementClient managementClient) {
+        final Properties config = new Properties();
+        config.put("remote.connections", "default");
+        config.put("remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
+        config.put("remote.connection.default.host", managementClient.getWebUri().getHost());
+        config.put("remote.connection.default.port", String.valueOf(managementClient.getWebUri().getPort()));
+
+        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(config);
+        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
+        EJBClientContext.setSelector(selector);
+    }
 }
