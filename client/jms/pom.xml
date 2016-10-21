@@ -75,6 +75,11 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-jms-client</artifactId>
         </dependency>
+        <!-- Required by the artemis-jms-client -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss</groupId>
