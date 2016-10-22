@@ -24,12 +24,14 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
  * ClassTable contributor for a {@link DistributedSingletonServiceBuilder}.
  * @author Paul Ferraro
  */
+@MetaInfServices(ClassTableContributor.class)
 public class SingletonClassTableContributor implements ClassTableContributor {
 
     @Override

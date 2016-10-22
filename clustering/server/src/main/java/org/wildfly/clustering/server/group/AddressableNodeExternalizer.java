@@ -28,12 +28,14 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Marshalling externalizer for an {@link AddressableNode}.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class AddressableNodeExternalizer implements Externalizer<AddressableNode> {
 
     @Override

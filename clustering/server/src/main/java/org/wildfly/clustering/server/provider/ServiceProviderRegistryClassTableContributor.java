@@ -24,12 +24,14 @@ package org.wildfly.clustering.server.provider;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
  * ClassTable contributor for the marshaller of a {@link ServiceProviderRegistration}.
  * @author Paul Ferraro
  */
+@MetaInfServices(ClassTableContributor.class)
 public class ServiceProviderRegistryClassTableContributor implements ClassTableContributor {
 
     @Override

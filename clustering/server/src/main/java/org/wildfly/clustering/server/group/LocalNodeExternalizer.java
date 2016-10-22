@@ -26,12 +26,14 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Marshalling externalizer for a {@link LocalNode}.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class LocalNodeExternalizer implements Externalizer<LocalNode> {
 
     @Override
