@@ -23,10 +23,10 @@
 package org.wildfly.clustering.server.singleton;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -213,9 +213,9 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     }
 
     @Override
-    public AtomicReference<T> getValueRef() {
+    public Optional<T> getLocalValue() {
         try {
-            return this.primary.get() ? new AtomicReference<>(this.primaryController.getValue()) : null;
+            return this.primary.get() ? Optional.ofNullable(this.primaryController.getValue()) : null;
         } catch (IllegalStateException e) {
             // This might happen if primary service has not yet started, or if node is no longer the primary node
             return null;

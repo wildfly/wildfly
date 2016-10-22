@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
 
 public interface SingletonContext<T> {
 
@@ -29,5 +29,5 @@ public interface SingletonContext<T> {
 
     void stop();
 
-    AtomicReference<T> getValueRef();
+    Optional<T> getLocalValue();
 }

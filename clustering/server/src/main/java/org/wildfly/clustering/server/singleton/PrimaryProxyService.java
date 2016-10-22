@@ -25,8 +25,8 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.jboss.msc.service.Service;
@@ -67,7 +67,7 @@ public class PrimaryProxyService<T> implements Service<T> {
                 if (!this.started) {
                     throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
                 }
-                Map<Node, CommandResponse<AtomicReference<T>>> responses = this.dispatcher.getValue().executeOnCluster(new SingletonValueCommand<T>());
+                Map<Node, CommandResponse<Optional<T>>> responses = this.dispatcher.getValue().executeOnCluster(new SingletonValueCommand<T>());
                 // Prune non-primary (i.e. null) results
                 result = responses.values().stream().map(response -> {
                     try {
@@ -75,7 +75,7 @@ public class PrimaryProxyService<T> implements Service<T> {
                     } catch (ExecutionException e) {
                         throw new IllegalArgumentException(e);
                     }
-                }).filter(ref -> ref != null).map(ref -> ref.get()).collect(Collectors.toList());
+                }).filter(value -> value != null).map(value -> value.orElse(null)).collect(Collectors.toList());
                 // We expect only 1 result
                 if (result.size() > 1) {
                     // This would mean there are multiple primary nodes!
