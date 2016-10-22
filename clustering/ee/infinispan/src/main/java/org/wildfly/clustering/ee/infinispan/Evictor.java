@@ -21,14 +21,19 @@
  */
 package org.wildfly.clustering.ee.infinispan;
 
+import org.infinispan.context.Flag;
+
 /**
  * Evicts a cache entry.
  * @author Paul Ferraro
  */
 public interface Evictor<K> {
+    Flag[] EVICTION_FLAGS = new Flag[] { Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY };
+
     /**
      * Evict the specified item from the cache.
      * @param id the item identifier
+     * @return true, if entry was evicted, false otherwise
      */
-    void evict(K id);
+    boolean evict(K id);
 }

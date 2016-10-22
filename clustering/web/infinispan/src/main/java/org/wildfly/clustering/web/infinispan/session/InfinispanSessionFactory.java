@@ -93,12 +93,16 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
     }
 
     @Override
-    public void evict(String id) {
+    public boolean evict(String id) {
         try {
-            this.metaDataFactory.evict(id);
-            this.attributesFactory.evict(id);
+            boolean evicted = this.metaDataFactory.evict(id);
+            if (evicted) {
+                this.attributesFactory.evict(id);
+            }
+            return evicted;
         } catch (Throwable e) {
             InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
+            return false;
         }
     }
 

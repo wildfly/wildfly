@@ -122,8 +122,13 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     }
 
     @Override
-    public void evict(String id) {
-        this.creationMetaDataCache.evict(new SessionCreationMetaDataKey(id));
-        this.accessMetaDataCache.evict(new SessionAccessMetaDataKey(id));
+    public boolean evict(String id) {
+        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
+        if (this.findCreationMetaDataCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(key) != null) {
+            this.creationMetaDataCache.evict(key);
+            this.accessMetaDataCache.evict(new SessionAccessMetaDataKey(id));
+            return true;
+        }
+        return false;
     }
 }
