@@ -29,6 +29,7 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -61,12 +62,14 @@ public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implement
         return this.targetClass;
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class SimpleEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleEntry<Object, Object>> {
         public SimpleEntryExternalizer() {
             super(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry<Object, Object>::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class SimpleImmutableEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleImmutableEntry<Object, Object>> {
         public SimpleImmutableEntryExternalizer() {
             super(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry<Object, Object>::new);

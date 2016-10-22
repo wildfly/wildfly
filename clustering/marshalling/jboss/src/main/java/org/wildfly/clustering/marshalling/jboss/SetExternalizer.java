@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntFunction;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -78,18 +79,21 @@ public class SetExternalizer<T extends Set<Object>> implements Externalizer<T> {
         return this.targetClass;
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ConcurrentHashSetExternalizer extends SetExternalizer<ConcurrentHashMap.KeySetView<Object, Boolean>> {
         public ConcurrentHashSetExternalizer() {
             super(ConcurrentHashMap.KeySetView.class, capacity -> ConcurrentHashMap.newKeySet(capacity));
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class HashSetExternalizer extends SetExternalizer<HashSet<Object>> {
         public HashSetExternalizer() {
             super(HashSet.class, HashSet::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class LinkedHashSetExternalizer extends SetExternalizer<LinkedHashSet<Object>> {
         public LinkedHashSetExternalizer() {
             super(LinkedHashSet.class, LinkedHashSet::new);

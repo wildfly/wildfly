@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.IntFunction;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -82,42 +83,49 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
         return this.targetClass;
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ArrayDequeExternalizer extends CollectionExternalizer<ArrayDeque<Object>> {
         public ArrayDequeExternalizer() {
             super(ArrayDeque.class, ArrayDeque::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ArrayListExternalizer extends CollectionExternalizer<ArrayList<Object>> {
         public ArrayListExternalizer() {
             super(ArrayList.class, ArrayList::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ConcurrentLinkedDequeExternalizer extends CollectionExternalizer<ConcurrentLinkedDeque<Object>> {
         public ConcurrentLinkedDequeExternalizer() {
             super(ConcurrentLinkedDeque.class, size -> new ConcurrentLinkedDeque<>());
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ConcurrentLinkedQueueExternalizer extends CollectionExternalizer<ConcurrentLinkedQueue<Object>> {
         public ConcurrentLinkedQueueExternalizer() {
             super(ConcurrentLinkedQueue.class, size -> new ConcurrentLinkedQueue<>());
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class HashSetExternalizer extends CollectionExternalizer<HashSet<Object>> {
         public HashSetExternalizer() {
             super(HashSet.class, HashSet::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class LinkedHashSetExternalizer extends CollectionExternalizer<LinkedHashSet<Object>> {
         public LinkedHashSetExternalizer() {
             super(LinkedHashSet.class, LinkedHashSet::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class LinkedListExternalizer extends CollectionExternalizer<LinkedList<Object>> {
         public LinkedListExternalizer() {
             super(LinkedList.class, size -> new LinkedList<>());

@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -68,12 +69,14 @@ public class SortedSetExternalizer<T extends SortedSet<Object>> implements Exter
         return this.targetClass;
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ConcurrentSkipListSetExternalizer extends SortedSetExternalizer<ConcurrentSkipListSet<Object>> {
         public ConcurrentSkipListSetExternalizer() {
             super(ConcurrentSkipListSet.class, ConcurrentSkipListSet<Object>::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class TreeSetExternalizer extends SortedSetExternalizer<TreeSet<Object>> {
         public TreeSetExternalizer() {
             super(TreeSet.class, TreeSet<Object>::new);

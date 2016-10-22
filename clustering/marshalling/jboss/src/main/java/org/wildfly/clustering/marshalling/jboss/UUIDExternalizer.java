@@ -26,12 +26,14 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.UUID;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * {@link Externalizer} for {@link UUID} instances.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class UUIDExternalizer implements Externalizer<UUID> {
 
     @Override
