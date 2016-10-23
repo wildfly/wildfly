@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.timerservice.security.runas;
 /**
  *  @author Tomasz Adamski
  */
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.naming.InitialContext;
 
@@ -45,7 +45,6 @@ public class TimeoutMethodWithRunAsAnnotationTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "myJar.jar");
         jar.addPackage(TimeoutMethodWithRunAsAnnotationTestCase.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 

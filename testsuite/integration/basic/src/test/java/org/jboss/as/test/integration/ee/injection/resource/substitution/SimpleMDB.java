@@ -56,7 +56,7 @@ public class SimpleMDB implements MessageListener {
 
     @Override
     public void onMessage(Message msg) {
-        log.info("OnMessage working...");
+        log.trace("OnMessage working...");
         try {
             Destination destination = msg.getJMSReplyTo();
             Connection conn = connectionFactory.createConnection();

@@ -43,17 +43,14 @@ public class SecondBean implements SessionBean {
     }
 
     public boolean test(String[] s) {
-        //System.out.println(">> test(String[])");
         return true;
     }
 
     public boolean test(String s) {
-        //System.out.println(">> test(String)");
         return true;
     }
 
     public boolean test(int x) {
-        //System.out.println(">> test(int)");
         return true;
     }
 

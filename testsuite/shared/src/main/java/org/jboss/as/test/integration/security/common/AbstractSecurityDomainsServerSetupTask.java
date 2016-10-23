@@ -121,7 +121,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
         for (final SecurityDomain securityDomain : securityDomains) {
             final String securityDomainName = securityDomain.getName();
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Adding security domain " + securityDomainName);
+                LOGGER.trace("Adding security domain " + securityDomainName);
             }
             final ModelNode compositeOp = new ModelNode();
             compositeOp.get(OP).set(COMPOSITE);
@@ -178,7 +178,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
         for (final SecurityDomain securityDomain : securityDomains) {
             final String domainName = securityDomain.getName();
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Removing security domain " + domainName);
+                LOGGER.trace("Removing security domain " + domainName);
             }
             final ModelNode op = new ModelNode();
             op.get(OP).set(REMOVE);
@@ -213,7 +213,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
      */
     private List<ModelNode> createJaspiAuthnNodes(JaspiAuthn securityConfigurations, String domainName) {
         if (securityConfigurations == null) {
-            LOGGER.info("No security configuration for JASPI module.");
+            LOGGER.trace("No security configuration for JASPI module.");
             return null;
         }
         if (securityConfigurations.getAuthnModules() == null || securityConfigurations.getAuthnModules().length == 0
@@ -231,7 +231,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
         steps.add(Util.createAddOperation(jaspiAddress));
 
         for (final AuthnModule config : securityConfigurations.getAuthnModules()) {
-            LOGGER.info("Adding auth-module: " + config);
+            LOGGER.trace("Adding auth-module: " + config);
             final ModelNode securityModuleNode = Util.createAddOperation(jaspiAddress.append(AUTH_MODULE,config.getName()));
             steps.add(securityModuleNode);
             securityModuleNode.get(ModelDescriptionConstants.CODE).set(config.getName());
@@ -246,7 +246,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             }
             Map<String, String> configOptions = config.getOptions();
             if (configOptions == null) {
-                LOGGER.info("No module options provided.");
+                LOGGER.trace("No module options provided.");
                 configOptions = Collections.emptyMap();
             }
             final ModelNode moduleOptionsNode = securityModuleNode.get(MODULE_OPTIONS);
@@ -274,11 +274,11 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
                 securityModuleNode.get(ModelDescriptionConstants.CODE).set(code);
                 securityModuleNode.get(FLAG).set(flag);
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Adding JASPI login module stack [code=" + code + ", flag=" + flag + "]");
+                    LOGGER.trace("Adding JASPI login module stack [code=" + code + ", flag=" + flag + "]");
                 }
                 Map<String, String> configOptions = config.getOptions();
                 if (configOptions == null) {
-                    LOGGER.info("No module options provided.");
+                    LOGGER.trace("No module options provided.");
                     configOptions = Collections.emptyMap();
                 }
                 final ModelNode moduleOptionsNode = securityModuleNode.get(MODULE_OPTIONS);
@@ -315,7 +315,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
                                             String flagDefaultValue, final SecurityModule[] securityModules, String domainName, ModelNode operations) {
         if (securityModules == null || securityModules.length == 0) {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("No security configuration for " + securityComponent + " module.");
+                LOGGER.trace("No security configuration for " + securityComponent + " module.");
             }
             return false;
         }
@@ -334,11 +334,11 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             securityModuleNode.get(flagAttributeName).set(flag);
             Map<String, String> configOptions = config.getOptions();
             if (configOptions == null) {
-                LOGGER.info("No module options provided.");
+                LOGGER.trace("No module options provided.");
                 configOptions = Collections.emptyMap();
             }
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Adding " + securityComponent + " module [code=" + code + ", " + flagAttributeName + "=" + flag
+                LOGGER.trace("Adding " + securityComponent + " module [code=" + code + ", " + flagAttributeName + "=" + flag
                         + ", options = " + configOptions + "]");
             }
             final ModelNode moduleOptionsNode = securityModuleNode.get(MODULE_OPTIONS);
@@ -363,7 +363,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
     private ModelNode createJSSENode(final JSSE jsse, String domainName) {
         if (jsse == null) {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("No security configuration for JSSE module.");
+                LOGGER.trace("No security configuration for JSSE module.");
             }
             return null;
         }

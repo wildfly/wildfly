@@ -47,7 +47,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
 
         return 0;
     }
@@ -85,7 +85,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
 
         return false;
     }
@@ -96,7 +96,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
 
         return XAResource.XA_OK;
     }
@@ -107,7 +107,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
 
         return null;
     }
@@ -118,7 +118,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
 
         return false;
     }
@@ -138,7 +138,7 @@ public class LoggingXAResource implements XAResource {
 
         invocations.add(str);
 
-        LOG.info(str);
+        LOG.trace(str);
     }
 
     public List<String> getInvocations() {

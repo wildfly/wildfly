@@ -63,6 +63,7 @@ import java.util.Set;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.dmr.ValueExpression;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -81,6 +82,7 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
+    private static final Logger LOGGER = Logger.getLogger(ExpressionSupportSmokeTestCase.class);
 
     private static final Set<ModelType> COMPLEX_TYPES = Collections.unmodifiableSet(EnumSet.of(ModelType.LIST, ModelType.OBJECT, ModelType.PROPERTY));
 
@@ -120,22 +122,20 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         Map<PathAddress, Map<String, ModelNode>> expectedValues = new HashMap<PathAddress, Map<String, ModelNode>>();
         setExpressions(PathAddress.EMPTY_ADDRESS, "master", expectedValues);
 
-        System.out.println();
-        System.out.println("Update statistics:");
-        System.out.println("==================");
-        System.out.println("conflicts: " + conflicts);
-        System.out.println("no expression simple: " + noSimple);
-        System.out.println("no expression simple collection: " + noSimpleCollection);
-        System.out.println("no expression complex list: " + noComplexList);
-        System.out.println("no expression object: " + noObject);
-        System.out.println("no expression complex property: " + noComplexProperty);
-        System.out.println("supported but undefined: " + supportedUndefined);
-        System.out.println("simple: " + simple);
-        System.out.println("simple collection: " + simpleCollection);
-        System.out.println("complex list: " + complexList);
-        System.out.println("object: " + object);
-        System.out.println("complex property: " + complexProperty);
-        System.out.println();
+        LOGGER.trace("Update statistics:");
+        LOGGER.trace("==================");
+        LOGGER.trace("conflicts: " + conflicts);
+        LOGGER.trace("no expression simple: " + noSimple);
+        LOGGER.trace("no expression simple collection: " + noSimpleCollection);
+        LOGGER.trace("no expression complex list: " + noComplexList);
+        LOGGER.trace("no expression object: " + noObject);
+        LOGGER.trace("no expression complex property: " + noComplexProperty);
+        LOGGER.trace("supported but undefined: " + supportedUndefined);
+        LOGGER.trace("simple: " + simple);
+        LOGGER.trace("simple collection: " + simpleCollection);
+        LOGGER.trace("complex list: " + complexList);
+        LOGGER.trace("object: " + object);
+        LOGGER.trace("complex property: " + complexProperty);
 
         // restart back to normal mode
         ModelNode op = new ModelNode();
@@ -419,7 +419,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
     private void logHandling(String msg) {
         if (logHandling) {
-            System.out.println(msg);
+            LOGGER.trace(msg);
         }
     }
 

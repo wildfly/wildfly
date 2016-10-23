@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJB;
 
@@ -74,7 +74,6 @@ public class SingletonBeanTestCase {
         jar.addClass(ReadOnlySingletonBeanDescriptorWithExpression.class);
         jar.addAsManifestResource(SingletonBeanTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(SingletonBeanTestCase.class.getPackage(), "jboss.properties", "jboss.properties");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -231,7 +230,7 @@ public class SingletonBeanTestCase {
 
         @Override
         public String call() throws Exception {
-            log.info("Bean: " + bean.toString());
+            log.trace("Bean: " + bean.toString());
             return bean.twoSecondEcho(String.valueOf(this.num));
         }
     }

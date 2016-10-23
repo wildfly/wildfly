@@ -108,7 +108,6 @@ public class PortableExtensionInExternalModuleTestCase {
                 .addClass(PortableExtensionSubdeploymentLookup.class)
                 // the CDI injection does not work neither with empty nor with 'all'!
                 .addAsManifestResource(newBeans11Descriptor("all"), "beans.xml");
-        log.info(ejbSubdeployment.toString(true));
 
         WebArchive webSubdeployment = ShrinkWrap.create(WebArchive.class, "web-subdeployment.war")
                 .addClass(PortableExtensionInExternalModuleTestCase.class)

@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.Principal;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;

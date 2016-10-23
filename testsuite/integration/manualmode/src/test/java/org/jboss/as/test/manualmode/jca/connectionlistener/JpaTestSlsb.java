@@ -98,7 +98,7 @@ public class JpaTestSlsb implements JpaTestSlsbRemote {
             resultSet = statement.executeQuery("SELECT COUNT(*) FROM test_table WHERE type = '1'");
             resultSet.next();
             int activatedCount = resultSet.getInt(1);
-            log.info("Activated count: " + activatedCount);
+            log.trace("Activated count: " + activatedCount);
             closeResultSet(resultSet);
             closeStatement(statement);
 
@@ -113,7 +113,7 @@ public class JpaTestSlsb implements JpaTestSlsbRemote {
             int passivatedCount = resultSet.getInt(1);
             closeResultSet(resultSet);
             closeStatement(statement);
-            log.info("Passivated count: " + passivatedCount);
+            log.trace("Passivated count: " + passivatedCount);
 
             if (expectedRecords > 0) {
                 Assert.assertTrue("Count of records created passivatedConnectionListener must be > 0", passivatedCount > 0);
@@ -127,7 +127,7 @@ public class JpaTestSlsb implements JpaTestSlsbRemote {
             int ourRecordsCount = resultSet.getInt(1);
             closeResultSet(resultSet);
             closeStatement(statement);
-            log.info("Records count: " + ourRecordsCount);
+            log.trace("Records count: " + ourRecordsCount);
 
             Assert.assertTrue("Unexpected count of records.", expectedRecords == ourRecordsCount);
         } finally {
@@ -150,7 +150,7 @@ public class JpaTestSlsb implements JpaTestSlsbRemote {
             int activatedCount = resultSet.getInt(1);
             closeResultSet(resultSet);
             closeStatement(statement);
-            log.info("Activated count: " + activatedCount);
+            log.trace("Activated count: " + activatedCount);
 
             //Even if we only read from DB, activated listener insert record to DB.
             Assert.assertEquals("Activated count: ", expectedActivated, activatedCount);
@@ -161,7 +161,7 @@ public class JpaTestSlsb implements JpaTestSlsbRemote {
             int passivatedCount = resultSet.getInt(1);
             closeResultSet(resultSet);
             closeStatement(statement);
-            log.info("Passivated count: " + passivatedCount);
+            log.trace("Passivated count: " + passivatedCount);
 
             Assert.assertEquals("Passivated count: ", expectedPassivated, passivatedCount);
 
@@ -171,7 +171,7 @@ public class JpaTestSlsb implements JpaTestSlsbRemote {
             int ourRecordsCount = resultSet.getInt(1);
             closeResultSet(resultSet);
             closeStatement(statement);
-            log.info("Records count: " + ourRecordsCount);
+            log.trace("Records count: " + ourRecordsCount);
 
             Assert.assertEquals("Records count: ", expectedRecords, ourRecordsCount);
         } finally {

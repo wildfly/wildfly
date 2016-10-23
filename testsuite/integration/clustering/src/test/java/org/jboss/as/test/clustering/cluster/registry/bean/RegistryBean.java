@@ -53,17 +53,17 @@ public class RegistryBean implements Registry<String, String>, Registry.Listener
 
     @Override
     public void addedEntries(Map<String, String> added) {
-        System.out.println("New registry entry:" + added);
+        //System.out.println("New registry entry:" + added);
     }
 
     @Override
     public void updatedEntries(Map<String, String> updated) {
-        System.out.println("Updated registry entry:" + updated);
+        //System.out.println("Updated registry entry:" + updated);
     }
 
     @Override
     public void removedEntries(Map<String, String> removed) {
-        System.out.println("Removed registry entry:" + removed);
+        //System.out.println("Removed registry entry:" + removed);
     }
 
     @Override

@@ -52,7 +52,6 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
-import org.jboss.logging.Logger;
 import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -79,8 +78,6 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
      * The SECURITY_DOMAIN_NAME_PREFIX
      */
     public static final String SECURITY_DOMAIN_NAME_PREFIX = "test-";
-
-    private static Logger LOGGER = Logger.getLogger(LdapExtLikeAdvancedLdapLMTestCase.class);
 
     private static final String DEP1 = "DEP1";
     private static final String DEP2 = "DEP2";
@@ -300,7 +297,6 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
      * @return
      */
     private static WebArchive createWar(String securityDomainName) {
-        LOGGER.info("Start deployment for security-domain " + securityDomainName);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, securityDomainName + ".war");
         war.addClasses(RolePrintingServlet.class, PrincipalPrintingServlet.class);
         war.addAsWebInfResource(LdapExtLoginModuleTestCase.class.getPackage(), LdapExtLoginModuleTestCase.class.getSimpleName()
@@ -308,9 +304,6 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(securityDomainName), "jboss-web.xml");
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),
                 "jboss-deployment-structure.xml");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 

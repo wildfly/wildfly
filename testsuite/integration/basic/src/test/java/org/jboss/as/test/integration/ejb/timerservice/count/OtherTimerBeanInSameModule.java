@@ -30,7 +30,7 @@ public class OtherTimerBeanInSameModule {
 
     public void createTimerForNextDay(final boolean persistent, final String info) {
         this.timerService.createSingleActionTimer(new Date(System.currentTimeMillis() + (60 * 60 * 24 * 1000)) , new TimerConfig(info, persistent));
-        logger.info("Created a timer persistent = " + persistent + " info = " + info);
+        logger.trace("Created a timer persistent = " + persistent + " info = " + info);
     }
 }
 

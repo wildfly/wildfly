@@ -64,8 +64,6 @@ public class TestReadListener implements ReadListener {
                     writeLine(writer, "END");
                     writer.flush();
                 }
-            } else {
-                System.out.println("Data length: " + len);
             }
         }
     }

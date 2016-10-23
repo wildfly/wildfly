@@ -68,11 +68,11 @@ public class SimpleMDB implements MessageDrivenBean, MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message: " + message);
+        logger.trace("Received message: " + message);
         try {
             final Destination replyTo = message.getJMSReplyTo();
             if (replyTo != null) {
-                logger.info("Replying to " + replyTo);
+                logger.trace("Replying to " + replyTo);
                 try (
                         JMSContext context = factory.createContext()
                 ) {

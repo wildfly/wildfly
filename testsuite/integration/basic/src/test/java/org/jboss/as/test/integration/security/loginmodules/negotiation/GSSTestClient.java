@@ -74,7 +74,7 @@ public class GSSTestClient {
      * @throws GSSException
      */
     public String getName(final GSSCredential gssCredential) throws IOException, GSSException {
-        LOGGER.info("getName() called with GSSCredential:\n" + gssCredential);
+        LOGGER.trace("getName() called with GSSCredential:\n" + gssCredential);
         // Create an unbound socket
         final Socket socket = new Socket();
         GSSContext gssContext = null;

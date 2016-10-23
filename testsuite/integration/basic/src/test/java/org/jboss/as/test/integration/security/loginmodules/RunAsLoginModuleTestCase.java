@@ -44,7 +44,8 @@ import javax.security.auth.AuthPermission;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -63,7 +64,6 @@ import org.jboss.as.test.integration.security.loginmodules.common.CustomEjbAcces
 import org.jboss.as.test.integration.security.loginmodules.common.SimpleSecuredEJB;
 import org.jboss.as.test.integration.security.loginmodules.common.SimpleSecuredEJBImpl;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.RunAsLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -123,7 +123,6 @@ public class RunAsLoginModuleTestCase {
         }
     }
 
-    private static Logger log = Logger.getLogger(RunAsLoginModuleTestCase.class);
 
     private static final String DEP1 = "RunAsLoginModule";
 
@@ -132,8 +131,6 @@ public class RunAsLoginModuleTestCase {
      */
     @Deployment(name = DEP1, order = 1)
     public static WebArchive appDeployment1() {
-        log.info("start" + DEP1 + "deployment");
-
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEP1 + ".war");
         war.addClass(PrincipalPrintingServlet.class);
         war.setWebXML(Utils.getResource("org/jboss/as/test/integration/security/loginmodules/deployments/RunAsLoginModule/web.xml"));
@@ -141,8 +138,6 @@ public class RunAsLoginModuleTestCase {
 
         war.addClasses(SimpleSecuredEJB.class, SimpleSecuredEJBImpl.class, CustomEjbAccessingLoginModule.class);
         war.addAsManifestResource(createPermissionsXmlAsset(new AuthPermission("modifyPrincipals")), "permissions.xml");
-
-        log.debug(war.toString(true));
 
         return war;
     }
@@ -155,9 +150,7 @@ public class RunAsLoginModuleTestCase {
     @OperateOnDeployment(DEP1)
     @Test
     public void testCleartextPassword1(@ArquillianResource URL url) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response;
-        log.debug("URL: " + url.toString());
 
         HttpGet httpget = new HttpGet(url.toString());
         String headerValue = Base64.getEncoder().encodeToString("anil:anil".getBytes());
@@ -165,7 +158,7 @@ public class RunAsLoginModuleTestCase {
         httpget.addHeader("Authorization", "Basic " + headerValue);
         String text;
 
-        try {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()){
             response = httpclient.execute(httpget);
             text = Utils.getContent(response);
         } catch (IOException e) {

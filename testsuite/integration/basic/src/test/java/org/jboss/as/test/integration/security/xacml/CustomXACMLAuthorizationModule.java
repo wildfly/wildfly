@@ -83,7 +83,7 @@ public class CustomXACMLAuthorizationModule extends AbstractAuthorizationModule 
      */
     @Override
     public int authorize(Resource resource) {
-        LOGGER.info("Authorizing resource: " + resource);
+        LOGGER.trace("Authorizing resource: " + resource);
         int result = AuthorizationContext.DENY;
 
         if (resource instanceof WebResource) {

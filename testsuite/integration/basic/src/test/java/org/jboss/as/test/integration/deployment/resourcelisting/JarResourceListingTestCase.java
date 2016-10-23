@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.ResourceListingUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.shrinkwrap.api.Archive;
@@ -57,26 +58,26 @@ public class JarResourceListingTestCase {
 
     @Test()
     public void testRecursiveJARResourceRetrieval() {
-        log.info("Test non-recursive listing of resources in JAR deployment");
+        log.trace("Test non-recursive listing of resources in JAR deployment");
         doTestJARResourceRetrieval(true, "/");
 
     }
 
     @Test()
     public void testNonRecursiveJARResourceRetrieval() {
-        log.info("Test recursive listing of resources in JAR deployment");
+        log.trace("Test recursive listing of resources in JAR deployment");
         doTestJARResourceRetrieval(false, "/");
     }
 
     @Test()
     public void testRecursiveJARResourceRetrievalForSpecifiedRootDir() {
-        log.info("Test recursive listing of resources in JAR deployment for root dir /META-INF");
+        log.trace("Test recursive listing of resources in JAR deployment for root dir /META-INF");
         doTestJARResourceRetrieval(true, "/META-INF");
     }
 
     @Test()
     public void testNonRecursiveJARResourceRetrievalForSpecifiedRootDir() {
-        log.info("Test non-recursive listing of resources in JAR deployment for root dir /META-INF");
+        log.trace("Test non-recursive listing of resources in JAR deployment for root dir /META-INF");
         doTestJARResourceRetrieval(false, "/META-INF");
     }
 
@@ -99,13 +100,13 @@ public class JarResourceListingTestCase {
         Collections.sort(foundResources);
         Collections.sort(resourcesInDeployment);
 
-        log.info("List of expected resources:");
+        log.trace("List of expected resources:");
         for (String expectedResource : resourcesInDeployment) {
-            log.info(expectedResource);
+            log.trace(expectedResource);
         }
-        log.info("List of found resources: ");
+        log.trace("List of found resources: ");
         for (String foundResource : foundResources) {
-            log.info(foundResource);
+            log.trace(foundResource);
         }
 
         Assert.assertArrayEquals("Not all resources from JAR archive are correctly listed", resourcesInDeployment.toArray(), foundResources.toArray());

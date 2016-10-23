@@ -144,7 +144,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity in node1 in memory db");
             assertEquals(employeeName, "Tom Brady");
-            log.info(new Date() + "about to read entity on node1 (from xpc queue)");
+            log.trace(new Date() + "about to read entity on node1 (from xpc queue)");
 
             employeeName = executeUrlWithAnswer(client, xpc1_get_url, "on node1, node1 should be able to read entity on node1");
             assertEquals(employeeName, "Tom Brady");
@@ -206,11 +206,11 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             // extended persistence context is available on node1
 
-            log.info(new Date() + "create employee entity ");
+            log.trace(new Date() + "create employee entity ");
             String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity that lives in the extended persistence context that this test will verify is always available");
             assertEquals(employeeName, "Tom Brady");
 
-            log.info(new Date() + "1. about to read entity on node1");
+            log.trace(new Date() + "1. about to read entity on node1");
             // ensure that we can get it from node 1
             employeeName = executeUrlWithAnswer(client, xpc1_get_url, "1. xpc on node1, node1 should be able to read entity on node1");
             assertEquals(employeeName, "Tom Brady");
@@ -219,7 +219,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             start(CONTAINER_2);
 
-            log.info(new Date() + "2. started node2 + deployed, about to read entity on node1");
+            log.trace(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "2. started node2, xpc on node1, node1 should be able to read entity on node1");
             assertEquals(employeeName, "Tom Brady");
@@ -229,7 +229,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             // failover to deployment2
             stop(CONTAINER_1); // failover #1 to node 2
 
-            log.info(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
+            log.trace(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "3. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc");
             assertEquals(employeeName, "Tom Brady");
@@ -238,7 +238,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             String destroyed = executeUrlWithAnswer(client, xpc2_getdestroy_url, "4. destroy the bean on node2");
             assertEquals(destroyed, "DESTROY");
-            log.info(new Date() + "4. test is done");
+            log.trace(new Date() + "4. test is done");
 
         }
     }

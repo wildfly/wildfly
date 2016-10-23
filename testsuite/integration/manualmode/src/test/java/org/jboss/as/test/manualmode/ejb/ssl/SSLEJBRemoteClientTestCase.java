@@ -104,11 +104,11 @@ public class SSLEJBRemoteClientTestCase {
 
     @BeforeClass
     public static void prepare() throws Exception {
-        log.info("*** BEFORE CLASS ***");
-        log.info("*** javax.net.ssl.trustStore="+System.getProperty("javax.net.ssl.trustStore"));
-        log.info("*** javax.net.ssl.trustStorePassword="+System.getProperty("javax.net.ssl.trustStorePassword"));
-        log.info("*** javax.net.ssl.keyStore="+System.getProperty("javax.net.ssl.keyStore"));
-        log.info("*** javax.net.ssl.keyStorePassword="+System.getProperty("javax.net.ssl.keyStorePassword"));
+        log.trace("*** BEFORE CLASS ***");
+        log.trace("*** javax.net.ssl.trustStore="+System.getProperty("javax.net.ssl.trustStore"));
+        log.trace("*** javax.net.ssl.trustStorePassword="+System.getProperty("javax.net.ssl.trustStorePassword"));
+        log.trace("*** javax.net.ssl.keyStore="+System.getProperty("javax.net.ssl.keyStore"));
+        log.trace("*** javax.net.ssl.keyStorePassword="+System.getProperty("javax.net.ssl.keyStorePassword"));
         // probably not required, we get these properties from maven
         /*System.setProperty("javax.net.ssl.trustStore", client_truststore_path);
         System.setProperty("javax.net.ssl.trustStorePassword", SSLRealmSetupTool.CLIENT_KEYSTORE_PASSWORD);
@@ -118,7 +118,7 @@ public class SSLEJBRemoteClientTestCase {
     }
 
     private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
-        log.info("*** reading EJBClientContextSelector properties");
+        log.trace("*** reading EJBClientContextSelector properties");
         // setup the selector
         final String clientPropertiesFile = "org/jboss/as/test/manualmode/ejb/ssl/jboss-ejb-client.properties";
         final InputStream inputStream = SSLEJBRemoteClientTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
@@ -128,9 +128,9 @@ public class SSLEJBRemoteClientTestCase {
         final Properties properties = new Properties();
         properties.load(inputStream);
         final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
-        log.info("*** creating EJBClientContextSelector");
+        log.trace("*** creating EJBClientContextSelector");
         final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
-        log.info("*** applying EJBClientContextSelector");
+        log.trace("*** applying EJBClientContextSelector");
         return EJBClientContext.setSelector(selector);
     }
 
@@ -139,15 +139,15 @@ public class SSLEJBRemoteClientTestCase {
     public void prepareServerOnce() throws Exception {
         if(!serverConfigDone) {
             // prepare server config and then restart
-            log.info("*** preparing server configuration");
+            log.trace("*** preparing server configuration");
             ManagementClient managementClient;
-            log.info("*** starting server");
+            log.trace("*** starting server");
             container.start(DEFAULT_JBOSSAS);
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
-            log.info("*** will configure server now");
+            log.trace("*** will configure server now");
             SSLRealmSetupTool.setup(managementClient);
-            log.info("*** restarting server");
+            log.trace("*** restarting server");
             container.stop(DEFAULT_JBOSSAS);
             container.start(DEFAULT_JBOSSAS);
             managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
@@ -156,7 +156,7 @@ public class SSLEJBRemoteClientTestCase {
             previousClientContextSelector = setupEJBClientContextSelector();
             serverConfigDone = true;
         } else {
-            log.info("*** Server already prepared, skipping config procedure");
+            log.trace("*** Server already prepared, skipping config procedure");
         }
     }
 
@@ -179,17 +179,17 @@ public class SSLEJBRemoteClientTestCase {
 
     @Test
     public void testStatelessBean() throws Exception {
-        log.info("**** deploying deployment with stateless beans");
+        log.trace("**** deploying deployment with stateless beans");
         deployer.deploy(DEPLOYMENT_STATELESS);
-        log.info("**** creating InitialContext");
+        log.trace("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
         try {
-            log.info("**** looking up StatelessBean through JNDI");
+            log.trace("**** looking up StatelessBean through JNDI");
             StatelessBeanRemote bean = (StatelessBeanRemote)
                     ctx.lookup("ejb:/" + MODULE_NAME_STATELESS + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getCanonicalName());
-            log.info("**** About to perform synchronous call on stateless bean");
+            log.trace("**** About to perform synchronous call on stateless bean");
             String response = bean.sayHello();
-            log.info("**** The answer is: " + response);
+            log.trace("**** The answer is: " + response);
             Assert.assertEquals("Remote invocation of EJB was not successful", StatelessBeanRemote.ANSWER, response);
             deployer.undeploy(DEPLOYMENT_STATELESS);
         } finally {
@@ -199,18 +199,18 @@ public class SSLEJBRemoteClientTestCase {
 
     @Test
     public void testStatelessBeanAsync() throws Exception {
-        log.info("**** deploying deployment with stateless beans");
+        log.trace("**** deploying deployment with stateless beans");
         deployer.deploy(DEPLOYMENT_STATELESS);
-        log.info("**** creating InitialContext");
+        log.trace("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
         try {
-            log.info("**** looking up StatelessBean through JNDI");
+            log.trace("**** looking up StatelessBean through JNDI");
             StatelessBeanRemote bean = (StatelessBeanRemote)
                     ctx.lookup("ejb:/" + MODULE_NAME_STATELESS + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getCanonicalName());
-            log.info("**** About to perform asynchronous call on stateless bean");
+            log.trace("**** About to perform asynchronous call on stateless bean");
             Future<String> futureResponse = bean.sayHelloAsync();
             String response = futureResponse.get();
-            log.info("**** The answer is: " + response);
+            log.trace("**** The answer is: " + response);
             Assert.assertEquals("Remote asynchronous invocation of EJB was not successful", StatelessBeanRemote.ANSWER, response);
             deployer.undeploy(DEPLOYMENT_STATELESS);
         } finally {
@@ -220,17 +220,17 @@ public class SSLEJBRemoteClientTestCase {
 
     @Test
     public void testStatefulBean() throws Exception {
-        log.info("**** deploying deployment with stateful beans");
+        log.trace("**** deploying deployment with stateful beans");
         deployer.deploy(DEPLOYMENT_STATEFUL);
-        log.info("**** creating InitialContext");
+        log.trace("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
         try {
-            log.info("**** looking up StatefulBean through JNDI");
+            log.trace("**** looking up StatefulBean through JNDI");
             StatefulBeanRemote bean = (StatefulBeanRemote)
                     ctx.lookup("ejb:/" + MODULE_NAME_STATEFUL + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulBeanRemote.class.getCanonicalName()+"?stateful");
-            log.info("**** About to perform synchronous call on stateful bean");
+            log.trace("**** About to perform synchronous call on stateful bean");
             String response = bean.sayHello();
-            log.info("**** The answer is: " + response);
+            log.trace("**** The answer is: " + response);
             Assert.assertEquals("Remote invocation of EJB was not successful", StatefulBeanRemote.ANSWER, response);
             deployer.undeploy(DEPLOYMENT_STATEFUL);
         } finally {
@@ -240,18 +240,18 @@ public class SSLEJBRemoteClientTestCase {
 
     @Test
     public void testStatefulBeanAsync() throws Exception {
-        log.info("**** deploying deployment with stateful beans");
+        log.trace("**** deploying deployment with stateful beans");
         deployer.deploy(DEPLOYMENT_STATEFUL);
-        log.info("**** creating InitialContext");
+        log.trace("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
         try {
-            log.info("**** looking up StatefulBean through JNDI");
+            log.trace("**** looking up StatefulBean through JNDI");
             StatefulBeanRemote bean = (StatefulBeanRemote)
                     ctx.lookup("ejb:/" + MODULE_NAME_STATEFUL + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulBeanRemote.class.getCanonicalName()+"?stateful");
-            log.info("**** About to perform asynchronous call on stateful bean");
+            log.trace("**** About to perform asynchronous call on stateful bean");
             Future<String> futureResponse = bean.sayHelloAsync();
             String response = futureResponse.get();
-            log.info("**** The answer is: " + response);
+            log.trace("**** The answer is: " + response);
             Assert.assertEquals("Remote asynchronous invocation of EJB was not successful", StatefulBeanRemote.ANSWER, response);
             deployer.undeploy(DEPLOYMENT_STATEFUL);
         } finally {

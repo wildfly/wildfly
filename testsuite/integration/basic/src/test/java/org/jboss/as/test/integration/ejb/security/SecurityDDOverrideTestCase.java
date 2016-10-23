@@ -69,7 +69,6 @@ public class SecurityDDOverrideTestCase {
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
                 .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml")
                 .addPackage(CommonCriteria.class.getPackage());
-        logger.info(jar.toString(true));
         return jar;
     }
 

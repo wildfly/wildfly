@@ -106,7 +106,7 @@ public class SendToQueueFromWithinTransactionTest {
     public void receivedMessage(@Observes Message message) {
         messageReceived = true;
         try {
-            logger.info("caught event... message=" + ((TextMessage) message).getText());
+            logger.trace("caught event... message=" + ((TextMessage) message).getText());
         } catch (JMSException ex) {
             ex.printStackTrace();
             Assert.fail(ex.getMessage());

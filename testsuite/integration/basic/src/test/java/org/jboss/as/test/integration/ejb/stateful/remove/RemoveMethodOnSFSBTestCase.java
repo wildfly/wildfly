@@ -22,13 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.stateful.remove;
 
-import java.util.logging.Logger;
-
 import javax.ejb.EJB;
 import javax.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -50,7 +49,6 @@ public class RemoveMethodOnSFSBTestCase {
         // create the ejb jar
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "sfsb-remove-method-test.jar");
         jar.addPackage(SFSBWithRemoveMethods.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -70,7 +68,7 @@ public class RemoveMethodOnSFSBTestCase {
             Assert.fail("SFSB was expected to be removed after a call to the @Remove method");
         } catch (NoSuchEJBException nsee) {
             // expected
-            log.info("Got the expected NoSuchEJBException after invoking remove on the SFSB");
+            log.trace("Got the expected NoSuchEJBException after invoking remove on the SFSB");
         }
     }
 
@@ -119,7 +117,7 @@ public class RemoveMethodOnSFSBTestCase {
             Assert.fail("Did not get the expected NoSuchEJBException on second invocation on SFSB");
         } catch (NoSuchEJBException nsee) {
             // expected
-            log.info("Got the expected NoSuchEJBException on second invocation on SFSB");
+            log.trace("Got the expected NoSuchEJBException on second invocation on SFSB");
         }
 
     }
@@ -155,7 +153,7 @@ public class RemoveMethodOnSFSBTestCase {
             Assert.fail("Did not get the expected NoSuchEJBException on second invocation on SFSB");
         } catch (NoSuchEJBException nsee) {
             // expected
-            log.info("Got the expected NoSuchEJBException on second invocation on SFSB");
+            log.trace("Got the expected NoSuchEJBException on second invocation on SFSB");
         }
     }
 
@@ -172,7 +170,7 @@ public class RemoveMethodOnSFSBTestCase {
             Assert.fail("SFSB was expected to be removed after a call to the @Remove method");
         } catch (NoSuchEJBException nsee) {
             // expected
-            log.info("Got the expected NoSuchEJBException after invoking remove on the SFSB");
+            log.trace("Got the expected NoSuchEJBException after invoking remove on the SFSB");
         }
     }
 

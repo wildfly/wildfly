@@ -63,7 +63,7 @@ public class MDB21TestCase extends AbstractMDB2xTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             jmsAdminOperations.createJmsQueue("ejb2x/queue", "java:jboss/ejb2x/queue");
             jmsAdminOperations.createJmsQueue("ejb2x/replyQueue", "java:jboss/ejb2x/replyQueue");
         }
@@ -87,7 +87,6 @@ public class MDB21TestCase extends AbstractMDB2xTestCase {
         ejbJar.addAsManifestResource(MDB21TestCase.class.getPackage(), "ejb-jar-21.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
-        logger.info(ejbJar.toString(true));
         return ejbJar;
     }
 

@@ -81,7 +81,7 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
      *      java.lang.String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        LOGGER.info("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
+        LOGGER.trace("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
         final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
@@ -89,7 +89,7 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         map.put("hostname", cannonicalHost);
         final String supportedEncTypes = Utils.IBM_JDK ? getSupportedEncTypes() : "des-cbc-md5,des3-cbc-sha1-kd";
         map.put("enctypes", supportedEncTypes);
-        LOGGER.info("Supported enctypes in krb5.conf: " + supportedEncTypes);
+        LOGGER.trace("Supported enctypes in krb5.conf: " + supportedEncTypes);
         FileUtils.write(
                 KRB5_CONF_FILE,
                 StrSubstitutor.replace(
@@ -102,7 +102,7 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
                 createKeytab(userForKeyTab.getUser(), userForKeyTab.getPassword(), userForKeyTab.getKeyTabFileName());
             }
         }
-        LOGGER.info("Setting Kerberos configuration: " + KRB5_CONF_FILE);
+        LOGGER.trace("Setting Kerberos configuration: " + KRB5_CONF_FILE);
         origKrb5Conf = Utils.setSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath());
         origKrbDebug = Utils.setSystemProperty("sun.security.krb5.debug", "true");
         origIbmJGSSDebug = Utils.setSystemProperty("com.ibm.security.jgss.debug", "all");
@@ -179,7 +179,7 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
      * @throws IOException
      */
     protected void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
-        LOGGER.info("Principal name: " + principalName);
+        LOGGER.trace("Principal name: " + principalName);
         final KerberosTime timeStamp = new KerberosTime();
 
         DataOutputStream dos = null;

@@ -26,8 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -75,31 +73,9 @@ public class EntityManagerFactoryTestCase {
             return interfaceType.cast(iniCtx.lookup(name));
 
         } catch (NamingException e) {
-            dumpJndi("");
             throw e;
         }
     }
-
-    private void dumpJndi(String s) {
-       /* try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }*/
-    }
-
-    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
-        }
-    }
-
 
     /**
      * Test that EntityManagerFactory can be bind to specified JNDI name

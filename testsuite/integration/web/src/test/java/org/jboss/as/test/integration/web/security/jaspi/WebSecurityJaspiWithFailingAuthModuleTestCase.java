@@ -36,7 +36,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
-import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.basic.WebSecurityBASICTestCase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -73,7 +72,6 @@ public class WebSecurityJaspiWithFailingAuthModuleTestCase {
         war.addAsResource(WebSecurityBASICTestCase.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(WebSecurityBASICTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
-        WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
 
@@ -93,13 +91,10 @@ public class WebSecurityJaspiWithFailingAuthModuleTestCase {
 
             HttpGet httpget = new HttpGet(url.toExternalForm() + "secured/");
 
-            System.out.println("executing request" + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
-            System.out.println("----------------------------------------");
             StatusLine statusLine = response.getStatusLine();
-            System.out.println(statusLine);
             if (entity != null) {
                 System.out.println("Response content length: " + entity.getContentLength());
             }

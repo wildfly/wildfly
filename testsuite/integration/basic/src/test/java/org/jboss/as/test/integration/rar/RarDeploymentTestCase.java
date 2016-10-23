@@ -27,7 +27,6 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.rar.ejb.NoOpEJB;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -43,9 +42,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class RarDeploymentTestCase {
-
-
-    private static final Logger logger = Logger.getLogger(RarDeploymentTestCase.class);
 
     /**
      * .ear
@@ -64,18 +60,15 @@ public class RarDeploymentTestCase {
     public static Archive createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         ejbJar.addClass(NoOpEJB.class);
-        logger.info(ejbJar.toString(true));
 
         final JavaArchive rar = ShrinkWrap.create(JavaArchive.class, "helloworld.rar");
         rar.addPackage(HelloWorldResourceAdapter.class.getPackage());
-        logger.info(rar.toString(true));
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "rar-in-ear-test.ear");
         ear.addAsModule(rar);
         ear.addAsModule(ejbJar);
         ear.addAsManifestResource(RarDeploymentTestCase.class.getPackage(), "application.xml", "application.xml");
 
-        logger.info(ear.toString(true));
         return ear;
     }
 

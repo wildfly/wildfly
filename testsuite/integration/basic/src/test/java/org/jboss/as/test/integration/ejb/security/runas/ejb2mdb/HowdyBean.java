@@ -54,8 +54,8 @@ public class HowdyBean implements Howdy {
     Hola hola;
 
     public String sayHowdy() {
-        log.info("HowdyBean.sayHowdy(). Caller name: " + context.getCallerPrincipal().getName());
-        log.info("[Howdy] calling sayHola: " + hola.sayHola());
+        log.trace("HowdyBean.sayHowdy(). Caller name: " + context.getCallerPrincipal().getName());
+        log.trace("[Howdy] calling sayHola: " + hola.sayHola());
 
         String name = getName();
 

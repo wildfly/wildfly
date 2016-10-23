@@ -43,7 +43,7 @@ public class GoodByeBean implements SessionBean {
 
     public String sayGoodBye(String userID) {
         String greeting = "GoodBye " + userID;
-        log.info("Inside GoodByeBean.sayGoodBye(). Greeting: " + greeting);
+        log.trace("Inside GoodByeBean.sayGoodBye(). Greeting: " + greeting);
         return greeting;
     }
 

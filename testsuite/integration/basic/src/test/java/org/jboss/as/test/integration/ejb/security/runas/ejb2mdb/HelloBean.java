@@ -71,7 +71,7 @@ public class HelloBean implements Hello {
             throw new IllegalArgumentException("User is in role!!");
         }
 
-        log.info("HelloBean - sending message");
+        log.trace("HelloBean - sending message");
         String msg = this.sendMessage();
 
         String name = getName();
@@ -103,7 +103,7 @@ public class HelloBean implements Hello {
 
             MessageConsumer consumer = session.createConsumer(replyQueue);
             TextMessage replyMsg = (TextMessage) consumer.receive(5000);
-            log.info("Message received:" + replyMsg);
+            log.trace("Message received:" + replyMsg);
             return replyMsg.getText();
         } finally {
             if (ic != null) {
@@ -127,7 +127,7 @@ public class HelloBean implements Hello {
                 conn.close();
             }
         } catch (JMSException jmse) {
-            log.info("connection close failed: " + jmse);
+            log.trace("connection close failed: " + jmse);
         }
     }
 

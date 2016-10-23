@@ -191,7 +191,7 @@ public abstract class AbstractTimerManagementTestCase {
         operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(Boolean.toString(true));
         final ModelNode result = this.managementClient.getControllerClient().execute(operation);
         if (!Operations.isSuccessfulOutcome(result)) {
-            throw new OperationFailedException(result);
+            throw new OperationFailedException(result.asString());
         }
 
         return result.get(ModelDescriptionConstants.RESULT);
@@ -207,7 +207,7 @@ public abstract class AbstractTimerManagementTestCase {
                 PathElement.pathElement("stateless-session-bean", getBeanClassName()),
                 PathElement.pathElement("service", "timer-service"));
         final ModelNode operation = Util.createOperation("read-resource", address);
-        operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(Boolean.toString(true));
+        operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         final ModelNode result = managementClient.getControllerClient().execute(operation);
 
         Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME)

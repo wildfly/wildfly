@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.jca.archive;
 
 import static org.junit.Assert.fail;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -69,12 +69,12 @@ public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
             enabled = getArchiveValidationAttribute("enabled");
             failingOnError = getArchiveValidationAttribute("fail-on-error");
             failingOnWarning = getArchiveValidationAttribute("fail-on-warn");
-            log.info("//save//" + enabled + "//" + failingOnError + "//" + failingOnWarning);
+            log.trace("//save//" + enabled + "//" + failingOnError + "//" + failingOnWarning);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            log.info("//restore//" + enabled + "//" + failingOnError + "//" + failingOnWarning);
+            log.trace("//restore//" + enabled + "//" + failingOnError + "//" + failingOnWarning);
             setArchiveValidation(enabled, failingOnError, failingOnWarning);
 
         }

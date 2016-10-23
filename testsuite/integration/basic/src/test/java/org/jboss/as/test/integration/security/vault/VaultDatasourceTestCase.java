@@ -84,7 +84,7 @@ public class VaultDatasourceTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            LOGGER.info("RESOURCE_LOCATION=" + RESOURCE_LOCATION);
+            LOGGER.trace("RESOURCE_LOCATION=" + RESOURCE_LOCATION);
 
             VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
 

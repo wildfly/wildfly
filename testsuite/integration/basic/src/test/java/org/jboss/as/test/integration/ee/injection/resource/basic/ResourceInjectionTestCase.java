@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.basic;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;

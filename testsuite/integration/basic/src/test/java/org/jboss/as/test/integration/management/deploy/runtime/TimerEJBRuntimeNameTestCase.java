@@ -171,7 +171,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
             context.close();
         } catch (Throwable t) {
             // just log
-            log.info("Ignoring a problem which occurred while closing: " + context, t);
+            log.trace("Ignoring a problem which occurred while closing: " + context, t);
         }
         context = null;
     }

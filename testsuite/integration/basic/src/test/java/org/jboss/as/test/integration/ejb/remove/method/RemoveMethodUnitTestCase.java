@@ -29,7 +29,6 @@ import javax.rmi.PortableRemoteObject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -46,8 +45,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class RemoveMethodUnitTestCase {
-    private static final Logger log = Logger.getLogger(RemoveMethodUnitTestCase.class);
-
     private static final String DD_BASED_MODULE_NAME = "remove-method-dd-test";
     private static final String ANNOTATION_BASED_MODULE_NAME = "remove-method-test";
 
@@ -58,12 +55,10 @@ public class RemoveMethodUnitTestCase {
     public static Archive<?> deployment() {
         final JavaArchive ejb3Jar = ShrinkWrap.create(JavaArchive.class, ANNOTATION_BASED_MODULE_NAME + ".jar").addPackage(
                 RemoveMethodUnitTestCase.class.getPackage());
-        log.info(ejb3Jar.toString(true));
 
         final JavaArchive ejb2Jar = ShrinkWrap.create(JavaArchive.class, DD_BASED_MODULE_NAME + ".jar").addClasses(Ejb21ViewDDBean.class,
                 Ejb21View.class, Ejb21ViewHome.class, RemoveMethodUnitTestCase.class)
                 .addAsManifestResource(RemoveMethodUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        log.info(ejb2Jar.toString(true));
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "remove-method-test.ear");
         ear.addAsModules(ejb2Jar, ejb3Jar);

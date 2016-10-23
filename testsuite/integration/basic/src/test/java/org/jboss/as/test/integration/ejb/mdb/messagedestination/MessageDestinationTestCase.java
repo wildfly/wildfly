@@ -32,7 +32,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -49,8 +48,6 @@ import org.junit.runner.RunWith;
 @ServerSetup({MessageDestinationTestCase.JmsQueueSetup.class})
 public class MessageDestinationTestCase {
 
-    private static final Logger logger = Logger.getLogger(MessageDestinationTestCase.class);
-
     @EJB (mappedName = "java:module/MessagingEjb")
     private MessagingEjb messagingMdb;
 
@@ -60,7 +57,7 @@ public class MessageDestinationTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
+            jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             jmsAdminOperations.createJmsQueue("messagedestinationtest/queue", "java:jboss/mdbtest/messageDestinationQueue");
             jmsAdminOperations.createJmsQueue("messagedestinationtest/replyQueue", "java:jboss/mdbtest/messageDestinationReplyQueue");
         }
@@ -85,7 +82,6 @@ public class MessageDestinationTestCase {
         ejbJar.addAsManifestResource(MessageDestinationTestCase.class.getPackage(),  "ejb-jar.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MessageDestinationTestCase.class.getPackage(),  "jboss-ejb3.xml", "jboss-ejb3.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
-        logger.info(ejbJar.toString(true));
         return ejbJar;
     }
 

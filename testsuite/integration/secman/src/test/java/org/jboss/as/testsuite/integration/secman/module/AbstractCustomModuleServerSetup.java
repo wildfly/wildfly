@@ -55,7 +55,7 @@ public abstract class AbstractCustomModuleServerSetup implements ServerSetupTask
      */
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        LOGGER.info("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
+        LOGGER.trace("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
         FileUtils.deleteDirectory(WORK_DIR);
         removeModule(getModuleSuffix());
         WORK_DIR.mkdirs();
@@ -70,7 +70,7 @@ public abstract class AbstractCustomModuleServerSetup implements ServerSetupTask
      */
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        LOGGER.info("Removing custom module");
+        LOGGER.trace("Removing custom module");
         FileUtils.deleteDirectory(WORK_DIR);
         removeModule(getModuleSuffix());
     }

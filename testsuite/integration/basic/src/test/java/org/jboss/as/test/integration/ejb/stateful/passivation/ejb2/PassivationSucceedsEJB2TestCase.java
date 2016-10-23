@@ -31,7 +31,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.stateful.passivation.PassivationTestCaseSetup;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -49,7 +48,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationSucceedsEJB2TestCase {
-    private static final Logger log = Logger.getLogger(PassivationSucceedsEJB2TestCase.class);
     private static String jndi;
 
     @ArquillianResource
@@ -66,7 +64,6 @@ public class PassivationSucceedsEJB2TestCase {
         jar.addClasses(PassivationTestCaseSetup.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
-        log.info(jar.toString(true));
         return jar;
     }
 

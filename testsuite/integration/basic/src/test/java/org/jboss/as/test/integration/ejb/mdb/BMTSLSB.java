@@ -24,12 +24,12 @@ public class BMTSLSB {
 
 
     public void doSomethingWithUserTransaction() {
-        logger.info("Beginning UserTransaction");
+        logger.trace("Beginning UserTransaction");
         boolean utStarted = false;
         try {
             userTransaction.begin();
             utStarted = true;
-            logger.info("UserTransaction started");
+            logger.trace("UserTransaction started");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

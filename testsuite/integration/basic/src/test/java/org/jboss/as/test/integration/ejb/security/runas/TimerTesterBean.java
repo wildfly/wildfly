@@ -80,13 +80,13 @@ public class TimerTesterBean implements TimerTester {
     @Timeout
     public void timeoutHandler(Timer timer) {
         callerPrincipal = ctx.getCallerPrincipal();
-        log.info("timeoutHanlder() - getCallerPrincipal: " + callerPrincipal);
+        log.trace("timeoutHanlder() - getCallerPrincipal: " + callerPrincipal);
 
         try {
             UncheckedStatelessBean tester = (UncheckedStatelessBean) new InitialContext().lookup("java:module/"
                     + UncheckedStatelessBean.class.getSimpleName());
             calleeCallerPrincipal = tester.unchecked();
-            log.info("callee: " + calleeCallerPrincipal);
+            log.trace("callee: " + calleeCallerPrincipal);
             timerCalled = true;
         } catch (Exception e) {
             log.error(e);

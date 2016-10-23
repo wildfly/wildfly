@@ -64,7 +64,7 @@ public class SingletonBean {
 
     @Timeout
     private void onTimeout(final Timer timer) throws InterruptedException {
-        log.info("Timeout invoked for " + this + " on timer " + timer);
+        log.trace("Timeout invoked for " + this + " on timer " + timer);
         this.timeoutNotifyingLatch.countDown();
         log.debug("Waiting for timer will be permitted to continue");
         this.timeoutWaiter.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);

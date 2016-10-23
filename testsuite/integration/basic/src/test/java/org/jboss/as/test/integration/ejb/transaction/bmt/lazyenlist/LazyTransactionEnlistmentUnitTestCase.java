@@ -27,7 +27,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -43,8 +42,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class LazyTransactionEnlistmentUnitTestCase {
-    private static final Logger log = Logger.getLogger(LazyTransactionEnlistmentUnitTestCase.class);
-
     @ArquillianResource
     InitialContext ctx;
 
@@ -54,7 +51,6 @@ public class LazyTransactionEnlistmentUnitTestCase {
                 LazyTransactionEnlistmentUnitTestCase.class.getPackage());
         jar.addAsManifestResource(LazyTransactionEnlistmentUnitTestCase.class.getPackage(), "persistence.xml",
                 "persistence.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -63,17 +59,13 @@ public class LazyTransactionEnlistmentUnitTestCase {
         ATM atm = (ATM) ctx.lookup("ejb:/tx-lazy-enlist/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
         // if only
         long id = atm.createAccount(1000000);
-        //System.out.println("*** id " + id);
         double balance = atm.getBalance(id);
-        //System.out.println("*** balance " + balance);
         Assert.assertEquals(1000000, balance, Double.NaN);
 
         balance = atm.depositTwiceWithRollback(id, 125000, 250000);
-        //System.out.println("*** balance " + balance);
         // the entity state itself won't be rolled back
         Assert.assertEquals(1375000, balance, Double.NaN);
         balance = atm.getBalance(id);
-        //System.out.println("*** balance " + balance);
         Assert.assertEquals(1125000, balance, Double.NaN);
     }
 
@@ -82,15 +74,11 @@ public class LazyTransactionEnlistmentUnitTestCase {
         ATM atm = (ATM) ctx.lookup("ejb:/tx-lazy-enlist/" + ATMBean.class.getSimpleName() + "!" + ATM.class.getName());
         // if only
         long id = atm.createAccount(1000000);
-        //System.out.println("*** id " + id);
         double balance = atm.getBalance(id);
-        //System.out.println("*** balance " + balance);
         Assert.assertEquals(1000000, balance, Double.NaN);
 
         balance = atm.withdrawTwiceWithRollback(id, 125000, 250000);
-        //System.out.println("*** balance " + balance);
         balance = atm.getBalance(id);
-        //System.out.println("*** balance " + balance);
         Assert.assertEquals(875000, balance, Double.NaN);
     }
 }

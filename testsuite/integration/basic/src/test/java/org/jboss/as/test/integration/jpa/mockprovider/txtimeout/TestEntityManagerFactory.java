@@ -76,7 +76,6 @@ public class TestEntityManagerFactory implements InvocationHandler {
                 proxyInterfaces,
                 testEntityManager
         );
-        System.out.println("returning new EntityManager");
         return proxyEntityManager;
     }
 

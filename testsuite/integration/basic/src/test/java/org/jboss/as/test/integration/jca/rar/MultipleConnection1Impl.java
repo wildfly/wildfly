@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.cci.ConnectionMetaData;
 import javax.resource.cci.Interaction;
@@ -68,7 +68,7 @@ public class MultipleConnection1Impl implements MultipleConnection1 {
      * @return String
      */
     public String test(String s) {
-        log.finest("test()");
+        log.trace("test()");
         return null;
 
     }

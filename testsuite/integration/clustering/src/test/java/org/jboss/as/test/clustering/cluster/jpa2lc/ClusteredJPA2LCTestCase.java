@@ -44,7 +44,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -74,7 +73,6 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 @RunAsClient
 public class ClusteredJPA2LCTestCase {
 
-    private static final Logger log = Logger.getLogger(ClusteredJPA2LCTestCase.class);
     private static final String MODULE_NAME = "clustered2lc";
 
     @ArquillianResource
@@ -100,7 +98,6 @@ public class ClusteredJPA2LCTestCase {
         war.addPackage(ClusteredJPA2LCTestCase.class.getPackage());
         war.addAsWebInfResource(ClusteredJPA2LCTestCase.class.getPackage(), "persistence.xml",
                 "classes/META-INF/persistence.xml");
-        log.info(war.toString(true));
         return war;
     }
 

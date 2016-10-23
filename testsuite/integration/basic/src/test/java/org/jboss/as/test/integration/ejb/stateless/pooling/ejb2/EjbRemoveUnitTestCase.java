@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.ejb.stateless.pooling.ejb2;
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.naming.InitialContext;
 
@@ -92,7 +92,6 @@ public class EjbRemoveUnitTestCase {
     public static Archive<?> deploymentSingleton()  {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
                 .addClasses(CounterSingleton.class);
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -108,7 +107,6 @@ public class EjbRemoveUnitTestCase {
         jar.addAsManifestResource(EjbRemoveUnitTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(EjbRemoveUnitTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.single.jar, org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
-        log.info(jar.toString(true));
         return jar;
     }
 

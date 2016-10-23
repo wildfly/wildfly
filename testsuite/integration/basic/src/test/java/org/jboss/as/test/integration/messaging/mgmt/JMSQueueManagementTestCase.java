@@ -48,6 +48,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,6 +63,7 @@ import org.junit.runner.RunWith;
 @RunAsClient()
 @RunWith(Arquillian.class)
 public class JMSQueueManagementTestCase {
+    private static final Logger LOGGER = Logger.getLogger(JMSQueueManagementTestCase.class);
 
     private static final String EXPORTED_PREFIX = "java:jboss/exported/";
 
@@ -411,13 +413,13 @@ public class JMSQueueManagementTestCase {
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
             if (!"success".equals(outcome)) {
-                System.out.println(response);
+                LOGGER.trace(response);
             }
             Assert.assertEquals("success", outcome);
             return response.get("result");
         } else {
             if ("success".equals(outcome)) {
-                System.out.println(response);
+                LOGGER.trace(response);
             }
             Assert.assertEquals("failed", outcome);
             return response.get("failure-description");

@@ -69,8 +69,6 @@ public class SFSB {
         // static {
         try {
 
-            //System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
-
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
@@ -87,7 +85,7 @@ public class SFSB {
             sessionFactory = configuration.buildSessionFactory();
 
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
-            System.err.println("Initial SessionFactory creation failed." + ex);
+            ex.printStackTrace();
             throw new ExceptionInInitializerError(ex);
         }
     }

@@ -24,7 +24,7 @@ package org.jboss.as.test.smoke.rar;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionDefinition;

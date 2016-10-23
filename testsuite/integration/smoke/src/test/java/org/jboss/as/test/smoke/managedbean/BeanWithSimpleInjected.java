@@ -71,7 +71,7 @@ public class BeanWithSimpleInjected extends BeanParent {
             throw new RuntimeException("PostConstruct called before @Inject method");
         }
 
-        log.info("-----> Constructed BeanWithSimpleInjected, simple=" + simple);
+        log.trace("-----> Constructed BeanWithSimpleInjected, simple=" + simple);
     }
 
     @Interceptors(OtherInterceptorBean.class)
@@ -105,7 +105,7 @@ public class BeanWithSimpleInjected extends BeanParent {
         if (!context.getMethod().getName().equals("echo")) {
             return context.proceed();
         }
-        log.info("-----> Intercepting call to " + context.getMethod());
+        log.trace("-----> Intercepting call to " + context.getMethod());
         return "#BeanWithSimpleInjected#" + context.proceed();
     }
 }

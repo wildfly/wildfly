@@ -54,7 +54,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebCERTTestsSecurityDomainSetup;
-import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -88,7 +87,6 @@ public class WebSecurityCERTTestCase {
         war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
-        WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
 
@@ -153,7 +151,6 @@ public class WebSecurityCERTTestCase {
             HttpResponse response = httpclient.execute(httpget);
 
             StatusLine statusLine = response.getStatusLine();
-            System.out.println("Response: " + statusLine);
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
         } finally {
             // When HttpClient instance is no longer needed,

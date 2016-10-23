@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.jca.rar;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -99,7 +99,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      * @throws ResourceException Generic exception
      */
     public Object createConnectionFactory(ConnectionManager cxManager) throws ResourceException {
-        log.finest("createConnectionFactory()");
+        log.trace("createConnectionFactory()");
         return new MultipleConnectionFactory2Impl(this, cxManager);
     }
 
@@ -123,7 +123,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      */
     public ManagedConnection createManagedConnection(Subject subject,
                                                      ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        log.finest("createManagedConnection()");
+        log.trace("createManagedConnection()");
         return new MultipleManagedConnection2(this);
     }
 
@@ -138,7 +138,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      */
     public ManagedConnection matchManagedConnections(Set connectionSet,
                                                      Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        log.finest("matchManagedConnections()");
+        log.trace("matchManagedConnections()");
         ManagedConnection result = null;
         Iterator it = connectionSet.iterator();
         while (result == null && it.hasNext()) {
@@ -158,7 +158,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      * @throws ResourceException generic exception
      */
     public PrintWriter getLogWriter() throws ResourceException {
-        log.finest("getLogWriter()");
+        log.trace("getLogWriter()");
         return logwriter;
     }
 
@@ -169,7 +169,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      * @throws ResourceException generic exception
      */
     public void setLogWriter(PrintWriter out) throws ResourceException {
-        log.finest("setLogWriter()");
+        log.trace("setLogWriter()");
         logwriter = out;
     }
 
@@ -179,7 +179,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      * @return The handle
      */
     public ResourceAdapter getResourceAdapter() {
-        log.finest("getResourceAdapter()");
+        log.trace("getResourceAdapter()");
         return ra;
     }
 
@@ -189,7 +189,7 @@ public class MultipleManagedConnectionFactory2 implements ManagedConnectionFacto
      * @param ra The handle
      */
     public void setResourceAdapter(ResourceAdapter ra) {
-        log.finest("setResourceAdapter()");
+        log.trace("setResourceAdapter()");
         this.ra = ra;
     }
 

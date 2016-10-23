@@ -86,7 +86,7 @@ public class PicketLinkTestBase {
         HttpGet httpGet = new HttpGet(requestURI);
         HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
-        LOGGER.info("Request to: " + requestURI + " responds: " + statusCode);
+        LOGGER.trace("Request to: " + requestURI + " responds: " + statusCode);
 
         assertEquals("Unexpected status code", expectedStatusCode, statusCode);
 
@@ -121,7 +121,7 @@ public class PicketLinkTestBase {
         httpGet.setParams(params);
         HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
-        LOGGER.info("Request to: " + requestURI + " responds: " + statusCode);
+        LOGGER.trace("Request to: " + requestURI + " responds: " + statusCode);
 
         Header locationHeader = response.getFirstHeader("location");
         if (locationHeader != null) {
@@ -237,7 +237,7 @@ public class PicketLinkTestBase {
                                                    final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
             LoginException {
         uri = Utils.replaceHost(uri, Utils.getDefaultHost(true));
-        LOGGER.info("Requesting URI: " + uri);
+        LOGGER.trace("Requesting URI: " + uri);
         httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
         httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
 

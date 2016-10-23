@@ -77,7 +77,7 @@ public class HelloEJBCallServlet extends HttpServlet {
             final Context ctx = new InitialContext();
             final Hello ejbObject = (Hello) ctx.lookup(jndiName);
             final String msg = ejbObject.sayHello();
-            LOGGER.info(msg);
+            LOGGER.trace(msg);
             writer.append(msg);
             ctx.close();
         } catch (NamingException ex) {

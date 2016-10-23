@@ -47,7 +47,7 @@ public class CookieReadServlet extends HttpServlet {
         out.println("<head><title>Cookie Read Servlet</title></head><body><pre>");
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            log.info("cookie is null");
+            log.trace("cookie is null");
             setCookies(request, response);
             out.println("Server set cookies correctly");
         } else {

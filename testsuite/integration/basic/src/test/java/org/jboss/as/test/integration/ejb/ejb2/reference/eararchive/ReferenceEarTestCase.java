@@ -27,7 +27,6 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -43,7 +42,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class ReferenceEarTestCase {
-    private static final Logger log = Logger.getLogger(ReferenceEarTestCase.class);
 
     @ArquillianResource
     InitialContext ctx;
@@ -70,7 +68,6 @@ public class ReferenceEarTestCase {
         jar2.addAsManifestResource(ReferenceEarTestCase.class.getPackage(), "jboss-ejb3-ejb3.xml", "jboss-ejb3.xml");
         jar2.addAsManifestResource(ReferenceEarTestCase.class.getPackage(), "ejb-jar-ejb3.xml", "ejb-jar.xml");
 
-        log.info(ear.toString(true));
         ear.addAsModule(jar1);
         ear.addAsModule(jar2);
         return ear;

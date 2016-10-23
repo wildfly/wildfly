@@ -57,11 +57,11 @@ public class LifecycleCounterMDB implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            log.info(this + " received message " + message);
+            log.trace(this + " received message " + message);
             final Destination replyTo = message.getJMSReplyTo();
             // ignore messages that need no reply
             if (replyTo == null) {
-                log.info(this + " noticed that no reply-to replyTo has been set. Just returning");
+                log.trace(this + " noticed that no reply-to replyTo has been set. Just returning");
                 return;
             }
             try (
@@ -80,13 +80,13 @@ public class LifecycleCounterMDB implements MessageListener {
     @PreDestroy
     protected void preDestroy() {
 
-        log.info("@PreDestroy on " + this);
+        log.trace("@PreDestroy on " + this);
         lifeCycleTracker.trackPreDestroyOn(this.getClass().getName());
     }
 
     @PostConstruct
     protected void postConstruct() {
         lifeCycleTracker.trackPostConstructOn(this.getClass().getName());
-        log.info(this + " MDB @PostConstructed");
+        log.trace(this + " MDB @PostConstructed");
     }
 }

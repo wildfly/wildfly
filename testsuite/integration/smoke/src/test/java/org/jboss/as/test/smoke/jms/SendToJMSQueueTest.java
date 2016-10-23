@@ -145,31 +145,31 @@ public class SendToJMSQueueTest {
         MessageConsumer consumer = null;
         try {
             // CREATE CONSUMER
-            logger.info("******* Creating connection for consumer");
+            logger.trace("******* Creating connection for consumer");
             consumerConnection = factory.createConnection();
-            logger.info("Creating session for consumer");
+            logger.trace("Creating session for consumer");
             consumerSession = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            logger.info("Creating consumer");
+            logger.trace("Creating consumer");
             consumer = consumerSession.createConsumer(queue2);
-            logger.info("Start session");
+            logger.trace("Start session");
             consumerConnection.start();
 
             // SEND A MESSAGE
-            logger.info("***** Start - sending message to topic");
+            logger.trace("***** Start - sending message to topic");
             senderConnection = factory.createConnection();
-            logger.info("Creating session..");
+            logger.trace("Creating session..");
             senderSession = senderConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
             MessageProducer producer = senderSession.createProducer(queue2);
             TextMessage message = senderSession.createTextMessage("Hahaha!");
 
-            logger.info("Sending..");
+            logger.trace("Sending..");
             producer.send(message);
-            logger.info("Message sent");
+            logger.trace("Message sent");
             senderConnection.start();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            logger.info("Closing connections and sessions");
+            logger.trace("Closing connections and sessions");
             if (senderSession != null) {
                 senderSession.close();
             }
@@ -181,9 +181,9 @@ public class SendToJMSQueueTest {
         Message receivedMessage = null;
         Message receivedMessage2 = null;
         try {
-            logger.info("Receiving");
+            logger.trace("Receiving");
             receivedMessage = consumer.receive(5000);
-            logger.info("Received a message");
+            logger.trace("Received a message");
             receivedMessage.acknowledge();
             consumerSession.recover();
             receivedMessage2 = consumer.receive(5000);
@@ -222,31 +222,31 @@ public class SendToJMSQueueTest {
         MessageConsumer consumer = null;
         try {
             // CREATE SUBSCRIBER
-            logger.info("******* Creating connection for consumer");
+            logger.trace("******* Creating connection for consumer");
             consumerConnection = factory.createConnection();
-            logger.info("Creating session for consumer");
+            logger.trace("Creating session for consumer");
             consumerSession = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            logger.info("Creating consumer");
+            logger.trace("Creating consumer");
             consumer = consumerSession.createConsumer(queue3);
-            logger.info("Start session");
+            logger.trace("Start session");
             consumerConnection.start();
 
             // SEND A MESSAGE
-            logger.info("***** Start - sending message to topic");
+            logger.trace("***** Start - sending message to topic");
             senderConnection = factory.createConnection();
-            logger.info("Creating session..");
+            logger.trace("Creating session..");
             senderSession = senderConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
             MessageProducer producer = senderSession.createProducer(queue3);
             TextMessage message = senderSession.createTextMessage("Hello world!");
 
-            logger.info("Sending..");
+            logger.trace("Sending..");
             producer.send(message);
-            logger.info("Message sent");
+            logger.trace("Message sent");
             senderConnection.start();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            logger.info("Closing connections and sessions");
+            logger.trace("Closing connections and sessions");
             if (senderSession != null) {
                 senderSession.close();
             }
@@ -257,7 +257,7 @@ public class SendToJMSQueueTest {
 
         Message receivedMessage = null;
         try {
-            logger.info("Receiving");
+            logger.trace("Receiving");
             receivedMessage = consumer.receive(5000);
             try {
                 Thread.sleep(1000);

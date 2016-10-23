@@ -99,7 +99,7 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
         int avail = getStatisticsAttribute("AvailableCount", node);
         int active = getStatisticsAttribute("ActiveCount", node);
         int maxUsed = getStatisticsAttribute("MaxUsedCount", node);
-        logger.info("Node:" + node.toString() + "\n" + "Available:" + avail + "\n" + "Active:" + active + "\n" + "MaxUsed:"
+        logger.trace("Node:" + node.toString() + "\n" + "Available:" + avail + "\n" + "Active:" + active + "\n" + "MaxUsed:"
                 + maxUsed + "\n");
         assertTrue(avail > 0);
         if (yes) {

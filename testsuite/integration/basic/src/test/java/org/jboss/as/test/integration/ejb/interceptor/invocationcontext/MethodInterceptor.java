@@ -48,7 +48,7 @@ public class MethodInterceptor {
 
     @PostConstruct
     void postConstruct(InvocationContext ctx) {
-        log.info("PostConstruct on MethodInterceptor called");
+        log.trace("PostConstruct on MethodInterceptor called");
         if (ctx.getMethod() != null) {
             throw new RuntimeException("InvocationContext.getMethod() on lifecycle event has to be null");
         }

@@ -34,13 +34,11 @@ public class D {
     public void create(Object bf) throws Throwable {
         Method create = bf.getClass().getMethod("create");
         B b = (B) create.invoke(bf);
-        System.out.println("b = " + b);
     }
 
     public void start(Object bf) throws Throwable {
         BeanFactory tbf = (BeanFactory) bf;
         B b = (B) tbf.create();
-        System.out.println("b = " + b);
     }
 
 }

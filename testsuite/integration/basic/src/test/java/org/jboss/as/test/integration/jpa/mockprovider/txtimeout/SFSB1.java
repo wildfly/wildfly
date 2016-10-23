@@ -33,6 +33,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
+import org.jboss.logging.Logger;
 import org.jboss.tm.TxUtils;
 
 /**
@@ -42,6 +43,7 @@ import org.jboss.tm.TxUtils;
  */
 @Stateful
 public class SFSB1 {
+    private static final Logger LOGGER = Logger.getLogger(SFSB1.class);
     @PersistenceContext
     EntityManager entityManager;
 
@@ -60,7 +62,7 @@ public class SFSB1 {
 
     @TransactionTimeout(value = 1, unit = TimeUnit.SECONDS)
     public void createEmployeeWaitForTxTimeout(boolean registerTxSync, String name, String address, int id) {
-        System.out.println("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.createEmployeeWaitForTxTimeout " +
+        LOGGER.trace("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.createEmployeeWaitForTxTimeout " +
                 "entered, will wait for tx time out to occur");
         Employee emp = new Employee();
         emp.setId(id);
@@ -93,14 +95,14 @@ public class SFSB1 {
                     case Status.STATUS_COMMITTED:
                         throw new RuntimeException("transaction was committed.");
                     case Status.STATUS_ROLLEDBACK:
-                        System.out.println("tx timed out and rolled back as expected, success case reached.");
+                        LOGGER.trace("tx timed out and rolled back as expected, success case reached.");
                         done = true;
                         break;
                     case Status.STATUS_ACTIVE:
-                        System.out.println("tx is still active, sleep for 250ms and check tx status again.");
+                        LOGGER.trace("tx is still active, sleep for 250ms and check tx status again.");
                         break;
                     default:
-                        System.out.println("tx status = " + status + ", sleep for 250ms and check tx status again.");
+                        LOGGER.trace("tx status = " + status + ", sleep for 250ms and check tx status again.");
                         break;
                 }
 
@@ -108,7 +110,7 @@ public class SFSB1 {
                 e.printStackTrace();
                 return;
             }
-            System.out.println("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.createEmployeeWaitForTxTimeout waiting for tx to timeout");
+            LOGGER.trace("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.createEmployeeWaitForTxTimeout waiting for tx to timeout");
         }
 
     }

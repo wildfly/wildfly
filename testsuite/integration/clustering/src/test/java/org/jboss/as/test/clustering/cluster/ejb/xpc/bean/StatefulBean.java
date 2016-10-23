@@ -128,9 +128,9 @@ public class StatefulBean implements Stateful {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public void echo(String message) {
-        log.info("echo entered for " + message);
+        log.trace("echo entered for " + message);
         logStats("echo " + message);
-        log.info("echo completed for " + message);
+        log.trace("echo completed for " + message);
     }
 
 
@@ -162,14 +162,14 @@ public class StatefulBean implements Stateful {
 
     private void logStats(String methodName) {
         Session session = em.unwrap(Session.class);
-        log.info(methodName + "(version=" + version + ", HashMap version=" + valueBag.get("version") + ") logging statistics for session = " + session);
+        log.trace(methodName + "(version=" + version + ", HashMap version=" + valueBag.get("version") + ") logging statistics for session = " + session);
         session.getSessionFactory().getStatistics().setStatisticsEnabled(true);
         session.getSessionFactory().getStatistics().logSummary();
         String[] entityRegionNames = session.getSessionFactory().getStatistics().getSecondLevelCacheRegionNames();
         for (String name : entityRegionNames) {
-            log.info("cache entity region name = " + name);
+            log.trace("cache entity region name = " + name);
             SecondLevelCacheStatistics stats = session.getSessionFactory().getStatistics().getSecondLevelCacheStatistics(name);
-            log.info("2lc for " + name + ": " + stats.toString());
+            log.trace("2lc for " + name + ": " + stats.toString());
 
         }
         // we will want to return the SecondLevelCacheStatistics for Employee

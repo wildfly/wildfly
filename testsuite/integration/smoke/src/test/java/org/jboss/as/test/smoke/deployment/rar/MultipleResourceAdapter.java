@@ -22,7 +22,7 @@
 package org.jboss.as.test.smoke.deployment.rar;
 
 import java.io.Serializable;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -82,7 +82,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      */
     public void endpointActivation(MessageEndpointFactory endpointFactory,
                                    ActivationSpec spec) throws ResourceException {
-        log.finest("endpointActivation()");
+        log.trace("endpointActivation()");
     }
 
     /**
@@ -93,7 +93,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      */
     public void endpointDeactivation(MessageEndpointFactory endpointFactory,
                                      ActivationSpec spec) {
-        log.finest("endpointDeactivation()");
+        log.trace("endpointDeactivation()");
     }
 
     /**
@@ -104,7 +104,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      */
     public void start(BootstrapContext ctx)
             throws ResourceAdapterInternalException {
-        log.finest("start()");
+        log.trace("start()");
     }
 
     /**
@@ -112,7 +112,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      * during application server shutdown.
      */
     public void stop() {
-        log.finest("stop()");
+        log.trace("stop()");
     }
 
     /**
@@ -124,7 +124,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
      */
     public XAResource[] getXAResources(ActivationSpec[] specs)
             throws ResourceException {
-        log.finest("getXAResources()");
+        log.trace("getXAResources()");
         return null;
     }
 

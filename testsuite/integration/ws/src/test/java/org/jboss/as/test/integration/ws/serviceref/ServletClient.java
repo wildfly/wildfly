@@ -98,15 +98,15 @@ public class ServletClient extends HttpServlet {
 
         try {
             if (typeStr.equals("echo1")) {
-                log.info("Echo1: " + echo1(echoStr));
+                log.trace("Echo1: " + echo1(echoStr));
             } else if (typeStr.equals("echo2")) {
-                log.info("Echo2: " + echo2(echoStr));
+                log.trace("Echo2: " + echo2(echoStr));
             } else if (typeStr.equals("echo3")) {
-                log.info("Echo3: " + echo3(echoStr));
+                log.trace("Echo3: " + echo3(echoStr));
             } else if (typeStr.equals("echo4")) {
-                log.info("Echo4: " + echo4(echoStr));
+                log.trace("Echo4: " + echo4(echoStr));
             } else if (typeStr.equals("echo5")) {
-                log.info("Echo5: " + echo5(echoStr));
+                log.trace("Echo5: " + echo5(echoStr));
             }
         } catch (Exception ex) {
             resp.getWriter().println(ex.toString());

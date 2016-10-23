@@ -128,7 +128,7 @@ public class SSLRealmSetupTool {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL resourcesUrl = tccl.getResource("");
         String resourcePath = resourcesUrl.getPath();
-        log.info("Path to resources is " + resourcePath);
+        log.trace("Path to resources is " + resourcePath);
         operation = new ModelNode();
         operation.get(OP_ADDR).set(getSecurityRealmsAddressSSLIdentity());
         operation.get(OP).set(ADD);
@@ -163,7 +163,7 @@ public class SSLRealmSetupTool {
         operation.get("enabled").set(true);
         operation.get("security-realm").set(SECURITY_REALM_NAME);
         result = managementClient.getControllerClient().execute(operation);
-        log.info("creating connector result " + result);
+        log.trace("creating connector result " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         //add remoting connector
@@ -185,7 +185,7 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).set(getSecurityRealmsAddress());
         operation.get(RECURSIVE).set("true");
         ModelNode ret = managementClient.getControllerClient().execute(operation);
-        log.info("SSLRealm config looks like this:\n" + ret.get(RESULT).toJSONString(false));
+        log.trace("SSLRealm config looks like this:\n" + ret.get(RESULT).toJSONString(false));
     }
 
     public static void tearDown(final ManagementClient managementClient, ContainerController controller) throws Exception {
@@ -209,7 +209,7 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).add("https-listener", "testConnector");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.info("removing connector result " + result);
+        log.trace("removing connector result " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // Removing security realm

@@ -57,7 +57,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
@@ -149,8 +151,6 @@ public class SAML2KerberosAuthenticationTestCase {
      */
     @Deployment(name = SERVICE_PROVIDER_NAME)
     public static WebArchive createSpWar() {
-        LOGGER.info("Creating deployment for " + SP_DEPLOYMENT_NAME);
-
         final WebArchive war = ShrinkWrap.create(WebArchive.class, SP_DEPLOYMENT_NAME + ".war");
         war.addClasses(RolePrintingServlet.class, PrincipalPrintingServlet.class);
         war.addAsWebInfResource(SAML2KerberosAuthenticationTestCase.class.getPackage(),
@@ -167,10 +167,6 @@ public class SAML2KerberosAuthenticationTestCase {
 
         war.add(new StringAsset("Welcome to deployment: " + SP_DEPLOYMENT_NAME), "index.jsp");
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
-
         return war;
     }
 
@@ -181,7 +177,6 @@ public class SAML2KerberosAuthenticationTestCase {
      */
     @Deployment(name = IDENTITY_PROVIDER_NAME)
     public static WebArchive createIdpWar() {
-        LOGGER.info("Creating deployment for " + IDP_DEPLOYMENT_NAME);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, IDP_DEPLOYMENT_NAME + ".war");
         war.addAsWebInfResource(SAML2KerberosAuthenticationTestCase.class.getPackage(),
                 SAML2KerberosAuthenticationTestCase.class.getSimpleName() + "-idp-web.xml", "web.xml");
@@ -199,11 +194,6 @@ public class SAML2KerberosAuthenticationTestCase {
         war.addAsWebResource(SAML2KerberosAuthenticationTestCase.class.getPackage(), "login.jsp", "login.jsp");
         war.add(new StringAsset("Welcome to IdP"), "index.jsp");
         war.add(new StringAsset("Welcome to IdP hosted"), "hosted/index.jsp");
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
-
         return war;
     }
 
@@ -216,8 +206,8 @@ public class SAML2KerberosAuthenticationTestCase {
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testNegotiateHttpHeader(@ArquillianResource URL webAppURL,
                                         @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        try {
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()){
             final HttpGet httpGet = new HttpGet(webAppURL.toURI());
             final HttpResponse response = httpClient.execute(httpGet);
 
@@ -238,11 +228,6 @@ public class SAML2KerberosAuthenticationTestCase {
             assertThat("WWW-Authenticate [Negotiate] header is missing", authnHeaderValues, matcherAnyContainsNegotiate);
 
             consumeResponse(response);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
         }
     }
 
@@ -312,8 +297,8 @@ public class SAML2KerberosAuthenticationTestCase {
         uri = Utils.replaceHost(uri, canonicalHost);
         idpUri = Utils.replaceHost(idpUri, canonicalHost);
 
-        LOGGER.info("Making call to: " + uri);
-        LOGGER.info("Expected IDP: " + idpUri);
+        LOGGER.trace("Making call to: " + uri);
+        LOGGER.trace("Expected IDP: " + idpUri);
 
         final Krb5LoginConfiguration krb5configuration = new Krb5LoginConfiguration(Utils.getLoginConfiguration());
         // Use our custom configuration to avoid reliance on external config

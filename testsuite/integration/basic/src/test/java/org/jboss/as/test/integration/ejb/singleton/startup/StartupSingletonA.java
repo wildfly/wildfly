@@ -47,11 +47,11 @@ public class StartupSingletonA {
     }
 
     public void doSomething() {
-        logger.info(this.getClass().getName() + "#doSomething()");
+        logger.trace(this.getClass().getName() + "#doSomething()");
     }
 
     public String echo(String msg) {
-        logger.info("Echo " + msg);
+        logger.trace("Echo " + msg);
         return msg;
     }
 

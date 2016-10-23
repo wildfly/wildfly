@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionMetaData;
 
@@ -51,7 +51,7 @@ public class Multiple2ManagedConnectionMetaData implements ManagedConnectionMeta
      */
     @Override
     public String getEISProductName() throws ResourceException {
-        log.finest("getEISProductName()");
+        log.trace("getEISProductName()");
         return null; //TODO
     }
 
@@ -63,7 +63,7 @@ public class Multiple2ManagedConnectionMetaData implements ManagedConnectionMeta
      */
     @Override
     public String getEISProductVersion() throws ResourceException {
-        log.finest("getEISProductVersion()");
+        log.trace("getEISProductVersion()");
         return null; //TODO
     }
 
@@ -75,7 +75,7 @@ public class Multiple2ManagedConnectionMetaData implements ManagedConnectionMeta
      */
     @Override
     public int getMaxConnections() throws ResourceException {
-        log.finest("getMaxConnections()");
+        log.trace("getMaxConnections()");
         return 0; //TODO
     }
 
@@ -87,7 +87,7 @@ public class Multiple2ManagedConnectionMetaData implements ManagedConnectionMeta
      */
     @Override
     public String getUserName() throws ResourceException {
-        log.finest("getUserName()");
+        log.trace("getUserName()");
         return null; //TODO
     }
 

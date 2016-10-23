@@ -45,7 +45,6 @@ import javax.ejb.TransactionAttribute;
 @TransactionAttribute(NEVER)
 public class SimpleStatefulSessionBean {
     public String echo(CountDownLatch latch, String msg) throws InterruptedException {
-        System.out.println("Waiting in " + this);
         boolean tripped = latch.await(5, SECONDS);
         if (!tripped)
             return "Timed out";

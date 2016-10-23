@@ -40,7 +40,7 @@ public class TestService extends ServiceMBeanSupport implements TestServiceMBean
 
     @Override
     protected void createService() throws Exception {
-        getLog().info("createService()");
+        getLog().trace("createService()");
         setTestResultMBeanAttribute("CreateServiceInvoked", true);
         server.addNotificationListener(new ObjectName("jboss:name=service-mbean-support-test"),
                 new ObjectName("jboss:name=service-mbean-support-test-result"), null, new Object());
@@ -48,21 +48,21 @@ public class TestService extends ServiceMBeanSupport implements TestServiceMBean
 
     @Override
     protected void startService() throws Exception {
-        getLog().info("startService()");
+        getLog().trace("startService()");
         new InitialContext().bind(NAME, VALUE);
         setTestResultMBeanAttribute("StartServiceInvoked", true);
     }
 
     @Override
     protected void stopService() throws Exception {
-        getLog().info("stopService()");
+        getLog().trace("stopService()");
         new InitialContext().unbind(NAME);
         setTestResultMBeanAttribute("StopServiceInvoked", true);
     }
 
     @Override
     protected void destroyService() throws Exception {
-        getLog().info("destroyService()");
+        getLog().trace("destroyService()");
         setTestResultMBeanAttribute("DestroyServiceInvoked", true);
     }
 

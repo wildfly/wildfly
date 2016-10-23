@@ -375,7 +375,7 @@ public class SwitchIdentityTestCase {
 
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             final List<ModelNode> updates = new LinkedList<ModelNode>();
-            LOGGER.info("Adding socket binding");
+            LOGGER.trace("Adding socket binding");
             // /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejb-outbound:add(host=localhost,port=8080) {allow-resource-service-restart=true}
             ModelNode socketBindingModelNode = Util.createAddOperation(ADDR_SOCKET_BINDING);
             socketBindingModelNode.get(HOST).set(Utils.getHost(managementClient));

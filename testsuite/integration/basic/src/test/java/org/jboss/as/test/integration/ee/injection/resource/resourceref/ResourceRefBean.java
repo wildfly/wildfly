@@ -59,7 +59,7 @@ public class ResourceRefBean implements ResourceRefRemote {
         String encJndiName = "java:comp/env/EJBTHREE-1823_DS";
         DataSource ds = (DataSource) ctx.lookup(encJndiName);
         ret = ds != null;
-        logger.info("Datasource was found: " + ret + ", on: " + encJndiName);
+        logger.trace("Datasource was found: " + ret + ", on: " + encJndiName);
         return ret;
     }
 }

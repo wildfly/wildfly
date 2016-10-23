@@ -30,12 +30,14 @@ import javax.naming.InitialContext;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.logging.Logger;
 import org.junit.Test;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
 public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
+    private final Logger log = Logger.getLogger(FailoverTestCase.class);
 
     protected final String jmsQueueName = "FailoverTestCase-Queue";
     protected final String jmsQueueLookup = "jms/" + jmsQueueName;
@@ -53,9 +55,9 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        System.out.println("===================");
-        System.out.println("STOP SERVER1...");
-        System.out.println("===================");
+        log.trace("===================");
+        log.trace("STOP SERVER1...");
+        log.trace("===================");
         container.stop(SERVER1);
 
         // let some time for the backup to detect the failure
@@ -70,9 +72,9 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
 
-        System.out.println("====================");
-        System.out.println("START SERVER1...");
-        System.out.println("====================");
+        log.trace("====================");
+        log.trace("START SERVER1...");
+        log.trace("====================");
         // restart the live server
         container.start(SERVER1);
 
@@ -96,9 +98,9 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendAndReceiveMessage(context1, jmsQueueLookup);
         context1.close();
 
-        System.out.println("=============================");
-        System.out.println("RETURN TO NORMAL OPERATION...");
-        System.out.println("=============================");
+        log.trace("=============================");
+        log.trace("RETURN TO NORMAL OPERATION...");
+        log.trace("=============================");
     }
 
     @Test
@@ -112,16 +114,16 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        System.err.println("############## 1 #############");
-        listSharedStoreDir();
+        log.trace("############## 1 #############");
+        //listSharedStoreDir();
 
-        System.err.println("===================");
-        System.err.println("STOP SERVER1...");
-        System.err.println("===================");
+        log.trace("===================");
+        log.trace("STOP SERVER1...");
+        log.trace("===================");
         container.stop(SERVER1);
 
-        System.out.println("############## 2 #############");
-        listSharedStoreDir();
+        log.trace("############## 2 #############");
+        //listSharedStoreDir();
 
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupJMSOperations, true);
@@ -135,9 +137,9 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
 
-        System.out.println("====================");
-        System.out.println("START SERVER1...");
-        System.out.println("====================");
+        log.trace("====================");
+        log.trace("START SERVER1...");
+        log.trace("====================");
         // restart the live server
         container.start(SERVER1);
         // let some time for the backup to detect the live node and failback
@@ -161,9 +163,9 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text3);
         context1.close();
 
-        System.out.println("==============================");
-        System.out.println("STOP SERVER1 A 2ND TIME...");
-        System.out.println("==============================");
+        log.trace("==============================");
+        log.trace("STOP SERVER1 A 2ND TIME...");
+        log.trace("==============================");
         // shutdown server1 a 2nd time
         container.stop(SERVER1);
 
@@ -186,20 +188,20 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         if (!SHARED_STORE_DIR.exists()) {
             return;
         }
-        System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.err.println("SHARED_STORE_DIR = " + SHARED_STORE_DIR);
+        log.trace("@@@@@@@@@@@@@@@@@@@@@@@@@");
+        log.trace("SHARED_STORE_DIR = " + SHARED_STORE_DIR);
         for (File file : SHARED_STORE_DIR.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return true;
             }})) {
-            System.err.format("+ %s [r=%s,w=%s,x=%s]\n", file, file.canRead(), file.canWrite(), file.canExecute());
+            log.trace(String.format("+ %s [r=%s,w=%s,x=%s]\n", file, file.canRead(), file.canWrite(), file.canExecute()));
             if (file.isDirectory()) {
                 for (File f : file.listFiles()) {
-                    System.err.println("    + " + f);
+                    log.trace("    + " + f);
                 }
             }
         }
-        System.err.println("@@@@@@@@@@@@@@@@@@@@@@@@@");
+        log.trace("@@@@@@@@@@@@@@@@@@@@@@@@@");
     }
 }

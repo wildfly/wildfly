@@ -58,7 +58,6 @@ public class JarJBossDeploymentStructureTestCase {
                 new RuntimePermission("getProtectionDomain")),
                 "permissions.xml");
 
-        logger.info(jar.toString(true));
         return jar;
     }
 

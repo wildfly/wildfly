@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -53,7 +53,6 @@ public class SingletonUnitTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb31singleton.jar");
         jar.addPackage(SingletonUnitTestCase.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 

@@ -83,7 +83,7 @@ public class CloneProfileTestCase extends AbstractCliTestBase {
      * @return CLI output
      */
     private String cliRequest(String line, boolean successRequired) {
-        log.info(line);
+        log.trace(line);
         cli.sendLine(line);
         String output = cli.readOutput();
         if (successRequired) {

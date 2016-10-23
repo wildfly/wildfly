@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.wsa;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
@@ -28,43 +29,52 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
 public class WSHandler implements SOAPHandler<SOAPMessageContext> {
+    private static final Logger LOGGER = Logger.getLogger(WSHandler.class);
 
     public Set<QName> getHeaders() {
         return null;
     }
 
     public boolean handleFault(SOAPMessageContext context) {
-        logToSystemOut(context);
+        log(context);
         return true;
     }
 
     public boolean handleMessage(SOAPMessageContext context) {
-        logToSystemOut(context);
+        log(context);
         return true;
     }
 
-    private void logToSystemOut(SOAPMessageContext smc) {
-        Boolean outboundProperty = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+    private void log(SOAPMessageContext smc) {
+        if (!LOGGER.isTraceEnabled()) {
+            return;
+        }
+        boolean outboundProperty = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
-        if (outboundProperty.booleanValue()) {
-            System.out.println("Outgoing message:");
+        if (outboundProperty) {
+            LOGGER.trace("Outgoing message:");
         } else {
-            System.out.println("Incoming message:");
+            LOGGER.trace("Incoming message:");
         }
 
-        System.out.println("-----------");
+        LOGGER.trace("-----------");
         SOAPMessage message = smc.getMessage();
         try {
-            message.writeTo(System.out);
-            System.out.println("");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            message.writeTo(baos);
+            LOGGER.trace(baos.toString());
+            LOGGER.trace("");
         } catch (Exception e) {
-            System.out.println("Exception in handler: " + e);
+            LOGGER.error("Exception in handler: " + e);
         }
-        System.out.println("-----------");
+        LOGGER.trace("-----------");
     }
 
     public void close(MessageContext context) {

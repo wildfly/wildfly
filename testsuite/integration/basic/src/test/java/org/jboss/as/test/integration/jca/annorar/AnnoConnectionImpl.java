@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.annorar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * AnnoConnectionImpl

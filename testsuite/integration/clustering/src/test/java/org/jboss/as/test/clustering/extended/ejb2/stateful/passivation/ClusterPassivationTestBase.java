@@ -135,7 +135,7 @@ public abstract class ClusterPassivationTestBase {
         statefulBean.incrementNumber(); // 41
         Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 41
         // nodeName of nested bean should be the same as the node of parent
-        log.info("Called node name first: " + calledNodeFirst);
+        log.trace("Called node name first: " + calledNodeFirst);
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
 
         // A small hack - deleting node (by name) from cluster which this client knows
@@ -146,7 +146,7 @@ public abstract class ClusterPassivationTestBase {
 
         String calledNodeSecond = statefulBean.incrementNumber(); // 42
         statefulBean.setPassivationNode(calledNodeSecond);
-        log.info("Called node name second: " + calledNodeSecond);
+        log.trace("Called node name second: " + calledNodeSecond);
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
 
         // Resetting cluster context to know both cluster nodes

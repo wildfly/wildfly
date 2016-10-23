@@ -37,7 +37,7 @@ public class EndpointImpl {
    private static Logger log = Logger.getLogger(EndpointImpl.class);
 
    public String echo(String input) {
-      log.info("echo: " + input);
+      log.trace("echo: " + input);
       return input;
    }
 }

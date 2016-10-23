@@ -60,7 +60,7 @@ public class ScriptAssertTestCase {
         // Since this test apparently fails (https://issues.jboss.org/browse/AS7-2166) against OpenJDK, due to missing Javascript engine, let's just enable this test against Sun/Oracle JDK (which is known/expected to pass).
         // If an org.junit.Assume fails, then the @Test(s) are ignored http://stackoverflow.com/questions/1689242/conditionally-ignoring-tests-in-junit-4
         final boolean compatibleJRE = isCompatibleJRE();
-        logger.info("Current JRE is " + (compatibleJRE ? "compatible, running " : "incompatible, skipping ") + " tests in " + ScriptAssertTestCase.class.getSimpleName());
+        logger.trace("Current JRE is " + (compatibleJRE ? "compatible, running " : "incompatible, skipping ") + " tests in " + ScriptAssertTestCase.class.getSimpleName());
         Assume.assumeTrue(compatibleJRE);
     }
 

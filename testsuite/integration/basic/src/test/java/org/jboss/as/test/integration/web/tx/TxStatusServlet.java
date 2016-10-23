@@ -48,12 +48,12 @@ public class TxStatusServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        log.info("In TxStatusServlet");
+        log.trace("In TxStatusServlet");
         UserTransaction transaction;
         try {
             transaction = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
             int status = transaction.getStatus();
-            log.info("Transaction status is " + status);
+            log.trace("Transaction status is " + status);
             request.setAttribute(ATTRIBUTE, Integer.valueOf(status));
         } catch (Exception e) {
             log.error("Failed retrieving transaction status", e);

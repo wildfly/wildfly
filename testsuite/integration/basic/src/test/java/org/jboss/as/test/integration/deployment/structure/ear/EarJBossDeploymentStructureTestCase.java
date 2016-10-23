@@ -71,7 +71,6 @@ public class EarJBossDeploymentStructureTestCase {
         ear.addAsModule(ignoredJar);
         ear.addAsModule(ejbJar);
 
-        logger.info(ear.toString(true));
         return ear;
     }
 

@@ -87,12 +87,12 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     @Override
     protected void startServers(ManagementClient client1, ManagementClient client2) {
         if (client1 == null || !client1.isServerInRunningState()) {
-            log.info("Starting server: " + CONTAINER_1);
+            log.trace("Starting server: " + CONTAINER_1);
             controller.start(CONTAINER_1);
             deployer.deploy(DEPLOYMENT_1);
         }
         if (client2 == null || !client2.isServerInRunningState()) {
-            log.info("Starting server: " + CONTAINER_2);
+            log.trace("Starting server: " + CONTAINER_2);
             controller.start(CONTAINER_2);
             deployer.deploy(DEPLOYMENT_2);
         }
@@ -119,13 +119,13 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
         node2container.put(nodeName1, CONTAINER_1);
-        log.info("URL1 nodename: " + nodeName1);
+        log.trace("URL1 nodename: " + nodeName1);
 
         String nodeName2 = HttpRequest.get(baseURL2.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
 
         node2deployment.put(nodeName2, DEPLOYMENT_2);
         node2container.put(nodeName2, CONTAINER_2);
-        log.info("URL2 nodename: " + nodeName2);
+        log.trace("URL2 nodename: " + nodeName2);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     public void stopAndClean(
             @OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
             @OperateOnDeployment(DEPLOYMENT_2) @ArquillianResource ManagementClient client2) throws Exception {
-        log.info("Stop&Clean...");
+        log.trace("Stop&Clean...");
 
         // returning to the previous context selector, @see {RemoteEJBClientDDBasedSFSBFailoverTestCase}
         if (previousSelector != null) {

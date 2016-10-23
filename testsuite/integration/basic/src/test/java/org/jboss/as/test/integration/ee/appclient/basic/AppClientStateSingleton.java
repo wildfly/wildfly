@@ -24,7 +24,7 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
 
     @Override
     public void reset() {
-        logger.info("Reset called!");
+        logger.trace("Reset called!");
         value = null;
         //if we have a thread blocked on the latch release it
         latch.countDown();
@@ -33,7 +33,7 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
 
     @Override
     public void makeAppClientCall(final String value) {
-        logger.info("AppClient Call called!");
+        logger.trace("AppClient Call called!");
         this.value = value;
         latch.countDown();
     }
@@ -42,11 +42,11 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
     public String awaitAppClientCall() {
         try {
             boolean b = latch.await(30, TimeUnit.SECONDS);
-            logger.info("Await returned: " + b + " : " + value);
+            logger.trace("Await returned: " + b + " : " + value);
             if (!b) {
                 ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
                 for (ThreadInfo info : threadInfos) {
-                    logger.info(info);
+                    logger.trace(info);
                 }
             }
             return value;

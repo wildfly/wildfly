@@ -39,13 +39,13 @@ public class IncorrectContainerInterceptor {
 
     @AroundInvoke
     Object method1(final InvocationContext invocationContext) throws Exception {
-        LOGGER.info("method1 invoked");
+        LOGGER.trace("method1 invoked");
         return invocationContext.proceed();
     }
 
     @AroundInvoke
     Object method2(final InvocationContext invocationContext) throws Exception {
-        LOGGER.info("method2 invoked");
+        LOGGER.trace("method2 invoked");
         return invocationContext.proceed();
     }
 }

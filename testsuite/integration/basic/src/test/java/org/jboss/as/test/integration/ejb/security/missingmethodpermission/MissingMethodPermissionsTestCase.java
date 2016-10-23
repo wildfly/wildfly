@@ -141,7 +141,7 @@ public class MissingMethodPermissionsTestCase {
             denyAccessBean.methodWithNoRole();
             Assert.fail("Invocation on a method with no specific security configurations was expected to fail due to <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> configuration, but it didn't");
         } catch (EJBAccessException eae) {
-            logger.info("Got the expected exception", eae);
+            logger.trace("Got the expected exception", eae);
         }
     }
 
@@ -163,7 +163,7 @@ public class MissingMethodPermissionsTestCase {
             denyAccessBean.methodWithNoRole();
             Assert.fail("Invocation on a method with no specific security configurations was expected to fail due to <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> configuration, but it didn't");
         } catch (EJBAccessException eae) {
-            logger.info("Got the expected exception", eae);
+            logger.trace("Got the expected exception", eae);
         }
     }
 }

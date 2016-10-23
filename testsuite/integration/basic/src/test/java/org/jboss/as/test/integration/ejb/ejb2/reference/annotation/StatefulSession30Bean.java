@@ -105,6 +105,6 @@ public class StatefulSession30Bean implements java.io.Serializable, StatefulSess
 
     @PreDestroy
     public void preDestroy() {
-        log.info("Invoking PreDestroy");
+        log.trace("Invoking PreDestroy");
     }
 }

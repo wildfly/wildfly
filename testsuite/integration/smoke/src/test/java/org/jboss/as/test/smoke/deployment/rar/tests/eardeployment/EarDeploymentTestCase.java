@@ -116,7 +116,7 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
         address.protect();
         final ModelNode snapshot = new ModelNode();
         snapshot.get(OP).set("read-resource");
-        snapshot.get("recursive").set("true");
+        snapshot.get("recursive").set(true);
         snapshot.get(OP_ADDR).set(address);
         executeOperation(snapshot);
     }

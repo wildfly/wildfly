@@ -45,7 +45,7 @@ public class BatchFetchingBean implements BatchRetriever {
     private EntityManager entityManager;
 
     public Batch fetchBatch(final String batchName) {
-        logger.info("Fetching batch " + batchName);
+        logger.trace("Fetching batch " + batchName);
         return this.entityManager.find(Batch.class, batchName);
     }
 }

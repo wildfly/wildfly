@@ -119,29 +119,29 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
     public void postConstruct() {
         Random r = new Random();
         this.identificator = new Integer(r.nextInt(999)).toString();
-        log.info("Bean [" + this.identificator + "] created");
+        log.trace("Bean [" + this.identificator + "] created");
     }
 
     @PreDestroy
     public void preDestroy() {
-        log.info("Bean [" + this.identificator + "] destroyed");
+        log.trace("Bean [" + this.identificator + "] destroyed");
     }
 
     @PrePassivate
     public void setPassivateFlag() {
-        log.info(this.toString() + " PrePassivation [" + this.identificator + "]");
+        log.trace(this.toString() + " PrePassivation [" + this.identificator + "]");
         this.beenPassivated = true;
     }
 
     @PostActivate
     public void setActivateFlag() {
-        log.info(this.toString() + " PostActivation [" + this.identificator + "]");
+        log.trace(this.toString() + " PostActivation [" + this.identificator + "]");
         this.beenActivated = true;
     }
 
     @Override
     public void close() {
-        log.info("Bean [" + this.identificator + "] removing");
+        log.trace("Bean [" + this.identificator + "] removing");
         this.nestledBean.close();
     }
 }

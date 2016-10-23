@@ -47,7 +47,7 @@ public class TesterBean implements Tester {
         if (bean == null)
             throw new TestFailedException(name + " was not injected");
         Class<?> invokedBusinessInterface = bean.getInvokedBusinessInterface();
-        log.info("invokedBusinessInterface = " + invokedBusinessInterface);
+        log.trace("invokedBusinessInterface = " + invokedBusinessInterface);
         if (!invokedBusinessInterface.equals(expectedInvokedBusinessInterface))
             throw new TestFailedException("InvokedBusinessInterface was " + invokedBusinessInterface + " instead of "
                     + expectedInvokedBusinessInterface);

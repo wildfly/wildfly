@@ -71,7 +71,7 @@ public class VaultSystemPropertiesTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            LOGGER.info("Add system property: " + TESTING_SYSTEM_PROPERTY);
+            LOGGER.trace("Add system property: " + TESTING_SYSTEM_PROPERTY);
             ModelNode op = Util.createAddOperation(SYSTEM_PROPERTIES_PATH);
             op.get(VALUE).set(BasicVaultServerSetupTask.VAULTED_PROPERTY);
             Utils.applyUpdate(op, managementClient.getControllerClient());
@@ -79,7 +79,7 @@ public class VaultSystemPropertiesTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            LOGGER.info("Remove system property: " + TESTING_SYSTEM_PROPERTY);
+            LOGGER.trace("Remove system property: " + TESTING_SYSTEM_PROPERTY);
             ModelNode op = Util.createRemoveOperation(SYSTEM_PROPERTIES_PATH);
             Utils.applyUpdate(op, managementClient.getControllerClient());
         }

@@ -123,7 +123,7 @@ public class ControllerServlet extends HttpServlet {
             response.getWriter().close();
 
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            throw new ServletException(e);
         }
     }
 

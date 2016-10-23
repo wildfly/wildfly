@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,10 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.web.security;
 
-import org.apache.log4j.Logger;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+package org.jboss.as.test.integration.security;
+
 import org.junit.Test;
 
 /**
@@ -31,19 +30,6 @@ import org.junit.Test;
  * @author Anil Saldhana
  */
 public abstract class WebSecurityPasswordBasedBase {
-
-    private static Logger LOGGER = Logger.getLogger(WebSecurityPasswordBasedBase.class);
-
-    /**
-     * Print the contents of the {@link WebArchive}
-     *
-     * @param war
-     */
-    public static void printWar(WebArchive war) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.info(war.toString(true));
-        }
-    }
 
     /**
      * Test with user "anil" who has the right password and the right role to access the servlet

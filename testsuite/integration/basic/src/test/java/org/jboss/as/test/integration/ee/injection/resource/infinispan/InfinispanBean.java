@@ -62,7 +62,6 @@ public class InfinispanBean {
             // Test custom type
             this.cache.put(2, new Bean());
         } catch (Exception e) {
-            e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
 

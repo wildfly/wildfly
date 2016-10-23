@@ -92,7 +92,7 @@ public class CookieUnitTestCase {
 
     @Test
     public void testCookieRetrievedCorrectly() throws Exception {
-        log.info("testCookieRetrievedCorrectly()");
+        log.trace("testCookieRetrievedCorrectly()");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(cookieURL.toURI() + "CookieServlet"));
 
@@ -106,7 +106,7 @@ public class CookieUnitTestCase {
         assertTrue("Sever did not set expired cookie on client", checkNoExpiredCookie(cookies));
 
         for (Cookie cookie : cookies) {
-            log.info("Cookie : " + cookie);
+            log.trace("Cookie : " + cookie);
             String cookieName = cookie.getName();
             String cookieValue = cookie.getValue();
 
@@ -117,7 +117,7 @@ public class CookieUnitTestCase {
             } else if (cookieName.equals("withSpace")) {
                 assertEquals("should be no quote in cookie with space", cookieValue.indexOf("\""), -1);
             } else if (cookieName.equals("comment")) {
-                log.info("comment in cookie: " + cookie.getComment());
+                log.trace("comment in cookie: " + cookie.getComment());
                 // RFC2109:Note that there is no Comment attribute in the Cookie request header
                 // corresponding to the one in the Set-Cookie response header. The user
                 // agent does not return the comment information to the origin server.
@@ -127,9 +127,9 @@ public class CookieUnitTestCase {
                 assertTrue("should contain a comma", cookieValue.indexOf(",") != -1);
             } else if (cookieName.equals("expireIn10Sec")) {
                 Date now = new Date();
-                log.info("will sleep for 5 seconds to see if cookie expires");
+                log.trace("will sleep for 5 seconds to see if cookie expires");
                 assertTrue("cookies should not be expired by now", !cookie.isExpired(new Date(now.getTime() + fiveSeconds)));
-                log.info("will sleep for 5 more secs and it should expire");
+                log.trace("will sleep for 5 more secs and it should expire");
                 assertTrue("cookies should be expired by now", cookie.isExpired(new Date(now.getTime() + 2 * fiveSeconds)));
             }
         }

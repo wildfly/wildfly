@@ -82,7 +82,7 @@ public class JACCForEarModulesTestCase {
      */
     @Deployment(name = "war")
     public static WebArchive warDeployment() {
-        LOGGER.info("Start WAR deployment");
+        LOGGER.trace("Create WAR deployment");
         return createWar(SECURITY_DOMAIN_NAME);
     }
 
@@ -91,7 +91,7 @@ public class JACCForEarModulesTestCase {
      */
     @Deployment(name = "ear")
     public static EnterpriseArchive earDeployment() {
-        LOGGER.info("Start EAR deployment");
+        LOGGER.trace("Create EAR deployment");
         final String earName = "ear-" + SECURITY_DOMAIN_NAME;
 
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, earName + ".ear");
@@ -100,9 +100,6 @@ public class JACCForEarModulesTestCase {
         ear.addAsModule(war);
         ear.addAsModule(jar);
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(ear.toString(true));
-        }
         return ear;
     }
 
@@ -111,7 +108,7 @@ public class JACCForEarModulesTestCase {
      */
     @Deployment(name = "jar", testable = false)
     public static JavaArchive jarDeployment() {
-        LOGGER.info("Start JAR deployment");
+        LOGGER.trace("Start JAR deployment");
         return createJar("jar-" + SECURITY_DOMAIN_NAME);
     }
 
@@ -175,9 +172,6 @@ public class JACCForEarModulesTestCase {
         war.addClass(ListJACCPoliciesServlet.class);
         war.addAsWebInfResource(JACCForEarModulesTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(SECURITY_DOMAIN_NAME), "jboss-web.xml");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 
@@ -219,13 +213,10 @@ public class JACCForEarModulesTestCase {
      */
     private Document getPermissionDocument(final URL webAppURL) throws IOException, DocumentException {
         final URL servletURL = new URL(webAppURL.toExternalForm() + ListJACCPoliciesServlet.SERVLET_PATH.substring(1));
-        LOGGER.info("Testing JACC permissions: " + servletURL);
+        LOGGER.trace("Testing JACC permissions: " + servletURL);
         final InputStream is = servletURL.openStream();
         try {
             final Document document = new SAXReader().read(is);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(document.getRootElement().asXML());
-            }
             return document;
         } finally {
             is.close();

@@ -51,7 +51,7 @@ public abstract class StatefulBeanBase {
 
     public String incrementNumber() {
         number++;
-        log.info("Incrementing number: " + Integer.toString(number));
+        log.trace("Incrementing number: " + Integer.toString(number));
         return NodeNameGetter.getNodeName();
     }
 
@@ -59,7 +59,7 @@ public abstract class StatefulBeanBase {
      * Setting number and returns node name where the method was called.
      */
     public String setNumber(int number) {
-        log.info("Setting number: " + Integer.toString(number));
+        log.trace("Setting number: " + Integer.toString(number));
         this.number = number;
         return NodeNameGetter.getNodeName();
     }
@@ -83,7 +83,7 @@ public abstract class StatefulBeanBase {
      */
     public void ejbActivate() throws EJBException, RemoteException {
         postActivateCalled++;
-        log.info("Activating with number: " + number + " and was passivated by " + getPassivatedBy() + ", postActivate method called " + postActivateCalled + " times");
+        log.trace("Activating with number: " + number + " and was passivated by " + getPassivatedBy() + ", postActivate method called " + postActivateCalled + " times");
     }
 
     /**
@@ -91,12 +91,12 @@ public abstract class StatefulBeanBase {
      */
     public void ejbPassivate() throws EJBException, RemoteException {
         prePassivateCalled++;
-        log.info("Passivating with number: " + number + " and was passivated by " + getPassivatedBy() + ", prePassivate method called " + prePassivateCalled + " times");
+        log.trace("Passivating with number: " + number + " and was passivated by " + getPassivatedBy() + ", prePassivate method called " + prePassivateCalled + " times");
 
         // when we should act on passivation - we change value of isPassivated variable
         if (NodeNameGetter.getNodeName().equals(actIfIsNode)) {
             passivatedBy = NodeNameGetter.getNodeName();
-            log.info("I'm node " + actIfIsNode + " => changing passivatedBy to " + passivatedBy);
+            log.trace("I'm node " + actIfIsNode + " => changing passivatedBy to " + passivatedBy);
         }
     }
 

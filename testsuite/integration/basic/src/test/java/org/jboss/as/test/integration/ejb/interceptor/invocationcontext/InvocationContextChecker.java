@@ -15,7 +15,7 @@ public class InvocationContextChecker {
     private static final Logger log = Logger.getLogger(InvocationContextChecker.class);
 
     public static String checkBeanInterceptorContext(InvocationContext ctx, String previousPhase, String currentPhase) {
-        log.info("Checking method call interceptor on: " + currentPhase);
+        log.trace("Checking method call interceptor on: " + currentPhase);
         boolean okContext = false;
         if (previousPhase == null) {
             okContext = ctx.getContextData().get("interceptor") == null;
@@ -51,7 +51,7 @@ public class InvocationContextChecker {
     }
 
     public static String checkTimeoutInterceptorContext(InvocationContext ctx, String previousPhase, String currentPhase) {
-        log.info("Checking timeout interceptor on: " + currentPhase);
+        log.trace("Checking timeout interceptor on: " + currentPhase);
         boolean okContext = false;
         if (previousPhase == null) {
             okContext = ctx.getContextData().get("interceptor") == null;

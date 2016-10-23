@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.packaging.multimodule;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -66,8 +65,6 @@ public class ViewClassPackagingTestCase {
     private static final String JAVA_MODULE_NAMESPACE_PREFIX = "java:module/";
 
 
-    private static final Logger logger = Logger.getLogger(ViewClassPackagingTestCase.class);
-
     @Deployment
     public static EnterpriseArchive createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
@@ -80,8 +77,6 @@ public class ViewClassPackagingTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
         ear.addAsModule(ejbJar);
         ear.addAsLibrary(beanInterfacesLibraryJar);
-
-        logger.info(ear.toString(true));
 
         return ear;
     }

@@ -16,7 +16,6 @@ import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -27,7 +26,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
-    private static final Logger log = Logger.getLogger(CommandDispatcherTestCase.class);
     private static final String MODULE_NAME = "command-dispatcher";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
 
@@ -46,7 +44,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());
-        log.info(ejbJar.toString(true));
         return ejbJar;
     }
 

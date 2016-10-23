@@ -95,7 +95,6 @@ public class LegacyConfigAdjuster {
             return;
         }
         for (ModelNode op : operations) {
-            //System.out.println("Adjusting using " + op);
             DomainTestUtils.executeForResult(op, client);
         }
     }

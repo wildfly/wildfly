@@ -77,7 +77,7 @@ public class AnnotationTimerServiceBean {
 
     @Timeout
     public void timeout(Timer timer) {
-        log.info("Timer is: " + timer + ", timer info is: " + timer.getInfo());
+        log.trace("Timer is: " + timer + ", timer info is: " + timer.getInfo());
         timerInfo = new String((String) timer.getInfo());
         isPersistent = timer.isPersistent();
         isCalendar = timer.isCalendarTimer();

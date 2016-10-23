@@ -70,7 +70,7 @@ public class HelloMDB implements MessageListener {
             goodBye = goodByeHome.create();
             log.debug("[HelloMDB] returned from goodByeHome.create()");
             String replyMsg = this.callEJB() + goodBye.sayGoodBye("user1");
-            log.info("[HelloMDB] calling sayHowdy: " + replyMsg);
+            log.trace("[HelloMDB] calling sayHowdy: " + replyMsg);
 
             sendReply(replyMsg, (Queue) message.getJMSReplyTo(), message.getJMSMessageID());
         } catch (Exception e) {

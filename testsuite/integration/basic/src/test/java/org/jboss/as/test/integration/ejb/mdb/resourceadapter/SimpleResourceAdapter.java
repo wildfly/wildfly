@@ -48,12 +48,12 @@ public class SimpleResourceAdapter implements ResourceAdapter, Referenceable, Se
 
     public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec)
             throws ResourceException {
-        logger.info("endpoint activation invoked for endpoint factory " + endpointFactory + " and activation spec " + spec);
+        logger.trace("endpoint activation invoked for endpoint factory " + endpointFactory + " and activation spec " + spec);
         ResourceAdapterDeploymentTracker.INSTANCE.endpointActivationCalled();
     }
 
     public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) {
-        logger.info("endpoint de-activation invoked for endpoint factory " + endpointFactory + " and activation spec " + spec);
+        logger.trace("endpoint de-activation invoked for endpoint factory " + endpointFactory + " and activation spec " + spec);
         ResourceAdapterDeploymentTracker.INSTANCE.endpointDeactivationCalled();
     }
 
@@ -62,7 +62,7 @@ public class SimpleResourceAdapter implements ResourceAdapter, Referenceable, Se
     }
 
     public void start(BootstrapContext ctx) throws ResourceAdapterInternalException {
-        logger.info("resource adapter start invoked");
+        logger.trace("resource adapter start invoked");
         try {
             /*
             *  This is a small delay to emulate startup time of an RA.
@@ -80,7 +80,7 @@ public class SimpleResourceAdapter implements ResourceAdapter, Referenceable, Se
     }
 
     public void stop() {
-        logger.info("resource adapter stop invoked");
+        logger.trace("resource adapter stop invoked");
         ResourceAdapterDeploymentTracker.INSTANCE.endpointStopCalled();
     }
 

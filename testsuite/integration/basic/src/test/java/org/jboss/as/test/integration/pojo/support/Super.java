@@ -27,6 +27,6 @@ package org.jboss.as.test.integration.pojo.support;
  */
 public class Super {
     protected void start() {
-        System.out.println("Lifecycle = " + this);
+
     }
 }

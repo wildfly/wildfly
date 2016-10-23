@@ -89,13 +89,13 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
         log.infof("[AT SERVICE] Durable participant prepare() - logged: %s", EventLogEvent.PREPARE);
 
         if(ServiceCommand.isPresent(ServiceCommand.VOTE_ROLLBACK, serviceCommands)) {
-            log.info("[AT SERVICE] Durable participant prepare(): " + Aborted.class.getSimpleName());
+            log.trace("[AT SERVICE] Durable participant prepare(): " + Aborted.class.getSimpleName());
             return new Aborted();
         } else if(ServiceCommand.isPresent(ServiceCommand.VOTE_READONLY_DURABLE, serviceCommands)) {
-            log.info("[AT SERVICE] Durable participant prepare(): " + ReadOnly.class.getSimpleName());
+            log.trace("[AT SERVICE] Durable participant prepare(): " + ReadOnly.class.getSimpleName());
             return new ReadOnly();
         } else {
-            log.info("[AT SERVICE] Durable participant prepare(): "  + Prepared.class.getSimpleName());
+            log.trace("[AT SERVICE] Durable participant prepare(): "  + Prepared.class.getSimpleName());
             return new Prepared();
         }
     }
@@ -110,7 +110,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     @Override
     public void commit() throws WrongStateException, SystemException {
         eventLog.addEvent(eventLogName, EventLogEvent.COMMIT);
-        log.info("[AT SERVICE] Durable participant commit() - logged: " + EventLogEvent.COMMIT);
+        log.trace("[AT SERVICE] Durable participant commit() - logged: " + EventLogEvent.COMMIT);
         activeParticipants.remove(transactionId);
     }
 
@@ -124,7 +124,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     @Override
     public void rollback() throws WrongStateException, SystemException {
         eventLog.addEvent(eventLogName, EventLogEvent.ROLLBACK);
-        log.info("[AT SERVICE] Durable participant rollback() - logged: " + EventLogEvent.ROLLBACK);
+        log.trace("[AT SERVICE] Durable participant rollback() - logged: " + EventLogEvent.ROLLBACK);
         activeParticipants.remove(transactionId);
     }
 
@@ -132,7 +132,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     @Override
     public void unknown() throws SystemException {
         eventLog.addEvent(eventLogName, EventLogEvent.UNKNOWN);
-        log.info("[AT SERVICE] Durable participant unknown() - logged: " + EventLogEvent.UNKNOWN);
+        log.trace("[AT SERVICE] Durable participant unknown() - logged: " + EventLogEvent.UNKNOWN);
     }
 
     /**
@@ -141,7 +141,7 @@ public class ATDurableParticipant implements  Durable2PCParticipant, Serializabl
     @Override
     public void error() throws SystemException {
         eventLog.addEvent(eventLogName, EventLogEvent.ERROR);
-        log.info("[AT SERVICE] Durable participant error() - logged: " + EventLogEvent.ERROR);
+        log.trace("[AT SERVICE] Durable participant error() - logged: " + EventLogEvent.ERROR);
     }
 
     // --- helper methods ---

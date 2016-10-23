@@ -69,7 +69,6 @@ public class StatefulBeanWhichDependsOnTestCase extends SessionWhichDependeOnTes
         jar.addClass(StatefulBeanWhichDependsOn.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
                 + SessionConstants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
-        logger.info(jar.toString(true));
         return jar;
     }
 

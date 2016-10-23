@@ -84,7 +84,7 @@ public class LocalViewRemoteInvocationTestCase {
             Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
-            logger.info("Got the expected exception on invoking on a local view, remotely", nsee);
+            logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
         }
     }
 
@@ -103,7 +103,7 @@ public class LocalViewRemoteInvocationTestCase {
             Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
-            logger.info("Got the expected exception on invoking on a local view, remotely", nsee);
+            logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
         }
     }
 
@@ -122,7 +122,7 @@ public class LocalViewRemoteInvocationTestCase {
             Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
-            logger.info("Got the expected exception on invoking on a local view, remotely", nsee);
+            logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
         }
     }
 
@@ -143,7 +143,7 @@ public class LocalViewRemoteInvocationTestCase {
             Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
-            logger.info("Got the expected exception on invoking on a local view, remotely", nsee);
+            logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
         }
     }
 
@@ -163,7 +163,7 @@ public class LocalViewRemoteInvocationTestCase {
             Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
-            logger.info("Got the expected exception on invoking on a local view, remotely", nsee);
+            logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
         }
     }
 
@@ -183,7 +183,7 @@ public class LocalViewRemoteInvocationTestCase {
             Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
-            logger.info("Got the expected exception on invoking on a local view, remotely", nsee);
+            logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
         }
     }
 

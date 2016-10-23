@@ -180,7 +180,7 @@ public class IIOPTransactionPropagationTestCase {
          */
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            log.info("JTSSetup.setup");
+            log.trace("JTSSetup.setup");
             this.managementClient = managementClient;
             boolean isNeedReload = false;
 
@@ -204,7 +204,7 @@ public class IIOPTransactionPropagationTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            log.info("JTSSetup.tearDown");
+            log.trace("JTSSetup.tearDown");
             this.managementClient = managementClient;
             boolean isNeedReload = false;
 
@@ -257,7 +257,7 @@ public class IIOPTransactionPropagationTestCase {
             operation.get(OP_ADDR).set(address);
             operation.get("name").set("jts");
             operation.get("value").set(enabled);
-            log.info("operation=" + operation);
+            log.trace("operation=" + operation);
             executeOperation(operation);
         }
 
@@ -270,7 +270,7 @@ public class IIOPTransactionPropagationTestCase {
             operation.get(OP_ADDR).set(address);
             operation.get("name").set("transactions");
             operation.get("value").set(transactionsOnIIOP);
-            log.info("operation=" + operation);
+            log.trace("operation=" + operation);
             executeOperation(operation);
         }
 

@@ -36,7 +36,7 @@ public class CounterSingleton implements CounterSingletonRemote {
     private static final Logger log = Logger.getLogger(CounterSingleton.class);
 
     public int getDestroyCount() {
-        log.info("destroyCounter: " + destroyCounter.get());
+        log.trace("destroyCounter: " + destroyCounter.get());
         return destroyCounter.get();
     }
 

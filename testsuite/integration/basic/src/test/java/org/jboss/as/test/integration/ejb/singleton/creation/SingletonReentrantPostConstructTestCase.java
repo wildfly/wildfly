@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton.creation;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -57,7 +57,6 @@ public class SingletonReentrantPostConstructTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-reentrantly-created-singleton.jar");
         jar.addPackage(SingletonReentrantPostConstructTestCase.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 

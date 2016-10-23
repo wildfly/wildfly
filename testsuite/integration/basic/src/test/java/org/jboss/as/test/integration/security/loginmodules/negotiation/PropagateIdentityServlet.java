@@ -77,7 +77,7 @@ public class PropagateIdentityServlet extends HttpServlet {
             final PrintWriter writer = resp.getWriter();
             final GSSTestClient client = new GSSTestClient(StringUtils.strip(req.getServerName(), "[]"), GSSTestConstants.PORT,
                     GSSTestConstants.PRINCIPAL);
-            LOGGER.info("Client for identity propagation created: " + client);
+            LOGGER.trace("Client for identity propagation created: " + client);
             try {
                 writer.print(client.getName(credential));
             } catch (GSSException e) {

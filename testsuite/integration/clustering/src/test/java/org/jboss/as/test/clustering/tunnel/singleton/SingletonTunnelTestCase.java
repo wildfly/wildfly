@@ -122,7 +122,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
         URI serviceBNode1Uri = MyServiceServlet.createURI(baseURL1, SingletonServiceActivator.SERVICE_B_NAME);
         URI serviceBNode2Uri = MyServiceServlet.createURI(baseURL2, SingletonServiceActivator.SERVICE_B_NAME);
 
-        log.info("URLs are:\n" + serviceANode1Uri
+        log.trace("URLs are:\n" + serviceANode1Uri
                 + "\n" + serviceANode2Uri
                 + "\n" + serviceBNode1Uri
                 + "\n" + serviceBNode2Uri);
@@ -142,7 +142,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
         // 2. Stop gossip router, cluster splits and each partition should have it's own provider
 
         stopGossipRouter();
-        log.info("Waiting for establishing a view.");
+        log.trace("Waiting for establishing a view.");
 
         waitForView(baseURL1, NODE_1);
         waitForView(baseURL2, NODE_2);
@@ -213,14 +213,14 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
     }
 
     private static void startGossipRouter() {
-        log.info("Starting gossip router.");
+        log.trace("Starting gossip router.");
         try {
             String address = System.getProperty("node0");
             if (address == null || address.trim().isEmpty()) {
                 address = "127.0.0.1";
             }
             if (gossipRouter == null) {
-                log.info("Assigning address " + address + " to gossip router.");
+                log.trace("Assigning address " + address + " to gossip router.");
                 gossipRouter = new GossipRouter(address, 12001);
 
             }
@@ -232,7 +232,7 @@ public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
     }
 
     private static void stopGossipRouter() {
-        log.info("Stopping gossip router.");
+        log.trace("Stopping gossip router.");
         if (gossipRouter != null) {
             gossipRouter.stop();
         }

@@ -123,7 +123,6 @@ public class MDBTestCase {
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         // grant necessary permissions
         ejbJar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
-        logger.info(ejbJar.toString(true));
         return ejbJar;
     }
 

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -103,7 +103,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
      * @throws ResourceException generic exception
      */
     public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException {
-        log.finest("endpointActivation()");
+        log.trace("endpointActivation()");
     }
 
     /**
@@ -113,7 +113,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
      * @param spec            An activation spec JavaBean instance.
      */
     public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) {
-        log.finest("endpointDeactivation()");
+        log.trace("endpointDeactivation()");
     }
 
     /**
@@ -123,19 +123,19 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
      * @throws ResourceAdapterInternalException indicates bootstrap failure.
      */
     public void start(BootstrapContext ctx) throws ResourceAdapterInternalException {
-        log.finest("start()");
+        log.trace("start()");
 
         if (ctx instanceof NamedBootstrapContext) {
             NamedBootstrapContext nc = (NamedBootstrapContext) ctx;
             setBootstrapContextName(nc.getName());
-            log.finest("Bootstrap-context:" + nc.getName());
+            log.trace("Bootstrap-context:" + nc.getName());
         }
         WorkManager wm = ctx.getWorkManager();
 
         if (wm instanceof NamedWorkManager) {
             NamedWorkManager nw = (NamedWorkManager) wm;
             setWorkManagerName(nw.getName());
-            log.finest("Work-manager:" + nw.getName());
+            log.trace("Work-manager:" + nw.getName());
         }
 
         Work myWork1 = new MultipleWork();
@@ -155,7 +155,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
      * This is called when a resource adapter instance is undeployed or during application server shutdown.
      */
     public void stop() {
-        log.finest("stop()");
+        log.trace("stop()");
     }
 
     /**
@@ -166,7 +166,7 @@ public class MultipleResourceAdapter2 implements ResourceAdapter {
      * @throws ResourceException generic exception
      */
     public XAResource[] getXAResources(ActivationSpec[] specs) throws ResourceException {
-        log.finest("getXAResources()");
+        log.trace("getXAResources()");
         return null;
     }
 

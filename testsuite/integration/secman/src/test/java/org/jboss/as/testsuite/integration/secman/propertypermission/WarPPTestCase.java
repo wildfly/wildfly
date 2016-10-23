@@ -87,7 +87,7 @@ public class WarPPTestCase extends AbstractPPTestsWithJSP {
     }
 
     private static WebArchive warDeployment(final String appName, Asset permissionsXmlAsset) {
-        LOGGER.info("Start WAR deployment");
+        LOGGER.trace("Start WAR deployment");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, appName + ".war");
         addJSMCheckServlet(war);
         addPermissionsXml(war, permissionsXmlAsset, null);

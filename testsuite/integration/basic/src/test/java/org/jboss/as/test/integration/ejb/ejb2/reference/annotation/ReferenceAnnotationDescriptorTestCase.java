@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session21Bean;
 import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session21Home;
 import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30;
 import org.jboss.as.test.integration.ejb.ejb2.reference.global.Session30RemoteBusiness;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -53,8 +52,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class ReferenceAnnotationDescriptorTestCase {
-
-    private static final Logger log = Logger.getLogger(ReferenceAnnotationDescriptorTestCase.class);
 
     @Deployment
     public static Archive<?> deployment() {
@@ -83,7 +80,6 @@ public class ReferenceAnnotationDescriptorTestCase {
                         Session21Bean.class);
         jar.addAsManifestResource(ReferenceAnnotationDescriptorTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(ReferenceAnnotationDescriptorTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

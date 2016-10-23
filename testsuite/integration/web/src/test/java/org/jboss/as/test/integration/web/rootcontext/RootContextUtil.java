@@ -98,11 +98,11 @@ import org.jboss.logging.Logger;
 
     public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
-            log.debug("+++ Update on " + client + ":\n" + update.toString());
+            log.trace("+++ Update on " + client + ":\n" + update.toString());
             ModelNode result = client.execute(new OperationBuilder(update).build());
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
                 if (result.hasDefined("result"))
-                    log.info(result.get("result"));
+                    log.trace(result.get("result"));
             } else if (result.hasDefined("failure-description")) {
                 throw new RuntimeException(result.get("failure-description").toString());
             } else {
@@ -114,12 +114,12 @@ import org.jboss.logging.Logger;
     /**
      * Access http://localhost/
      */
-    public static String hitRootContext(Logger log, URL url, String serverName) throws Exception {
+    public static String hitRootContext(URL url, String serverName) throws Exception {
         HttpGet httpget = new HttpGet(url.toURI());
         HttpClient httpclient = HttpClients.createDefault();
         httpget.setHeader("Host", serverName);
 
-        log.info("executing request" + httpget.getRequestLine());
+        log.trace("executing request" + httpget.getRequestLine());
         HttpResponse response = httpclient.execute(httpget);
 
         int statusCode = response.getStatusLine().getStatusCode();

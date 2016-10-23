@@ -15,7 +15,6 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.sar.context.classloader.mbean.MBeanInAModuleService;
 import org.jboss.as.test.integration.sar.context.classloader.mbean.MBeanInAModuleServiceMBean;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -37,8 +36,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 @RunWith(Arquillian.class)
 @RunAsClient
 public class MBeanTCCLTestCase {
-
-    private static final Logger logger = Logger.getLogger(MBeanTCCLTestCase.class);
 
     private static final String EAR_NAME = "tccl-mbean-test-app";
     private static final String SAR_NAME = "tccl-mbean-test-sar";
@@ -93,7 +90,6 @@ public class MBeanTCCLTestCase {
                 new RuntimePermission("getClassLoader")),
                 "permissions.xml");
 
-        logger.info("created deployment: " + ear.toString(true));
         return ear;
     }
 

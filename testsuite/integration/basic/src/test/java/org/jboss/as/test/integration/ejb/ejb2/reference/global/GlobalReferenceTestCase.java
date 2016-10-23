@@ -33,7 +33,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
-import org.jboss.logging.Logger;
 
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -51,7 +50,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class GlobalReferenceTestCase {
 
-    private static final Logger log = Logger.getLogger(GlobalReferenceTestCase.class);
     private static final String EJB2 = "global-reference-ejb2";
     private static final String EJB3 = "global-reference-ejb3";
 
@@ -60,7 +58,6 @@ public class GlobalReferenceTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EJB3 + ".jar")
            .addClasses(GlobalReferenceTestCase.class, GlobalSession30Bean.class, Session30.class, Session30RemoteBusiness.class,
                    Session21.class, Session21Home.class);
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -69,7 +66,6 @@ public class GlobalReferenceTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EJB2 + ".jar")
            .addClasses(Session21.class, Session21Bean.class, Session21Home.class,
                    Session30.class, Session30RemoteBusiness.class);
-        log.info(jar.toString(true));
         jar.addAsManifestResource(GlobalReferenceTestCase.class.getPackage(), "jboss-ejb3-global.xml", "jboss.xml");
         jar.addAsManifestResource(GlobalReferenceTestCase.class.getPackage(), "ejb-jar-global.xml", "ejb-jar.xml");
         return jar;

@@ -23,8 +23,6 @@
 package org.jboss.as.test.integration.jpa.sibling;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -80,30 +78,8 @@ public class SiblingXPCInheritanceTestCase {
     protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
         try {
             return interfaceType.cast(iniCtx.lookup(name));
-
         } catch (NamingException e) {
-            dumpJndi("");
             throw e;
-        }
-    }
-
-    private void dumpJndi(String s) {
-   /*     try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }*/
-    }
-
-    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
         }
     }
 

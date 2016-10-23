@@ -84,15 +84,11 @@ public class LdapUrlInSearchBaseTestCase {
      */
     @Deployment
     public static WebArchive deployment() {
-        LOGGER.info("Creating deployment");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ldap-test.war");
         war.addClasses(LdapUrlTestServlet.class);
 
         war.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:10389", "connect,resolve")), "permissions.xml");
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 
@@ -130,10 +126,6 @@ public class LdapUrlInSearchBaseTestCase {
     public static void main(String[] args) throws Exception {
         LDAPServerSetupTask ldapSetup = new LDAPServerSetupTask();
         ldapSetup.setup(null, null);
-        /*System.out.println("InitialDirContext used:");
-        System.out.println(LdapUrlTestServlet.runSearch(null, false));
-        System.out.println("InitialLdapContext used:");
-        System.out.println(LdapUrlTestServlet.runSearch(null, true));*/
         ldapSetup.tearDown(null, null);
     }
 

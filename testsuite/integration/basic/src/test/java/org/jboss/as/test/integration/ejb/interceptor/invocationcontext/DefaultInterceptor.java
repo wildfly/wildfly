@@ -50,7 +50,7 @@ public class DefaultInterceptor {
 
     @PostConstruct
     void postConstruct(InvocationContext ctx) {
-        log.info("PostConstruct on DefaultInterceptor called" + ctx.getTarget().getClass().getName());
+        log.trace("PostConstruct on DefaultInterceptor called" + ctx.getTarget().getClass().getName());
         if (ctx.getMethod() != null) {
             throw new RuntimeException("InvocationContext.getMethod() on lifecycle event has to be null");
         }
