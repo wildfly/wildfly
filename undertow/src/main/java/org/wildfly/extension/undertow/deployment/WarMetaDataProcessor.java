@@ -493,7 +493,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.invalidRelativeOrdering(this.ordering.getJar()));
                 }
                 if (check.isBeforeInternal(ordering, checked)) {
-                    return false;
+                    return true;
                 }
             }
             return false;
@@ -521,7 +521,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                     throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.invalidRelativeOrdering(this.ordering.getJar()));
                 }
                 if (check.isAfterInternal(ordering, checked)) {
-                    return false;
+                    return true;
                 }
             }
             return false;
