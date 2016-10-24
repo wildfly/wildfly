@@ -29,41 +29,38 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-import javax.management.AttributeList;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
+abstract class LogStoreParticipantOperationHandler implements OperationStepHandler {
 
-    static final LogStoreParticipantRefreshHandler INSTANCE = new LogStoreParticipantRefreshHandler();
+    private String operationName;
+
+    public LogStoreParticipantOperationHandler(String operationName) {
+        this.operationName = operationName;
+    }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
 
         try {
+            // Get the internal object name
             final ObjectName on = LogStoreResource.getObjectName(resource);
-            final ModelNode model = resource.getModel().clone();
 
-            AttributeList attributes = mbs.getAttributes(on, LogStoreConstants.PARTICIPANT_JMX_NAMES);
+            //  Invoke the MBean operation
+            mbs.invoke(on, operationName, null, null);
 
-            for (javax.management.Attribute attribute : attributes.asList()) {
-                String modelName = LogStoreConstants.jmxNameToModelName(LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES, attribute.getName());
-
-                if (modelName != null) {
-                    ModelNode aNode = model.get(modelName);
-                    Object value = attribute.getValue();
-
-                    if (aNode != null)
-                        aNode.set(value == null ? "" : value.toString());
-                }
-            }
-            // Replace the model
-            resource.writeModel(model);
         } catch (Exception e) {
             throw new OperationFailedException("JMX error: " + e.getMessage());
         }
 
+        // refresh the attributes of this participant (the status attribute should have changed to PREPARED
+        refreshParticipant(context);
+
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
+
+    abstract void refreshParticipant(OperationContext context);
 }

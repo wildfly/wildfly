@@ -23,18 +23,28 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
 
-public class LogStoreParticipantRecoveryHandler extends LogStoreParticipantOperationHandler {
-    private LogStoreParticipantRefreshHandler refreshHandler = null;
+public class LogStoreParticipantDeleteHandler extends LogStoreParticipantOperationHandler {
+    private LogStoreProbeHandler probeHandler = null;
 
-    public LogStoreParticipantRecoveryHandler(LogStoreParticipantRefreshHandler refreshHandler) {
-        super("clearHeuristic");
+    public LogStoreParticipantDeleteHandler(LogStoreProbeHandler probeHandler) {
+        super("remove");
 
-        this.refreshHandler = refreshHandler;
+        this.probeHandler = probeHandler;
     }
 
-    // refresh the attributes of this participant (the status attribute should have changed to PREPARED
     void refreshParticipant(OperationContext context) {
-        context.addStep(refreshHandler, OperationContext.Stage.MODEL, true);
+        final ModelNode operation = Util.createEmptyOperation("refresh-log-store", context.getCurrentAddress().getParent().getParent());
+
+        context.addStep(operation, new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                probeHandler.execute(context, operation);
+            }
+        }, OperationContext.Stage.MODEL);
     }
 }
