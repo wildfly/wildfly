@@ -26,6 +26,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Map;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
@@ -33,6 +34,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalize
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class InfinispanBeanGroupEntryExternalizer<I, T> implements Externalizer<InfinispanBeanGroupEntry<I, T>> {
 
     private final Externalizer<SimpleMarshalledValue<Map<I, T>>> externalizer = new SimpleMarshalledValueExternalizer<>();

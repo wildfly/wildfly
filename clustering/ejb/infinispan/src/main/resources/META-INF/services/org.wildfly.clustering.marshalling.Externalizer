@@ -1,7 +1,0 @@
-org.wildfly.clustering.ejb.infinispan.BasicSessionIDExternalizer
-org.wildfly.clustering.ejb.infinispan.ClientMappingExternalizer
-org.wildfly.clustering.ejb.infinispan.UnknownSessionIDExternalizer
-org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKeyExternalizer
-org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanEntryExternalizer
-org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupEntryExternalizer
-org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeyExternalizer

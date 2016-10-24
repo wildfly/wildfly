@@ -27,12 +27,14 @@ import java.io.ObjectOutput;
 import java.util.Date;
 
 import org.jboss.ejb.client.SessionID;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.infinispan.BasicSessionIDExternalizer;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanBeanEntry<SessionID>> {
 
     private final Externalizer<SessionID> externalizer = new BasicSessionIDExternalizer();

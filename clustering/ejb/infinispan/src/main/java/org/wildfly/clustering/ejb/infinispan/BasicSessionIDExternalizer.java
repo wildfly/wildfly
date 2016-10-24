@@ -23,11 +23,14 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.jboss.ejb.client.BasicSessionID;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class BasicSessionIDExternalizer extends SessionIDExternalizer {
 
     public BasicSessionIDExternalizer() {
