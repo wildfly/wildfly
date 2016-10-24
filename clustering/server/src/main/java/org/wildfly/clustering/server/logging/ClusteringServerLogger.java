@@ -74,11 +74,11 @@ public interface ClusteringServerLogger extends BasicLogger {
     @Message(id = 5, value = "Failed to start %s service")
     void serviceStartFailed(@Cause StartException e, String service);
 
-    @LogMessage(level = ERROR)
+    @LogMessage(level = WARN)
     @Message(id = 6, value = "Failed to reach quorum of %2$d for %1$s service. No singleton master will be elected.")
     void quorumNotReached(String service, int quorum);
 
-    @LogMessage(level = WARN)
+    @LogMessage(level = INFO)
     @Message(id = 7, value = "Just reached required quorum of %2$d for %1$s service. If this cluster loses another member, no node will be chosen to provide this service.")
     void quorumJustReached(String service, int quorum);
 
@@ -99,4 +99,11 @@ public interface ClusteringServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 12, value = "Failed to notify %s/%s service provider registration listener of new providers: %s")
     void serviceProviderRegistrationListenerFailed(@Cause Throwable e, String containerName, String cacheName, Set<Node> providers);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13, value = "No node was elected as the singleton provider of the %s service")
+    void noPrimaryElected(String service);
+
+    @Message(id = 14, value = "Specified quorum %d must be greater than zero")
+    IllegalArgumentException invalidQuorum(int quorum);
 }

@@ -96,6 +96,9 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
 
     @Override
     public SingletonServiceBuilder<T> requireQuorum(int quorum) {
+        if (quorum < 1) {
+            throw ClusteringServerLogger.ROOT_LOGGER.invalidQuorum(quorum);
+        }
         this.quorum.set(quorum);
         return this;
     }
@@ -142,33 +145,34 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
 
         // Only run election on a single node
         if (candidates.isEmpty() || candidates.get(0).equals(group.getLocalNode())) {
-            Node elected = null;
-
             // First validate that quorum was met
             int size = candidates.size();
             int quorum = this.quorum.intValue();
-            if (size >= quorum) {
-                if ((quorum > 1) && (size == quorum)) {
-                    ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.serviceName.getCanonicalName(), quorum);
-                }
+            boolean quorumMet = size >= quorum;
 
-                if (!candidates.isEmpty()) {
-                    elected = this.electionPolicy.elect(candidates);
-
-                    ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.serviceName.getCanonicalName());
-                }
-            } else if (quorum > 1) {
-                ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.serviceName.getCanonicalName(), quorum);
+            if ((quorum > 1) && (size == quorum)) {
+                // Log fragility of singleton availability
+                ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.serviceName.getCanonicalName(), quorum);
             }
+
+            Node elected = quorumMet ? this.electionPolicy.elect(candidates) : null;
 
             CommandDispatcher<SingletonContext<T>> dispatcher = this.dispatcher.getValue();
             try {
                 if (elected != null) {
+                    ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.serviceName.getCanonicalName());
+
                     // Stop service on every node except elected node
                     dispatcher.executeOnCluster(new StopCommand<>(), elected);
                     // Start service on elected node
                     dispatcher.executeOnNode(new StartCommand<>(), elected);
                 } else {
+                    if (quorumMet) {
+                        ClusteringServerLogger.ROOT_LOGGER.noPrimaryElected(this.serviceName.getCanonicalName());
+                    } else {
+                        ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.serviceName.getCanonicalName(), quorum);
+                    }
+
                     // Stop service on every node
                     dispatcher.executeOnCluster(new StopCommand<>());
                 }
