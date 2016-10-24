@@ -36,22 +36,22 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REBIND;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REBIND;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import org.jboss.as.naming.NamingContext;
 
 import java.net.SocketPermission;
 import java.net.URL;
+
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.subsystem.NamingExtension;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -103,7 +103,7 @@ public class RebindTestCase {
 
         final String name = "java:global/rebind";
         final String lookup = "java:global/lookup";
-
+        Exception error = null;
         try {
             ModelNode operation = prepareAddBindingOperation(name, SIMPLE);
             operation.get(VALUE).set("http://localhost");
@@ -138,10 +138,12 @@ public class RebindTestCase {
             operationResult = managementClient.getControllerClient().execute(operation);
             Assert.assertFalse(operationResult.get(FAILURE_DESCRIPTION).toString(), operationResult.get(FAILURE_DESCRIPTION).isDefined());
             Assert.assertEquals("java:global/lookup", operationResult.get(RESULT).get(LOOKUP).asString());
-
+        } catch (Exception e) {
+            error = e;
+            throw e;
         } finally {
-            removeBinding(name);
-            removeBinding(lookup);
+            removeBinding(name, error);
+            removeBinding(lookup, error);
         }
     }
 
@@ -149,6 +151,7 @@ public class RebindTestCase {
     public void testRebindingObjectFactory() throws Exception {
 
         final String bindingName = "java:global/bind";
+        Exception error = null;
 
         try {
             ModelNode operation = prepareAddBindingOperation(bindingName, SIMPLE);
@@ -162,18 +165,21 @@ public class RebindTestCase {
             operation.get("class").set("org.jboss.as.naming.interfaces.java.javaURLContextFactory");
             operationResult = managementClient.getControllerClient().execute(operation);
             verifyBindingClass(operationResult, bindingName, NamingContext.class.getName());
-
+        } catch (Exception e) {
+            error = e;
+            throw e;
         } finally {
-            removeBinding(bindingName);
+            removeBinding(bindingName, error);
         }
     }
 
     @Test
-    public void testRebidingLookup() throws Exception {
+    public void testRebindingLookup() throws Exception {
 
         final String simpleBindingName1 = "java:global/simple1";
         final String simpleBindingName2 = "java:global/simple2";
         final String lookupBindingName = "java:global/lookup";
+        Exception error = null;
 
         try {
             ModelNode operation = prepareAddBindingOperation(simpleBindingName1, SIMPLE);
@@ -197,11 +203,13 @@ public class RebindTestCase {
             operation.get(LOOKUP).set(simpleBindingName2);
             operationResult = managementClient.getControllerClient().execute(operation);
             verifyBinding(operationResult, lookupBindingName, "simple2");
-
+        } catch (Exception e) {
+            error = e;
+            throw e;
         } finally {
-            removeBinding(simpleBindingName1);
-            removeBinding(simpleBindingName2);
-            removeBinding(lookupBindingName);
+            removeBinding(simpleBindingName1, error);
+            removeBinding(simpleBindingName2, error);
+            removeBinding(lookupBindingName, error);
         }
     }
 
@@ -246,14 +254,22 @@ public class RebindTestCase {
         return bindingAddress;
     }
 
-    private void removeBinding (String bindingName) throws Exception {
+    private void removeBinding (String bindingName, Exception testException) throws Exception {
         ModelNode removeOperation = new ModelNode();
         removeOperation.get(OP).set(REMOVE);
         removeOperation.get(OP_ADDR).set(getBindingAddress(bindingName));
         removeOperation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-        Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                .isDefined());
+        if (testException == null) {
+            //Only error here if the test was successful
+            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined());
+        } else {
+            if (removeResult.get(FAILURE_DESCRIPTION).isDefined()) {
+                throw new Exception(removeResult.get(FAILURE_DESCRIPTION) +
+                        " - there was an exisiting exception in the test, it is added as the cause", testException);
+            }
+        }
     }
 
 }
