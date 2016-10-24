@@ -109,9 +109,9 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Se
     }
 
     @Override
-    public void evict(String id) {
+    public boolean evict(String id) {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
-        SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(key);
+        SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(key);
         if (entry != null) {
             entry.getNames().entrySet().stream().forEach(attribute -> {
                 try {
@@ -122,6 +122,7 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Se
             });
             this.namesCache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).evict(key);
         }
+        return (entry != null);
     }
 
     @Override
