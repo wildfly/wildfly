@@ -47,11 +47,11 @@ public enum XMLAttribute {
     ;
     private final String localName;
 
-    private XMLAttribute(Attribute attribute) {
+    XMLAttribute(Attribute attribute) {
         this(attribute.getDefinition().getXmlName());
     }
 
-    private XMLAttribute(String localName) {
+    XMLAttribute(String localName) {
         this.localName = localName;
     }
 

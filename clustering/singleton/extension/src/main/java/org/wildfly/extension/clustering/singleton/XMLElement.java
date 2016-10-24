@@ -47,15 +47,15 @@ public enum XMLElement {
     ;
     private final String localName;
 
-    private XMLElement(PathElement path) {
+    XMLElement(PathElement path) {
         this(path.getKey());
     }
 
-    private XMLElement(Attribute attribute) {
+    XMLElement(Attribute attribute) {
         this(attribute.getDefinition().getXmlName());
     }
 
-    private XMLElement(String localName) {
+    XMLElement(String localName) {
         this.localName = localName;
     }
 

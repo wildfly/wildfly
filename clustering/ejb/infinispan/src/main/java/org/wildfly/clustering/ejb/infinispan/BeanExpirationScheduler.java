@@ -109,7 +109,7 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<I> {
     private class ExpirationTask implements Runnable {
         private final I id;
 
-        public ExpirationTask(I id) {
+        ExpirationTask(I id) {
             this.id = id;
         }
 
