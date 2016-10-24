@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.ExecutionException;
-
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+package org.wildfly.clustering.dispatcher;
 
 /**
- * ClassTable contributor for the marshaller of a {@link CommandDispatcher}.
+ * Indicates a failure to dispatch a command.
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class CommandDispatcherClassTableContributor implements ClassTableContributor {
+public class CommandDispatcherException extends Exception {
+    private static final long serialVersionUID = 3984965224844057380L;
 
-    @Override
-    public Collection<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(Command.class, NoSuchService.class, ExecutionException.class);
+    /**
+     * Creates a new CommandDispatcherException using the specified cause.
+     * @param cause the cause of this exception.
+     */
+    public CommandDispatcherException(Throwable cause) {
+        super(cause);
     }
 }

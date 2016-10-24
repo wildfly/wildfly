@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
@@ -136,7 +137,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
                     // Stop service on every node
                     this.dispatcher.executeOnCluster(new StopCommand<>());
                 }
-            } catch (Exception e) {
+            } catch (CommandDispatcherException e) {
                 throw new IllegalStateException(e);
             }
         }
