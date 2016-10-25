@@ -168,7 +168,7 @@ public class HibernateAnnotationScanner implements Scanner {
                 for (ClassInfo classInfo : allClasses) {
                     String className = classInfo.name().toString();
                     try {
-                        resultClasses.add(pu.getNewTempClassLoader().loadClass(className));
+                        resultClasses.add(pu.cacheTempClassLoader().loadClass(className));
                     } catch (ClassNotFoundException e) {
                         JPA_LOGGER.cannotLoadEntityClass(e, className);
                     } catch (NoClassDefFoundError e) {
@@ -236,7 +236,7 @@ public class HibernateAnnotationScanner implements Scanner {
                         String className = annotationInstance.target().toString();
                         try {
                             JPA_LOGGER.tracef("getClassesInJar found class %s with annotation %s", className, annClass.getName());
-                            Class<?> clazz = pu.getNewTempClassLoader().loadClass(className);
+                            Class<?> clazz = pu.cacheTempClassLoader().loadClass(className);
                             result.add(clazz);
                             classesForAnnotation.add(clazz);
                         } catch (ClassNotFoundException e) {
