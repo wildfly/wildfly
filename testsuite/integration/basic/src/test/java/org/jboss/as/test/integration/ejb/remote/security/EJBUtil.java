@@ -85,7 +85,7 @@ class EJBUtil {
     public static Properties createEjbClientConfiguration(String hostName) throws UnknownHostException {
         final Properties pr = new Properties();
         pr.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
-        pr.put("remote.connection.default.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS", "JBOSS_LOCAL_USER");
+        pr.put("remote.connection.default.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
         pr.put("remote.connections", "default");
         pr.put("remote.connection.default.host", hostName);
         pr.put("remote.connection.default.port", "8080");
