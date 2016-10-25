@@ -50,9 +50,11 @@ public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefi
         super.registerOperations(resourceRegistration);
 
         final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
+        final LogStoreProbeHandler probeHandler = LogStoreProbeHandler.INSTANCE;
 
         resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.REFRESH, getResourceDescriptionResolver()), refreshHandler);
         resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.RECOVER, getResourceDescriptionResolver()), new LogStoreParticipantRecoveryHandler(refreshHandler));
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.DELETE, getResourceDescriptionResolver()), new LogStoreParticipantDeleteHandler(probeHandler));
     }
 
     @Override
