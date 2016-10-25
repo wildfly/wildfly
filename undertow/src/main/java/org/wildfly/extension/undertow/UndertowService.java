@@ -49,8 +49,11 @@ import org.wildfly.extension.undertow.security.jacc.HttpServletRequestPolicyCont
  */
 public class UndertowService implements Service<UndertowService> {
 
+    @Deprecated
     public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
+    @Deprecated
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
+    @Deprecated
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
      * service name under which default server is bound.
@@ -66,6 +69,32 @@ public class UndertowService implements Service<UndertowService> {
      */
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
+
+    public static final String CAPABILITY_NAME_UNDERTOW = "org.wildfly.undertow";
+
+    public static final String CAPABILITY_NAME_LISTENER = "org.wildfly.undertow.listener";
+    public static final String CAPABILITY_NAME_SERVER = "org.wildfly.undertow.server";
+    public static final String CAPABILITY_NAME_HOST = "org.wildfly.undertow.host";
+    public static final String CAPABILITY_NAME_LOCATION = "org.wildfly.undertow.location";
+    public static final String CAPABILITY_NAME_HANDLER = "org.wildfly.extension.undertow.handler";
+    public static final String CAPABILITY_NAME_MOD_CLUSTER_FILTER= "org.wildfly.undertow.mod_cluster_filter";
+    public static final String CAPABILITY_NAME_SERVLET_CONTAINER = "org.wildfly.undertow.servlet-container";
+    public static final String CAPABILITY_NAME_HTTP_INVOKER = "org.wildfly.undertow.http-invoker";
+    public static final String CAPABILITY_NAME_HTTP_INVOKER_HOST = "org.wildfly.undertow.http-invoker.host";
+    public static final String CAPABILITY_NAME_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";
+    public static final String CAPABILITY_NAME_REVERSE_PROXY_HANDLER_HOST = "org.wildfly.undertow.reverse-proxy.host";
+
+    public static final String CAP_REF_IO_WORKER = "org.wildfly.io.worker";
+    public static final String CAP_REF_BUFFER_POOL = "org.wildfly.io.buffer-pool";
+    public static final String CAP_REF_SOCKET_BINDING = "org.wildfly.network.socket-binding";
+    public static final String CAP_REF_SSL_CONTEXT = "org.wildfly.security.ssl-context";
+    public static final String CAP_REF_HTTP_AUTHENITCATION_FACTORY = "org.wildfly.security.http-authentication-factory";
+    public static final String CAP_REF_JACC_POLICY = "org.wildfly.security.jacc-policy";
+    public static final String CAP_REF_OUTBOUND_SOCKET = "org.wildfly.network.outbound-socket-binding";
+
+
+
+
     /**
      * The base name for web deployments.
      */
@@ -75,7 +104,7 @@ public class UndertowService implements Service<UndertowService> {
     private final String defaultVirtualHost;
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
-    private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
+    private volatile String instanceId;
     private volatile boolean statisticsEnabled;
     private final Set<Consumer<Boolean>> statisticsChangeListenters = new HashSet<>();
 
@@ -92,11 +121,11 @@ public class UndertowService implements Service<UndertowService> {
     }
 
     public static ServiceName virtualHostName(final String server, final String virtualHost) {
-        return SERVER.append(server).append(virtualHost);
+        return ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(server).append(virtualHost);
     }
 
     public static ServiceName locationServiceName(final String server, final String virtualHost, final String locationName) {
-        return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
+        return  virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
     }
 
     public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
@@ -148,6 +177,7 @@ public class UndertowService implements Service<UndertowService> {
         return serviceName;
     }
 
+    @Deprecated
     public static ServiceName listenerName(String listenerName) {
         return UNDERTOW.append(Constants.LISTENER).append(listenerName);
     }

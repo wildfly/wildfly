@@ -51,6 +51,11 @@ public class UndertowDefaultConfigUpgradeTestCase extends AbstractSubsystemBaseT
     }
 
     @Override
+    public void testSchema() throws Exception {
+
+    }
+
+    @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return UndertowSubsystemTestCase.DEFAULT;
     }

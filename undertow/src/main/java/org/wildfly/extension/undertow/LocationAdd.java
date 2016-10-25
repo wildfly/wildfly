@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.List;
 
 import io.undertow.server.HttpHandler;
@@ -55,22 +53,21 @@ class LocationAdd extends AbstractAddStepHandler {
 
     @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-        final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
-        final String name = address.getLastElement().getValue();
+        final PathAddress hostAddress = context.getCurrentAddress().getParent();
+        final PathAddress serverAddress = hostAddress.getParent();
+        final String name = context.getCurrentAddressValue();
         final String handler = LocationDefinition.HANDLER.resolveModelAttribute(context, model).asString();
 
         final LocationService service = new LocationService(name);
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
-        final ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
         final ServiceName serviceName = UndertowService.locationServiceName(serverName, hostName, name);
-        final ServiceBuilder<LocationService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(hostServiceName, Host.class, service.getHost())
-                .addDependency(UndertowService.HANDLER.append(handler), HttpHandler.class, service.getHttpHandler());
+        final ServiceBuilder<LocationService> builder = context.getServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY, service)
+                .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_HANDLER, HttpHandler.class, service.getHttpHandler(),handler)
+                .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_HOST, Host.class, service.getHost(), serverName, hostName);
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
+                .addAliases(serviceName)
                 .install();
     }
 }

@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -42,7 +41,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  *
  * @author Stuart Douglas
  */
-public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
+class ModClusterBalancerDefinition extends SimpleResourceDefinition {
 
     public static ModClusterBalancerDefinition INSTANCE = new ModClusterBalancerDefinition();
 
@@ -83,8 +82,9 @@ public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
             .build();
 
 
-    ModClusterBalancerDefinition() {
-        super(UndertowExtension.BALANCER, UndertowExtension.getResolver("handler", "mod-cluster", "balancer"), null, null, true);
+    private ModClusterBalancerDefinition() {
+        super(new Parameters(UndertowExtension.BALANCER, UndertowExtension.getResolver("handler", "mod-cluster", "balancer"))
+                .setRuntime());
     }
 
     @Override
@@ -164,7 +164,7 @@ public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
 
         @Override
         public final void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+            PathAddress address = context.getCurrentAddress();
             int current = address.size() - 1;
             String balancerName = address.getElement(current--).getValue();
             String modClusterName = address.getElement(current--).getValue();

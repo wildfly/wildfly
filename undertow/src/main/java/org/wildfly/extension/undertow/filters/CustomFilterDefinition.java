@@ -5,14 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import io.undertow.Handlers;
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -47,35 +44,6 @@ public class CustomFilterDefinition extends Filter {
             .setXmlName("param")
             .setAllowExpression(true)
             .setRestartAllServices()
-            .setAttributeMarshaller(new AttributeMarshaller() { //todo not needed once https://github.com/wildfly/wildfly-core/pull/86 is merged
-                @Override
-                public boolean isMarshallable(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault) {
-                    return resourceModel.isDefined() && resourceModel.hasDefined(attribute.getName());
-                }
-
-                @Override
-                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    if (!resourceModel.hasDefined(attribute.getName())) {
-                        return;
-                    }
-                    resourceModel = resourceModel.get(attribute.getName());
-                    for (ModelNode property : resourceModel.asList()) {
-                        writer.writeEmptyElement(attribute.getXmlName());
-                        writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), property.asProperty().getName());
-                        writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName(), property.asProperty().getValue().asString());
-                    }
-                }
-
-                @Override
-                public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    marshallAsElement(attribute, resourceModel, marshallDefault, writer);
-                }
-
-                @Override
-                public boolean isMarshallableAsElement() {
-                    return true;
-                }
-            })
             .build();
 
     public static final CustomFilterDefinition INSTANCE = new CustomFilterDefinition();

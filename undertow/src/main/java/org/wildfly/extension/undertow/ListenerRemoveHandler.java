@@ -36,6 +36,6 @@ class ListenerRemoveHandler extends ServiceRemoveStepHandler {
 
     @Override
     protected ServiceName serviceName(String name) {
-        return UndertowService.listenerName(name);
+        return ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(name);
     }
 }

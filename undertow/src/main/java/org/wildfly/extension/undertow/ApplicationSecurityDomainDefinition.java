@@ -24,6 +24,9 @@ package org.wildfly.extension.undertow;
 
 import static io.undertow.util.StatusCodes.OK;
 import static java.security.AccessController.doPrivileged;
+import static org.wildfly.extension.undertow.UndertowService.CAPABILITY_NAME_APPLICATION_SECURITY_DOMAIN;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_HTTP_AUTHENITCATION_FACTORY;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_JACC_POLICY;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
 import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
@@ -162,24 +165,19 @@ import io.undertow.servlet.util.SavedRequest;
  */
 public class ApplicationSecurityDomainDefinition extends PersistentResourceDefinition {
 
-    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.extension.undertow.application-security-domain";
-
 
     private static final String ANONYMOUS_PRINCIPAL = "anonymous";
     private static final String SERVLET = "servlet";
     private static final String EJB = "ejb";
 
     static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, BiFunction.class)
+            .Builder.of(CAPABILITY_NAME_APPLICATION_SECURITY_DOMAIN, true, BiFunction.class)
             .build();
-
-    private static final String HTTP_AUTHENITCATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
-    private static final String JACC_POLICY_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(HTTP_AUTHENITCATION_FACTORY_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
+            .setCapabilityReference(CAP_REF_HTTP_AUTHENITCATION_FACTORY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
             .build();
 
@@ -234,7 +232,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-            ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(Function.class);
+            ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
 
             ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
             ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
@@ -287,11 +285,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             ServiceBuilder<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> serviceBuilder = target.addService(serviceName, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
 
-            serviceBuilder.addDependency(context.getCapabilityServiceName(HTTP_AUTHENITCATION_FACTORY_CAPABILITY,
+            serviceBuilder.addDependency(context.getCapabilityServiceName(CAP_REF_HTTP_AUTHENITCATION_FACTORY,
                     httpServerMechanismFactory, HttpAuthenticationFactory.class), HttpAuthenticationFactory.class, applicationSecurityDomainService.getHttpAuthenticationFactoryInjector());
 
             if (enableJacc) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.REQUIRED, context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.REQUIRED, context.getCapabilityServiceName(CAP_REF_JACC_POLICY, Policy.class));
             }
 
             if (resource.hasChild(UndertowExtension.PATH_SSO)) {

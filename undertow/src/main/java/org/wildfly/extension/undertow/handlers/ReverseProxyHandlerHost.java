@@ -22,12 +22,23 @@
 
 package org.wildfly.extension.undertow.handlers;
 
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_OUTBOUND_SOCKET;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SSL_CONTEXT;
+import static org.wildfly.extension.undertow.UndertowService.CAPABILITY_NAME_REVERSE_PROXY_HANDLER_HOST;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collection;
+import javax.net.ssl.SSLContext;
+
 import io.undertow.protocols.ssl.UndertowXnioSsl;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilitiesServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -37,7 +48,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -46,7 +57,6 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -61,30 +71,28 @@ import org.xnio.Options;
 import org.xnio.Xnio;
 import org.xnio.ssl.XnioSsl;
 
-import javax.net.ssl.SSLContext;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-
 /**
  * @author Stuart Douglas
  * @author Tomaz Cerar
  */
 public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
-    private static final String REVERSE_PROXY_HANDLER_HOST_CAPABILITY_NAME = "org.wildfly.undertow.reverse-proxy.host";
-    private static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
-
-    public static final ReverseProxyHandlerHost INSTANCE = new ReverseProxyHandlerHost();
-
     public static final ServiceName SERVICE_NAME = UndertowService.HANDLER.append("reverse-proxy", "host");
 
+    private static final RuntimeCapability<Void> REVERSE_PROXY_HOST_RUNTIME_CAPABILITY =
+                RuntimeCapability.Builder.of(CAPABILITY_NAME_REVERSE_PROXY_HANDLER_HOST, true, ReverseProxyHostService.class)
+                        .setDynamicNameMapper(path -> new String[]{
+                                            path.getParent().getLastElement().getValue(),
+                                            path.getLastElement().getValue()})
+                        .addDynamicOptionalRequirements(CAP_REF_SSL_CONTEXT)
+                        .addDynamicOptionalRequirements(CAP_REF_OUTBOUND_SOCKET)
+                        .build();
 
     public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true) //todo consider what we can do to make this non nullable
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setCapabilityReference(CAP_REF_OUTBOUND_SOCKET)
             .build();
 
     public static final AttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder("scheme", ModelType.STRING)
@@ -109,7 +117,8 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, REVERSE_PROXY_HANDLER_HOST_CAPABILITY_NAME, true)
+            //.setCapabilityReference(CAP_REF_SSL_CONTEXT, CAPABILITY_NAME_REVERSE_PROXY_HANDLER_HOST, true)
+            .setCapabilityReference(CAP_REF_SSL_CONTEXT)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
@@ -123,8 +132,11 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
 
+    public static final ReverseProxyHandlerHost INSTANCE = new ReverseProxyHandlerHost();
+
     private ReverseProxyHandlerHost() {
-        super(PathElement.pathElement(Constants.HOST), UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, Constants.HOST));
+        super(new Parameters(PathElement.pathElement(Constants.HOST), UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, Constants.HOST))
+        );
     }
 
     @Override
@@ -145,23 +157,22 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                 return SERVICE_NAME.append(proxyName).append(name);
             }
         }, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        resourceRegistration.registerCapability(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY);
+    }
 
     private final class ReverseProxyHostAdd extends AbstractAddStepHandler {
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            for (AttributeDefinition def : getAttributes()) {
-                def.validateAndSet(operation, model);
-            }
+        public ReverseProxyHostAdd() {
+            super(getAttributes());
         }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            final String name = address.getLastElement().getValue();
+            final PathAddress address = context.getCurrentAddress();
             final String proxyName = address.getElement(address.size() - 2).getValue();
             final String socketBinding = OUTBOUND_SOCKET_BINDING.resolveModelAttribute(context, model).asString();
             final String scheme = SCHEME.resolveModelAttribute(context, model).asString();
@@ -175,20 +186,18 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                 jvmRoute = null;
             }
             ReverseProxyHostService service = new ReverseProxyHostService(scheme, jvmRoute, path);
-            ServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget().addService(SERVICE_NAME.append(proxyName).append(name), service)
-                    .addDependency(UndertowService.HANDLER.append(proxyName), HttpHandler.class, service.proxyHandler)
-                    .addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(socketBinding), OutboundSocketBinding.class, service.socketBinding);
+            CapabilitiesServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget()
+                    .addCapability(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY, service)
+                    .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_HANDLER, HttpHandler.class, service.proxyHandler, proxyName)
+                    .addCapabilityRequirement(UndertowService.CAP_REF_OUTBOUND_SOCKET, OutboundSocketBinding.class, service.socketBinding, socketBinding);
 
             if (sslContext.isDefined()) {
-                builder.addDependency(
-                        context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, sslContext.asString(), SSLContext.class),
-                        SSLContext.class, service.sslContext);
+                builder.addCapabilityRequirement(CAP_REF_SSL_CONTEXT, SSLContext.class, service.sslContext, sslContext.asString());
             }
             if(securityRealm.isDefined()) {
                 SecurityRealm.ServiceUtil.addDependency(builder, service.securityRealm, securityRealm.asString(), false);
             }
             builder.install();
-
         }
     }
 

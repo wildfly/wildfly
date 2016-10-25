@@ -34,9 +34,11 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
@@ -45,6 +47,15 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostDefinition extends PersistentResourceDefinition {
+
+    static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(UndertowService.CAPABILITY_NAME_HOST, true, Host.class)
+            .addRequirements(UndertowService.CAPABILITY_NAME_UNDERTOW)
+            .setDynamicNameMapper(pathElements -> new String[]{
+                    pathElements.getParent().getLastElement().getValue(),
+                    pathElements.getLastElement().getValue()})
+            .build();
+
+
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -98,4 +109,8 @@ class HostDefinition extends PersistentResourceDefinition {
         return CHILDREN;
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(HOST_CAPABILITY);
+    }
 }

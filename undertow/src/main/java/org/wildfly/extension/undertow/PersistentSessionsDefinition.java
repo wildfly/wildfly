@@ -119,7 +119,6 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
-            context.stepCompleted();
         }
 
         private void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

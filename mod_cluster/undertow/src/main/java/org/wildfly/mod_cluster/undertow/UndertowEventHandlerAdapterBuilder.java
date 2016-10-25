@@ -22,6 +22,7 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.service.ServiceBuilder;
@@ -38,7 +39,7 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
     public static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target, String connector, int statusInterval) {
+    public ServiceBuilder<?> build(ServiceTarget target, OperationContext context, String connector, int statusInterval) {
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         InjectedValue<SuspendController> suspendController = new InjectedValue<>();
@@ -47,7 +48,7 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
         return new AsynchronousServiceBuilder<>(SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener, suspendController, statusInterval)).build(target)
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
-                .addDependency(UndertowService.listenerName(connector), UndertowListener.class, listener)
+                .addDependency(context.getCapabilityServiceName(UndertowService.CAPABILITY_NAME_LISTENER, connector, UndertowListener.class), UndertowListener.class, listener)
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, suspendController)
         ;
     }
