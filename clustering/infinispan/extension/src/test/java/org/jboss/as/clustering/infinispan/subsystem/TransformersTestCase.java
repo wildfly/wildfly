@@ -360,7 +360,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    @org.junit.Ignore("WFLY-6766")
     public void testRejectionsEAP620() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_6_2_0);
     }
@@ -452,7 +451,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         @Override
         protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            return !attribute.equals(new ModelNode(true));
+            // The attribute won't be defined in the :write-attribute(name=default-cache,.. boot operation so don't reject in that case
+            return attribute.isDefined() && !attribute.equals(new ModelNode(true));
         }
 
         @Override
