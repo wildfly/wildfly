@@ -25,9 +25,11 @@ import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapMode
 import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapResults;
 import static org.jboss.as.clustering.controller.PropertiesTestUtil.executeOpInBothControllersWithAttachments;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -449,9 +452,17 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         }
 
         @Override
+        protected boolean checkValue(ModelNode operation, String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
+            if (!isGeneratedWriteAttribute && Operations.getName(operation).equals(WRITE_ATTRIBUTE_OPERATION) && operation.hasDefined(NAME) && operation.get(NAME).asString().equals(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE.getName())) {
+                // The attribute won't be defined in the :write-attribute(name=default-cache,.. boot operation so don't reject in that case
+                return false;
+            }
+            return !attribute.equals(new ModelNode(true));
+        }
+
+        @Override
         protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            // The attribute won't be defined in the :write-attribute(name=default-cache,.. boot operation so don't reject in that case
-            return attribute.isDefined() && !attribute.equals(new ModelNode(true));
+            throw new IllegalStateException();
         }
 
         @Override
