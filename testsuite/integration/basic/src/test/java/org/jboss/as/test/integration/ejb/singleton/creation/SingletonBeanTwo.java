@@ -39,7 +39,7 @@ public class SingletonBeanTwo {
 
     @PostConstruct
     void initialise() {
-        logger.info("initialised");
+        logger.trace("initialised");
     }
 
     /**

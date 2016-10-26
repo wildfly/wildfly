@@ -101,7 +101,7 @@ public class CLISecurityTestCase {
         assertFalse(cli.isConnected());
         cli.sendLine("connect " + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort(), true);
         String line = cli.readOutput();
-        logger.info("cli response: " + line);
+        logger.trace("cli response: " + line);
         assertTrue("CLI is not secured:" + line, line.indexOf("Authenticating against security realm") >= 0);
 
         cli.shutdown();

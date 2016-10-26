@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ws.ejb;
 
 import java.net.URL;
 import java.util.Hashtable;
-import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -53,13 +52,10 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     @ArquillianResource
     URL baseUrl;
 
-    private static final Logger log = Logger.getLogger(SimpleStatelessWebserviceEndpointTestCase.class.getName());
-
     @Deployment(testable = false)
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "stateless-ws-endpoint-example.jar");
         jar.addClasses(SimpleStatelessWebserviceEndpointIface.class, SimpleStatelessWebserviceEndpointImpl.class);
-        log.info(jar.toString(true));
         return jar;
     }
 

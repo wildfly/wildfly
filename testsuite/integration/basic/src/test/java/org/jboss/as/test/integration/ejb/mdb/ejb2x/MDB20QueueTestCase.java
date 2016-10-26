@@ -88,7 +88,6 @@ public class MDB20QueueTestCase extends AbstractMDB2xTestCase {
         ejbJar.addAsManifestResource(MDB20QueueTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
-        logger.info(ejbJar.toString(true));
         return ejbJar;
     }
 

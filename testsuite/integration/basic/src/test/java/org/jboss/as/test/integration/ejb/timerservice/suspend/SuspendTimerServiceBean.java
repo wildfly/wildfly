@@ -67,7 +67,7 @@ public class SuspendTimerServiceBean {
 
     @Timeout
     public synchronized void timeout(Timer timer) {
-        log.info("Timer is: " + timer + ", timer info is: " + timer.getInfo());
+        log.trace("Timer is: " + timer + ", timer info is: " + timer.getInfo());
         timerInfo = (String) timer.getInfo();
 
         timerServiceCount++;

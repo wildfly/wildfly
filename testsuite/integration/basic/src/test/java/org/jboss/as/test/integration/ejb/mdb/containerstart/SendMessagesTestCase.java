@@ -154,7 +154,6 @@ public class SendMessagesTestCase {
                 .addClasses(HelperSingleton.class, HelperSingletonImpl.class);
         // grant necessary permissions
         jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -165,7 +164,6 @@ public class SendMessagesTestCase {
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + SINGLETON + ".jar\n"), "MANIFEST.MF");
         // grant necessary permissions
         jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -173,7 +171,7 @@ public class SendMessagesTestCase {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
+                log.trace(result.get("result"));
             }
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.get("failure-description").toString());
@@ -259,7 +257,7 @@ public class SendMessagesTestCase {
                         " in " + SECONDS.toMillis(RECEIVE_WAIT_S) + " seconds", msg);
                 String text = ((TextMessage) msg).getText();
                 received.add(text);
-                log.info(i + ": " + text);
+                log.trace(i + ": " + text);
             }
             assertNull(receiver.receiveNoWait());
 

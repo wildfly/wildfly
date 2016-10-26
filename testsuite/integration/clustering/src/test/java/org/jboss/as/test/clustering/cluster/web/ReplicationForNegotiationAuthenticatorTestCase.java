@@ -90,7 +90,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends AbstractWebF
 
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
-                log.info("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.trace("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -101,7 +101,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends AbstractWebF
 
             response = client.execute(new HttpGet(uri2));
             try {
-                log.info("Requested " + uri2 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.trace("Requested " + uri2 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -111,7 +111,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends AbstractWebF
             //and back on the 1st server
             response = client.execute(new HttpGet(uri1));
             try {
-                log.info("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.trace("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {

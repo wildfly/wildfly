@@ -82,7 +82,7 @@ public class JspMappingTestCase {
 
     @Test
     public void testSimpleJSP() throws Exception {
-        log.info("Simple JSP");
+        log.trace("Simple JSP");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(webappUrl.toURI() + "index.jsp"));
         try (InputStream in = response.getEntity().getContent()) {
@@ -93,7 +93,7 @@ public class JspMappingTestCase {
 
     @Test
     public void testFalseCss() throws Exception {
-        log.info("False CSS");
+        log.trace("False CSS");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(webappUrl.toURI() + "test.css"));
         try (InputStream in = response.getEntity().getContent()) {
@@ -105,7 +105,7 @@ public class JspMappingTestCase {
 
     @Test
     public void testFalseHtmlPage() throws Exception {
-        log.info("False HTML");
+        log.trace("False HTML");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(webappUrl.toURI() + "test.html"));
         try (InputStream in = response.getEntity().getContent()) {
@@ -117,7 +117,7 @@ public class JspMappingTestCase {
 
     @Test
     public void testTrueHtmlPage() throws Exception {
-        log.info("True HTML");
+        log.trace("True HTML");
         DefaultHttpClient httpclient = new DefaultHttpClient();
         HttpResponse response = httpclient.execute(new HttpGet(webappUrl.toURI() + "index.html"));
         try (InputStream in = response.getEntity().getContent()) {

@@ -27,18 +27,15 @@ import org.wildfly.clustering.service.SubGroupServiceNameFactory;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link SingletonCacheRequirement} instead.
  */
+@Deprecated
 public enum SingletonServiceName implements SubGroupServiceNameFactory {
 
     BUILDER {
         @Override
         public ServiceName getServiceName(String containerName, String cacheName) {
-            return ServiceName.JBOSS.append("clustering", "singleton", containerName, (cacheName != null) ? cacheName : "default");
+            return ServiceName.parse((cacheName != null) ? SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve(containerName, cacheName) : SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve(containerName));
         }
     };
-
-    @Override
-    public ServiceName getServiceName(String containerName) {
-        return this.getServiceName(containerName, null);
-    }
 }

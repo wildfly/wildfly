@@ -74,7 +74,7 @@ public class LifecycleTrackerBean implements LifecycleTracker {
 
     @Override
     public void clearState() {
-        logger.info("Clearing state on " + this);
+        logger.trace("Clearing state on " + this);
         this.postConstructedBeans.clear();
         this.preDestroyedBeans.clear();
     }

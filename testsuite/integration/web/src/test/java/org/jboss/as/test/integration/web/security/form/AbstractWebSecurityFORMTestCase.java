@@ -42,7 +42,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.test.integration.security.WebSecurityPasswordBasedBase;
 
 /**
  * An Abstract parent of the FORM based authentication tests. <br/>
@@ -66,7 +66,7 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
      * @param pass
      * @param expectedStatusCode
      * @throws Exception
-     * @see org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase#makeCall(java.lang.String, java.lang.String,
+     * @see WebSecurityPasswordBasedBase#makeCall(java.lang.String, java.lang.String,
      * int)
      */
     @Override
@@ -83,16 +83,16 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
-            LOGGER.info("Login form get: " + statusLine);
+            LOGGER.trace("Login form get: " + statusLine);
             assertEquals(200, statusLine.getStatusCode());
 
-            LOGGER.info("Initial set of cookies:");
+            LOGGER.trace("Initial set of cookies:");
             List<Cookie> cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
-                LOGGER.info("None");
+                LOGGER.trace("None");
             } else {
                 for (int i = 0; i < cookies.size(); i++) {
-                    LOGGER.info("- " + cookies.get(i).toString());
+                    LOGGER.trace("- " + cookies.get(i).toString());
                 }
             }
             req = url.toExternalForm() + "secured/j_security_check";
@@ -122,13 +122,13 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             entity = response.getEntity();
             if (entity != null) { EntityUtils.consume(entity); }
 
-            LOGGER.info("Post logon cookies:");
+            LOGGER.trace("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
-                LOGGER.info("None");
+                LOGGER.trace("None");
             } else {
                 for (int i = 0; i < cookies.size(); i++) {
-                    LOGGER.info("- " + cookies.get(i).toString());
+                    LOGGER.trace("- " + cookies.get(i).toString());
                 }
             }
 

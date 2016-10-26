@@ -21,15 +21,15 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements DistributedCacheGroupBuilderProvider {
+public class CacheSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements DistributedCacheBuilderProvider {
 
     public CacheSingletonServiceBuilderFactoryBuilderProvider() {
-        super((support, containerName, cacheName) -> new CacheSingletonServiceBuilderFactoryBuilder(containerName, cacheName));
+        super((name, containerName, cacheName) -> new CacheSingletonServiceBuilderFactoryBuilder(name, containerName, cacheName));
     }
 }

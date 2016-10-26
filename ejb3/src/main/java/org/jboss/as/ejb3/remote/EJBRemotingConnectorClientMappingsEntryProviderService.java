@@ -24,41 +24,69 @@ package org.jboss.as.ejb3.remote;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemotingConnectorClientMappingsEntryProviderService extends AbstractService<RegistryEntryProvider<String, List<ClientMapping>>> {
+public class EJBRemotingConnectorClientMappingsEntryProviderService implements CapabilityServiceBuilder<Map.Entry<String, List<ClientMapping>>>, Value<Map.Entry<String, List<ClientMapping>>> {
 
-    private final RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
-    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo = new InjectedValue<>();
+    private final ServiceName remotingServerInfoServiceName;
 
-    public ServiceBuilder<RegistryEntryProvider<String, List<ClientMapping>>> build(ServiceTarget target, String clientMappingsClusterName, ServiceName remotingServerInfoServiceName) {
-        return target.addService(CacheGroupServiceName.REGISTRY_ENTRY.getServiceName(clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), this)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.serverEnvironment)
-                .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
-        ;
+    private volatile ValueDependency<Group> group;
+    private volatile String clientMappingsClusterName;
+    private volatile ServiceName name;
+
+    public EJBRemotingConnectorClientMappingsEntryProviderService(String clientMappingsClusterName, ServiceName remotingServerInfoServiceName) {
+        this.clientMappingsClusterName = clientMappingsClusterName;
+        this.remotingServerInfoServiceName = remotingServerInfoServiceName;
     }
 
     @Override
-    public RegistryEntryProvider<String, List<ClientMapping>> getValue() {
-        return this.registryEntryProvider;
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<Map.Entry<String, List<ClientMapping>>> configure(OperationContext context) {
+        this.name = ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(context, this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME);
+        this.group = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.clientMappingsClusterName), Group.class);
+        return this;
+    }
+
+    @Override
+    public ServiceBuilder<Map.Entry<String, List<ClientMapping>>> build(ServiceTarget target) {
+        ServiceBuilder<Map.Entry<String, List<ClientMapping>>> builder = target.addService(this.name, new ValueService<>(this))
+                .addDependency(this.remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
+                ;
+        return this.group.register(builder);
+    }
+
+    @Override
+    public Map.Entry<String, List<ClientMapping>> getValue() {
+        return new AbstractMap.SimpleImmutableEntry<>(this.group.getValue().getLocalNode().getName(), this.getClientMappings());
     }
 
     List<ClientMapping> getClientMappings() {
@@ -82,22 +110,5 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Abst
             ret.add(defaultClientMapping);
         }
         return ret;
-    }
-
-    String getNodeName() {
-        return this.serverEnvironment.getValue().getNodeName();
-    }
-
-    class ClientMappingEntryProvider implements RegistryEntryProvider<String, List<ClientMapping>> {
-
-        @Override
-        public String getKey() {
-            return EJBRemotingConnectorClientMappingsEntryProviderService.this.getNodeName();
-        }
-
-        @Override
-        public List<ClientMapping> getValue() {
-            return EJBRemotingConnectorClientMappingsEntryProviderService.this.getClientMappings();
-        }
     }
 }

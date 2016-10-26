@@ -76,7 +76,7 @@ public class JACCAuthzPropagationTestCase {
      */
     @Deployment(name = "war")
     public static WebArchive warDeployment() {
-        LOGGER.info("Start WAR deployment");
+        LOGGER.trace("Start WAR deployment");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, TEST_NAME + ".war");
         war.addClasses(PropagationTestServlet.class, Manage.class, BridgeBean.class, TargetBean.class);
         final StringAsset usersRolesAsset = new StringAsset(Utils.createUsersFromRoles(Manage.ROLES_ALL));

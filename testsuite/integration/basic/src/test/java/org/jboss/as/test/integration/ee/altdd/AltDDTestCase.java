@@ -50,7 +50,6 @@ public class AltDDTestCase {
         ejbs.addClasses(AltDDTestCase.class, AltDDEjb.class);
         ejbs.addAsManifestResource(AltDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         ear.addAsModule(ejbs);
-        //System.out.println(ear);
         return ear;
     }
 

@@ -255,8 +255,6 @@ public class AdvancedLdapLoginModuleTestCase {
      * @return
      */
     private static WebArchive createWar(final String deploymentName) {
-        LOGGER.info("Starting deployment " + deploymentName);
-
         final WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName + ".war");
         war.addClasses(SimpleSecuredServlet.class, SimpleServlet.class, RolePrintingServlet.class,
                 PrincipalPrintingServlet.class);
@@ -265,9 +263,6 @@ public class AdvancedLdapLoginModuleTestCase {
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(deploymentName), "jboss-web.xml");
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),
                 "jboss-deployment-structure.xml");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 
@@ -417,7 +412,7 @@ public class AdvancedLdapLoginModuleTestCase {
                     IOUtils.toString(
                             AdvancedLdapLoginModuleTestCase.class.getResourceAsStream(AdvancedLdapLoginModuleTestCase.class
                                     .getSimpleName() + ".ldif"), "UTF-8"), map);
-            LOGGER.info(ldifContent);
+            LOGGER.trace(ldifContent);
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
                 for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {

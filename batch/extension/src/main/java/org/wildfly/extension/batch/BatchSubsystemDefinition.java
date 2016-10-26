@@ -28,7 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jberet.spi.JobExecutor;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
@@ -163,7 +163,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     /**
      * Handler responsible for adding the subsystem resource to the model.
      */
-    static class BatchSubsystemAdd extends AbstractAddStepHandler {
+    static class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 

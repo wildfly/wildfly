@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.annotation.Resource;
 import javax.resource.spi.ActivationSpec;
 
@@ -160,7 +160,7 @@ public class NoRaAnnoTestCase extends ContainerResourceMgmtTestBase {
         assertNotNull(connection1);
         AnnoManagedConnectionFactory mcf = connection1.getMCF();
         assertNotNull(mcf);
-        log.info("MCF:" + mcf + "//1//" + mcf.getFirst() + "//2//"
+        log.trace("MCF:" + mcf + "//1//" + mcf.getFirst() + "//2//"
                 + mcf.getSecond());
         assertEquals((byte) 4, (byte) mcf.getFirst());
         assertEquals((short) 0, (short) mcf.getSecond());
@@ -175,7 +175,7 @@ public class NoRaAnnoTestCase extends ContainerResourceMgmtTestBase {
     @Test
     public void testAdminOjbect() throws Throwable {
         assertNotNull(adminObject);
-        log.info("AO:" + adminObject + "//1//" + adminObject.getFirst()
+        log.trace("AO:" + adminObject + "//1//" + adminObject.getFirst()
                 + "//2//" + adminObject.getSecond());
         assertEquals((long) 12345, (long) adminObject.getFirst());
         assertEquals(false, adminObject.getSecond());
@@ -240,14 +240,14 @@ public class NoRaAnnoTestCase extends ContainerResourceMgmtTestBase {
         assertNotNull(as1.getResourceAdapter());
 
         AnnoActivationSpec tas = (AnnoActivationSpec) as;
-        log.info("AS:" + tas + "//1//" + tas.getFirst() + "//2//"
+        log.trace("AS:" + tas + "//1//" + tas.getFirst() + "//2//"
                 + tas.getSecond());
         assertEquals(new Character('C'), tas.getFirst());
         assertEquals(new Double(0.5), tas.getSecond());
         assertTrue(tas.getResourceAdapter() instanceof AnnoResourceAdapter);
         AnnoResourceAdapter tra = (AnnoResourceAdapter) tas
                 .getResourceAdapter();
-        log.info("RA:" + tra + "//1//" + tra.getFirst() + "//2//"
+        log.trace("RA:" + tra + "//1//" + tra.getFirst() + "//2//"
                 + tra.getSecond());
         assertEquals("A", tra.getFirst());
         assertEquals(new Integer(5), tra.getSecond());

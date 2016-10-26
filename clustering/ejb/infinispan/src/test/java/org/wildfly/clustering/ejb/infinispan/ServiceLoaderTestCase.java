@@ -27,9 +27,9 @@ import java.util.ServiceLoader;
 import org.junit.Test;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.spi.CacheGroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * Validates loading of services.
@@ -47,8 +47,8 @@ public class ServiceLoaderTestCase {
     public void load() {
         load(Externalizer.class);
         load(BeanManagerFactoryBuilderFactoryProvider.class);
-        load(DistributedCacheGroupBuilderProvider.class);
-        load(LocalCacheGroupBuilderProvider.class);
-        load(CacheGroupAliasBuilderProvider.class);
+        load(DistributedCacheBuilderProvider.class);
+        load(LocalCacheBuilderProvider.class);
+        load(CacheAliasBuilderProvider.class);
     }
 }

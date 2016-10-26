@@ -51,10 +51,10 @@ public class HolaBean implements Hola {
 
     @RolesAllowed("INTERNAL_ROLE")
     public String sayHola() {
-        log.info("HolaBean.sayHola(). Caller name: " + context.getCallerPrincipal().getName());
+        log.trace("HolaBean.sayHola(). Caller name: " + context.getCallerPrincipal().getName());
 
         if (context.isCallerInRole("JBossAdmin")) {
-            log.info("User is in role!!");
+            log.trace("User is in role!!");
         }
 
         String name = getName();

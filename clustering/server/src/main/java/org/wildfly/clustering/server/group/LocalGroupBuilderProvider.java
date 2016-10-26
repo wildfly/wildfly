@@ -30,6 +30,6 @@ import org.wildfly.clustering.group.Group;
 public class LocalGroupBuilderProvider extends GroupBuilderProvider implements org.wildfly.clustering.spi.LocalGroupBuilderProvider {
 
     public LocalGroupBuilderProvider() {
-        super((support, group) -> new LocalGroupBuilder(group));
+        super((registry, group) -> new LocalGroupBuilder(registry, group));
     }
 }

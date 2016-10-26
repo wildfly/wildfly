@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb;
 
 import java.util.Collection;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
@@ -33,7 +34,7 @@ public interface BeanManagerFactoryBuilderFactory<I, B extends Batch> {
      * Installs dependencies for a deployment unit
      * @param name the service name of the deployment unit
      */
-    Collection<Builder<?>> getDeploymentBuilders(ServiceName name);
+    Collection<CapabilityServiceBuilder<?>> getDeploymentBuilders(ServiceName name);
 
     /**
      * Builds a bean manager factory for an EJB within a deployment.

@@ -47,12 +47,12 @@ public class SingletonB implements SingletonBeanRemoteView {
     }
 
     public void doSomething() {
-        logger.info(this.getClass().getName() + "#doSomething()");
+        logger.trace(this.getClass().getName() + "#doSomething()");
     }
 
     @Override
     public String echo(String msg) {
-        logger.info("Echo " + msg);
+        logger.trace("Echo " + msg);
         return msg;
     }
 }

@@ -38,7 +38,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,13 +55,10 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 @RunAsClient
 public class ServiceRefSevletTestCase {
 
-    private static final Logger log = Logger.getLogger(ServiceRefSevletTestCase.class);
-
     @Deployment(name = "main", testable = false)
     public static JavaArchive mainDeployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ws-serviceref-example.jar")
                 .addClasses(EJB3Bean.class, EndpointInterface.class);
-        log.info(jar.toString(true));
         return jar;
     }
 

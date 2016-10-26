@@ -83,7 +83,7 @@ public class ReplyingMDB implements MessageListener {
                     try {
                         Thread.sleep(SECONDS.toMillis(WAIT_S));
                     } catch (InterruptedException ie) {
-                        log.info("Sleeping for transaction timeout was interrupted."
+                        log.trace("Sleeping for transaction timeout was interrupted."
                                 + "This is expected at least for JTS transaction.");
                     }
                     // synchronize with test to undeploy would be in processing
@@ -105,7 +105,7 @@ public class ReplyingMDB implements MessageListener {
 
     @PostConstruct
     public void postConstruct() {
-        log.info(ReplyingMDB.class.getSimpleName() + " was created");
+        log.trace(ReplyingMDB.class.getSimpleName() + " was created");
         try {
             connection = factory.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -117,7 +117,7 @@ public class ReplyingMDB implements MessageListener {
 
     @PreDestroy
     public void preDestroy() {
-        log.info("Destroying MDB " + ReplyingMDB.class.getSimpleName());
+        log.trace("Destroying MDB " + ReplyingMDB.class.getSimpleName());
         try {
             if (connection != null)
                 connection.close();

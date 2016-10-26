@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.cache.distributable;
 
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
@@ -89,9 +90,9 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     @Override
-    public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        for (Builder<?> builder : this.builder.getDeploymentBuilders(deploymentUnitServiceName)) {
-            builder.build(target).install();
+    public void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName) {
+        for (CapabilityServiceBuilder<?> builder : this.builder.getDeploymentBuilders(deploymentUnitServiceName)) {
+            builder.configure(support).build(target).install();
         }
     }
 

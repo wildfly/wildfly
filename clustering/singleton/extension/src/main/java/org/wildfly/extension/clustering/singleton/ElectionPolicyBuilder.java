@@ -64,18 +64,9 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
 
     @Override
     public ServiceBuilder<SingletonElectionPolicy> build(ServiceTarget target) {
-        final List<Preference> preferences = this.preferences;
-        Value<SingletonElectionPolicy> value = new Value<SingletonElectionPolicy>() {
-            @Override
-            public SingletonElectionPolicy getValue() {
-                SingletonElectionPolicy policy = ElectionPolicyBuilder.this.getValue();
-                return preferences.isEmpty() ? policy : new PreferredSingletonElectionPolicy(policy, preferences);
-            }
-        };
+        Value<SingletonElectionPolicy> value = () -> this.preferences.isEmpty() ? this.getValue() : new PreferredSingletonElectionPolicy(this.getValue(), this.preferences);
         ServiceBuilder<SingletonElectionPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        for (Dependency dependency : this.dependencies) {
-            dependency.register(builder);
-        }
+        this.dependencies.forEach(dependency -> dependency.register(builder));
         return builder;
     }
 

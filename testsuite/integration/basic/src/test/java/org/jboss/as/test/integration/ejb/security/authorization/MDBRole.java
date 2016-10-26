@@ -91,7 +91,6 @@ public class MDBRole implements MessageListener {
 
    public void onMessage(Message message) {
       try {
-         //System.out.println("Message " + message);
          if (!"Let's test it!".equals(((TextMessage) message).getText())){
             throw new AssertionError("Unexpected message: " + ((TextMessage) message).getText() + " ; expected:\"Let's test it!\"");
          }

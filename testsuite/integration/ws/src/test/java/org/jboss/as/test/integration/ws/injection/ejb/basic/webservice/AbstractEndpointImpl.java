@@ -66,7 +66,7 @@ public abstract class AbstractEndpointImpl implements EndpointIface {
             throw new WebServiceException("Injection failed");
         }
 
-        LOG.info("echo: " + msg);
+        LOG.trace("echo: " + msg);
         return msg;
     }
 

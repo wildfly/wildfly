@@ -40,7 +40,7 @@ public class ContainerInterceptorOne {
 
     @AroundInvoke
     public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
-        logger.info("Container interceptor invoked!!!");
+        logger.trace("Container interceptor invoked!!!");
         final String skipInterceptor = (String) invocationContext.getContextData().get(FlowTrackingBean.CONTEXT_DATA_KEY);
         if (skipInterceptor != null && this.getClass().getName().equals(skipInterceptor)) {
             return invocationContext.proceed();

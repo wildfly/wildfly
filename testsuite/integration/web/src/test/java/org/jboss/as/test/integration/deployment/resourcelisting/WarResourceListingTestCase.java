@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.deployment.resourcelisting;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.deployment.classloading.war.WebInfLibClass;
+import org.jboss.as.test.shared.ResourceListingUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.shrinkwrap.api.Archive;
@@ -73,32 +74,32 @@ public class WarResourceListingTestCase {
 
     @Test()
     public void testRecursiveResourceRetrieval() {
-        log.info("Test recursive listing of resources");
+        log.trace("Test recursive listing of resources");
         doTestResourceRetrieval(true, "/");
 
     }
 
     @Test()
     public void testNonRecursiveResourceRetrieval() {
-        log.info("Test nonrecursive listing of resources");
+        log.trace("Test nonrecursive listing of resources");
         doTestResourceRetrieval(false, "/");
     }
 
     @Test()
     public void testRecursiveResourceRetrievalForSpecifiedRootDir() {
-        log.info("Test recursive listing of resources in specific directory");
+        log.trace("Test recursive listing of resources in specific directory");
         doTestResourceRetrieval(true, "/WEB-INF");
     }
 
     @Test()
     public void testNonRecursiveResourceRetrievalForSpecifiedRootDir() {
-        log.info("Test recursive listing of resources in specific directory");
+        log.trace("Test recursive listing of resources in specific directory");
         doTestResourceRetrieval(false, "/WEB-INF");
     }
 
     @Test()
     public void testDirectResourceRetrieval() {
-        log.info("Test accessing resources using getResource method");
+        log.trace("Test accessing resources using getResource method");
 
         ModuleClassLoader classLoader = (ModuleClassLoader) getClass().getClassLoader();
 
@@ -130,13 +131,13 @@ public class WarResourceListingTestCase {
 
         Collections.sort(foundResources);
 
-        log.info("List of expected resources:");
+        log.trace("List of expected resources:");
         for (String expectedResource : resourcesInDeployment) {
-            log.info(expectedResource);
+            log.trace(expectedResource);
         }
-        log.info("List of found resources: ");
+        log.trace("List of found resources: ");
         for (String foundResource : foundResources) {
-            log.info(foundResource);
+            log.trace(foundResource);
         }
 
         Assert.assertArrayEquals("Not all resources from WAR archive are correctly listed", resourcesInDeployment.toArray(), foundResources.toArray());

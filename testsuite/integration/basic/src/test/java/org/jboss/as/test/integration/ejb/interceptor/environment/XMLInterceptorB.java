@@ -34,9 +34,9 @@ public class XMLInterceptorB {
     MySession2RemoteB session2;
 
     public Object intercept(InvocationContext ctx) throws Exception {
-        log.info("Calling XMLInterceptorB...");
+        log.trace("Calling XMLInterceptorB...");
         session2.doitSession();
-        log.info("Calling XMLInterceptorB - after doit");
+        log.trace("Calling XMLInterceptorB - after doit");
         return false;
     }
 

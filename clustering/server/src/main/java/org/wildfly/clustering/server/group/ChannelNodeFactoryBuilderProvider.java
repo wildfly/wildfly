@@ -21,26 +21,15 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for creating a channel-based {@link org.wildfly.clustering.group.NodeFactory}.
  * @author Paul Ferraro
  */
-public class ChannelNodeFactoryBuilderProvider implements DistributedGroupBuilderProvider {
+public class ChannelNodeFactoryBuilderProvider extends JGroupsNodeFactoryBuilderProvider<ChannelNodeFactory> implements DistributedGroupBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group) {
-        return Collections.singleton(new ChannelNodeFactoryBuilder(support, group));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public ChannelNodeFactoryBuilderProvider() {
+        super((name, group) -> new ChannelNodeFactoryBuilder(name, group));
     }
 }

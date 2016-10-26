@@ -61,24 +61,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
             SHARED_STORE_DIR.mkdirs();
         }
         super.setUp();
-
-        listSharedStoreDir();
     }
-
-    private void listSharedStoreDir() {
-        System.out.println("<<<<@@@@@@@@@@@@@@@@@@@@@@@@@");
-        System.out.println("SHARED_STORE_DIR = " + SHARED_STORE_DIR);
-        for (File file : SHARED_STORE_DIR.listFiles()) {
-            System.out.println("+ " + file);
-            if (file.isDirectory()) {
-                for (File f : file.listFiles()) {
-                    System.out.println("    + " + f);
-                }
-            }
-        }
-        System.out.println("<<<<<@@@@@@@@@@@@@@@@@@@@@@@@@");
-    }
-
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
         // /subsystem=messaging-activemq/server=default/ha-policy=shared-store-master:add(failover-on-server-shutdown=true)

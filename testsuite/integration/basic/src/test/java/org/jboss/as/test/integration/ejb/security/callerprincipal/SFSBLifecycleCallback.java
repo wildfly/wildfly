@@ -61,7 +61,7 @@ public class SFSBLifecycleCallback implements IBeanLifecycleCallback {
 
         Principal princ = sessContext.getCallerPrincipal();
         results.setSfsb("postconstruct", princ.getName() + "start");
-        log.info(SFSBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
+        log.trace(SFSBLifecycleCallback.class.getSimpleName() + " @PostConstruct called");
     }
 
     @PreDestroy
@@ -71,11 +71,11 @@ public class SFSBLifecycleCallback implements IBeanLifecycleCallback {
 
         Principal princ = sessContext.getCallerPrincipal();
         results.setSfsb("predestroy", princ.getName() + "stop");
-        log.info(SFSBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
+        log.trace(SFSBLifecycleCallback.class.getSimpleName() + " @PreDestroy called");
     }
 
     public String get() {
-        log.info("stateful get() principal: " + sessContext.getCallerPrincipal());
+        log.trace("stateful get() principal: " + sessContext.getCallerPrincipal());
         return "stateful";
     }
 }

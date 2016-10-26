@@ -17,7 +17,6 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -27,7 +26,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase {
-    private static final Logger log = Logger.getLogger(ServiceProviderRegistrationTestCase.class);
     private static final String MODULE_NAME = "service-provider-registration";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
 
@@ -46,7 +44,6 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
-        log.info(ejbJar.toString(true));
         return ejbJar;
     }
 

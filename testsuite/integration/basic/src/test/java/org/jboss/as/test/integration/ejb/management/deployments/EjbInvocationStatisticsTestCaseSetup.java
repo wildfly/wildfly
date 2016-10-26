@@ -58,7 +58,7 @@ public class EjbInvocationStatisticsTestCaseSetup implements ServerSetupTask {
         operation.get("name").set("max-size");
         operation.get("value").set(1);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.info("modelnode operation write-attribute max-size=1: " + result);
+        log.trace("modelnode operation write-attribute max-size=1: " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
     }

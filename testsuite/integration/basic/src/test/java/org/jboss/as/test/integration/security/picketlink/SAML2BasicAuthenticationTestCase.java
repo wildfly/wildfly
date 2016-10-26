@@ -56,7 +56,7 @@ public class SAML2BasicAuthenticationTestCase {
 
     @Deployment(name = IDP)
     public static WebArchive deploymentIdP() {
-        LOGGER.info("Start deployment " + IDP);
+        LOGGER.trace("Start deployment " + IDP);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, IDP + ".war");
         war.addAsResource(new StringAsset(PicketLinkTestBase.USERS), "users.properties");
         war.addAsResource(new StringAsset(PicketLinkTestBase.ROLES), "roles.properties");
@@ -73,7 +73,7 @@ public class SAML2BasicAuthenticationTestCase {
 
     @Deployment(name = SP1)
     public static WebArchive deploymentSP1() {
-        LOGGER.info("Start deployment " + SP1);
+        LOGGER.trace("Start deployment " + SP1);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, SP1 + ".war");
         war.addAsWebInfResource(SAML2BasicAuthenticationTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset("sp", "org.picketlink.identity.federation.bindings.tomcat.sp.ServiceProviderAuthenticator"),
@@ -87,7 +87,7 @@ public class SAML2BasicAuthenticationTestCase {
 
     @Deployment(name = SP2)
     public static WebArchive deploymentSP2() {
-        LOGGER.info("Start deployment " + SP2);
+        LOGGER.trace("Start deployment " + SP2);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, SP2 + ".war");
         war.addAsWebInfResource(SAML2BasicAuthenticationTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset("sp", "org.picketlink.identity.federation.bindings.tomcat.sp.ServiceProviderAuthenticator"),

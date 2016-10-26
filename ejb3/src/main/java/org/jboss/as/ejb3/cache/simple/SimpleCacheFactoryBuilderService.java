@@ -26,6 +26,7 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
@@ -49,6 +50,7 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
 public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> implements CacheFactoryBuilder<K, V>  {
 
     private static final ThreadFactory THREAD_FACTORY = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
+        @Override
         public JBossThreadFactory run() {
             return new JBossThreadFactory(new ThreadGroup(SimpleCache.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
         }
@@ -67,7 +69,7 @@ public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> exte
     }
 
     @Override
-    public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
+    public void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName) {
         new RemoveOnCancelScheduledExecutorServiceBuilder(deploymentUnitServiceName.append(this.name, "expiration"), THREAD_FACTORY).build(target).install();
     }
 

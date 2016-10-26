@@ -50,7 +50,7 @@ public abstract class BaseMDB implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message: " + message);
+        logger.trace("Received message: " + message);
 
         boolean setRollbackOnlyThrowsIllegalStateException;
 
@@ -65,7 +65,7 @@ public abstract class BaseMDB implements MessageListener {
         try {
             final Destination replyTo = message.getJMSReplyTo();
             if (replyTo != null) {
-                logger.info("Replying to " + replyTo);
+                logger.trace("Replying to " + replyTo);
                 try (
                         JMSContext context = cf.createContext()
                 ) {

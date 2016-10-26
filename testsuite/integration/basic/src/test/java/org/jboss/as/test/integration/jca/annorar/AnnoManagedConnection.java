@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
 import javax.resource.spi.ConnectionEventListener;
@@ -92,7 +92,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      */
     public Object getConnection(Subject subject,
                                 ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        log.finest("getConnection()");
+        log.trace("getConnection()");
         connection = new AnnoConnectionImpl(this, mcf);
         return connection;
     }
@@ -105,7 +105,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void associateConnection(Object connection) throws ResourceException {
-        log.finest("associateConnection()");
+        log.trace("associateConnection()");
 
         if (connection == null) { throw new ResourceException("Null connection handle"); }
 
@@ -121,7 +121,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void cleanup() throws ResourceException {
-        log.finest("cleanup()");
+        log.trace("cleanup()");
     }
 
     /**
@@ -130,7 +130,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void destroy() throws ResourceException {
-        log.finest("destroy()");
+        log.trace("destroy()");
     }
 
     /**
@@ -139,7 +139,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @param listener A new ConnectionEventListener to be registered
      */
     public void addConnectionEventListener(ConnectionEventListener listener) {
-        log.finest("addConnectionEventListener()");
+        log.trace("addConnectionEventListener()");
         if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.add(listener);
     }
@@ -151,7 +151,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @param listener already registered connection event listener to be removed
      */
     public void removeConnectionEventListener(ConnectionEventListener listener) {
-        log.finest("removeConnectionEventListener()");
+        log.trace("removeConnectionEventListener()");
         if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
         listeners.remove(listener);
     }
@@ -179,7 +179,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public PrintWriter getLogWriter() throws ResourceException {
-        log.finest("getLogWriter()");
+        log.trace("getLogWriter()");
         return logwriter;
     }
 
@@ -190,7 +190,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public void setLogWriter(PrintWriter out) throws ResourceException {
-        log.finest("setLogWriter()");
+        log.trace("setLogWriter()");
         logwriter = out;
     }
 
@@ -201,7 +201,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public LocalTransaction getLocalTransaction() throws ResourceException {
-        log.finest("getLocalTransaction()");
+        log.trace("getLocalTransaction()");
         return null;
     }
 
@@ -212,7 +212,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public XAResource getXAResource() throws ResourceException {
-        log.finest("getXAResource()");
+        log.trace("getXAResource()");
         return null;
     }
 
@@ -224,7 +224,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * @throws ResourceException generic exception if operation fails
      */
     public ManagedConnectionMetaData getMetaData() throws ResourceException {
-        log.finest("getMetaData()");
+        log.trace("getMetaData()");
         return new AnnoManagedConnectionMetaData();
     }
 
@@ -232,7 +232,7 @@ public class AnnoManagedConnection implements ManagedConnection {
      * Call me
      */
     void callMe() {
-        log.finest("callMe()");
+        log.trace("callMe()");
     }
 
 }

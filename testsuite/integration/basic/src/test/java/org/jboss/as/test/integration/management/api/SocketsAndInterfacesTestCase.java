@@ -140,10 +140,6 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", ADD);
         op.get("socket-binding").set("test123-binding");
         result = executeOperation(op);
-        op = createOpNode("/", "read-resource");
-        op.get("recursive").set(true);
-        op.get("include-runtime").set(true);
-        result = executeOperation(op);
 
         final URL url =new URL("http", testHost, TEST_PORT, "/");
         Assert.assertTrue("Could not connect to created connector: "+url+"<>"+InetAddress.getByName(url.getHost())+"..."+getNonDefaultNic()+".>"+result,WebUtil.testHttpURL(url.toString()));
@@ -156,7 +152,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         Assert.assertTrue(result.get(RESPONSE_HEADERS).get(PROCESS_STATE).asString().equals("reload-required"));
 
-        logger.info("Restarting server.");
+        logger.trace("Restarting server.");
 
         ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
 
@@ -171,7 +167,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
             }
         });
 
-        logger.info("Server is up.");
+        logger.trace("Server is up.");
 
         // check the connector is not listening on the old port
         Assert.assertFalse("Could not connect to created connector.",WebUtil.testHttpURL(new URL(

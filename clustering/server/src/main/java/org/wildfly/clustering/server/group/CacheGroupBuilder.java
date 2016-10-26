@@ -21,66 +21,71 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 import org.infinispan.Cache;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a {@link Group} service for a cache.
  * @author Paul Ferraro
  */
-public class CacheGroupBuilder extends CacheGroupServiceNameProvider implements Builder<Group>, Service<Group>, CacheGroupConfiguration {
+public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, CacheGroupConfiguration {
+
+    private final ServiceName name;
+    private final String containerName;
+    private final String cacheName;
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<InfinispanNodeFactory> factory = new InjectedValue<>();
-    private final CapabilityServiceSupport support;
+    private volatile ValueDependency<Cache> cache;
+    private volatile ValueDependency<InfinispanNodeFactory> factory;
 
-    private volatile CacheGroup group;
+    public CacheGroupBuilder(ServiceName name, String containerName, String cacheName) {
+        this.name = name;
+        this.containerName = containerName;
+        this.cacheName = cacheName;
+    }
 
-    public CacheGroupBuilder(CapabilityServiceSupport support, String containerName, String cacheName) {
-        super(containerName, cacheName);
-        this.support = support;
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<Group> configure(CapabilityServiceSupport support) {
+        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), Cache.class);
+        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(support, this.containerName, this.cacheName), InfinispanNodeFactory.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<Group> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this)
-                .addDependency(InfinispanCacheRequirement.CACHE.getServiceName(this.support, this.containerName, this.cacheName), Cache.class, this.cache)
-                .addDependency(CacheGroupServiceName.NODE_FACTORY.getServiceName(this.containerName, this.cacheName), InfinispanNodeFactory.class, this.factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+        Supplier<CacheGroup> supplier = () -> new CacheGroup(this);
+        Service<Group> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
+        ServiceBuilder<Group> builder = target.addService(this.name, service).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        Stream.of(this.cache, this.factory).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override
     public Cache<?, ?> getCache() {
         return this.cache.getValue();
-    }
-
-    @Override
-    public Group getValue() {
-        return this.group;
-    }
-
-    @Override
-    public void start(StartContext context) {
-        this.group = new CacheGroup(this);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.group.close();
-        this.group = null;
     }
 
     @Override

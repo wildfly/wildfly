@@ -6,8 +6,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Remove;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class CommonStatefulSBImpl implements CommonStatefulSB {
@@ -18,24 +17,24 @@ public class CommonStatefulSBImpl implements CommonStatefulSB {
     @PostConstruct
     private void init() {
         bean = new SerialBean();
-        log.log(Level.INFO, "New SFSB created: {0}.", this);
+        log.tracef("New SFSB created: %s.", this);
     }
 
     @Override
     public int getSerial() {
-        log.log(Level.INFO, "getSerial() called on non-forwarding node " + getCurrentNode());
+        log.trace("getSerial() called on non-forwarding node " + getCurrentNode());
         return bean.getSerial();
     }
 
     @Override
     public int getSerialAndIncrement() {
-        log.log(Level.INFO, "getSerialAndIncrement() called on non-forwarding node " + getCurrentNode());
+        log.trace("getSerialAndIncrement() called on non-forwarding node " + getCurrentNode());
         return bean.getSerialAndIncrement();
     }
 
     @Override
     public byte[] getCargo() {
-        log.log(Level.INFO, "getCargo() called on non-forwarding node " + getCurrentNode());
+        log.trace("getCargo() called on non-forwarding node " + getCurrentNode());
         return bean.getCargo();
     }
 

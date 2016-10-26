@@ -40,7 +40,7 @@ public class NonContainerInterceptor {
 
     @AroundInvoke
     public Object someMethod(InvocationContext invocationContext) throws Exception {
-        logger.info("Invoked non-container interceptor!!!");
+        logger.trace("Invoked non-container interceptor!!!");
         final String skipInterceptor = (String) invocationContext.getContextData().get(FlowTrackingBean.CONTEXT_DATA_KEY);
         if (skipInterceptor != null && this.getClass().getName().equals(skipInterceptor)) {
             return invocationContext.proceed();

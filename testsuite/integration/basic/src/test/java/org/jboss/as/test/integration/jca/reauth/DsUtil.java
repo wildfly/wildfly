@@ -41,7 +41,6 @@ public class DsUtil {
 
         assertTrue("result='" + result + "', but must contain '" + resultContains + "' substring",
                 result.indexOf(resultContains) >= 0);
-        //System.out.println("result=" + result);
 
     }
 }

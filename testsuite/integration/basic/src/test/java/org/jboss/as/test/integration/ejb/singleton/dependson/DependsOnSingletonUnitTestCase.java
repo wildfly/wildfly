@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.singleton.dependson;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -59,7 +59,6 @@ public class DependsOnSingletonUnitTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "callcounter.jar");
         jar.addClass(CallCounterSingleton.class);
         jar.addClass(DependsOnSingletonUnitTestCase.class);
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -80,7 +79,6 @@ public class DependsOnSingletonUnitTestCase {
         ear.addAsModule(jarThree);
         ear.addAsManifestResource(DependsOnSingletonUnitTestCase.class.getPackage(), "application.xml", "application.xml");
         ear.addAsManifestResource(new StringAsset("Dependencies: deployment.callcounter.jar \n"), "MANIFEST.MF");
-        log.info(ear.toString(true));
         return ear;
     }
 

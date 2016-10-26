@@ -141,20 +141,20 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to LON-0
-            System.out.println("Executing HTTP request: " + url1);
+            //System.out.println("Executing HTTP request: " + url1);
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // Lets wait for the session to replicate
             waitForReplication(GRACE_TIME_TO_REPLICATE);
 
             // do a get on LON-1
-            System.out.println("Executing HTTP request: " + url2);
+            //System.out.println("Executing HTTP request: " + url2);
             response = client.execute(new HttpGet(url2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -162,10 +162,10 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // do a get on NYC-0
-            System.out.println("Executing HTTP request: " + url3);
+            //System.out.println("Executing HTTP request: " + url3);
             response = client.execute(new HttpGet(url3));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -173,10 +173,10 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
 
             // do a get on SFO-0
-            System.out.println("Executing HTTP request: " + url4);
+            //System.out.println("Executing HTTP request: " + url4);
             response = client.execute(new HttpGet(url4));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -184,7 +184,7 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-            System.out.println("Executed HTTP request");
+            //System.out.println("Executed HTTP request");
         }
     }
 

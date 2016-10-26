@@ -84,7 +84,7 @@ public class EJBClientUserTransactionTestCase {
     public static void beforeTestClass() throws Exception {
         // the node name that the test methods can use
         nodeName = EJBManagementUtil.getNodeName();
-        logger.info("Using node name " + nodeName);
+        logger.trace("Using node name " + nodeName);
 
     }
 

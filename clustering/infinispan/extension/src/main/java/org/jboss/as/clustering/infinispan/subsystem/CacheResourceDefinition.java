@@ -22,6 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.infinispan.configuration.cache.Index;
@@ -55,6 +58,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Base class for cache resources which require common cache attributes only.
@@ -77,6 +81,11 @@ public class CacheResourceDefinition extends ChildResourceDefinition {
         public org.jboss.as.clustering.controller.Capability getCapability() {
             return this.capability;
         }
+    }
+
+    static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
+    static {
+        EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement)));
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {

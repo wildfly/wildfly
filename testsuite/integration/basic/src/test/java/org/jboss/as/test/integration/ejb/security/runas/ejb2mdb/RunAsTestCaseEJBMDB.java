@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import java.net.URL;
-import java.util.logging.Logger;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -47,6 +46,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -101,7 +101,6 @@ public class RunAsTestCaseEJBMDB {
                         GoodByeLocal.class,
                         GoodByeLocalHome.class);
         jar.addAsManifestResource(RunAsTestCaseEJBMDB.class.getPackage(), "ejb-jar-ejb2.xml", "ejb-jar.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -118,7 +117,6 @@ public class RunAsTestCaseEJBMDB {
                         HelloMDB.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.runasmdbejb-ejb2.jar  \n"), "MANIFEST.MF");
         jar.addAsManifestResource(RunAsTestCaseEJBMDB.class.getPackage(), "ejb-jar-ejb3.xml", "ejb-jar.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -126,7 +124,7 @@ public class RunAsTestCaseEJBMDB {
     public void testEjb() throws Exception {
         Hello helloBean = (Hello) initialContext.lookup("runasmdbejb-ejb3/Hello!org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.Hello");
         String hellomsg = helloBean.sayHello();
-        log.info(hellomsg);
+        log.trace(hellomsg);
         Assert.assertEquals("Hello Fred! Howdy Fred! GoodBye user1", hellomsg);
     }
 
@@ -147,7 +145,7 @@ public class RunAsTestCaseEJBMDB {
             TextMessage message = session.createTextMessage("hello goodbye");
             message.setJMSReplyTo(replyQueue);
             sender.send(message);
-            log.info("testSendMessage(): Message sent!");
+            log.trace("testSendMessage(): Message sent!");
 
             MessageConsumer consumer = session.createConsumer(replyQueue);
             Message replyMsg = consumer.receive(5000);
@@ -169,7 +167,7 @@ public class RunAsTestCaseEJBMDB {
                 conn.close();
             }
         } catch (JMSException jmse) {
-            System.out.println("connection close failed: " + jmse);
+            log.trace("connection close failed: " + jmse);
         }
     }
 

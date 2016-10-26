@@ -93,7 +93,6 @@ public class MDBWhichDependsOnTestCase {
         jar.addClass(CallCounterProxy.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
                 + Constants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
-        logger.info(jar.toString(true));
         return jar;
     }
 

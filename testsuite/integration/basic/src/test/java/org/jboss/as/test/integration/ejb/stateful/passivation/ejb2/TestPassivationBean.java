@@ -71,7 +71,7 @@ public class TestPassivationBean extends TestPassivationBeanParent implements Se
     public void ejbCreate() {
         Random r = new Random();
         this.identificator = new Integer(r.nextInt(999)).toString();
-        log.info("Bean [" + this.identificator + "] created");
+        log.trace("Bean [" + this.identificator + "] created");
     }
 
     @Override

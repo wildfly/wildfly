@@ -45,12 +45,12 @@ public class SimpleResourceAdapter implements ResourceAdapter {
 
     @Override
     public void start(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
-        log.info("SimpleResourceAdapter started");
+        log.trace("SimpleResourceAdapter started");
     }
 
     @Override
     public void stop() {
-        log.info("SimpleResourceAdapter stopped");
+        log.trace("SimpleResourceAdapter stopped");
     }
 
     /**
@@ -60,7 +60,7 @@ public class SimpleResourceAdapter implements ResourceAdapter {
     @Override
     public void endpointActivation(MessageEndpointFactory messageEndpointFactory,
                                    ActivationSpec activationSpec) throws ResourceException {
-        log.info("SimpleResourceAdapter activating MDB endpoint and sending a message to it");
+        log.trace("SimpleResourceAdapter activating MDB endpoint and sending a message to it");
         Class<?> endpointClass = messageEndpointFactory.getEndpointClass();
         try {
             Method methodToInvoke = endpointClass.getMethod(((SimpleActivationSpec)activationSpec).getMethodName(), String.class);
@@ -75,7 +75,7 @@ public class SimpleResourceAdapter implements ResourceAdapter {
     @Override
     public void endpointDeactivation(MessageEndpointFactory messageEndpointFactory,
                                      ActivationSpec activationSpec) {
-        log.info("SimpleResourceAdapter deactivating MDB endpoint");
+        log.trace("SimpleResourceAdapter deactivating MDB endpoint");
         if (endpoint != null) {
             endpoint.release();
             endpoint = null;

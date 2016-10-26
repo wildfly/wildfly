@@ -28,7 +28,7 @@ import java.util.Collections;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.JobExecutor;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -154,7 +154,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     /**
      * Handler responsible for adding the subsystem resource to the model.
      */
-    static class BatchSubsystemAdd extends AbstractAddStepHandler {
+    static class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
@@ -163,7 +163,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
+        protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
             final boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));

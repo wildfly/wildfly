@@ -99,11 +99,11 @@ public class LayeredDistributionTestCase {
         buildTestModule(TEST_LAYER);
 
 
-        log.info("===starting server===");
+        log.trace("===starting server===");
         controller.start(CONTAINER);
-        log.info("===appserver started===");
+        log.trace("===appserver started===");
         //deployer.deploy(DEPLOYMENT);
-        //log.info("===deployment deployed===");
+        //log.trace("===deployment deployed===");
     }
 
     @Test
@@ -111,10 +111,10 @@ public class LayeredDistributionTestCase {
     public void after() throws Exception {
         try {
             //deployer.undeploy(DEPLOYMENT);
-            //log.info("===deployment undeployed===");
+            //log.trace("===deployment undeployed===");
         } finally {
             controller.stop(CONTAINER);
-            log.info("===appserver stopped===");
+            log.trace("===appserver stopped===");
         }
     }
 
@@ -152,7 +152,7 @@ public class LayeredDistributionTestCase {
     private void buildLayer(String layer) throws Exception {
 
         File asDir = new File(AS_PATH);
-        log.info("AS dir:" + asDir);
+        log.trace("AS dir:" + asDir);
         Assert.assertTrue(asDir.exists());
 
         Assert.assertTrue(layersDir.exists());

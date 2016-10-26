@@ -34,7 +34,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -53,8 +52,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationTestCase {
-    private static final Logger log = Logger.getLogger(PassivationTestCase.class);
-
     private static final long PASSIVATION_WAIT = TimeoutUtil.adjust(1000);
 
     @ArquillianResource
@@ -71,7 +68,6 @@ public class PassivationTestCase {
         jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(PassivationTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

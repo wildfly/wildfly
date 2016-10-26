@@ -59,6 +59,12 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         }
 
         @Override
+        public State getState() {
+            // A non-tx batch is always active
+            return State.ACTIVE;
+        }
+
+        @Override
         public Transaction getTransaction() {
             return null;
         }

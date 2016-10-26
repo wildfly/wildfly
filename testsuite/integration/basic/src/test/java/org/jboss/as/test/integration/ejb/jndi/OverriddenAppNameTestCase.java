@@ -27,7 +27,6 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -45,7 +44,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class OverriddenAppNameTestCase {
 
-    private static final Logger logger = Logger.getLogger(OverriddenAppNameTestCase.class);
 
     /**
      * The app name of the deployment
@@ -100,11 +98,9 @@ public class OverriddenAppNameTestCase {
         jar.addAsManifestResource(OverriddenAppNameTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         // add the entire package
         jar.addPackage(EchoBean.class.getPackage());
-        logger.info(jar.toString(true));
 
         // add the jar to the .ear
         ear.add(jar, "/", ZipExporter.class);
-        logger.info(ear.toString(true));
 
         // return the .ear
         return ear;

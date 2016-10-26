@@ -87,7 +87,7 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     public void close() throws WrongStateException, SystemException {
         // Nothing to do here as the item has already been added to the set
         eventLog.addEvent(participantName, EventLogEvent.CLOSE);
-        log.info("[BA COORDINATOR COMPL SERVICE] Participant close() - logged: " + EventLogEvent.CLOSE);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Participant close() - logged: " + EventLogEvent.CLOSE);
         // The participant knows that this BA is now finished and can throw away any temporary state
         removeParticipant(txID, this);
     }
@@ -101,7 +101,7 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
      */
     public void cancel() throws WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.CANCEL);
-        log.info("[BA COORDINATOR COMPL SERVICE] Participant cancel() - logged: " + EventLogEvent.CANCEL);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Participant cancel() - logged: " + EventLogEvent.CANCEL);
         // the participant should compensate any work done within this BA here
         removeParticipant(txID, this);
     }
@@ -115,7 +115,7 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
      */
     public void compensate() throws FaultedException, WrongStateException, SystemException {
         eventLog.addEvent(participantName, EventLogEvent.COMPENSATE);
-        log.info("[BA COORDINATOR COMPL SERVICE] Participant compensate() - logged: " + EventLogEvent.COMPENSATE);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Participant compensate() - logged: " + EventLogEvent.COMPENSATE);
         // there will be carrying out some compensation action here
         removeParticipant(txID, this);
     }
@@ -123,23 +123,23 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
     @Deprecated
     public void unknown() throws SystemException {
         eventLog.addEvent(participantName, EventLogEvent.UNKNOWN);
-        log.info("[BA COORDINATOR COMPL SERVICE] Participant unknown() - logged: " + EventLogEvent.UNKNOWN);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Participant unknown() - logged: " + EventLogEvent.UNKNOWN);
         removeParticipant(txID, this);
     }
 
     public void error() throws SystemException {
         eventLog.addEvent(participantName, EventLogEvent.ERROR);
-        log.info("[BA COORDINATOR COMPL SERVICE] Participant error() - logged: " + EventLogEvent.ERROR);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Participant error() - logged: " + EventLogEvent.ERROR);
         removeParticipant(txID, this);
     }
 
     public void complete() throws WrongStateException, SystemException {
         // This tells the participant that the BA completed, but may be compensated later
         eventLog.addEvent(participantName, EventLogEvent.COMPLETE);
-        log.info("[BA COORDINATOR COMPL SERVICE] Participant complete() - logged: " + EventLogEvent.COMPLETE);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Participant complete() - logged: " + EventLogEvent.COMPLETE);
 
         if (ServiceCommand.isPresent(ServiceCommand.SYSTEM_EXCEPTION_ON_COMPLETE, serviceCommands)) {
-            log.info("[BA COORDINATOR COMPL SERVICE] Participant complete() - intentionally throwing " + SystemException.class.getName());
+            log.trace("[BA COORDINATOR COMPL SERVICE] Participant complete() - intentionally throwing " + SystemException.class.getName());
             throw new SystemException("Intentionally throwing system exception to get compensation method on run");
         }
     }
@@ -155,11 +155,11 @@ public class BACoordinationCompletionParticipant implements BusinessAgreementWit
         if (confirmed) {
             // This tells the participant that compensation information has been logged and that it is safe to commit any changes
             eventLog.addEvent(participantName, EventLogEvent.CONFIRM_COMPLETED);
-            log.info("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(true) - logged: " + EventLogEvent.CONFIRM_COMPLETED);
+            log.trace("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(true) - logged: " + EventLogEvent.CONFIRM_COMPLETED);
         } else {
             // A compensation action will follow here
             eventLog.addEvent(participantName, EventLogEvent.CONFIRM_FAILED);
-            log.info("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(false) - logged: " + EventLogEvent.CONFIRM_FAILED);
+            log.trace("[BA COORDINATOR COMPL SERVICE] Participant confirmCompleted(false) - logged: " + EventLogEvent.CONFIRM_FAILED);
         }
     }
 

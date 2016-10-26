@@ -76,7 +76,7 @@ public class StatefulUnitTestCase {
             operation.get("name").set("max-size");
             operation.get("value").set(1);
             ModelNode result = managementClient.getControllerClient().execute(operation);
-            log.info("modelnode operation write-attribute max-size=0: " + result);
+            log.trace("modelnode operation write-attribute max-size=0: " + result);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         }
 
@@ -107,20 +107,16 @@ public class StatefulUnitTestCase {
         jar.addPackage(StatefulUnitTestCase.class.getPackage());
         jar.addAsManifestResource(StatefulUnitTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.marshalling \n"), "MANIFEST.MF");
-        log.info(jar.toString(true));
         return jar;
     }
 
     @Test
     public void testStateful() throws Exception {
         StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
-        //System.out.println("Before DOIT testStateful");
         int id = remote.doit();
-        //System.out.println("After DOIT testStateful");
         ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
         remote.find(id);
-        //System.out.println("After find testStateful");
     }
 
     @Test

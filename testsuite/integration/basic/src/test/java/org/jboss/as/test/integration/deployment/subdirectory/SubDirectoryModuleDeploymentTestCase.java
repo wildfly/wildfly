@@ -4,13 +4,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ArchiveAsset;
@@ -33,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class SubDirectoryModuleDeploymentTestCase {
-    private static final Logger logger = Logger.getLogger(SubDirectoryModuleDeploymentTestCase.class);
 
     @Deployment
     public static Archive<?> createDeployment() {
@@ -47,7 +46,6 @@ public class SubDirectoryModuleDeploymentTestCase {
         war.addClass(MessageServlet.class);
         ear.addAsModule(new ArchiveAsset(war, ZipExporter.class), "subdir/web/web.war");
 
-        logger.info(ear.toString(true));
         return ear;
     }
 
@@ -56,8 +54,7 @@ public class SubDirectoryModuleDeploymentTestCase {
 
     @Test
     public void testModulesInSubDeployments() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()){
             HttpGet httpget = new HttpGet(url.toExternalForm() + "message");
 
             HttpResponse response = httpclient.execute(httpget);
@@ -68,12 +65,6 @@ public class SubDirectoryModuleDeploymentTestCase {
 
             String result = EntityUtils.toString(entity);
             Assert.assertEquals("Hello World", result);
-
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
 
     }

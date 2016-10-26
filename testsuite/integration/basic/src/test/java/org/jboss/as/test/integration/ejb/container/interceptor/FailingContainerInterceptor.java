@@ -39,7 +39,7 @@ public class FailingContainerInterceptor {
 
     @AroundInvoke
     Object throwException(final InvocationContext invocationContext) throws Exception {
-        LOGGER.info("Throwing exception");
+        LOGGER.trace("Throwing exception");
         throw new IllegalArgumentException("Blocking access to the bean.");
     }
 }

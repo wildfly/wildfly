@@ -38,7 +38,6 @@ import org.junit.Test;
 
 /**
  * @author Radoslav Husar
- * @version Oct 2015
  */
 public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
@@ -50,43 +49,71 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         return formatArtifact("org.wildfly:wildfly-mod_cluster-extension:%s", version);
     }
 
-    private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
+    private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.jboss.as:jboss-as-modcluster:%s", version);
+    }
+
+    private static String formatEAP7SubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version);
     }
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
+    private static ModClusterModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+        switch (controllerVersion) {
+            case EAP_6_2_0:
+                return ModClusterModel.VERSION_1_4_0;
+            case EAP_6_3_0:
+            case EAP_6_4_0:
+            case EAP_6_4_7:
+                return ModClusterModel.VERSION_1_5_0;
+            case EAP_7_0_0:
+                return ModClusterModel.VERSION_4_0_0;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private static String[] getDependencies(ModelTestControllerVersion version) {
+        switch (version) {
+            case EAP_6_2_0:
+                return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.6.Final-redhat-1"};
+            case EAP_6_3_0:
+                return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.9.Final-redhat-1"};
+            case EAP_6_4_0:
+            case EAP_6_4_7:
+                return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.11.Final-redhat-1"};
+            case EAP_7_0_0:
+                return new String[] {formatEAP7SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.3.2.Final-redhat-1"};
+        }
+        throw new IllegalArgumentException();
+    }
+
     @Test
     public void testTransformerEAP_6_2_0() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
-        this.testTransformation(ModClusterModel.VERSION_1_4_0, version,
-                formatLegacySubsystemArtifact(version),
-                "org.jboss.mod_cluster:mod_cluster-core:1.2.6.Final-redhat-1"
-        );
+        testTransformation(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
     public void testTransformerEAP_6_3_0() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
-        this.testTransformation(ModClusterModel.VERSION_1_5_0, version,
-                formatLegacySubsystemArtifact(version),
-                "org.jboss.mod_cluster:mod_cluster-core:1.2.9.Final-redhat-1"
-        );
+        testTransformation(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
     public void testTransformerEAP_6_4_0() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
-        this.testTransformation(ModClusterModel.VERSION_1_5_0, version,
-                formatLegacySubsystemArtifact(version),
-                "org.jboss.mod_cluster:mod_cluster-core:1.2.11.Final-redhat-1"
-        );
+        testTransformation(ModelTestControllerVersion.EAP_6_4_0);
     }
 
-    private void testTransformation(ModClusterModel model, ModelTestControllerVersion controllerVersion, String... dependencies) throws Exception {
+    @Test
+    public void testTransformerEAP_7_0_0() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    private void testTransformation(ModelTestControllerVersion controllerVersion) throws Exception {
+        String[] dependencies = getDependencies(controllerVersion);
         String subsystemXml = readResource("subsystem-transform.xml");
+        ModClusterModel model = getModelVersion(controllerVersion);
         ModelVersion modelVersion = model.getVersion();
         String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
 
@@ -108,33 +135,28 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testRejectionsEAP_6_2_0() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
-        this.testRejections(ModClusterModel.VERSION_1_4_0, version,
-                formatLegacySubsystemArtifact(version),
-                "org.jboss.mod_cluster:mod_cluster-core:1.2.6.Final-redhat-1"
-        );
+        testRejections(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     @Test
     public void testRejectionsEAP_6_3_0() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
-        this.testRejections(ModClusterModel.VERSION_1_5_0, version,
-                formatLegacySubsystemArtifact(version),
-                "org.jboss.mod_cluster:mod_cluster-core:1.2.9.Final-redhat-1"
-        );
+        testRejections(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
     public void testRejectionsEAP_6_4_0() throws Exception {
-        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_4_0;
-        this.testRejections(ModClusterModel.VERSION_1_5_0, version,
-                formatLegacySubsystemArtifact(version),
-                "org.jboss.mod_cluster:mod_cluster-core:1.2.11.Final-redhat-1"
-        );
+        testRejections(ModelTestControllerVersion.EAP_6_4_0);
     }
 
-    private void testRejections(ModClusterModel model, ModelTestControllerVersion controllerVersion, String... dependencies) throws Exception {
+    @Test
+    public void testRejectionsEAP_7_0_0() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    private void testRejections(ModelTestControllerVersion controllerVersion) throws Exception {
+        String[] dependencies = getDependencies(controllerVersion);
         String subsystemXml = readResource("subsystem-reject.xml");
+        ModClusterModel model = getModelVersion(controllerVersion);
         ModelVersion modelVersion = model.getVersion();
         String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
 

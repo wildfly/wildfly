@@ -24,14 +24,14 @@ public class AnnoBasedMDB implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message " + message + " in MDB " + this.getClass().getName());
+        logger.trace("Received message " + message + " in MDB " + this.getClass().getName());
         try {
             final Destination replyTo = message.getJMSReplyTo();
             if (replyTo == null) {
                 return;
             }
 
-            logger.info("Sending a reply to destination " + replyTo);
+            logger.trace("Sending a reply to destination " + replyTo);
             jmsMessagingUtil.reply(message);
         } catch (JMSException e) {
             throw new RuntimeException(e);

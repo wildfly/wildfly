@@ -51,20 +51,20 @@ public class EchoBean implements EchoRemote {
 
     @Override
     public String echo(String message) {
-        logger.info(this.getClass().getSimpleName() + " echoing message " + message);
+        logger.trace(this.getClass().getSimpleName() + " echoing message " + message);
         return message;
     }
 
     @Asynchronous
     @Override
     public Future<String> asyncEcho(final String message, final long delayInMilliSec) {
-        logger.info("Going to delay the echo of \"" + message + "\" for " + delayInMilliSec + " milliseconds");
+        logger.trace("Going to delay the echo of \"" + message + "\" for " + delayInMilliSec + " milliseconds");
         try {
             Thread.sleep(delayInMilliSec);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        logger.info(this.getClass().getSimpleName() + " echoing message: " + message);
+        logger.trace(this.getClass().getSimpleName() + " echoing message: " + message);
         return new AsyncResult<String>(message);
     }
 

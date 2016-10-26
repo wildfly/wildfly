@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.ResourceException;
@@ -91,7 +91,7 @@ public class MultipleConnectionFactory1Impl implements
      */
     @Override
     public Connection getConnection() throws ResourceException {
-        log.finest("getConnection()");
+        log.trace("getConnection()");
         return (MultipleConnection1) connectionManager.allocateConnection(mcf,
                 null);
     }
@@ -104,7 +104,7 @@ public class MultipleConnectionFactory1Impl implements
      */
     @Override
     public Reference getReference() throws NamingException {
-        log.finest("getReference()");
+        log.trace("getReference()");
         return reference;
     }
 
@@ -115,7 +115,7 @@ public class MultipleConnectionFactory1Impl implements
      */
     @Override
     public void setReference(Reference reference) {
-        log.finest("setReference()");
+        log.trace("setReference()");
         this.reference = reference;
     }
 

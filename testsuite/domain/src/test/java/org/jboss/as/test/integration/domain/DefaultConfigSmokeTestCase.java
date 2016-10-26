@@ -43,6 +43,7 @@ import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfig
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,7 +53,7 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
-
+    private static final Logger LOGGER = Logger.getLogger(DefaultConfigSmokeTestCase.class);
 
     public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
 
@@ -113,17 +114,19 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
 
     private static void writeExpressionAudit(PathAddress pa, ModelNode resourceDescription) {
         String paString = getPaString(pa);
-        if (resourceDescription.hasDefined(ModelDescriptionConstants.ATTRIBUTES)) {
-            for (Property property : resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).asPropertyList()) {
-                ModelNode attrdesc = property.getValue();
-                if (!attrdesc.hasDefined(ModelDescriptionConstants.STORAGE) ||
-                        AttributeAccess.Storage.CONFIGURATION.name().toLowerCase().equals(attrdesc.get(ModelDescriptionConstants.STORAGE).asString().toLowerCase())) {
-                    StringBuilder sb = new StringBuilder(paString);
-                    sb.append(",").append(property.getName());
-                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.TYPE).asString());
-                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).asBoolean(false));
-                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.DESCRIPTION).asString());
-                    System.out.println(sb.toString());
+        if (LOGGER.isTraceEnabled()) {
+            if (resourceDescription.hasDefined(ModelDescriptionConstants.ATTRIBUTES)) {
+                for (Property property : resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).asPropertyList()) {
+                    ModelNode attrdesc = property.getValue();
+                    if (!attrdesc.hasDefined(ModelDescriptionConstants.STORAGE) ||
+                            AttributeAccess.Storage.CONFIGURATION.name().toLowerCase().equals(attrdesc.get(ModelDescriptionConstants.STORAGE).asString().toLowerCase())) {
+                        StringBuilder sb = new StringBuilder(paString);
+                        sb.append(",").append(property.getName());
+                        sb.append(",").append(attrdesc.get(ModelDescriptionConstants.TYPE).asString());
+                        sb.append(",").append(attrdesc.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).asBoolean(false));
+                        sb.append(",").append(attrdesc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+                        LOGGER.trace(sb.toString());
+                    }
                 }
             }
         }

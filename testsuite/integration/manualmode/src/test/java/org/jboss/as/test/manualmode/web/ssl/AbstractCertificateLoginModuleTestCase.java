@@ -150,7 +150,7 @@ public abstract class AbstractCertificateLoginModuleTestCase {
         HttpGet httpGet = new HttpGet(url.toURI());
         HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
-        LOGGER.info("Request to: " + url + " responds: " + statusCode);
+        LOGGER.trace("Request to: " + url + " responds: " + statusCode);
 
         assertEquals("Unexpected status code", expectedStatusCode, statusCode);
 

@@ -77,7 +77,7 @@ public class MyServiceServlet extends HttpServlet {
                 resp.setHeader("node", env.getNodeName());
             }
         } catch (IllegalStateException e) {
-            // Service was not started
+            this.log(e.getLocalizedMessage(), e);
         }
         resp.getWriter().write("Success");
     }

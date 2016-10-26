@@ -125,7 +125,6 @@ public class DeployedXmlJMSManagementTestCase {
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("entries");
-        //System.out.println("operation = " + operation);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         System.out.println("result = " + result);
         Assert.assertEquals("java:/queue1", result.get(RESULT).asList().get(0).asString());

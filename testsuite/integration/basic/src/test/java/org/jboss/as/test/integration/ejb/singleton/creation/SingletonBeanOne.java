@@ -54,7 +54,7 @@ public class SingletonBeanOne {
      */
     @PostConstruct
     void initialise() {
-        logger.info("Initialising");
+        logger.trace("Initialising");
         SingletonBeanOne thisBO = sessionContext.getBusinessObject(SingletonBeanOne.class);
         beanTwo.useBeanOne(thisBO);
     }
@@ -69,7 +69,7 @@ public class SingletonBeanOne {
      * A business method for {@link SingletonBeanTwo} to call.
      */
     public void performSomething() {
-        logger.info("Doing something");
+        logger.trace("Doing something");
     }
 
 }

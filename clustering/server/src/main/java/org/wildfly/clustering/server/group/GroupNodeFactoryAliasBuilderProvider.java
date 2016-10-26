@@ -22,27 +22,15 @@
 
 package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class GroupNodeFactoryAliasBuilderProvider implements GroupAliasBuilderProvider {
+public class GroupNodeFactoryAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String aliasGroup, String targetGroup) {
-        return Collections.<Builder<?>>singleton(new AliasServiceBuilder<>(GroupServiceName.NODE_FACTORY.getServiceName(aliasGroup), GroupServiceName.NODE_FACTORY.getServiceName(targetGroup), JGroupsNodeFactory.class));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public GroupNodeFactoryAliasBuilderProvider() {
+        super(ClusteringRequirement.NODE_FACTORY);
     }
 }

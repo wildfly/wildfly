@@ -30,8 +30,6 @@ import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -131,34 +129,12 @@ public class Hibernate2LCacheStatsTestCase {
             return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + "beans/" + beanName + "!"
                     + interfaceType.getName()));
         } catch (NamingException e) {
-            dumpJndi("");
             throw e;
         }
     }
 
     protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup(name));
-    }
-
-    // TODO: move this logic to a common base class (might be helpful for writing new tests)
-    private static void dumpJndi(String s) {
-        /*try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }*/
-    }
-
-    private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
-        }
     }
 
     @Test
@@ -184,7 +160,6 @@ public class Hibernate2LCacheStatsTestCase {
             conn.close();
             // read updated (dirty) data from second level cache
             s2 = sfsb.getPlanet(s2.getPlanetId());
-            System.out.println("get sfsb.getPlanet() returned planet with galaxy=" + s2.getGalaxy());
             assertTrue("was able to read updated Planet entity", s2 != null);
             assertEquals("Galaxy for Planet " + s2.getPlanetName() + " was read from second level cache = " + s2.getGalaxy(),
                     "MILKY WAY", s2.getGalaxy());

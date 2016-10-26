@@ -159,7 +159,7 @@ public class TestResultService implements TestResultServiceMBean, ServiceMBean, 
                     = (AttributeChangeNotification) notification;
             int oldValue = (Integer) attributeChangeNotification.getOldValue();
             int newValue = (Integer) attributeChangeNotification.getNewValue();
-            logger.info("Attribute change notification: " + oldValue + "->" + newValue);
+            logger.trace("Attribute change notification: " + oldValue + "->" + newValue);
             if (oldValue == STOPPED && newValue == STARTING) { startingNotificationReceived = true; } else if (oldValue == STARTING && newValue == STARTED) {
                 startedNotificationReceived = true;
             } else if (oldValue == STARTED && newValue == STOPPING) {

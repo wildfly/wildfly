@@ -63,6 +63,7 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
                 .addAttributes(CacheResourceDefinition.Attribute.class)
                 .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(CacheResourceDefinition.Capability.class)
+                .addCapabilities(CacheResourceDefinition.CLUSTERING_CAPABILITIES.values())
                 .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
                 .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
                 ;

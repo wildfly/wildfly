@@ -64,7 +64,6 @@ public class SimpleSubsystemsTestCase extends ContainerResourceMgmtTestBase {
 
     private void testSimpleSubsystem(String subsystemName) throws IOException, MgmtOperationException {
         ModelNode op = createOpNode("subsystem=" + subsystemName, "read-resource");
-        op.get("recursive").set(true);
 
         ModelNode result = executeOperation(op);
         assertTrue("Subsystem not empty.", result.keys().size() == 0);

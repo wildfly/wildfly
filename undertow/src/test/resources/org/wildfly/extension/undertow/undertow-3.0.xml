@@ -34,7 +34,7 @@
         <https-listener name="https" disallowed-methods="" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true" max-connections="100"/>
         <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1"/>
 
-        <host name="default-host" alias="localhost, some.host" default-web-module="something.war" default-response-code="503">
+        <host name="default-host" alias="localhost, some.host" default-web-module="something-else.war" default-response-code="503">
             <location name="/" handler="welcome-content">
                 <!--<filter-ref name="security-other"/>-->
                 <filter-ref name="limit-connections"/>

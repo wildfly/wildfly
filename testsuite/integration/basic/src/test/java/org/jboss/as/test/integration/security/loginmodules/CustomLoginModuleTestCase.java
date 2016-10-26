@@ -66,7 +66,6 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLoginModule;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
-import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -146,7 +145,6 @@ public class CustomLoginModuleTestCase {
     @Deployment
     public static WebArchive deployment() throws IOException {
         WebArchive war = create("custom-login-module.war", SecuredServlet.class);
-        WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
 

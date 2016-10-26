@@ -55,7 +55,7 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
      */
     public void saveData(String value, ServiceCommand... serviceCommands) throws TestApplicationException {
 
-        log.info("[BA COORDINATOR COMPL SERVICE] web method saveData('" + value + "')");
+        log.trace("[BA COORDINATOR COMPL SERVICE] web method saveData('" + value + "')");
         eventLog.foundEventLogName(value);
         BusinessActivityManager activityManager = BusinessActivityManagerFactory.businessActivityManager();
 
@@ -71,7 +71,7 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
         BACoordinationCompletionParticipant participantBA = BACoordinationCompletionParticipant.getSomeParticipant(transactionId);
 
         if (participantBA != null && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
-            log.info("[BA COORDINATOR COMPL SERVICE] Re-using the existing participant, already registered for this BA - command set to: " +
+            log.trace("[BA COORDINATOR COMPL SERVICE] Re-using the existing participant, already registered for this BA - command set to: " +
                     REUSE_BA_PARTICIPANT);
         } else {
             try {
@@ -79,7 +79,7 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
                 participantBA = new BACoordinationCompletionParticipant(serviceCommands, eventLog, transactionId, value);
                 BACoordinationCompletionParticipant.recordParticipant(transactionId, participantBA);
 
-                log.info("[BA COORDINATOR COMPL SERVICE] Enlisting a participant into the BA");
+                log.trace("[BA COORDINATOR COMPL SERVICE] Enlisting a participant into the BA");
                 BAParticipantManager baParticipantManager = activityManager.enlistForBusinessAgreementWithCoordinatorCompletion(participantBA,
                         "BACoordinatorCompletition:" + new Uid().toString());
 
@@ -104,6 +104,6 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
         }
 
         // invoke the back-end business logic
-        log.info("[BA COORDINATOR COMPL SERVICE] Invoking the back-end business logic - saving value: " + value);
+        log.trace("[BA COORDINATOR COMPL SERVICE] Invoking the back-end business logic - saving value: " + value);
     }
 }

@@ -44,28 +44,28 @@ public class JNDIBindingService implements JNDIBindingServiceMBean {
     private String jndiName;
 
     public void create() throws Exception {
-        logger.info("create()");
+        logger.trace("create()");
         this.jndiName =  NAME + count.getAndIncrement();
     }
 
     public void start() throws Exception {
-        logger.info("start()");
+        logger.trace("start()");
         new InitialContext().bind(jndiName, VALUE);
-        logger.info("Bound to JNDI " + jndiName);
+        logger.trace("Bound to JNDI " + jndiName);
     }
 
     public void stop() throws Exception {
-        logger.info("stop()");
+        logger.trace("stop()");
         new InitialContext().unbind(jndiName);
-        logger.info("Unbound from jndi " + jndiName);
+        logger.trace("Unbound from jndi " + jndiName);
     }
 
     public void destroy() throws Exception {
-        logger.info("destroy()");
+        logger.trace("destroy()");
     }
 
     @Override
     public void sayHello() {
-        logger.info("Hello from " + this);
+        logger.trace("Hello from " + this);
     }
 }

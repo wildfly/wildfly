@@ -234,8 +234,8 @@ public class Utils extends CoreUtils {
     public static void applyUpdate(ModelNode update, final ModelControllerClient client) throws Exception {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Client update: " + update);
-            LOGGER.info("Client update result: " + result);
+            LOGGER.trace("Client update: " + update);
+            LOGGER.trace("Client update result: " + result);
         }
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             LOGGER.debug("Operation succeeded.");
@@ -280,18 +280,8 @@ public class Utils extends CoreUtils {
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
-            //System.out.println("Login form get: " + statusLine);
-            assertEquals(200, statusLine.getStatusCode());
 
-            //System.out.println("Initial set of cookies:");
-            /*List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }*/
+            assertEquals(200, statusLine.getStatusCode());
 
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(URL + "/j_security_check");
@@ -320,16 +310,6 @@ public class Utils extends CoreUtils {
             entity = response.getEntity();
             if (entity != null)
                 EntityUtils.consume(entity);
-
-           /* System.out.println("Post logon cookies:");
-            cookies = httpclient.getCookieStore().getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }*/
 
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();
@@ -360,7 +340,7 @@ public class Utils extends CoreUtils {
      */
     public static void saveArchiveToFolder(Archive<?> archive, String folderPath) {
         final File exportFile = new File(folderPath, archive.getName());
-        LOGGER.info("Exporting archive: " + exportFile.getAbsolutePath());
+        LOGGER.trace("Exporting archive: " + exportFile.getAbsolutePath());
         archive.as(ZipExporter.class).exportTo(exportFile, true);
     }
 
@@ -414,7 +394,7 @@ public class Utils extends CoreUtils {
         HttpGet httpGet = new HttpGet(url.toURI());
         HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
-        LOGGER.info("Request to: " + url + " responds: " + statusCode);
+        LOGGER.trace("Request to: " + url + " responds: " + statusCode);
 
         assertEquals("Unexpected status code", expectedStatusCode, statusCode);
 
@@ -441,7 +421,7 @@ public class Utils extends CoreUtils {
      */
     public static String makeCallWithBasicAuthn(URL url, String user, String pass, int expectedStatusCode) throws IOException,
             URISyntaxException {
-        LOGGER.info("Requesting URL " + url);
+        LOGGER.trace("Requesting URL " + url);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         try {
             final HttpGet httpGet = new HttpGet(url.toURI());
@@ -490,7 +470,7 @@ public class Utils extends CoreUtils {
      */
     public static String makeCallWithKerberosAuthn(final URI uri, final String user, final String pass,
             final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
-        LOGGER.info("Requesting URI: " + uri);
+        LOGGER.trace("Requesting URI: " + uri);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
 
@@ -565,7 +545,7 @@ public class Utils extends CoreUtils {
             LoginException {
         final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
         final String url = strippedContextUrl + page;
-        LOGGER.info("Requesting URL: " + url);
+        LOGGER.trace("Requesting URL: " + url);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
         String unauthorizedPageBody = null;
@@ -651,7 +631,7 @@ public class Utils extends CoreUtils {
             final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
         final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
         final String url = strippedContextUrl + page;
-        LOGGER.info("Requesting URL: " + url);
+        LOGGER.trace("Requesting URL: " + url);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
         String unauthorizedPageBody = null;
@@ -675,7 +655,7 @@ public class Utils extends CoreUtils {
             unauthorizedPageBody = EntityUtils.toString(response.getEntity());
 
             assertNotNull(unauthorizedPageBody);
-            LOGGER.info(unauthorizedPageBody);
+            LOGGER.trace(unauthorizedPageBody);
             assertTrue(unauthorizedPageBody.contains("j_security_check"));
 
             HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
@@ -843,7 +823,7 @@ public class Utils extends CoreUtils {
         createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_CRT));
         createTestResource(new File(workingFolder, SecurityTestConstants.UNTRUSTED_KEYSTORE));
         createTestResource(new File(workingFolder, SecurityTestConstants.UNTRUSTED_CRT));
-        LOGGER.info("Key material created in " + workingFolder.getAbsolutePath());
+        LOGGER.trace("Key material created in " + workingFolder.getAbsolutePath());
     }
 
     /**
@@ -855,7 +835,7 @@ public class Utils extends CoreUtils {
      */
     private static void createTestResource(File file) throws IOException {
         FileOutputStream fos = null;
-        LOGGER.info("Creating test file " + file.getAbsolutePath());
+        LOGGER.trace("Creating test file " + file.getAbsolutePath());
         try {
             fos = new FileOutputStream(file);
             IOUtils.copy(CoreUtils.class.getResourceAsStream(file.getName()), fos);

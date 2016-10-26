@@ -85,12 +85,12 @@ public class VaultSystemPropertyOnServerStartTestCase {
 
     @Test
     public void testVaultedSystemPropertyOnStart() throws Exception {
-        LOGGER.info("*** starting server");
+        LOGGER.trace("*** starting server");
         container.start(CONTAINER);
 
         deployer.deploy(DEPLOYMENT);
 
-        LOGGER.info("Try to access " + printPropertyServlet);
+        LOGGER.trace("Try to access " + printPropertyServlet);
         String response = HttpRequest.get(printPropertyServlet, 10, TimeUnit.SECONDS);
         Assert.assertTrue("Vaulted system property wasn't read successfully",
                 response.contains(BasicVaultServerSetupTask.VAULT_ATTRIBUTE));
@@ -102,7 +102,7 @@ public class VaultSystemPropertyOnServerStartTestCase {
     @Before
     public void beforeTest() throws Exception {
 
-        LOGGER.info("*** starting server");
+        LOGGER.trace("*** starting server");
         container.start(CONTAINER);
 
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
@@ -111,12 +111,12 @@ public class VaultSystemPropertyOnServerStartTestCase {
 
         serverSetup.setup(managementClient, CONTAINER);
 
-        LOGGER.info("Add system property: " + TESTING_SYSTEM_PROPERTY);
+        LOGGER.trace("Add system property: " + TESTING_SYSTEM_PROPERTY);
         ModelNode op = Util.createAddOperation(SYSTEM_PROPERTIES_PATH);
         op.get(VALUE).set(BasicVaultServerSetupTask.VAULTED_PROPERTY);
         Utils.applyUpdate(op, managementClient.getControllerClient());
 
-        LOGGER.info("*** stoping server");
+        LOGGER.trace("*** stoping server");
         container.stop(CONTAINER);
         Thread.sleep(1000);
         int i = 0;
@@ -129,13 +129,13 @@ public class VaultSystemPropertyOnServerStartTestCase {
     @After
     public void afterTest() throws Exception {
 
-        LOGGER.info("Remove system property: " + TESTING_SYSTEM_PROPERTY);
+        LOGGER.trace("Remove system property: " + TESTING_SYSTEM_PROPERTY);
         ModelNode op = Util.createRemoveOperation(SYSTEM_PROPERTIES_PATH);
         Utils.applyUpdate(op, managementClient.getControllerClient());
 
         serverSetup.tearDown(managementClient, CONTAINER);
 
-        LOGGER.info("*** stoping server");
+        LOGGER.trace("*** stoping server");
         container.stop(CONTAINER);
         Thread.sleep(1000);
         int i = 0;

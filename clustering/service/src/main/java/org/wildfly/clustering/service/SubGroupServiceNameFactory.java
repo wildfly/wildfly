@@ -24,6 +24,7 @@ package org.wildfly.clustering.service;
 
 import org.jboss.msc.service.ServiceName;
 
+@Deprecated
 public interface SubGroupServiceNameFactory extends GroupServiceNameFactory {
     ServiceName getServiceName(String group, String subGroup);
 

@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalRouteCacheGroupBuilderProvider extends RouteCacheGroupBuilderProvider implements LocalCacheGroupBuilderProvider {
+public class LocalRouteCacheGroupBuilderProvider extends RouteCacheGroupBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalRouteCacheGroupBuilderProvider() {
-        super(LocalCacheGroupBuilderProvider.class);
+        super(LocalCacheBuilderProvider.class);
     }
 }

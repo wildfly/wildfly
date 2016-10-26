@@ -77,7 +77,6 @@ public class ExternalizerTestCase extends ClusterAbstractTestCase {
         war.addPackage(CounterServlet.class.getPackage());
         war.setWebXML(ExternalizerTestCase.class.getPackage(), "web.xml");
         war.addAsServiceProvider(Externalizer.class, CounterExternalizer.class);
-        log.info(war.toString(true));
         return war;
     }
 

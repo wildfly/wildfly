@@ -199,7 +199,6 @@ public class DatabaseLoginModuleTestCase {
      * @return
      */
     private static WebArchive createWar(final String deployment) {
-        LOGGER.info("Starting deployment " + deployment);
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, deployment + ".war");
         war.addClasses(SimpleSecuredServlet.class, SimpleServlet.class);
@@ -208,9 +207,6 @@ public class DatabaseLoginModuleTestCase {
                 "<security-domain>" + deployment + "</security-domain>" + //
                 "</jboss-web>"), "jboss-web.xml");
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 
@@ -284,7 +280,7 @@ public class DatabaseLoginModuleTestCase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             server = Server.createTcpServer("-tcpAllowOthers").start();
             final String dbUrl = "jdbc:h2:mem:" + DATASOURCE_NAME + ";DB_CLOSE_DELAY=-1";
-            LOGGER.info("Creating database " + dbUrl);
+            LOGGER.trace("Creating database " + dbUrl);
 
             final Connection conn = DriverManager.getConnection(dbUrl, "sa", "sa");
             executeUpdate(conn, "CREATE TABLE Roles(PrincipalID Varchar(50), Role Varchar(50), RoleGroup Varchar(50))");
@@ -311,7 +307,7 @@ public class DatabaseLoginModuleTestCase {
         private void executeUpdate(Connection connection, String query) throws SQLException {
             final Statement statement = connection.createStatement();
             final int updateResult = statement.executeUpdate(query);
-            LOGGER.info("Result: " + updateResult + ".  SQL statement: " + query);
+            LOGGER.trace("Result: " + updateResult + ".  SQL statement: " + query);
             statement.close();
         }
     }

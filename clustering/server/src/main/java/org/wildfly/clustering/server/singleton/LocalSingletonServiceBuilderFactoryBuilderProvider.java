@@ -21,15 +21,15 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements LocalCacheGroupBuilderProvider {
+public class LocalSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalSingletonServiceBuilderFactoryBuilderProvider() {
-        super((support, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(containerName, cacheName));
+        super((name, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name));
     }
 }

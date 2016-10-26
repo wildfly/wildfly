@@ -75,16 +75,12 @@ public class JACCTranslateServletDDTestCase {
      */
     @Deployment
     public static WebArchive warDeployment() {
-        LOGGER.info("Start WAR deployment");
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEBAPP_NAME);
         war.addClass(ListJACCPoliciesServlet.class);
         war.addAsWebInfResource(JACCTranslateServletDDTestCase.class.getPackage(), "web-JACC11-example.xml", "web.xml");
         war.addAsWebInfResource(new StringAsset("<jboss-web>" + //
                 "<security-domain>" + SECURITY_DOMAIN_NAME + "</security-domain>" + //
                 "</jboss-web>"), "jboss-web.xml");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 
@@ -181,7 +177,7 @@ public class JACCTranslateServletDDTestCase {
      */
     private Node getContextPolicyNode(final URL webAppURL, String contextId) throws Exception {
         final URL servletURL = new URL(webAppURL.toExternalForm() + ListJACCPoliciesServlet.SERVLET_PATH.substring(1));
-        LOGGER.info("Testing JACC permissions: " + servletURL);
+        LOGGER.trace("Testing JACC permissions: " + servletURL);
 
         final InputStream is = servletURL.openStream();
         try {
@@ -189,8 +185,8 @@ public class JACCTranslateServletDDTestCase {
             final String xpathBase = "/" + ListJACCPoliciesServlet.ROOT_ELEMENT
                     + "/ActiveContextPolicies/ContextPolicy[@contextID='" + contextId + "']";
             final Node contextPolicyNode = document.selectSingleNode(xpathBase);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(contextPolicyNode.asXML());
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace(contextPolicyNode.asXML());
             }
             return contextPolicyNode;
         } finally {

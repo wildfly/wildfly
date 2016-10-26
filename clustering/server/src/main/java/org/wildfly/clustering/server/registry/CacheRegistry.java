@@ -51,7 +51,6 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
@@ -70,22 +69,24 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     private final Batcher<? extends Batch> batcher;
     private final Group group;
     private final NodeFactory<Address> factory;
+    private final Runnable closeTask;
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
-    private final Map.Entry<K, V> registryEntry;
+    private final Map.Entry<K, V> entry;
 
-    public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
+    public CacheRegistry(CacheRegistryConfiguration<K, V> config, Map.Entry<K, V> entry, Runnable closeTask) {
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
         this.factory = config.getNodeFactory();
-        this.registryEntry = new AbstractMap.SimpleImmutableEntry<>(provider.getKey(), provider.getValue());
+        this.closeTask = closeTask;
+        this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
         this.populateRegistry();
         this.cache.addListener(this, new CacheRegistryFilter());
     }
 
     private void populateRegistry() {
         try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), registryEntry);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), this.entry);
         }
     }
 
@@ -104,6 +105,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                 // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
                 this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(node);
             }
+            this.closeTask.run();
         });
     }
 
@@ -175,7 +177,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                     this.populateRegistry();
 
                     // Invoke listeners outside above tx context
-                    this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, registryEntry);
+                    this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
                 }
             }
         });

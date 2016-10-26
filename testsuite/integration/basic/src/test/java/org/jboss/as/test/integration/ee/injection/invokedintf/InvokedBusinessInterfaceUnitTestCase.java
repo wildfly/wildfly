@@ -54,12 +54,11 @@ public class InvokedBusinessInterfaceUnitTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar").addPackage(
                 InvokedBusinessInterfaceUnitTestCase.class.getPackage());
         jar.addAsManifestResource(InvokedBusinessInterfaceUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
     protected <Q, T> Q lookupInterface(Class<T> bean, Class<Q> intf) throws NamingException {
-        log.info("initctx: " + ctx);
+        log.trace("initctx: " + ctx);
         return intf.cast(ctx.lookup("java:global/" + ARCHIVE_NAME + "/" + bean.getSimpleName() + "!" + intf.getName()));
     }
 

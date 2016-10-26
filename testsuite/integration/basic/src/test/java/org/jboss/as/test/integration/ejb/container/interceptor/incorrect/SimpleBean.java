@@ -47,7 +47,7 @@ public class SimpleBean {
      * @see org.jboss.as.test.integration.ejb.container.interceptor.FlowTracker#echo(java.lang.String)
      */
     public String echo(final String message) {
-        LOGGER.info("echo() called");
+        LOGGER.trace("echo() called");
         return message;
     }
 }

@@ -58,7 +58,7 @@ public class StatelessBean {
 
     public void localCall() throws Exception {
         InitialContext jndiContext = getInitialContext();
-        log.info("Calling Local remotely... " + jndiContext.getEnvironment());
+        log.trace("Calling Local remotely... " + jndiContext.getEnvironment());
         StatefulLocal stateful = (StatefulLocal) jndiContext.lookup("ejb:/" + RemoteLocalCallTestCase.ARCHIVE_NAME_SERVER
                 + "//" + StatefulBean.class.getSimpleName() + "!" + StatefulLocal.class.getName());
         stateful.method();
@@ -66,7 +66,7 @@ public class StatelessBean {
 
     public void localHomeCall() throws Exception {
         InitialContext jndiContext = getInitialContext();
-        log.info("Calling LocalHome remotely... " + jndiContext.getEnvironment());
+        log.trace("Calling LocalHome remotely... " + jndiContext.getEnvironment());
         StatefulLocalHome statefulHome = (StatefulLocalHome) jndiContext.lookup("ejb:/" + StatefulBean.class.getSimpleName()
                 + "!" + StatefulLocalHome.class.getName());
         StatefulLocal stateful = statefulHome.create();
@@ -76,7 +76,7 @@ public class StatelessBean {
     public int remoteCall() throws Exception {
         ++methodCount;
         InitialContext jndiContext = getInitialContext();
-        log.info("Calling Remote... " + jndiContext.getEnvironment());
+        log.trace("Calling Remote... " + jndiContext.getEnvironment());
         StatelessRemote stateless = (StatelessRemote) jndiContext.lookup("ejb:/" + RemoteLocalCallTestCase.ARCHIVE_NAME_SERVER
                 + "//" + StatelessBean.class.getSimpleName() + "!" + StatelessRemote.class.getName());
         return stateless.method();
@@ -94,13 +94,13 @@ public class StatelessBean {
 
     public int method() throws Exception {
         ++methodCount;
-        log.info("Method called " + methodCount);
+        log.trace("Method called " + methodCount);
         return methodCount;
     }
 
     public int homeMethod() throws Exception {
         ++homeMethodCount;
-        log.info("HomeMethod called " + homeMethodCount);
+        log.trace("HomeMethod called " + homeMethodCount);
         return homeMethodCount;
     }
 

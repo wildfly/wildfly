@@ -32,6 +32,7 @@
  * AS  8.0.0  / 2.0.0 / 1_2 (this should have been 2_0!)
  * AS  9.0.0  / 3.0.0 / 2_0
  * AS  10.0.0 / 3.0.0 / 2_0
+ * EAP 7.0.0  / 4.0.0 / 2_0
  *
  * @author Radoslav Husar
  * @version Apr 2015

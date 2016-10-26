@@ -21,13 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.ServiceLoader;
-import java.util.concurrent.ExecutorService;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,8 +31,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
@@ -60,17 +55,20 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
+import org.jboss.tm.ExtendedJBossXATerminator;
+import org.wildfly.clustering.spi.CacheBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+import java.util.ServiceLoader;
+import java.util.concurrent.ExecutorService;
 
 /**
  * A {@link AbstractAddStepHandler} to handle the add operation for the EJB
@@ -95,6 +93,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionsRepository.getTransactionManagerInjector())
                 .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, transactionsRepository.getUserTransactionInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, RecoveryManagerService.class, transactionsRepository.getRecoveryManagerInjector())
+                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, ExtendedJBossXATerminator.class, transactionsRepository.getXATerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 
@@ -112,11 +111,11 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
         // Install the client-mapping service for the remoting connector
-        new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, clientMappingsClusterName, remotingServerInfoServiceName)
+        new EJBRemotingConnectorClientMappingsEntryProviderService(clientMappingsClusterName, remotingServerInfoServiceName).configure(context).build(target)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        new RegistryInstallerService(clientMappingsClusterName).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new RegistryInstallerService(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
@@ -125,13 +124,13 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
             // Install services that would normally be installed by this container/cache
             CapabilityServiceSupport support = context.getCapabilityServiceSupport();
             for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), clientMappingsClusterName)) {
-                    builder.build(target).install();
+                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> requirement.getServiceName(support, clientMappingsClusterName), clientMappingsClusterName)) {
+                    builder.configure(support).build(target).install();
                 }
             }
-            for (CacheGroupBuilderProvider provider : ServiceLoader.load(LocalCacheGroupBuilderProvider.class, LocalCacheGroupBuilderProvider.class.getClassLoader())) {
-                for (Builder<?> builder : provider.getBuilders(support, clientMappingsClusterName, null)) {
-                    builder.build(target).install();
+            for (CacheBuilderProvider provider : ServiceLoader.load(LocalCacheBuilderProvider.class, LocalCacheBuilderProvider.class.getClassLoader())) {
+                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> requirement.getServiceName(support, clientMappingsClusterName, null), clientMappingsClusterName, null)) {
+                    builder.configure(support).build(target).install();
                 }
             }
         }

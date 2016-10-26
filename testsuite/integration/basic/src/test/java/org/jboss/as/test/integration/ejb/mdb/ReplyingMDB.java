@@ -45,7 +45,6 @@ public class ReplyingMDB implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            //System.out.println("Message " + message);
             final Destination replyTo = message.getJMSReplyTo();
             // ignore messages that need no reply
             if (replyTo == null)

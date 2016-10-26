@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.management.api.web;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -53,6 +53,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+//todo this test could probably be done in manual mode test with wildfly runner, also could be merged into VirtualHostTestCase
 public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
 
     @ArquillianResource
@@ -94,7 +95,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
     public void addRemoveVirtualServer(@ArquillianResource Deployer deployer) throws Exception {
 
         if (! resolveHosts()) {
-            log.info("Unable to resolve alternate server host name.");
+            log.trace("Unable to resolve alternate server host name.");
             return;
         }
         addVirtualServer();
@@ -127,6 +128,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
     private void addVirtualServer() throws IOException, MgmtOperationException {
         ModelNode addOp = createOpNode("subsystem=undertow/server=default-server/host=test", "add");
         addOp.get("alias").add(virtualHost);
+        addOp.get("default-web-module").set("some-test.war");
 
         ModelNode rewrite = new ModelNode();
         rewrite.get("condition").setEmptyList();

@@ -67,7 +67,6 @@ public class InjectionTestCase {
         JavaArchive sharedJar = ShrinkWrap.create(JavaArchive.class, "jaxws-injection.jar");
         sharedJar.addClass(BeanIface.class);
         sharedJar.addClass(BeanImpl.class);
-        //System.out.println(sharedJar.toString(true));
 
         // construct ejb3 jar
         JavaArchive ejb3Jar = ShrinkWrap.create(JavaArchive.class, "jaxws-injection-ejb3.jar");

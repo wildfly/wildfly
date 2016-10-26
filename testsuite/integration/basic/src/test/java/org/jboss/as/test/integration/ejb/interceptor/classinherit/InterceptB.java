@@ -32,7 +32,6 @@ public class InterceptB {
     @AroundInvoke
     Object audit(InvocationContext ctx) throws Exception {
         String message = (String) ctx.proceed();
-        // System.out.println("Interceptor called for "+ctx.getMethod().getName());
         return "InterceptedB: " + message;
     }
 }

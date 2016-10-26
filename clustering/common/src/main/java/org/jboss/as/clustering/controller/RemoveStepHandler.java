@@ -53,6 +53,22 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     }
 
     @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        // We explicitly need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
+        PathAddress address = context.getCurrentAddress();
+        this.descriptor.getCapabilities().forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
+
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
+                .filter(access -> access != null)
+                .map(access -> access.getAttributeDefinition())
+                    .filter(attribute -> (attribute != null) && attribute.hasCapabilityRequirements())
+                    .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
+
+        super.performRemove(context, operation, model);
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (this.handler != null) {
             this.handler.removeServices(context, model);
@@ -68,17 +84,7 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        this.descriptor.getCapabilities().forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
-
-        ModelNode model = resource.getModel();
-        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
-        registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
-                .filter(access -> access != null)
-                .map(access -> access.getAttributeDefinition())
-                    .filter(attribute -> (attribute != null) && attribute.hasCapabilityRequirements())
-                    .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
+        // We already unregistered our capabilities in performRemove(...)
     }
 
     @Override

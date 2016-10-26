@@ -49,7 +49,7 @@ public class LogAccessBean implements LogAccess {
     @PostConstruct
     @PreDestroy
     public void logLifecycleAction() {
-        LOGGER.info("logLifecycleAction");
+        LOGGER.trace("logLifecycleAction");
         Log.SB.append(getClass().getSimpleName());
     }
 

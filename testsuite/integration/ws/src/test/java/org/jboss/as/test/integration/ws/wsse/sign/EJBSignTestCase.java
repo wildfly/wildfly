@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ws.wsse.EJBServiceImpl;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -58,7 +57,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 @RunAsClient
 public class EJBSignTestCase {
 
-    private static Logger log = Logger.getLogger(EJBSignTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
 
@@ -73,8 +71,6 @@ public class EJBSignTestCase {
                 addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService-ejb-sign.wsdl", "wsdl/SecurityService.wsdl").
                 addAsManifestResource(ServiceIface.class.getPackage(), "wsdl/SecurityService_schema1.xsd", "wsdl/SecurityService_schema1.xsd").
                 addAsManifestResource(EJBSignTestCase.class.getPackage(), "jaxws-endpoint-config.xml", "jaxws-endpoint-config.xml");
-        log.info(jar.toString(true));
-
         return jar;
     }
 

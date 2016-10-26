@@ -38,7 +38,6 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.ejb3.Hello;
 import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
-import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,7 +54,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({EjbXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class})
 public class EjbXACMLAuthorizationModuleTestCase {
-    private static Logger LOGGER = Logger.getLogger(EjbXACMLAuthorizationModuleTestCase.class);
 
     @EJB(mappedName = "java:global/test-custom-xacml/HelloBean")
     private Hello hello;
@@ -172,7 +170,6 @@ public class EjbXACMLAuthorizationModuleTestCase {
                         XACMLTestUtils.TESTOBJECTS_CONFIG + "/jboss-ejb3.xml", "jboss-ejb3.xml");
         XACMLTestUtils.addJBossDeploymentStructureToArchive(jar);
         jar.addClasses(AbstractSecurityDomainsServerSetupTask.class);
-        LOGGER.info(jar.toString(true));
         return jar;
     }
 

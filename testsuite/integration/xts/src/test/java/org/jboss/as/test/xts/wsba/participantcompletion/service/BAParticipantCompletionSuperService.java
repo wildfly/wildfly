@@ -64,7 +64,7 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
      */
     public void saveData(String value, ServiceCommand... serviceCommands) throws TestApplicationException {
 
-        log.info("[BA PARTICIPANT COMPL SERVICE] invoked saveData('" + value + "')");
+        log.trace("[BA PARTICIPANT COMPL SERVICE] invoked saveData('" + value + "')");
         eventLog.foundEventLogName(value);
 
         BAParticipantManager participantManager;
@@ -78,13 +78,13 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
         }
 
         if (participantRegistry.keySet().contains(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {
-            log.info("[BA PARTICIPANT COMPL SERVICE] Reusing BA participant manager - command: " + REUSE_BA_PARTICIPANT);
+            log.trace("[BA PARTICIPANT COMPL SERVICE] Reusing BA participant manager - command: " + REUSE_BA_PARTICIPANT);
             participantManager = participantRegistry.get(txid);
         } else {
             try {
                 // Enlist the Participant for this service:
                 BAParticipantCompletionParticipant participant = new BAParticipantCompletionParticipant(serviceCommands, eventLog, value);
-                log.info("[BA PARTICIPANT COMPL SERVICE] Enlisting a participant into the BA");
+                log.trace("[BA PARTICIPANT COMPL SERVICE] Enlisting a participant into the BA");
                 participantManager = activityManager.enlistForBusinessAgreementWithParticipantCompletion(participant,
                         "BAParticipantCompletition:" + new Uid().toString());
                 participantRegistry.put(txid, participantManager);
@@ -105,11 +105,11 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
          * completed. Otherwise, we notify the coordinator that we cannot complete. If any other participant fails or the client
          * decides to cancel we can rely upon being told to compensate.
          */
-        log.info("[BA PARTICIPANT COMPL SERVICE] Prepare the backend resource and if successful notify the coordinator that we have completed our work");
+        log.trace("[BA PARTICIPANT COMPL SERVICE] Prepare the backend resource and if successful notify the coordinator that we have completed our work");
         if (ServiceCommand.isPresent(DO_COMPLETE, serviceCommands)) {
             try {
                 // Tell the coordinator manager we have finished our work
-                log.info("[BA PARTICIPANT COMPL SERVICE] Prepare successful, notifying coordinator of completion");
+                log.trace("[BA PARTICIPANT COMPL SERVICE] Prepare successful, notifying coordinator of completion");
                 participantManager.completed();
             } catch (Exception e) {
                 /* Failed to notify the coordinator that we have finished our work. Compensate the work and throw an Exception
@@ -122,7 +122,7 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
         if (ServiceCommand.isPresent(CANNOT_COMPLETE, serviceCommands)) {
             try {
                 // Tell the participant manager we cannot complete. This will force the activity to fail.
-                log.info("[BA PARTICIPANT COMPL SERVICE] Prepared fail, notifying coordinator that we cannot complete");
+                log.trace("[BA PARTICIPANT COMPL SERVICE] Prepared fail, notifying coordinator that we cannot complete");
                 participantManager.cannotComplete();
                 return;
             } catch (Exception e) {

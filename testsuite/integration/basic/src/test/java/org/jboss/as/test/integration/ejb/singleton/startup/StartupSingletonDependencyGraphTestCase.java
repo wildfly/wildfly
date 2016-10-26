@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.singleton.startup;
 
-import java.util.logging.Logger;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -42,13 +41,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class StartupSingletonDependencyGraphTestCase {
-    private static final Logger log = Logger.getLogger(StartupSingletonDependencyGraphTestCase.class.getName());
-
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-singleton-startup.jar");
         jar.addPackage(StartupSingletonDependencyGraphTestCase.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 

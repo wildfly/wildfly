@@ -75,8 +75,6 @@ public class SFSBHibernate2LcacheStats {
         // static {
         try {
 
-            //System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
-
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
@@ -97,7 +95,7 @@ public class SFSBHibernate2LcacheStats {
             // build the serviceregistry
             sessionFactory = configuration.buildSessionFactory();
         } catch (Throwable ex) { // Make sure you log the exception, as it might be swallowed
-            System.err.println("Initial SessionFactory creation failed." + ex);
+            ex.printStackTrace();
             throw new ExceptionInInitializerError(ex);
         }
 
@@ -138,8 +136,6 @@ public class SFSBHibernate2LcacheStats {
             // session.flush();
             // session.close();
         } catch (Exception e) {
-
-            e.printStackTrace();
             throw new RuntimeException("transactional failure while persisting planet entity", e);
 
         }

@@ -49,6 +49,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * The root resource of the JGroups subsystem.
@@ -62,6 +63,11 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
     static final Map<JGroupsRequirement, Capability> CAPABILITIES = new EnumMap<>(JGroupsRequirement.class);
     static {
         EnumSet.allOf(JGroupsRequirement.class).forEach(requirement -> CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement())));
+    }
+
+    static final Map<ClusteringRequirement, Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
+    static {
+        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement())));
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -125,6 +131,7 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(CAPABILITIES.values())
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);

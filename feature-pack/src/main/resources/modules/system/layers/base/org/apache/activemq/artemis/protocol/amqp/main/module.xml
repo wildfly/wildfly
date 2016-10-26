@@ -33,5 +33,6 @@
         <module name="org.apache.qpid.proton"/>
         <!-- required to load ActiveMQ protocol SPI -->
         <module name="org.apache.activemq.artemis"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

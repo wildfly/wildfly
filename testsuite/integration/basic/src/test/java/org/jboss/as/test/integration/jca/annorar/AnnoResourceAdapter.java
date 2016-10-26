@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.jca.annorar;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.AuthenticationMechanism;
@@ -143,7 +143,7 @@ public class AnnoResourceAdapter implements ResourceAdapter,
         activations.put((AnnoActivationSpec) spec, activation);
         activation.start();
 
-        log.finest("endpointActivation()");
+        log.trace("endpointActivation()");
     }
 
     /**
@@ -157,7 +157,7 @@ public class AnnoResourceAdapter implements ResourceAdapter,
         AnnoActivation activation = activations.remove(spec);
         if (activation != null) { activation.stop(); }
 
-        log.finest("endpointDeactivation()");
+        log.trace("endpointDeactivation()");
     }
 
     /**
@@ -168,7 +168,7 @@ public class AnnoResourceAdapter implements ResourceAdapter,
      */
     public void start(BootstrapContext ctx)
             throws ResourceAdapterInternalException {
-        log.finest("start()");
+        log.trace("start()");
     }
 
     /**
@@ -176,7 +176,7 @@ public class AnnoResourceAdapter implements ResourceAdapter,
      * application server shutdown.
      */
     public void stop() {
-        log.finest("stop()");
+        log.trace("stop()");
     }
 
     /**
@@ -188,7 +188,7 @@ public class AnnoResourceAdapter implements ResourceAdapter,
      */
     public XAResource[] getXAResources(ActivationSpec[] specs)
             throws ResourceException {
-        log.finest("getXAResources()");
+        log.trace("getXAResources()");
         return null;
     }
 

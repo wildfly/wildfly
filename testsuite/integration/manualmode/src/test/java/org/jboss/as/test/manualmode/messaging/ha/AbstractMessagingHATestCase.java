@@ -221,18 +221,14 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     private void restoreSnapshot(String snapshot) {
-        System.out.println("snapshot = " + snapshot);
         File snapshotFile = new File(snapshot);
         File configurationDir = snapshotFile.getParentFile().getParentFile().getParentFile();
-        System.out.println("configurationDir = " + configurationDir);
         File standaloneConfiguration = new File(configurationDir, "standalone-full-ha.xml");
         snapshotFile.renameTo(standaloneConfiguration);
     }
 
     protected static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
-        System.out.println("operation = " + operation);
         ModelNode response = client.execute(operation);
-        System.out.println("response = " + response);
         boolean success = SUCCESS.equals(response.get(OUTCOME).asString());
         if (success) {
             return response.get(RESULT);

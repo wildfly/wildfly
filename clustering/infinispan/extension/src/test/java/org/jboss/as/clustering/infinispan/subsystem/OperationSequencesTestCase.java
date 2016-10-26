@@ -1,23 +1,42 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.byteman.contrib.bmunit.BMRule;
-import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
 * Test case for testing sequences of management operations.
 *
 * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
 */
-@RunWith(BMUnitRunner.class)
 public class OperationSequencesTestCase extends OperationTestCaseBase {
 
     @Test
@@ -78,47 +97,6 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         // remove the cache container again
         result = servicesA.executeOperation(removeContainerOp);
         Assert.assertEquals(result.toString(), FAILED, result.get(OUTCOME).asString());
-    }
-
-    @Ignore("This requires NORMAL mode, but we lack the requisite runtime capabilities")
-    @Test
-    @BMRule(name="Test remove rollback operation",
-            targetClass="org.jboss.as.clustering.infinispan.subsystem.CacheContainerServiceHandler",
-            targetMethod="removeServices",
-            targetLocation="AT ENTRY",
-            action="$1.setRollbackOnly()")
-    public void testCacheContainerRemoveRollback() throws Exception {
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
-
-        ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
-        ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
-
-        // add a cache container
-        ModelNode result = servicesA.executeOperation(addContainerOp);
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
-
-        // add a local cache
-        result = servicesA.executeOperation(addCacheOp);
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
-
-        // remove the cache container
-        // the remove has OperationContext.setRollbackOnly() injected
-        // and so is expected to fail
-        result = servicesA.executeOperation(removeContainerOp);
-        Assert.assertEquals(result.toString(), FAILED, result.get(OUTCOME).asString());
-
-        // need to check that all services are correctly re-installed
-        ServiceName containerServiceName = CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(getCacheContainerAddress("maximal2"));
-
-        ServiceName cacheConfigurationServiceName = CacheResourceDefinition.Capability.CONFIGURATION.getServiceName(getCacheAddress("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred"));
-        ServiceName cacheServiceName = CacheResourceDefinition.Capability.CACHE.getServiceName(getCacheAddress("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred"));
-
-        Assert.assertNotNull("cache container service not installed", servicesA.getContainer().getService(containerServiceName));
-        Assert.assertNotNull("cache configuration service not installed", servicesA.getContainer().getService(cacheConfigurationServiceName));
-        Assert.assertNotNull("cache service not installed", servicesA.getContainer().getService(cacheServiceName));
     }
 
     @Test

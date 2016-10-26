@@ -77,7 +77,6 @@ public class TestPersistenceProvider implements PersistenceProvider {
                 testEntityManagerFactory
         );
 
-        System.out.println("TestPersistenceProvider.createContainerEntityManagerFactory() is returning " + proxyEntityManagerFactory);
         return proxyEntityManagerFactory;
     }
 

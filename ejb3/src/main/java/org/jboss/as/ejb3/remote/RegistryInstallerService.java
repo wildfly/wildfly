@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -30,27 +32,43 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
-public class RegistryInstallerService implements Service<Void> {
+public class RegistryInstallerService implements CapabilityServiceBuilder<Void>, Service<Void> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings", "installer");
 
     private final String clientMappingsClusterName;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<RegistryCollector> collector = new InjectedValue<>();
+
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Registry> registry = new InjectedValue<>();
+    private volatile ValueDependency<Registry> registry;
 
     public RegistryInstallerService(String clientMappingsClusterName) {
         this.clientMappingsClusterName = clientMappingsClusterName;
     }
 
+    @Override
+    public ServiceName getServiceName() {
+        return SERVICE_NAME;
+    }
+
+    @Override
+    public Builder<Void> configure(OperationContext context) {
+        this.registry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY.getServiceName(context, this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class);
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<Void> build(ServiceTarget target) {
-        return target.addService(SERVICE_NAME, this)
+        ServiceBuilder<Void> builder = target.addService(this.getServiceName(), this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(CacheGroupServiceName.REGISTRY.getServiceName(this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
         ;
+        return this.registry.register(builder);
     }
 
     @Override

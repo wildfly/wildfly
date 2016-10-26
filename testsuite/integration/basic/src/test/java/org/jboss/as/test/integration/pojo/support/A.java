@@ -30,7 +30,6 @@ public class A {
 
     public A(B b) {
         this.b = b;
-        System.out.println("b = " + b);
     }
 
     public B getB() {

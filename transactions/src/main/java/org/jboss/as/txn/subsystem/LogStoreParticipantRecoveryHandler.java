@@ -23,42 +23,18 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-public class LogStoreParticipantRecoveryHandler  implements OperationStepHandler {
-
-    private  LogStoreParticipantRefreshHandler refreshHandler = null;
+public class LogStoreParticipantRecoveryHandler extends LogStoreParticipantOperationHandler {
+    private LogStoreParticipantRefreshHandler refreshHandler = null;
 
     public LogStoreParticipantRecoveryHandler(LogStoreParticipantRefreshHandler refreshHandler) {
+        super("clearHeuristic");
+
         this.refreshHandler = refreshHandler;
     }
 
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-
-        try {
-            // Get the internal object name
-            final ObjectName on = LogStoreResource.getObjectName(resource);
-
-            //  Invoke the MBean operation
-            mbs.invoke(on, "clearHeuristic", null, null);
-
-        } catch (Exception e) {
-            throw new OperationFailedException("JMX error: ", e);
-        }
-
-        // refresh the attributes of this participant (the status attribute should have changed to PREPARED
+    // refresh the attributes of this participant (the status attribute should have changed to PREPARED
+    void refreshParticipant(OperationContext context) {
         context.addStep(refreshHandler, OperationContext.Stage.MODEL, true);
-
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

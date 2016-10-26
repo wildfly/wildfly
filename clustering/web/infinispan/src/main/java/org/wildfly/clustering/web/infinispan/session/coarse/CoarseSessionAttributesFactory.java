@@ -87,8 +87,9 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
     }
 
     @Override
-    public void evict(String id) {
+    public boolean evict(String id) {
         this.cache.evict(new SessionAttributesKey(id));
+        return true;
     }
 
     @Override

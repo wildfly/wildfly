@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.registry;
 
+import java.util.Map;
+
 /**
  * Factory for creating a clustered registry.
  *
@@ -31,10 +33,10 @@ package org.wildfly.clustering.registry;
 public interface RegistryFactory<K, V> {
 
     /**
-     * Creates a registry for the group associated with this factory.
+     * Creates a registry using the specified entry.
      *
-     * @param provider the provider of the local registry entry
+     * @param entry the local registry entry
      * @return a registry
      */
-    Registry<K, V> createRegistry(RegistryEntryProvider<K, V> provider);
+    Registry<K, V> createRegistry(Map.Entry<K, V> entry);
 }

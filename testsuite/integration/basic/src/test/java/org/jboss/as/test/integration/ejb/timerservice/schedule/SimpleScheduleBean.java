@@ -63,11 +63,11 @@ public class SimpleScheduleBean {
     @Schedule(second="*", minute = "*", hour = "*", persistent = false, info = "info", timezone = "Europe/Prague")
     public void timeout(Timer timer) {
         timerInfo = (String) timer.getInfo();
-        log.info("timer info= " + timerInfo);
+        log.trace("timer info= " + timerInfo);
         isPersistent = timer.isPersistent();
         isCalendar = timer.isCalendarTimer();
         timezone = timer.getSchedule().getTimezone();
-        log.info(timer.getSchedule().getEnd());
+        log.trace(timer.getSchedule().getEnd());
 
         timerServiceCalled = true;
         latch.countDown();

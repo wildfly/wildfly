@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,7 +52,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class TestNoAddressingTestCase {
 
-    private static Logger log = Logger.getLogger(TestNoAddressingTestCase.class.getName());
     @ArquillianResource
     URL baseUrl;
     private static final String message = "no-addressing";

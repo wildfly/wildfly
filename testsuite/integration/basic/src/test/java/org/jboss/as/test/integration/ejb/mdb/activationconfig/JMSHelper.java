@@ -59,12 +59,12 @@ public class JMSHelper {
     }
 
     public static void reply(ConnectionFactory cf, Message message) {
-        logger.info("Received message: " + message);
+        logger.trace("Received message: " + message);
         try (
                 JMSContext context = cf.createContext(AUTO_ACKNOWLEDGE)
         ) {
             if (message.getJMSReplyTo() != null) {
-                logger.info("Replying to " + message.getJMSReplyTo());
+                logger.trace("Replying to " + message.getJMSReplyTo());
 
                 String text = (message instanceof TextMessage) ? ((TextMessage)message).getText() : message.toString();
 

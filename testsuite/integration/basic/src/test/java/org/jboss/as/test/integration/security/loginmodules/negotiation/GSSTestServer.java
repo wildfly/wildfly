@@ -87,7 +87,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
             try {
                 Thread.sleep(ADJUSTED_SECOND);
             } catch (InterruptedException e) {
-                LOGGER.info("Interrupted", e);
+                LOGGER.trace("Interrupted", e);
             }
         }
 
@@ -179,7 +179,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
         } catch (IOException e) {
             LOGGER.error("Problem occurred during sending stop command", e);
         } catch (InterruptedException e) {
-            LOGGER.info("Thread.sleep() interrupted", e);
+            LOGGER.trace("Thread.sleep() interrupted", e);
         } finally {
             try {
                 socket.close();
@@ -208,7 +208,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
         LOGGER.debug("Authentication succeed");
         // 2. Perform the work as authenticated Subject.
         final String finishMsg = Subject.doAs(lc.getSubject(), new ServerAction());
-        LOGGER.info("Server stopped with result: " + (finishMsg == null ? "OK" : finishMsg));
+        LOGGER.trace("Server stopped with result: " + (finishMsg == null ? "OK" : finishMsg));
         lc.logout();
         krb5configuration.resetConfiguration();
     }
@@ -227,7 +227,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
             ServerSocket serverSocket = null;
             try {
                 serverSocket = new ServerSocket(GSSTestConstants.PORT);
-                LOGGER.info("Server started on port " + GSSTestConstants.PORT);
+                LOGGER.trace("Server started on port " + GSSTestConstants.PORT);
                 int command = GSSTestConstants.CMD_NOOP;
 
                 serverStarted = true;
@@ -258,7 +258,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
                                 }
                             }
                             final String clientName = gssContext.getSrcName().toString();
-                            LOGGER.info("Context Established with Client " + clientName);
+                            LOGGER.trace("Context Established with Client " + clientName);
 
                             // encrypt
                             final MessageProp msgProp = new MessageProp(true);
@@ -268,10 +268,10 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
                             dataOutputStream.writeInt(outToken.length);
                             dataOutputStream.write(outToken);
                             dataOutputStream.flush();
-                            LOGGER.info("Client name was returned as the token value.");
+                            LOGGER.trace("Client name was returned as the token value.");
                         }
                     } catch (EOFException e) {
-                        LOGGER.info("Client didn't send a correct message.");
+                        LOGGER.trace("Client didn't send a correct message.");
                     } catch (IOException e) {
                         LOGGER.error("IOException occurred", e);
                     } catch (GSSException e) {
@@ -294,7 +294,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
 
                     }
                 } while (command != GSSTestConstants.CMD_STOP);
-                LOGGER.info("Stop command received.");
+                LOGGER.trace("Stop command received.");
             } catch (IOException e) {
                 LOGGER.error("IOException occurred", e);
                 return e.getMessage();

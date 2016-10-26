@@ -212,15 +212,11 @@ public class LdapExtPasswordCachingTestCase {
      * @return
      */
     private static WebArchive createWar(String securityDomainName) {
-        LOGGER.info("Start deployment for security-domain " + securityDomainName);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, securityDomainName + ".war");
         war.addClasses(PrincipalPrintingServlet.class);
         war.addAsWebInfResource(LdapExtLoginModuleTestCase.class.getPackage(), LdapExtLoginModuleTestCase.class.getSimpleName()
                 + "-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(securityDomainName), "jboss-web.xml");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(war.toString(true));
-        }
         return war;
     }
 
@@ -317,7 +313,6 @@ public class LdapExtPasswordCachingTestCase {
 
     @AfterClass
     public static void cleanup() {
-        System.out.println("doing cleanup");
         passwordProvider.cleanup();
     }
 

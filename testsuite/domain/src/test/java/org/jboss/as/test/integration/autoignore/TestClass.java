@@ -49,12 +49,10 @@ public class TestClass implements TestClassMBean {
             final BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             final OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
             try {
-                System.out.println("--- writing");
                 writer.write("Test\n");
             } finally {
                 try {
                     writer.close();
-                    System.out.println("--- written");
                 } catch (Exception ignore) {
                 }
             }

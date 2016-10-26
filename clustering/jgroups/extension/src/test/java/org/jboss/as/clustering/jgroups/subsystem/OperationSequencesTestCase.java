@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -8,20 +29,15 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.byteman.contrib.bmunit.BMRule;
-import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
 * Test case for testing sequences of management operations.
 *
 * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
 */
-@RunWith(BMUnitRunner.class)
 public class OperationSequencesTestCase extends OperationTestCaseBase {
 
     // stack test operations
@@ -160,33 +176,5 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         result = services.executeOperation(getLegacyTransportRemoveOperation(stackName));
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-    }
-
-    @org.junit.Ignore("This fails for some mysterious reason - but this isn't a critical test")
-    @Test
-    @BMRule(name="Test remove rollback operation",
-            targetClass="org.jboss.as.clustering.jgroups.subsystem.StackRemoveHandler",
-            targetMethod="performRuntime",
-            targetLocation="AT EXIT",
-            action="traceln(\"Injecting rollback fault via Byteman\");$1.setRollbackOnly()")
-    public void testProtocolStackRemoveRollback() throws Exception {
-
-        KernelServices services = buildKernelServices();
-
-        ModelNode operation = Operations.createCompositeOperation(addStackOp, addTransportOp, addProtocolOp);
-
-        // add a protocol stack
-        ModelNode result = services.executeOperation(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        // remove the protocol stack
-        // the remove has OperationContext.setRollbackOnly() injected
-        // and so is expected to fail
-        result = services.executeOperation(removeStackOp);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-
-        // need to check that all services are correctly re-installed
-        ServiceName channelFactoryServiceName = StackResourceDefinition.Capability.JCHANNEL_FACTORY.getDefinition().getCapabilityServiceName("maximal2");
-        Assert.assertNotNull("channel factory service not installed", services.getContainer().getService(channelFactoryServiceName));
     }
 }

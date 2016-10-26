@@ -45,9 +45,9 @@ public abstract class AbstractTimerBean {
     private TimerService timerService;
 
     public void startTimers() {
-        logger.info("Initially had these timers:");
+        logger.trace("Initially had these timers:");
         for (Timer timer: timerService.getTimers()) {
-            logger.info("   " + timer.getInfo());
+            logger.trace("   " + timer.getInfo());
         }
         for (int i = 0; i < NUMBER_OF_TIMERS; i++) {
             String name = getClass().getSimpleName() + "#" + i;

@@ -22,42 +22,53 @@
 package org.wildfly.clustering.server.provider;
 
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a non-clustered {@link ServiceProviderRegistrationFactory} service.
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistryBuilder<T> extends ServiceProviderRegistryServiceNameProvider implements Builder<ServiceProviderRegistry<T>>, Value<ServiceProviderRegistry<T>> {
+public class LocalServiceProviderRegistryBuilder<T> implements CapabilityServiceBuilder<ServiceProviderRegistry<T>> {
 
-    private final InjectedValue<Group> group = new InjectedValue<>();
+    private final ServiceName name;
+    private final String containerName;
+    private final String cacheName;
 
-    /**
-     * @param containerName
-     * @param cacheName
-     */
-    public LocalServiceProviderRegistryBuilder(String containerName, String cacheName) {
-        super(containerName, cacheName);
+    private volatile ValueDependency<Group> group;
+
+    public LocalServiceProviderRegistryBuilder(ServiceName name, String containerName, String cacheName) {
+        this.name = name;
+        this.containerName = containerName;
+        this.cacheName = cacheName;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<ServiceProviderRegistry<T>> configure(CapabilityServiceSupport support) {
+        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), Group.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheGroupServiceName.GROUP.getServiceName(this.containerName, this.cacheName), Group.class, this.group)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public ServiceProviderRegistry<T> getValue() {
-        return new ServiceProviderRegistrationFactoryAdapter<>(new LocalServiceProviderRegistry<>(this.group.getValue()));
+        Value<ServiceProviderRegistry<T>> value = () -> new ServiceProviderRegistrationFactoryAdapter<>(new LocalServiceProviderRegistry<>(this.group.getValue()));
+        return this.group.register(target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

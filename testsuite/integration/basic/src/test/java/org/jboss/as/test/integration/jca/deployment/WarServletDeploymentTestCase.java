@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.jca.deployment;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -50,8 +49,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class WarServletDeploymentTestCase {
-    private static final Logger log = Logger.getLogger(WarServletDeploymentTestCase.class.getName());
-
     static final String deploymentName = "raractivation.ear";
     static final String rarDeploymentName = "eis.rar";
     static final String webDeploymentName = "web.war";
@@ -66,7 +63,6 @@ public class WarServletDeploymentTestCase {
 
         raa.addAsManifestResource(WarServletDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml");
 
-        log.info(raa.toString(true));
         return raa;
     }
 

@@ -56,10 +56,10 @@ public class ScopeCdiIntegrationMDB implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message " + message);
+        logger.trace("Received message " + message);
         try {
             if (message.getJMSReplyTo() != null) {
-                logger.info("Replying to " + message.getJMSReplyTo());
+                logger.trace("Replying to " + message.getJMSReplyTo());
                 // send a reply
                 this.jmsMessagingUtil.sendTextMessage(requestScopedCDIBean.sayHello(), message.getJMSReplyTo(), null);
             }

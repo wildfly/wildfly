@@ -50,7 +50,6 @@ public class JBossDeploymentStructure11ParsingTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(JBossDeploymentStructure11ParsingTestCase.class.getPackage());
         ejbJar.addAsManifestResource(JBossDeploymentStructure11ParsingTestCase.class.getPackage(), "jboss-deployment-structure_1_1.xml", "jboss-deployment-structure.xml");
-        logger.info(ejbJar.toString(true));
         return ejbJar;
     }
 

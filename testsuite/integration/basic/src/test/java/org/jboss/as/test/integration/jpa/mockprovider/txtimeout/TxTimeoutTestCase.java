@@ -26,8 +26,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -107,29 +105,7 @@ public class TxTimeoutTestCase {
         try {
             return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
         } catch (NamingException e) {
-            dumpJndi("");
             throw e;
-        }
-    }
-
-    // TODO: move this logic to a common base class (might be helpful for writing new tests)
-    private void dumpJndi(String s) {
-        /*try {
-            dumpTreeEntry(iniCtx.list(s), s);
-        } catch (NamingException ignore) {
-        }*/
-    }
-
-    private void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
         }
     }
 
@@ -171,7 +147,7 @@ public class TxTimeoutTestCase {
         try {
             sfsb1.createEmployeeWaitForTxTimeout(false, "Wily", "1 Appletree Lane", 10);
         } catch (Exception e) { // ignore the tx rolled back exception
-            System.out.println("ignoring the " + e.getMessage());
+            //
         }
         assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
     }
@@ -192,7 +168,7 @@ public class TxTimeoutTestCase {
         try {
             sfsb1.createEmployeeWaitForTxTimeout(true, "Wily", "1 Appletree Lane", 10);
         } catch (Exception e) { // ignore the tx rolled back exception
-            System.out.println("ignoring the " + e.getMessage());
+            //
         }
         assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
         assertTrue("transaction was canceled by reaper thread", SFSB1.isAfterCompletionCalledByTMTimeoutThread());

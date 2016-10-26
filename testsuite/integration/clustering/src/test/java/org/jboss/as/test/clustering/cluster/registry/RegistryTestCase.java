@@ -19,7 +19,6 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -29,7 +28,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RegistryTestCase extends ClusterAbstractTestCase {
-    private static final Logger log = Logger.getLogger(RegistryTestCase.class);
     private static final String MODULE_NAME = "registry";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
 
@@ -51,7 +49,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new PropertyPermission(NODE_NAME_PROPERTY, "read")
         ), "permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 

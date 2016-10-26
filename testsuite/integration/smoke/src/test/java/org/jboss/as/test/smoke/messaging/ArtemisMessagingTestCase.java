@@ -83,8 +83,6 @@ public class ArtemisMessagingTestCase {
 
     @Before
     public void start() throws Exception {
-        System.out.println("managementClient = " + managementClient);
-
         //Not using JNDI so we use the core services directly
         sf = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName())).createSessionFactory();
         session = sf.createSession();
@@ -145,7 +143,7 @@ public class ArtemisMessagingTestCase {
         ClientMessage message = session.createMessage(false);
 
         message.putStringProperty(BODY, text);
-        log.info("-----> Sending message");
+        log.trace("-----> Sending message");
         producer.send(message);
     }
 }

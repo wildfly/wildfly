@@ -29,7 +29,7 @@ public class TestConnectionListener implements ConnectionListener {
                     + "type bigint"
                     + ")");
             c.createStatement().executeUpdate("INSERT INTO test_table(description, type) VALUES ('activated', '1')");
-            log.info("Activated record has been created, " + c);
+            log.trace("Activated record has been created, " + c);
         } else {
             log.error("Connection listener property testString was not injected properly. Activated record has not been created.");
         }
@@ -38,7 +38,7 @@ public class TestConnectionListener implements ConnectionListener {
     public void passivated(Connection c) throws SQLException {
         if ("MyTest".equals(testString)) {
             c.createStatement().executeUpdate("INSERT INTO test_table(description, type) VALUES ('passivated', '0')");
-            log.info("Passivated record has been created, " + c);
+            log.trace("Passivated record has been created, " + c);
         } else {
             log.error("Connection listener property testString was not injected properly. Passivated record has not been created.");
         }

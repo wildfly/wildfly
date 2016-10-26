@@ -21,15 +21,15 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.spi.DistributedCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a clustered {@link ServiceProviderRegistrationFactory}.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements DistributedCacheGroupBuilderProvider {
+public class CacheServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements DistributedCacheBuilderProvider {
 
     public CacheServiceProviderRegistryBuilderProvider() {
-        super((support, containerName, cacheName) -> new CacheServiceProviderRegistryBuilder<>(support, containerName, cacheName));
+        super((name, containerName, cacheName) -> new CacheServiceProviderRegistryBuilder<>(name, containerName, cacheName));
     }
 }

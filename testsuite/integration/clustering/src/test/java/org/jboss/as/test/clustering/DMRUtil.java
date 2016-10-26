@@ -61,7 +61,7 @@ public class DMRUtil {
         operation.get("name").set(attrName);
         ModelNode result = client.execute(operation);
         Assert.assertEquals("Unset of attribute " + attrName + " on server was not successful", SUCCESS, result.get(OUTCOME).asString());
-        log.info("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
+        log.trace("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
     }
 
     public static void unsetMaxSizeAttribute(ModelControllerClient client) throws Exception {

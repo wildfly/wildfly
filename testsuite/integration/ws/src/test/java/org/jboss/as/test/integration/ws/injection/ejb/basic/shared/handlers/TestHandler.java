@@ -64,7 +64,7 @@ public final class TestHandler extends GenericSOAPHandler {
             log.error("Annotation driven initialization for bean1 failed");
             correctInitialization = false;
         } else {
-            log.info("@EJB annotation driven injection OK");
+            log.trace("@EJB annotation driven injection OK");
         }
 
         // verify @Resource annotation driven injection
@@ -72,7 +72,7 @@ public final class TestHandler extends GenericSOAPHandler {
             log.error("Annotation driven initialization for boolean1 failed -- " + boolean1);
             correctInitialization = false;
         } else {
-            log.info("@Resource annotation driven injection OK");
+            log.trace("@Resource annotation driven injection OK");
         }
 
         this.correctState = correctInitialization;

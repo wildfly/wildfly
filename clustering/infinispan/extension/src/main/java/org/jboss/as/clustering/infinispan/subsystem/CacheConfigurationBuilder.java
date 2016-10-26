@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
 
 import java.util.function.Consumer;
 
@@ -52,7 +53,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -110,7 +110,7 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
         this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(enabled).available(enabled).create();
 
         this.global = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.containerName), GlobalConfiguration.class);
-        this.builder = new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, this.containerName, this.cacheName), this.containerName, this.cacheName, this.andThen(builder -> {
+        this.builder = new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(CONFIGURATION.getServiceName(context.getCurrentAddress()), this.containerName, this.cacheName, this.andThen(builder -> {
             CacheMode mode = builder.clustering().cacheMode();
 
             if (mode.isSynchronous() && (this.transaction.getValue().lockingMode() == LockingMode.OPTIMISTIC) && (this.locking.getValue().isolationLevel() == IsolationLevel.REPEATABLE_READ)) {

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.smoke.rar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;

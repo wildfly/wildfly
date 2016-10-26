@@ -72,21 +72,21 @@ public class EJB2xMDB implements MessageDrivenBean, MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message " + message + " in MDB " + this.getClass().getName());
+        logger.trace("Received message " + message + " in MDB " + this.getClass().getName());
         try {
             if (message.getStringProperty("MessageFormat") != null)
-                logger.info("MessageFormat property = " + message.getStringProperty("MessageFormat"));
+                logger.trace("MessageFormat property = " + message.getStringProperty("MessageFormat"));
 
             Destination replyTo = message.getJMSReplyTo();
             if (replyTo == null) {
                 try {
-                    System.out.println("mdbContext = " + mdbContext);
+                    logger.trace("mdbContext = " + mdbContext);
                     replyTo = (Destination) mdbContext.lookup("jms/replyQueue");
                 } catch (Throwable e) {
                     logger.warn(e);
                 }
             } else {
-                logger.info("Using replyTo from message JMSReplyTo: " + replyTo);
+                logger.trace("Using replyTo from message JMSReplyTo: " + replyTo);
             }
             if (replyTo == null) {
                 throw new EJBException("no replyTo Destination");

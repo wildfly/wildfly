@@ -25,7 +25,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.security.auth.login.LoginContext;

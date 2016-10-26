@@ -98,7 +98,7 @@ public abstract class RequestDumpingHandlerTestImpl {
         if (logFilePath.toFile().exists() && logFilePath.toFile().isFile()) {
             skipBytes = logFilePath.toFile().length();
         } else {
-            log.info("The log file ('" + logFilePath + "') does not exist yet, that is ok.");
+            log.trace("The log file ('" + logFilePath + "') does not exist yet, that is ok.");
         }
 
         // Perform request on server...
@@ -135,7 +135,7 @@ public abstract class RequestDumpingHandlerTestImpl {
         LineNumberReader lnr = new LineNumberReader(new FileReader(logFilePath.toFile()));
         StringBuilder sb = new StringBuilder();
 
-        log.info("I am skipping '" + skipBytes + "' bytes from the beggining of the file.");
+        log.trace("I am skipping '" + skipBytes + "' bytes from the beggining of the file.");
         lnr.skip(skipBytes);
 
         String input;
@@ -180,7 +180,7 @@ public abstract class RequestDumpingHandlerTestImpl {
             Thread.sleep(SLEEP_TIMEOUT);
         } while (currTime - startTime < TOTAL_DELAY);
 
-        log.info("I have read following content of the file '" + logFilePath + "':\n" + content + "\n---END-OF-FILE-OUTPUT---");
+        log.trace("I have read following content of the file '" + logFilePath + "':\n" + content + "\n---END-OF-FILE-OUTPUT---");
 
         // Finally compare search result with our expectation...
         Assert.assertEquals("Searching for pattern: '" + pattern + "' in log file ('" + logFilePath.toString() + "')",
@@ -245,7 +245,7 @@ public abstract class RequestDumpingHandlerTestImpl {
      */
     private void searchForHeaders(String content, Header[] hdrs) throws FileNotFoundException {
         if (hdrs == null) {
-            log.info("No array with headers given -> skipping testing header content in log file.");
+            log.trace("No array with headers given -> skipping testing header content in log file.");
             return;
         }
 
@@ -371,7 +371,7 @@ public abstract class RequestDumpingHandlerTestImpl {
             Header[][] reqAndrespHeaders = new Header[2][];
             reqAndrespHeaders[1] = retrieveHeaders(httpsConn.getHeaderFields());
 
-            log.info("The content of the URL ('" + uri + "'):\n" + sb.toString());
+            log.trace("The content of the URL ('" + uri + "'):\n" + sb.toString());
 
             Assert.assertEquals(200, httpsConn.getResponseCode());
             Assert.assertEquals("Could not reach expected content via http request", "A file", sb.toString());

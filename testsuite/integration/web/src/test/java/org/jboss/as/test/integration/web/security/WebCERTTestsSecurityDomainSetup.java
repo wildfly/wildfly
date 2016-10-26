@@ -86,8 +86,8 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
     protected static void applyUpdate(final ModelControllerClient client, ModelNode update, boolean allowFailure) throws Exception {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
+            if (result.hasDefined("result") && log.isTraceEnabled()) {
+                log.trace(result.get("result"));
             }
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.get("failure-description").toString());

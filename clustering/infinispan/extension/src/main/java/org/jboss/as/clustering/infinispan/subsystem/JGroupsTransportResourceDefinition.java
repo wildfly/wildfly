@@ -58,7 +58,6 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  * Resource description for the addressable resource and its alias
  *
  * /subsystem=infinispan/cache-container=X/transport=jgroups
- * /subsystem=infinispan/cache-container=X/transport=TRANSPORT
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
@@ -269,6 +268,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                 .addAttributes(ExecutorAttribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new JGroupsTransportServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);

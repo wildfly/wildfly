@@ -35,7 +35,6 @@ import javax.ejb.NoSuchEJBException;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -115,8 +114,8 @@ public interface WeldLogger extends BasicLogger {
     void beansXmlValidationError(URL file, int line , String message);
 
     @LogMessage(level = Logger.Level.WARN)
-    @Message(id = 13, value = "Deployment %s contains CDI annotations but no bean archive was not found. (No beans.xml nor class with bean defining annotations)")
-    void cdiAnnotationsButNotBeanArchive(DeploymentUnit deploymentUnit);
+    @Message(id = 13, value = "Deployment %s contains CDI annotations but no bean archive was not found. (No beans.xml or class with bean defining annotations was present)")
+    void cdiAnnotationsButNotBeanArchive(String deploymentUnit);
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 14, value = "Exception tearing down thread state")

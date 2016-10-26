@@ -41,7 +41,7 @@ public class CounterBean extends CounterBaseBean implements SessionBean {
 
     @Override
     public void ejbRemove() throws EJBException {
-        log.info("ejbRemove called...");
+        log.trace("ejbRemove called...");
         CounterSingleton.destroyCounter.incrementAndGet();
     }
 

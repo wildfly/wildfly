@@ -420,4 +420,9 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         }
         return false;
     }
+
+    @Override
+    protected void waitForComponentStart() {
+        super.waitForComponentStart();
+    }
 }

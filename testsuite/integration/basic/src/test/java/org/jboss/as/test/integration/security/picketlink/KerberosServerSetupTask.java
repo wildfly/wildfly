@@ -180,7 +180,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
                 IOUtils.toString(
                         KerberosServerSetupTask.class.getResourceAsStream(KerberosServerSetupTask.class.getSimpleName()
                                 + ".ldif"), "UTF-8"), map);
-        LOGGER.info(ldifContent);
+        LOGGER.trace(ldifContent);
 
         final SchemaManager schemaManager = directoryService1.getSchemaManager();
         try {

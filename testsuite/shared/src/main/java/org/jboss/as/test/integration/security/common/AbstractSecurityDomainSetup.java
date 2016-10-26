@@ -13,6 +13,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -31,6 +32,7 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
  * @author Stuart Douglas
  */
 public abstract class AbstractSecurityDomainSetup implements ServerSetupTask {
+    private static final Logger LOGGER = Logger.getLogger(AbstractSecurityDomainSetup.class);
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates) {
         for (ModelNode update : updates) {
@@ -46,7 +48,7 @@ public abstract class AbstractSecurityDomainSetup implements ServerSetupTask {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
             if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
+                LOGGER.trace(result.get("result"));
             }
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.get("failure-description").toString());

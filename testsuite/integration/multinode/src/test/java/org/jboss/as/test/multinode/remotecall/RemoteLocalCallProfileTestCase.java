@@ -109,7 +109,7 @@ public class RemoteLocalCallProfileTestCase {
 
     @BeforeClass
     public static void printSysProps() {
-        log.info("System properties:\n" + System.getProperties());
+        log.trace("System properties:\n" + System.getProperties());
     }
 
     @Deployment(name = "server")

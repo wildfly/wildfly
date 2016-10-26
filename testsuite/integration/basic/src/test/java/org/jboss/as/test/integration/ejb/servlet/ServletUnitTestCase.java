@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.servlet;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -57,14 +57,12 @@ public class ServletUnitTestCase {
     public static Archive<?> deployEjbs() {
         JavaArchive jar = getEjbs("ejb3-servlet-ejbs.jar");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.ejb3-servlet-client.jar \n"), "MANIFEST.MF");
-        log.info(jar.toString(true));
         return jar;
     }
 
     @Deployment(name = "client", order = 1)
     public static Archive<?> deployClient() {
         JavaArchive jar = getClient("ejb3-servlet-client.jar");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -100,7 +98,6 @@ public class ServletUnitTestCase {
         ear.addAsModule(war);
 
         ear.addAsManifestResource(ServletUnitTestCase.class.getPackage(), "application.xml", "application.xml");
-        log.info(ear.toString(true));
         return ear;
     }
 

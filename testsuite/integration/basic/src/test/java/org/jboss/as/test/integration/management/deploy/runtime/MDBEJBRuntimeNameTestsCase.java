@@ -210,7 +210,7 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
             connection.close();
         } catch (Throwable t) {
             // just log
-            log.info("Ignoring a problem which occurred while closing: " + connection, t);
+            log.trace("Ignoring a problem which occurred while closing: " + connection, t);
         }
     }
 }

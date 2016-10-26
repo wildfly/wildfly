@@ -133,12 +133,12 @@ public class DynamicJNDIContextEJBInvocationTestCase {
         final CountDownLatch passivationLatch = new CountDownLatch(1);
         sfsbOnLocalServer.registerPassivationNotificationLatch(passivationLatch);
 
-        logger.info("Triggering passivation of " + StatefulBeanA.class.getSimpleName() + " bean");
+        logger.trace("Triggering passivation of " + StatefulBeanA.class.getSimpleName() + " bean");
         InitialContext.doLookup("java:module/" + StatefulBeanA.class.getSimpleName() + "!" + StatefulBeanA.class.getName());
 
         final boolean passivated = passivationLatch.await(2, TimeUnit.SECONDS);
         if (passivated) {
-            logger.info("pre-passivate invoked on " + StatefulBeanA.class.getSimpleName() + " bean");
+            logger.trace("pre-passivate invoked on " + StatefulBeanA.class.getSimpleName() + " bean");
         } else {
             Assert.fail(sfsbOnLocalServer + " was not passivated");
         }

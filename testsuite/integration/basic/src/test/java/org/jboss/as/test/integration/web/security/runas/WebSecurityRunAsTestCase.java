@@ -34,7 +34,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -65,7 +64,6 @@ public class WebSecurityRunAsTestCase {
         war.addAsResource(WebSecurityRunAsTestCase.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(WebSecurityRunAsTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
-        WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
 

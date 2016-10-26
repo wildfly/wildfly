@@ -86,10 +86,7 @@ public class JBossAppXMLSecurityTestCase {
         jar.addPackage(CommonCriteria.class.getPackage());
         jar.addAsManifestResource(JBossAppXMLSecurityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
 
-        logger.info(jar.toString(true));
-
         ear.addAsModule(jar);
-        logger.info(ear.toString(true));
         return ear;
     }
 

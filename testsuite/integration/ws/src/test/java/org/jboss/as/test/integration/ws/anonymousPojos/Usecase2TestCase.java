@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ws.anonymousPojos;
 
 import java.net.URL;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;

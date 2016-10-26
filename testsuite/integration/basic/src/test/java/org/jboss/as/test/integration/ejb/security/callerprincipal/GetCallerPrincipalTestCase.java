@@ -123,7 +123,6 @@ public class GetCallerPrincipalTestCase {
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-single", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -137,7 +136,6 @@ public class GetCallerPrincipalTestCase {
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -151,7 +149,6 @@ public class GetCallerPrincipalTestCase {
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -164,7 +161,6 @@ public class GetCallerPrincipalTestCase {
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")                ;
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -182,7 +178,6 @@ public class GetCallerPrincipalTestCase {
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -204,7 +199,7 @@ public class GetCallerPrincipalTestCase {
         try {
             ITestResultsSingleton results = this.getResultsSingleton();
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
-            log.debug("Stateless bean returns: " + bean.get());
+            log.trace("Stateless bean returns: " + bean.get());
 
             Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
 
@@ -223,7 +218,7 @@ public class GetCallerPrincipalTestCase {
         ITestResultsSingleton results = this.getResultsSingleton();
         try {
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
-            log.debug("Stateful bean returns: " + bean.get());
+            log.trace("Stateful bean returns: " + bean.get());
 
             Assert.assertEquals(ANONYMOUS + "start", results.getSfsb("postconstruct"));
 
@@ -272,7 +267,7 @@ public class GetCallerPrincipalTestCase {
             Message replyMsg = consumer.receive(5000);
 
             Object obj = ((ObjectMessage) replyMsg).getObject();
-            log.info("MDB message get: " + obj);
+            log.trace("MDB message get: " + obj);
 
             Assert.assertEquals(OK + "start", results.getMdb("postconstruct"));
 

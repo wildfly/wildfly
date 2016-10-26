@@ -30,6 +30,6 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 public class LocalCommandDispatcherFactoryBuilderProvider extends CommandDispatcherFactoryBuilderProvider implements LocalGroupBuilderProvider {
 
     public LocalCommandDispatcherFactoryBuilderProvider() {
-        super((support, group) -> new LocalCommandDispatcherFactoryBuilder(group));
+        super((name, group) -> new LocalCommandDispatcherFactoryBuilder(name, group));
     }
 }

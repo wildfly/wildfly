@@ -63,10 +63,8 @@ class JarSignerUtil {
             for (String a : args) {
                 command.append(" ").append(a);
             }
-            System.out.println("command = " + command);
             Process process = Runtime.getRuntime().exec(command.toString());
             int result = process.waitFor();
-            System.out.println("result = " + result);
         } catch (Exception e) {
             throw new RuntimeException("could not sign", e);
         }

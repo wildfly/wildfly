@@ -21,26 +21,15 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.group.NodeFactory}.
  * @author Paul Ferraro
  */
-public class LocalNodeFactoryBuilderProvider implements LocalGroupBuilderProvider {
+public class LocalNodeFactoryBuilderProvider extends JGroupsNodeFactoryBuilderProvider<JGroupsNodeFactory> implements LocalGroupBuilderProvider {
 
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String group) {
-        return Collections.singleton(new LocalNodeFactoryBuilder(group));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName();
+    public LocalNodeFactoryBuilderProvider() {
+        super((name, group) -> new LocalNodeFactoryBuilder(name, group));
     }
 }

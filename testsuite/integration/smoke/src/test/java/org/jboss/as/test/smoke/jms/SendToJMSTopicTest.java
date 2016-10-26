@@ -33,6 +33,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,6 +76,9 @@ public class SendToJMSTopicTest {
 
     @Test
     public void sendMessage() throws Exception {
+        // WFLY-7346 - Ignore the test if the security manager is installed
+        Assume.assumeTrue(System.getSecurityManager() == null);
+
         Connection senderConnection = null;
         Connection consumerConnection = null;
         Session senderSession = null;
@@ -82,30 +86,30 @@ public class SendToJMSTopicTest {
         MessageConsumer consumer = null;
         try {
             // CREATE SUBSCRIBER
-            logger.info("******* Creating connection for consumer");
+            logger.trace("******* Creating connection for consumer");
             consumerConnection = factory.createConnection();
-            logger.info("Creating session for consumer");
+            logger.trace("Creating session for consumer");
             consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            logger.info("Creating consumer");
+            logger.trace("Creating consumer");
             consumer = consumerSession.createConsumer(topic);
-            logger.info("Start session");
+            logger.trace("Start session");
             consumerConnection.start();
 
             // SEND A MESSAGE
-            logger.info("***** Start - sending message to topic");
+            logger.trace("***** Start - sending message to topic");
             senderConnection = factory.createConnection();
-            logger.info("Creating session..");
+            logger.trace("Creating session..");
             senderSession = senderConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer producer = senderSession.createProducer(topic);
             TextMessage message = senderSession.createTextMessage("Hello world!");
-            logger.info("Sending..");
+            logger.trace("Sending..");
             producer.send(message);
-            logger.info("Message sent");
+            logger.trace("Message sent");
             senderConnection.start();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            logger.info("Closing connections and sessions");
+            logger.trace("Closing connections and sessions");
             if (senderSession != null) {
                 senderSession.close();
             }
@@ -116,9 +120,9 @@ public class SendToJMSTopicTest {
 
         Message receivedMessage = null;
         try {
-            logger.info("Receiving");
+            logger.trace("Receiving");
             receivedMessage = consumer.receive(5000);
-            logger.info("Received: " + ((TextMessage) receivedMessage).getText());
+            logger.trace("Received: " + ((TextMessage) receivedMessage).getText());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());

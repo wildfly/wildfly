@@ -59,7 +59,6 @@ import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -76,7 +75,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
-    private static final Logger log = Logger.getLogger(RemoteFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-failover-test";
     private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
     private static final String SECURE_CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client-secure.properties";
@@ -105,7 +103,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new PropertyPermission(NODE_NAME_PROPERTY, "read")
         ), "permissions.xml");
-        log.info(jar.toString(true));
         return jar;
     }
 
@@ -209,7 +206,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             Result<Integer> result = bean.increment();
             String target = result.getNode();
             int count = 1;
-            System.out.println("Established weak affinity to " + target);
 
             Assert.assertEquals(count++, result.getValue().intValue());
 
@@ -244,7 +240,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             // Bean may have acquired new weak affinity
             target = result.getNode();
             Assert.assertEquals(count++, result.getValue().intValue());
-            System.out.println("Reestablished weak affinity to " + target);
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
@@ -277,7 +272,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             // Bean may have acquired new weak affinity
             target = result.getNode();
             Assert.assertEquals(count++, result.getValue().intValue());
-            System.out.println("Reestablished weak affinity to " + target);
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {

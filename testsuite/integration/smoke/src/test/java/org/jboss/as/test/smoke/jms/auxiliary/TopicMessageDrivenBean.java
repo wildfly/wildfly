@@ -54,7 +54,7 @@ public class TopicMessageDrivenBean implements MessageListener {
 
     public void onMessage(Message message) {
         try {
-            logger.info("message " + ((TextMessage) message).getText() + " received! Sending event.");
+            logger.trace("message " + ((TextMessage) message).getText() + " received! Sending event.");
         } catch (JMSException e) {
             e.printStackTrace();
         }

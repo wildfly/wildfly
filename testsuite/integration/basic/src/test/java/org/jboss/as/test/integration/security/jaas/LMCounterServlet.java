@@ -59,7 +59,7 @@ public class LMCounterServlet extends HttpServlet {
         resp.setContentType("text/plain");
         final PrintWriter writer = resp.getWriter();
         final String counterStr = Integer.toString(CustomLoginModule.loginCounter);
-        LOGGER.info("CustomLoginModule.login() counter value: " + counterStr);
+        LOGGER.trace("CustomLoginModule.login() counter value: " + counterStr);
         writer.append(counterStr);
         writer.close();
     }

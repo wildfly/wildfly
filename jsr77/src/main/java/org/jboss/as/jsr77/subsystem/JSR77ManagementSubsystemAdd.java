@@ -29,8 +29,8 @@ import static org.jboss.as.jsr77.subsystem.Constants.MODULE_NAME;
 
 import javax.management.MBeanServer;
 import javax.management.j2ee.ManagementHome;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
@@ -61,7 +61,7 @@ import org.jboss.msc.value.Values;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
+class JSR77ManagementSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     JSR77ManagementSubsystemAdd(boolean appclient) {
         super(appclient ? JSR77ManagementRootResource.JSR77_APPCLIENT_CAPABILITY : JSR77ManagementRootResource.JSR77_CAPABILITY);
@@ -73,7 +73,7 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

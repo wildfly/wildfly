@@ -30,19 +30,19 @@ public class MDBWhichDependsOn implements MessageListener {
 
     @PostConstruct
     public void postConstruct() {
-        logger.info("MDB.postConstruct");
+        logger.trace("MDB.postConstruct");
         this.counter.setPostConstruct();
     }
 
     @PreDestroy
     public void preDestroy() {
-        logger.info("MDB.preDestroy");
+        logger.trace("MDB.preDestroy");
         this.counter.setPreDestroy();
     }
 
     @Override
     public void onMessage(Message message) {
-        logger.info("MDB.message");
+        logger.trace("MDB.message");
         this.counter.setMessage();
         try {
             final Destination replyTo = message.getJMSReplyTo();
@@ -50,7 +50,7 @@ public class MDBWhichDependsOn implements MessageListener {
                 return;
             }
 
-            logger.info("Sending a reply to destination " + replyTo);
+            logger.trace("Sending a reply to destination " + replyTo);
             jmsMessagingUtil.reply(message);
         } catch (JMSException e) {
             throw new RuntimeException(e);

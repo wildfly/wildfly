@@ -104,7 +104,6 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
 
         for (String piId : ids) {
             assertNotNull(piId);
-            System.out.println("PID:" + piId);
             assertNotNull(repository.getResourceAdapter(piId));
         }
 
@@ -122,7 +121,6 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
 
         for (String piId : ids) {
             assertNotNull(piId);
-            System.out.println("PID:" + piId);
             assertNotNull(repository.getResourceAdapter(piId));
         }
     }

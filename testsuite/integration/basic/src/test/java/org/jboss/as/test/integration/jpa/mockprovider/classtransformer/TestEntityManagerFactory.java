@@ -41,7 +41,6 @@ public class TestEntityManagerFactory implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         invocations.add(method.getName());
-        //System.out.println("TestEntityManagerFactory method=" + method.getName() + " is returning null");
         return null;
 
     }

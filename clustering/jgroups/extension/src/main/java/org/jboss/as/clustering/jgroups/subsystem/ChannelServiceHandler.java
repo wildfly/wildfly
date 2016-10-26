@@ -22,12 +22,14 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.*;
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.*;
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.*;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -39,7 +41,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 
@@ -67,9 +69,9 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
 
         // Install group services for channel
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name)) {
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", builder.getServiceName(), name);
-                builder.build(target).install();
+                builder.configure(context).build(target).install();
             }
         }
     }
@@ -79,13 +81,13 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
 
-        EnumSet.allOf(ChannelResourceDefinition.Capability.class).forEach(capability -> capability.getServiceName(address));
+        EnumSet.allOf(Capability.class).forEach(capability -> capability.getServiceName(address));
 
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(context.getCapabilityServiceSupport(), name)) {
+            for (ServiceNameProvider builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Removing %s for channel %s", builder.getServiceName(), name);
                 context.removeService(builder.getServiceName());
             }

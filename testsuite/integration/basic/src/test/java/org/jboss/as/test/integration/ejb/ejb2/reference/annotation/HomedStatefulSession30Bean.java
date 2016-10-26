@@ -96,6 +96,6 @@ public class HomedStatefulSession30Bean implements java.io.Serializable {
 
     @PreDestroy
     public void preDestroy() {
-        log.info("Invoking PreDestroy");
+        log.trace("Invoking PreDestroy");
     }
 }

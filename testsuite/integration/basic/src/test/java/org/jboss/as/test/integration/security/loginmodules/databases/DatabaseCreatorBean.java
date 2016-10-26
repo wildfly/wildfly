@@ -80,7 +80,7 @@ public class DatabaseCreatorBean {
         try {
             statement = connection.createStatement();
             final int updateResult = statement.executeUpdate(query);
-            LOGGER.info("Result: " + updateResult + ".  SQL statement: " + query);
+            LOGGER.trace("Result: " + updateResult + ".  SQL statement: " + query);
         } catch (SQLException e) {
             LOGGER.error("SQL execution failed", e);
         } finally {

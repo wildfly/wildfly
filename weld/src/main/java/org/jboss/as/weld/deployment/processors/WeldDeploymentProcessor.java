@@ -130,7 +130,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
             //if there are CDI annotation present and this is the top level deployment we log a warning
             if (deploymentUnit.getParent() == null && CdiAnnotationMarker.cdiAnnotationsPresent(deploymentUnit)) {
-                WeldLogger.DEPLOYMENT_LOGGER.cdiAnnotationsButNotBeanArchive(deploymentUnit);
+                WeldLogger.DEPLOYMENT_LOGGER.cdiAnnotationsButNotBeanArchive(deploymentUnit.getName());
             }
 
             return;

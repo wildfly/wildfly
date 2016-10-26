@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.view.duplicateview;
 
-import java.util.logging.Logger;
-
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -38,8 +36,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class DuplicateViewDefinitionTestCase {
-    private static final Logger log = Logger.getLogger(DuplicateViewDefinitionTestCase.class.getName());
-
     @Deployment
     public static Archive<?> deployment() {
 
@@ -47,7 +43,6 @@ public class DuplicateViewDefinitionTestCase {
                 .addPackage(AnnotatedDoNothingBean.class.getPackage())
                 .addPackage(DoNothingBean.class.getPackage())
                 .addAsManifestResource(DuplicateViewDefinitionTestCase.class.getPackage(), "ejb-jar.xml");
-        log.info(archive.toString(true));
         return archive;
     }
 

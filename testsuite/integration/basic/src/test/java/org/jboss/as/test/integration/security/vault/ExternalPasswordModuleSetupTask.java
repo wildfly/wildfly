@@ -45,7 +45,7 @@ public class ExternalPasswordModuleSetupTask implements ServerSetupTask {
      */
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        LOGGER.info("Creating: " + getModuleName());
+        LOGGER.trace("Creating: " + getModuleName());
         testModule = new TestModule(getModuleName());
         testModule.addResource(MODULE_JAR).addClass(ExternalPassword.class);
         testModule.create();
@@ -56,7 +56,7 @@ public class ExternalPasswordModuleSetupTask implements ServerSetupTask {
      */
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        LOGGER.info("Removing module: " + getModuleName());
+        LOGGER.trace("Removing module: " + getModuleName());
         if (testModule != null) {
             testModule.remove();
         }

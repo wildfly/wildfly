@@ -64,18 +64,15 @@ public class AS1675TestCase {
         sharedJar.addClass(BeanImpl.class);
         sharedJar.addClass(EndpointIface.class);
         sharedJar.addClass(AbstractEndpointImpl.class);
-        //System.out.println(sharedJar.toString(true));
         // construct ejb3 jar
         JavaArchive ejb3Jar = ShrinkWrap.create(JavaArchive.class, "ejb3.jar");
         ejb3Jar.addClass(EJB3Bean.class);
         ejb3Jar.addClass(AS1675TestCase.class);
         ejb3Jar.addAsManifestResource(new StringAsset(EJB_JAR), "ejb-jar.xml");
-        //System.out.println(ejb3Jar.toString(true));
         // construct ear
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "as1675.ear");
         ear.addAsModule(sharedJar);
         ear.addAsModule(ejb3Jar);
-        //System.out.println(ear.toString(true));
         // return ear
         return ear;
     }

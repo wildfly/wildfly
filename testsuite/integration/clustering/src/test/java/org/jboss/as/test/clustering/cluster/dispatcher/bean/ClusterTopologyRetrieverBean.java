@@ -26,7 +26,6 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
     @Override
     public ClusterTopology getClusterTopology() {
         try {
-            System.out.println("Executing command on cluster");
             Collection<CommandResponse<String>> responses = this.dispatcher.executeOnCluster(this.command).values();
             List<String> nodes = new ArrayList<>(responses.size());
             for (CommandResponse<String> response: responses) {
@@ -34,10 +33,8 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
             }
 
             Node localNode = this.factory.getGroup().getLocalNode();
-            System.out.println("Executing command on node: " + localNode);
             String local = this.dispatcher.executeOnNode(this.command, localNode).get();
 
-            System.out.println("Executing command on cluster excluding node: " + localNode);
             responses = this.dispatcher.executeOnCluster(this.command, localNode).values();
             List<String> remote = new ArrayList<>(responses.size());
             for (CommandResponse<String> response: responses) {

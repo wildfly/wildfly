@@ -206,7 +206,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";
 
-        log.info("URLs are: " + url1 + ", " + url2);
+        log.trace("URLs are: " + url1 + ", " + url2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response;

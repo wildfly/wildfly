@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.security;
 import static org.junit.Assert.fail;
 
 import java.util.Map;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.ejb.EJB;
 import javax.security.auth.login.LoginContext;
 
@@ -132,7 +132,7 @@ public class LifecycleTestCase  {
         try {
             Map<String, String> result = entryBean.testStatlessBean();
             for (String current : result.keySet()) {
-                log.info(current + " = " + result.get(current));
+                log.trace(current + " = " + result.get(current));
             }
             verifyResult(result, BaseBean.BUSINESS, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
         } finally {
@@ -152,7 +152,7 @@ public class LifecycleTestCase  {
         try {
             Map<String, String> result = entryBean.testStatlessBean();
             for (String current : result.keySet()) {
-                log.info(current + " = " + result.get(current));
+                log.trace(current + " = " + result.get(current));
             }
             verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
                     failureMessages);
@@ -174,7 +174,7 @@ public class LifecycleTestCase  {
         try {
             Map<String, String> result = entryBean.testStatlessBean();
             for (String current : result.keySet()) {
-                log.info(current + " = " + result.get(current));
+                log.trace(current + " = " + result.get(current));
             }
             verifyResult(result, BaseBean.LIFECYCLE_CALLBACK, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
                     failureMessages);

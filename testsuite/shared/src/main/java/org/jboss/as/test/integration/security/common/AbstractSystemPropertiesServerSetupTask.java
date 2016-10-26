@@ -52,7 +52,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
 
     public final void setup(final ManagementClient managementClient, String containerId) throws Exception {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Adding system properties.");
+            LOGGER.trace("Adding system properties.");
         }
         systemProperties = getSystemProperties();
         if (systemProperties == null || systemProperties.length == 0) {
@@ -86,7 +86,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
      */
     public final void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Removing system properties.");
+            LOGGER.trace("Removing system properties.");
         }
         if (systemProperties == null || systemProperties.length == 0) {
             return;

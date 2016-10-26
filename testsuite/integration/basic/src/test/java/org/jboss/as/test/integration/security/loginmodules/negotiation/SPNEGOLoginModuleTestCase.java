@@ -211,7 +211,7 @@ public class SPNEGOLoginModuleTestCase {
     public void testAuthn(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
 
-        LOGGER.info("Testing successful authentication " + servletUri);
+        LOGGER.trace("Testing successful authentication " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
     }
@@ -226,7 +226,7 @@ public class SPNEGOLoginModuleTestCase {
     public void testUnsuccessfulAuthn(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
 
-        LOGGER.info("Testing failed authentication " + servletUri);
+        LOGGER.trace("Testing failed authentication " + servletUri);
         try {
             Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "the%", HttpServletResponse.SC_OK);
             fail();
@@ -251,7 +251,7 @@ public class SPNEGOLoginModuleTestCase {
     public void testUnsuccessfulAuthz(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
 
-        LOGGER.info("Testing correct authentication, but failed authorization " + servletUri);
+        LOGGER.trace("Testing correct authentication, but failed authorization " + servletUri);
         Utils.makeCallWithKerberosAuthn(servletUri, "hnelson", "secret", HttpServletResponse.SC_FORBIDDEN);
     }
 
@@ -265,7 +265,7 @@ public class SPNEGOLoginModuleTestCase {
     public void testUnsecured(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleServlet.SERVLET_PATH);
 
-        LOGGER.info("Testing access to unprotected resource " + servletUri);
+        LOGGER.trace("Testing access to unprotected resource " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, null, null, HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body.", SimpleServlet.RESPONSE_BODY, responseBody);
     }
@@ -280,7 +280,7 @@ public class SPNEGOLoginModuleTestCase {
     public void testIdentityPropagation(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, PropagateIdentityServlet.SERVLET_PATH);
 
-        LOGGER.info("Testing identity propagation " + servletUri);
+        LOGGER.trace("Testing identity propagation " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body.", "jduke@JBOSS.ORG", responseBody);
     }
@@ -295,18 +295,18 @@ public class SPNEGOLoginModuleTestCase {
     public void testFormFallback(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
 
-        LOGGER.info("Testing fallback to FORM authentication. " + servletUri);
+        LOGGER.trace("Testing fallback to FORM authentication. " + servletUri);
 
-        LOGGER.info("Testing successful SPNEGO authentication");
+        LOGGER.trace("Testing successful SPNEGO authentication");
         String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
 
-        LOGGER.info("Testing successful FORM authentication");
+        LOGGER.trace("Testing successful FORM authentication");
         responseBody = Utils.makeHttpCallWoSPNEGO(webAppURL.toExternalForm(), SimpleSecuredServlet.SERVLET_PATH,
                 "jduke@JBOSS.ORG", "fallback", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
 
-        LOGGER.info("Testing FORM fallback");
+        LOGGER.trace("Testing FORM fallback");
         responseBody = Utils.makeHttpCallWithFallback(webAppURL.toExternalForm(), SimpleSecuredServlet.SERVLET_PATH,
                 "jduke@JBOSS.ORG", "fallback", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
@@ -414,7 +414,7 @@ public class SPNEGOLoginModuleTestCase {
             EntityUtils.consume(response.getEntity());
             httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(kerberosToken));
             response = httpClient.execute(httpGet);
-            LOGGER.info("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
             assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY,
                     EntityUtils.toString(response.getEntity()));
@@ -487,7 +487,7 @@ public class SPNEGOLoginModuleTestCase {
             httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(spnegoInitToken));
 
             response = httpClient.execute(httpGet);
-            LOGGER.info("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
 
             if (continuationExpected) {
                 assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
@@ -498,7 +498,7 @@ public class SPNEGOLoginModuleTestCase {
                 byte[] spnegoRespToken = KerberosTestUtils.generateSpnegoTokenResp(responseToken);
                 httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(spnegoRespToken));
                 response = httpClient.execute(httpGet);
-                LOGGER.info("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+                LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
             }
             if (successExpected) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -583,7 +583,7 @@ public class SPNEGOLoginModuleTestCase {
                     IOUtils.toString(
                             SPNEGOLoginModuleTestCase.class.getResourceAsStream(SPNEGOLoginModuleTestCase.class.getSimpleName()
                                     + ".ldif"), "UTF-8"), map);
-            LOGGER.info(ldifContent);
+            LOGGER.trace(ldifContent);
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
 

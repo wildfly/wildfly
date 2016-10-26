@@ -98,7 +98,7 @@ public class SAML2AttributeMappingTestCase {
 
     @Deployment(name = IDP)
     public static WebArchive deploymentIdP() {
-        LOGGER.info("Start deployment " + IDP);
+        LOGGER.trace("Start deployment " + IDP);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, IDP + ".war");
         war.addAsWebInfResource(SAML2AttributeMappingTestCase.class.getPackage(), "attrib-web.xml", "web.xml");
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation", "org.picketlink"),
@@ -113,7 +113,7 @@ public class SAML2AttributeMappingTestCase {
 
     @Deployment(name = SP)
     public static WebArchive deploymentSP() {
-        LOGGER.info("Start deployment " + SP);
+        LOGGER.trace("Start deployment " + SP);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, SP + ".war");
         war.addAsWebInfResource(SAML2AttributeMappingTestCase.class.getPackage(), "attrib-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset("sp",

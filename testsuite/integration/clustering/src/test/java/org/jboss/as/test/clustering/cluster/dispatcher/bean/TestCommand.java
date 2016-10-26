@@ -8,7 +8,6 @@ public class TestCommand implements Command<String, Node> {
 
     @Override
     public String execute(Node node) {
-        System.out.println(String.format("Command.execute(%s)", node));
         return node.getName();
     }
 }

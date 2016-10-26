@@ -18,6 +18,7 @@ package org.jboss.as.test.integration.ejb.mdb.dynamic.impl;
 
 import org.jboss.as.test.integration.ejb.mdb.dynamic.adapter.TelnetActivationSpec;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.api.TelnetListener;
+import org.jboss.logging.Logger;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 
 public class TelnetServer implements TtyCodes {
     private static final Logger logger = Logger.getLogger(TelnetServer.class.getName());
@@ -56,7 +56,7 @@ public class TelnetServer implements TtyCodes {
         this.listener = listener;
         // make sure the socket is open right away
         this.serverSocket = new ServerSocket(port);
-        logger.info("Listening on " + serverSocket.getLocalPort());
+        logger.trace("Listening on " + serverSocket.getLocalPort());
 
         for (Cmd cmd : spec.getCmds()) {
             this.cmds.put(cmd.getName(), cmd);

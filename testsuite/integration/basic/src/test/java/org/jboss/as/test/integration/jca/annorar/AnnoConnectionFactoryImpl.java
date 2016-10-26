@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.annorar;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.resource.ResourceException;
@@ -85,7 +85,7 @@ public class AnnoConnectionFactoryImpl implements AnnoConnectionFactory {
      */
     @Override
     public AnnoConnection getConnection() throws ResourceException {
-        log.finest("getConnection()");
+        log.trace("getConnection()");
         return (AnnoConnection) connectionManager.allocateConnection(mcf, null);
     }
 
@@ -97,7 +97,7 @@ public class AnnoConnectionFactoryImpl implements AnnoConnectionFactory {
      */
     @Override
     public Reference getReference() throws NamingException {
-        log.finest("getReference()");
+        log.trace("getReference()");
         return reference;
     }
 
@@ -108,7 +108,7 @@ public class AnnoConnectionFactoryImpl implements AnnoConnectionFactory {
      */
     @Override
     public void setReference(Reference reference) {
-        log.finest("setReference()");
+        log.trace("setReference()");
         this.reference = reference;
     }
 

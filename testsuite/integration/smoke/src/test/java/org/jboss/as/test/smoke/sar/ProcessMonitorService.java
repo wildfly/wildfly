@@ -43,7 +43,7 @@ public class ProcessMonitorService implements ProcessMonitorServiceMBean {
     }
 
     public void start() {
-        log.info("Starting " + config.getExampleName());
+        log.trace("Starting " + config.getExampleName());
 
         Thread t = new Thread(new Runnable() {
 
@@ -55,7 +55,7 @@ public class ProcessMonitorService implements ProcessMonitorServiceMBean {
                     double usedmemory = totalmemory - bytesToMb(Runtime.getRuntime().freeMemory());
                     long seconds = (System.currentTimeMillis() - starttime)/1000;
 
-                    log.info(config.getExampleName() + "-Montitor: System using " + usedmemory + " Mb of " + totalmemory + " Mb after " + seconds + " seconds");
+                    log.trace(config.getExampleName() + "-Montitor: System using " + usedmemory + " Mb of " + totalmemory + " Mb after " + seconds + " seconds");
                     try {
                         Thread.sleep(config.getIntervalSeconds() * 1000);
                     } catch (InterruptedException e) {
@@ -69,7 +69,7 @@ public class ProcessMonitorService implements ProcessMonitorServiceMBean {
 
     public void stop() {
         stop.set(true);
-        log.info("Stopping " + config.getExampleName());
+        log.trace("Stopping " + config.getExampleName());
     }
 
     static double bytesToMb(double d) {

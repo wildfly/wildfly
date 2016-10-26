@@ -23,9 +23,6 @@
 package org.jboss.as.test.integration.jpa.webnontxem;
 
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -42,28 +39,7 @@ public class Employee {
             // WFLY-6441: verify that java:comp/env values can be read from web.xml when persistence provider loads entity class
             new InitialContext().lookup("java:comp/env/simpleString");
         } catch (Exception e) {
-            dumpJndi("");  // in case of test failure, show jndi contents
             throw new RuntimeException("unable to get java:app/env/simpleString from JPA deployer", e);
-        }
-    }
-
-    private static void dumpJndi(String s) {
-        try {
-            dumpTreeEntry(new InitialContext().list(s), s);
-        } catch (NamingException ignore) {
-        }
-    }
-
-    private static void dumpTreeEntry(NamingEnumeration<NameClassPair> list, String s) throws NamingException {
-        System.out.println("\ndump " + s);
-        while (list.hasMore()) {
-            NameClassPair ncp = list.next();
-            System.out.println(ncp.toString());
-            if (s.length() == 0) {
-                dumpJndi(ncp.getName());
-            } else {
-                dumpJndi(s + "/" + ncp.getName());
-            }
         }
     }
 

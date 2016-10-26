@@ -189,7 +189,7 @@ public class MissingMethodPermissionsDefaultAllowedTestCase {
             denyAccessBean.methodWithNoRole();
             Assert.fail("Invocation on a method with no specific security configurations was expected to fail by default, but it didn't");
         } catch (EJBAccessException eae) {
-            logger.info("Got the expected exception", eae);
+            logger.trace("Got the expected exception", eae);
         }
     }
 

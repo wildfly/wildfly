@@ -76,7 +76,7 @@ public class ScheduleRetryFailSingletonBean {
     private void timeout(final Timer timer) {
         int wait = 0;
         counter++;
-        LOGGER.info("Executing TimerTestBean  " + timer);
+        LOGGER.trace("Executing TimerTestBean  " + timer);
         switch(counter) {
             case 1:
                 started.countDown();
@@ -89,11 +89,11 @@ public class ScheduleRetryFailSingletonBean {
                 break;
         }
         alive.countDown();
-        LOGGER.info("count=" + counter + "  Sleeping "+wait+"ms");
+        LOGGER.trace("count=" + counter + "  Sleeping "+wait+"ms");
         try {
             Thread.sleep(wait);
         } catch (InterruptedException e) {}
-        LOGGER.info("Finished executing TimerTestBean nextTimeOut=" + timer.getNextTimeout());
+        LOGGER.trace("Finished executing TimerTestBean nextTimeOut=" + timer.getNextTimeout());
     }
 
     /**

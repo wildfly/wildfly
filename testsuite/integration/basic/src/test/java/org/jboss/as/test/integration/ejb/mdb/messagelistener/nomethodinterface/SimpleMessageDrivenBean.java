@@ -45,7 +45,7 @@ public class SimpleMessageDrivenBean implements NoMethodMessageListener {
     private Logger logger = Logger.getLogger(SimpleMessageDrivenBean.class);
 
     public void handleMessage(String message) {
-        logger.info("SimpleMessageDriven bean received message: " + message);
+        logger.trace("SimpleMessageDriven bean received message: " + message);
         tracker.getReceivedLatch().countDown();
     }
 

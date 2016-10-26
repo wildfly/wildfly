@@ -76,6 +76,8 @@ public abstract class ListenerService<T> implements Service<T> {
     protected final OptionMap listenerOptions;
     protected final OptionMap socketOptions;
     protected volatile OpenListener openListener;
+    private volatile boolean enabled;
+    private volatile boolean started;
 
 
     protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions) {
@@ -113,6 +115,27 @@ public abstract class ListenerService<T> implements Service<T> {
         return name;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public synchronized void setEnabled(boolean enabled) {
+        if(started && enabled != this.enabled) {
+            if(enabled) {
+                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
+                try {
+                    startListening(worker.getValue(), socketAddress, acceptListener);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                stopListening();
+            }
+        }
+        this.enabled = enabled;
+    }
+
     public abstract boolean isSecure();
 
     protected void registerBinding() {
@@ -128,18 +151,21 @@ public abstract class ListenerService<T> implements Service<T> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        started = true;
         preStart(context);
         serverService.getValue().registerListener(this);
         try {
-            final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
             openListener = createOpenListener();
-            final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
             HttpHandler handler = serverService.getValue().getRoot();
             for(HandlerWrapper wrapper : listenerHandlerWrappers) {
                 handler = wrapper.wrap(handler);
             }
             openListener.setRootHandler(handler);
-            startListening(worker.getValue(), socketAddress, acceptListener);
+            if(enabled) {
+                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
+                startListening(worker.getValue(), socketAddress, acceptListener);
+            }
             registerBinding();
         } catch (IOException e) {
             cleanFailedStart();
@@ -159,8 +185,11 @@ public abstract class ListenerService<T> implements Service<T> {
 
     @Override
     public void stop(StopContext context) {
+        started = false;
         serverService.getValue().unregisterListener(this);
-        stopListening();
+        if(enabled) {
+            stopListening();
+        }
         unregisterBinding();
     }
 

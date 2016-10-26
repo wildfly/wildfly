@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas.mdb;
 
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -100,7 +100,6 @@ public class RunAsMDBUnitTestCase {
         jar.addAsManifestResource(RunAsMDBUnitTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
-        log.info(jar.toString(true));
         return jar;
     }
 

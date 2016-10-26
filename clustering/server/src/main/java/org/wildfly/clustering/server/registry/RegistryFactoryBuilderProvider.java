@@ -21,51 +21,34 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.clustering.registry.Registry;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.server.CacheBuilderFactory;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.CacheGroupServiceName;
-import org.wildfly.clustering.spi.GroupServiceName;
+import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheJndiNameFactory;
+import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Provides the requisite builders for a clustered {@link RegistryFactory} created from the specified factory.
  * @author Paul Ferraro
  */
-public class RegistryFactoryBuilderProvider implements CacheGroupBuilderProvider {
+public class RegistryFactoryBuilderProvider extends CacheRequirementBuilderProvider<RegistryFactory<Object, Object>> {
 
-    private final CacheBuilderFactory<RegistryFactory<Object, Object>> factory;
-
-    /**
-     * Constructs a new provider for {@link RegistryFactory} service builders.
-     */
-    public RegistryFactoryBuilderProvider(CacheBuilderFactory<RegistryFactory<Object, Object>> factory) {
-        this.factory = factory;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Collection<Builder<?>> getBuilders(CapabilityServiceSupport support, String containerName, String cacheName) {
-        Builder<RegistryFactory<Object, Object>> builder = this.factory.createBuilder(support, containerName, cacheName);
-        ContextNames.BindInfo binding = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, GroupServiceName.BASE_NAME, CacheGroupServiceName.REGISTRY.toString(), containerName, cacheName).getAbsoluteName());
-        Builder<ManagedReferenceFactory> bindingBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), RegistryFactory.class);
-        Builder<Registry<Object, Object>> registryBuilder = new RegistryBuilder<>(containerName, cacheName);
-        return Arrays.asList(builder, bindingBuilder, registryBuilder);
+    protected RegistryFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<RegistryFactory<Object, Object>> factory) {
+        super(ClusteringCacheRequirement.REGISTRY_FACTORY, factory, CacheJndiNameFactory.REGISTRY_FACTORY);
     }
 
     @Override
-    public String toString() {
-        return this.getClass().getName();
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
+        Collection<CapabilityServiceBuilder<?>> builders = super.getBuilders(registry, containerName, cacheName);
+        List<CapabilityServiceBuilder<?>> result = new ArrayList<>(builders.size() + 1);
+        result.addAll(builders);
+        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName));
+        return result;
     }
 }
