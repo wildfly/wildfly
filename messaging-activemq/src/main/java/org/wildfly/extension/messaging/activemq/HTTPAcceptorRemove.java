@@ -23,6 +23,7 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.LEGACY;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -39,10 +40,14 @@ public class HTTPAcceptorRemove extends AbstractRemoveStepHandler {
 
     static final HTTPAcceptorRemove INSTANCE = new HTTPAcceptorRemove();
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final String name = context.getCurrentAddressValue();
         context.removeService(HTTPUpgradeService.UPGRADE_SERVICE_NAME.append(name));
+
+        boolean upgradeLegacy = HTTPAcceptorDefinition.UPGRADE_LEGACY.resolveModelAttribute(context, model).asBoolean();
+        if (upgradeLegacy) {
+            context.removeService(HTTPUpgradeService.UPGRADE_SERVICE_NAME.append(name, LEGACY));
+        }
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
