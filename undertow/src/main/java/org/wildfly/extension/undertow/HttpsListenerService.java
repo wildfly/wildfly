@@ -85,7 +85,7 @@ public class HttpsListenerService extends HttpListenerService {
             try {
                 return createAlpnOpenListener();
             } catch (Throwable e) {
-                UndertowLogger.ROOT_LOGGER.alpnNotFound();
+                UndertowLogger.ROOT_LOGGER.alpnNotFound(getName());
                 UndertowLogger.ROOT_LOGGER.debug("Exception creating ALPN listener", e);
                 return super.createOpenListener();
             }

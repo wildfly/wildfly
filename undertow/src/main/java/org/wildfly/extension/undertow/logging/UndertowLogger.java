@@ -308,9 +308,9 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 70, value = "Could not load handler %s from %s module")
     RuntimeException couldNotLoadHandlerFromModule(String className, String moduleName, @Cause Exception e);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 71, value = "Jetty ALPN not found. HTTP2 and SPDY are not available. Please make sure Jetty ALPN is on the boot class path.")
-    void alpnNotFound();
+    @LogMessage(level = WARN)
+    @Message(id = 71, value = "No ALPN provider found, HTTP/2 will not be enabled. To remove this message set enable-http2 to false on the listener %s in the Undertow subsystem.")
+    void alpnNotFound(String listener);
 
     @Message(id = 72, value = "Could not find configured external path %s")
     DeploymentUnitProcessingException couldNotFindExternalPath(File path);
