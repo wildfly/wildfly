@@ -47,7 +47,7 @@ public class ServletResourceManager implements ResourceManager {
     public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment, boolean followSymlink, boolean disableFileWatchService) throws IOException {
         this.explodedDeployment = explodedDeployment;
         Path physicalFile = resourcesRoot.getPhysicalFile().toPath().toRealPath();
-        deploymentResourceManager = new PathResourceManager(physicalFile, 1024 * 1024, true, followSymlink,!disableFileWatchService, "/"); //TODO: enable safe paths support
+        deploymentResourceManager = new PathResourceManager(physicalFile, 1024 * 1024, true, followSymlink,!disableFileWatchService);
         this.overlays = overlays;
     }
 
