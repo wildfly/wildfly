@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.List;
 
-import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -104,7 +103,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
     private AdditionalInitialization createAdditionalInitialization() {
         return new LegacyControllerAdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
-                .require(CommonRequirement.MBEAN_SERVER)
                 ;
     }
 
