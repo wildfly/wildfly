@@ -21,9 +21,13 @@
  */
 package org.jboss.as.test.integration.jaxrs.jackson;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author Stuart Douglas
@@ -35,5 +39,21 @@ public class JacksonResource {
     @Produces("application/vnd.customer+json")
     public Customer get() {
         return new Customer("John", "Citizen");
+    }
+
+
+    @Path("/duration")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Duration duration() {
+        return Duration.of(1, ChronoUnit.SECONDS);
+    }
+
+
+    @Path("/optional")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Optional<String> optional() {
+        return Optional.of("optional string");
     }
 }

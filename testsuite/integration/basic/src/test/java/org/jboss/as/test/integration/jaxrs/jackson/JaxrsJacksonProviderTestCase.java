@@ -72,6 +72,17 @@ public class JaxrsJacksonProviderTestCase {
         Assert.assertEquals("{\"first\":\"John\",\"last\":\"Citizen\"}", result);
     }
 
+    @Test
+    public void testDurationJsr310() throws Exception {
+        String result = performCall("myjaxrs/jackson/duration");
+        Assert.assertEquals("\"PT1S\"", result);
+    }
+
+    @Test
+    public void testDurationJsrjdk8() throws Exception {
+        String result = performCall("myjaxrs/jackson/optional");
+        Assert.assertEquals("\"optional string\"", result);
+    }
     /**
      * AS7-1276
      */
