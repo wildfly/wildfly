@@ -819,4 +819,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 87, value = "Unable to load connector service factory class: %s")
     OperationFailedException unableToLoadConnectorServiceFactoryClass(String factroyClass);
 
+    @Message(id = 88, value = "%s is an invalid value for parameter %s, it should be multiple of %s")
+    OperationFailedException invalidModularParameterValue(long size, String parameterName, long modular);
 }
