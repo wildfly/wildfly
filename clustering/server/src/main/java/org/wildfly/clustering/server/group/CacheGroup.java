@@ -21,14 +21,21 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
@@ -38,23 +45,29 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.service.concurrent.ServiceExecutor;
-import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link Group} implementation based on the topology of a cache.
  * @author Paul Ferraro
  */
-@org.infinispan.notifications.Listener(sync = false)
+@org.infinispan.notifications.Listener
 public class CacheGroup implements Group, AutoCloseable {
 
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private static ThreadFactory createThreadFactory(Class<?> targetClass) {
+        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
+    }
+
+    private final Map<Listener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
     private final InfinispanNodeFactory factory;
     private final SortedMap<Integer, Boolean> views = Collections.synchronizedSortedMap(new TreeMap<>());
-    private final ServiceExecutor executor = new StampedLockServiceExecutor();
 
     public CacheGroup(CacheGroupConfiguration config) {
         this.cache = config.getCache();
@@ -65,10 +78,14 @@ public class CacheGroup implements Group, AutoCloseable {
 
     @Override
     public void close() {
-        this.executor.close(() -> {
-            this.cache.removeListener(this);
-            this.cache.getCacheManager().removeListener(this);
+        this.cache.removeListener(this);
+        this.cache.getCacheManager().removeListener(this);
+        // Cleanup any unregistered listeners
+        this.listeners.values().forEach(executor -> {
+            PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
+            WildFlySecurityManager.doUnchecked(action);
         });
+        this.listeners.clear();
     }
 
     @Override
@@ -117,25 +134,33 @@ public class CacheGroup implements Group, AutoCloseable {
     public void topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (event.isPre()) return;
 
-        this.executor.execute(() -> {
-            List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
-            List<Node> oldNodes = this.getNodes(oldAddresses);
-            List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
-            List<Node> newNodes = this.getNodes(newAddresses);
+        List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
+        List<Node> oldNodes = this.getNodes(oldAddresses);
+        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
+        List<Node> newNodes = this.getNodes(newAddresses);
 
-            Set<Address> obsolete = new HashSet<>(oldAddresses);
-            obsolete.removeAll(newAddresses);
-            this.factory.invalidate(obsolete);
+        Set<Address> obsolete = new HashSet<>(oldAddresses);
+        obsolete.removeAll(newAddresses);
+        this.factory.invalidate(obsolete);
 
-            int viewId = event.getCache().getCacheManager().getTransport().getViewId();
-            Boolean status = this.views.get(viewId);
-            boolean merged = (status != null) ? status.booleanValue() : false;
-            for (Listener listener: this.listeners) {
-                listener.membershipChanged(oldNodes, newNodes, merged);
+        int viewId = event.getCache().getCacheManager().getTransport().getViewId();
+        Boolean status = this.views.get(viewId);
+        boolean merged = (status != null) ? status.booleanValue() : false;
+        this.listeners.forEach((listener, executor) -> {
+            try {
+                executor.submit(() -> {
+                    try {
+                        listener.membershipChanged(oldNodes, newNodes, merged);
+                    } catch (Throwable e) {
+                        ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                    }
+                });
+            } catch (RejectedExecutionException e) {
+                // Listener was unregistered
             }
-            // Purge obsolete views
-            this.views.headMap(viewId).clear();
         });
+        // Purge obsolete views
+        this.views.headMap(viewId).clear();
     }
 
     private List<Node> getNodes(List<Address> addresses) {
@@ -148,12 +173,21 @@ public class CacheGroup implements Group, AutoCloseable {
 
     @Override
     public void addListener(Listener listener) {
-        this.listeners.add(listener);
+        this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
     }
 
     @Override
     public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
+        ExecutorService executor = this.listeners.remove(listener);
+        if (executor != null) {
+            PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
+            WildFlySecurityManager.doUnchecked(action);
+            try {
+                executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private List<Address> getAddresses() {
