@@ -49,10 +49,14 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public static final ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
     public static final ModuleIdentifier RESTEASY_JACKSON2 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson2-provider");
     public static final ModuleIdentifier RESTEASY_JSON_P_PROVIDER = ModuleIdentifier.create("org.jboss.resteasy.resteasy-json-p-provider");
-    //public static final ModuleIdentifier RESTEASY_JETTISON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jettison-provider");
     public static final ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
     public static final ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
     public static final ModuleIdentifier RESTEASY_YAML = ModuleIdentifier.create("org.jboss.resteasy.resteasy-yaml-provider");
+
+
+    public static final ModuleIdentifier JACKSON_DATATYPE_JDK8 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jdk8");
+    public static final ModuleIdentifier JACKSON_DATATYPE_JSR310 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jsr310");
+
     public static final ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
     public static final ModuleIdentifier JSON_API = ModuleIdentifier.create("javax.json.api");
     public static final ModuleIdentifier JAXRS_API = ModuleIdentifier.create("javax.ws.rs.api");
@@ -87,6 +91,8 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_YAML, true);
         addDependency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL, true);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO, true);
+        addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true);
+        addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true);
