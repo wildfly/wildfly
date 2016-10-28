@@ -81,6 +81,7 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<I> {
     @Override
     public void cancel(Locality locality) {
         for (I id: this.expirationFutures.keySet()) {
+            if (Thread.currentThread().isInterrupted()) break;
             if (!locality.isLocal(id)) {
                 this.cancel(id);
             }

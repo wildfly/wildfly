@@ -79,6 +79,7 @@ public class BeanGroupEvictionScheduler<I> implements Scheduler<I>, BeanGroupEvi
         synchronized (this.evictionQueue) {
             Iterator<I> groups = this.evictionQueue.iterator();
             while (groups.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) break;
                 I id = groups.next();
                 if (!locality.isLocal(id)) {
                     groups.remove();
