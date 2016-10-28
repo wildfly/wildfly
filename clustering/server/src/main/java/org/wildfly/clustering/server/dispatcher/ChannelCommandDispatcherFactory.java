@@ -22,10 +22,7 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +39,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.logging.ClusteringLogger;
-import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.threads.JBossThreadFactory;
@@ -55,7 +51,6 @@ import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestHandler;
-import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
@@ -77,32 +72,30 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory, RequestHandler, AutoCloseable, Group, MembershipListener {
 
-    final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
-    final MarshallingContext marshallingContext;
-
-    private final ExecutorService viewExecutor = Executors.newSingleThreadExecutor(createThreadFactory());
-    private final ServiceExecutor executor = new StampedLockServiceExecutor();
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
-    private final AtomicReference<View> view = new AtomicReference<>();
-    private final MessageDispatcher dispatcher;
-    private final JGroupsNodeFactory nodeFactory;
-    private final long timeout;
-
     private static ThreadFactory createThreadFactory() {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(ChannelCommandDispatcherFactory.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
         return WildFlySecurityManager.doUnchecked(action);
     }
 
+    private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
+    private final ExecutorService viewExecutor = Executors.newSingleThreadExecutor(createThreadFactory());
+    private final ServiceExecutor executor = new StampedLockServiceExecutor();
+    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final AtomicReference<View> view = new AtomicReference<>();
+    private final JGroupsNodeFactory nodeFactory;
+    private final MarshallingContext marshallingContext;
+    private final MessageDispatcher dispatcher;
+    private final long timeout;
+
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
         this.nodeFactory = config.getNodeFactory();
         this.marshallingContext = config.getMarshallingContext();
         this.timeout = config.getTimeout();
-        final RpcDispatcher.Marshaller marshaller = new CommandResponseMarshaller(config);
         this.dispatcher = new MessageDispatcher() {
             @Override
             protected RequestCorrelator createRequestCorrelator(Protocol transport, RequestHandler handler, Address localAddr) {
                 RequestCorrelator correlator = super.createRequestCorrelator(transport, handler, localAddr);
-                correlator.setMarshaller(marshaller);
+                correlator.setMarshaller(new CommandResponseMarshaller(config));
                 return correlator;
             }
         };
@@ -152,33 +145,14 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(final Object id, C context) {
-        final int version = this.marshallingContext.getCurrentVersion();
-        CommandMarshaller<C> marshaller = new CommandMarshaller<C>() {
-            @Override
-            public <R> byte[] marshal(Command<R, C> command) throws IOException {
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                try (DataOutputStream output = new DataOutputStream(bytes)) {
-                    IndexExternalizer.VARIABLE.writeData(output, version);
-                    try (Marshaller marshaller = ChannelCommandDispatcherFactory.this.marshallingContext.createMarshaller(version)) {
-                        marshaller.start(Marshalling.createByteOutput(output));
-                        marshaller.writeObject(id);
-                        marshaller.writeObject(command);
-                        marshaller.flush();
-                    }
-                    return bytes.toByteArray();
-                }
-            }
-        };
+    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
         this.contexts.put(id, Optional.ofNullable(context));
-        final CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalNode(), context);
-        return new ChannelCommandDispatcher<C>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher) {
-            @Override
-            public void close() {
-                localDispatcher.close();
-                ChannelCommandDispatcherFactory.this.contexts.remove(id);
-            }
-        };
+        CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
+        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalNode(), context);
+        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher, () -> {
+            localDispatcher.close();
+            this.contexts.remove(id);
+        });
     }
 
     @Override

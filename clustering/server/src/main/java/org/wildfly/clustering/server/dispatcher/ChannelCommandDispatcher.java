@@ -53,7 +53,7 @@ import org.wildfly.clustering.server.Addressable;
  *
  * @param <C> command execution context
  */
-public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
+public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private static final RspFilter FILTER = new RspFilter() {
         @Override
@@ -72,13 +72,20 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
     private final NodeFactory<Address> factory;
     private final long timeout;
     private final CommandDispatcher<C> localDispatcher;
+    private final Runnable closeTask;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout, CommandDispatcher<C> localDispatcher) {
+    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
         this.factory = factory;
         this.timeout = timeout;
         this.localDispatcher = localDispatcher;
+        this.closeTask = closeTask;
+    }
+
+    @Override
+    public void close() {
+        this.closeTask.run();
     }
 
     @Override
