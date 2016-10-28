@@ -31,11 +31,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.logging.ClusteringLogger;
@@ -60,6 +60,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
+import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -72,15 +73,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory, RequestHandler, AutoCloseable, Group, MembershipListener {
 
-    private static ThreadFactory createThreadFactory() {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(ChannelCommandDispatcherFactory.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return WildFlySecurityManager.doUnchecked(action);
+    private static ThreadFactory createThreadFactory(Class<?> targetClass) {
+        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
     }
 
     private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
-    private final ExecutorService viewExecutor = Executors.newSingleThreadExecutor(createThreadFactory());
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final Map<Listener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
     private final JGroupsNodeFactory nodeFactory;
     private final MarshallingContext marshallingContext;
@@ -112,7 +112,12 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         this.executor.close(() -> {
             this.dispatcher.stop();
             this.dispatcher.getChannel().setUpHandler(null);
-            this.viewExecutor.shutdown();
+            // Cleanup any stray listeners
+            this.listeners.values().forEach(executor -> {
+                PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
+                WildFlySecurityManager.doUnchecked(action);
+            });
+            this.listeners.clear();
         });
     }
 
@@ -157,12 +162,20 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public void addListener(Listener listener) {
-        this.listeners.add(listener);
+        this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
     }
 
     @Override
     public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
+        ExecutorService executor = this.listeners.remove(listener);
+        if (executor != null) {
+            executor.shutdownNow();
+            try {
+                executor.awaitTermination(this.timeout, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Override
@@ -209,31 +222,31 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public void viewAccepted(View view) {
-        try {
-            this.viewExecutor.submit(() -> {
-                View oldView = this.view.getAndSet(view);
-                if (oldView != null) {
-                    List<Node> oldNodes = this.getNodes(oldView);
-                    List<Node> newNodes = this.getNodes(view);
+        View oldView = this.view.getAndSet(view);
+        if (oldView != null) {
+            List<Node> oldNodes = this.getNodes(oldView);
+            List<Node> newNodes = this.getNodes(view);
 
-                    List<Address> leftMembers = View.leftMembers(oldView, view);
-                    if (leftMembers != null) {
-                        this.nodeFactory.invalidate(leftMembers);
-                    }
+            List<Address> leftMembers = View.leftMembers(oldView, view);
+            if (leftMembers != null) {
+                this.nodeFactory.invalidate(leftMembers);
+            }
 
-                    this.executor.execute(() -> {
-                        for (Listener listener: this.listeners) {
-                            try {
-                                listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
-                            } catch (Throwable e) {
-                                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                            }
+            for (Map.Entry<Listener, ExecutorService> entry : this.listeners.entrySet()) {
+                try {
+                    Listener listener = entry.getKey();
+                    ExecutorService executor = entry.getValue();
+                    executor.submit(() -> {
+                        try {
+                            listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
+                        } catch (Throwable e) {
+                            ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                         }
                     });
+                } catch (RejectedExecutionException e) {
+                    // Executor was shutdown
                 }
-            });
-        } catch (RejectedExecutionException e) {
-            // Executor was shutdown
+            }
         }
     }
 
