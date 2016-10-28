@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,12 +39,17 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
@@ -66,6 +72,8 @@ public class JMSQueueManagementTestCase {
     private static final Logger LOGGER = Logger.getLogger(JMSQueueManagementTestCase.class);
 
     private static final String EXPORTED_PREFIX = "java:jboss/exported/";
+
+    private static final long SAMPLE_PERIOD = 1001;
 
     private static long count = System.currentTimeMillis();
 
@@ -133,6 +141,30 @@ public class JMSQueueManagementTestCase {
         }
     }
 
+
+    private void enableStatistics(boolean enabled) throws IOException {
+
+        if (enabled) {
+            ModelNode enableStatistics = Util.getWriteAttributeOperation(adminSupport.getServerAddress(), "statistics-enabled", new ModelNode(enabled));
+            ModelNode accelerateSamplingPeriod = Util.getWriteAttributeOperation(adminSupport.getServerAddress(), "message-counter-sample-period", new ModelNode(SAMPLE_PERIOD));
+
+            execute(enableStatistics, true);
+            execute(accelerateSamplingPeriod, true);
+        } else {
+            ModelNode undefineStatisticsEnabled = Util.getUndefineAttributeOperation(PathAddress.pathAddress(adminSupport.getServerAddress()), "statistics-enabled");
+            ModelNode undefineMessageCounterSamplePeriod = Util.getUndefineAttributeOperation(PathAddress.pathAddress(adminSupport.getServerAddress()), "message-counter-sample-period");
+
+            execute(undefineStatisticsEnabled, true);
+            execute(undefineMessageCounterSamplePeriod, true);
+        }
+    }
+
+    private static JsonObject fromString(String string) {
+        try (JsonReader reader = Json.createReader(new StringReader(string))) {
+            return reader.readObject();
+        }
+    }
+
     @Test
     public void testListAndCountMessages() throws Exception {
 
@@ -152,32 +184,68 @@ public class JMSQueueManagementTestCase {
     @Test
     public void testMessageCounters() throws Exception {
 
-        MessageProducer producer = session.createProducer(queue);
-        producer.send(session.createTextMessage("A"));
-        producer.send(session.createTextMessage("B"));
+        try {
+            enableStatistics(true);
 
-        ModelNode result = execute(getQueueOperation("list-message-counter-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+            MessageProducer producer = session.createProducer(queue);
+            producer.send(session.createTextMessage("A"));
+            producer.send(session.createTextMessage("B"));
 
-        result = execute(getQueueOperation("list-message-counter-as-html"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
 
-        result = execute(getQueueOperation("list-message-counter-history-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+            // wait for 2 sample periods to let the counters be updated.
+            checkMessageCounters(2, 2);
 
-        result = execute(getQueueOperation("list-message-counter-history-as-html"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+            ModelNode result = execute(getQueueOperation("list-message-counter-as-html"), true);
+            Assert.assertTrue(result.isDefined());
+            Assert.assertEquals(ModelType.STRING, result.getType());
 
-        result = execute(getQueueOperation("reset-message-counter"), true);
-        Assert.assertFalse(result.isDefined());
+            result = execute(getQueueOperation("list-message-counter-history-as-json"), true);
+            Assert.assertTrue(result.isDefined());
+            Assert.assertEquals(ModelType.STRING, result.getType());
 
-        result = execute(getQueueOperation("list-message-counter-history-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+            result = execute(getQueueOperation("list-message-counter-history-as-html"), true);
+            Assert.assertTrue(result.isDefined());
+            Assert.assertEquals(ModelType.STRING, result.getType());
+
+            result = execute(getQueueOperation("reset-message-counter"), true);
+            Assert.assertFalse(result.isDefined());
+
+            // check that the messageCountDelta has been reset to 0 after invoking "reset-message-counter"
+            checkMessageCounters(2, 0);
+
+            result = execute(getQueueOperation("list-message-counter-history-as-json"), true);
+            Assert.assertTrue(result.isDefined());
+            Assert.assertEquals(ModelType.STRING, result.getType());
+        } finally {
+            enableStatistics(false);
+        }
+    }
+
+    /**
+     * Given that message counters are sampled, we fetched them several time (with a period shorter than the sample period)
+     * to make the test pass faster.
+     */
+    private void checkMessageCounters(int expectedMessageCount, int expectedMessageCountDelta) throws Exception {
+        long start = System.currentTimeMillis();
+        long now;
+        JsonObject messageCounters;
+        do {
+            Thread.sleep((long) (SAMPLE_PERIOD / 2.0));
+            ModelNode result = execute(getQueueOperation("list-message-counter-as-json"), true);
+            Assert.assertTrue(result.isDefined());
+            Assert.assertEquals(ModelType.STRING, result.getType());
+            messageCounters = fromString(result.asString());
+            int actualMessageCount = messageCounters.getInt("messageCount");
+            int actualMessageCountDelta = messageCounters.getInt("messageCountDelta");
+            if (actualMessageCount == expectedMessageCount && actualMessageCountDelta == expectedMessageCountDelta) {
+                // got correct counters
+                return;
+            }
+            now = System.currentTimeMillis();
+        } while (now - start < (2.0 * SAMPLE_PERIOD));
+        // after twice the sample period, the assertions must always be true
+        Assert.assertEquals(messageCounters.toString(), expectedMessageCount, messageCounters.getInt("messageCount"));
+        Assert.assertEquals(messageCounters.toString(), expectedMessageCountDelta, messageCounters.getInt("messageCountDelta"));
 
     }
 
