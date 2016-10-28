@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 
 import io.undertow.UndertowOptions;
 import io.undertow.protocols.ssl.UndertowXnioSsl;
@@ -61,6 +62,8 @@ import org.xnio.ssl.XnioSsl;
  */
 public class HttpsListenerService extends HttpListenerService {
 
+    public static final String REQUIRED_CIPHER = "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256";
+
     private Supplier<SSLContext> sslContextSupplier;
     private volatile AcceptingChannel<SslConnection> sslServer;
     static final String PROTOCOL = "https";
@@ -82,11 +85,17 @@ public class HttpsListenerService extends HttpListenerService {
     @Override
     protected OpenListener createOpenListener() {
         if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
-            try {
-                return createAlpnOpenListener();
-            } catch (Throwable e) {
-                UndertowLogger.ROOT_LOGGER.alpnNotFound(getName());
-                UndertowLogger.ROOT_LOGGER.debug("Exception creating ALPN listener", e);
+            SSLContext sslContext = sslContextSupplier.get();
+            if(serverSupportsHTTP2(sslContext)) {
+                try {
+                    return createAlpnOpenListener();
+                } catch (Throwable e) {
+                    UndertowLogger.ROOT_LOGGER.alpnNotFound(getName());
+                    UndertowLogger.ROOT_LOGGER.debug("Exception creating ALPN listener", e);
+                    return super.createOpenListener();
+                }
+            } else {
+                UndertowLogger.ROOT_LOGGER.noStrongCiphers();
                 return super.createOpenListener();
             }
         } else {
@@ -99,6 +108,7 @@ public class HttpsListenerService extends HttpListenerService {
         Pool<ByteBuffer> bufferPool = getBufferPool().getValue();
         HttpOpenListener http =  new HttpOpenListener(bufferPool, undertowOptions);
         AlpnOpenListener alpn = new AlpnOpenListener(bufferPool, undertowOptions, http);
+
         if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
             Http2OpenListener http2 = new Http2OpenListener(bufferPool, undertowOptions, "h2");
             alpn.addProtocol(Http2OpenListener.HTTP2, http2, 10);
@@ -125,6 +135,7 @@ public class HttpsListenerService extends HttpListenerService {
         XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
         sslServer = xnioSsl.createSslConnectionServer(worker, socketAddress, (ChannelListener) acceptListener, combined);
         sslServer.resumeAccepts();
+        sslContext.createSSLEngine().getEnabledCipherSuites();
 
         UndertowLogger.ROOT_LOGGER.listenerStarted("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(socketAddress.getAddress()), socketAddress.getPort());
     }
@@ -147,5 +158,16 @@ public class HttpsListenerService extends HttpListenerService {
     @Override
     protected String getProtocol() {
         return PROTOCOL;
+    }
+
+    public static boolean serverSupportsHTTP2(SSLContext context) {
+        SSLEngine engine = context.createSSLEngine();
+        String[] ciphers = engine.getEnabledCipherSuites();
+        for(String i : ciphers) {
+            if(i.equals(REQUIRED_CIPHER)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
