@@ -1,5 +1,15 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.1">
     <server name="default">
+        <cluster-connection name="cc1"
+                            address="${address:cc1-address}"
+                            connector-name="netty"
+                            producer-window-size="${producer.windows.size:5678}"
+                            static-connectors="in-vm netty" />
+        <bridge name="bridge1"
+                queue-name="${queue.name:coreQueueA}"
+                forwarding-address="${forwarding.address:forwardingaddress1}"
+                producer-window-size="${producer.windows.size:5678}"
+                static-connectors="in-vm netty" />
         <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"
                                    user="alice"

@@ -390,6 +390,7 @@
                     </xs:attribute>
                     <xs:attribute name="max-hops" type="xs:int" use="optional" />
                     <xs:attribute name="confirmation-window-size" type="xs:int" use="optional" />
+                    <xs:attribute name="producer-window-size" type="xs:int" use="optional" />
                     <xs:attribute name="notification-attempts" type="xs:int" use="optional" />
                     <xs:attribute name="notification-interval" type="xs:long" use="optional" />
                     <xs:attribute name="static-connectors" type="stringList" use="optional" />
@@ -449,6 +450,7 @@
                     <xs:attribute name="reconnect-attempts-on-same-node" type="xs:int"  use="optional" />
                     <xs:attribute name="use-duplicate-detection" type="xs:boolean"  use="optional" />
                     <xs:attribute name="confirmation-window-size" type="xs:int"  use="optional" />
+                    <xs:attribute name="producer-window-size" type="xs:int" use="optional" />
                     <xs:attribute name="user" type="xs:string"  use="optional" />
                     <xs:attribute name="password" type="xs:string"  use="optional" />
                     <xs:attribute name="static-connectors" type="stringList"  use="optional" />
