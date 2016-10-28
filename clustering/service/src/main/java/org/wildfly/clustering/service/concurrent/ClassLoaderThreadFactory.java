@@ -20,12 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.wildfly.clustering.service.concurrent;
 
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
-
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link ThreadFactory} decorator that associates a specific class loader to created threads.
@@ -59,6 +58,6 @@ public class ClassLoaderThreadFactory implements ThreadFactory {
             thread.setContextClassLoader(this.loader);
             return thread;
         };
-        return WildFlySecurityManager.doUnchecked(action);
+        return AccessController.doPrivileged(action);
     }
 }
