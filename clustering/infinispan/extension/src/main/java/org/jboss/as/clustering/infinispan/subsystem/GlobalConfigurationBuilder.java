@@ -93,7 +93,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
 
     @Override
     public Builder<GlobalConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.server = new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class);
+        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class) : null;
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         return this;
     }
@@ -136,7 +136,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
         builder.globalJmxStatistics()
                 .enabled(this.statisticsEnabled)
                 .cacheManagerName(this.name)
-                .mBeanServerLookup(new MBeanServerProvider(this.server.getValue()))
+                .mBeanServerLookup(new MBeanServerProvider((this.server != null) ? this.server.getValue() : null))
                 .jmxDomain("org.wildfly.clustering.infinispan")
                 .allowDuplicateDomains(true);
 
@@ -156,6 +156,6 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 ;
         this.pools.values().forEach(dependency -> dependency.register(builder));
         this.schedulers.values().forEach(dependency -> dependency.register(builder));
-        return this.server.register(builder);
+        return (this.server != null) ? this.server.register(builder) : builder;
     }
 }

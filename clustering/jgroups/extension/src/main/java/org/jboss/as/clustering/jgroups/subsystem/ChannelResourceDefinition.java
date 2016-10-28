@@ -28,7 +28,6 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
@@ -61,7 +60,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
@@ -79,7 +77,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
     }
 
     enum Capability implements CapabilityProvider {
-        JCHANNEL(JGroupsRequirement.CHANNEL, CommonRequirement.MBEAN_SERVER),
+        JCHANNEL(JGroupsRequirement.CHANNEL),
         FORK_CHANNEL_FACTORY(JGroupsRequirement.CHANNEL_FACTORY),
         JCHANNEL_FACTORY(JGroupsRequirement.CHANNEL_SOURCE),
         JCHANNEL_MODULE(JGroupsRequirement.CHANNEL_MODULE),
@@ -87,8 +85,8 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         ;
         private org.jboss.as.clustering.controller.Capability capablity;
 
-        Capability(UnaryRequirement requirement, Requirement... requirements) {
-            this.capablity = new UnaryRequirementCapability(requirement, requirements);
+        Capability(UnaryRequirement requirement) {
+            this.capablity = new UnaryRequirementCapability(requirement);
         }
 
         @Override

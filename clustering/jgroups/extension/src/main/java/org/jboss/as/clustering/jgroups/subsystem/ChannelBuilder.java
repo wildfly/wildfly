@@ -75,15 +75,15 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
     @Override
     public ServiceBuilder<Channel> build(ServiceTarget target) {
         ServiceBuilder<Channel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target);
-        Stream.of(this.factory, this.server, this.cluster).forEach(dependency -> dependency.register(builder));
-        return builder;
+        Stream.of(this.factory, this.cluster).forEach(dependency -> dependency.register(builder));
+        return (this.server != null) ? this.server.register(builder) : builder;
     }
 
     @Override
     public Builder<Channel> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.cluster = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, this.name), String.class);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, this.name), ChannelFactory.class);
-        this.server = new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class);
+        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class) : null;
         return this;
     }
 
@@ -105,7 +105,7 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
             JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, output);
         }
 
-        if (this.channel instanceof JChannel) {
+        if ((this.channel instanceof JChannel) && (this.server != null)) {
             try {
                 JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.name);
             } catch (Exception e) {
@@ -124,7 +124,7 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
     public void stop(StopContext context) {
         this.channel.disconnect();
 
-        if (this.channel instanceof JChannel) {
+        if ((this.channel instanceof JChannel) && (this.server != null)) {
             try {
                 JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.name);
             } catch (Exception e) {

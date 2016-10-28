@@ -30,7 +30,6 @@ import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.RemoveStepHandler;
@@ -67,7 +66,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
@@ -87,13 +85,13 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
 
     enum Capability implements CapabilityProvider {
         CONTAINER(InfinispanRequirement.CONTAINER),
-        CONFIGURATION(InfinispanRequirement.CONFIGURATION, CommonRequirement.MBEAN_SERVER),
+        CONFIGURATION(InfinispanRequirement.CONFIGURATION),
         KEY_AFFINITY_FACTORY(InfinispanRequirement.KEY_AFFINITY_FACTORY),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 
-        Capability(UnaryRequirement requirement, Requirement... requirements) {
-            this.capability = new UnaryRequirementCapability(requirement, requirements);
+        Capability(UnaryRequirement requirement) {
+            this.capability = new UnaryRequirementCapability(requirement);
         }
 
         @Override
