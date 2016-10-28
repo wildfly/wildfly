@@ -22,6 +22,8 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -70,9 +72,9 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
     static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition.Builder(Constants.ADDITIONAL_PROPERTIES, true)
-            .setXmlName(Constants.PROPERTY)
             .setAllowExpression(true)
-            .setWrapXmlElement(false)
+            .setAttributeMarshaller(AttributeMarshaller.PROPERTIES_MARSHALLER_UNWRAPPED)
+            .setAttributeParser(AttributeParser.PROPERTIES_PARSER_UNWRAPPED)
             .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = {KEYSTORE, TRUSTSTORE, KEYMANAGER, TRUSTMANAGER, CLIENT_ALIAS, SERVER_ALIAS, SERVICE_AUTH_TOKEN,

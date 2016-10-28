@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -103,8 +105,8 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .build();
 
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
-            .setXmlName("property")
-            .setWrapXmlElement(false)
+            .setAttributeMarshaller(AttributeMarshaller.PROPERTIES_MARSHALLER_UNWRAPPED)
+            .setAttributeParser(AttributeParser.PROPERTIES_PARSER_UNWRAPPED)
             .setAllowExpression(true)
             .build();
 

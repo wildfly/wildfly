@@ -45,7 +45,6 @@ public class ConfigurationResource extends SimpleResourceDefinition {
 
     static final PropertiesAttributeDefinition ENTRIES = new PropertiesAttributeDefinition.Builder(ModelConstants.ENTRIES, false)
             .setAllowExpression(true)
-            .setXmlName(Namespace10.Element.PROPERTY.getLocalName())
             .setWrapXmlElement(false)
             .build();
 
