@@ -119,7 +119,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).ifPresent(defaultCache -> {
             for (CacheAliasBuilderProvider provider : ServiceLoader.load(CacheAliasBuilderProvider.class, CacheAliasBuilderProvider.class.getClassLoader())) {
-                for (ServiceNameProvider builder : provider.getBuilders(requirement -> DEFAULT_CLUSTERING_CAPABILITIES.get(requirement.getDefaultServiceNameFactory()).getServiceName(address), name, null, defaultCache)) {
+                for (ServiceNameProvider builder : provider.getBuilders(requirement -> DEFAULT_CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, null, defaultCache)) {
                     context.removeService(builder.getServiceName());
                 }
             }
