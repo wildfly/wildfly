@@ -42,9 +42,9 @@ import org.junit.Test;
 /**
  * @author Radoslav Husar
  */
-public class TransformersTestCase extends AbstractSubsystemTest {
+public class SingletonTransformersTestCase extends AbstractSubsystemTest {
 
-    public TransformersTestCase() {
+    public SingletonTransformersTestCase() {
         super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension());
     }
 
