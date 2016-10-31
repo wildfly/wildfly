@@ -22,64 +22,45 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
 /**
- * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
+ * Builds an MSC service that is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
-public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
+public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext<T> {
 
     @SuppressWarnings("rawtypes")
     private final ValueDependency<ServiceProviderRegistry> registry;
     private final ValueDependency<CommandDispatcherFactory> dispatcherFactory;
-    private final InjectedValue<ServiceProviderRegistration<ServiceName>> registration = new InjectedValue<>();
-    private final InjectedValue<CommandDispatcher<SingletonContext<T>>> dispatcher = new InjectedValue<>();
     private final ServiceName serviceName;
     private final Service<T> primaryService;
-    private final AtomicBoolean primary = new AtomicBoolean(false);
-    private final AtomicInteger quorum = new AtomicInteger(1);
 
-    private volatile Service<T> backupService;
+    private volatile Optional<Service<T>> backupService = Optional.empty();
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
-    private volatile ServiceController<T> primaryController;
-    private volatile ServiceController<T> backupController;
+    private volatile int quorum = 1;
 
     public DistributedSingletonServiceBuilder(DistributedSingletonServiceBuilderContext context, ServiceName serviceName, Service<T> service) {
         this.registry = context.getServiceProviderRegistryDependency();
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
         this.serviceName = serviceName;
         this.primaryService = service;
-        this.backupService = new PrimaryProxyService<>(this.serviceName, this.dispatcher, this.registration, this.quorum);
     }
 
     @Override
@@ -89,7 +70,7 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        ServiceBuilder<T> builder = new AsynchronousServiceBuilder<>(this.serviceName, this).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
+        ServiceBuilder<T> builder = new AsynchronousServiceBuilder<>(this.serviceName, new DistributedSingletonService<>(this)).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
         Stream.of(this.registry, this.dispatcherFactory).forEach(dependency -> dependency.register(builder));
         return builder;
     }
@@ -99,7 +80,7 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
         if (quorum < 1) {
             throw ClusteringServerLogger.ROOT_LOGGER.invalidQuorum(quorum);
         }
-        this.quorum.set(quorum);
+        this.quorum = quorum;
         return this;
     }
 
@@ -111,118 +92,38 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
 
     @Override
     public SingletonServiceBuilder<T> backupService(Service<T> backupService) {
-        this.backupService = backupService;
+        this.backupService = Optional.of(backupService);
         return this;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public void start(StartContext context) throws StartException {
-        ServiceTarget target = context.getChildTarget();
-        this.primaryController = target.addService(this.serviceName.append("primary"), this.primaryService).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        this.backupController = target.addService(this.serviceName.append("backup"), this.backupService).setInitialMode(ServiceController.Mode.PASSIVE).install();
-        this.dispatcher.inject(this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this));
-        this.registration.inject(this.registry.getValue().register(this.serviceName, this));
+    public Value<ServiceProviderRegistry> getServiceProviderRegistry() {
+        return this.registry;
     }
 
     @Override
-    public void stop(StopContext context) {
-        this.registration.getValue().close();
-        this.registration.uninject();
-        this.dispatcher.getValue().close();
-        this.dispatcher.uninject();
+    public Value<CommandDispatcherFactory> getCommandDispatcherFactory() {
+        return this.dispatcherFactory;
     }
 
     @Override
-    public boolean isPrimary() {
-        return this.primary.get();
+    public Service<T> getPrimaryService() {
+        return this.primaryService;
     }
 
     @Override
-    public void providersChanged(Set<Node> nodes) {
-        Group group = this.registry.getValue().getGroup();
-        List<Node> candidates = group.getNodes();
-        candidates.retainAll(nodes);
-
-        // Only run election on a single node
-        if (candidates.isEmpty() || candidates.get(0).equals(group.getLocalNode())) {
-            // First validate that quorum was met
-            int size = candidates.size();
-            int quorum = this.quorum.intValue();
-            boolean quorumMet = size >= quorum;
-
-            if ((quorum > 1) && (size == quorum)) {
-                // Log fragility of singleton availability
-                ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.serviceName.getCanonicalName(), quorum);
-            }
-
-            Node elected = quorumMet ? this.electionPolicy.elect(candidates) : null;
-
-            CommandDispatcher<SingletonContext<T>> dispatcher = this.dispatcher.getValue();
-            try {
-                if (elected != null) {
-                    ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.serviceName.getCanonicalName());
-
-                    // Stop service on every node except elected node
-                    dispatcher.executeOnCluster(new StopCommand<>(), elected);
-                    // Start service on elected node
-                    dispatcher.executeOnNode(new StartCommand<>(), elected);
-                } else {
-                    if (quorumMet) {
-                        ClusteringServerLogger.ROOT_LOGGER.noPrimaryElected(this.serviceName.getCanonicalName());
-                    } else {
-                        ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.serviceName.getCanonicalName(), quorum);
-                    }
-
-                    // Stop service on every node
-                    dispatcher.executeOnCluster(new StopCommand<>());
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
+    public Optional<Service<T>> getBackupService() {
+        return this.backupService;
     }
 
     @Override
-    public void start() {
-        // If we were not already the primary node
-        if (this.primary.compareAndSet(false, true)) {
-            ClusteringServerLogger.ROOT_LOGGER.startSingleton(this.serviceName.getCanonicalName());
-            ServiceContainerHelper.stop(this.backupController);
-            start(this.primaryController);
-        }
+    public SingletonElectionPolicy getElectionPolicy() {
+        return this.electionPolicy;
     }
 
     @Override
-    public void stop() {
-        // If we were the previous the primary node
-        if (this.primary.compareAndSet(true, false)) {
-            ClusteringServerLogger.ROOT_LOGGER.stopSingleton(this.serviceName.getCanonicalName());
-            ServiceContainerHelper.stop(this.primaryController);
-            start(this.backupController);
-        }
-    }
-
-    private static void start(ServiceController<?> controller) {
-        try {
-            ServiceContainerHelper.start(controller);
-        } catch (StartException e) {
-            ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, controller.getName().getCanonicalName());
-            ServiceContainerHelper.stop(controller);
-        }
-    }
-
-    @Override
-    public T getValue() {
-        return (this.primary.get() ? this.primaryController : this.backupController).getValue();
-    }
-
-    @Override
-    public Optional<T> getLocalValue() {
-        try {
-            return this.primary.get() ? Optional.ofNullable(this.primaryController.getValue()) : null;
-        } catch (IllegalStateException e) {
-            // This might happen if primary service has not yet started, or if node is no longer the primary node
-            return null;
-        }
+    public int getQuorum() {
+        return this.quorum;
     }
 }

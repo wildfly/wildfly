@@ -27,13 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
@@ -45,29 +45,30 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  * @author Paul Ferraro
  */
 public class PrimaryProxyService<T> implements Service<T> {
-    private final ServiceName serviceName;
-    private final Value<CommandDispatcher<SingletonContext<T>>> dispatcher;
-    private final Value<ServiceProviderRegistration<ServiceName>> registration;
-    private final Number quorum;
+
+    private final Supplier<CommandDispatcher<SingletonContext<T>>> dispatcher;
+    private final Supplier<ServiceProviderRegistration<ServiceName>> registration;
+    private final int quorum;
 
     private volatile boolean started = false;
 
-    public PrimaryProxyService(ServiceName serviceName, Value<CommandDispatcher<SingletonContext<T>>> dispatcher, Value<ServiceProviderRegistration<ServiceName>> registration, Number quorum) {
-        this.serviceName = serviceName;
-        this.dispatcher = dispatcher;
-        this.registration = registration;
-        this.quorum = quorum;
+    public PrimaryProxyService(PrimaryProxyContext<T> context) {
+        this.dispatcher = context.getCommandDispatcher();
+        this.registration = context.getServiceProviderRegistration();
+        this.quorum = context.getQuorum();
     }
 
     @Override
     public T getValue() {
+        CommandDispatcher<SingletonContext<T>> dispatcher = this.dispatcher.get();
+        ServiceProviderRegistration<ServiceName> registration = this.registration.get();
         try {
             List<T> result = Collections.emptyList();
             while (result.isEmpty()) {
                 if (!this.started) {
-                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
+                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(registration.getService().getCanonicalName());
                 }
-                Map<Node, CommandResponse<Optional<T>>> responses = this.dispatcher.getValue().executeOnCluster(new SingletonValueCommand<T>());
+                Map<Node, CommandResponse<Optional<T>>> responses = dispatcher.executeOnCluster(new SingletonValueCommand<T>());
                 // Prune non-primary (i.e. null) results
                 result = responses.values().stream().map(response -> {
                     try {
@@ -79,13 +80,13 @@ public class PrimaryProxyService<T> implements Service<T> {
                 // We expect only 1 result
                 if (result.size() > 1) {
                     // This would mean there are multiple primary nodes!
-                    throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(this.serviceName.getCanonicalName(), result.size());
+                    throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(registration.getService().getCanonicalName(), result.size());
                 }
                 if (result.isEmpty()) {
-                    ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(this.serviceName.getCanonicalName());
+                    ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(registration.getService().getCanonicalName());
                     // Verify whether there is no primary node because a quorum was not reached during the last election
-                    if (this.registration.getValue().getProviders().size() < this.quorum.intValue()) {
-                        throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
+                    if (registration.getProviders().size() < this.quorum) {
+                        throw ClusteringServerLogger.ROOT_LOGGER.notStarted(registration.getService().getCanonicalName());
                     }
                     if (Thread.currentThread().isInterrupted()) {
                         throw new InterruptedException();

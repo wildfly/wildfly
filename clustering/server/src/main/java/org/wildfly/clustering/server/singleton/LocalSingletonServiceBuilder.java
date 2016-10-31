@@ -62,7 +62,7 @@ public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, this.service);
+        return target.addService(this.name, new LocalSingletonService<>(this.service));
     }
 
     @Override
