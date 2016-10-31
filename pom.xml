@@ -124,7 +124,7 @@
         <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>5.3.1</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.1.17</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.2.10</version.org.apache.myfaces.core>
         <version.org.apache.openjpa>2.4.1</version.org.apache.openjpa>
         <version.org.eclipselink.version>2.6.3</version.org.eclipselink.version>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
