@@ -94,12 +94,6 @@ public enum ChannelMetric implements Metric<JChannel> {
             return new ModelNode(channel.getState());
         }
     },
-    STATS_ENABLED("stats-enabled", ModelType.BOOLEAN) {
-        @Override
-        public ModelNode execute(JChannel channel) {
-            return new ModelNode(channel.statsEnabled());
-        }
-    },
     VERSION("version", ModelType.STRING) {
         @Override
         public ModelNode execute(JChannel channel) {
