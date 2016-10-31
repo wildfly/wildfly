@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -97,8 +96,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 return InfinispanModel.VERSION_1_6_0;
             case EAP_7_0_0:
                 return InfinispanModel.VERSION_4_0_0;
+            default:
+                throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException();
     }
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
@@ -146,7 +146,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
         return new LegacyControllerAdditionalInitialization()
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
-                .require(CommonRequirement.MBEAN_SERVER)
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
                 ;
@@ -247,7 +246,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         };
     }
 
-    private void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
+    private static void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
         final String cacheContainer = "maximal";
 
         final String testProperty1 = "testProperty1";
