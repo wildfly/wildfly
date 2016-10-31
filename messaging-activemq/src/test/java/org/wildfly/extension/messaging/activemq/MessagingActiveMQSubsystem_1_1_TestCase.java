@@ -26,6 +26,8 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_PATH;
@@ -139,10 +141,17 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                BridgeDefinition.PRODUCER_WINDOW_SIZE))
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CLUSTER_CONNECTION_PATH),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
-                                ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)));
+                                ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED))
+        );
     }
 
     @Override

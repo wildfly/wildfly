@@ -105,6 +105,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
 
         final int maxHops = ClusterConnectionDefinition.MAX_HOPS.resolveModelAttribute(context, model).asInt();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
+        final int producerWindowSize = ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final ModelNode discoveryNode = ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
         final long callTimeout = CommonAttributes.CALL_TIMEOUT.resolveModelAttribute(context, model).asLong();
@@ -130,6 +131,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
                 .setMessageLoadBalancingType(MessageLoadBalancingType.valueOf(messageLoadBalancingType))
                 .setMaxHops(maxHops)
                 .setConfirmationWindowSize(confirmationWindowSize)
+                .setProducerWindowSize(producerWindowSize)
                 .setClusterNotificationInterval(clusterNotificationInterval)
                 .setClusterNotificationAttempts(clusterNotificationAttempts);
 
