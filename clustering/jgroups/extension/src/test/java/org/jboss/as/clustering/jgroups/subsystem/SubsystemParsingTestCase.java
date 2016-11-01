@@ -127,6 +127,11 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         return addresses;
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format("schema/jboss-as-jgroups_%d_%d.xsd", schema.major(), schema.minor());
+    }
+
     /**
      * Tests that the xml is parsed into the correct operations
      */
