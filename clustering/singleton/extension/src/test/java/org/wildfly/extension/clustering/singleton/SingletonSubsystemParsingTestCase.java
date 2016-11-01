@@ -45,12 +45,12 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Paul Ferraro
  */
 @RunWith(Parameterized.class)
-public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
+public class SingletonSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final SingletonSchema schema;
     private final int expectedOperationCount;
 
-    public SubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
+    public SingletonSubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
         super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), String.format("subsystem-singleton-%d_%d.xml", schema.major(), schema.minor()));
         this.schema = schema;
         this.expectedOperationCount = expectedOperationCount;

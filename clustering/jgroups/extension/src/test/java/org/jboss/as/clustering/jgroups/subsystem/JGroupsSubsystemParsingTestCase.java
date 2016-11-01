@@ -57,12 +57,12 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
+public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final int expectedOperationCount;
     private final JGroupsSchema schema;
 
-    public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
+    public JGroupsSubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), String.format(Locale.ROOT, "subsystem-jgroups-%d_%d.xml", schema.major(), schema.minor()));
         this.expectedOperationCount = expectedOperationCount;
         this.schema = schema;

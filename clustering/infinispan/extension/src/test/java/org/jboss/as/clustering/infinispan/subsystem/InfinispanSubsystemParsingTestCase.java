@@ -52,12 +52,12 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
+public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final InfinispanSchema schema;
     private final int operations;
 
-    public SubsystemParsingTestCase(InfinispanSchema schema, int operations) {
+    public InfinispanSubsystemParsingTestCase(InfinispanSchema schema, int operations) {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), String.format("subsystem-infinispan-%d_%d.xml", schema.major(), schema.minor()));
         this.schema = schema;
         this.operations = operations;
