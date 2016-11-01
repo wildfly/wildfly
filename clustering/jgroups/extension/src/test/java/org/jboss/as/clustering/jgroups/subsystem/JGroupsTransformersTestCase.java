@@ -56,7 +56,7 @@ import org.junit.Test;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class TransformersTestCase extends OperationTestCaseBase {
+public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
     private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.jboss.as:jboss-as-clustering-jgroups:%s", version);

@@ -34,7 +34,7 @@ import org.junit.Test;
  * @author <a href="tomasz.cerar@redhat.com"> Tomasz Cerar</a>
  * @author Richard Achmatowicz (c) 2015 Red Hat Inc.
  */
-public class TransformersTestCase extends AbstractSubsystemBaseTest {
+public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.wildfly:wildfly-ejb3:%s", version);
@@ -48,7 +48,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
-    public TransformersTestCase() {
+    public Ejb3TransformersTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());
     }
 

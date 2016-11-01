@@ -66,7 +66,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class TransformersTestCase extends OperationTestCaseBase {
+public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
     private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.jboss.as:jboss-as-clustering-infinispan:%s", version);
