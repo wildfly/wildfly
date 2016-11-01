@@ -26,12 +26,14 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.jboss.msc.service.ServiceName;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * {@link Externalizer} for a {@link ServiceName}.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class ServiceNameExternalizer implements Externalizer<ServiceName> {
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,40 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.singleton.service;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+package org.wildfly.clustering.server.group;
 
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
-public class MyService implements Service<Environment> {
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
-    private final Value<ServerEnvironment> env;
-    private final AtomicBoolean started = new AtomicBoolean(false);
+/**
+ * Marshalling externalizer for a {@link LocalNode}.
+ * @author Paul Ferraro
+ */
+@MetaInfServices(Externalizer.class)
+public class LocalNodeExternalizer implements Externalizer<LocalNode> {
 
-    public MyService(Value<ServerEnvironment> env) {
-        this.env = env;
+    @Override
+    public void writeObject(ObjectOutput output, LocalNode node) throws IOException {
+        output.writeUTF(node.getCluster());
+        output.writeUTF(node.getName());
     }
 
     @Override
-    public Environment getValue() {
-        if (!this.started.get()) {
-            throw new IllegalStateException();
-        }
-        return new Environment(this.env.getValue().getNodeName());
+    public LocalNode readObject(ObjectInput input) throws IOException {
+        return new LocalNode(input.readUTF(), input.readUTF());
     }
 
     @Override
-    public void start(StartContext context) {
-        this.started.set(true);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.started.set(false);
+    public Class<? extends LocalNode> getTargetClass() {
+        return LocalNode.class;
     }
 }

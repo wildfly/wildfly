@@ -41,6 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.singleton.SingletonBuilder;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
@@ -86,7 +87,7 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
     }
 
     @Override
-    public <T> Builder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
+    public <T> SingletonBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
         return this.factory.getValue().createSingletonServiceBuilder(name, service).electionPolicy(this.policy.getValue()).requireQuorum(this.quorum);
     }
 }

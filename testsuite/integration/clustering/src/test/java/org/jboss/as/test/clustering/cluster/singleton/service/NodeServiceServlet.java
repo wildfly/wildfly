@@ -35,11 +35,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.group.Node;
 
-@WebServlet(urlPatterns = { MyServiceServlet.SERVLET_PATH })
-public class MyServiceServlet extends HttpServlet {
+@WebServlet(urlPatterns = { NodeServiceServlet.SERVLET_PATH })
+public class NodeServiceServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
-    private static final String SERVLET_NAME = "service";
+    public static final String NODE_HEADER = "node";
+    private static final String SERVLET_NAME = "node";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
     private static final String SERVICE = "service";
     private static final String EXPECTED = "expected";
@@ -63,18 +65,18 @@ public class MyServiceServlet extends HttpServlet {
         String expected = req.getParameter(EXPECTED);
         this.log(String.format("Received request for %s, expecting %s", serviceName, expected));
         @SuppressWarnings("unchecked")
-        ServiceController<Environment> service = (ServiceController<Environment>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
+        ServiceController<Node> service = (ServiceController<Node>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
         try {
-            Environment env = service.getValue();
+            Node node = service.getValue();
             if (expected != null) {
                 for (int i = 0; i < RETRIES; ++i) {
-                    if ((env != null) && expected.equals(env.getNodeName())) break;
+                    if ((node != null) && expected.equals(node.getName())) break;
                     Thread.yield();
-                    env = service.getValue();
+                    node = service.getValue();
                 }
             }
-            if (env != null) {
-                resp.setHeader("node", env.getNodeName());
+            if (node != null) {
+                resp.setHeader(NODE_HEADER, node.getName());
             }
         } catch (IllegalStateException e) {
             this.log(e.getLocalizedMessage(), e);

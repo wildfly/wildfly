@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import java.util.Arrays;
-import java.util.Collection;
+package org.wildfly.clustering.marshalling.jboss;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Optional;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * ClassTable contributor for a {@link DistributedSingletonServiceBuilder}.
+ * {@link Externalizer} for {@link Optional} values.
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class SingletonClassTableContributor implements ClassTableContributor {
+@MetaInfServices(Externalizer.class)
+public class OptionalExternalizer implements Externalizer<Optional<Object>> {
 
     @Override
-    public Collection<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(SingletonValueCommand.class, StartCommand.class, StopCommand.class);
+    public void writeObject(ObjectOutput output, Optional<Object> optional) throws IOException {
+        output.writeObject(optional.orElse(null));
+    }
+
+    @Override
+    public Optional<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return Optional.ofNullable(input.readObject());
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Class<? extends Optional<Object>> getTargetClass() {
+        Class targetClass = Optional.class;
+        return targetClass;
     }
 }

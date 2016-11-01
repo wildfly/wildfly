@@ -439,7 +439,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {
-        public ChangeToTrueConfig(String... attributes) {
+        ChangeToTrueConfig(String... attributes) {
             super(attributes);
         }
 

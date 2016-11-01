@@ -56,7 +56,7 @@ public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     @Override
-    public ServiceProviderRegistration<T> register(final T service, Listener listener) {
+    public ServiceProviderRegistration<T> register(T service, Listener listener) {
         return this.register(service);
     }
 
@@ -67,6 +67,6 @@ public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @Override
     public Set<T> getServices() {
-        return this.services;
+        return Collections.unmodifiableSet(this.services);
     }
 }

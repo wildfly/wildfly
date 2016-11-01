@@ -128,7 +128,7 @@ public class SessionExpirationScheduler implements Scheduler {
     private class ExpirationTask implements Runnable {
         private final String id;
 
-        public ExpirationTask(String id) {
+        ExpirationTask(String id) {
             this.id = id;
         }
 

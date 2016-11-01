@@ -1,3 +1,0 @@
-org.wildfly.clustering.server.dispatcher.CommandDispatcherClassTableContributor
-org.wildfly.clustering.server.provider.ServiceProviderRegistryClassTableContributor
-org.wildfly.clustering.server.singleton.SingletonClassTableContributor

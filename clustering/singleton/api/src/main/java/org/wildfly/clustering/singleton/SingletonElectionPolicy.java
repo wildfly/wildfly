@@ -27,8 +27,7 @@ import java.util.List;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Used by a singleton service to elect the node which should run the service
- * from the list of nodes providing that service.
+ * Used by a singleton service to elect the primary node from among the list of nodes that can provide the given service.
  * @author Paul Ferraro
  */
 public interface SingletonElectionPolicy {

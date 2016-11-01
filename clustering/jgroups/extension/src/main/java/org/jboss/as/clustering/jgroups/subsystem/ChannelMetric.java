@@ -115,7 +115,7 @@ public enum ChannelMetric implements Metric<JChannel> {
     ;
     private final AttributeDefinition definition;
 
-    private ChannelMetric(String name, ModelType type) {
+    ChannelMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

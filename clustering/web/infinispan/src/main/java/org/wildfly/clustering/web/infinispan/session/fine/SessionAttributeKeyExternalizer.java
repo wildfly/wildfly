@@ -24,6 +24,8 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import java.io.IOException;
 import java.io.ObjectOutput;
 
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
@@ -31,6 +33,7 @@ import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
  * Externalizer for a {@link SessionAttributeKey}.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class SessionAttributeKeyExternalizer extends SessionKeyExternalizer<SessionAttributeKey> {
 
     public SessionAttributeKeyExternalizer() {

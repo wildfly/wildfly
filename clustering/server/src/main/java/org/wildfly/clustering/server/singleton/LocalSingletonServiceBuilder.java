@@ -55,6 +55,12 @@ public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     }
 
     @Override
+    public SingletonServiceBuilder<T> backupService(Service<T> backupService) {
+        // A backup service will never run on a local singleton
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
         return target.addService(this.name, this.service);
     }

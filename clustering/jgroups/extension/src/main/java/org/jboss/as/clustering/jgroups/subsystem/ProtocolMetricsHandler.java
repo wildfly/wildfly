@@ -212,7 +212,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         private final Class<?>[] types;
         private final ModelType modelType;
 
-        private FieldType(ModelType modelType, Class<?>... types) {
+        FieldType(ModelType modelType, Class<?>... types) {
             this.modelType = modelType;
             this.types = types;
         }

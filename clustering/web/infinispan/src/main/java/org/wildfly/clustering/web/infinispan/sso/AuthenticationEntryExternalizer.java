@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
@@ -35,6 +36,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalize
  * @param <A>
  * @param <D>
  */
+@MetaInfServices(Externalizer.class)
 public class AuthenticationEntryExternalizer<A, L> implements Externalizer<AuthenticationEntry<A, L>> {
 
     private final Externalizer<SimpleMarshalledValue<A>> externalizer = new SimpleMarshalledValueExternalizer<>();

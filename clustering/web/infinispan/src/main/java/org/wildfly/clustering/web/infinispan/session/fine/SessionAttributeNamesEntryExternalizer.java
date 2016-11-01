@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 
@@ -37,6 +38,7 @@ import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
  * Externalizer for {@link SessionAttributeNamesEntry}.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class SessionAttributeNamesEntryExternalizer implements Externalizer<SessionAttributeNamesEntry> {
 
     @Override

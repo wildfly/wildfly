@@ -38,7 +38,7 @@ public enum SingletonModel implements Model {
 
     private final ModelVersion version;
 
-    private SingletonModel(int major, int minor, int micro) {
+    SingletonModel(int major, int minor, int micro) {
         this.version = ModelVersion.create(major, minor, micro);
     }
 
