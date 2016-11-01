@@ -59,7 +59,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         new ChannelClusterBuilder(JCHANNEL_CLUSTER.getServiceName(address), name).configure(context, model).build(target).install();
-        new ChannelBuilder(JCHANNEL.getServiceName(address), name).configure(context, model).build(target).install();
+        new ChannelBuilder(JCHANNEL.getServiceName(address), name).statisticsEnabled(STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean()).configure(context, model).build(target).install();
         new AliasServiceBuilder<>(JCHANNEL_FACTORY.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, stack), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
         new ForkChannelFactoryBuilder(FORK_CHANNEL_FACTORY.getServiceName(address), name).configure(context, model).build(target).install();
         new ModuleBuilder(JCHANNEL_MODULE.getServiceName(address), MODULE).configure(context, model).build(target).install();

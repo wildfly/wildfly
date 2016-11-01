@@ -28,7 +28,9 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -49,12 +51,17 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return (result == 0) ? path1.getValue().compareTo(path2.getValue()) : result;
     };
 
+    private static final Comparator<AttributeDefinition> ATTRIBUTE_COMPARATOR = (AttributeDefinition attribute1, AttributeDefinition attribute2) -> {
+        return attribute1.getName().compareTo(attribute2.getName());
+    };
+
     private final ResourceDescriptionResolver resolver;
     private final List<Capability> capabilities = new LinkedList<>();
     private final List<AttributeDefinition> attributes = new LinkedList<>();
     private final List<AttributeDefinition> parameters = new LinkedList<>();
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
+    private final Map<AttributeDefinition, Attribute> aliases = new TreeMap<>(ATTRIBUTE_COMPARATOR);
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -88,6 +95,11 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     @Override
     public Set<PathElement> getRequiredSingletonChildren() {
         return this.requiredSingletonChildren;
+    }
+
+    @Override
+    public Map<AttributeDefinition, Attribute> getAttributeAliases() {
+        return this.aliases;
     }
 
     public <E extends Enum<E> & Attribute> ResourceDescriptor addAttributes(Class<E> enumClass) {
@@ -151,6 +163,11 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor addRequiredSingletonChildren(PathElement... paths) {
         this.requiredSingletonChildren.addAll(Arrays.asList(paths));
+        return this;
+    }
+
+    public ResourceDescriptor addAlias(Attribute alias, Attribute target) {
+        this.aliases.put(alias.getDefinition(), target);
         return this;
     }
 }

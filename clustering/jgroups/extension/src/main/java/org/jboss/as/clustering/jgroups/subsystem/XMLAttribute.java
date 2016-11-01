@@ -51,6 +51,7 @@ public enum XMLAttribute {
     SITE(TransportResourceDefinition.Attribute.SITE),
     SOCKET_BINDING(ProtocolResourceDefinition.Attribute.SOCKET_BINDING),
     STACK(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK),
+    STATISTICS_ENABLED(ChannelResourceDefinition.Attribute.STATISTICS_ENABLED),
     @Deprecated THREAD_FACTORY(TransportResourceDefinition.ThreadingAttribute.THREAD_FACTORY),
     @Deprecated TIMER_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.TIMER_EXECUTOR),
     TYPE(ModelDescriptionConstants.TYPE),

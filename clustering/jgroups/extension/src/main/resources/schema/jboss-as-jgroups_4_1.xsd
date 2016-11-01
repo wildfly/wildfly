@@ -97,6 +97,11 @@
                 <xs:documentation>Indicates the module from which to load clustering services.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>Indicates whether or not this channel will collect statistics.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="fork">

@@ -181,6 +181,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         break;
                     }
                 }
+                case STATISTICS_ENABLED: {
+                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                        readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
