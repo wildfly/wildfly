@@ -21,14 +21,17 @@
 package org.jboss.as.test.integration.management.deploy.runtime.jaxrs;
 
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.ejb.Singleton;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 /**
  *
@@ -71,7 +74,12 @@ public class HelloResource {
     @PUT
     @Consumes("text/plain")
     @Path("/update")
-    public void updateMessage(String content) {
+    public void updateMessage(@QueryParam("content") @DefaultValue("Hello") String content) {
         message.set(content);
+    }
+
+    @Path("/sub")
+    public SubHelloResource sub() {
+        return new SubHelloResource();
     }
 }

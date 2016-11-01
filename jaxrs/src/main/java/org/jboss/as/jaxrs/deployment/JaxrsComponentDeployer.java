@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+
 import java.util.Arrays;
 
 import org.jboss.as.ee.component.Attachments;
@@ -36,8 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
-
-import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 /**
  * Integrates JAX-RS with managed beans and EJB's
