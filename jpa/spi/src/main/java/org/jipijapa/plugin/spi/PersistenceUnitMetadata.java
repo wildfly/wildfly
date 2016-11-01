@@ -92,7 +92,15 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     void setTempClassLoaderFactory(TempClassLoaderFactory tempClassLoaderFactory);
 
+    /**
+     * Cache a (new, on first use) temp classloader and return it for all subsequent calls.
+     * The cached temp classloader is only to be reused by the caller, at the per persistence unit level.
+     * @return the cached temp classloader
+     */
+    ClassLoader cacheTempClassLoader();
+
     void setSharedCacheMode(SharedCacheMode sharedCacheMode);
 
     List<ClassTransformer> getTransformers();
+
 }
