@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -64,24 +65,24 @@ public class PrimaryProxyService<T> implements Service<T> {
         CommandDispatcher<SingletonContext<T>> dispatcher = this.dispatcher.get();
         ServiceProviderRegistration<ServiceName> registration = this.registration.get();
         try {
-            List<T> result = Collections.emptyList();
+            List<Map.Entry<Node, Optional<T>>> result = Collections.emptyList();
             while (result.isEmpty()) {
                 if (!this.started) {
                     throw ClusteringServerLogger.ROOT_LOGGER.notStarted(registration.getService().getCanonicalName());
                 }
                 Map<Node, CommandResponse<Optional<T>>> responses = dispatcher.executeOnCluster(new SingletonValueCommand<T>());
                 // Prune non-primary (i.e. null) results
-                result = responses.values().stream().map(response -> {
+                result = responses.entrySet().stream().map(entry -> {
                     try {
-                        return response.get();
+                        return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().get());
                     } catch (ExecutionException e) {
                         throw new IllegalArgumentException(e);
                     }
-                }).filter(value -> value != null).map(value -> value.orElse(null)).collect(Collectors.toList());
+                }).filter(entry -> entry.getValue() != null).collect(Collectors.toList());
                 // We expect only 1 result
                 if (result.size() > 1) {
                     // This would mean there are multiple primary nodes!
-                    throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(registration.getService().getCanonicalName(), result.size());
+                    throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(registration.getService().getCanonicalName(), result.stream().map(entry -> entry.getKey()).collect(Collectors.toList()));
                 }
                 if (result.isEmpty()) {
                     ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(registration.getService().getCanonicalName());
@@ -96,7 +97,7 @@ public class PrimaryProxyService<T> implements Service<T> {
                     Thread.yield();
                 }
             }
-            return result.get(0);
+            return result.get(0).getValue().orElse(null);
         } catch (CommandDispatcherException e) {
             throw new IllegalStateException(e);
         } catch (InterruptedException e) {
