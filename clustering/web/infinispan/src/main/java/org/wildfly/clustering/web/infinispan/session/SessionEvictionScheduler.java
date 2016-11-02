@@ -93,6 +93,7 @@ public class SessionEvictionScheduler implements Scheduler, SessionEvictionConte
         synchronized (this.evictionQueue) {
             Iterator<String> sessions = this.evictionQueue.iterator();
             while (sessions.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) break;
                 String sessionId = sessions.next();
                 if (!locality.isLocal(sessionId)) {
                     sessions.remove();

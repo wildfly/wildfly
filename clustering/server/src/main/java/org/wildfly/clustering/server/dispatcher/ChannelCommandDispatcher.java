@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +41,9 @@ import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RspFilter;
+import org.jgroups.util.FutureListener;
 import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandResponse;
@@ -53,7 +57,7 @@ import org.wildfly.clustering.server.Addressable;
  *
  * @param <C> command execution context
  */
-public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
+public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private static final RspFilter FILTER = new RspFilter() {
         @Override
@@ -72,13 +76,20 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
     private final NodeFactory<Address> factory;
     private final long timeout;
     private final CommandDispatcher<C> localDispatcher;
+    private final Runnable closeTask;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout, CommandDispatcher<C> localDispatcher) {
+    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
         this.factory = factory;
         this.timeout = timeout;
         this.localDispatcher = localDispatcher;
+        this.closeTask = closeTask;
+    }
+
+    @Override
+    public void close() {
+        this.closeTask.run();
     }
 
     @Override
@@ -100,37 +111,57 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
 
     @Override
     public <R> Map<Node, Future<R>> submitOnCluster(Command<R, C> command, Node... excludedNodes) throws Exception {
-        final Future<? extends Map<Address, Rsp<R>>> responses = this.dispatcher.castMessageWithFuture(null, this.createMessage(command), this.createRequestOptions(excludedNodes));
-
-        Map<Node, Future<R>> results = new HashMap<>();
+        Map<Node, Future<R>> results = new ConcurrentHashMap<>();
+        FutureListener<RspList<R>> listener = future -> {
+            try {
+                future.get().keySet().stream().map(address -> this.factory.createNode(address)).forEach(node -> results.remove(node));
+            } catch (CancellationException e) {
+                // Ignore
+            } catch (ExecutionException e) {
+                // Ignore
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
+        Future<? extends Map<Address, Rsp<R>>> futureResponses = this.dispatcher.castMessageWithFuture(null, this.createMessage(command), this.createRequestOptions(excludedNodes), listener);
         Set<Node> excluded = (excludedNodes != null) ? new HashSet<>(Arrays.asList(excludedNodes)) : Collections.<Node>emptySet();
         for (Address address: this.dispatcher.getChannel().getView().getMembers()) {
-            final Node node = this.factory.createNode(address);
+            Node node = this.factory.createNode(address);
             if (!excluded.contains(node)) {
                 Future<R> future = new Future<R>() {
                     @Override
                     public boolean cancel(boolean mayInterruptIfRunning) {
-                        return responses.cancel(mayInterruptIfRunning);
+                        return futureResponses.cancel(mayInterruptIfRunning);
                     }
 
                     @Override
                     public R get() throws InterruptedException, ExecutionException {
-                        return createCommandResponse(responses.get().get(node)).get();
+                        Map<Address, Rsp<R>> responses = futureResponses.get();
+                        Rsp<R> response = responses.get(address);
+                        if (response == null) {
+                            throw new CancellationException();
+                        }
+                        return createCommandResponse(response).get();
                     }
 
                     @Override
                     public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                        return createCommandResponse(responses.get(timeout, unit).get(node)).get();
+                        Map<Address, Rsp<R>> responses = futureResponses.get(timeout, unit);
+                        Rsp<R> response = responses.get(address);
+                        if (response == null) {
+                            throw new CancellationException();
+                        }
+                        return createCommandResponse(response).get();
                     }
 
                     @Override
                     public boolean isCancelled() {
-                        return responses.isCancelled();
+                        return futureResponses.isCancelled();
                     }
 
                     @Override
                     public boolean isDone() {
-                        return responses.isDone();
+                        return futureResponses.isDone();
                     }
                 };
                 results.put(node, future);
