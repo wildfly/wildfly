@@ -27,6 +27,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 
 /**
@@ -62,7 +63,8 @@ public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, new LocalSingletonService<>(this.service));
+        SingletonService<T> service = new LocalSingletonService<>(this.service);
+        return new AsynchronousSingletonServiceBuilder<>(this.name, service).build(target);
     }
 
     @Override

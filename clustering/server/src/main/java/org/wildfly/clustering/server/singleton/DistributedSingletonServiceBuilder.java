@@ -27,16 +27,15 @@ import java.util.stream.Stream;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
@@ -70,9 +69,10 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        ServiceBuilder<T> builder = new AsynchronousServiceBuilder<>(this.serviceName, new DistributedSingletonService<>(this)).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
-        Stream.of(this.registry, this.dispatcherFactory).forEach(dependency -> dependency.register(builder));
-        return builder;
+        SingletonService<T> service = new DistributedSingletonService<>(this);
+        ServiceBuilder<T> installer = new AsynchronousSingletonServiceBuilder<>(this.serviceName, service).build(target);
+        Stream.of(this.registry, this.dispatcherFactory).forEach(dependency -> dependency.register(installer));
+        return installer;
     }
 
     @Override

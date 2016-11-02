@@ -95,6 +95,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             HttpResponse response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -105,6 +106,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -113,6 +115,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -123,6 +126,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -133,6 +137,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -141,6 +146,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -151,6 +157,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -161,6 +168,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -169,6 +177,7 @@ public class SingletonPolicyServiceTestCase extends ClusterAbstractTestCase {
             response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME, NODE_2)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
                 Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
