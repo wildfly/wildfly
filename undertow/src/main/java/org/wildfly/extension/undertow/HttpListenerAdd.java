@@ -43,7 +43,7 @@ public class HttpListenerAdd extends ListenerAdd {
     }
 
     @Override
-    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
+    ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         final boolean proxyAddressForwarding = HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
@@ -66,7 +66,7 @@ public class HttpListenerAdd extends ListenerAdd {
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
             serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(redirectBindingRef.asString()), SocketBinding.class, service.getRedirectSocket());

@@ -30,7 +30,7 @@ public class TestServer extends Server {
         super(name, defaultHost);
     }
 
-    public TestServer(String name, String defaultHost, Host host, ListenerService<?> listener) {
+    public TestServer(String name, String defaultHost, Host host, ListenerService listener) {
         this(name, defaultHost);
         this.registerHost(host);
         this.registerListener(listener);

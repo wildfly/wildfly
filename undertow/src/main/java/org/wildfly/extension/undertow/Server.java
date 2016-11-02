@@ -55,7 +55,7 @@ public class Server implements Service<Server> {
     private final InjectedValue<ServletContainerService> servletContainer = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private volatile HttpHandler root;
-    private final List<ListenerService<?>> listeners = new CopyOnWriteArrayList<>();
+    private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
     private final Set<Host> hosts = new CopyOnWriteArraySet<>();
 
     private final HashMap<Integer,Integer> securePortMappings = new HashMap<>();
@@ -76,7 +76,7 @@ public class Server implements Service<Server> {
         undertowService.getValue().registerServer(this);
     }
 
-    protected void registerListener(ListenerService<?> listener) {
+    protected void registerListener(ListenerService listener) {
            listeners.add(listener);
            if (!listener.isSecure()) {
                SocketBinding binding = listener.getBinding().getValue();
@@ -89,7 +89,7 @@ public class Server implements Service<Server> {
            }
        }
 
-       protected void unregisterListener(ListenerService<?> listener) {
+       protected void unregisterListener(ListenerService listener) {
            listeners.remove(listener);
            if (!listener.isSecure()) {
                SocketBinding binding = listener.getBinding().getValue();
@@ -163,8 +163,8 @@ public class Server implements Service<Server> {
         return Collections.unmodifiableSet(hosts);
     }
 
-    public List<ListenerService<?>> getListeners() {
-        return listeners;
+    public List<UndertowListener> getListeners() {
+        return (List)listeners;
     }
 
 

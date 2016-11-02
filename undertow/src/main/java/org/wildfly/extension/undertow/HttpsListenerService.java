@@ -156,7 +156,7 @@ public class HttpsListenerService extends HttpListenerService {
     }
 
     @Override
-    protected String getProtocol() {
+    public String getProtocol() {
         return PROTOCOL;
     }
 

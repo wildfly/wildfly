@@ -54,7 +54,7 @@ import org.xnio.channels.AcceptingChannel;
  * @author Stuart Douglas
  * @author Tomaz Cerar
  */
-public class HttpListenerService extends ListenerService<HttpListenerService> {
+public class HttpListenerService extends ListenerService {
     private volatile AcceptingChannel<StreamConnection> server;
 
     private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
@@ -153,7 +153,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
     }
 
     @Override
-    protected String getProtocol() {
+    public String getProtocol() {
         return PROTOCOL;
     }
 }

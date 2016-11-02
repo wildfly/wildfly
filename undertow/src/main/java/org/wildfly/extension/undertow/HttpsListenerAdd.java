@@ -50,7 +50,7 @@ public class HttpsListenerAdd extends ListenerAdd {
     }
 
     @Override
-    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
+    ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder().addAll(socketOptions);
         HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model, builder);
         ModelNode value = HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, model);
@@ -72,7 +72,7 @@ public class HttpsListenerAdd extends ListenerAdd {
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         serviceBuilder.addDependency(HttpListenerAdd.REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
 
         ModelNode sslContextModel = HttpsListenerResourceDefinition.SSL_CONTEXT.resolveModelAttribute(context, model);

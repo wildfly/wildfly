@@ -55,7 +55,7 @@ public class ResetConnectorStatisticsHandler implements OperationStepHandler {
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        ListenerService<?> service = (ListenerService<?>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name)).getValue();
+        ListenerService service = (ListenerService) context.getServiceRegistry(false).getService(UndertowService.listenerName(name)).getValue();
         ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
         if(stats != null) {
             stats.reset();
