@@ -22,22 +22,24 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-jaxrs">
-
+<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-legacy">
+    <properties>
+        <property name="jboss.api" value="deprecated"/>
+    </properties>
+    
     <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-jaxrs}"/>
-        <artifact name="${org.jboss.resteasy:resteasy-client}"/>
+        <artifact name="${org.jboss.resteasy:resteasy-legacy}"/>
     </resources>
 
     <dependencies>
-        <module name="org.jboss.resteasy.resteasy-jaxrs-services" services="import"/>
+        <module name="javax.ws.rs.api"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs" services="import"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.activation.api"/>
         <module name="javax.validation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.xml.bind.api"/>
-        <module name="javax.ws.rs.api"/>
         <module name="org.apache.commons.io"/>
         <module name="org.apache.commons.codec" />
         <module name="org.apache.httpcomponents"/>
