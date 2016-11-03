@@ -61,7 +61,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        this(descriptor, handler, new ReloadRequiredWriteAttributeHandler(descriptor));
+        this(descriptor, handler, (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
     }
 
     AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, OperationStepHandler writeAttributeHandler) {
@@ -69,6 +69,11 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         this.descriptor = descriptor;
         this.handler = handler;
         this.writeAttributeHandler = writeAttributeHandler;
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return super.requiresRuntime(context) && (this.handler != null);
     }
 
     @Override
@@ -140,19 +145,15 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (this.handler != null) {
-            this.handler.installServices(context, model);
-        }
+        this.handler.installServices(context, model);
     }
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-        if (this.handler != null) {
-            try {
-                this.handler.removeServices(context, resource.getModel());
-            } catch (OperationFailedException e) {
-                throw new IllegalStateException(e);
-            }
+        try {
+            this.handler.removeServices(context, resource.getModel());
+        } catch (OperationFailedException e) {
+            throw new IllegalStateException(e);
         }
     }
 
