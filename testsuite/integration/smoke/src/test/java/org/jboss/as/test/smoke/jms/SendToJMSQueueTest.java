@@ -22,6 +22,16 @@
 
 package org.jboss.as.test.smoke.jms;
 
+import javax.annotation.Resource;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -37,16 +47,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
 
 /**
  * Basic JMS test using a customly created JMS queue
@@ -86,9 +86,6 @@ public class SendToJMSQueueTest {
 
     @Test
     public void sendAndReceiveMessage() throws Exception {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         Connection connection = null;
         Session session = null;
         Message receivedMessage = null;
@@ -135,9 +132,6 @@ public class SendToJMSQueueTest {
 
     @Test
     public void sendMessageWithClientAcknowledge() throws Exception {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         Connection senderConnection = null;
         Connection consumerConnection = null;
         Session senderSession = null;
