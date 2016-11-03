@@ -3083,8 +3083,8 @@
       <artifactId>jboss-jsf-api_2.2_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU General Public License, Version 2</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0.txt</url>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
