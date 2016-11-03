@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -142,7 +143,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
                 final ModelNode bindingRemove = new ModelNode();
                 bindingRemove.get(OP).set(REMOVE);
                 bindingRemove.get(OP_ADDR).set(createAddress());
-                bindingRemove.get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+                bindingRemove.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
                 final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
                 Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
                         .isDefined());
