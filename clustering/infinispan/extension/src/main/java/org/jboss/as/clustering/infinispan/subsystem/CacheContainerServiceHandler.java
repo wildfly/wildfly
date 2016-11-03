@@ -134,6 +134,8 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 
+        context.removeService(CacheContainerComponent.MODULE.getServiceName(address));
+
         EnumSet.allOf(CacheContainerResourceDefinition.Capability.class).stream().map(component -> component.getServiceName(address)).forEach(serviceName -> context.removeService(serviceName));
     }
 }
