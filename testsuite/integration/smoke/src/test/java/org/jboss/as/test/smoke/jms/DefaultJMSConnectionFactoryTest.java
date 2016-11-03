@@ -51,7 +51,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -100,9 +99,6 @@ public class DefaultJMSConnectionFactoryTest {
 
     @Test
     public void sendWithRegularConnectionFactory() throws Exception {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         String text = UUID.randomUUID().toString();
 
         producerEJB.sendWithRegularConnectionFactory(queue, text);
