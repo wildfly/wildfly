@@ -117,6 +117,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         context.removeService(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName).getBinderServiceName());
 
         context.removeService(new XAResourceRecoveryBuilder(cacheAddress).getServiceName());
+        context.removeService(CacheComponent.MODULE.getServiceName(cacheAddress));
 
         EnumSet.allOf(CacheResourceDefinition.Capability.class).stream().map(capability -> capability.getServiceName(cacheAddress)).forEach(serviceName -> context.removeService(serviceName));
     }
