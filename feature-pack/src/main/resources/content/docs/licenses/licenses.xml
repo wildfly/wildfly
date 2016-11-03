@@ -1439,8 +1439,8 @@
       <artifactId>codemodel</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -1455,8 +1455,8 @@
       <artifactId>jaxb-core</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -1471,8 +1471,8 @@
       <artifactId>jaxb-jxc</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -1487,8 +1487,8 @@
       <artifactId>jaxb-runtime</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -1503,8 +1503,8 @@
       <artifactId>jaxb-xjc</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -1519,8 +1519,8 @@
       <artifactId>txw2</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
