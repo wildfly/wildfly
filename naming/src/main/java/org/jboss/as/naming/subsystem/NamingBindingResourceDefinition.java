@@ -89,7 +89,6 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final PropertiesAttributeDefinition ENVIRONMENT = new PropertiesAttributeDefinition.Builder(NamingSubsystemModel.ENVIRONMENT, true)
-            .setXmlName("property")
             .setAllowExpression(true)
             .build();
 
