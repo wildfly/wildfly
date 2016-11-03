@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
@@ -29,13 +32,18 @@ import org.jberet.repository.JobRepository;
 import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
@@ -54,6 +62,7 @@ import org.wildfly.extension.requestcontroller.RequestController;
  */
 public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
+    static final AttachmentKey<WildFlyJobXmlResolver> JOB_XML_RESOLVER = AttachmentKey.create(WildFlyJobXmlResolver.class);
     private final boolean rcPresent;
 
     public BatchEnvironmentProcessor(final boolean rcPresent) {
@@ -65,6 +74,13 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.hasAttachment(Attachments.MODULE)) {
             BatchLogger.LOGGER.tracef("Processing deployment '%s' for the batch environment.", deploymentUnit.getName());
+
+            // Configure and attach the job resolver for all deployments
+            final WildFlyJobXmlResolver jobXmlResolver = getJobXmlResolver(deploymentUnit);
+
+            // Skip the rest of the processing for EAR's, only sub-deployments need an environment configured
+            if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) return;
+
             // Get the class loader
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final ClassLoader moduleClassLoader = module.getClassLoader();
@@ -95,7 +111,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
             // Create the batch environment
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, WildFlyJobXmlResolver.of(moduleClassLoader, deploymentUnit), deploymentUnit.getName(), restartJobsOnResume);
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentUnit.getName(), restartJobsOnResume);
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
 
             // Add a dependency to the thread-pool
@@ -137,5 +153,53 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
+    }
+
+    private WildFlyJobXmlResolver getJobXmlResolver(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        // If this deployment unit already has a resolver, just use it
+        if (deploymentUnit.hasAttachment(JOB_XML_RESOLVER)) {
+            return deploymentUnit.getAttachment(JOB_XML_RESOLVER);
+        }
+        // Get the module for it's class loader
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        final ClassLoader classLoader = module.getClassLoader();
+        WildFlyJobXmlResolver resolver;
+        // If we're an EAR we need to skip sub-deployments as they'll be process later, however all sub-deployments have
+        // access to the EAR/lib directory so those resources need to be processed
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            // Create a new WildFlyJobXmlResolver without jobs from sub-deployments as they'll be processed later
+            final List<ResourceRoot> resources = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)
+                    .stream()
+                    .filter(r -> !SubDeploymentMarker.isSubDeployment(r))
+                    .collect(Collectors.toList());
+            resolver = WildFlyJobXmlResolver.of(classLoader, resources);
+            deploymentUnit.putAttachment(JOB_XML_RESOLVER, resolver);
+        } else {
+            // Create a new resolver for this deployment
+            if (deploymentUnit.hasAttachment(Attachments.RESOURCE_ROOTS)) {
+                resolver = WildFlyJobXmlResolver.of(classLoader, deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS));
+            } else {
+                resolver = WildFlyJobXmlResolver.of(classLoader, Collections.singletonList(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT)));
+            }
+            deploymentUnit.putAttachment(JOB_XML_RESOLVER, resolver);
+            // Process all accessible sub-deployments
+            final List<DeploymentUnit> accessibleDeployments = deploymentUnit.getAttachmentList(Attachments.ACCESSIBLE_SUB_DEPLOYMENTS);
+            for (DeploymentUnit subDeployment : accessibleDeployments) {
+                // Skip our self
+                if (deploymentUnit.equals(subDeployment)) {
+                    continue;
+                }
+                if (subDeployment.hasAttachment(JOB_XML_RESOLVER)) {
+                    final WildFlyJobXmlResolver toCopy = subDeployment.getAttachment(JOB_XML_RESOLVER);
+                    WildFlyJobXmlResolver.merge(resolver, toCopy);
+                } else {
+                    // We need to create a resolver for the sub-deployment and merge the two
+                    final WildFlyJobXmlResolver toCopy = getJobXmlResolver(subDeployment);
+                    subDeployment.putAttachment(JOB_XML_RESOLVER, toCopy);
+                    WildFlyJobXmlResolver.merge(resolver, toCopy);
+                }
+            }
+        }
+        return resolver;
     }
 }
