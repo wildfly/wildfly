@@ -27,7 +27,6 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
 
 import java.util.Collection;
@@ -44,7 +43,7 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
 
     protected static final SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING, false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setRestartAllServices()
                     .setAllowExpression(true)
                     .build();
 

@@ -45,28 +45,33 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition DOMAIN = new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING, true)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("/"))
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition HTTP_ONLY = new SimpleAttributeDefinitionBuilder("http-only", ModelType.BOOLEAN, true)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition SECURE = new SimpleAttributeDefinitionBuilder("secure", ModelType.BOOLEAN, true)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition COOKIE_NAME = new SimpleAttributeDefinitionBuilder("cookie-name", ModelType.STRING, true)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("JSESSIONIDSSO"))
+            .setRestartAllServices()
             .build();
 
     static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH, HTTP_ONLY, SECURE, COOKIE_NAME);

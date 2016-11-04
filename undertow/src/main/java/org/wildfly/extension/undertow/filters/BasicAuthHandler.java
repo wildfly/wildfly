@@ -44,6 +44,7 @@ public class BasicAuthHandler extends Filter {
 
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)
             .setAllowNull(false)
+            .setRestartAllServices()
             .build();
 
     private BasicAuthHandler() {

@@ -205,6 +205,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(
             Constants.PROPERTIES, true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     //ior transport config attributes

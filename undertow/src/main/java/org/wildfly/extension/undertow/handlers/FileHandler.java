@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
@@ -52,38 +53,45 @@ public class FileHandler extends Handler {
     public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
     public static final AttributeDefinition CACHE_BUFFER_SIZE = new SimpleAttributeDefinitionBuilder("cache-buffer-size", ModelType.LONG)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1024))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
     public static final AttributeDefinition CACHE_BUFFERS = new SimpleAttributeDefinitionBuilder("cache-buffers", ModelType.LONG)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1024))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
     public static final AttributeDefinition DIRECTORY_LISTING = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY_LISTING, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition FOLLOW_SYMLINK = new SimpleAttributeDefinitionBuilder("follow-symlink", ModelType.BOOLEAN)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final StringListAttributeDefinition SAFE_SYMLINK_PATHS = new StringListAttributeDefinition.Builder("safe-symlink-paths")
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition CASE_SENSITIVE = new SimpleAttributeDefinitionBuilder("case-sensitive", ModelType.BOOLEAN)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     private FileHandler() {

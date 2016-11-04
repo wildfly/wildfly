@@ -33,10 +33,12 @@ public class CustomFilterDefinition extends Filter {
     public static final AttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder("class-name", ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     public static final AttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder("module", ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final PropertiesAttributeDefinition PARAMETERS = new PropertiesAttributeDefinition.Builder("parameters", true)
@@ -44,6 +46,7 @@ public class CustomFilterDefinition extends Filter {
             .setWrapXmlElement(false)
             .setXmlName("param")
             .setAllowExpression(true)
+            .setRestartAllServices()
             .setAttributeMarshaller(new AttributeMarshaller() { //todo not needed once https://github.com/wildfly/wildfly-core/pull/86 is merged
                 @Override
                 public boolean isMarshallable(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault) {

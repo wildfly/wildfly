@@ -43,10 +43,12 @@ class ServerDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("default-host"))
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition SERVLET_CONTAINER = new SimpleAttributeDefinitionBuilder(Constants.SERVLET_CONTAINER, ModelType.STRING)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode("default"))
+            .setRestartAllServices()
             .build();
     static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_HOST, SERVLET_CONTAINER};
     static final List<PersistentResourceDefinition> CHILDREN = Arrays.asList(

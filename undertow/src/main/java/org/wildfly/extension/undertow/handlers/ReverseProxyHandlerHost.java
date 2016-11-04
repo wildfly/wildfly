@@ -39,7 +39,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -84,7 +83,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true) //todo consider what we can do to make this non nullable
             .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
@@ -92,30 +91,33 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("http"))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("/"))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition INSTANCE_ID = new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM)
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY, REVERSE_PROXY_HANDLER_HOST_CAPABILITY_NAME, true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)
             .setAlternatives(Constants.SSL_CONTEXT)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
