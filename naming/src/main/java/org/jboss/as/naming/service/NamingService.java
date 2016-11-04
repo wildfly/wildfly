@@ -41,6 +41,11 @@ import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
  * @author Eduardo Martins
  */
 public class NamingService implements Service<NamingStore> {
+    public static final String CAPABILITY_NAME = "org.wildfly.naming";
+    /**
+     * @deprecated Dependent subsystem should instead register a requirement on the {@link #CAPABILITY_NAME} capability.
+     */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
     private final InjectedValue<NamingStore> namingStore;
 

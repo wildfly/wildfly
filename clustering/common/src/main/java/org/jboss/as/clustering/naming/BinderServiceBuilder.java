@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CommonRequirement;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -34,6 +36,10 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a ManagedReferenceFactory JNDI binding.
@@ -45,6 +51,8 @@ public class BinderServiceBuilder<T> implements CapabilityServiceBuilder<Managed
     private final ServiceName targetServiceName;
     private final Class<T> targetClass;
     private final List<ContextNames.BindInfo> aliases = new LinkedList<>();
+
+    private volatile boolean enabled = true;
 
     public BinderServiceBuilder(ContextNames.BindInfo binding, ServiceName targetServiceName, Class<T> targetClass) {
         this.binding = binding;
@@ -63,7 +71,18 @@ public class BinderServiceBuilder<T> implements CapabilityServiceBuilder<Managed
     }
 
     @Override
+    public Builder<ManagedReferenceFactory> configure(OperationContext context) {
+        this.enabled = context.hasOptionalCapability(CommonRequirement.NAMING_STORE.getName(), null, null);
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<ManagedReferenceFactory> build(ServiceTarget target) {
+        if (!this.enabled) {
+            // If naming is not enabled, just install a dummy service that never starts
+            Value<ManagedReferenceFactory> value = new ImmediateValue<>(null);
+            return target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.NEVER);
+        }
         String name = this.binding.getBindName();
         BinderService binder = new BinderService(name);
         ServiceBuilder<ManagedReferenceFactory> builder = target.addService(this.getServiceName(), binder)

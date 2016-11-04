@@ -23,6 +23,7 @@ package org.jboss.as.naming.deployment;
 
 import java.util.List;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,11 +49,13 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
+        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        ServiceName namingStoreServiceName = support.getCapabilityServiceName(NamingService.CAPABILITY_NAME);
         //this will always be up but we need to make sure the naming service is
         //not shut down before the deployment is undeployed when the container is shut down
-        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, NamingService.SERVICE_NAME);
+        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, namingStoreServiceName);
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
         final ServiceName serviceName = serviceName(deploymentUnit.getServiceName());
         final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, new RuntimeBindReleaseService());
@@ -60,7 +63,7 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
         if(deploymentUnit.getParent() != null) {
             serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
         }
-        serviceBuilder.addDependency(NamingService.SERVICE_NAME);
+        serviceBuilder.addDependency(namingStoreServiceName);
         serviceBuilder.install();
     }
 
