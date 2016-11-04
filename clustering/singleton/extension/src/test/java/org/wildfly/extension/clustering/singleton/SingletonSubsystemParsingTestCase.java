@@ -45,12 +45,14 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Paul Ferraro
  */
 @RunWith(Parameterized.class)
-public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
+public class SingletonSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
+    private final SingletonSchema schema;
     private final int expectedOperationCount;
 
-    public SubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
+    public SingletonSubsystemParsingTestCase(SingletonSchema schema, int expectedOperationCount) {
         super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), String.format("subsystem-singleton-%d_%d.xml", schema.major(), schema.minor()));
+        this.schema = schema;
         this.expectedOperationCount = expectedOperationCount;
     }
 
@@ -82,6 +84,11 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization().require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format("schema/wildfly-singleton_%d_%d.xsd", schema.major(), schema.minor());
     }
 
     /**

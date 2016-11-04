@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
@@ -51,12 +52,12 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
+public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private final InfinispanSchema schema;
     private final int operations;
 
-    public SubsystemParsingTestCase(InfinispanSchema schema, int operations) {
+    public InfinispanSubsystemParsingTestCase(InfinispanSchema schema, int operations) {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), String.format("subsystem-infinispan-%d_%d.xml", schema.major(), schema.minor()));
         this.schema = schema;
         this.operations = operations;
@@ -88,11 +89,6 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        super.compareXml(configId, original, marshalled);
-    }
-
-    @Override
     protected void compare(ModelNode model1, ModelNode model2) {
         purgeJGroupsModel(model1);
         purgeJGroupsModel(model2);
@@ -101,6 +97,18 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private static void purgeJGroupsModel(ModelNode model) {
         model.get(JGroupsSubsystemResourceDefinition.PATH.getKey()).remove(JGroupsSubsystemResourceDefinition.PATH.getValue());
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format("schema/jboss-as-infinispan_%d_%d.xsd", schema.major(), schema.minor());
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("java.io.tmpdir", "/tmp");
+        return properties;
     }
 
     /**

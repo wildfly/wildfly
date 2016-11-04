@@ -21,6 +21,7 @@
  */
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.clustering.controller.Schema;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -30,37 +31,39 @@ import java.util.Locale;
 /**
  * @author Jean-Frederic Clere
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-public enum Namespace {
-    // must be first
-    UNKNOWN(0, 0, null),
+public enum ModClusterSchema implements Schema<ModClusterSchema> {
 
     MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
     MODCLUSTER_1_1(1, 1, new ModClusterSubsystemXMLReader_1_1()),
     MODCLUSTER_1_2(1, 2, new ModClusterSubsystemXMLReader_1_2()),
     MODCLUSTER_2_0(2, 0, new ModClusterSubsystemXMLReader_2_0()),
     ;
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = MODCLUSTER_2_0;
+    public static final ModClusterSchema CURRENT = MODCLUSTER_2_0;
 
     private final int major;
     private final int minor;
     private final XMLElementReader<List<ModelNode>> reader;
 
-    Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
+    ModClusterSchema(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
         this.major = major;
         this.minor = minor;
         this.reader = reader;
     }
 
-    /**
-     * Get the URI of this namespace.
-     *
-     * @return the URI
-     */
-    public String getUri() {
+    @Override
+    public int major() {
+        return this.major;
+    }
+
+    @Override
+    public int minor() {
+        return this.minor;
+    }
+
+    @Override
+    public String getNamespaceUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
     }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch;
+package org.wildfly.extension.batch.jberet;
 
 import java.io.IOException;
 
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;
 
 /**
  * Basic subsystem test. Tests parsing various batch configurations
  */
-public class SubsystemParsingTestCase extends AbstractBatchTestCase {
+public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
 
-    public SubsystemParsingTestCase() {
+    public JBeretSubsystemParsingTestCase() {
         super(BatchSubsystemDefinition.NAME, new BatchSubsystemExtension());
     }
 
@@ -42,13 +43,13 @@ public class SubsystemParsingTestCase extends AbstractBatchTestCase {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-batch_1_0.xsd";
+        return "schema/wildfly-batch-jberet_1_0.xsd";
     }
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[] {
-            "/subsystem-templates/batch.xml"
+            "/subsystem-templates/batch-jberet.xml"
         };
     }
 
@@ -65,6 +66,10 @@ public class SubsystemParsingTestCase extends AbstractBatchTestCase {
     @Test
     public void testJdbcSubsystem() throws Exception {
         standardSubsystemTest("/jdbc-default-subsystem.xml");
-        standardSubsystemTest("/jdbc-subsystem.xml");
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.data-source.ExampleDS");
     }
 }

@@ -100,10 +100,10 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (Namespace namespace : Namespace.values()) {
-            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
+        for (ModClusterSchema schema : ModClusterSchema.values()) {
+            XMLElementReader<List<ModelNode>> reader = schema.getXMLReader();
             if (reader != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getXMLReader());
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), schema.getXMLReader());
             }
         }
     }
