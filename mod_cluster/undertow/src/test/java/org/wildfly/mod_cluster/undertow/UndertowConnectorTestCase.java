@@ -36,7 +36,6 @@ import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.modcluster.container.Connector;
-import org.jboss.msc.value.InjectedValue;
 import org.junit.Test;
 import org.wildfly.extension.undertow.AjpListenerService;
 import org.wildfly.extension.undertow.HttpListenerService;
@@ -45,7 +44,7 @@ import org.wildfly.extension.undertow.ListenerService;
 import org.xnio.OptionMap;
 
 public class UndertowConnectorTestCase {
-    private final ListenerService<?> listener = mock(ListenerService.class);
+    private final ListenerService listener = mock(ListenerService.class);
     private final Connector connector = new UndertowConnector(this.listener);
 
     @Test
@@ -62,10 +61,8 @@ public class UndertowConnectorTestCase {
         NetworkInterfaceBinding interfaceBinding = new NetworkInterfaceBinding(Collections.<NetworkInterface>emptySet(), expected);
         SocketBindingManager bindingManager = mock(SocketBindingManager.class);
         SocketBinding binding = new SocketBinding("socket", 1, true, null, 0, interfaceBinding, bindingManager, Collections.<ClientMapping>emptyList());
-        InjectedValue<SocketBinding> bindingValue = new InjectedValue<SocketBinding>();
 
-        bindingValue.inject(binding);
-        when(this.listener.getBinding()).thenReturn(bindingValue);
+        when(this.listener.getSocketBinding()).thenReturn(binding);
 
         InetAddress result = this.connector.getAddress();
 
@@ -78,10 +75,8 @@ public class UndertowConnectorTestCase {
         NetworkInterfaceBinding interfaceBinding = new NetworkInterfaceBinding(Collections.<NetworkInterface>emptySet(), InetAddress.getLocalHost());
         SocketBindingManager bindingManager = mock(SocketBindingManager.class);
         SocketBinding binding = new SocketBinding("socket", expected, true, null, 0, interfaceBinding, bindingManager, Collections.<ClientMapping>emptyList());
-        InjectedValue<SocketBinding> bindingValue = new InjectedValue<SocketBinding>();
 
-        bindingValue.inject(binding);
-        when(this.listener.getBinding()).thenReturn(bindingValue);
+        when(this.listener.getSocketBinding()).thenReturn(binding);
 
         int result = this.connector.getPort();
 

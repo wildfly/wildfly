@@ -271,7 +271,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
                 return;
             }
             String op = operation.get(NAME).asString();
-            ListenerService<?> service = listenerSC.getValue();
+            ListenerService service = listenerSC.getValue();
             ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
             if(stats != null) {
                 ConnectorStat element = ConnectorStat.getStat(op);
@@ -318,7 +318,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             // may be different now than it was before (different system props, or vault contents)
             // Instead we consider the previous setting to be enabled if the service Mode != Mode.NEVER
             final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-            ListenerService<?> listenerService = (ListenerService<?>) controller.getService();
+            ListenerService listenerService = (ListenerService) controller.getService();
             boolean currentEnabled = listenerService.isEnabled();
             handbackHolder.setHandback(currentEnabled);
             listenerService.setEnabled(enabled);
@@ -331,7 +331,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
                 final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
                 final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-                ListenerService<?> listenerService = (ListenerService<?>) controller.getService();
+                ListenerService listenerService = (ListenerService) controller.getService();
                 listenerService.setEnabled(handback);
             }
         }
