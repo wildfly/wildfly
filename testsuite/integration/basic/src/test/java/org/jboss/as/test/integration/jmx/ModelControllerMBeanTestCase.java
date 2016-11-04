@@ -36,6 +36,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.jmx.model.ModelControllerMBeanHelper;
+import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -104,7 +105,7 @@ public class ModelControllerMBeanTestCase {
         String urlString = System
                 .getProperty("jmx.service.url", "service:jmx:http-remoting-jmx://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort());
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-        connector = JMXConnectorFactory.connect(serviceURL, null);
+        connector = JMXConnectorFactory.connect(serviceURL,DefaultConfiguration.credentials());
         return connector.getMBeanServerConnection();
     }
 
