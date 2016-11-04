@@ -239,7 +239,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         ReverseProxyHandler.MAX_REQUEST_TIME,
                                                         ReverseProxyHandler.REQUEST_QUEUE_SIZE,
                                                         ReverseProxyHandler.CACHED_CONNECTIONS_PER_THREAD,
-                                                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT)
+                                                        ReverseProxyHandler.CONNECTION_IDLE_TIMEOUT,
+                                                        ReverseProxyHandler.MAX_RETRIES)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE.getPathElement())
                                                         .setXmlElementName(Constants.HOST)
                                                         .addAttributes(
@@ -295,7 +296,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.HTTP2_INITIAL_WINDOW_SIZE,
                                         ModClusterDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
                                         ModClusterDefinition.HTTP2_MAX_FRAME_SIZE,
-                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
+                                        ModClusterDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
+                                        ModClusterDefinition.MAX_RETRIES)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE.getPathElement())
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)

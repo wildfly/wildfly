@@ -37,7 +37,7 @@
         </server>
         <servlet-container name="default" />
         <filters>
-            <mod-cluster name="load-balancer" management-socket-binding="mcmp-management" advertise-socket-binding="modcluster" enable-http2="true"  />
+            <mod-cluster name="load-balancer" management-socket-binding="mcmp-management" advertise-socket-binding="modcluster" enable-http2="true" max-retries="3"  />
         </filters>
     </subsystem>
     <socket-binding name="http" port="${jboss.http.port:8080}"/>

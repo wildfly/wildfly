@@ -99,7 +99,11 @@ public class ReverseProxyHandler extends Handler {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-
+    public static final AttributeDefinition MAX_RETRIES = new SimpleAttributeDefinitionBuilder(Constants.MAX_RETRIES, ModelType.INT)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(1L))
+            .build();
 
     public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
 
@@ -109,7 +113,10 @@ public class ReverseProxyHandler extends Handler {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT);
+        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES,
+                PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME,
+                CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT,
+                MAX_RETRIES);
     }
 
     @Override
@@ -127,6 +134,7 @@ public class ReverseProxyHandler extends Handler {
         int requestQueueSize = REQUEST_QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
         int cachedConnectionsPerThread = CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
         int connectionIdleTimeout = CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(context, model).asInt();
+        int maxRetries = MAX_RETRIES.resolveModelAttribute(context, model).asInt();
 
 
         final LoadBalancingProxyClient lb = new LoadBalancingProxyClient(new ExclusivityChecker() {
@@ -146,7 +154,7 @@ public class ReverseProxyHandler extends Handler {
             lb.addSessionCookieName(id);
         }
 
-        ProxyHandler handler = new ProxyHandler(lb, maxTime, ResponseCodeHandler.HANDLE_404);
+        ProxyHandler handler = new ProxyHandler(lb, maxTime, ResponseCodeHandler.HANDLE_404, false, false, maxRetries);
         return handler;
     }
 }

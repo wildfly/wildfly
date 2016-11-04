@@ -226,6 +226,7 @@ public interface Constants {
     String DISABLE_FILE_WATCH_SERVICE = "disable-file-watch-service";
     String PER_MESSAGE_DEFLATE = "per-message-deflate";
     String DEFLATER_LEVEL = "deflater-level";
+    String MAX_RETRIES = "max-retries";
 
     // Elytron Integration
     String APPLICATION_SECURITY_DOMAIN = "application-security-domain";
