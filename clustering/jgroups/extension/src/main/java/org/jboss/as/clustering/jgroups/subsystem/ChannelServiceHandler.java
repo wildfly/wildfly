@@ -81,7 +81,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
 
-        EnumSet.allOf(Capability.class).forEach(capability -> capability.getServiceName(address));
+        EnumSet.allOf(Capability.class).forEach(capability -> context.removeService(capability.getServiceName(address)));
 
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());

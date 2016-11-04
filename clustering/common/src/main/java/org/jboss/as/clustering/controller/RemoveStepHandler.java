@@ -53,6 +53,11 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return super.requiresRuntime(context) && (this.handler != null);
+    }
+
+    @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // We explicitly need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
         PathAddress address = context.getCurrentAddress();
@@ -70,15 +75,19 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (this.handler != null) {
+        if (context.isResourceServiceRestartAllowed()) {
             this.handler.removeServices(context, model);
+        } else {
+            context.reloadRequired();
         }
     }
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (this.handler != null) {
+        if (context.isResourceServiceRestartAllowed()) {
             this.handler.installServices(context, model);
+        } else {
+            context.revertReloadRequired();
         }
     }
 
