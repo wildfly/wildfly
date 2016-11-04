@@ -50,18 +50,21 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition NON_PORTABLE_MODE_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(NON_PORTABLE_MODE_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition DEVELOPMENT_MODE_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(DEVELOPMENT_MODE_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
             .build();
 
     private WeldResourceDefinition() {

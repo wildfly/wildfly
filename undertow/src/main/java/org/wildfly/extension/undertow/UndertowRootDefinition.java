@@ -34,7 +34,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -53,27 +52,28 @@ import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 class UndertowRootDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setRestartAllServices()
                     .setDefaultValue(new ModelNode("default-host"))
                     .build();
     protected static final SimpleAttributeDefinition DEFAULT_SERVLET_CONTAINER =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SERVLET_CONTAINER, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setRestartAllServices()
                     .setDefaultValue(new ModelNode("default"))
                     .build();
     protected static final SimpleAttributeDefinition DEFAULT_SERVER =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SERVER, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setRestartAllServices()
                     .setDefaultValue(new ModelNode("default-server"))
                     .build();
     protected static final SimpleAttributeDefinition INSTANCE_ID =
             new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setRestartAllServices()
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode().set(new ValueExpression("${jboss.node.name}")))
                     .build();
     protected static final SimpleAttributeDefinition STATISTICS_ENABLED =
                 new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
+                        .setRestartAllServices()
                         .setAllowExpression(true)
                         .setDefaultValue(new ModelNode(false))
                         .build();
@@ -82,6 +82,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(SecurityConstants.DEFAULT_APPLICATION_POLICY))
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+                    .setRestartAllServices()
                     .build();
 
 

@@ -44,6 +44,7 @@ class LocationDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition HANDLER = new SimpleAttributeDefinitionBuilder(Constants.HANDLER, ModelType.STRING)
             .setAllowNull(false)
             .setValidator(new StringLengthValidator(1))
+            .setRestartAllServices()
             .build();
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(FilterRefDefinition.INSTANCE));
     static final LocationDefinition INSTANCE = new LocationDefinition();

@@ -49,10 +49,12 @@ public class ExpressionFilterDefinition extends Filter {
     public static final AttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     public static final AttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder("module", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final ExpressionFilterDefinition INSTANCE = new ExpressionFilterDefinition();

@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
@@ -53,29 +54,34 @@ public class ReverseProxyHandler extends Handler {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(30))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition SESSION_COOKIE_NAMES = new SimpleAttributeDefinitionBuilder(Constants.SESSION_COOKIE_NAMES, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("JSESSIONID"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
     public static final AttributeDefinition CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CONNECTIONS_PER_THREAD, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder(Constants.MAX_REQUEST_TIME, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition REQUEST_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_QUEUE_SIZE, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
 
@@ -83,12 +89,14 @@ public class ReverseProxyHandler extends Handler {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(5))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition CONNECTION_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.CONNECTION_IDLE_TIMEOUT, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(60L))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
 

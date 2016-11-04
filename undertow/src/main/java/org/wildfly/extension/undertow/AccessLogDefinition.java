@@ -33,7 +33,6 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
@@ -47,10 +46,11 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition PATTERN = new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, true)
             .setDefaultValue(new ModelNode("common"))
             .setValidator(new StringLengthValidator(1, true))
+            .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
             .build();
@@ -58,41 +58,49 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("access_log."))
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder(Constants.SUFFIX, ModelType.STRING, true)
             .setDefaultValue(new ModelNode("log"))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition ROTATE = new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition DIRECTORY = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY, ModelType.STRING)
             .setAllowNull(true)
             .setValidator(new StringLengthValidator(1, true))
             .setDefaultValue(new ModelNode(new ValueExpression("${jboss.server.log.dir}")))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     protected static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING)
             .setAllowNull(true)
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     protected static final SimpleAttributeDefinition USE_SERVER_LOG = new SimpleAttributeDefinitionBuilder(Constants.USE_SERVER_LOG, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     protected static final SimpleAttributeDefinition EXTENDED = new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     protected static final SimpleAttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder(Constants.PREDICATE, ModelType.STRING, true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(

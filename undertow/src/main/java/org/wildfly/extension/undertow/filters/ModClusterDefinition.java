@@ -38,7 +38,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -69,29 +68,34 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowExpression(true)
             .setAllowNull(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition ADVERTISE_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.ADVERTISE_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition SECURITY_KEY = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_KEY, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition ADVERTISE_PROTOCOL = new SimpleAttributeDefinitionBuilder(Constants.ADVERTISE_PROTOCOL, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode("http"))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition ADVERTISE_PATH = new SimpleAttributeDefinitionBuilder(Constants.ADVERTISE_PATH, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode("/"))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition ADVERTISE_FREQUENCY = new SimpleAttributeDefinitionBuilder(Constants.ADVERTISE_FREQUENCY, ModelType.INT)
@@ -99,6 +103,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(10000))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition HEALTH_CHECK_INTERVAL = new SimpleAttributeDefinitionBuilder(Constants.HEALTH_CHECK_INTERVAL, ModelType.INT)
@@ -106,6 +111,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(10000))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition BROKEN_NODE_TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.BROKEN_NODE_TIMEOUT, ModelType.INT)
@@ -113,12 +119,14 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(60000)) //TODO: what is a good default?
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode("default"))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder(Constants.MAX_REQUEST_TIME, ModelType.INT)
@@ -126,18 +134,21 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(-1))
+            .setRestartAllServices()
             .build();
 
 
     public static final AttributeDefinition MANAGEMENT_ACCESS_PREDICATE = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_ACCESS_PREDICATE, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CONNECTIONS_PER_THREAD, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(40))
+            .setRestartAllServices()
             .build();
 
 
@@ -145,6 +156,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(40))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition CONNECTION_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.CONNECTION_IDLE_TIMEOUT, ModelType.INT)
@@ -152,25 +164,27 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setDefaultValue(new ModelNode(60))
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition REQUEST_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_QUEUE_SIZE, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1000))
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM)
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY, MOD_CLUSTER_FILTER_CAPABILITY_NAME, true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)
             .setAlternatives(Constants.SSL_CONTEXT)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .setDeprecated(ModelVersion.create(4, 0, 0))
@@ -179,59 +193,59 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     public static final SimpleAttributeDefinition USE_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.USE_ALIAS, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
 
     public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition MAX_AJP_PACKET_SIZE = new SimpleAttributeDefinitionBuilder(Constants.MAX_AJP_PACKET_SIZE, ModelType.INT)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
 
     public static final OptionAttributeDefinition HTTP2_ENABLE_PUSH = OptionAttributeDefinition.builder("http2-enable-push", UndertowOptions.HTTP2_SETTINGS_ENABLE_PUSH)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_HEADER_TABLE_SIZE = OptionAttributeDefinition.builder("http2-header-table-size", UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_INITIAL_WINDOW_SIZE = OptionAttributeDefinition.builder("http2-initial-window-size", UndertowOptions.HTTP2_SETTINGS_INITIAL_WINDOW_SIZE)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_CONCURRENT_STREAMS = OptionAttributeDefinition.builder("http2-max-concurrent-streams", UndertowOptions.HTTP2_SETTINGS_MAX_CONCURRENT_STREAMS)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_FRAME_SIZE = OptionAttributeDefinition.builder("http2-max-frame-size", UndertowOptions.HTTP2_SETTINGS_MAX_FRAME_SIZE)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_HEADER_LIST_SIZE = OptionAttributeDefinition.builder("http2-max-header-list-size", UndertowOptions.HTTP2_SETTINGS_MAX_HEADER_LIST_SIZE)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .build();

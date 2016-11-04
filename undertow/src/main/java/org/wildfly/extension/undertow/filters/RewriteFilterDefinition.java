@@ -45,6 +45,7 @@ public class RewriteFilterDefinition extends Filter {
     public static final AttributeDefinition TARGET = new SimpleAttributeDefinitionBuilder("target", ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
@@ -52,6 +53,7 @@ public class RewriteFilterDefinition extends Filter {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final RewriteFilterDefinition INSTANCE = new RewriteFilterDefinition();

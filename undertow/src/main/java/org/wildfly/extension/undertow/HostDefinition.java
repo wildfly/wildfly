@@ -54,19 +54,19 @@ class HostDefinition extends PersistentResourceDefinition {
             .setAttributeMarshaller(AttributeMarshaller.COMMA_STRING_LIST)
             .build();
     static final SimpleAttributeDefinition DEFAULT_WEB_MODULE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_WEB_MODULE, ModelType.STRING, true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, true, false))
             .setDefaultValue(new ModelNode("ROOT.war"))
             .build();
 
     static final SimpleAttributeDefinition DEFAULT_RESPONSE_CODE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_RESPONSE_CODE, ModelType.INT, true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setRestartAllServices()
             .setValidator(new IntRangeValidator(400, 599, true, true))
             .setDefaultValue(new ModelNode(404))
             .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition DISABLE_CONSOLE_REDIRECT = new SimpleAttributeDefinitionBuilder("disable-console-redirect", ModelType.BOOLEAN, true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setRestartAllServices()
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
