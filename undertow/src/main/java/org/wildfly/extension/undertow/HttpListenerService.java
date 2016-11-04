@@ -133,6 +133,11 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
         httpListenerRegistry.getValue().removeListener(getName());
     }
 
+    protected void unregisterBinding() {
+        httpListenerRegistry.getValue().removeListener(getName());
+        super.unregisterBinding();
+    }
+
     @Override
     protected void stopListening() {
         server.suspendAccepts();
@@ -140,7 +145,6 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
         IoUtils.safeClose(server);
         server = null;
         UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getSocketAddress().getPort());
-        httpListenerRegistry.getValue().removeListener(getName());
     }
 
     @Override
