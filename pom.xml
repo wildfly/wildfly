@@ -112,7 +112,7 @@
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
-        <version.joda-time>2.7</version.joda-time>
+        <version.joda-time>2.9.5</version.joda-time>
         <version.jsoup>1.8.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
