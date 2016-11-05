@@ -28,7 +28,7 @@ public class SingletonSubDeploymentUnitPhaseBuilder implements DeploymentUnitPha
     public <T> ServiceBuilder<T> build(ServiceTarget target, ServiceName name, Service<T> service) {
         // Install the actual phase service under some other name, and have it start automatically when the parent deployment's singleton service starts
         target.addService(name.append("service"), service)
-                .addDependency(DeploymentUtils.getDeploymentUnitPhaseServiceName(this.parent, this.phase).append("service"))
+                .addDependency(DeploymentUtils.getDeploymentUnitPhaseServiceName(this.parent, this.phase).append("primary"))
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
         // Return a dummy service builder

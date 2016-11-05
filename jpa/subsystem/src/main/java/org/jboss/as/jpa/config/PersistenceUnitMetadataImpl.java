@@ -109,6 +109,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private volatile TempClassLoaderFactory tempClassLoaderFactory;
 
+    private volatile ClassLoader cachedTempClassLoader;
+
     private volatile Map<URL, Index> annotationIndex;
 
     @Override
@@ -388,6 +390,15 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public void setTempClassLoaderFactory(TempClassLoaderFactory tempClassloaderFactory) {
         this.tempClassLoaderFactory = tempClassloaderFactory;
+        cachedTempClassLoader = null;  // always clear the cached temp classloader when a new tempClassloaderFactory is set.
+    }
+
+    @Override
+    public ClassLoader cacheTempClassLoader() {
+        if(cachedTempClassLoader == null && tempClassLoaderFactory != null) {
+            cachedTempClassLoader = tempClassLoaderFactory.createNewTempClassLoader();
+        }
+        return cachedTempClassLoader;
     }
 
     @Override

@@ -27,9 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.wildfly.extension.mod_cluster.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.mod_cluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -38,60 +40,64 @@ import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.msc.service.ServiceController;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Jean-Frederic Clere
  * @author Radoslav Husar
- * @version Apr 2015
  */
-public class ModClusterSubsystemParsingTestCase extends AbstractSubsystemBaseTest {
+@RunWith(Parameterized.class)
+public class ModClusterSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
-    public ModClusterSubsystemParsingTestCase() {
-        super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
+    private final ModClusterSchema schema;
+    private final int expectedOperationCount;
+
+    public ModClusterSubsystemParsingTestCase(ModClusterSchema schema, int expectedOperationCount) {
+        super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension(), String.format("subsystem_%d_%d.xml", schema.major(), schema.minor()));
+        this.schema = schema;
+        this.expectedOperationCount = expectedOperationCount;
     }
 
-    // --------------------------------------------------- Standard Subsystem tests
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        Object[][] data = new Object[][] {
+                { ModClusterSchema.MODCLUSTER_1_0, 13 },
+                { ModClusterSchema.MODCLUSTER_1_1, 13 },
+                { ModClusterSchema.MODCLUSTER_1_2, 15 },
+                { ModClusterSchema.MODCLUSTER_2_0, 15 },
 
+        };
+        return Arrays.asList(data);
+    }
+
+    /**
+     * Tests that the xml is parsed into the correct operations.
+     */
     @Test
-    public void testXsd10() throws Exception {
-        standardSubsystemTest("subsystem_1_0.xml", false);
-    }
+    public void testParseSubsystem() throws Exception {
+        List<ModelNode> operations = this.parse(this.getSubsystemXml());
 
-    @Test
-    public void testXsd11() throws Exception {
-        standardSubsystemTest("subsystem_1_1.xml", false);
-    }
-
-    @Test
-    public void testXsd12() throws Exception {
-        standardSubsystemTest("subsystem_1_2.xml", false);
-    }
-
-    @Test
-    public void testSubsystemWithSimpleLoadProvider() throws Exception {
-        super.standardSubsystemTest("subsystem_2_0_simple-load-provider.xml");
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
+        Assert.assertEquals(this.expectedOperationCount, operations.size());
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-mod-cluster_2_0.xsd";
+        return String.format("schema/jboss-as-mod-cluster_%d_%d.xsd", schema.major(), schema.minor());
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/mod_cluster.xml"
-        };
+    @Test
+    public void testSubsystemWithSimpleLoadProvider() throws Exception {
+        if (schema != ModClusterSchema.CURRENT) return;
+
+        super.standardSubsystemTest("subsystem_2_0_simple-load-provider.xml");
     }
 
     @Test
     public void testSSL() throws Exception {
+        if (schema != ModClusterSchema.CURRENT) return;
+
         KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization()).setSubsystemXml(getSubsystemXml());
         KernelServices services = builder.build();
         ModelNode model = services.readWholeModel();

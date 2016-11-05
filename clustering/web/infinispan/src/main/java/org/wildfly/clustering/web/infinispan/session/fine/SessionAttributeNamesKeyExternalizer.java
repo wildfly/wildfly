@@ -21,12 +21,15 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
 /**
  * Externalizer for {@link SessionAttributeNamesKey}.
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class SessionAttributeNamesKeyExternalizer extends SessionKeyExternalizer<SessionAttributeNamesKey> {
 
     public SessionAttributeNamesKeyExternalizer() {

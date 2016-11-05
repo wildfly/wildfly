@@ -103,12 +103,17 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         STACK("stack", ModelType.STRING, new CapabilityReference(Capability.JCHANNEL_FACTORY, JGroupsRequirement.CHANNEL_FACTORY)),
         MODULE("module", ModelType.STRING, new ModelNode("org.wildfly.clustering.server"), new ModuleIdentifierValidatorBuilder()),
-        CLUSTER("cluster", ModelType.STRING)
+        CLUSTER("cluster", ModelType.STRING),
+        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, new ModelNode(false)),
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
             this.definition = createBuilder(name, type).build();
+        }
+
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = createBuilder(name, type).setDefaultValue(defaultValue).build();
         }
 
         Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
@@ -130,6 +135,21 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
+    public enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        STATS_ENABLED("stats-enabled", ModelType.BOOLEAN, JGroupsModel.VERSION_4_1_0),
+        ;
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setDeprecated(deprecation.getVersion()).setStorageRuntime().build();
         }
 
         @Override
@@ -225,6 +245,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler();
         new AddStepHandler(descriptor, handler) {

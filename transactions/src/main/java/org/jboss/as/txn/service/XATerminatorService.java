@@ -32,27 +32,20 @@ import org.jboss.tm.JBossXATerminator;
  * The XATerminator service.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 public final class XATerminatorService implements Service<JBossXATerminator> {
-    private volatile JBossXATerminator value;
 
-    private final boolean jts;
+    private final JBossXATerminator value;
 
-    public XATerminatorService(boolean jts) {
-        this.jts = jts;
+    public XATerminatorService(final JBossXATerminator value) {
+        this.value = value;
     }
 
-
     public void start(final StartContext context) throws StartException {
-        if (jts) {
-            value = new com.arjuna.ats.internal.jbossatx.jts.jca.XATerminator();
-        } else {
-            value = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
-        }
     }
 
     public void stop(final StopContext context) {
-        value = null;
     }
 
     public JBossXATerminator getValue() throws IllegalStateException {

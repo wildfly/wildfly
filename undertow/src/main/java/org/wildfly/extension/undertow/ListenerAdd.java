@@ -71,7 +71,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         OptionMap socketOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.SOCKET_OPTIONS);
         String serverName = parent.getLastElement().getValue();
         final ServiceName listenerServiceName = UndertowService.listenerName(name);
-        final ListenerService<? extends ListenerService> service = createService(name, serverName, context, model, listenerOptions,socketOptions);
+        final ListenerService service = createService(name, serverName, context, model, listenerOptions,socketOptions);
         if (peerHostLookup) {
             service.addWrapperHandler(new HandlerWrapper() {
                 @Override
@@ -101,7 +101,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         final ServiceName socketBindingServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.SOCKET_CAPABILITY, bindingRef, SocketBinding.class);
         final ServiceName workerServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, workerName, XnioWorker.class);
         final ServiceName bufferPoolServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, bufferPoolName, Pool.class);
-        final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
+        final ServiceBuilder<? extends UndertowListener> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
         serviceBuilder.addDependency(workerServiceName, XnioWorker.class, service.getWorker())
                 .addDependency(socketBindingServiceName, SocketBinding.class, service.getBinding())
                 .addDependency(bufferPoolServiceName, (Injector) service.getBufferPool())
@@ -112,8 +112,8 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
 
     }
 
-    abstract ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
+    abstract ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
 
-    abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
+    abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
 
 }

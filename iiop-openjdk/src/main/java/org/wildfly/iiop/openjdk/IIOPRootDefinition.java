@@ -204,10 +204,8 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(
             Constants.PROPERTIES, true)
-            .setWrapXmlElement(true)
-            .setWrapperElement(Constants.PROPERTIES)
-            .setXmlName(Constants.PROPERTY)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     //ior transport config attributes

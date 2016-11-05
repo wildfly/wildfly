@@ -181,6 +181,7 @@
                             message-load-balancing-type="${message.load.balancing.type:STRICT}"
                             max-hops="${max.hops:7}"
                             confirmation-window-size="${confirmation.windows.size:459}"
+                            producer-window-size="-1"
                             notification-attempts="${notification.attempts:2}"
                             notification-interval="${notification.interval:1}"
                             static-connectors="in-vm netty" />
@@ -232,6 +233,7 @@
                 reconnect-attempts-on-same-node="${reconnect-attempts-on-same-node:5}"
                 use-duplicate-detection="${use.duplicate.detection:true}"
                 confirmation-window-size="${confirmation.window.size:350}"
+                producer-window-size="-1"
                 user="${user:Brian}"
                 password="${password:secret}"
                 static-connectors="in-vm netty" />

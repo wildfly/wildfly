@@ -122,9 +122,10 @@
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
+        <version.org.apache.jstl>1.2.5</version.org.apache.jstl>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>5.3.1</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.1.17</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.2.10</version.org.apache.myfaces.core>
         <version.org.apache.openjpa>2.4.1</version.org.apache.openjpa>
         <version.org.eclipselink.version>2.6.3</version.org.eclipselink.version>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
@@ -155,10 +156,10 @@
         <version.org.jdom>1.1.3</version.org.jdom>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.hal.release-stream>2.9.0.Alpha4</version.org.jboss.hal.release-stream>
+        <version.org.jboss.hal.release-stream>2.9.0.Alpha5</version.org.jboss.hal.release-stream>
         <version.org.jboss.ejb-client>3.0.0.Beta1</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>1.0.8.Final</version.org.jboss.genericjms>
+        <version.org.jboss.genericjms>2.0.0.Alpha1</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.3.4.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.5.0.Final</version.org.jboss.jboss-transaction-spi>
@@ -168,7 +169,7 @@
         <version.org.jboss.openjdk-orb>8.0.6.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.remote-naming>2.0.4.Final</version.org.jboss.remote-naming>
-        <version.org.jboss.resteasy>3.0.19.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.1.0.CR3</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.3.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -190,9 +191,8 @@
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.5_spec>1.0.0.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.5_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
-        <version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>1.1.3.Final</version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
-        <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
+        <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.1.Beta1</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.3.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
@@ -209,6 +209,7 @@
         <version.org.jgroups>3.6.11.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.0.0.Final</version.org.jgroups.azure>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
+        <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP3</version.org.picketlink>
@@ -2288,6 +2289,10 @@
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3383,6 +3388,24 @@
                         <artifactId>commons-lang</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-spec</artifactId>
+                <version>${version.org.apache.jstl}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-impl</artifactId>
+                <version>${version.org.apache.jstl}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-compat</artifactId>
+                <version>${version.org.apache.jstl}</version>
             </dependency>
 
             <dependency>
@@ -4761,14 +4784,14 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>async-http-servlet-3.0</artifactId>
+                <artifactId>resteasy-jaxrs-services</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-legacy</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
@@ -5229,18 +5252,6 @@
                 <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
                 <artifactId>jboss-jsp-api_2.3_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet.jstl</groupId>
-                <artifactId>jboss-jstl-api_1.2_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.servlet</groupId>
@@ -5940,6 +5951,13 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kohsuke.metainf-services</groupId>
+                <artifactId>metainf-services</artifactId>
+                <version>${version.org.kohsuke.metainf-services}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>

@@ -106,7 +106,12 @@ public class SessionExpirationScheduler implements Scheduler {
 
     @Override
     public void cancel(Locality locality) {
-        this.expirationFutures.keySet().stream().filter(sessionId -> !locality.isLocal(sessionId)).forEach(sessionId -> this.cancel(sessionId));
+        for (String sessionId : this.expirationFutures.keySet()) {
+            if (Thread.currentThread().isInterrupted()) break;
+            if (!locality.isLocal(sessionId)) {
+                this.cancel(sessionId);
+            }
+        }
     }
 
     @Override
@@ -128,7 +133,7 @@ public class SessionExpirationScheduler implements Scheduler {
     private class ExpirationTask implements Runnable {
         private final String id;
 
-        public ExpirationTask(String id) {
+        ExpirationTask(String id) {
             this.id = id;
         }
 

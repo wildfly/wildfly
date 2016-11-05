@@ -39,10 +39,12 @@ public class ResponseHeaderFilter extends Filter {
     public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     public static final AttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("header-value", ModelType.STRING)
             .setAllowNull(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final ResponseHeaderFilter INSTANCE = new ResponseHeaderFilter();

@@ -85,9 +85,19 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+
         for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(requirement -> LOCAL_CLUSTERING_CAPABILITIES.get(requirement).getServiceName(context.getCurrentAddress()), LocalGroupBuilderProvider.LOCAL)) {
+            for (ServiceNameProvider builder : provider.getBuilders(requirement -> LOCAL_CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), LocalGroupBuilderProvider.LOCAL)) {
                 context.removeService(builder.getServiceName());
+            }
+        }
+
+        if (!context.hasOptionalCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName(), null, null)) {
+            for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
+                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), null, LocalGroupBuilderProvider.LOCAL)) {
+                    context.removeService(builder.getServiceName());
+                }
             }
         }
     }

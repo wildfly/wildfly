@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntFunction;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -79,18 +80,21 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
         return this.targetClass;
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class ConcurrentHashMapExternalizer extends MapExternalizer<ConcurrentHashMap<Object, Object>> {
         public ConcurrentHashMapExternalizer() {
             super(ConcurrentHashMap.class, ConcurrentHashMap::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class HashMapExternalizer extends MapExternalizer<HashMap<Object, Object>> {
         public HashMapExternalizer() {
             super(HashMap.class, HashMap::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class LinkedHashMapExternalizer extends MapExternalizer<LinkedHashMap<Object, Object>> {
         public LinkedHashMapExternalizer() {
             super(LinkedHashMap.class, LinkedHashMap::new);

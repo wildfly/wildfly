@@ -34,8 +34,8 @@ import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.AbstractServerConfigMBean;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
 import org.wildfly.extension.undertow.Host;
-import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Server;
+import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -193,9 +193,9 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         ServerHostInfo hostInfo = new ServerHostInfo(hostname);
         Host undertowHost = getUndertowHost(hostInfo);
         if (undertowHost != null && !undertowHost.getServer().getListeners().isEmpty()) {
-            for(ListenerService<?> listener : undertowHost.getServer().getListeners()) {
+            for(UndertowListener listener : undertowHost.getServer().getListeners()) {
                 if (listener.isSecure() == securePort) {
-                    return listener.getBinding().getValue().getAbsolutePort();
+                    return listener.getSocketBinding().getAbsolutePort();
                 }
             }
         }

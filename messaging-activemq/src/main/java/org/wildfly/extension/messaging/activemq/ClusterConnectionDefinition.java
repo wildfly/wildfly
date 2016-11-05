@@ -23,6 +23,7 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -165,6 +166,14 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition PRODUCER_WINDOW_SIZE = create("producer-window-size", INT)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBridgeProducerWindowSize()))
+            .setMeasurementUnit(BYTES)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterRetryInterval()))
             .setMeasurementUnit(MILLISECONDS)
@@ -206,6 +215,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
             MESSAGE_LOAD_BALANCING_TYPE, MAX_HOPS,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
+            PRODUCER_WINDOW_SIZE,
             NOTIFICATION_ATTEMPTS,
             NOTIFICATION_INTERVAL,
             CONNECTOR_REFS,

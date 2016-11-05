@@ -42,6 +42,7 @@ public class RequestLimitHandler extends Filter {
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
             .setAllowExpression(true)
             .setAllowNull(false)
+            .setRestartAllServices()
             .build();
 
 
@@ -49,6 +50,7 @@ public class RequestLimitHandler extends Filter {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(0))
+            .setRestartAllServices()
             .build();
 
 

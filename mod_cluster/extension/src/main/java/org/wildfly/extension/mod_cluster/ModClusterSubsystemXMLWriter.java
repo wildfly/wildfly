@@ -44,7 +44,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
             throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
+        context.startSubsystemElement(ModClusterSchema.CURRENT.getNamespaceUri(), false);
 
         ModelNode node = context.getModelNode();
         if (node.get(ModClusterConfigResourceDefinition.PATH.getKeyValuePair()).isDefined()) {

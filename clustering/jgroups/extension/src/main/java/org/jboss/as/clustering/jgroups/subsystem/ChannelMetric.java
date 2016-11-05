@@ -34,79 +34,73 @@ import org.jgroups.JChannel;
  */
 public enum ChannelMetric implements Metric<JChannel> {
 
-    ADDRESS(MetricKeys.ADDRESS, ModelType.STRING) {
+    ADDRESS("address", ModelType.STRING) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getAddressAsString());
         }
     },
-    ADDRESS_AS_UUID(MetricKeys.ADDRESS_AS_UUID, ModelType.STRING) {
+    ADDRESS_AS_UUID("address-as-uuid", ModelType.STRING) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getAddressAsUUID());
         }
     },
-    DISCARD_OWN_MESSAGES(MetricKeys.DISCARD_OWN_MESSAGES, ModelType.BOOLEAN) {
+    DISCARD_OWN_MESSAGES("discard-own-messages", ModelType.BOOLEAN) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getDiscardOwnMessages());
         }
     },
-    NUM_TASKS_IN_TIMER(MetricKeys.NUM_TASKS_IN_TIMER, ModelType.INT) {
+    NUM_TASKS_IN_TIMER("num-tasks-in-timer", ModelType.INT) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getNumberOfTasksInTimer());
         }
     },
-    NUM_TIMER_THREADS(MetricKeys.NUM_TIMER_THREADS, ModelType.INT) {
+    NUM_TIMER_THREADS("num-timer-threads", ModelType.INT) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getTimerThreads());
         }
     },
-    RECEIVED_BYTES(MetricKeys.RECEIVED_BYTES, ModelType.LONG) {
+    RECEIVED_BYTES("received-bytes", ModelType.LONG) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getReceivedBytes());
         }
     },
-    RECEIVED_MESSAGES(MetricKeys.RECEIVED_MESSAGES, ModelType.LONG) {
+    RECEIVED_MESSAGES("received-messages", ModelType.LONG) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getReceivedMessages());
         }
     },
-    SENT_BYTES(MetricKeys.SENT_BYTES, ModelType.LONG) {
+    SENT_BYTES("sent-bytes", ModelType.LONG) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getSentBytes());
         }
     },
-    SENT_MESSAGES(MetricKeys.SENT_MESSAGES, ModelType.LONG) {
+    SENT_MESSAGES("sent-messages", ModelType.LONG) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getSentMessages());
         }
     },
-    STATE(MetricKeys.STATE, ModelType.STRING) {
+    STATE("state", ModelType.STRING) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getState());
         }
     },
-    STATS_ENABLED(MetricKeys.STATS_ENABLED, ModelType.BOOLEAN) {
-        @Override
-        public ModelNode execute(JChannel channel) {
-            return new ModelNode(channel.statsEnabled());
-        }
-    },
-    VERSION(MetricKeys.VERSION, ModelType.STRING) {
+    VERSION("version", ModelType.STRING) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(JChannel.getVersion());
         }
     },
-    VIEW(MetricKeys.VIEW, ModelType.STRING) {
+    VIEW("view", ModelType.STRING) {
         @Override
         public ModelNode execute(JChannel channel) {
             return new ModelNode(channel.getViewAsString());
@@ -115,7 +109,7 @@ public enum ChannelMetric implements Metric<JChannel> {
     ;
     private final AttributeDefinition definition;
 
-    private ChannelMetric(String name, ModelType type) {
+    ChannelMetric(String name, ModelType type) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
     }
 

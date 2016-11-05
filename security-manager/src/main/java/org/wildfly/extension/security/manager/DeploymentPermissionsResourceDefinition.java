@@ -44,6 +44,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -78,6 +79,17 @@ class DeploymentPermissionsResourceDefinition extends PersistentResourceDefiniti
 
     private static final ObjectTypeAttributeDefinition PERMISSIONS_VALUE_TYPE =
             ObjectTypeAttributeDefinition.Builder.of(PERMISSION, CLASS, NAME, ACTIONS, MODULE).build();
+
+    // this was supposed to be the attribute definition's default value, but using it as a default results in an error when
+    // trying to obtain the MBeanInfo for the security manager subsystem because default lists are not supported. The error
+    // message 'Default value not supported for ArrayType and TabularType' is displayed in an exception thrown by the
+    // javax.management.openmbean.OpenMBeanInfoSupport class.
+    static final ModelNode DEFAULT_MAXIMUM_SET;
+    static {
+        final ModelNode defaultPermission = new ModelNode();
+        defaultPermission.get(PERMISSION_CLASS).set("java.security.AllPermission");
+        DEFAULT_MAXIMUM_SET = new ModelNode().add(defaultPermission);
+    };
 
     static final AttributeDefinition MAXIMUM_PERMISSIONS =
             ObjectListAttributeDefinition.Builder.of(Constants.MAXIMUM_PERMISSIONS, PERMISSIONS_VALUE_TYPE)

@@ -91,6 +91,15 @@ public final class Operations {
     }
 
     /**
+     * Indicates whether or not this operation expects to include default values.
+     * @param operation an operation
+     * @return true, if default values are expected, false otherwise.
+     */
+    public static boolean isIncludeDefaults(ModelNode operation) {
+        return operation.hasDefined(ModelDescriptionConstants.INCLUDE_DEFAULTS) ? operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).asBoolean() : true;
+    }
+
+    /**
      * Creates a composite operation using the specified operation steps.
      * @param operations steps
      * @return a composite operation

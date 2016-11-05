@@ -76,7 +76,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
         ;
         private final SimpleAttributeDefinition definition;
 
-        private Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setCapabilityReference(reference)
                     .setFlags(Flag.RESTART_RESOURCE_SERVICES)

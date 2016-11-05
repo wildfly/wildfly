@@ -28,6 +28,7 @@ import java.io.ObjectOutput;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.marshalling.jboss.InstantExternalizer;
@@ -36,6 +37,7 @@ import org.wildfly.clustering.marshalling.jboss.InstantExternalizer;
  * Externalizer for {@link SessionCreationMetaDataEntry}
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class SessionCreationMetaDataEntryExternalizer implements Externalizer<SessionCreationMetaDataEntry<Object>> {
     private static final Externalizer<Instant> INSTANT_EXTERNALIZER = new InstantExternalizer();
 

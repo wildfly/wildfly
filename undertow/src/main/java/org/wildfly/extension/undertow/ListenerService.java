@@ -55,7 +55,7 @@ import org.xnio.channels.AcceptingChannel;
 /**
  * @author Tomaz Cerar
  */
-public abstract class ListenerService<T> implements Service<T> {
+public abstract class ListenerService implements Service<UndertowListener>, UndertowListener {
 
     protected static final OptionMap commonOptions = OptionMap.builder()
             .set(Options.TCP_NODELAY, true)
@@ -207,7 +207,18 @@ public abstract class ListenerService<T> implements Service<T> {
 
     abstract void stopListening();
 
-    protected abstract String getProtocol();
+    public abstract String getProtocol();
+
+    @Override
+    public boolean isShutdown() {
+        XnioWorker worker = getWorker().getOptionalValue();
+        return worker == null || worker.isShutdown();
+    }
+
+    @Override
+    public SocketBinding getSocketBinding() {
+        return binding.getValue();
+    }
 
     private static class ListenerBinding implements ManagedBinding {
 

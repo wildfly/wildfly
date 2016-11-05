@@ -25,5 +25,17 @@ package org.wildfly.clustering.singleton;
  * @author Paul Ferraro
  */
 public interface Singleton {
-    boolean isMaster();
+    /**
+     * @deprecated Use {@link #isPrimary()} instead.
+     */
+    @Deprecated
+    default boolean isMaster() {
+        return this.isPrimary();
+    }
+
+    /**
+     * Indicates whether this node is the primary provider of the singleton.
+     * @return true, if this node is the primary node, false if it is a backup node.
+     */
+    boolean isPrimary();
 }

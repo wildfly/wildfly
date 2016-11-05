@@ -31,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Function;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -65,12 +66,14 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
         return this.targetClass;
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class CopyOnWriteArrayListExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArrayList<Object>> {
         public CopyOnWriteArrayListExternalizer() {
             super(CopyOnWriteArrayList.class, CopyOnWriteArrayList<Object>::new);
         }
     }
 
+    @MetaInfServices(Externalizer.class)
     public static class CopyOnWriteArraySetExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArraySet<Object>> {
         public CopyOnWriteArraySetExternalizer() {
             super(CopyOnWriteArraySet.class, CopyOnWriteArraySet<Object>::new);

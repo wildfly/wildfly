@@ -32,6 +32,8 @@
     </dependencies>
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.servlet.jstl:jboss-jstl-api_1.2_spec}"/>
+        <artifact name="${org.apache.taglibs:taglibs-standard-spec}"/>
+        <artifact name="${org.apache.taglibs:taglibs-standard-impl}"/>
+        <artifact name="${org.apache.taglibs:taglibs-standard-compat}"/>
     </resources>
 </module>

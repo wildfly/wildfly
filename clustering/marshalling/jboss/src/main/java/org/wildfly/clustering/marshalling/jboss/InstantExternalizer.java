@@ -27,11 +27,13 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Instant;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class InstantExternalizer implements Externalizer<Instant> {
 
     @Override

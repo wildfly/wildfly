@@ -24,6 +24,7 @@ package org.wildfly.clustering.server.dispatcher;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
@@ -31,6 +32,7 @@ import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
  * ClassTable contributor for the marshaller of a {@link CommandDispatcher}.
  * @author Paul Ferraro
  */
+@MetaInfServices(ClassTableContributor.class)
 public class CommandDispatcherClassTableContributor implements ClassTableContributor {
 
     @Override

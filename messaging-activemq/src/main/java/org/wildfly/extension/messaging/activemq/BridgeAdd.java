@@ -28,6 +28,7 @@ import static org.wildfly.extension.messaging.activemq.BridgeDefinition.DISCOVER
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.FORWARDING_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.INITIAL_CONNECT_ATTEMPTS;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.PASSWORD;
+import static org.wildfly.extension.messaging.activemq.BridgeDefinition.PRODUCER_WINDOW_SIZE;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.QUEUE_NAME;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.RECONNECT_ATTEMPTS;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE;
@@ -130,6 +131,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final int reconnectAttemptsOnSameNode = RECONNECT_ATTEMPTS_ON_SAME_NODE.resolveModelAttribute(context, model).asInt();
         final boolean useDuplicateDetection = USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
+        final int producerWindowSize = PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(context, model).asLong();
         final long connectionTTL = CommonAttributes.CONNECTION_TTL.resolveModelAttribute(context, model).asLong();
         final ModelNode discoveryNode = DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
@@ -156,6 +158,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
                 .setReconnectAttemptsOnSameNode(reconnectAttemptsOnSameNode)
                 .setUseDuplicateDetection(useDuplicateDetection)
                 .setConfirmationWindowSize(confirmationWindowSize)
+                .setProducerWindowSize(producerWindowSize)
                 .setHA(ha)
                 .setUser(user)
                 .setPassword(password);

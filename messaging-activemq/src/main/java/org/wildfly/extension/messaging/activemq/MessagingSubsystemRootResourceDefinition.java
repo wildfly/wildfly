@@ -35,6 +35,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
@@ -66,11 +67,22 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder server = builder.addChildResource(MessagingExtension.SERVER_PATH);
+
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
+        // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
+        rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.PRODUCER_WINDOW_SIZE);
+        ResourceTransformationDescriptionBuilder clusterConnection = server.addChildResource(MessagingExtension.CLUSTER_CONNECTION_PATH);
+        // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE);
         ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
         // reject rebalance-connections introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS);
         // reject statistics-enabled introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED);
+        // reject max-pool-size whose default value has been changed in  management version 2.0.0
+        defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE);
+        // reject min-pool-size whose default value has been changed in  management version 2.0.0
+        defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
     }
@@ -84,5 +96,10 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(attr.getDefaultValue()), attr)
                     .addRejectCheck(DEFINED, attr);
         }
+    }
+
+    private static void defaultValueAttributeConverter(ResourceTransformationDescriptionBuilder builder, AttributeDefinition attr) {
+       builder.getAttributeBuilder()
+                .setValueConverter(new DefaultValueAttributeConverter(attr), attr);
     }
 }

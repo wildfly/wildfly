@@ -32,6 +32,8 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -84,24 +86,25 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CACHE_CONTAINER("cache-container", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_BUILDER, ClusteringDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY)),
         CACHE("cache", ModelType.STRING, new DefaultableCapabilityReference(Capability.BUILDER, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, CACHE_CONTAINER)),
-        QUORUM("quorum", ModelType.INT, new ModelNode(1)),
+        QUORUM("quorum", ModelType.INT, new ModelNode(1), new IntRangeValidatorBuilder().min(1)),
         ;
         private final AttributeDefinition definition;
 
-        private Attribute(String name, ModelType type, DefaultableCapabilityReference reference) {
+        Attribute(String name, ModelType type, DefaultableCapabilityReference reference) {
             this.definition = createBuilder(name, type).setAllowNull(true).setCapabilityReference(reference).build();
         }
 
-        private Attribute(String name, ModelType type, CapabilityReference reference) {
+        Attribute(String name, ModelType type, CapabilityReference reference) {
             this.definition = createBuilder(name, type).setAllowNull(false).setCapabilityReference(reference).build();
         }
 
-        private Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type)
                     .setAllowExpression(true)
                     .setAllowNull(true)
                     .setDefaultValue(defaultValue)
-                    .build();
+                    ;
+            this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {

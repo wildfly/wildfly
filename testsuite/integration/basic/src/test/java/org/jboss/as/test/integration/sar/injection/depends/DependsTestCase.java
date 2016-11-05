@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -62,7 +63,7 @@ public final class DependsTestCase {
     @Test
     @SuppressWarnings("unchecked")
     public void testMBean() throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
+        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL(), DefaultConfiguration.credentials()).getMBeanServerConnection();
         final ObjectName a1ObjectName = new ObjectName("test:service=A1");
         final ObjectName aObjectName =  (ObjectName) mbeanServer.getAttribute(a1ObjectName, "ObjectName");
         Assert.assertTrue(aObjectName.equals(new ObjectName("test:service=A")));

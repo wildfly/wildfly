@@ -77,4 +77,13 @@ public interface SecurityManagerLogger extends BasicLogger {
      */
     @Message(id = 4, value = "Deployment configuration error: the following permissions are not implied by the maximum permissions set %s")
     DeploymentUnitProcessingException invalidDeploymentConfiguration(StringBuilder failedPermissions);
+
+    /**
+     * Creates a message indicating that empty maximum sets are not understood in the target model version and must thus
+     * be rejected.
+     *
+     * @return the constructed {@link String} message.
+     */
+    @Message(id = 5, value = "Empty maximum sets are not understood in the target model version and must be rejected")
+    String rejectedEmptyMaximumSet();
 }

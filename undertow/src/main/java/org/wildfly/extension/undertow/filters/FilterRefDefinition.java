@@ -56,12 +56,14 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     public static final AttributeDefinition PRIORITY = new SimpleAttributeDefinitionBuilder("priority", ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1))
             .setValidator(new IntRangeValidator(1, true, true))
+            .setRestartAllServices()
             .build();
 
     public static final FilterRefDefinition INSTANCE = new FilterRefDefinition();

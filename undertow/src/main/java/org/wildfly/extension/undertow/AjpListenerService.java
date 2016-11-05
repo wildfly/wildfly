@@ -42,7 +42,7 @@ import org.xnio.channels.AcceptingChannel;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class AjpListenerService extends ListenerService<AjpListenerService> {
+public class AjpListenerService extends ListenerService {
 
     private volatile AcceptingChannel<StreamConnection> server;
     private final String scheme;
@@ -95,7 +95,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
     }
 
     @Override
-    protected String getProtocol() {
+    public String getProtocol() {
         return "ajp";
     }
 }

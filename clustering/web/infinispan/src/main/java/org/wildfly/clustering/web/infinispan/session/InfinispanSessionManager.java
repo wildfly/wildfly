@@ -21,11 +21,20 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,6 +59,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -66,8 +76,6 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
-import org.wildfly.clustering.service.concurrent.ServiceExecutor;
-import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
@@ -79,6 +87,7 @@ import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Generic session manager implementation - independent of cache mapping strategy.
@@ -86,9 +95,15 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 @Listener(primaryOnly = true)
 public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, TransactionBatch> {
+
+    private static ThreadFactory createThreadFactory() {
+        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(InfinispanSessionManager.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        return WildFlySecurityManager.doUnchecked(action);
+    }
+
     private final SessionExpirationListener expirationListener;
     private final Batcher<TransactionBatch> batcher;
-    private final Cache<? extends Key<String>, ?> cache;
+    private final Cache<Key<String>, ?> cache;
     private final CacheProperties properties;
     private final SessionFactory<MV, AV, L> factory;
     private final IdentifierFactory<String> identifierFactory;
@@ -101,10 +116,11 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private final Locality locality;
     private final Recordable<ImmutableSession> recorder;
     private final ServletContext context;
+    private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
 
     private volatile CommandDispatcher<Scheduler> dispatcher;
     private volatile Scheduler scheduler;
-    private volatile ServiceExecutor executor;
+    private volatile ExecutorService executor;
 
     public InfinispanSessionManager(SessionFactory<MV, AV, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
@@ -123,7 +139,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
     @Override
     public void start() {
-        this.executor = new StampedLockServiceExecutor();
+        this.executor = Executors.newSingleThreadExecutor(createThreadFactory());
         if (this.recorder != null) {
             this.recorder.reset();
         }
@@ -156,17 +172,23 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         };
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.cache.getName() + ".schedulers", this.scheduler);
         this.cache.addListener(this, this.filter);
-        this.schedule(this.cache, new SimpleLocality(false), this.locality);
+        this.schedule(new SimpleLocality(false), this.locality);
     }
 
     @Override
     public void stop() {
-        this.executor.close(() -> {
-            this.cache.removeListener(this);
+        this.cache.removeListener(this);
+        PrivilegedAction<List<Runnable>> action = () -> this.executor.shutdownNow();
+        WildFlySecurityManager.doUnchecked(action);
+        try {
+            this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
             this.dispatcher.close();
             this.scheduler.close();
             this.identifierFactory.stop();
-        });
+        }
     }
 
     boolean isPersistent() {
@@ -275,7 +297,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     }
 
     private Set<String> getSessions(Flag... flags) {
-        try (Stream<? extends Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
+        try (Stream<Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
             return keys.filter(this.filter.and(key -> this.locality.isLocal(key))).map(key -> key.getValue()).collect(Collectors.toSet());
         }
     }
@@ -293,95 +315,106 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (!event.isPre() && !this.properties.isPersistent()) {
-            this.executor.execute(() -> {
-                String id = event.getKey().getValue();
-                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-                Map.Entry<MV, AV> value = this.factory.findValue(id);
-                if (value != null) {
-                    ImmutableSession session = this.factory.createImmutableSession(id, value);
-                    this.triggerPostActivationEvents(session);
-                }
-            });
+            String id = event.getKey().getValue();
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
+            Map.Entry<MV, AV> value = this.factory.findValue(id);
+            if (value != null) {
+                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                this.triggerPostActivationEvents(session);
+            }
         }
     }
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre() && !this.properties.isPersistent()) {
-            this.executor.execute(() -> {
-                String id = event.getKey().getValue();
-                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-                Map.Entry<MV, AV> value = this.factory.findValue(id);
-                if (value != null) {
-                    ImmutableSession session = this.factory.createImmutableSession(id, value);
-                    this.triggerPrePassivationEvents(session);
-                }
-            });
+            String id = event.getKey().getValue();
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
+            Map.Entry<MV, AV> value = this.factory.findValue(id);
+            if (value != null) {
+                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                this.triggerPrePassivationEvents(session);
+            }
         }
     }
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
         if (event.isPre()) {
-            this.executor.execute(() -> {
-                String id = event.getKey().getValue();
-                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-                Map.Entry<MV, AV> value = this.factory.findValue(id);
-                if (value != null) {
-                    ImmutableSession session = this.factory.createImmutableSession(id, value);
-                    ImmutableSessionAttributes attributes = session.getAttributes();
+            String id = event.getKey().getValue();
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
+            Map.Entry<MV, AV> value = this.factory.findValue(id);
+            if (value != null) {
+                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                ImmutableSessionAttributes attributes = session.getAttributes();
 
-                    HttpSession httpSession = new ImmutableHttpSessionAdapter(session, this.context);
+                HttpSession httpSession = new ImmutableHttpSessionAdapter(session, this.context);
 
-                    for (String name: attributes.getAttributeNames()) {
-                        Object attribute = attributes.getAttribute(name);
-                        if (attribute instanceof HttpSessionBindingListener) {
-                            HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
-                            listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
-                        }
-                    }
-
-                    if (this.recorder != null) {
-                        this.recorder.record(session);
+                for (String name: attributes.getAttributeNames()) {
+                    Object attribute = attributes.getAttribute(name);
+                    if (attribute instanceof HttpSessionBindingListener) {
+                        HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
+                        listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
                     }
                 }
-            });
+
+                if (this.recorder != null) {
+                    this.recorder.record(session);
+                }
+            }
         }
     }
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<SessionCreationMetaDataKey, ?> event) {
-        this.executor.execute(() -> {
-            Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
-            Address localAddress = cache.getCacheManager().getAddress();
-            Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
-            if (event.isPre()) {
-                this.scheduler.cancel(newLocality);
-            } else {
-                Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
-                this.schedule(cache, oldLocality, newLocality);
+        Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
+        Address localAddress = cache.getCacheManager().getAddress();
+        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        if (event.isPre()) {
+            Future<?> future = this.rehashFuture.getAndSet(null);
+            if (future != null) {
+                future.cancel(true);
             }
-        });
+            try {
+                this.executor.submit(() -> this.scheduler.cancel(newLocality));
+            } catch (RejectedExecutionException e) {
+                // Executor was shutdown
+            }
+        } else {
+            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            try {
+                this.rehashFuture.set(this.executor.submit(() -> this.schedule(oldLocality, newLocality)));
+            } catch (RejectedExecutionException e) {
+                // Executor was shutdown
+            }
+        }
     }
 
-    private void schedule(Cache<? extends Key<String>, ?> cache, Locality oldLocality, Locality newLocality) {
+    private void schedule(Locality oldLocality, Locality newLocality) {
         SessionMetaDataFactory<MV, L> metaDataFactory = this.factory.getMetaDataFactory();
         // Iterate over sessions in memory
-        try (Stream<? extends Key<String>> keys = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream()) {
-            // If we are the new primary owner of this session then schedule expiration of this session locally
-            keys.filter(this.filter).filter(key -> !oldLocality.isLocal(key) && newLocality.isLocal(key)).map(key -> key.getValue()).forEach(id -> {
-                try (Batch batch = this.batcher.createBatch()) {
-                    try {
-                        // We need to lookup the session to obtain its meta data
-                        MV value = metaDataFactory.tryValue(id);
-                        if (value != null) {
-                            this.scheduler.schedule(id, metaDataFactory.createImmutableSessionMetaData(id, value));
+        try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().stream().filter(this.filter)) {
+            Iterator<Key<String>> keys = stream.iterator();
+            while (keys.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) break;
+                Key<String> key = keys.next();
+                // If we are the new primary owner of this session then schedule expiration of this session locally
+                if (this.filter.test(key) && !oldLocality.isLocal(key) && newLocality.isLocal(key)) {
+                    String id = key.getValue();
+                    try (Batch batch = this.batcher.createBatch()) {
+                        try {
+                            // We need to lookup the session to obtain its meta data
+                            MV value = metaDataFactory.tryValue(id);
+                            if (value != null) {
+                                this.scheduler.schedule(id, metaDataFactory.createImmutableSessionMetaData(id, value));
+                            }
+                            return;
+                        } catch (CacheException e) {
+                            batch.discard();
                         }
-                    } catch (CacheException e) {
-                        batch.discard();
                     }
                 }
-            });
+            }
         }
     }
 

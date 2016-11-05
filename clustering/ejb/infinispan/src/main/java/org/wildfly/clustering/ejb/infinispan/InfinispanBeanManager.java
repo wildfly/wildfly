@@ -21,8 +21,18 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.security.PrivilegedAction;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -42,6 +52,7 @@ import org.infinispan.remoting.transport.Address;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
+import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -65,8 +76,7 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.service.concurrent.ServiceExecutor;
-import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link BeanManager} implementation backed by an infinispan cache.
@@ -79,6 +89,11 @@ import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
  */
 @Listener(primaryOnly = true)
 public class InfinispanBeanManager<I, T> implements BeanManager<I, T, TransactionBatch> {
+
+    private static ThreadFactory createThreadFactory() {
+        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(InfinispanBeanManager.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        return WildFlySecurityManager.doUnchecked(action);
+    }
 
     private final String beanName;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
@@ -96,11 +111,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private final Batcher<TransactionBatch> batcher;
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final BeanFilter<I> filter;
+    private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
 
     private volatile SchedulerContext<I> schedulerContext;
-
+    private volatile ExecutorService executor;
     private volatile CommandDispatcher<SchedulerContext<I>> dispatcher;
-    private volatile ServiceExecutor executor;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration) {
         this.beanName = configuration.getBeanName();
@@ -124,7 +139,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     @Override
     public void start() {
-        this.executor = new StampedLockServiceExecutor();
+        this.executor = Executors.newSingleThreadExecutor(createThreadFactory());
         this.affinity.start();
         Time timeout = this.expiration.getTimeout();
         Scheduler<I> noopScheduler = new Scheduler<I>() {
@@ -170,12 +185,18 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     @Override
     public void stop() {
-        this.executor.close(() -> {
-            this.cache.removeListener(this);
+        this.cache.removeListener(this);
+        PrivilegedAction<List<Runnable>> action = () -> this.executor.shutdownNow();
+        WildFlySecurityManager.doUnchecked(action);
+        try {
+            this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
             this.dispatcher.close();
             this.schedulerContext.close();
             this.affinity.stop();
-        });
+        }
     }
 
     @Override
@@ -285,13 +306,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (event.isPre()) {
             this.passiveCount.incrementAndGet();
             if (!this.properties.isPersistent()) {
-                this.executor.execute(() -> {
-                    I groupId = event.getValue().getGroupId();
-                    BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
-                    if (entry != null) {
-                        this.groupFactory.createGroup(groupId, entry).prePassivate(event.getKey().getId(), this.passivation.getPassivationListener());
-                    }
-                });
+                I groupId = event.getValue().getGroupId();
+                BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
+                if (entry != null) {
+                    this.groupFactory.createGroup(groupId, entry).prePassivate(event.getKey().getId(), this.passivation.getPassivationListener());
+                }
             }
         }
     }
@@ -301,40 +320,56 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (!event.isPre()) {
             this.passiveCount.decrementAndGet();
             if (!this.properties.isPersistent()) {
-                this.executor.execute(() -> {
-                    I groupId = event.getValue().getGroupId();
-                    BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
-                    if (entry != null) {
-                        this.groupFactory.createGroup(groupId, entry).postActivate(event.getKey().getId(), this.passivation.getPassivationListener());
-                    }
-                });
+                I groupId = event.getValue().getGroupId();
+                BeanGroupEntry<I, T> entry = this.groupFactory.findValue(groupId);
+                if (entry != null) {
+                    this.groupFactory.createGroup(groupId, entry).postActivate(event.getKey().getId(), this.passivation.getPassivationListener());
+                }
             }
         }
     }
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<BeanKey<I>, BeanEntry<I>> event) {
-        this.executor.execute(() -> {
-            Address localAddress = this.cache.getCacheManager().getAddress();
-            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
-            Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
-            if (event.isPre()) {
-                this.schedulerContext.getBeanScheduler().cancel(newLocality);
-                this.schedulerContext.getBeanGroupScheduler().cancel(newLocality);
-            } else {
-                this.schedule(oldLocality, newLocality);
+        Address localAddress = this.cache.getCacheManager().getAddress();
+        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        if (event.isPre()) {
+            Future<?> future = this.rehashFuture.getAndSet(null);
+            if (future != null) {
+                future.cancel(true);
             }
-        });
+            try {
+                this.executor.submit(() -> {
+                    this.schedulerContext.getBeanScheduler().cancel(newLocality);
+                    this.schedulerContext.getBeanGroupScheduler().cancel(newLocality);
+                });
+            } catch (RejectedExecutionException e) {
+                // Executor was shutdown
+            }
+        } else {
+            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            try {
+                this.rehashFuture.set(this.executor.submit(() -> this.schedule(oldLocality, newLocality)));
+            } catch (RejectedExecutionException e) {
+                // Executor was shutdown
+            }
+        }
     }
 
     private void schedule(Locality oldLocality, Locality newLocality) {
-        // Iterate over sessions in memory
-        try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> entries = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream()) {
-            // If we are the new primary owner of this session then schedule expiration of this session locally
-            entries.filter(this.filter).filter(entry -> !oldLocality.isLocal(entry.getKey()) && newLocality.isLocal(entry.getKey())).forEach(entry -> {
-                this.schedulerContext.getBeanScheduler().schedule(entry.getKey().getId());
-                this.schedulerContext.getBeanGroupScheduler().schedule(entry.getValue().getGroupId());
-            });
+        // Iterate over beans in memory
+        try (Stream<Map.Entry<BeanKey<I>, BeanEntry<I>>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).entrySet().stream().filter(this.filter)) {
+            Iterator<Map.Entry<BeanKey<I>, BeanEntry<I>>> entries = stream.iterator();
+            while (entries.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) break;
+                Map.Entry<BeanKey<I>, BeanEntry<I>> entry = entries.next();
+                BeanKey<I> key = entry.getKey();
+                // If we are the new primary owner of this bean then schedule expiration of this bean locally
+                if (this.filter.test(this.filter) && !oldLocality.isLocal(key) && newLocality.isLocal(key)) {
+                    this.schedulerContext.getBeanScheduler().schedule(key.getId());
+                    this.schedulerContext.getBeanGroupScheduler().schedule(entry.getValue().getGroupId());
+                }
+            }
         }
     }
 

@@ -27,12 +27,14 @@ import java.io.ObjectOutput;
 import java.net.InetAddress;
 
 import org.jboss.as.network.ClientMapping;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(Externalizer.class)
 public class ClientMappingExternalizer implements Externalizer<ClientMapping> {
 
     @Override

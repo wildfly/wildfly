@@ -63,6 +63,7 @@ public class ModClusterService extends FilterService {
     private final int connectionIdleTimeout;
     private final int requestQueueSize;
     private final boolean useAlias;
+    private final int maxRetries;
 
     private ModCluster modCluster;
     private MCMPConfig config;
@@ -82,6 +83,7 @@ public class ModClusterService extends FilterService {
                       int connectionIdleTimeout,
                       int requestQueueSize,
                       boolean useAlias,
+                      int maxRetries,
                       OptionMap clientOptions) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
@@ -97,6 +99,7 @@ public class ModClusterService extends FilterService {
         this.connectionIdleTimeout = connectionIdleTimeout;
         this.requestQueueSize = requestQueueSize;
         this.useAlias = useAlias;
+        this.maxRetries = maxRetries;
         this.clientOptions = clientOptions;
     }
 
@@ -126,6 +129,7 @@ public class ModClusterService extends FilterService {
             XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
             modClusterBuilder = ModCluster.builder(worker, UndertowClient.getInstance(), xnioSsl);
         }
+        modClusterBuilder.setMaxRetries(maxRetries);
         modClusterBuilder.setClientOptions(clientOptions);
         modClusterBuilder.setHealthCheckInterval(healthCheckInterval)
                 .setMaxRequestTime(maxRequestTime)
@@ -186,7 +190,7 @@ public class ModClusterService extends FilterService {
         //to specify the next handler. To get around this we invoke the mod_proxy handler
         //and then if it has not dispatched or handled the request then we know that we can
         //just pass it on to the next handler
-        final HttpHandler proxyHandler = modCluster.getProxyHandler();
+        final HttpHandler proxyHandler = modCluster.createProxyHandler(next);
         final HttpHandler realNext = new HttpHandler() {
             @Override
             public void handleRequest(HttpServerExchange exchange) throws Exception {
@@ -252,6 +256,7 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.USE_ALIAS.resolveModelAttribute(operationContext, model).asBoolean(),
+                ModClusterDefinition.MAX_RETRIES.resolveModelAttribute(operationContext, model).asInt(),
                 builder.getMap());
         ServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);

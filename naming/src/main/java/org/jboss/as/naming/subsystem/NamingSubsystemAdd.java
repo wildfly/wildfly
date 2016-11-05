@@ -36,6 +36,7 @@ import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
 import org.jboss.as.naming.service.ExternalContextsService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.naming.service.NamingStoreService;
+import org.jboss.as.naming.subsystem.NamingSubsystemRootResourceDefinition.Capability;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -53,12 +54,13 @@ import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
  */
 public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
-
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
 
         ROOT_LOGGER.activatingSubsystem();
@@ -73,7 +75,8 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Create the Naming Service
         final NamingService namingService = new NamingService();
-        target.addService(NamingService.SERVICE_NAME, namingService)
+        target.addService(Capability.NAMING_STORE.getDefinition().getCapabilityServiceName(), namingService)
+                .addAliases(NamingService.SERVICE_NAME)
                 .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, namingService.getNamingStore())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
@@ -110,6 +113,7 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         target.addService(ExternalContextsService.SERVICE_NAME, new ExternalContextsService(externalContexts)).install();
 
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_NAMING_EXTERNAL_CONTEXTS, new ExternalContextsProcessor(externalContexts));
                 processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());

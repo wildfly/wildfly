@@ -350,14 +350,14 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         SimpleAttributeDefinition MAX_POOL_SIZE = SimpleAttributeDefinitionBuilder.create("max-pool-size", INT)
-                .setDefaultValue(new ModelNode().set(-1))
+                .setDefaultValue(new ModelNode().set(20))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition MIN_POOL_SIZE = SimpleAttributeDefinitionBuilder.create("min-pool-size", INT)
-                .setDefaultValue(new ModelNode().set(-1))
+                .setDefaultValue(new ModelNode().set(0))
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()

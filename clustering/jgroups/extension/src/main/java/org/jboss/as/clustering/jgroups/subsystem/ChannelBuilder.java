@@ -60,11 +60,17 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
     private volatile ValueDependency<ChannelFactory> factory;
     private volatile ValueDependency<MBeanServer> server;
     private volatile ValueDependency<String> cluster;
+    private volatile boolean statisticsEnabled = false;
     private volatile Channel channel;
 
     public ChannelBuilder(ServiceName serviceName, String name) {
         this.serviceName = serviceName;
         this.name = name;
+    }
+
+    public ChannelBuilder statisticsEnabled(boolean enabled) {
+        this.statisticsEnabled = enabled;
+        return this;
     }
 
     @Override
@@ -105,11 +111,15 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
             JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, output);
         }
 
-        if ((this.channel instanceof JChannel) && (this.server != null)) {
-            try {
-                JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.name);
-            } catch (Exception e) {
-                JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
+        if (this.channel instanceof JChannel) {
+            JChannel channel = (JChannel) this.channel;
+            channel.enableStats(this.statisticsEnabled);
+            if (this.server != null) {
+                try {
+                    JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.name);
+                } catch (Exception e) {
+                    JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
+                }
             }
         }
 

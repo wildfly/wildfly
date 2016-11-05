@@ -54,7 +54,7 @@ import org.xnio.channels.AcceptingChannel;
  * @author Stuart Douglas
  * @author Tomaz Cerar
  */
-public class HttpListenerService extends ListenerService<HttpListenerService> {
+public class HttpListenerService extends ListenerService {
     private volatile AcceptingChannel<StreamConnection> server;
 
     private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
@@ -133,6 +133,11 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
         httpListenerRegistry.getValue().removeListener(getName());
     }
 
+    protected void unregisterBinding() {
+        httpListenerRegistry.getValue().removeListener(getName());
+        super.unregisterBinding();
+    }
+
     @Override
     protected void stopListening() {
         server.suspendAccepts();
@@ -140,7 +145,6 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
         IoUtils.safeClose(server);
         server = null;
         UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getSocketAddress().getPort());
-        httpListenerRegistry.getValue().removeListener(getName());
     }
 
     @Override
@@ -153,7 +157,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
     }
 
     @Override
-    protected String getProtocol() {
+    public String getProtocol() {
         return PROTOCOL;
     }
 }
