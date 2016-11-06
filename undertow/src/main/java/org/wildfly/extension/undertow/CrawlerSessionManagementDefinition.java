@@ -32,6 +32,7 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -57,6 +58,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition SESSION_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(Constants.SESSION_TIMEOUT, ModelType.INT, true)
                     .setRestartAllServices()
+                    .setMeasurementUnit(MeasurementUnit.SECONDS)
                     .setAllowExpression(true)
                     .build();
 
