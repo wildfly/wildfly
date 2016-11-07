@@ -6180,6 +6180,8 @@
                 <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true</modular.jdk.props>
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
+                <!-- we override javassit to version that works on JDK9 -->
+                <version.org.javassist>3.22.0-CR1</version.org.javassist>
             </properties>
             <build>
                 <plugins>
