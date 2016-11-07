@@ -6171,15 +6171,17 @@
             </activation>
             <properties>
                 <!-- [WFCORE-1431] remove SASL workaround -->
-                <modular.jdk.args>--add-exports java.security.sasl/com.sun.security.sasl.digest=ALL-UNNAMED
-                    --add-exports java.security.sasl/com.sun.security.sasl=ALL-UNNAMED
-                    --add-exports jdk.unsupported/sun.reflect=ALL-UNNAMED
-                    --add-exports jdk.unsupported/sun.misc=ALL-UNNAMED
+                <modular.jdk.args>--add-exports=java.security.sasl/com.sun.security.sasl.digest=ALL-UNNAMED
+                    --add-exports=java.security.sasl/com.sun.security.sasl=ALL-UNNAMED
+                    --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
+                    --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
                 <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true</modular.jdk.props>
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
+                <!-- we override javassist to version that works on JDK9 -->
+                <version.org.javassist>3.22.0-CR1</version.org.javassist>
             </properties>
             <build>
                 <plugins>
