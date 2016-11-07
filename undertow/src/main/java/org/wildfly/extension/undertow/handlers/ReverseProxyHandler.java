@@ -101,6 +101,7 @@ public class ReverseProxyHandler extends Handler {
 
     public static final AttributeDefinition MAX_RETRIES = new SimpleAttributeDefinitionBuilder(Constants.MAX_RETRIES, ModelType.INT)
             .setAllowNull(true)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1L))
             .build();
