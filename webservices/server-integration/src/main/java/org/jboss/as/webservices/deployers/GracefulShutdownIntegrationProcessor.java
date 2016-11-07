@@ -37,9 +37,9 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 
 /**
- * DUP for telling Undertow to let WS deal with blocking requests to 
+ * DUP for telling Undertow to let WS deal with blocking requests to
  * serve XTS requirements.
- * 
+ *
  * @autor <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  *
  */

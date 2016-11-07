@@ -109,7 +109,13 @@ public final class EndpointPublishService implements Service<Context> {
     public static ServiceBuilder<Context> createServiceBuilder(final ServiceTarget serviceTarget, final String context,
             final ClassLoader loader, final String hostName, final Map<String, String> urlPatternToClassName,
             JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd) {
-        final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd);
+        return createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, null);
+    }
+
+    public static ServiceBuilder<Context> createServiceBuilder(final ServiceTarget serviceTarget, final String context,
+            final ClassLoader loader, final String hostName, final Map<String, String> urlPatternToClassName,
+            JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd, Map<Class<?>, Object> deploymentAttachments) {
+        final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, deploymentAttachments);
         final EndpointPublishService service = new EndpointPublishService(context, unit);
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
