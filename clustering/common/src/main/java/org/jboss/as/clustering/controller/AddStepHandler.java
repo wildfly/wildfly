@@ -160,10 +160,11 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
-        // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
-        this.descriptor.getCapabilities().forEach(capability -> context.registerCapability(capability.resolve(address)));
-
         ModelNode model = resource.getModel();
+        // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
+        // Only register capabilities when allowed by the associated predicate
+        this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.registerCapability(capability.resolve(address)));
+
         this.attributes.stream()
                 .filter(attribute -> attribute.hasCapabilityRequirements())
                 .forEach(attribute -> attribute.addCapabilityRequirements(context, model.get(attribute.getName())));
@@ -204,6 +205,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     (context, operation) -> context.addStep(Operations.createWriteAttributeOperation(context.getCurrentAddress(), target, Operations.getAttributeValue(operation)), writeHandler, OperationContext.Stage.MODEL));
         }
 
-        new CapabilityRegistration(this.descriptor.getCapabilities()).register(registration);
+        new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
     }
 }

@@ -29,8 +29,7 @@ import org.jboss.as.controller.AttributeDefinition;
 /**
  * @author Paul Ferraro
  */
-@FunctionalInterface
-public interface WriteAttributeStepHandlerDescriptor {
+public interface WriteAttributeStepHandlerDescriptor extends OperationStepHandlerDescriptor {
 
     /**
      * Attributes of the add operation.

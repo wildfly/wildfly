@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Map;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -61,7 +63,7 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         // We explicitly need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
         PathAddress address = context.getCurrentAddress();
-        this.descriptor.getCapabilities().forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
+        this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
 
         ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
