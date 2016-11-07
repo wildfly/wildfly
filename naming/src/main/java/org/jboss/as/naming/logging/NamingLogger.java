@@ -566,7 +566,7 @@ public interface NamingLogger extends BasicLogger {
      * @param attributeName
      * @return
      */
-    @Message(id = 60, value = "Binding type %s requires attributed named %s defined")
+    @Message(id = 60, value = "Binding type %s requires attribute named %s defined")
     OperationFailedException bindingTypeRequiresAttributeDefined(BindingType bindingType, String attributeName);
 
     @Message(id = 61, value = "Binding type %s can not take a 'cache' attribute")
