@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
@@ -73,6 +74,7 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
     public ServiceBuilder<SingletonPolicy> build(ServiceTarget target) {
         ServiceBuilder<SingletonPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<SingletonPolicy>(this)))
                 .addDependency(new ElectionPolicyServiceNameProvider(this.address).getServiceName(), SingletonElectionPolicy.class, this.policy)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
         return this.factory.register(builder);
     }
