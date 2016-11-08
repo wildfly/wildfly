@@ -101,7 +101,7 @@ public class LegacySubsystemConfigurationUtil {
 
     private List<ModelNode> parseSubsystemXml(String subsystemXml) throws XMLStreamException {
         XMLMapper xmlMapper = XMLMapper.Factory.create();
-        ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null, null, RuntimeHostControllerInfoAccessor.SERVER);
+        ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null, null, null, RuntimeHostControllerInfoAccessor.SERVER);
         TestParser testParser = new TestParser(subsystemName, extensionParsingRegistry);
         xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
         extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
