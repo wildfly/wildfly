@@ -344,7 +344,7 @@ public class Constants {
     static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.ENLISTMENT_TRACE.getLocalName())
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .build();
 

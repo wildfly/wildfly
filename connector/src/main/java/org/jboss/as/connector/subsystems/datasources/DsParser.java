@@ -1173,9 +1173,7 @@ public class DsParser extends AbstractParser {
                 }
                 case ENLISTMENT_TRACE: {
                     final String value = rawAttributeText(reader, ENLISTMENT_TRACE.getXmlName());
-                    if (value != null) {
-                        ENLISTMENT_TRACE.parseAndSetParameter(value, operation, reader);
-                    }
+                    ENLISTMENT_TRACE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case TRACKING: {
@@ -1812,9 +1810,7 @@ public class DsParser extends AbstractParser {
                 }
                 case ENLISTMENT_TRACE: {
                     final String value = rawAttributeText(reader, ENLISTMENT_TRACE.getXmlName());
-                    if (value != null) {
-                        ENLISTMENT_TRACE.parseAndSetParameter(value, operation, reader);
-                    }
+                    ENLISTMENT_TRACE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case TRACKING: {
