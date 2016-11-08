@@ -86,6 +86,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketbox.util.KeyStoreUtil;
@@ -103,6 +104,7 @@ import org.picketbox.util.KeyStoreUtil;
         RemotingLoginModuleTestCase.SecurityDomainsSetup.class //
 })
 @RunAsClient
+@Ignore("WFLY-7510")
 public class RemotingLoginModuleTestCase {
     private static Logger LOGGER = Logger.getLogger(RemotingLoginModuleTestCase.class);
 
