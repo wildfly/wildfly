@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.clustering.function.Functions;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.Services;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
@@ -110,11 +110,11 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
     }
 
     @Override
-    public Builder<CommandDispatcherFactory> configure(OperationContext context) {
-        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, this.group), Channel.class);
-        this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, this.group), ChannelFactory.class);
-        this.module = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_MODULE.getServiceName(context, this.group), Module.class);
-        this.nodeFactory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(context, this.group), JGroupsNodeFactory.class);
+    public Builder<CommandDispatcherFactory> configure(CapabilityServiceSupport support) {
+        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), Channel.class);
+        this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(support, this.group), ChannelFactory.class);
+        this.module = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_MODULE.getServiceName(support, this.group), Module.class);
+        this.nodeFactory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(support, this.group), JGroupsNodeFactory.class);
         return this;
     }
 
