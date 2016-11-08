@@ -462,7 +462,11 @@ public class NamingContext implements EventContext {
     /** {@inheritDoc} */
     public Name composeName(Name name, Name prefix) throws NamingException {
         final Name result = (Name) prefix.clone();
-        result.addAll(name);
+        if (name instanceof CompositeName) {
+            result.addAll(name);
+        } else {
+            result.addAll(new CompositeName(name.toString()));
+        }
         return result;
     }
 

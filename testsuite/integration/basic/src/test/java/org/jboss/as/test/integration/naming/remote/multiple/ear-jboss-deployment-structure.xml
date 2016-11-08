@@ -8,13 +8,13 @@
     </deployment>
     <sub-deployment name="web.war">
         <dependencies>
-            <module name="org.jboss.remote-naming" />
+            <module name="org.wildfly.naming-client" services="import"/>
             <module name="org.jboss.as.network" />
         </dependencies>
     </sub-deployment>
     <sub-deployment name="ejb.jar">
         <dependencies>
-            <module name="org.jboss.remote-naming" />
+            <module name="org.wildfly.naming-client" services="import"/>
             <module name="org.jboss.as.network" />
         </dependencies>
     </sub-deployment>
