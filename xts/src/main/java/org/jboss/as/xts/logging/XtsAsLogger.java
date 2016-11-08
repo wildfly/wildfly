@@ -24,9 +24,13 @@ package org.jboss.as.xts.logging;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -96,5 +100,12 @@ public interface XtsAsLogger extends BasicLogger {
      */
     // @Message(id = 7, value = "Cannot load CDI Extension")
     // DeploymentUnitProcessingException cannotLoadCDIExtension();
+
+    /**
+     * Warning that coordination context deserialization has failed
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "Coordination context deserialization failed")
+    void coordinationContextDeserializationFailed(@Cause Throwable cause);
 
 }

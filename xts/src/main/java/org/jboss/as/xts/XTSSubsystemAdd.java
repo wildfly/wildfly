@@ -63,6 +63,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.wsf.spi.invocation.RejectionRule;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.publish.Context;
 import org.oasis_open.docs.ws_tx.wsat._2006._06.CompletionCoordinatorRPCService;
@@ -217,6 +218,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_XTS_COMPONENT_INTERCEPTORS, new XTSInterceptorDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_XTS_SOAP_HANDLERS, new XTSHandlerDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_XTS, new XTSDependenciesDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_XTS_PORTABLE_EXTENSIONS, new GracefulShutdownDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
@@ -238,13 +240,16 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ClassLoader loader = XTSService.class.getClassLoader();
         ServiceBuilder<Context> endpointBuilder;
         ArrayList<ServiceController<Context>> controllers = new ArrayList<ServiceController<Context>>();
+        Map<Class<?>, Object> attachments = new HashMap<>();
+        attachments.put(RejectionRule.class, new GracefulShutdownRejectionRule());
         for (ContextInfo contextInfo : contextDefinitions) {
             String contextName = contextInfo.contextPath;
             Map<String, String> map = new HashMap<String, String>();
             for (EndpointInfo endpointInfo : contextInfo.endpointInfo) {
                 map.put(endpointInfo.URLPattern, endpointInfo.SEIClassname);
             }
-            endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader, hostName, map);
+            endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader, hostName, map, null,
+                    null, null, attachments);
 
             controllers.add(endpointBuilder.setInitialMode(Mode.ACTIVE)
                     .install());

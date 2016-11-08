@@ -8,6 +8,18 @@
 
         <echo message="Copying and configuring AS instance for XTS..."/>
 
+        <echo message="Copying and configuring instance default-server"/>
+        <copy todir="target/default-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+
+        <echo message="Copying and configuring instance alternative-server"/>
+        <copy todir="target/alternative-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+
+        <echo message="Setting port offset of 100 to alternative-server"/>
+        <ts.config-as.add-port-offset name="alternative-server" offset="100"/>
     </target>
 
 </project>
