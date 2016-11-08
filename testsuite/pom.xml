@@ -1292,8 +1292,8 @@
                 <jdk>9</jdk>
             </activation>
             <properties>
-                <modular.jdk.testsuite.args>${modular.jdk.args} -XaddExports:java.base/sun.security.validator=ALL-UNNAMED
-                     -XaddExports:java.naming/com.sun.jndi.ldap=ALL-UNNAMED</modular.jdk.testsuite.args>
+                <modular.jdk.testsuite.args>${modular.jdk.args} --add-exports=java.base/sun.security.validator=ALL-UNNAMED
+                    --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</modular.jdk.testsuite.args>
             </properties>
         </profile>
 

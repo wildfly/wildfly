@@ -33,6 +33,7 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -98,6 +99,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.TIMEOUT, ModelType.INT)
             .setAllowNull(true)
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setStorageRuntime()
             .build();
 

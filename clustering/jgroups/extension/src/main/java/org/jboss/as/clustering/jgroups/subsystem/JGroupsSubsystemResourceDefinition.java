@@ -130,8 +130,8 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addCapabilities(CAPABILITIES.values())
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), CAPABILITIES.values())
+                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
         new AddStepHandler(descriptor, handler).register(registration);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.controller;
+package org.jboss.as.test.integration.deployment.classloading.ear.subdeployments;
 
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-
-/**
- * Describes the common properties of a remove operation handler.
- * @author Paul Ferraro
- */
-@FunctionalInterface
-public interface RemoveStepHandlerDescriptor extends OperationStepHandlerDescriptor {
-    /**
-     * The description resolver for the operation.
-     * @return a description resolver
-     */
-    ResourceDescriptionResolver getDescriptionResolver();
+public class ClassInJar {
+    public String invokeToStringOnClassloaderOfClass (String className) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
+       ClassLoader cl = Class.forName(className).getClassLoader();
+       if(cl == null) {
+           return "bootstrap class loader";
+       }
+       return cl.toString();
+    }
 }

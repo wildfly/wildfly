@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -74,6 +75,7 @@ public class ReverseProxyHandler extends Handler {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -96,11 +98,13 @@ public class ReverseProxyHandler extends Handler {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(60L))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition MAX_RETRIES = new SimpleAttributeDefinitionBuilder(Constants.MAX_RETRIES, ModelType.INT)
             .setAllowNull(true)
+            .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1L))
             .build();

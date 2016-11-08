@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc. and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.controller;
+package org.jboss.as.test.integration.management.deploy.runtime.jaxrs;
 
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 
 /**
- * Describes the common properties of a remove operation handler.
- * @author Paul Ferraro
+ * @author <a href="mailto:lgao@redhat.com">Lin Gao</a>
+ *
  */
-@FunctionalInterface
-public interface RemoveStepHandlerDescriptor extends OperationStepHandlerDescriptor {
-    /**
-     * The description resolver for the operation.
-     * @return a description resolver
-     */
-    ResourceDescriptionResolver getDescriptionResolver();
+@Produces({"text/plain"})
+public class SubHelloResource {
+
+    @GET
+    public String hi() {
+        return "Hi";
+    }
+
+    @GET
+    @Path("ping/{name}")
+    public String ping(@PathParam("name") @DefaultValue("JBoss") String name) {
+        return "ping " + name;
+    }
 }

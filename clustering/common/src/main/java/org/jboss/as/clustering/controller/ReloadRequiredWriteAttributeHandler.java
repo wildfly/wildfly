@@ -22,9 +22,14 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Map;
+import java.util.function.Predicate;
+
 import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformerOperationAttachment;
@@ -46,6 +51,32 @@ public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller
     @Override
     public void register(ManagementResourceRegistration registration) {
         this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attribute, ModelNode newValue, ModelNode oldValue) {
+        Map<Capability, Predicate<ModelNode>> capabilities = this.descriptor.getCapabilities();
+        if (!capabilities.isEmpty()) {
+            PathAddress address = context.getCurrentAddress();
+            // newValue is already applied to the model
+            ModelNode newModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            ModelNode oldModel = newModel.clone();
+            oldModel.get(attribute.getName()).set(oldValue);
+            for (Map.Entry<Capability, Predicate<ModelNode>> entry : capabilities.entrySet()) {
+                Capability capability = entry.getKey();
+                Predicate<ModelNode> predicate = entry.getValue();
+                boolean registered = predicate.test(oldModel);
+                boolean shouldRegister = predicate.test(newModel);
+                if (!registered && shouldRegister) {
+                    // Attribute change enables capability registration
+                    context.registerCapability(capability.resolve(address));
+                } else if (registered && !shouldRegister) {
+                    // Attribute change disables capability registration
+                    context.deregisterCapability(capability.resolve(address).getName());
+                }
+            }
+        }
+        super.recordCapabilitiesAndRequirements(context, attribute, newValue, oldValue);
     }
 
     @Override

@@ -23,6 +23,7 @@
 package org.jboss.as.jaxrs.deployment;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,6 +51,7 @@ import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
@@ -298,6 +300,20 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
+        //Clear the type cache in jackson databind
+        //see https://issues.jboss.org/browse/WFLY-7037
+        //see https://github.com/FasterXML/jackson-databind/issues/1363
+        //we use reflection to avoid a non optional dependency on jackson
+        try {
+            Module module = context.getAttachment(Attachments.MODULE);
+            Class<?> typeFactoryClass = module.getClassLoader().loadClass("com.fasterxml.jackson.databind.type.TypeFactory");
+            Method defaultInstanceMethod = typeFactoryClass.getMethod("defaultInstance");
+            Object typeFactory = defaultInstanceMethod.invoke(null);
+            Method clearCache = typeFactoryClass.getDeclaredMethod("clearCache");
+            clearCache.invoke(typeFactory);
+        } catch (Exception e) {
+            JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
+        }
     }
 
     protected void setFilterInitParam(FilterMetaData filter, String name, String value) {

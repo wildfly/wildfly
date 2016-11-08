@@ -138,6 +138,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new SingletonPolicyBuilder(address));
         new AddStepHandler(descriptor, handler).register(registration);

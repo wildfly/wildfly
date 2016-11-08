@@ -107,22 +107,25 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
                 .setReadOnly()
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)
+                .setDeprecated(JaxrsExtension.MODEL_VERSION_1_1_0)
                 .setReplyParameters(JAXRS_RESOURCE).build();
 
 
         void handle(ModelNode response, String contextRootPath, Collection<String> servletMappings, String mapping, List<ResourceInvoker> resources) {
             for (ResourceInvoker resourceInvoker : resources) {
-                ResourceMethodInvoker resource = (ResourceMethodInvoker) resourceInvoker;
-                final ModelNode node = new ModelNode();
-                node.get(CLASSNAME.getName()).set(resource.getResourceClass().getCanonicalName());
-                node.get(PATH.getName()).set(mapping);
-                for (String servletMapping : servletMappings) {
-                    String method = formatMethod(resource, servletMapping, mapping, contextRootPath);
-                    for (final String httpMethod : resource.getHttpMethods()) {
-                        node.get(METHODS.getName()).add(String.format(method, httpMethod));
+                if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
+                    ResourceMethodInvoker resource = (ResourceMethodInvoker) resourceInvoker;
+                    final ModelNode node = new ModelNode();
+                    node.get(CLASSNAME.getName()).set(resource.getResourceClass().getCanonicalName());
+                    node.get(PATH.getName()).set(mapping);
+                    for (String servletMapping : servletMappings) {
+                        String method = formatMethod(resource, servletMapping, mapping, contextRootPath);
+                        for (final String httpMethod : resource.getHttpMethods()) {
+                            node.get(METHODS.getName()).add(String.format(method, httpMethod));
+                        }
                     }
+                    response.add(node);
                 }
-                response.add(node);
             }
         }
 
