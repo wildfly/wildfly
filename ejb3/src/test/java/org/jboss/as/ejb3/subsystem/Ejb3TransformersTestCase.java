@@ -2,9 +2,12 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
 
 import java.io.IOException;
@@ -17,9 +20,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.ejb3.subsystem.temp.FailedOperationTransformationConfig;
+import org.jboss.as.ejb3.subsystem.temp.ModelTestUtils;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -173,8 +176,9 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
         if (EJB3Model.VERSION_1_2_1.matches(version)) {
 
+
             // create a chained config to apply multiple transformation configs to each one of a collection of attributes
-            FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
+            FailedOperationTransformationConfig.ChainedConfig chainedSubsystemConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
                             /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX))
@@ -182,13 +186,17 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                     .build();
 
             // discard new attributes default-sfsb-passivation-disabled-cache, disable-default-ejb-permissions
-            config.addFailedAttribute(subsystemAddress, chainedConfig);
+            config.addFailedAttribute(subsystemAddress, chainedSubsystemConfig);
 
             // make sure that we have a file-data-store matching the custom-data-store attribute value
             final PathAddress timerServiceAddr = subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH);
             final PathAddress badFileStoreAddr = timerServiceAddr.append(PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rename-to-default"));
             final PathAddress newFileStoreAddr = timerServiceAddr.append(PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store"));
             config.addFailedAttribute(badFileStoreAddr, new ChangeAddressConfig(services, badFileStoreAddr, newFileStoreAddr));
+
+            //Add a config to remove the extra file-data-store. This is against the fixed address from ChangeAddressConfig
+            RemoveExtraFileStoreConfig removeExtraFileStoreConfig = new RemoveExtraFileStoreConfig(services, timerServiceAddr);
+            config.addFailedAttribute(newFileStoreAddr, removeExtraFileStoreConfig);
 
             // reject the resource /subsystem=ejb3/service=timer-service/file-data-store=file-data-store-rejected since we already have a file-data-store
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")),
@@ -218,6 +226,13 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             // reject the resource /subsystem=ejb3/service=identity
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.IDENTITY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
+
+            //Special handling for this test!!!!
+            //Don't transform the resulting composite, instead rather transform the individual steps
+            config.setDontTransformComposite();
+
+            //Remove the extra file-data-store entries so that our transformers can work
+            config.setCallback(() -> removeExtraFileStoreConfig.removeExtraFileDataStore());
         }
 
         if (EJB3Model.VERSION_1_3_0.matches(version)) {
@@ -285,7 +300,31 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     }
 
-    private static class ChangeAddressConfig implements FailedOperationTransformationConfig.PathAddressConfig {
+    private abstract static class BasePathAddressConfig implements FailedOperationTransformationConfig.PathAddressConfig {
+
+        @Override
+        public boolean expectDiscarded(ModelNode operation) {
+            //The reject simply forwards on the original operation to make it fail
+            return false;
+        }
+
+        @Override
+        public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+
+        @Override
+        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
+            throw new IllegalStateException("Should not get called");
+        }
+    }
+
+    private static class ChangeAddressConfig extends BasePathAddressConfig {
         KernelServices services;
         private final PathAddress badAddress;
         private final PathAddress newAddress;
@@ -327,29 +366,70 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             return op;
         }
 
-        @Override
-        public boolean expectDiscarded(ModelNode operation) {
-            //The reject simply forwards on the original operation to make it fail
-            return false;
-        }
-
-        @Override
-        public List<ModelNode> createWriteAttributeOperations(ModelNode operation) {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public boolean expectFailedWriteAttributeOperation(ModelNode operation) {
-            throw new IllegalStateException("Should not get called");
-        }
-
-        @Override
-        public ModelNode correctWriteAttributeOperation(ModelNode operation) {
-            throw new IllegalStateException("Should not get called");
-        }
-
         private boolean isBadAddress(ModelNode operation) {
             return PathAddress.pathAddress(operation.require(OP_ADDR)).equals(badAddress);
+        }
+    }
+
+    private static class RemoveExtraFileStoreConfig extends BasePathAddressConfig {
+        private final KernelServices kernelServices;
+        private final PathAddress timerServiceAddress;
+        private final PathAddress rejectedFileDataStoreAddress;
+        private ModelNode removedResourceModel;
+
+        public RemoveExtraFileStoreConfig(KernelServices kernelServices, PathAddress timerServiceAddress) {
+            this.kernelServices = kernelServices;
+            this.timerServiceAddress = timerServiceAddress;
+            rejectedFileDataStoreAddress = timerServiceAddress.append(EJB3SubsystemModel.FILE_DATA_STORE_PATH.getKey(), "file-data-store-rejected");
+        }
+
+        @Override
+        public boolean expectFailed(ModelNode operation) {
+            return hasTooManyFileStores();
+        }
+
+        @Override
+        public boolean canCorrectMore(ModelNode operation) {
+            return hasTooManyFileStores();
+        }
+
+        private boolean hasTooManyFileStores() {
+            ModelNode op = Util.createOperation(READ_CHILDREN_NAMES_OPERATION, timerServiceAddress);
+            op.get(CHILD_TYPE).set(EJB3SubsystemModel.FILE_DATA_STORE_PATH.getKey());
+            ModelNode result = ModelTestUtils.checkOutcome(kernelServices.executeOperation(op)).get(RESULT);
+            List<ModelNode> list = result.asList();
+            return list.size() > 1;
+        }
+
+        @Override
+        public ModelNode correctOperation(ModelNode operation) {
+            //Here we don't actually correct the operation, but we remove the extra file-data-store which causes the
+            //rejection
+
+
+            ModelNode rr = Util.createEmptyOperation(READ_RESOURCE_OPERATION, rejectedFileDataStoreAddress);
+            removedResourceModel = ModelTestUtils.checkOutcome(kernelServices.executeOperation(rr)).get(RESULT);
+
+            removeExtraFileDataStore();
+            return operation;
+        }
+
+        void removeExtraFileDataStore() {
+            ModelNode remove = Util.createRemoveOperation(rejectedFileDataStoreAddress);
+            ModelTestUtils.checkOutcome(kernelServices.executeOperation(remove));
+        }
+
+        @Override
+        public void operationDone(ModelNode operation) {
+            if (removedResourceModel != null) {
+                //Re-add the removed resource, since we have more checks in the config for file-data-store=file-data-store-rejected
+                ModelNode add = Util.createAddOperation(
+                        timerServiceAddress.append(EJB3SubsystemModel.FILE_DATA_STORE_PATH.getKey(), "file-data-store-rejected"));
+                for (String key : removedResourceModel.keys()) {
+                    add.get(key).set(removedResourceModel.get(key));
+                }
+                ModelNode result = ModelTestUtils.checkOutcome(kernelServices.executeOperation(add)).get(RESULT);
+            }
         }
     }
 }
