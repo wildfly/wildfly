@@ -23,7 +23,6 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.ThreadSetupHandler;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;

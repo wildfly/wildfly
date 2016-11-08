@@ -40,12 +40,15 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostAdd extends AbstractAddStepHandler {
+
+    private static final String REQUEST_CONTROLLER_CAPABILITY = "org.wildfly.request-controller";
 
     static final HostAdd INSTANCE = new HostAdd();
 
@@ -118,6 +121,10 @@ class HostAdd extends AbstractAddStepHandler {
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServer())
                 .addDependency(CommonWebServer.SERVICE_NAME)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost());
+
+        if(context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY, null, null)) {
+            builder.addDependency(context.getCapabilityServiceName(REQUEST_CONTROLLER_CAPABILITY, RequestController.class), RequestController.class, service.getRequestControllerInjectedValue());
+        }
 
         if (aliases != null) {
             for (String alias : aliases) {
