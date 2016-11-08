@@ -64,7 +64,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,7 +74,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({MDBTestCase.JmsQueueSetup.class})
-@Ignore("WFLY-7303")
 public class MDBTestCase {
 
     private static final Logger logger = Logger.getLogger(MDBTestCase.class);
