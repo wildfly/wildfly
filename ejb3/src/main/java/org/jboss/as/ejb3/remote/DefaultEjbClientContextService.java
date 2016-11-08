@@ -30,13 +30,15 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.util.function.Supplier;
+
 /**
  * Service that manages an EJBClientContext
  *
  * @author Stuart Douglas
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
-public class DefaultEjbClientContextService implements Service<EJBClientContext> {
+public class DefaultEjbClientContextService implements Service<EJBClientContext>, Supplier<EJBClientContext> {
 
     /**
      * The base service name for these services
@@ -69,6 +71,7 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         }
 
         final EJBClientContext clientContext = builder.build();
+        EJBClientContext.getContextManager().setGlobalDefaultSupplier(this);
         this.context = clientContext;
 
     }
@@ -80,6 +83,11 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
 
     @Override
     public EJBClientContext getValue() throws IllegalStateException, IllegalArgumentException {
+        return context;
+    }
+
+    @Override
+    public EJBClientContext get(){
         return context;
     }
 
