@@ -23,11 +23,10 @@
 package org.jboss.as.security.remoting;
 
 import java.security.Principal;
-import java.util.Collection;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.security.UserPrincipal;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * A {@link Principal} implementation to wrap a Remoting {@link Connection} and represent the identity authenticated against that Connection.
@@ -42,13 +41,10 @@ public final class RemotingConnectionPrincipal implements Principal {
 
     public RemotingConnectionPrincipal(final Connection connection) {
         this.connection = connection;
-        Collection<Principal> principals = connection.getPrincipals();
+        SecurityIdentity localIdentity = connection.getLocalIdentity();
         String userName = null;
-        for (Principal current : principals) {
-            if (current instanceof UserPrincipal) {
-                userName = current.getName();
-                break;
-            }
+        if (localIdentity != null) {
+            userName = localIdentity.getPrincipal().getName();
         }
         if (userName == null) {
             throw SecurityLogger.ROOT_LOGGER.noUserPrincipalFound();

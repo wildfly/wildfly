@@ -53,6 +53,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.ManagementSecurityIdentitySupplier;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
@@ -66,6 +67,7 @@ import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.web.WebExtension;
 import org.jboss.dmr.ModelNode;
@@ -282,7 +284,8 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
                     }
                 }
             }, null));
-            rootRegistration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), null, null, new EnvironmentNameReader() {
+            rootRegistration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), new ManagementSecurityIdentitySupplier(),
+                    null, null, new EnvironmentNameReader() {
                 public boolean isServer() {
                     return true;
                 }
@@ -319,6 +322,11 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         @Override
         protected ProcessType getProcessType() {
             return ProcessType.SELF_CONTAINED;
+        }
+
+        @Override
+        protected void setupController(ControllerInitializer controllerInitializer) {
+            controllerInitializer.addPath("jboss.controller.temp.dir", System.getProperty("java.io.tmpdir"), null);
         }
 
     }

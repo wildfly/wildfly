@@ -17,6 +17,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,6 +48,9 @@ public class WebSocketTestCase {
 
     @Test
     public void testWebSocket() throws Exception {
+        //TODO WFLY-7538 - This needs to be reenabled
+        Assume.assumeTrue(System.getSecurityManager() == null);
+
         AnnotatedClient endpoint = new AnnotatedClient();
         WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
         Session session = serverContainer.connectToServer(endpoint, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/websocket/websocket/Stuart", "", ""));

@@ -157,7 +157,7 @@
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.hal.release-stream>2.9.0.Alpha5</version.org.jboss.hal.release-stream>
-        <version.org.jboss.ejb-client>2.1.4.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>3.0.0.Beta2</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.0.Alpha1</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
@@ -217,9 +217,10 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.7.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Alpha11</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.0.Alpha12</version.org.wildfly.core>
         <version.org.wildfly.arquillian>2.0.0.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha12</version.org.wildfly.security.elytron-subsystem>
+        <version.org.wildfly.naming-client>1.0.0.Beta4</version.org.wildfly.naming-client>
+        <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha13</version.org.wildfly.security.elytron-subsystem>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
@@ -1168,6 +1169,12 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-naming</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-naming-client</artifactId>
+                <version>${version.org.wildfly.naming-client}</version>
             </dependency>
 
             <dependency>
@@ -6068,6 +6075,12 @@
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-managed</artifactId>
                 <version>${version.org.wildfly.arquillian}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.sasl</groupId>
+                        <artifactId>jboss-sasl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

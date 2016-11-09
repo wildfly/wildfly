@@ -307,6 +307,11 @@
         <!-- Dependencies specific to the integration tests. -->
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-webservices-tests-integration</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

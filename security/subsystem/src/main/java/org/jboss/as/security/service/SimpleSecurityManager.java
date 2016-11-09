@@ -40,14 +40,11 @@ import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.core.security.ServerSecurityManager;
-import org.jboss.as.core.security.SubjectUserInfo;
-import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.remoting.RemotingConnectionCredential;
 import org.jboss.as.security.remoting.RemotingConnectionPrincipal;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.RunAs;
@@ -69,6 +66,10 @@ import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
 import org.jboss.security.javaee.SecurityRoleRef;
+import org.wildfly.security.auth.server.IdentityCredentials;
+import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -298,19 +299,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                 SecurityContextUtil util = current.getUtil();
 
                 Connection connection = SecurityActions.remotingContextGetConnection();
-                UserInfo userInfo = connection.getUserInfo();
                 Principal p = null;
                 Object credential = null;
 
-                if (userInfo instanceof SubjectUserInfo) {
-                    SubjectUserInfo sinfo = (SubjectUserInfo) userInfo;
-                    Subject subject = sinfo.getSubject();
-
-                    Set<PasswordCredential> pcSet = subject.getPrivateCredentials(PasswordCredential.class);
-                    if (pcSet.size() > 0) {
-                        PasswordCredential pc = pcSet.iterator().next();
-                        p = new SimplePrincipal(pc.getUserName());
-                        credential = new String(pc.getCredential());
+                SecurityIdentity localIdentity = connection.getLocalIdentity();
+                if (localIdentity != null) {
+                    p = new SimplePrincipal(localIdentity.getPrincipal().getName());
+                    IdentityCredentials privateCredentials = localIdentity.getPrivateCredentials();
+                    PasswordCredential passwordCredential = privateCredentials.getCredential(PasswordCredential.class, ClearPassword.ALGORITHM_CLEAR);
+                    if (passwordCredential != null) {
+                        credential = new String(passwordCredential.getPassword(ClearPassword.class).getPassword());
                     }
                 }
 
