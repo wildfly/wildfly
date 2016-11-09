@@ -1893,6 +1893,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-jdbc-store</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+            </dependency>
+
+            <dependency>
                <groupId>org.apache.activemq</groupId>
                <artifactId>artemis-journal</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>

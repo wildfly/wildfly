@@ -115,6 +115,11 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                                         ServerDefinition.JOURNAL_MAX_IO,
                                         ServerDefinition.CREATE_BINDINGS_DIR,
                                         ServerDefinition.CREATE_JOURNAL_DIR,
+                                        ServerDefinition.JOURNAL_DATASOURCE,
+                                        ServerDefinition.JOURNAL_MESSAGES_TABLE,
+                                        ServerDefinition.JOURNAL_BINDINGS_TABLE,
+                                        ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
+                                        ServerDefinition.JOURNAL_SQL_PROVIDER_FACTORY,
                                         // statistics
                                         ServerDefinition.STATISTICS_ENABLED,
                                         ServerDefinition.MESSAGE_COUNTER_SAMPLE_PERIOD,

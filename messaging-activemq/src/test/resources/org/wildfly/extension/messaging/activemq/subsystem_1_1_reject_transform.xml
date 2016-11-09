@@ -1,5 +1,12 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.1">
     <server name="default">
+        <journal datasource="fooDS"
+                 messages-table="MY_MESSAGES"
+                 bindings-table="MY_BINDINGS"
+                 large-messages-table="MY_LARGE_MESSAGES">
+            <sql-provider-factory-class name="org.foo.MySQLProviderFactory" module="com.acme" />
+        </journal>
+
         <cluster-connection name="cc1"
                             address="${address:cc1-address}"
                             connector-name="netty"

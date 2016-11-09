@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.management.MBeanServer;
+import javax.sql.DataSource;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
@@ -40,11 +41,13 @@ import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.io.aio.AIOSequentialFileFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
+import org.apache.activemq.artemis.jdbc.store.sql.GenericSQLProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
@@ -92,6 +95,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
     private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
+    // Injected DataSource for JDBC store use (can be null).
+    private final InjectedValue<DataSource> dataSource = new InjectedValue<>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final PathConfig pathConfig;
     // mapping between the {broadcast|discovery}-groups and the *names* of the JGroups channel they use
@@ -133,6 +138,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
     InjectedValue<MBeanServer> getMBeanServer() {
         return mbeanServer;
+    }
+
+    InjectedValue<DataSource> getDataSource() {
+        return dataSource;
     }
 
     Map<String, JChannel> getChannels() {
@@ -290,6 +299,16 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             // security
             WildFlySecurityManager wildFlySecurityManager = new WildFlySecurityManager(securityDomainContextValue.getValue());
 
+            DataSource ds = dataSource.getOptionalValue();
+            if (ds != null) {
+                DatabaseStorageConfiguration dbConfiguration = (DatabaseStorageConfiguration) configuration.getStoreConfiguration();
+                dbConfiguration.setDataSource(ds);
+                // FIXME: make this configurable
+                dbConfiguration.setSqlProvider(new GenericSQLProvider.Factory());
+                configuration.setStoreConfiguration(dbConfiguration);
+                ROOT_LOGGER.infof("use JDBC store for Artemis server, bindingsTable:%s",
+                        dbConfiguration.getBindingsTableName());
+            }
             // Now start the server
             server = new ActiveMQServerImpl(configuration, mbeanServer.getOptionalValue(), wildFlySecurityManager);
             if (ActiveMQDefaultConfiguration.getDefaultClusterPassword().equals(server.getConfiguration().getClusterPassword())) {

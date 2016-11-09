@@ -51,7 +51,13 @@
                 compact-min-files="${journal.compact.min.files:2}"
                 max-io="${journal.max.io:50}"
                 create-bindings-dir="${create.bindings.dir:false}"
-                create-journal-dir="${create.journal.dir:true}"/>
+                create-journal-dir="${create.journal.dir:true}"
+                datasource="fooDS"
+                messages-table="${journal.message.table:MESSAGES}"
+                bindings-table="${journal.bindings.table:BINDINGS}"
+                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}">
+            <sql-provider-factory-class name="org.foo.MySQLProviderFactory" module="com.acme" />
+        </journal>
 
         <statistics
                 enabled="${statistics.enabled:true}"
