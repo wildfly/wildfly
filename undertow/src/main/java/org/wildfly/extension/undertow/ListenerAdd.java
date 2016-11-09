@@ -105,7 +105,9 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         serviceBuilder.addDependency(workerServiceName, XnioWorker.class, service.getWorker())
                 .addDependency(socketBindingServiceName, SocketBinding.class, service.getBinding())
                 .addDependency(bufferPoolServiceName, (Injector) service.getBufferPool())
-                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
+                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService())
+                // Include the capability-declared service name as an alias  TODO get rid of the old style name
+                .addAliases(ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(name));
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);
         serviceBuilder.install();
