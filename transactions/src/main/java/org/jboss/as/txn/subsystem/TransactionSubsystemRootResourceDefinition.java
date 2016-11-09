@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.arjuna.ats.arjuna.coordinator.TxControl;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -55,6 +54,10 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the root resource of the transaction subsystem.
@@ -125,12 +128,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     //coordinator environment
     public static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
             .setDeprecated(ModelVersion.create(2))
             .setAllowExpression(true).build();
@@ -276,6 +279,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(USE_JOURNAL_STORE);
         attributesWithoutMutuals.remove(USE_JDBC_STORE);
 
+        attributesWithoutMutuals.remove(STATISTICS_ENABLED);
         attributesWithoutMutuals.remove(DEFAULT_TIMEOUT);
         attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove these as it also needs special write handler
 
@@ -306,6 +310,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_BINDING, null, mutualProcessIdWriteHandler);
         resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_MAX_PORTS, null, mutualProcessIdWriteHandler);
 
+        //Register statistics-enabled attribute
+        resourceRegistration.registerReadWriteAttribute(STATISTICS_ENABLED, null, new StatisticsEnabledHandler(STATISTICS_ENABLED));
         AliasedHandler esh = new AliasedHandler(STATISTICS_ENABLED.getName());
         resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, esh, esh);
 
@@ -500,6 +506,34 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                              final ModelNode valueToRevert, final Void handback)
             throws OperationFailedException {
             TxControl.setDefaultTimeout(valueToRestore.asInt());
+        }
+    }
+
+    private static class StatisticsEnabledHandler extends AbstractWriteAttributeHandler<Void> {
+
+        final CoordinatorEnvironmentBean coordinatorEnvironmentBean;
+
+        public StatisticsEnabledHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+            this.coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
+        }
+
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+            throws OperationFailedException {
+            coordinatorEnvironmentBean.setEnableStatistics(resolvedValue.asBoolean());
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+            throws OperationFailedException {
+            coordinatorEnvironmentBean.setEnableStatistics(valueToRestore.asBoolean());
         }
     }
 
