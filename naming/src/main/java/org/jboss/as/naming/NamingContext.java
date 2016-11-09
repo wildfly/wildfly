@@ -589,7 +589,11 @@ public class NamingContext implements EventContext {
                     absoluteName.addAll(name.getSuffix(1));
                 } else {
                     absoluteName.addAll(prefix);
-                    absoluteName.addAll(name);
+                    if(name instanceof CompositeName) {
+                        absoluteName.addAll(name);
+                    } else {
+                        absoluteName.addAll(new CompositeName(name.toString()));
+                    }
                 }
             }
             sm.checkPermission(new JndiPermission(absoluteName.toString(), actions));
