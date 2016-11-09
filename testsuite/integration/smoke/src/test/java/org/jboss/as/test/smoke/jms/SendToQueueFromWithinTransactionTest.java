@@ -41,7 +41,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,9 +83,6 @@ public class SendToQueueFromWithinTransactionTest {
 
     @Test
     public void sendSuccessfully() throws Exception {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         try {
             sender.sendToQueueSuccessfully();
             Thread.sleep(2000);
@@ -98,9 +94,6 @@ public class SendToQueueFromWithinTransactionTest {
 
     @Test
     public void sendAndRollback() {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         try {
             sender2.sendToQueueAndRollback();
             Thread.sleep(2000);

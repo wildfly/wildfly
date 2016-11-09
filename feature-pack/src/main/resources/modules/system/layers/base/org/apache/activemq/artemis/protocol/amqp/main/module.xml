@@ -25,7 +25,6 @@
 <module xmlns="urn:jboss:module:1.5" name="org.apache.activemq.artemis.protocol.amqp">
     <resources>
         <artifact name="${org.apache.activemq:artemis-amqp-protocol}"/>
-        <artifact name="${org.apache.activemq:artemis-proton-plug}"/>
     </resources>
 
     <dependencies>

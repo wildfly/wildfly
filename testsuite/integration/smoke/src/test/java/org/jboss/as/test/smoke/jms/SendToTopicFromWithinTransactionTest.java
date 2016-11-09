@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.smoke.jms;
 
+import javax.ejb.EJB;
+import javax.enterprise.event.Observes;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -35,16 +41,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
-import javax.enterprise.event.Observes;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
 
 /**
  * Tests sending JMS messages to a topic within a transaction
@@ -84,9 +83,6 @@ public class SendToTopicFromWithinTransactionTest {
 
     @Test
     public void sendSuccessfully() throws Exception {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         try {
             sender.sendToTopicSuccessfully();
             Thread.sleep(2000);
@@ -98,9 +94,6 @@ public class SendToTopicFromWithinTransactionTest {
 
     @Test
     public void sendAndRollback() {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         try {
             sender2.sendToTopicAndRollback();
             Thread.sleep(2000);

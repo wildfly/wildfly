@@ -116,7 +116,7 @@
         <version.jsoup>1.8.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
-        <version.org.apache.activemq.artemis>1.4.0</version.org.apache.activemq.artemis>
+        <version.org.apache.activemq.artemis>1.5.0</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.1.8</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
@@ -1852,8 +1852,20 @@
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-configuration2</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.airlift</groupId>
+                        <artifactId>airline</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1972,18 +1984,6 @@
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-native</artifactId>
-                <version>${version.org.apache.activemq.artemis}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>artemis-proton-plug</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
