@@ -52,7 +52,7 @@ import java.util.Set;
 abstract class ListenerAdd extends AbstractAddStepHandler {
 
     ListenerAdd(ListenerResourceDefinition definition) {
-        super(ListenerResourceDefinition.LISTENER_CAPABILITY, definition.getAttributes());
+        super(definition.getAttributes());
     }
 
     @Override

@@ -214,8 +214,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     public ListenerResourceDefinition(PathElement pathElement) {
-        super(pathElement, UndertowExtension.getResolver(Constants.LISTENER)
-        );
+        super(new PersistentResourceDefinition.Parameters(pathElement, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(LISTENER_CAPABILITY));
     }
 
     public Collection<AttributeDefinition> getAttributes() {
