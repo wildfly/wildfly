@@ -42,5 +42,8 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
     public void register(ManagementResourceRegistration registration) {
         new AddStepHandler(this.descriptor, this.handler).register(registration);
         new RemoveStepHandler(this.descriptor, this.handler).register(registration);
+
+        Registration<ManagementResourceRegistration> writeAttributeHandler = (this.handler != null) ? new ReloadRequiredWriteAttributeHandler(this.descriptor) : new ModelOnlyWriteAttributeHandler(this.descriptor);
+        writeAttributeHandler.register(registration);
     }
 }

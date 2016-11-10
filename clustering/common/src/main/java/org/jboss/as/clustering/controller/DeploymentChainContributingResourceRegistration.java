@@ -47,5 +47,8 @@ public class DeploymentChainContributingResourceRegistration implements Registra
     public void register(ManagementResourceRegistration registration) {
         new DeploymentChainContributingAddStepHandler(this.descriptor, this.handler, this.deploymentChainContributor).register(registration);
         new ReloadRequiredRemoveStepHandler(this.descriptor).register(registration);
+
+        Registration<ManagementResourceRegistration> writeAttributeHandler = (this.handler != null) ? new ReloadRequiredWriteAttributeHandler(this.descriptor) : new ModelOnlyWriteAttributeHandler(this.descriptor);
+        writeAttributeHandler.register(registration);
     }
 }

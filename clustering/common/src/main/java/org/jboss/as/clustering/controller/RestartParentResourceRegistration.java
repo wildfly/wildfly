@@ -48,5 +48,6 @@ public class RestartParentResourceRegistration<T> implements Registration<Manage
     public void register(ManagementResourceRegistration registration) {
         new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, this.descriptor, this.handler).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, this.descriptor, this.handler).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, this.descriptor).register(registration);
     }
 }

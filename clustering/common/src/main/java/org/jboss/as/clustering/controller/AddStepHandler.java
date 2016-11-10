@@ -54,21 +54,15 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
 
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
-    private final OperationStepHandler writeAttributeHandler;
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor) {
         this(descriptor, null);
     }
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        this(descriptor, handler, (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
-    }
-
-    AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, OperationStepHandler writeAttributeHandler) {
         super(descriptor.getAttributes());
         this.descriptor = descriptor;
         this.handler = handler;
-        this.writeAttributeHandler = writeAttributeHandler;
     }
 
     @Override
@@ -191,8 +185,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         parameters = Stream.concat(parameters, this.descriptor.getAttributeAliases().keySet().stream());
         parameters.forEach(attribute -> builder.addParameter(attribute));
         registration.registerOperationHandler(builder.build(), this);
-
-        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this.writeAttributeHandler));
 
         for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
             Attribute target = entry.getValue();

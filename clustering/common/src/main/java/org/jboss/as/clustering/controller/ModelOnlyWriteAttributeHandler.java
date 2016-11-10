@@ -26,6 +26,7 @@ import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperati
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformerOperationAttachment;
 import org.jboss.dmr.ModelNode;
@@ -33,10 +34,13 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Paul Ferraro
  */
-public class ModelOnlyWriteAttributeHandler extends org.jboss.as.controller.ModelOnlyWriteAttributeHandler {
+public class ModelOnlyWriteAttributeHandler extends org.jboss.as.controller.ModelOnlyWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
+
+    private final WriteAttributeStepHandlerDescriptor descriptor;
 
     public ModelOnlyWriteAttributeHandler(WriteAttributeStepHandlerDescriptor descriptor) {
         super(descriptor.getAttributes().stream().toArray(AttributeDefinition[]::new));
+        this.descriptor = descriptor;
     }
 
     @Override
@@ -50,5 +54,10 @@ public class ModelOnlyWriteAttributeHandler extends org.jboss.as.controller.Mode
             }
             valuesAttachment.putIfAbsentInitialValue(Operations.getPathAddress(operation), attributeName, oldValue);
         }
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
     }
 }
