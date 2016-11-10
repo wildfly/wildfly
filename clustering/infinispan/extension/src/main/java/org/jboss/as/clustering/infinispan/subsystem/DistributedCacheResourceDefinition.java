@@ -22,9 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
@@ -136,8 +135,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                 .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributedCacheServiceHandler();
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
         super.register(registration);
     }

@@ -26,8 +26,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.DeploymentChainContributingAddStepHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -102,8 +101,7 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
-        new DeploymentChainContributingAddStepHandler(descriptor, handler, target -> target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor())).register(registration);
-        new ReloadRequiredRemoveStepHandler(descriptor).register(registration);
+        new DeploymentChainContributingResourceRegistration(descriptor, handler, target -> target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor())).register(registration);
 
         new CacheContainerResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
     }

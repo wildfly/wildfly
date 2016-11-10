@@ -22,12 +22,11 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.OperationHandler;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -146,46 +145,50 @@ public class StackResourceDefinition extends ChildResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addExtraParameters(TRANSPORT, PROTOCOLS)
                 .addCapabilities(Capability.class)
-                ;
-        ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);
-        new AddStepHandler(descriptor, handler) {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                PathAddress address = context.getCurrentAddress();
-                if (operation.hasDefined(TRANSPORT.getName())) {
-                    ModelNode transport = operation.get(TRANSPORT.getName());
-                    String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, transport).asString();
-                    PathElement transportPath = TransportResourceDefinition.pathElement(type);
-                    PathAddress transportAddress = address.append(transportPath);
-                    ModelNode transportOperation = Util.createAddOperation(transportAddress);
-                    for (TransportResourceDefinition.Attribute attribute : TransportResourceDefinition.Attribute.values()) {
-                        String name = attribute.getName();
-                        if (transport.hasDefined(name)) {
-                            transportOperation.get(name).set(transport.get(name));
+                .addOperationTranslator(new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        if (operation.hasDefined(TRANSPORT.getName())) {
+                            PathAddress address = context.getCurrentAddress();
+                            ModelNode transport = operation.get(TRANSPORT.getName());
+                            String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, transport).asString();
+                            PathElement transportPath = TransportResourceDefinition.pathElement(type);
+                            PathAddress transportAddress = address.append(transportPath);
+                            ModelNode transportOperation = Util.createAddOperation(transportAddress);
+                            for (TransportResourceDefinition.Attribute attribute : TransportResourceDefinition.Attribute.values()) {
+                                String name = attribute.getName();
+                                if (transport.hasDefined(name)) {
+                                    transportOperation.get(name).set(transport.get(name));
+                                }
+                            }
+                            context.addStep(transportOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(transportPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
                         }
                     }
-                    context.addStep(transportOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(transportPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
-                }
-                if (operation.hasDefined(PROTOCOLS.getName())) {
-                    for (ModelNode protocol : operation.get(PROTOCOLS.getName()).asList()) {
-                        String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, protocol).asString();
-                        PathElement protocolPath = ProtocolResourceDefinition.pathElement(type);
-                        PathAddress protocolAddress = address.append(protocolPath);
-                        ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
-                        for (ProtocolResourceDefinition.Attribute attribute : ProtocolResourceDefinition.Attribute.values()) {
-                            String name = attribute.getName();
-                            if (protocol.hasDefined(name)) {
-                                protocolOperation.get(name).set(protocol.get(name));
+                })
+                .addOperationTranslator(new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        if (operation.hasDefined(PROTOCOLS.getName())) {
+                            PathAddress address = context.getCurrentAddress();
+                            for (ModelNode protocol : operation.get(PROTOCOLS.getName()).asList()) {
+                                String type = ProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, protocol).asString();
+                                PathElement protocolPath = ProtocolResourceDefinition.pathElement(type);
+                                PathAddress protocolAddress = address.append(protocolPath);
+                                ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
+                                for (ProtocolResourceDefinition.Attribute attribute : ProtocolResourceDefinition.Attribute.values()) {
+                                    String name = attribute.getName();
+                                    if (protocol.hasDefined(name)) {
+                                        protocolOperation.get(name).set(protocol.get(name));
+                                    }
+                                }
+                                context.addStep(protocolOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
                             }
                         }
-                        context.addStep(protocolOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
                     }
-                }
-                super.execute(context, operation);
-            }
-        }.register(registration);
-
-        new RemoveStepHandler(descriptor, handler).register(registration);
+                })
+                ;
+        ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
         OperationDefinition legacyAddProtocolOperation = new SimpleOperationDefinitionBuilder("add-protocol", this.getResourceDescriptionResolver())
                 .setParameters(ProtocolResourceDefinition.Attribute.SOCKET_BINDING.getDefinition())

@@ -24,10 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
@@ -120,7 +119,6 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
                 .addAttributes(TableResourceDefinition.ColumnAttribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryTableBuilder(address.getParent().getParent()));
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
     }
 }

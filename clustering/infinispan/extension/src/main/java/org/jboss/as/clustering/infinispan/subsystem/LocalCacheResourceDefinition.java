@@ -22,9 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -68,8 +67,7 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
                 .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new LocalCacheServiceHandler();
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
         super.register(registration);
     }

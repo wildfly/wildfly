@@ -39,12 +39,14 @@ import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -53,6 +55,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Base class for store resources which require common store attributes and JDBC store attributes
@@ -172,20 +175,46 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    static void translateAddOperation(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName())) {
-            if (operation.hasDefined(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getName())) {
-                // Translate JNDI name into pool name
-                String jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.resolveModelAttribute(context, operation).asString();
-                String poolName = findPoolName(context, jndiName);
-                operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName()).set(poolName);
-            } else {
-                throw ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
+    static class TableAttributeTranslator implements OperationStepHandler {
+        private final org.jboss.as.clustering.controller.Attribute attribute;
+        private final PathElement path;
+
+        TableAttributeTranslator(org.jboss.as.clustering.controller.Attribute attribute, PathElement path) {
+            this.attribute = attribute;
+            this.path = path;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (operation.hasDefined(this.attribute.getName())) {
+                // Translate deprecated table attribute into separate add table operation
+                ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(this.path));
+                ModelNode parameters = operation.get(this.attribute.getName());
+                for (Property parameter : parameters.asPropertyList()) {
+                    addTableOperation.get(parameter.getName()).set(parameter.getValue());
+                }
+                context.addStep(addTableOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(this.path), ModelDescriptionConstants.ADD), context.getCurrentStage());
             }
         }
     }
 
-    private static String findPoolName(OperationContext context, String jndiName) throws OperationFailedException {
+    static final OperationStepHandler DATA_SOURCE_TRANSLATOR = new OperationStepHandler() {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName())) {
+                if (operation.hasDefined(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getName())) {
+                    // Translate JNDI name into pool name
+                    String jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.resolveModelAttribute(context, operation).asString();
+                    String poolName = findPoolName(context, jndiName);
+                    operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName()).set(poolName);
+                } else {
+                    throw ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
+                }
+            }
+        }
+    };
+
+    static String findPoolName(OperationContext context, String jndiName) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         PathAddress rootAddress = address.subAddress(0, address.size() - 4);
         PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));

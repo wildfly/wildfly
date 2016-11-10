@@ -24,9 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -122,7 +121,6 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
                 .addAttributes(DeprecatedAttribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new StateTransferBuilder(address.getParent()));
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
     }
 }

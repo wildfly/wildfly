@@ -24,8 +24,7 @@ package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.DeploymentChainContributingAddStepHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -119,7 +118,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SingletonServiceHandler();
-        new DeploymentChainContributingAddStepHandler(descriptor, handler, target -> {
+        new DeploymentChainContributingResourceRegistration(descriptor, handler, target -> {
             for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
                 target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, new JBossAllXmlParserRegisteringProcessor<>(schema.getRoot(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, new SingletonDeploymentXMLReader(schema)));
             }
@@ -127,7 +126,6 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
             target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SINGLETON_DEPLOYMENT, new SingletonDeploymentDependencyProcessor());
             target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_SINGLETON_DEPLOYMENT, new SingletonDeploymentProcessor());
         }).register(registration);
-        new ReloadRequiredRemoveStepHandler(descriptor).register(registration);
 
         new SingletonPolicyResourceDefinition().register(registration);
     }

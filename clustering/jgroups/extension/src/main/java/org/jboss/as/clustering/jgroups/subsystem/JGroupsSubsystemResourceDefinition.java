@@ -25,12 +25,11 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
@@ -134,8 +133,7 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
         new ChannelResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
         new StackResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);

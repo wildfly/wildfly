@@ -22,12 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -37,12 +34,9 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperation
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -50,7 +44,6 @@ import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Resource description for the addressable resource and its alias
@@ -144,31 +137,14 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 .addCapabilities(Capability.class)
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
+                .addOperationTranslator(DATA_SOURCE_TRANSLATOR)
+                // Translate deprecated BINARY_TABLE attribute into separate add table operation
+                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH))
+                // Translate deprecated STRING_TABLE attribute into separate add table operation
+                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH))
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new MixedKeyedJDBCStoreBuilder(address.getParent()));
-        new AddStepHandler(descriptor, handler) {
-            @Override
-            protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-                translateAddOperation(context, operation);
-                // Translate deprecated BINARY_TABLE attribute into separate add table operation
-                this.addTableStep(context, operation, DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH, address -> new BinaryTableBuilder(address.getParent().getParent()));
-                // Translate deprecated STRING_TABLE attribute into separate add table operation
-                this.addTableStep(context, operation, DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH, address -> new StringTableBuilder(address.getParent().getParent()));
-                super.populateModel(context, operation, resource);
-            }
-
-            private void addTableStep(OperationContext context, ModelNode operation, DeprecatedAttribute attribute, PathElement path, ResourceServiceBuilderFactory<TableManipulationConfiguration> provider) {
-                if (operation.hasDefined(attribute.getName())) {
-                    ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(path));
-                    ModelNode parameters = operation.get(attribute.getName());
-                    for (Property parameter : parameters.asPropertyList()) {
-                        addTableOperation.get(parameter.getName()).set(parameter.getValue());
-                    }
-                    context.addStep(addTableOperation, registration.getOperationHandler(PathAddress.pathAddress(path), ModelDescriptionConstants.ADD), context.getCurrentStage());
-                }
-            }
-        }.register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
         registration.registerReadWriteAttribute(DeprecatedAttribute.BINARY_TABLE.getDefinition(), BinaryKeyedJDBCStoreResourceDefinition.LEGACY_READ_TABLE_HANDLER, BinaryKeyedJDBCStoreResourceDefinition.LEGACY_WRITE_TABLE_HANDLER);
         registration.registerReadWriteAttribute(DeprecatedAttribute.STRING_TABLE.getDefinition(), StringKeyedJDBCStoreResourceDefinition.LEGACY_READ_TABLE_HANDLER, StringKeyedJDBCStoreResourceDefinition.LEGACY_WRITE_TABLE_HANDLER);

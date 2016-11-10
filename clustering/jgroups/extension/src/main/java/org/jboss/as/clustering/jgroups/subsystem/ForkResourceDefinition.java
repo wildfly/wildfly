@@ -26,23 +26,15 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.registry.Resource.ResourceEntry;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -85,11 +77,9 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
     }
 
     private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
-    final boolean allowRuntimeOnlyRegistration;
 
-    ForkResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    ForkResourceDefinition() {
         super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -101,21 +91,8 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new ForkServiceHandler(this.builderFactory);
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler) {
-            @Override
-            protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-                super.performRemove(context, operation, model);
-                if (ForkResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
-                    Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-                    for (ResourceEntry entry: resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-                        context.removeResource(PathAddress.pathAddress(entry.getPathElement()));
-                    }
-                    context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
-                }
-            }
-        }.register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
-        new ForkProtocolResourceDefinition(this.builderFactory, this.allowRuntimeOnlyRegistration).register(registration);
+        new ForkProtocolResourceDefinition(this.builderFactory).register(registration);
     }
 }

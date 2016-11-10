@@ -22,11 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -84,8 +83,7 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new PartitionHandlingBuilder(address.getParent()));
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new OperationHandler<>(new PartitionHandlingOperationExecutor(), PartitionHandlingOperation.class).register(registration);

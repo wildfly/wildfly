@@ -26,8 +26,7 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
@@ -111,8 +110,7 @@ public class StackProtocolResourceDefinition extends ProtocolResourceDefinition 
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ProtocolConfigurationBuilder(address));
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
 
         for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
             registration.registerReadOnlyAttribute(attribute.getDefinition(), null);

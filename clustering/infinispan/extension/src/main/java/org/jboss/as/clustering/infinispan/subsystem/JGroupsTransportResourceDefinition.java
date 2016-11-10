@@ -24,10 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Set;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
@@ -271,7 +270,6 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new JGroupsTransportServiceHandler();
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
     }
 }

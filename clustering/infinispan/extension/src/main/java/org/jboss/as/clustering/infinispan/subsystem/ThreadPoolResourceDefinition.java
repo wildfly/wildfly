@@ -25,11 +25,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.jboss.as.clustering.controller.AddStepHandler;
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -112,8 +111,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ThreadPoolBuilder(this, address.getParent()));
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new ResourceRegistration(descriptor, handler).register(registration);
     }
 
     @Override
