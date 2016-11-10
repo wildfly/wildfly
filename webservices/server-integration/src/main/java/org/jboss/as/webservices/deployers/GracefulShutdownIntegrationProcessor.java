@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
@@ -29,12 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
-import org.jboss.wsf.spi.deployment.WSFServlet;
 import org.wildfly.extension.undertow.deployment.UndertowAttachments;
-
-import io.undertow.predicate.Predicate;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.handlers.ServletRequestContext;
 
 /**
  * DUP for telling Undertow to let WS deal with blocking requests to
@@ -50,14 +44,7 @@ public class GracefulShutdownIntegrationProcessor implements DeploymentUnitProce
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final JAXWSDeployment wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
         if (wsDeployment != null) {
-            Predicate predicate = new Predicate() {
-                @Override
-                public boolean resolve(HttpServerExchange exchange) {
-                    ServletRequestContext src = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
-                    return src.getCurrentServlet().getManagedServlet().getServletInfo().getServletClass().equals(WSFServlet.class);
-                }
-            };
-            unit.addToAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED, predicate);
+            unit.addToAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED, new AllowWSRequestPredicate());
         }
     }
 
