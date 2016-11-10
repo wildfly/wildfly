@@ -32,7 +32,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
@@ -301,7 +301,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new CacheContainerServiceHandler();
-        new ResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         // Translate legacy add-alias operation to list-add operation
         OperationStepHandler addAliasHandler = new OperationStepHandler() {

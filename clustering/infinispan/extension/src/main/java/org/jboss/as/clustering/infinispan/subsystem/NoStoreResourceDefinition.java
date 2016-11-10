@@ -24,7 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
@@ -53,6 +53,6 @@ public class NoStoreResourceDefinition extends ChildResourceDefinition {
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new NoStoreBuilder(address.getParent()));
-        new ResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

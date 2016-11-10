@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -167,7 +167,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()));
-        new ResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
 

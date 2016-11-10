@@ -23,7 +23,7 @@
 package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.PathElement;
@@ -50,6 +50,6 @@ public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResour
                 .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RandomElectionPolicyBuilder(address.getParent()));
-        new ResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

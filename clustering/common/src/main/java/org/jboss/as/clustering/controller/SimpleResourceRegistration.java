@@ -22,17 +22,13 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.function.Consumer;
-
-import org.jboss.as.server.DeploymentProcessorTarget;
-
 /**
- * Registers a {@link DeploymentChainContributingAddStepHandler}, {@link ReloadRequiredRemoveStepHandler}, and {@link ReloadRequiredWriteAttributeHandler} on behalf of a resource definition.
+ * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link ReloadRequiredWriteAttributeHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class DeploymentChainContributingResourceRegistration extends ResourceRegistration {
+public class SimpleResourceRegistration extends ResourceRegistration {
 
-    public DeploymentChainContributingResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler, Consumer<DeploymentProcessorTarget> contributor) {
-        super(descriptor, handler, new DeploymentChainContributingAddStepHandler(descriptor, handler, contributor), new ReloadRequiredRemoveStepHandler(descriptor));
+    public SimpleResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
     }
 }

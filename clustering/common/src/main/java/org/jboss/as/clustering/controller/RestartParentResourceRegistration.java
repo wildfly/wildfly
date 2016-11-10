@@ -22,32 +22,17 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-
 /**
  * Registers a {@link RestartParentResourceAddStepHandler}, {@link RestartParentResourceRemoveStepHandler}, and {@link RestartParentResourceWriteAttributeHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class RestartParentResourceRegistration<T> implements Registration<ManagementResourceRegistration> {
-
-    private final ResourceServiceBuilderFactory<T> parentBuilderFactory;
-    private final ResourceDescriptor descriptor;
-    private final ResourceServiceHandler handler;
+public class RestartParentResourceRegistration<T> extends ResourceRegistration {
 
     public RestartParentResourceRegistration(ResourceServiceBuilderFactory<T> parentBuilderFactory, ResourceDescriptor descriptor) {
         this(parentBuilderFactory, descriptor, null);
     }
 
     public RestartParentResourceRegistration(ResourceServiceBuilderFactory<T> parentBuilderFactory, ResourceDescriptor descriptor, ResourceServiceHandler handler) {
-        this.parentBuilderFactory = parentBuilderFactory;
-        this.descriptor = descriptor;
-        this.handler = handler;
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, this.descriptor, this.handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, this.descriptor, this.handler).register(registration);
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, this.descriptor).register(registration);
+        super(descriptor, new RestartParentResourceAddStepHandler<>(parentBuilderFactory, descriptor, handler), new RestartParentResourceRemoveStepHandler<>(parentBuilderFactory, descriptor, handler), new RestartParentResourceWriteAttributeHandler<>(parentBuilderFactory, descriptor));
     }
 }

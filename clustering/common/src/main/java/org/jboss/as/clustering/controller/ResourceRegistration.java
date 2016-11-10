@@ -22,28 +22,66 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Map;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link ReloadRequiredWriteAttributeHandler} on behalf of a resource definition.
+ * Registers add, remove, and write-attribute operation handlers and capabilities.
  * @author Paul Ferraro
  */
 public class ResourceRegistration implements Registration<ManagementResourceRegistration> {
 
-    private final ResourceDescriptor descriptor;
-    private final ResourceServiceHandler handler;
+    private final AddStepHandlerDescriptor descriptor;
+    private final Registration<ManagementResourceRegistration> addRegistration;
+    private final Registration<ManagementResourceRegistration> removeRegistration;
+    private final Registration<ManagementResourceRegistration> writeAttributeRegistration;
 
-    public ResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+    protected ResourceRegistration(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, Registration<ManagementResourceRegistration> addRegistration, Registration<ManagementResourceRegistration> removeRegistration) {
+        this(descriptor, addRegistration, removeRegistration, (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
+    }
+
+    protected ResourceRegistration(AddStepHandlerDescriptor descriptor, Registration<ManagementResourceRegistration> addRegistration, Registration<ManagementResourceRegistration> removeRegistration, Registration<ManagementResourceRegistration> writeAttributeRegistration) {
         this.descriptor = descriptor;
-        this.handler = handler;
+        this.addRegistration = addRegistration;
+        this.removeRegistration = removeRegistration;
+        this.writeAttributeRegistration = writeAttributeRegistration;
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new AddStepHandler(this.descriptor, this.handler).register(registration);
-        new RemoveStepHandler(this.descriptor, this.handler).register(registration);
+        this.addRegistration.register(registration);
+        this.removeRegistration.register(registration);
+        this.writeAttributeRegistration.register(registration);
 
-        Registration<ManagementResourceRegistration> writeAttributeHandler = (this.handler != null) ? new ReloadRequiredWriteAttributeHandler(this.descriptor) : new ModelOnlyWriteAttributeHandler(this.descriptor);
-        writeAttributeHandler.register(registration);
+        // Register read/write handlers for attribute aliases
+        for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
+            Attribute target = entry.getValue();
+            String targetName = target.getDefinition().getName();
+            AttributeAccess targetAccess = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetName);
+            // If target attribute has no read handler, synthesize one
+            OperationStepHandler readHandler = (targetAccess.getReadHandler() != null) ? targetAccess.getReadHandler() : (context, operation) -> {
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                ModelNode result = context.getResult();
+                if (model.hasDefined(targetName)) {
+                    result.set(model.get(targetName));
+                } else if (Operations.isIncludeDefaults(operation)) {
+                    result.set(target.getDefinition().getDefaultValue());
+                }
+            };
+            OperationStepHandler writeHandler = targetAccess.getWriteHandler();
+            // Delegate read/write attribute operations to target attribute
+            registration.registerReadWriteAttribute(entry.getKey(),
+                    (context, operation) -> context.addStep(Operations.createReadAttributeOperation(context.getCurrentAddress(), target), readHandler, OperationContext.Stage.MODEL),
+                    (context, operation) -> context.addStep(Operations.createWriteAttributeOperation(context.getCurrentAddress(), target, Operations.getAttributeValue(operation)), writeHandler, OperationContext.Stage.MODEL));
+        }
+
+        new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
     }
 }
