@@ -114,13 +114,23 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         }
 
         super.execute(context, operation);
+
+        if (this.requiresRuntime(context)) {
+            this.descriptor.getRuntimeResourceRegistrations().forEach(registration -> context.addStep(registration, OperationContext.Stage.MODEL));
+        }
     }
 
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        // Perform operation translation
+        for (OperationStepHandler translator : this.descriptor.getOperationTranslators()) {
+            translator.execute(context, operation);
+        }
+        // Validate extra add operation parameters
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
         }
+        // Validate and apply attribute aliases
         for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
             AttributeDefinition alias = entry.getKey();
             Attribute target = entry.getValue();
