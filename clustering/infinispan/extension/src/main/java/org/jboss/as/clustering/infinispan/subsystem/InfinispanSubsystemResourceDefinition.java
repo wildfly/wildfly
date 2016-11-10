@@ -26,13 +26,14 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.DeploymentChainContributingAddStepHandler;
+import org.jboss.as.clustering.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -45,6 +46,7 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.server.deployment.Phase;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
@@ -100,8 +102,8 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
-        new BoottimeAddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new DeploymentChainContributingAddStepHandler(descriptor, handler, target -> target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor())).register(registration);
+        new ReloadRequiredRemoveStepHandler(descriptor).register(registration);
 
         new CacheContainerResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
     }

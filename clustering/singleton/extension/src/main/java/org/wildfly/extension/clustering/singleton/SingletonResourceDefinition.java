@@ -22,10 +22,10 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.BoottimeAddStepHandler;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.DeploymentChainContributingAddStepHandler;
+import org.jboss.as.clustering.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -43,10 +43,17 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonRequirement;
+import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentDependencyProcessor;
+import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentParsingProcessor;
+import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentProcessor;
+import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentSchema;
+import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentXMLReader;
 
 /**
  * Definition of the singleton deployer resource.
@@ -112,8 +119,15 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SingletonServiceHandler();
-        new BoottimeAddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new DeploymentChainContributingAddStepHandler(descriptor, handler, target -> {
+            for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
+                target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, new JBossAllXmlParserRegisteringProcessor<>(schema.getRoot(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, new SingletonDeploymentXMLReader(schema)));
+            }
+            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SINGLETON_DEPLOYMENT, new SingletonDeploymentParsingProcessor());
+            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SINGLETON_DEPLOYMENT, new SingletonDeploymentDependencyProcessor());
+            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_SINGLETON_DEPLOYMENT, new SingletonDeploymentProcessor());
+        }).register(registration);
+        new ReloadRequiredRemoveStepHandler(descriptor).register(registration);
 
         new SingletonPolicyResourceDefinition().register(registration);
     }
