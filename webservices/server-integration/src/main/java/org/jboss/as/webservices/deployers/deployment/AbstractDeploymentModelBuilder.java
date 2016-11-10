@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.REJECTION_RULE_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -50,6 +51,7 @@ import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.wsf.spi.invocation.RejectionRule;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
@@ -117,6 +119,12 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
 
         final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         dep.addAttachment(EjbJarMetaData.class, ejbJarMD);
+
+        final RejectionRule rr = getOptionalAttachment(unit, REJECTION_RULE_KEY);
+        if (rr != null) {
+            dep.addAttachment(RejectionRule.class, rr);
+
+        }
     }
 
     /**
