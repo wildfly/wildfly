@@ -88,6 +88,9 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
@@ -111,6 +114,9 @@
                             <execution>
                                 <id>ts.surefire.clustering.single-node</id> <phase>test</phase> <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
@@ -131,6 +137,9 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/messaging/**/*TestCase.java</include>
@@ -207,6 +216,9 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
@@ -226,6 +238,9 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
@@ -245,6 +260,9 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
@@ -265,6 +283,9 @@
                                 <phase>test</phase> 
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Force the order of tests -->
+                                    <runOrder>alphabetical</runOrder>
+
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/extended/**/*TestCase.java</include>
@@ -290,7 +311,7 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Force the order of tests -->
-                                    <runOrder>reversealphabetical</runOrder>
+                                    <runOrder>alphabetical</runOrder>
 
                                     <!-- Tests to execute. -->
                                     <includes>
