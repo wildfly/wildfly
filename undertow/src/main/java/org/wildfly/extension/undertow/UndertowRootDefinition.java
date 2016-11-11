@@ -26,14 +26,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -42,6 +47,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
@@ -173,4 +179,38 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, UndertowExtension.MODEL_VERSION_EAP7_0_0);
     }
 
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
+        for (AttributeDefinition attr : getAttributes()) {
+            if(attr == STATISTICS_ENABLED) {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void> () {
+                    @Override
+                    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+                        ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);
+                        if(controller != null) {
+                            UndertowService service = (UndertowService) controller.getService();
+                            if(service != null) {
+                                service.setStatisticsEnabled(resolvedValue.asBoolean());
+                            }
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
+                        ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);
+                        if(controller != null) {
+                            UndertowService service = (UndertowService) controller.getService();
+                            if(service != null) {
+                                service.setStatisticsEnabled(valueToRestore.asBoolean());
+                            }
+                        }
+                    }
+                });
+            } else {
+                resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+            }
+        }
+    }
 }
