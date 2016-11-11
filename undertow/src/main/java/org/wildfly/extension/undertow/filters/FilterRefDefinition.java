@@ -45,6 +45,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
+import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 
@@ -57,6 +58,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setValidator(PredicateValidator.INSTANCE)
             .build();
     public static final AttributeDefinition PRIORITY = new SimpleAttributeDefinitionBuilder("priority", ModelType.INT)
             .setAllowNull(true)
