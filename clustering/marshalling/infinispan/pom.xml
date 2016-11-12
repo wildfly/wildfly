@@ -28,18 +28,23 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-clustering</artifactId>
+        <artifactId>wildfly-clustering-marshalling</artifactId>
         <version>11.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-clustering-marshalling</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
+    <packaging>jar</packaging>
 
-    <name>WildFly: Clustering marshalling modules</name>
+    <name>WildFly: Clustering marshalling Infinispan adapters</name>
 
-    <modules>
-        <module>api</module>
-        <module>infinispan</module>
-        <module>jboss</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons</artifactId>
+        </dependency>
+    </dependencies>
 </project>

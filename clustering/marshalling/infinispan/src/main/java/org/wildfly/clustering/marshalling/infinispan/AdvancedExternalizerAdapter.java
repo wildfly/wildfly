@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.marshalling;
+package org.wildfly.clustering.marshalling.infinispan;
 
 import java.io.IOException;
 import java.io.ObjectInput;
