@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.commons.marshall.NotSerializableException;
+import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;

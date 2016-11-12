@@ -25,9 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;

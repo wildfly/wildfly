@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;

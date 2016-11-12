@@ -1,4 +1,4 @@
-package org.wildfly.clustering.ee.infinispan;
+package org.wildfly.clustering.ee;
 
 /**
  * Creates a value in the cache.

@@ -19,26 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ee.infinispan;
+package org.wildfly.clustering.ee;
 
 /**
- * Indicates that the value represented by this object has changed and needs to be replicated.
+ * Locates a value from the cache.
  * @author Paul Ferraro
  */
-public interface Mutator {
-    /**
-     * Ensure that this object replicates.
-     */
-    void mutate();
+public interface Locator<K, V> {
 
     /**
-     * Trivial {@link Mutator} implementation that does nothing.
-     * New cache entries, in particular, don't require mutation.
+     * Locates the value in the cache with the specified identifier.
+     * @param id the cache entry identifier
+     * @return the value of the cache entry, or null if not found.
      */
-    Mutator PASSIVE = new Mutator() {
-        @Override
-        public void mutate() {
-            // Do nothing
-        }
-    };
+    V findValue(K id);
+
+    /**
+     * Returns the value for the specified key, if possible.
+     * @param key a cache key
+     * @return the value of the cache entry, or null if not found or unavailable.
+     */
+    default V tryValue(K key) {
+        return this.findValue(key);
+    }
 }

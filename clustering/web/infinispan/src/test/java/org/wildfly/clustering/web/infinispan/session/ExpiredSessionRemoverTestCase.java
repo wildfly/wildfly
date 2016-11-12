@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.wildfly.clustering.ee.infinispan.Remover;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

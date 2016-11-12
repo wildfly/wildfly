@@ -34,8 +34,8 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.ee.infinispan.Mutator;
-import org.wildfly.clustering.ee.infinispan.Remover;
+import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
