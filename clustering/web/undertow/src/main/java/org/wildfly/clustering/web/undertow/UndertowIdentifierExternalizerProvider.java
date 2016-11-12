@@ -20,40 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.sso.coarse;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
+package org.wildfly.clustering.web.undertow;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.web.IdentifierExternalizer;
 import org.wildfly.clustering.web.IdentifierExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class SessionFilterExternalizer<D> implements Externalizer<SessionFilter<D>> {
-
-    private static final Externalizer<String> EXTERNALIZER = StreamSupport.stream(ServiceLoader.load(IdentifierExternalizerProvider.class, IdentifierExternalizerProvider.class.getClassLoader()).spliterator(), false).findFirst().get().getExternalizer();
+@MetaInfServices(IdentifierExternalizerProvider.class)
+public class UndertowIdentifierExternalizerProvider implements IdentifierExternalizerProvider {
 
     @Override
-    public void writeObject(ObjectOutput output, SessionFilter<D> filter) throws IOException {
-        EXTERNALIZER.writeObject(output, filter.getSessionId());
-    }
-
-    @Override
-    public SessionFilter<D> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new SessionFilter<>(EXTERNALIZER.readObject(input));
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public Class<? extends SessionFilter<D>> getTargetClass() {
-        Class targetClass = SessionFilter.class;
-        return targetClass;
+    public Externalizer<String> getExternalizer() {
+        return IdentifierExternalizer.BASE64;
     }
 }

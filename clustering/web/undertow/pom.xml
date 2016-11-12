@@ -51,6 +51,11 @@
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other

@@ -96,19 +96,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <scope>test</scope>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
