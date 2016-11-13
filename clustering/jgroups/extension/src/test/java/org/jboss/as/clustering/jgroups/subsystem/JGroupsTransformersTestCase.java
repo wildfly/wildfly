@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -42,7 +43,6 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -90,18 +90,23 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
             case EAP_6_3_0:
             case EAP_6_4_0:
             case EAP_6_4_7:
-                return new String[] {formatEAP6SubsystemArtifact(version)};
+                return new String[] {
+                        formatEAP6SubsystemArtifact(version),
+                };
             case EAP_7_0_0:
-                return new String[] {formatEAP7SubsystemArtifact(version),
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version)};
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                };
+            default:
+                throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException();
     }
 
-    private AdditionalInitialization createAdditionalInitialization() {
-        return new LegacyControllerAdditionalInitialization()
+    private org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
                 ;
     }
@@ -330,8 +335,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
-                .addSingleChildFirstClass(LegacyControllerAdditionalInitialization.class)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controller, version)
+                .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
                 .dontPersistXml();
 

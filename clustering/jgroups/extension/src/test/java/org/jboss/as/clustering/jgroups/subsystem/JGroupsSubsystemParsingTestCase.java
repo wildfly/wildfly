@@ -97,7 +97,7 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
+    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
                 ;
