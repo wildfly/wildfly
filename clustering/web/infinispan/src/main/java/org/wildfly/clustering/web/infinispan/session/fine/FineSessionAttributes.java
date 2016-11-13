@@ -34,8 +34,8 @@ import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
+import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
 /**
  * Exposes session attributes for fine granularity sessions.
@@ -100,7 +100,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         Object attribute = this.read(name, value);
         if (attribute != null) {
             // If the object is mutable, we need to indicate that the attribute should be replicated
-            if (MutableDetector.isMutable(attribute)) {
+            if (!SessionAttributeImmutability.INSTANCE.test(attribute)) {
                 Mutator mutator = this.mutations.computeIfAbsent(name, k -> new CacheEntryMutator<>(this.cache, key, value));
                 // If cache is not transactional, mutate on close instead.
                 if (this.properties.isTransactional()) {

@@ -39,7 +39,6 @@
         <module name="javax.servlet.api"/>
         <module name="javax.transaction.api"/>
 
-        <module name="net.jcip"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.as.clustering.common"/>
@@ -61,7 +60,6 @@
         <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
-        <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.clustering.web.undertow" services="import"/>
         <module name="org.wildfly.security.elytron"/>

@@ -29,8 +29,8 @@ import org.infinispan.commons.marshall.NotSerializableException;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
+import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
 /**
  * Exposes session attributes for a coarse granularity session.
@@ -81,7 +81,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     @Override
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
-        if (MutableDetector.isMutable(value)) {
+        if (!SessionAttributeImmutability.INSTANCE.test(value)) {
             if (this.mutations != null) {
                 this.mutations.add(name);
             } else {

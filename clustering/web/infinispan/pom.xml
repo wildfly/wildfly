@@ -39,10 +39,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.jcip</groupId>
-            <artifactId>jcip-annotations</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-api</artifactId>
         </dependency>
@@ -61,10 +57,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-web-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
