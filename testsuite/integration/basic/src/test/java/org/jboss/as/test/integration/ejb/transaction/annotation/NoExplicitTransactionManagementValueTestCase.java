@@ -47,7 +47,7 @@ public class NoExplicitTransactionManagementValueTestCase {
     private BeanWithoutTransactionManagementValue bean;
 
     @Deployment
-    public static Archive createDeployment() {
+    public static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "as7-1506.jar");
         jar.addClass(BeanWithoutTransactionManagementValue.class);
 

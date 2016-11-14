@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 public class LifecycleMethodTransactionManagementTestCase {
 
     @Deployment
-    public static Archive createDeployment() {
+    public static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejbLifecycleAnnotations.jar");
         jar.addPackage(LifecycleMethodTransactionManagementTestCase.class.getPackage());
         return jar;
