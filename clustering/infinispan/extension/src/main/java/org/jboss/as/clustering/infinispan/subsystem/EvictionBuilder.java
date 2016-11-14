@@ -52,7 +52,8 @@ public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> imp
     @Override
     public Builder<EvictionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         EvictionStrategy strategy = ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, model), EvictionStrategy.class);
-        this.builder.strategy(strategy);
+        // Convert NONE to MANUAL, which silences log WARNs on cache startup
+        this.builder.strategy((strategy == EvictionStrategy.NONE) ? EvictionStrategy.MANUAL : strategy);
         if (strategy.isEnabled()) {
             this.builder.type(EvictionType.COUNT).size(MAX_ENTRIES.resolveModelAttribute(context, model).asLong());
         }
