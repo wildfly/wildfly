@@ -45,7 +45,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.invocation.AccessCheckingInterceptor;
-import org.jboss.invocation.PrivilegedWithCombinerInterceptor;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -101,7 +100,6 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         pojoView.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                 configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
                 // add WS POJO component instance associating interceptor
                 configuration.addViewInterceptor(WSComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
