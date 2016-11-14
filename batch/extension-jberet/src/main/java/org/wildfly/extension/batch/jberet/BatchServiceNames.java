@@ -1,13 +1,9 @@
 package org.wildfly.extension.batch.jberet;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.batch.jberet._private.BatchLogger;
 
 /**
  * Service names for the batch subsystem.
@@ -57,29 +53,23 @@ public class BatchServiceNames {
     /**
      * Creates the service name used for the job operator registered for the deployment.
      *
-     * @param address the address to resolve the deployment name from
+     * @param deploymentRuntimeName the runtime name for the deployment
      *
      * @return the service name
      */
-    public static ServiceName jobOperatorServiceName(final PathAddress address) {
-        String deploymentName = null;
-        String subdeploymentName = null;
-        for (PathElement element : address) {
-            if (ModelDescriptionConstants.DEPLOYMENT.equals(element.getKey())) {
-                deploymentName = element.getValue();
-            } else if (ModelDescriptionConstants.SUBDEPLOYMENT.endsWith(element.getKey())) {
-                subdeploymentName = element.getValue();
-            }
-        }
-        if (deploymentName == null) {
-            throw BatchLogger.LOGGER.couldNotFindDeploymentName(address.toString());
-        }
-        final ServiceName result;
-        if (subdeploymentName == null) {
-            result = Services.deploymentUnitName(deploymentName);
-        } else {
-            result = Services.deploymentUnitName(deploymentName, subdeploymentName);
-        }
-        return result.append("batch").append("job-operator");
+    public static ServiceName jobOperatorServiceName(final String deploymentRuntimeName) {
+        return Services.deploymentUnitName(deploymentRuntimeName).append("batch").append("job-operator");
+    }
+
+    /**
+     * Creates the service name used for the job operator registered for the deployment.
+     *
+     * @param deploymentRuntimeName the runtime name for the deployment
+     * @param subdeploymentName     the name of the subdeployment
+     *
+     * @return the service name
+     */
+    public static ServiceName jobOperatorServiceName(final String deploymentRuntimeName, final String subdeploymentName) {
+        return Services.deploymentUnitName(deploymentRuntimeName, subdeploymentName).append("batch").append("job-operator");
     }
 }
