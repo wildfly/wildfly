@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -62,8 +62,8 @@ public class ChannelNodeFactoryBuilder implements CapabilityServiceBuilder<Chann
     }
 
     @Override
-    public Builder<ChannelNodeFactory> configure(OperationContext context) {
-        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, this.group), Channel.class);
+    public Builder<ChannelNodeFactory> configure(CapabilityServiceSupport support) {
+        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), Channel.class);
         return this;
     }
 

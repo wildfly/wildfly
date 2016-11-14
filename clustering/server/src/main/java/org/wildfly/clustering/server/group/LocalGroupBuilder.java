@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.group;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -57,8 +57,8 @@ public class LocalGroupBuilder implements CapabilityServiceBuilder<Group> {
     }
 
     @Override
-    public Builder<Group> configure(OperationContext context) {
-        this.factory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(context, this.group), JGroupsNodeFactory.class);
+    public Builder<Group> configure(CapabilityServiceSupport support) {
+        this.factory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(support, this.group), JGroupsNodeFactory.class);
         return this;
     }
 

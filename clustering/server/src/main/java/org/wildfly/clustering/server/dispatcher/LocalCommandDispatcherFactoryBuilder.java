@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -58,8 +58,8 @@ public class LocalCommandDispatcherFactoryBuilder implements CapabilityServiceBu
     }
 
     @Override
-    public Builder<CommandDispatcherFactory> configure(OperationContext context) {
-        this.group = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.groupName), Group.class);
+    public Builder<CommandDispatcherFactory> configure(CapabilityServiceSupport support) {
+        this.group = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(support, this.groupName), Group.class);
         return this;
     }
 
