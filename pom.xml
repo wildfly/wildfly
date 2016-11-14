@@ -88,7 +88,7 @@
         <version.com.google.guava>18.0</version.com.google.guava>
         <version.com.h2database>1.3.173</version.com.h2database>
         <version.com.microsoft.azure>4.0.0</version.com.microsoft.azure>
-        <version.com.sun.faces>2.2.13.SP1</version.com.sun.faces>
+        <version.com.sun.faces>2.2.13.SP3</version.com.sun.faces>
         <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.com.sun.xsom>20140925</version.com.sun.xsom>
