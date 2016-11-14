@@ -75,7 +75,11 @@ public abstract class AbstractBatchTestCase {
     }
 
     protected static String performCall(final String url) throws ExecutionException, IOException, TimeoutException {
-        return HttpRequest.get(url, TimeoutUtil.adjust(10), TimeUnit.SECONDS);
+        return performCall(url, 10);
+    }
+
+    protected static String performCall(final String url, final int timeout) throws ExecutionException, IOException, TimeoutException {
+        return HttpRequest.get(url, TimeoutUtil.adjust(timeout), TimeUnit.SECONDS);
     }
 
     protected static WebArchive addJobXml(final Package pkg, final WebArchive deployment, final String jobXml) {
