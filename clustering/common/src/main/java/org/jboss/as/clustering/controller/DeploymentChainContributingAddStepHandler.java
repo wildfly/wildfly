@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,31 +22,31 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.function.Consumer;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Generic boot-time add step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
- * Implementation note:
- * This handler inherits the logic from {@link AddStepHandler} and reimplements the logic from {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler}
- * since the latter requires less code duplication.
  * @author Paul Ferraro
  */
-public class BoottimeAddStepHandler extends AddStepHandler {
+public class DeploymentChainContributingAddStepHandler extends AddStepHandler {
 
-    public BoottimeAddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+    private final Consumer<DeploymentProcessorTarget> deploymentChainContributor;
+
+    public DeploymentChainContributingAddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, Consumer<DeploymentProcessorTarget> deploymentChainContributor) {
         super(descriptor, handler);
-    }
-
-    public BoottimeAddStepHandler(AddStepHandlerDescriptor descriptor) {
-        super(descriptor);
+        this.deploymentChainContributor = deploymentChainContributor;
     }
 
     @Override
     protected final void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         if (context.isBooting()) {
+            context.addStep(new DeploymentChainStep(this.deploymentChainContributor), OperationContext.Stage.RUNTIME);
+
             super.performRuntime(context, operation, resource);
         } else {
             context.reloadRequired();

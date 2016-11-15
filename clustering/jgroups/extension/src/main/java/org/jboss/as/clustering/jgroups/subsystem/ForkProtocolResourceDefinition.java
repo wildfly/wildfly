@@ -25,19 +25,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 
@@ -56,11 +50,8 @@ public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
         }
     }
 
-    final boolean allowRuntimeOnlyRegistration;
-
-    public ForkProtocolResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, boolean allowRuntimeOnlyRegistration) {
+    public ForkProtocolResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(parentBuilderFactory);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @SuppressWarnings("deprecation")
@@ -71,19 +62,10 @@ public class ForkProtocolResourceDefinition extends ProtocolResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
+                .addRuntimeResourceRegistration(new ForkProtocolResourceRegistrationHandler())
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ProtocolConfigurationBuilder(address));
-        new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
-            @Override
-            protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-                super.populateModel(context, operation, resource);
-                // Register runtime resource children for fork protocols
-                if (ForkProtocolResourceDefinition.this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
-                    context.addStep(new ForkProtocolResourceRegistrationHandler(), OperationContext.Stage.MODEL);
-                }
-            }
-        }.register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
 
         for (DeprecatedAttribute attribute : DeprecatedAttribute.values()) {
             registration.registerReadOnlyAttribute(attribute.getDefinition(), null);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,28 +22,17 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.dmr.ModelNode;
-
 /**
- * Add operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
+ * Registers a {@link RestartParentResourceAddStepHandler}, {@link RestartParentResourceRemoveStepHandler}, and {@link RestartParentResourceWriteAttributeHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class RestartParentResourceAddStepHandler<T> extends AddStepHandler {
+public class RestartParentResourceRegistration<T> extends ResourceRegistration {
 
-    private final OperationStepHandler handler;
-
-    public RestartParentResourceAddStepHandler(ResourceServiceBuilderFactory<T> parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, handler);
-        this.handler = new RestartParentResourceStepHandler<>(parentFactory);
+    public RestartParentResourceRegistration(ResourceServiceBuilderFactory<T> parentBuilderFactory, ResourceDescriptor descriptor) {
+        this(parentBuilderFactory, descriptor, null);
     }
 
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.execute(context, operation);
-
-        this.handler.execute(context, operation);
+    public RestartParentResourceRegistration(ResourceServiceBuilderFactory<T> parentBuilderFactory, ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+        super(descriptor, new RestartParentResourceAddStepHandler<>(parentBuilderFactory, descriptor, handler), new RestartParentResourceRemoveStepHandler<>(parentBuilderFactory, descriptor, handler), new RestartParentResourceWriteAttributeHandler<>(parentBuilderFactory, descriptor));
     }
 }

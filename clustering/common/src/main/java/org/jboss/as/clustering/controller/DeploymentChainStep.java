@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,28 +22,25 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.dmr.ModelNode;
+import java.util.function.Consumer;
+
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
 
 /**
- * Add operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
+ * Deployment chain step that delegates to a {@link DeploymentProcessorTarget} consumer.
  * @author Paul Ferraro
  */
-public class RestartParentResourceAddStepHandler<T> extends AddStepHandler {
+public class DeploymentChainStep extends AbstractDeploymentChainStep {
 
-    private final OperationStepHandler handler;
+    private final Consumer<DeploymentProcessorTarget> deploymentChainContributor;
 
-    public RestartParentResourceAddStepHandler(ResourceServiceBuilderFactory<T> parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, handler);
-        this.handler = new RestartParentResourceStepHandler<>(parentFactory);
+    public DeploymentChainStep(Consumer<DeploymentProcessorTarget> deploymentChainContributor) {
+        this.deploymentChainContributor = deploymentChainContributor;
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.execute(context, operation);
-
-        this.handler.execute(context, operation);
+    protected void execute(DeploymentProcessorTarget target) {
+        this.deploymentChainContributor.accept(target);
     }
 }

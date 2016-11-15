@@ -29,8 +29,7 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
@@ -105,8 +104,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider {
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
         ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = address -> new TransportConfigurationBuilder(address);
-        new RestartParentResourceAddStepHandler<>(transportBuilderFactory, descriptor).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(transportBuilderFactory, descriptor).register(registration);
+        new RestartParentResourceRegistration<>(transportBuilderFactory, descriptor).register(registration);
     }
 
     Collection<Attribute> getAttributes() {

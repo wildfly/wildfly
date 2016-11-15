@@ -39,7 +39,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -54,21 +53,15 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
 
     private final AddStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
-    private final OperationStepHandler writeAttributeHandler;
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor) {
         this(descriptor, null);
     }
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        this(descriptor, handler, (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
-    }
-
-    AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, OperationStepHandler writeAttributeHandler) {
         super(descriptor.getAttributes());
         this.descriptor = descriptor;
         this.handler = handler;
-        this.writeAttributeHandler = writeAttributeHandler;
     }
 
     @Override
@@ -114,13 +107,23 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         }
 
         super.execute(context, operation);
+
+        if (this.requiresRuntime(context)) {
+            this.descriptor.getRuntimeResourceRegistrations().forEach(registration -> context.addStep(registration, OperationContext.Stage.MODEL));
+        }
     }
 
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        // Perform operation translation
+        for (OperationStepHandler translator : this.descriptor.getOperationTranslators()) {
+            translator.execute(context, operation);
+        }
+        // Validate extra add operation parameters
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
         }
+        // Validate and apply attribute aliases
         for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
             AttributeDefinition alias = entry.getKey();
             Attribute target = entry.getValue();
@@ -181,30 +184,5 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         parameters = Stream.concat(parameters, this.descriptor.getAttributeAliases().keySet().stream());
         parameters.forEach(attribute -> builder.addParameter(attribute));
         registration.registerOperationHandler(builder.build(), this);
-
-        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this.writeAttributeHandler));
-
-        for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
-            Attribute target = entry.getValue();
-            String targetName = target.getDefinition().getName();
-            AttributeAccess targetAccess = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetName);
-            // If target attribute has no read handler, synthesize one
-            OperationStepHandler readHandler = (targetAccess.getReadHandler() != null) ? targetAccess.getReadHandler() : (context, operation) -> {
-                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                ModelNode result = context.getResult();
-                if (model.hasDefined(targetName)) {
-                    result.set(model.get(targetName));
-                } else if (Operations.isIncludeDefaults(operation)) {
-                    result.set(target.getDefinition().getDefaultValue());
-                }
-            };
-            OperationStepHandler writeHandler = targetAccess.getWriteHandler();
-            // Delegate read/write attribute operations to target attribute
-            registration.registerReadWriteAttribute(entry.getKey(),
-                    (context, operation) -> context.addStep(Operations.createReadAttributeOperation(context.getCurrentAddress(), target), readHandler, OperationContext.Stage.MODEL),
-                    (context, operation) -> context.addStep(Operations.createWriteAttributeOperation(context.getCurrentAddress(), target, Operations.getAttributeValue(operation)), writeHandler, OperationContext.Stage.MODEL));
-        }
-
-        new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
     }
 }

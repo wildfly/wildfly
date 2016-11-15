@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,28 +22,13 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.dmr.ModelNode;
-
 /**
- * Add operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
+ * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link ReloadRequiredWriteAttributeHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class RestartParentResourceAddStepHandler<T> extends AddStepHandler {
+public class SimpleResourceRegistration extends ResourceRegistration {
 
-    private final OperationStepHandler handler;
-
-    public RestartParentResourceAddStepHandler(ResourceServiceBuilderFactory<T> parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, handler);
-        this.handler = new RestartParentResourceStepHandler<>(parentFactory);
-    }
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.execute(context, operation);
-
-        this.handler.execute(context, operation);
+    public SimpleResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
     }
 }
