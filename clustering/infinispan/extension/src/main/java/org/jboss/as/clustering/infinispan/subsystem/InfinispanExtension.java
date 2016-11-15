@@ -25,10 +25,8 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -48,14 +46,6 @@ public class InfinispanExtension implements Extension {
 
         new InfinispanSubsystemResourceDefinition(context.getProcessType().isServer() ? context.getPathManager() : null, context.isRuntimeOnlyRegistrationValid()).register(registration);
         registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
-
-        if (context.isRegisterTransformers()) {
-            // Register transformers for all but the current model
-            for (InfinispanModel model: EnumSet.complementOf(EnumSet.of(InfinispanModel.CURRENT))) {
-                ModelVersion version = model.getVersion();
-                TransformationDescription.Tools.register(InfinispanSubsystemResourceDefinition.buildTransformation(version), registration, version);
-            }
-        }
     }
 
     @Override
