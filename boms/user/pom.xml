@@ -97,7 +97,7 @@
         <version.org.jboss.resteasy>3.0.19.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.negotiation>3.0.2.Final</version.org.jboss.security.negotiation>
         <version.org.jboss.shrinkwrap.resolver>2.2.4</version.org.jboss.shrinkwrap.resolver>
-        <version.org.jboss.spec.jboss.javaee.7>1.0.3.Final</version.org.jboss.spec.jboss.javaee.7>
+        <version.org.jboss.spec.jboss.javaee.7>1.0.4.Final</version.org.jboss.spec.jboss.javaee.7>
         <version.org.picketlink>2.5.5.SP2</version.org.picketlink>
         <version.org.slf4j>1.7.7</version.org.slf4j>
         <version.org.testng>6.9.10</version.org.testng>
