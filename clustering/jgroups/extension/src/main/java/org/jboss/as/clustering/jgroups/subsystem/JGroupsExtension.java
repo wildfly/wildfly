@@ -26,10 +26,8 @@ import java.util.EnumSet;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -55,14 +53,6 @@ public class JGroupsExtension implements Extension {
 
         new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()).register(registration);
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
-
-        if (context.isRegisterTransformers()) {
-            // Register transformers for all but the current model
-            for (JGroupsModel model: EnumSet.complementOf(EnumSet.of(JGroupsModel.CURRENT))) {
-                ModelVersion version = model.getVersion();
-                TransformationDescription.Tools.register(JGroupsSubsystemResourceDefinition.buildTransformers(version), registration, version);
-            }
-        }
     }
 
     @Override
