@@ -49,10 +49,6 @@ public class JGroupsExtension implements Extension {
         org.jgroups.logging.LogFactory.setCustomLogFactory(new LogFactory());
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.Extension#initialize(org.jboss.as.controller.ExtensionContext)
-     */
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
@@ -69,14 +65,8 @@ public class JGroupsExtension implements Extension {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.as.controller.Extension#initializeParsers(org.jboss.as.controller.parsing.ExtensionParsingContext)
-     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (JGroupsSchema schema: JGroupsSchema.values()) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new JGroupsSubsystemXMLReader(schema));
-        }
+        EnumSet.allOf(JGroupsSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new JGroupsSubsystemXMLReader(schema)));
     }
 }
