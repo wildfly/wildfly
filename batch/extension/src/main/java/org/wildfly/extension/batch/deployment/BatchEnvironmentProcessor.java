@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.batch.deployment;
 
+import java.util.Collections;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
@@ -77,7 +78,8 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
             // Create the batch environment
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, WildFlyJobXmlResolver.of(moduleClassLoader, deploymentUnit), deploymentUnit.getName());
+            final WildFlyJobXmlResolver jobXmlResolver = WildFlyJobXmlResolver.of(moduleClassLoader, Collections.singletonList(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT)));
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentUnit.getName());
             // Set the value for the job-repository, this can't be a capability as the JDBC job repository cannot be constructed
             // until deployment time because the default JNDI data-source name is only known during DUP processing
             service.getJobRepositoryInjector().setValue(new ImmediateValue<>(JobRepositoryFactory.getInstance().getJobRepository(moduleDescription)));

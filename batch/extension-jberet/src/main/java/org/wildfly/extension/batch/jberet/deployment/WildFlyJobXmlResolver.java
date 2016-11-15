@@ -28,9 +28,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -41,12 +41,8 @@ import javax.xml.stream.XMLStreamException;
 import org.jberet.job.model.Job;
 import org.jberet.job.model.JobParser;
 import org.jberet.spi.JobXmlResolver;
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
@@ -59,48 +55,38 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class WildFlyJobXmlResolver implements JobXmlResolver {
-    public static final AttachmentKey<WildFlyJobXmlResolver> JOB_XML_RESOLVER = AttachmentKey.create(WildFlyJobXmlResolver.class);
 
     private final Set<JobXmlResolver> jobXmlResolvers;
     private final Map<String, String> resolvedJobs;
     private final Map<String, VirtualFile> jobXmlFiles;
-    private final ClassLoader classLoader;
 
-    private WildFlyJobXmlResolver(final ClassLoader classLoader, final Map<String, VirtualFile> jobXmlFiles) {
-        this.classLoader = classLoader;
+    private WildFlyJobXmlResolver(final Map<String, VirtualFile> jobXmlFiles) {
         resolvedJobs = new LinkedHashMap<>();
         jobXmlResolvers = new LinkedHashSet<>();
         this.jobXmlFiles = jobXmlFiles;
     }
 
-    public static WildFlyJobXmlResolver of(final ClassLoader classLoader, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {// Get the root file
-        final VirtualFile root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        final VirtualFile jobsDir;
-        // Only files in the META-INF/batch-jobs directory
-        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            jobsDir = root.getChild("WEB-INF/classes/META-INF/batch-jobs");
-        } else {
-            jobsDir = root.getChild("META-INF/batch-jobs");
-        }
-        final WildFlyJobXmlResolver jobXmlResolver;
-        if (jobsDir != null && jobsDir.exists()) {
+    public static WildFlyJobXmlResolver of(final ClassLoader classLoader, final List<ResourceRoot> resources) throws DeploymentUnitProcessingException {
+        final Map<String, VirtualFile> foundJobXmlFiles = new LinkedHashMap<>();
+        for (ResourceRoot r : resources) {
+            final VirtualFile root = r.getRoot();
             try {
-                // We may have some job XML files
-                final Map<String, VirtualFile> xmlFiles = jobsDir.getChildren(JobXmlFilter.INSTANCE)
-                        .stream()
-                        .collect(Collectors.toMap(VirtualFile::getName, (f) -> f));
-                jobXmlResolver = new WildFlyJobXmlResolver(classLoader, xmlFiles);
+                addJobXmlFiles(foundJobXmlFiles, root.getChild(DEFAULT_PATH));
             } catch (IOException e) {
                 throw BatchLogger.LOGGER.errorProcessingBatchJobsDir(e);
             }
-        } else {
-            // This is likely not a batch deployment, creates a no-op service
-            jobXmlResolver = new WildFlyJobXmlResolver(classLoader, Collections.emptyMap());
         }
+
+        final WildFlyJobXmlResolver jobXmlResolver = new WildFlyJobXmlResolver(foundJobXmlFiles);
         // Initialize this instance
-        jobXmlResolver.init();
-        deploymentUnit.putAttachment(JOB_XML_RESOLVER, jobXmlResolver);
+        jobXmlResolver.init(classLoader);
         return jobXmlResolver;
+    }
+
+    public static void merge(final WildFlyJobXmlResolver target, final WildFlyJobXmlResolver toCopy) {
+        toCopy.resolvedJobs.forEach(target.resolvedJobs::putIfAbsent);
+        toCopy.jobXmlFiles.forEach(target.jobXmlFiles::putIfAbsent);
+        target.jobXmlResolvers.addAll(toCopy.jobXmlResolvers);
     }
 
     @Override
@@ -140,10 +126,20 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
         return resolvedJobs.get(jobXml);
     }
 
+    private static void addJobXmlFiles(final Map<String, VirtualFile> foundJobXmlFiles, final VirtualFile jobsDir) throws IOException {
+        if (jobsDir != null && jobsDir.exists()) {
+            // We may have some job XML files
+            final Map<String, VirtualFile> xmlFiles = jobsDir.getChildren(JobXmlFilter.INSTANCE)
+                    .stream()
+                    .collect(Collectors.toMap(VirtualFile::getName, (f) -> f));
+            foundJobXmlFiles.putAll(xmlFiles);
+        }
+    }
+
     /**
      * Initializes the state of an instance
      */
-    private void init() {
+    private void init(final ClassLoader classLoader) {
         // Load the user defined resolvers
         for (JobXmlResolver resolver : ServiceLoader.load(JobXmlResolver.class, classLoader)) {
             jobXmlResolvers.add(resolver);
