@@ -86,13 +86,11 @@ public class JMXFilterTestCase {
         Assert.assertTrue(names.contains(new ObjectName("jboss:name=test-sar-1234567890,type=jmx-sar")));
 
         names = connection.queryNames(new ObjectName("*:subsystem=jsr77,*"), null);
-        Assert.assertTrue(names.toString(), names.size() == 2 || names.size() == 4); // once WFCORE-1716 is in place it should be 4, but we need 2 to pass until that's fixed
+        Assert.assertTrue(names.toString(), names.size() == 4);
         Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:subsystem=jsr77")));
         Assert.assertTrue(names.contains(new ObjectName("jboss.as:subsystem=jsr77")));
-        if (names.size() > 2) {
-            Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:extension=org.jboss.as.jsr77,subsystem=jsr77")));
-            Assert.assertTrue(names.contains(new ObjectName("jboss.as:extension=org.jboss.as.jsr77,subsystem=jsr77")));
-        }
+        Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:extension=org.jboss.as.jsr77,subsystem=jsr77")));
+        Assert.assertTrue(names.contains(new ObjectName("jboss.as:extension=org.jboss.as.jsr77,subsystem=jsr77")));
 
         names = connection.queryNames(new ObjectName("*:j2eeType=J2EEServer,*"), null);
         Assert.assertEquals(1, names.size());
