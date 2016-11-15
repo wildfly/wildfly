@@ -33,7 +33,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.discovery.spi.DiscoveryProvider;
 
 /**
  *  @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
@@ -87,13 +86,6 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
         }
         return receiver;
     }
-
-    @Override
-    public DiscoveryProvider getDiscoveryProvider() {
-        return receiver;
-    }
-
-
 
     @Override
     public LocalTransportProvider getValue() throws IllegalStateException, IllegalArgumentException {

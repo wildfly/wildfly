@@ -28,5 +28,6 @@
 
     <dependencies>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.client.config"/>
     </dependencies>
 </module>

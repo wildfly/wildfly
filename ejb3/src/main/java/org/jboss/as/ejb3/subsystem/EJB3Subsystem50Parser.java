@@ -60,13 +60,6 @@ import org.wildfly.common.Assert;
 import org.wildfly.client.config.ConfigXMLParseException;
 
 import org.wildfly.discovery.ServiceURL;
-import org.wildfly.discovery.impl.StaticDiscoveryProvider;
-
-
-
-
-
-
 
 import java.util.EnumSet;
 
@@ -258,7 +251,7 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         }
 
         if (!staticURLs.isEmpty()) {
-            builder.addDiscoveryProvider(new StaticDiscoveryProvider(staticURLs));
+            //TODO Elytron - quickfix after discovery update required
         }
     }
 

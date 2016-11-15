@@ -67,7 +67,7 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         }
         if(!profileService.getServiceUrls().isEmpty()) {
             DiscoveryProvider staticDiscoveryProvider = new StaticDiscoveryProvider(profileService.getServiceUrls());
-            contextBuilder.addDiscoveryProvider(staticDiscoveryProvider);
+            //TODO Elytron - quickfix after discovery update required
         }
         this.ejbClientContext = contextBuilder.build();
     }
