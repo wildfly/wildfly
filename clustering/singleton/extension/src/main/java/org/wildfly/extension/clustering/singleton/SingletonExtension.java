@@ -29,11 +29,13 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.kohsuke.MetaInfServices;
 
 /**
  * Extension point for singleton subsystem.
  * @author Paul Ferraro
  */
+@MetaInfServices(Extension.class)
 public class SingletonExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "singleton";

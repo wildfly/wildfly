@@ -30,6 +30,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.kohsuke.MetaInfServices;
 
 /**
  * Registers the JGroups subsystem.
@@ -37,6 +38,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
+@MetaInfServices(Extension.class)
 public class JGroupsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jgroups";
