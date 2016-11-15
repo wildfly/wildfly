@@ -73,6 +73,12 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testExpressions() throws Exception {
         standardSubsystemTest("subsystem_1_1_expressions.xml", false);
     }

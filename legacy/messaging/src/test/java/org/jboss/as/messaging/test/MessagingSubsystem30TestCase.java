@@ -85,6 +85,12 @@ public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTes
         };
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();

@@ -53,6 +53,12 @@ public class BatchSubsystemParsingTestCase extends AbstractBatchTestCase {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testMinimalSubsystem() throws Exception {
         standardSubsystemTest("/minimal-subsystem.xml");
     }

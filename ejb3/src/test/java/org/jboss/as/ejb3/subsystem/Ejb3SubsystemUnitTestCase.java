@@ -73,6 +73,12 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void test15() throws Exception {
         standardSubsystemTest("subsystem15.xml", false);
     }

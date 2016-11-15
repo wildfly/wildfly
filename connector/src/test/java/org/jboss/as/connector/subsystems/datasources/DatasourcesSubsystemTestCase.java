@@ -71,6 +71,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testFullConfig() throws Exception {
         standardSubsystemTest("datasources-full.xml");
     }
