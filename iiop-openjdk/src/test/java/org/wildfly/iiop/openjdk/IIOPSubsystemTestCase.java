@@ -85,6 +85,12 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.
         String subsystemXml =

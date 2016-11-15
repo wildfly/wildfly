@@ -62,6 +62,12 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testOnlyExternalContextAllowsCache() throws Exception {
         KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .build();

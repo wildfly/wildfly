@@ -100,6 +100,12 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
         return properties;
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     @Override
     protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
         return super.standardSubsystemTest(configId, false);

@@ -69,6 +69,12 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     @Override
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);

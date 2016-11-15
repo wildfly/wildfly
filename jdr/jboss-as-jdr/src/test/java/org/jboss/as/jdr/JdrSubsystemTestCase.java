@@ -72,6 +72,13 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
                 "/subsystem-templates/jdr.xml"
         };
     }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     //todo not sure how much sense does it make to test this as model version is exactly the same as in current version
     /*@Test
     public void testTransformersEAP620() throws Exception {

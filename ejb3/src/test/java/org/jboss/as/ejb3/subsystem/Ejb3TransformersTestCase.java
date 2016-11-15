@@ -73,6 +73,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testTransformerEAP620() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;
         testTransformation(ModelVersion.create(1, 2, 1), controller,
