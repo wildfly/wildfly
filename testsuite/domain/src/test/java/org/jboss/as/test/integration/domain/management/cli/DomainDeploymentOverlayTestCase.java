@@ -34,13 +34,10 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestSup
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpResponse;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.network.NetworkUtils;
@@ -142,9 +139,8 @@ public class DomainDeploymentOverlayTestCase {
     @Before
     public void setUp() throws Exception {
         client = testSupport.getDomainMasterLifecycleUtil().createDomainClient();
-        ctx = CLITestUtil.getCommandContext();
-        //todo replace with proper fix coming with newer wildfly core.
-        ctx.connectController(testSupport.getDomainMasterConfiguration().getHostControllerManagementAddress(),testSupport.getDomainMasterConfiguration().getHostControllerManagementPort());
+        ctx = CLITestUtil.getCommandContext(testSupport);
+        ctx.connectController();
     }
 
     @After
@@ -157,6 +153,7 @@ public class DomainDeploymentOverlayTestCase {
             ctx.terminateSession();
             ctx = null;
         }
+        client.close();
         client = null;
     }
 
@@ -366,16 +363,5 @@ public class DomainDeploymentOverlayTestCase {
                 socketBinding.get("bound-port").asInt(),
                 "/" + deployment + "/SimpleServlet?env-entry=overlay-test");
         return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS).trim();
-    }
-
-    public static String getContent(HttpResponse response) throws IOException {
-        InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
-        StringBuilder content = new StringBuilder();
-        int c;
-        while (-1 != (c = reader.read())) {
-            content.append((char) c);
-        }
-        reader.close();
-        return content.toString();
     }
 }
