@@ -47,7 +47,6 @@ import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
-import org.apache.activemq.artemis.jdbc.store.sql.GenericSQLProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
@@ -303,8 +302,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             if (ds != null) {
                 DatabaseStorageConfiguration dbConfiguration = (DatabaseStorageConfiguration) configuration.getStoreConfiguration();
                 dbConfiguration.setDataSource(ds);
-                // FIXME: make this configurable
-                dbConfiguration.setSqlProvider(new GenericSQLProvider.Factory());
                 configuration.setStoreConfiguration(dbConfiguration);
                 ROOT_LOGGER.infof("use JDBC store for Artemis server, bindingsTable:%s",
                         dbConfiguration.getBindingsTableName());
