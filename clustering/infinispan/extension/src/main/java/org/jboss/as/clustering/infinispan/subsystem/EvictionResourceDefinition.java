@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
+
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -59,7 +61,7 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EVICTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class)),
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL)))),
         MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
         ;
         private final AttributeDefinition definition;
