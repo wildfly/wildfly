@@ -67,7 +67,7 @@ public class ReverseProxyHandler extends Handler {
     public static final AttributeDefinition CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CONNECTIONS_PER_THREAD, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(10))
+            .setDefaultValue(new ModelNode(40))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
