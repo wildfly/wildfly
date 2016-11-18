@@ -28,12 +28,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.NoSuchEJBException;
-
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.weld._private.WeldEjbLogger;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceContainer;
@@ -79,8 +78,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @SuppressWarnings({ "unchecked" })
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
         if (isRemoved()) {
-            // Cannot be placed in WeldLogger
-            throw new NoSuchEJBException("EJB has been removed");
+            WeldEjbLogger.ROOT_LOGGER.ejbHashBeenRemoved(ejbComponent);
         }
 
         final String businessInterfaceName = businessInterfaceType.getName();
