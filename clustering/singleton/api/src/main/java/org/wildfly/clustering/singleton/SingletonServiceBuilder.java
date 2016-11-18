@@ -21,16 +21,14 @@
  */
 package org.wildfly.clustering.singleton;
 
-import org.jboss.msc.service.Service;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a singleton service.
  * @author Paul Ferraro
  * @param <T> the singleton service value type
  */
-public interface SingletonServiceBuilder<T> extends SingletonBuilder<T> {
-    @Override
-    SingletonServiceBuilder<T> backupService(Service<T> backupService);
+public interface SingletonServiceBuilder<T> extends Builder<T> {
 
     /**
      * Defines the minimum number of members required before a singleton election will take place.

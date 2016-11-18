@@ -42,9 +42,7 @@ public class ValueServiceActivator implements ServiceActivator {
     public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
         try {
             SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).awaitValue();
-            policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)))
-                    .backupService(new ValueService<>(new ImmediateValue<>(Boolean.FALSE)))
-                    .build(context.getServiceTarget()).install();
+            policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(context.getServiceTarget()).install();
         } catch (InterruptedException e) {
             throw new ServiceRegistryException(e);
         }
