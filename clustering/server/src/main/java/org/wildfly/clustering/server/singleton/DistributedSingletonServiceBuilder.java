@@ -50,16 +50,17 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     private final ValueDependency<CommandDispatcherFactory> dispatcherFactory;
     private final ServiceName serviceName;
     private final Service<T> primaryService;
+    private final Optional<Service<T>> backupService;
 
-    private volatile Optional<Service<T>> backupService = Optional.empty();
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
     private volatile int quorum = 1;
 
-    public DistributedSingletonServiceBuilder(DistributedSingletonServiceBuilderContext context, ServiceName serviceName, Service<T> service) {
+    public DistributedSingletonServiceBuilder(DistributedSingletonServiceBuilderContext context, ServiceName serviceName, Service<T> primaryService, Service<T> backupService) {
         this.registry = context.getServiceProviderRegistryDependency();
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
         this.serviceName = serviceName;
-        this.primaryService = service;
+        this.primaryService = primaryService;
+        this.backupService = Optional.ofNullable(backupService);
     }
 
     @Override
@@ -87,12 +88,6 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     @Override
     public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy electionPolicy) {
         this.electionPolicy = electionPolicy;
-        return this;
-    }
-
-    @Override
-    public SingletonServiceBuilder<T> backupService(Service<T> backupService) {
-        this.backupService = Optional.of(backupService);
         return this;
     }
 
