@@ -91,7 +91,7 @@ public class ActiveMQServerControlWriteHandler extends AbstractWriteAttributeHan
                 if (!ActiveMQActivationService.isActiveMQServerActive(context, operation)) {
                     return false;
                 }
-                applyOperationToActiveMQService(context, operation, attributeName, service);
+                applyOperationToActiveMQService(operation, attributeName, newValue, service);
                 return false;
             }
         }
@@ -109,15 +109,12 @@ public class ActiveMQServerControlWriteHandler extends AbstractWriteAttributeHan
             final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(OP_ADDR)));
             ServiceController<?> service = registry.getService(serviceName);
             if (service != null && service.getState() == ServiceController.State.UP) {
-                // Create and execute a write-attribute operation that uses the valueToRestore
-                ModelNode revertOp = operation.clone();
-                revertOp.get(attributeName).set(valueToRestore);
-                applyOperationToActiveMQService(context, revertOp, attributeName, service);
+                applyOperationToActiveMQService(operation, attributeName, valueToRestore, service);
             }
         }
     }
 
-    private void applyOperationToActiveMQService(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> activeMQServiceController) {
+    private void applyOperationToActiveMQService(ModelNode operation, String attributeName, ModelNode newValue, ServiceController<?> activeMQServiceController) {
         ActiveMQServerControl serverControl = ActiveMQServer.class.cast(activeMQServiceController.getValue()).getActiveMQServerControl();
         if (serverControl == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -125,12 +122,11 @@ public class ActiveMQServerControlWriteHandler extends AbstractWriteAttributeHan
         }
         try {
             if (attributeName.equals(ServerDefinition.MESSAGE_COUNTER_SAMPLE_PERIOD.getName())) {
-                serverControl.setMessageCounterSamplePeriod(ServerDefinition.MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, operation).asLong());
+                serverControl.setMessageCounterSamplePeriod(newValue.asLong());
             } else if (attributeName.equals(ServerDefinition.MESSAGE_COUNTER_MAX_DAY_HISTORY.getName())) {
-                serverControl.setMessageCounterMaxDayCount(ServerDefinition.MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, operation).asInt());
+                serverControl.setMessageCounterMaxDayCount(newValue.asInt());
             } else if (attributeName.equals(ServerDefinition.STATISTICS_ENABLED.getName())) {
-                boolean enabled = ServerDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, operation).asBoolean();
-                if (enabled) {
+                if (newValue.asBoolean()) {
                     serverControl.enableMessageCounters();
                 } else {
                     serverControl.disableMessageCounters();
