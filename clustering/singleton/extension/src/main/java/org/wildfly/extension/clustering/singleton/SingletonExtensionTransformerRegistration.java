@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,33 +22,28 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import static org.jboss.as.controller.transform.description.TransformationDescription.Tools.register;
+
 import java.util.EnumSet;
 
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.kohsuke.MetaInfServices;
 
 /**
- * Extension point for singleton subsystem.
  * @author Paul Ferraro
  */
-@MetaInfServices(Extension.class)
-public class SingletonExtension implements Extension {
-
-    public static final String SUBSYSTEM_NAME = "singleton";
+@MetaInfServices(ExtensionTransformerRegistration.class)
+public class SingletonExtensionTransformerRegistration implements ExtensionTransformerRegistration {
 
     @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
-
-        new SingletonResourceDefinition().register(registration);
-        registration.registerXMLElementWriter(new SingletonXMLWriter());
+    public String getSubsystemName() {
+        return SingletonExtension.SUBSYSTEM_NAME;
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(SingletonSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema)));
+    public void registerTransformers(SubsystemTransformerRegistration registration) {
+        // Register transformers for all but the current model
+        EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT)).stream().map(model -> model.getVersion()).forEach(version -> register(SingletonResourceDefinition.buildTransformers(version), registration, version));
     }
 }
