@@ -94,6 +94,7 @@ public class Constants {
             .setXmlName(TimeOut.Tag.IDLE_TIMEOUT_MINUTES.getLocalName())
             .setMeasurementUnit(MeasurementUnit.MINUTES)
             .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
             .build();
 
     public static final SimpleAttributeDefinition BACKGROUNDVALIDATIONMILLIS = new SimpleAttributeDefinitionBuilder(BACKGROUNDVALIDATIONMILLIS_NAME, ModelType.LONG, true)
