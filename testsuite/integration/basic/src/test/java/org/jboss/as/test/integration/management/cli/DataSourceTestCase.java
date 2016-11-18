@@ -79,14 +79,21 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     public void testDataSource() throws Exception {
         testAddDataSource();
         testModifyDataSource();
-        //testRemoveDataSource();
+        testRemoveDataSource();
     }
 
-    //@Test
+    @Test
+    public void testDataSourceConnectionProperties() throws Exception {
+        testAddDataSourceConnectionProperties();
+        testModifyDataSource();
+        testRemoveDataSource();
+    }
+
+    @Test
     public void testXaDataSource() throws Exception {
         testAddXaDataSource();
         testModifyXaDataSource();
-        //testRemoveXaDataSource();
+        testRemoveXaDataSource();
     }
 
     private void testAddDataSource() throws Exception {
@@ -106,14 +113,28 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     }
 
+    private void testAddDataSourceConnectionProperties() throws Exception {
+
+        // add data source
+        cli.sendLine("data-source add --name=TestDS --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --datasource-class=org.h2.jdbcx.JdbcDataSource --connection-properties={\"url\"=>\"jdbc:h2:mem:test;DB_CLOSE_DELAY=-1\"}");
+
+        // check the data source is listed
+        cli.sendLine("cd /subsystem=datasources/data-source");
+        cli.sendLine("ls");
+        String ls = cli.readOutput();
+        assertTrue(ls.contains("TestDS"));
+
+        // check that it is available through JNDI
+        String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestDS");
+        Assert.assertTrue(javax.sql.DataSource.class.isAssignableFrom(Class.forName(jndiClass)));
+
+    }
+
     private void testRemoveDataSource() throws Exception {
 
-        // disable data source
-        //cli.sendLine("data-source disable --name=TestDS");
-
         // remove data source
-        //cli.sendLine("data-source remove --name=TestDS");
-        cli.sendLine("/subsystem=datasources/data-source=TestDS:remove{allow-resource-service-restart=true}");
+        cli.sendLine("data-source remove --name=TestDS");
+//        cli.sendLine("/subsystem=datasources/data-source=TestDS:remove()");
         cli.sendLine("reload");
 
         //check the data source is not listed
@@ -148,24 +169,16 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     }
 
-
     private void testAddXaDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2 --xa-datasource-properties=ServerName=localhost,PortNumber=50011 --enabled=false");
+        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2 --xa-datasource-properties={\"url\"=>\"jdbc:h2:mem:test\"}");
 
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
         cli.sendLine("ls");
         String ls = cli.readOutput();
         assertTrue(ls.contains("TestXADS"));
-
-        // add URL property
-        cli.sendLine(
-                "/subsystem=datasources/xa-data-source=TestXADS/xa-datasource-properties=URL:add(value=\"jdbc:h2:mem:test\")");
-
-        // enable data source
-        cli.sendLine("xa-data-source enable --name=TestXADS");
 
         // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestXADS");
@@ -178,6 +191,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // remove data source
         cli.sendLine("xa-data-source remove --name=TestXADS");
+        cli.sendLine("reload");
 
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
