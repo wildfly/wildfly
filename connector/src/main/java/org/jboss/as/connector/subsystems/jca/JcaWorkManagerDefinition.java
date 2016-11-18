@@ -25,8 +25,16 @@ package org.jboss.as.connector.subsystems.jca;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 
+import java.util.Set;
+
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -35,9 +43,15 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
+import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
+import org.jboss.as.threads.CommonAttributes;
 import org.jboss.as.threads.ThreadsServices;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -71,11 +85,65 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
 
     @Override
         public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_SHORT_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
-                ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING), registerRuntimeOnly));
-        resourceRegistration.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_LONG_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
-                        ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING), registerRuntimeOnly));
+        registerSubModels(resourceRegistration, registerRuntimeOnly);
+    }
 
+    static void registerSubModels(ManagementResourceRegistration resourceRegistration, boolean runtimeOnly) {
+        final BoundedQueueThreadPoolAdd shortRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(false,
+                ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
+                ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING)) {
+            @Override
+            protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource)
+                    throws OperationFailedException {
+                super.populateModel(context, operation, resource);
+                context.addStep(new OperationStepHandler(){
+                    public void execute(OperationContext oc, ModelNode op) throws OperationFailedException {
+                        checkThreadPool(oc, op, WORKMANAGER_SHORT_RUNNING);
+                   }
+                }, MODEL);
+            }
+        };
+        resourceRegistration.registerSubModel(
+                new JCAThreadPoolResourceDefinition(false, runtimeOnly, WORKMANAGER_SHORT_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING),
+                        CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, shortRunningThreadPoolAdd, new BoundedQueueThreadPoolRemove(shortRunningThreadPoolAdd)));
+
+        final BoundedQueueThreadPoolAdd longRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(false,
+                ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
+                ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING)) {
+            @Override
+            protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource)
+                    throws OperationFailedException {
+                super.populateModel(context, operation, resource);
+                context.addStep(new OperationStepHandler(){
+                    public void execute(OperationContext oc, ModelNode op) throws OperationFailedException {
+                        checkThreadPool(oc, op, WORKMANAGER_LONG_RUNNING);
+                   }
+                }, MODEL);
+            }
+        };
+        resourceRegistration.registerSubModel(
+                new JCAThreadPoolResourceDefinition(false, runtimeOnly, WORKMANAGER_LONG_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING),
+                        CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, longRunningThreadPoolAdd, new BoundedQueueThreadPoolRemove(longRunningThreadPoolAdd)));
+
+    }
+
+    private static class JCAThreadPoolResourceDefinition extends BoundedQueueThreadPoolResourceDefinition {
+        @SuppressWarnings("deprecation")
+        protected JCAThreadPoolResourceDefinition(boolean blocking, boolean registerRuntimeOnly,
+                String type, ServiceName serviceNameBase, String resolverPrefix, OperationStepHandler addHandler,
+                OperationStepHandler removeHandler) {
+            super(blocking, registerRuntimeOnly, type, serviceNameBase, resolverPrefix, addHandler, removeHandler);
+        }
+    }
+
+    private static void checkThreadPool(final OperationContext context, final ModelNode operation, final String type) throws OperationFailedException {
+        PathAddress threadPoolPath = context.getCurrentAddress();
+        PathAddress workManagerPath = threadPoolPath.getParent();
+        Set<Resource.ResourceEntry> entrySet = context.readResourceFromRoot(workManagerPath).getChildren(type);
+        if (entrySet.size() > 0
+                && !entrySet.iterator().next().getName().equals(threadPoolPath.getLastElement().getValue())) {
+            throw ConnectorLogger.ROOT_LOGGER.oneThreadPoolWorkManager(threadPoolPath.getLastElement().getValue(), type, workManagerPath.getLastElement().getValue());
+        }
     }
 
     public enum WmParameters {
