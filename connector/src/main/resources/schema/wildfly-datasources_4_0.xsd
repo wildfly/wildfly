@@ -1034,7 +1034,7 @@
         <xs:documentation>
           <![CDATA[[
             Specifies the name of AS7 module providing this driver.
-            Thios tag is not used in IronJacamar standalone container.
+            This tag is not used in IronJacamar standalone container.
            ]]>
         </xs:documentation>
       </xs:annotation>

@@ -25,6 +25,9 @@ package org.jboss.as.connector.subsystems.common.pool;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -211,6 +214,7 @@ public class Constants {
             .setXmlName(Pool.Tag.FLUSH_STRATEGY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setAllowedValues(Stream.of(FlushStrategy.values()).map(FlushStrategy::toString).filter(Objects::nonNull).toArray(String[]::new))
             .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
             .build();
 
