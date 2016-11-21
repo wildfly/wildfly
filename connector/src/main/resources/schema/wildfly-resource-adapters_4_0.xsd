@@ -558,7 +558,7 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              Defines if pool should use be fair
+              Defines if pool use should be fair
               Default true
              ]]>
           </xs:documentation>
@@ -745,7 +745,7 @@
           <xs:documentation>
             <![CDATA[[
               Specifies the security options used when creating a connection during recovery.
-              Note: if this credential are not specified the security credential are used for recover too
+              Note: if this credential is not specified the security credential is used for recovery too
              ]]>
           </xs:documentation>
         </xs:annotation>
