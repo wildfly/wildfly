@@ -60,6 +60,13 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="security-domain" type="namedType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Defines the name of the default security domain to use as a default for batch jobs.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="job-repository" type="job-repositoryType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="thread-pool" type="thread-poolType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="thread-factory" type="threads:thread-factory" minOccurs="0" maxOccurs="unbounded"/>

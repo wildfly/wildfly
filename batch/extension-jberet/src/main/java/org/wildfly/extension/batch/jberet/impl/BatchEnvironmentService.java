@@ -59,6 +59,8 @@ import org.wildfly.extension.batch.jberet.impl.ContextHandle.Handle;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.jberet.BatchEnvironmentFactory;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -195,6 +197,11 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return batchConfigurationInjector;
     }
 
+    private SecurityIdentity getIdentity() {
+        final SecurityDomain securityDomain = batchConfigurationInjector.getValue().getSecurityDomain();
+        return securityDomain == null ? null : securityDomain.getCurrentSecurityIdentity();
+    }
+
     private class WildFlyBatchEnvironment implements BatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
@@ -227,6 +234,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         @Override
         public void submitTask(final JobTask jobTask) {
+            final SecurityIdentity identity = getIdentity();
             final ContextHandle contextHandle = createContextHandle();
             final JobTask task = new JobTask() {
                 @Override
@@ -238,7 +246,11 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
                 public void run() {
                     final Handle handle = contextHandle.setup();
                     try {
-                        jobTask.run();
+                        if (identity == null) {
+                            jobTask.run();
+                        } else {
+                            identity.runAs(jobTask);
+                        }
                     } finally {
                         handle.tearDown();
                     }

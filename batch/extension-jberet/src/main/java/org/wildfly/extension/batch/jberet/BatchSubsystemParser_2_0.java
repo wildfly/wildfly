@@ -16,6 +16,7 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import java.util.Collections;
 import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 
@@ -30,5 +31,6 @@ class BatchSubsystemParser_2_0 extends BatchSubsystemParser_1_0 implements XMLSt
     public static final BatchSubsystemParser_2_0 INSTANCE = new BatchSubsystemParser_2_0();
 
     public BatchSubsystemParser_2_0() {
+        super(Collections.singletonMap(Element.SECURITY_DOMAIN, BatchSubsystemDefinition.SECURITY_DOMAIN));
     }
 }

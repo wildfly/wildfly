@@ -80,9 +80,9 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
         standardSubsystemTest("/jdbc-default-subsystem.xml");
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.data-source.ExampleDS");
+    @Test
+    public void testSecurityDomainSubsystem() throws Exception {
+        standardSubsystemTest("/security-domain-subsystem.xml");
     }
 
     @Test
@@ -116,5 +116,10 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
             // Run the standard subsystem test, but don't compare the XML as it should never match
             standardSubsystemTest(configId, false);
         }
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.data-source.ExampleDS", "org.wildfly.security.security-domain.ApplicationDomain");
     }
 }

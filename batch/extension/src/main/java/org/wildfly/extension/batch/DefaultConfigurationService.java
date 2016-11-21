@@ -24,6 +24,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -46,6 +47,12 @@ class DefaultConfigurationService implements BatchConfiguration, Service<BatchCo
     @Override
     public JobExecutor getDefaultJobExecutor() {
         return jobExecutorInjector.getValue();
+    }
+
+    @Override
+    public SecurityDomain getSecurityDomain() {
+        // No security domain will be used for the legacy subsystem
+        return null;
     }
 
     @Override

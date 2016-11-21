@@ -29,6 +29,7 @@
     <extension-module>org.wildfly.extension.batch.jberet</extension-module>
     <subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
         <default-job-repository name="in-memory"/>
+        <?ELYTRON?>
         <default-thread-pool name="batch"/>
         <job-repository name="in-memory">
             <in-memory/>
@@ -39,4 +40,9 @@
             <keepalive-time time="30" unit="seconds"/>
         </thread-pool>
     </subsystem>
+    <supplement name="elytron">
+        <replacement placeholder="ELYTRON">
+            <security-domain name="ApplicationDomain"/>
+        </replacement>
+    </supplement>
 </config>
