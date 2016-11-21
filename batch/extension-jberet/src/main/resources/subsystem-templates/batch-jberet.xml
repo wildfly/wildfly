@@ -27,7 +27,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.batch.jberet</extension-module>
-    <subsystem xmlns="urn:jboss:domain:batch-jberet:1.0">
+    <subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
         <default-job-repository name="in-memory"/>
         <default-thread-pool name="batch"/>
         <job-repository name="in-memory">

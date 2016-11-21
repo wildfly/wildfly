@@ -91,6 +91,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition RESTART_JOBS_ON_RESUME = SimpleAttributeDefinitionBuilder.create("restart-jobs-on-resume", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
+            .setAttributeParser(AttributeParsers.VALUE)
             .setAttributeMarshaller(AttributeMarshallers.VALUE)
             .build();
 

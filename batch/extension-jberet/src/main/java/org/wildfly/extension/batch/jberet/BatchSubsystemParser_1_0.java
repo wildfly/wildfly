@@ -24,16 +24,18 @@ package org.wildfly.extension.batch.jberet;
 
 import static org.jboss.as.threads.Namespace.THREADS_1_1;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumMap;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.threads.ThreadsParser;
@@ -51,6 +53,19 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
 
     public static final BatchSubsystemParser_1_0 INSTANCE = new BatchSubsystemParser_1_0();
 
+    private final Map<Element, SimpleAttributeDefinition> attributeElements;
+
+    public BatchSubsystemParser_1_0() {
+        this(Collections.emptyMap());
+    }
+
+    BatchSubsystemParser_1_0(final Map<Element, SimpleAttributeDefinition> additionalElements) {
+        attributeElements = new HashMap<>(additionalElements);
+        attributeElements.put(Element.DEFAULT_JOB_REPOSITORY, BatchSubsystemDefinition.DEFAULT_JOB_REPOSITORY);
+        attributeElements.put(Element.DEFAULT_THREAD_POOL, BatchSubsystemDefinition.DEFAULT_THREAD_POOL);
+        attributeElements.put(Element.RESTART_JOBS_ON_RESUME, BatchSubsystemDefinition.RESTART_JOBS_ON_RESUME);
+    }
+
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> ops) throws XMLStreamException {
         final ThreadsParser threadsParser = ThreadsParser.getInstance();
@@ -59,25 +74,32 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
         final ModelNode subsystemAddOp = Util.createAddOperation(subsystemAddress);
         ops.add(subsystemAddOp);
 
-        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL, Element.DEFAULT_JOB_REPOSITORY, Element.DEFAULT_THREAD_POOL);
+        // Find the required elements
+        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL);
+        attributeElements.forEach((element, attribute) -> {
+            if (!attribute.isAllowNull() && attribute.getDefaultValue() == null) {
+                requiredElements.add(element);
+            }
+        });
+
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String localName = reader.getLocalName();
             final Element element = Element.forName(localName);
-            if (element == Element.DEFAULT_THREAD_POOL) {
-                BatchSubsystemDefinition.DEFAULT_THREAD_POOL.parseAndSetParameter(readNameAttribute(reader), subsystemAddOp, reader);
-                ParseUtils.requireNoContent(reader);
-                requiredElements.remove(Element.DEFAULT_THREAD_POOL);
-            } else if (element == Element.DEFAULT_JOB_REPOSITORY) {
-                BatchSubsystemDefinition.DEFAULT_JOB_REPOSITORY.parseAndSetParameter(readNameAttribute(reader), subsystemAddOp, reader);
-                ParseUtils.requireNoContent(reader);
-                requiredElements.remove(Element.DEFAULT_JOB_REPOSITORY);
-            } else if (element == Element.RESTART_JOBS_ON_RESUME) {
-                BatchSubsystemDefinition.RESTART_JOBS_ON_RESUME.parseAndSetParameter(readValueAttribute(reader), subsystemAddOp, reader);
-                ParseUtils.requireNoContent(reader);
+            final SimpleAttributeDefinition attribute = attributeElements.get(element);
+            if (attribute != null) {
+                final AttributeParser parser = attribute.getParser();
+                if (parser.isParseAsElement()) {
+                    parser.parseElement(attribute, reader, subsystemAddOp);
+                } else {
+                    // Assume this is an element with a single name attribute
+                    parser.parseAndSetParameter(attribute, AttributeParsers.readNameAttribute(reader), subsystemAddOp, reader);
+                    ParseUtils.requireNoContent(reader);
+                }
+                requiredElements.remove(element);
             } else if (element == Element.JOB_REPOSITORY) {
-                final String name = readNameAttribute(reader);
+                final String name = AttributeParsers.readNameAttribute(reader);
                 parseJobRepository(reader, subsystemAddress, name, ops);
                 requiredElements.remove(Element.JOB_REPOSITORY);
             } else if (element == Element.THREAD_POOL) {
@@ -107,7 +129,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
                 ops.add(Util.createAddOperation(subsystemAddress.append(InMemoryJobRepositoryDefinition.NAME, name)));
                 ParseUtils.requireNoContent(reader);
             } else if (element == Element.JDBC) {
-                final Map<Attribute, String> attributes = readRequiredAttributes(reader, EnumSet.of(Attribute.DATA_SOURCE));
+                final Map<Attribute, String> attributes = AttributeParsers.readRequiredAttributes(reader, EnumSet.of(Attribute.DATA_SOURCE));
                 final ModelNode op = Util.createAddOperation(subsystemAddress.append(JdbcJobRepositoryDefinition.NAME, name));
                 JdbcJobRepositoryDefinition.DATA_SOURCE.parseAndSetParameter(attributes.get(Attribute.DATA_SOURCE), op, reader);
                 ops.add(op);
@@ -116,46 +138,5 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
                 throw ParseUtils.unexpectedElement(reader);
             }
         }
-    }
-
-    static String readNameAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        return readRequiredAttributes(reader, EnumSet.of(Attribute.NAME)).get(Attribute.NAME);
-    }
-
-    static String readValueAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        return readRequiredAttributes(reader, EnumSet.of(Attribute.VALUE)).get(Attribute.VALUE);
-    }
-
-    /**
-     * Reads the required attributes from an XML configuration.
-     * <p>
-     * The reader must be on an element with attributes.
-     * </p>
-     *
-     * @param reader     the reader for the attributes
-     * @param attributes the required attributes
-     *
-     * @return a map of the required attributes with the key being the attribute and the value being the value of the
-     * attribute
-     *
-     * @throws XMLStreamException if an XML processing error occurs
-     */
-    static Map<Attribute, String> readRequiredAttributes(final XMLExtendedStreamReader reader, final Set<Attribute> attributes) throws XMLStreamException {
-        final int attributeCount = reader.getAttributeCount();
-        final Map<Attribute, String> result = new EnumMap<>(Attribute.class);
-        for (int i = 0; i < attributeCount; i++) {
-            final Attribute current = Attribute.forName(reader.getAttributeLocalName(i));
-            if (attributes.contains(current)) {
-                if (result.put(current, reader.getAttributeValue(i)) != null) {
-                    throw ParseUtils.duplicateAttribute(reader, current.getLocalName());
-                }
-            } else {
-                throw ParseUtils.unexpectedAttribute(reader, i, attributes.stream().map(Attribute::getLocalName).collect(Collectors.toSet()));
-            }
-        }
-        if (result.isEmpty()) {
-            throw ParseUtils.missingRequired(reader, attributes.stream().map(Attribute::getLocalName).collect(Collectors.toSet()));
-        }
-        return result;
     }
 }

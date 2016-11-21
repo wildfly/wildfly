@@ -22,10 +22,22 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Basic subsystem test. Tests parsing various batch configurations
@@ -43,7 +55,7 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-batch-jberet_1_0.xsd";
+        return "schema/wildfly-batch-jberet_2_0.xsd";
     }
 
     @Override
@@ -71,5 +83,38 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities("org.wildfly.data-source.ExampleDS");
+    }
+
+    @Test
+    public void testLegacySubsystems() throws Exception {
+        // Get a list of all the logging_x_x.xml files
+        final Pattern pattern = Pattern.compile("(.*-subsystem)_\\d+_\\d+\\.xml");
+        // Using the CP as that's the standardSubsystemTest will use to find the config file
+        final String cp = WildFlySecurityManager.getPropertyPrivileged("java.class.path", ".");
+        final String[] entries = cp.split(Pattern.quote(File.pathSeparator));
+        final List<String> configs = new ArrayList<>();
+        for (String entry : entries) {
+            final Path path = Paths.get(entry);
+            if (Files.isDirectory(path)) {
+                Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                        final String name = file.getFileName().toString();
+                        if (pattern.matcher(name).matches()) {
+                            configs.add("/" + name);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        }
+
+        // The paths shouldn't be empty
+        Assert.assertFalse("No configs were found", configs.isEmpty());
+
+        for (String configId : configs) {
+            // Run the standard subsystem test, but don't compare the XML as it should never match
+            standardSubsystemTest(configId, false);
+        }
     }
 }

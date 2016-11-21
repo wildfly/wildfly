@@ -33,12 +33,13 @@ enum Namespace {
     UNKNOWN(null),
 
     BATCH_1_0("urn:jboss:domain:batch-jberet:1.0"),
+    BATCH_2_0("urn:jboss:domain:batch-jberet:2.0"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = BATCH_1_0;
+    public static final Namespace CURRENT = BATCH_2_0;
 
     private final String name;
 
