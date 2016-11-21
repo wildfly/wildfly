@@ -30,7 +30,9 @@ import com.arjuna.ats.internal.jta.recovery.jts.JCAServerTransactionRecoveryModu
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.suspend.RecoverySuspendController;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -67,8 +69,10 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
     private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
 
     private RecoveryManagerService recoveryManagerService;
+    private RecoverySuspendController recoverySuspendController;
     private boolean recoveryListener;
     private final boolean jts;
     private InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
@@ -150,9 +154,13 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
                 throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
+
+        recoverySuspendController = new RecoverySuspendController(recoveryManagerService);
+        suspendControllerInjector.getValue().registerActivity(recoverySuspendController);
     }
 
     public synchronized void stop(StopContext context) {
+        suspendControllerInjector.getValue().unRegisterActivity(recoverySuspendController);
         try {
             recoveryManagerService.stop();
         } catch (Exception e) {
@@ -160,6 +168,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         }
         recoveryManagerService.destroy();
         recoveryManagerService = null;
+        recoverySuspendController = null;
     }
 
     public synchronized RecoveryManagerService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -176,6 +185,10 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
     public Injector<SocketBinding> getStatusBindingInjector() {
         return statusBindingInjector;
+    }
+
+    public Injector<SuspendController> getSuspendControllerInjector() {
+        return suspendControllerInjector;
     }
 
     public Injector<SocketBindingManager> getBindingManager() {
