@@ -47,6 +47,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
+import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -80,7 +81,7 @@ public class RemoteNamingEjbTestCase {
 
     public InitialContext getRemoteContext() throws Exception {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
         env.put("jboss.naming.client.ejb.context", true);
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
@@ -138,9 +139,10 @@ public class RemoteNamingEjbTestCase {
             try {
                 ctx.lookup("some/entry");
                 fail("expected exception");
-            } catch (NameNotFoundException e) {
+            } catch (NamingException e) {
                 // expected
             }
+
 
             // test binding
             binder = (BinderRemote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());

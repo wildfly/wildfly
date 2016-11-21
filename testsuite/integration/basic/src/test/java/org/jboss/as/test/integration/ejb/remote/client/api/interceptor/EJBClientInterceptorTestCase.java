@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+//TODO Elytron - ejb-client4 integration
 public class EJBClientInterceptorTestCase {
 
     private static final int CLIENT_INTERCEPTOR_ORDER = 0x99999;
@@ -79,10 +80,6 @@ public class EJBClientInterceptorTestCase {
 
         interceptorData.put(keyOne, valueOne);
         interceptorData.put(keyTwo, valueTwo);
-
-        final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
-        // register the client side interceptor
-        ejbClientContext.registerInterceptor(CLIENT_INTERCEPTOR_ORDER, clientInterceptor);
 
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");

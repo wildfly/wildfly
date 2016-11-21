@@ -32,7 +32,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -40,7 +39,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +48,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+//TODO Elytron - ejb-client4 integration
 public class EJBClientXidTransactionTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientXidTransactionTestCase.class);
@@ -90,19 +89,6 @@ public class EJBClientXidTransactionTestCase {
     public static void beforeTestClass() throws Exception {
         // setup the tx manager and tx sync registry
         instantiateTxManagement();
-    }
-
-    /**
-     * Create and setup the EJB client context backed by the remoting receiver
-     *
-     * @throws Exception
-     */
-    @Before
-    public void beforeTest() throws Exception {
-        // create a client side tx context
-        final EJBClientTransactionContext txContext = EJBClientTransactionContext.create(txManager, txSyncRegistry);
-        // associate the tx context
-        EJBClientTransactionContext.setGlobalContext(txContext);
     }
 
     private static void instantiateTxManagement() {
