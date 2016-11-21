@@ -46,6 +46,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -73,7 +74,7 @@ public final class WSExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = WSExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     // attributes on the endpoint element
      static final AttributeDefinition ENDPOINT_WSDL = new SimpleAttributeDefinitionBuilder(
@@ -178,6 +179,7 @@ public final class WSExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             registerTransformers1_2_0(subsystem);
+            registerTransformers2_0_0(subsystem);
         }
     }
 
@@ -196,6 +198,13 @@ public final class WSExtension implements Extension {
         builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.STATISTICS_ENABLED);
         builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.WSDL_URI_SCHEME);
         builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.WSDL_PATH_REWRITE_RULE);
+        TransformationDescription.Tools.register(builder.build(), registration, version);
+    }
+
+    private void registerTransformers2_0_0(SubsystemRegistration registration) {
+        ModelVersion version = ModelVersion.create(2, 0, 0);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.STATISTICS_ENABLED);
         TransformationDescription.Tools.register(builder.build(), registration, version);
     }
 }
