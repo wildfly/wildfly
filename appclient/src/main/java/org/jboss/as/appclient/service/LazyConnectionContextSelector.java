@@ -85,7 +85,7 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
             final AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, mergedConfiguration);
 
             // open a connection
-            endpoint = Endpoint.getCurrent();
+            endpoint = Endpoint.builder().setEndpointName("endpoint").build();
             final IoFuture<Connection> futureConnection = endpoint.connect(uri, OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE, Options.SASL_POLICY_NOPLAINTEXT, Boolean.FALSE), context);
             connection = IoFutureHelper.get(futureConnection, 30L, TimeUnit.SECONDS);
 
