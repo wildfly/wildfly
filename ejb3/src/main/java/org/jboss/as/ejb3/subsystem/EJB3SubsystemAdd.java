@@ -228,9 +228,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         RemoteObjectSubstitutionManager.setRemoteObjectSubstitution(substitutionService);
 
-        //setup ejb: namespace
-        EjbNamingContextSetup.setupEjbNamespace();
-
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
         final ModelNode defaultDistinctName = EJB3SubsystemRootResourceDefinition.DEFAULT_DISTINCT_NAME.resolveModelAttribute(context, model);
