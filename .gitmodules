@@ -1,0 +1,4 @@
+[submodule "testsuite/additional-testsuite/eap-additional-testsuite"]
+	path = testsuite/additional-testsuite/eap-additional-testsuite
+	url = https://github.com/jboss-set/eap-additional-testsuite.git
+	branch = master

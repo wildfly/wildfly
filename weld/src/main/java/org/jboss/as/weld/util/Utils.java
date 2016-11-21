@@ -80,4 +80,8 @@ public class Utils {
             map.put(key, value);
         }
     }
+
+    public static void printDefaultMessage() {
+        System.out.println("Message : org.jboss.as.weld.util.Utils");
+    }
 }
