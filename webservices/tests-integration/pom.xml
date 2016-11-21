@@ -131,6 +131,10 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
         </dependency>
+        <dependency> <!-- Required by activemq... -->
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
@@ -138,6 +142,14 @@
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-nio</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.client</groupId>
+            <artifactId>wildfly-client-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client</artifactId>
         </dependency>
     </dependencies>
 
