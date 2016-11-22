@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE;
+
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,11 +54,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
     private MessagingSubsystemAdd() {
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
+        super(MessagingSubsystemRootResourceDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -75,6 +75,9 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_MESSAGING_XML_RESOURCES, new MessagingXmlInstallDeploymentUnitProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
-    }
 
+        int threadPoolMaxSize = GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+        int scheduledThreadPoolMaxSize = GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+        ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSize, scheduledThreadPoolMaxSize);
+    }
 }
