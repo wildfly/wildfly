@@ -22,20 +22,25 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
+import static org.jboss.dmr.ModelType.INT;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
@@ -44,6 +49,29 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class MessagingSubsystemRootResourceDefinition extends PersistentResourceDefinition {
+
+    public static final SimpleAttributeDefinition GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE = create("global-client-thread-pool-max-size", INT)
+            .setAttributeGroup("global-client")
+            .setXmlName("thread-pool-max-size")
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_THREAD_POOL_MAX_SIZE))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE = create("global-client-scheduled-thread-pool-max-size", INT)
+            .setAttributeGroup("global-client")
+            .setXmlName("scheduled-thread-pool-max-size")
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTES = {
+            GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
+            GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE
+    };
 
     public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
 
@@ -56,7 +84,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptyList();
+        return Arrays.asList(ATTRIBUTES);
     }
 
     public static void registerTransformers(SubsystemRegistration subsystemRegistration) {
@@ -64,9 +92,12 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
     }
 
     private static void registerTransformers_EAP_7_0_0(SubsystemRegistration subsystemRegistration) {
-        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        ResourceTransformationDescriptionBuilder server = builder.addChildResource(MessagingExtension.SERVER_PATH);
+        rejectDefinedAttributeWithDefaultValue(subsystem, MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
+                MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // reject journal-datasource, journal-bindings-table introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_DATASOURCE,
                 ServerDefinition.JOURNAL_MESSAGES_TABLE,
@@ -89,7 +120,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         // reject min-pool-size whose default value has been changed in  management version 2.0.0
         defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
 
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
+        TransformationDescription.Tools.register(subsystem.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
     }
 
     /**

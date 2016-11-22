@@ -141,6 +141,10 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
+                                MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ServerDefinition.JOURNAL_DATASOURCE,

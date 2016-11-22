@@ -32,6 +32,12 @@
     <xs:element name="subsystem">
         <xs:complexType>
             <xs:sequence>
+                <xs:element maxOccurs="1" minOccurs="0" name="global-client">
+                    <xs:complexType>
+                        <xs:attribute name="thread-pool-max-size" type="xs:int" />
+                        <xs:attribute name="scheduled-thread-pool-max-size" type="xs:int" />
+                    </xs:complexType>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
             </xs:sequence>

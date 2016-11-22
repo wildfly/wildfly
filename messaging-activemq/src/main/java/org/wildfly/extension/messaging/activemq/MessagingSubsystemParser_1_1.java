@@ -72,7 +72,10 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(MessagingSubsystemRootResourceDefinition.INSTANCE)
+        xmlDescription = builder(MessagingExtension.SUBSYSTEM_PATH)
+                .addAttributes(
+                        MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
+                        MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
                 .addChild(
                         builder(ServerDefinition.INSTANCE)
                                 .addAttributes(
