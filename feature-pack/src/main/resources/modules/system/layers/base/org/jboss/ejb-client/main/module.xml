@@ -32,8 +32,8 @@
         <module name="javax.interceptor.api"/>
         <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.client.discovery"/>
-        <module name="org.wildfly.client.naming"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.naming-client"/>
         <module name="org.jboss.remoting"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.logging"/>
