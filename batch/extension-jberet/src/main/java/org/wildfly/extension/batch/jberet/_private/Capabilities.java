@@ -57,4 +57,9 @@ public class Capabilities {
      */
     public static final RuntimeCapability<Void> JOB_REPOSITORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.job.repository", true, JobRepository.class)
             .build();
+
+    /**
+     * The capability name for the Elytron security domain.
+     */
+    public static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
 }

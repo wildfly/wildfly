@@ -42,6 +42,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -50,6 +51,7 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.as.threads.ThreadFactoryResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
@@ -62,6 +64,7 @@ import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDe
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
@@ -91,7 +94,14 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition RESTART_JOBS_ON_RESUME = SimpleAttributeDefinitionBuilder.create("restart-jobs-on-resume", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
+            .setAttributeParser(AttributeParsers.VALUE)
             .setAttributeMarshaller(AttributeMarshallers.VALUE)
+            .build();
+
+    static final SimpleAttributeDefinition SECURITY_DOMAIN = SimpleAttributeDefinitionBuilder.create("security-domain", ModelType.STRING, true)
+            .setAttributeMarshaller(AttributeMarshallers.NAMED)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setCapabilityReference(Capabilities.SECURITY_DOMAIN_CAPABILITY, Capabilities.BATCH_CONFIGURATION_CAPABILITY)
             .build();
 
     private final boolean registerRuntimeOnly;
@@ -124,9 +134,10 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, SECURITY_DOMAIN);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_JOB_REPOSITORY, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_THREAD_POOL, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(SECURITY_DOMAIN, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(RESTART_JOBS_ON_RESUME, null, new AbstractWriteAttributeHandler<Boolean>() {
             @Override
             protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
@@ -160,7 +171,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
         private BatchSubsystemAdd() {
-            super(Collections.singleton(Capabilities.BATCH_CONFIGURATION_CAPABILITY), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME);
+            super(Collections.singleton(Capabilities.BATCH_CONFIGURATION_CAPABILITY), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME, SECURITY_DOMAIN);
         }
 
         @Override
@@ -189,12 +200,13 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
             final ModelNode defaultJobRepository = DEFAULT_JOB_REPOSITORY.resolveModelAttribute(context, model);
             final ModelNode defaultThreadPool = DEFAULT_THREAD_POOL.resolveModelAttribute(context, model);
+            final ModelNode securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model);
             final boolean restartOnResume = RESTART_JOBS_ON_RESUME.resolveModelAttribute(context, model).asBoolean();
 
             final ServiceTarget target = context.getServiceTarget();
             final BatchConfigurationService service = new BatchConfigurationService();
             service.setRestartOnResume(restartOnResume);
-            target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), service)
+            final ServiceBuilder<BatchConfiguration> serviceBuilder = target.addService(context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class), service)
                     .addDependency(
                             context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), defaultJobRepository.asString(), JobRepository.class),
                             JobRepository.class,
@@ -204,10 +216,18 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                             context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), defaultThreadPool.asString(), JobExecutor.class),
                             JobExecutor.class,
                             service.getJobExecutorInjector()
-                    )
-                    // Only start this service if there are deployments present, allow it to be stopped as deployments
-                    // are removed.
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    );
+            if (securityDomain.isDefined()) {
+                serviceBuilder.addDependency(
+                        context.getCapabilityServiceName(Capabilities.SECURITY_DOMAIN_CAPABILITY, securityDomain.asString(), SecurityDomain.class),
+                        SecurityDomain.class,
+                        service.getSecurityDomainInjector()
+                );
+            }
+
+            // Only start this service if there are deployments present, allow it to be stopped as deployments
+            // are removed.
+            serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
         }
     }

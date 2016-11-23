@@ -23,6 +23,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * A default batch configuration service.
@@ -33,6 +34,7 @@ class BatchConfigurationService implements BatchConfiguration, Service<BatchConf
 
     private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
     private final InjectedValue<JobExecutor> jobExecutorInjector = new InjectedValue<>();
+    private final InjectedValue<SecurityDomain> securityDomainInjector = new InjectedValue<>();
     private volatile boolean restartOnResume;
 
     @Override
@@ -55,6 +57,11 @@ class BatchConfigurationService implements BatchConfiguration, Service<BatchConf
     }
 
     @Override
+    public SecurityDomain getSecurityDomain() {
+        return securityDomainInjector.getOptionalValue();
+    }
+
+    @Override
     public void start(final StartContext context) throws StartException {
     }
 
@@ -73,5 +80,9 @@ class BatchConfigurationService implements BatchConfiguration, Service<BatchConf
 
     protected InjectedValue<JobExecutor> getJobExecutorInjector() {
         return jobExecutorInjector;
+    }
+
+    InjectedValue<SecurityDomain> getSecurityDomainInjector() {
+        return securityDomainInjector;
     }
 }
