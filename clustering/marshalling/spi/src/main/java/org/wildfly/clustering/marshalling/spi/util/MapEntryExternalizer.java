@@ -20,45 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.Function;
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Externalizers for copy-on-write implementations of {@link Collection}.
  * @author Paul Ferraro
  */
-public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> implements Externalizer<T> {
+public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final Function<Collection<Object>, T> factory;
+    private final BiFunction<Object, Object, T> factory;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    CopyOnWriteCollectionExternalizer(Class targetClass, Function<Collection<Object>, T> factory) {
+    MapEntryExternalizer(Class targetClass, BiFunction<Object, Object, T> factory) {
         this.targetClass = targetClass;
         this.factory = factory;
     }
 
     @Override
-    public void writeObject(ObjectOutput output, T collection) throws IOException {
-        CollectionExternalizer.writeCollection(output, collection);
+    public void writeObject(ObjectOutput output, T entry) throws IOException {
+        output.writeObject(entry.getKey());
+        output.writeObject(entry.getValue());
     }
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
-        // Collect all elements first to avoid COW costs per element.
-        return this.factory.apply(CollectionExternalizer.readCollection(input, new ArrayList<>(size), size));
+        return this.factory.apply(input.readObject(), input.readObject());
     }
 
     @Override
@@ -67,16 +63,16 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class CopyOnWriteArrayListExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArrayList<Object>> {
-        public CopyOnWriteArrayListExternalizer() {
-            super(CopyOnWriteArrayList.class, CopyOnWriteArrayList<Object>::new);
+    public static class SimpleEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleEntry<Object, Object>> {
+        public SimpleEntryExternalizer() {
+            super(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry<Object, Object>::new);
         }
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class CopyOnWriteArraySetExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArraySet<Object>> {
-        public CopyOnWriteArraySetExternalizer() {
-            super(CopyOnWriteArraySet.class, CopyOnWriteArraySet<Object>::new);
+    public static class SimpleImmutableEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleImmutableEntry<Object, Object>> {
+        public SimpleImmutableEntryExternalizer() {
+            super(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry<Object, Object>::new);
         }
     }
 }

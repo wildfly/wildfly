@@ -20,37 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi;
 
+import static org.junit.Assert.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.concurrent.atomic.AtomicReference;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.function.BiConsumer;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * {@link Externalizer} for an {@link AtomicReference>
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class AtomicReferenceExternalizer implements Externalizer<AtomicReference<Object>> {
+public class ExternalizerTestUtil {
 
-    @Override
-    public void writeObject(ObjectOutput output, AtomicReference<Object> reference) throws IOException {
-        output.writeObject(reference.get());
+    public static <T> void test(Externalizer<T> externalizer, T subject) throws IOException, ClassNotFoundException {
+        test(externalizer, subject, (expected, actual) -> assertEquals(expected, actual));
     }
 
-    @Override
-    public AtomicReference<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new AtomicReference<>(input.readObject());
-    }
+    public static <T> void test(Externalizer<T> externalizer, T subject, BiConsumer<T, T> assertion) throws IOException, ClassNotFoundException {
+        assertTrue(externalizer.getTargetClass().isInstance(subject));
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    public Class<? extends AtomicReference<Object>> getTargetClass() {
-        Class targetClass = AtomicReference.class;
-        return targetClass;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (ObjectOutputStream output = new ObjectOutputStream(out)) {
+            externalizer.writeObject(output, subject);
+        }
+
+        try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(out.toByteArray()))) {
+            T result = externalizer.readObject(input);
+            assertion.accept(subject, result);
+        }
     }
 }

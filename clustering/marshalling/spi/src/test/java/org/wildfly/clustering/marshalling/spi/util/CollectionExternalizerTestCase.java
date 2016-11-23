@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -39,6 +39,7 @@ import java.util.function.BiConsumer;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 
 /**
  * Unit test for {@link CollectionExternalizer} externalizers.

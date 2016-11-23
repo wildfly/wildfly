@@ -25,7 +25,7 @@ package org.wildfly.clustering.ejb.infinispan;
 import org.jboss.ejb.client.BasicSessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro

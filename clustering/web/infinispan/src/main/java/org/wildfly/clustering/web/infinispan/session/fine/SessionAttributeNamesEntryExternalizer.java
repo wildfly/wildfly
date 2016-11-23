@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * Externalizer for {@link SessionAttributeNamesEntry}.

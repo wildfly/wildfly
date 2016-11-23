@@ -20,24 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
-import java.util.AbstractMap;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Test;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * {@link Externalizer} for an {@link AtomicReference>
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+@MetaInfServices(Externalizer.class)
+public class AtomicReferenceExternalizer implements Externalizer<AtomicReference<Object>> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        ExternalizerTestUtil.test(new MapEntryExternalizer.SimpleEntryExternalizer(), new AbstractMap.SimpleEntry<>(key, value));
-        ExternalizerTestUtil.test(new MapEntryExternalizer.SimpleImmutableEntryExternalizer(), new AbstractMap.SimpleImmutableEntry<>(key, value));
+    @Override
+    public void writeObject(ObjectOutput output, AtomicReference<Object> reference) throws IOException {
+        output.writeObject(reference.get());
+    }
+
+    @Override
+    public AtomicReference<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new AtomicReference<>(input.readObject());
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Class<? extends AtomicReference<Object>> getTargetClass() {
+        Class targetClass = AtomicReference.class;
+        return targetClass;
     }
 }

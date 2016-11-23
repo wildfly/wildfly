@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**

@@ -34,6 +34,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 

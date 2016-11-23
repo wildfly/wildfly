@@ -29,5 +29,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.wildfly.clustering.marshalling.api"/>
+        <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>

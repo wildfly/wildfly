@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
-
 /**
  * Marshaller that stores attribute values using marshalled values.
  * @author Paul Ferraro

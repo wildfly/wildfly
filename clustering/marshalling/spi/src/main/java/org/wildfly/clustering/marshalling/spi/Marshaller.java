@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.marshalling.spi;
 
-import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
-
 /**
  * A marshalling strategy for a specific object type.
  * @author Paul Ferraro

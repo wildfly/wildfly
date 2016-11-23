@@ -30,8 +30,8 @@ import java.time.Instant;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
-import org.wildfly.clustering.marshalling.jboss.InstantExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.time.InstantExternalizer;
 
 /**
  * Externalizer for {@link SessionCreationMetaDataEntry}

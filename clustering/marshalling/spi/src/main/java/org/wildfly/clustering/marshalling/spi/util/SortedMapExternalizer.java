@@ -20,41 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.Comparator;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
+ * Externalizers for implementations of {@link SortedMap}.
+ * Requires additional serialization of the comparator.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implements Externalizer<T> {
+public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final BiFunction<Object, Object, T> factory;
+    private final Function<Comparator<? super Object>, T> factory;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    MapEntryExternalizer(Class targetClass, BiFunction<Object, Object, T> factory) {
+    SortedMapExternalizer(Class targetClass, Function<Comparator<? super Object>, T> factory) {
         this.targetClass = targetClass;
         this.factory = factory;
     }
 
     @Override
-    public void writeObject(ObjectOutput output, T entry) throws IOException {
-        output.writeObject(entry.getKey());
-        output.writeObject(entry.getValue());
+    public void writeObject(ObjectOutput output, T map) throws IOException {
+        output.writeObject(map.comparator());
+        MapExternalizer.writeMap(output, map);
     }
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.factory.apply(input.readObject(), input.readObject());
+        @SuppressWarnings("unchecked")
+        Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
+        int size = IndexExternalizer.VARIABLE.readData(input);
+        return MapExternalizer.readMap(input, this.factory.apply(comparator), size);
     }
 
     @Override
@@ -63,16 +71,16 @@ public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implement
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class SimpleEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleEntry<Object, Object>> {
-        public SimpleEntryExternalizer() {
-            super(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry<Object, Object>::new);
+    public static class ConcurrentSkipListMapExternalizer extends SortedMapExternalizer<ConcurrentSkipListMap<Object, Object>> {
+        public ConcurrentSkipListMapExternalizer() {
+            super(ConcurrentSkipListMap.class, ConcurrentSkipListMap<Object, Object>::new);
         }
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class SimpleImmutableEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleImmutableEntry<Object, Object>> {
-        public SimpleImmutableEntryExternalizer() {
-            super(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry<Object, Object>::new);
+    public static class TreeMapExternalizer extends SortedMapExternalizer<TreeMap<Object, Object>> {
+        public TreeMapExternalizer() {
+            super(TreeMap.class, TreeMap<Object, Object>::new);
         }
     }
 }

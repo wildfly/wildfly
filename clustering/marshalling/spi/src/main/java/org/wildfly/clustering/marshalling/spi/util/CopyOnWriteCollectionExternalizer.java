@@ -20,48 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Comparator;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
- * Externalizers for implementations of {@link SortedMap}.
- * Requires additional serialization of the comparator.
+ * Externalizers for copy-on-write implementations of {@link Collection}.
  * @author Paul Ferraro
  */
-public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implements Externalizer<T> {
+public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final Function<Comparator<? super Object>, T> factory;
+    private final Function<Collection<Object>, T> factory;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    SortedMapExternalizer(Class targetClass, Function<Comparator<? super Object>, T> factory) {
+    CopyOnWriteCollectionExternalizer(Class targetClass, Function<Collection<Object>, T> factory) {
         this.targetClass = targetClass;
         this.factory = factory;
     }
 
     @Override
-    public void writeObject(ObjectOutput output, T map) throws IOException {
-        output.writeObject(map.comparator());
-        MapExternalizer.writeMap(output, map);
+    public void writeObject(ObjectOutput output, T collection) throws IOException {
+        CollectionExternalizer.writeCollection(output, collection);
     }
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        @SuppressWarnings("unchecked")
-        Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
         int size = IndexExternalizer.VARIABLE.readData(input);
-        return MapExternalizer.readMap(input, this.factory.apply(comparator), size);
+        // Collect all elements first to avoid COW costs per element.
+        return this.factory.apply(CollectionExternalizer.readCollection(input, new ArrayList<>(size), size));
     }
 
     @Override
@@ -70,16 +68,16 @@ public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implemen
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class ConcurrentSkipListMapExternalizer extends SortedMapExternalizer<ConcurrentSkipListMap<Object, Object>> {
-        public ConcurrentSkipListMapExternalizer() {
-            super(ConcurrentSkipListMap.class, ConcurrentSkipListMap<Object, Object>::new);
+    public static class CopyOnWriteArrayListExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArrayList<Object>> {
+        public CopyOnWriteArrayListExternalizer() {
+            super(CopyOnWriteArrayList.class, CopyOnWriteArrayList<Object>::new);
         }
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class TreeMapExternalizer extends SortedMapExternalizer<TreeMap<Object, Object>> {
-        public TreeMapExternalizer() {
-            super(TreeMap.class, TreeMap<Object, Object>::new);
+    public static class CopyOnWriteArraySetExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArraySet<Object>> {
+        public CopyOnWriteArraySetExternalizer() {
+            super(CopyOnWriteArraySet.class, CopyOnWriteArraySet<Object>::new);
         }
     }
 }

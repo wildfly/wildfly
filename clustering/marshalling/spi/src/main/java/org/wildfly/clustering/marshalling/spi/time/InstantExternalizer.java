@@ -20,26 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.time;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.time.Instant;
 
-import org.junit.Test;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Unit test for {@link SortedSetExternalizer} externalizers
  * @author Paul Ferraro
  */
-public class SortedSetExternalizerTestCase {
+@MetaInfServices(Externalizer.class)
+public class InstantExternalizer implements Externalizer<Instant> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Collection<Object> basis = Arrays.<Object>asList(1, 2, 3, 4, 5);
-        ExternalizerTestUtil.test(new SortedSetExternalizer.ConcurrentSkipListSetExternalizer(), new ConcurrentSkipListSet<>(basis));
-        ExternalizerTestUtil.test(new SortedSetExternalizer.TreeSetExternalizer(), new TreeSet<>(basis));
+    @Override
+    public Class<? extends Instant> getTargetClass() {
+        return Instant.class;
+    }
+
+    @Override
+    public void writeObject(ObjectOutput output, Instant instant) throws IOException {
+        output.writeLong(instant.toEpochMilli());
+    }
+
+    @Override
+    public Instant readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return Instant.ofEpochMilli(input.readLong());
     }
 }

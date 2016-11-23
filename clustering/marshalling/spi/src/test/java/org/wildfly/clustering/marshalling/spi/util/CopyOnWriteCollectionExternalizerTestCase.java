@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.marshalling.jboss;
+
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.UUID;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.junit.Test;
 
 /**
- * {@link Externalizer} for {@link UUID} instances.
+ * Unit test for {@link CopyOnWriteCollectionExternalizer} externalizers.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class UUIDExternalizer implements Externalizer<UUID> {
+public class CopyOnWriteCollectionExternalizerTestCase {
 
-    @Override
-    public void writeObject(ObjectOutput output, UUID uuid) throws IOException {
-        output.writeLong(uuid.getMostSignificantBits());
-        output.writeLong(uuid.getLeastSignificantBits());
-    }
-
-    @Override
-    public UUID readObject(ObjectInput input) throws IOException {
-        return new UUID(input.readLong(), input.readLong());
-    }
-
-    @Override
-    public Class<UUID> getTargetClass() {
-        return UUID.class;
+    @Test
+    public void test() throws ClassNotFoundException, IOException {
+        Collection<Object> basis = Arrays.<Object>asList(1, 2, 3, 4, 5);
+        CollectionExternalizerTestCase.test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArrayListExternalizer(), new CopyOnWriteArrayList<>(basis));
+        CollectionExternalizerTestCase.test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArraySetExternalizer(), new CopyOnWriteArraySet<>(basis));
     }
 }

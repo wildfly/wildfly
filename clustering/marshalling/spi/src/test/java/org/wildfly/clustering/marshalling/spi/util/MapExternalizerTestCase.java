@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 
 /**
  * Unit test for {@link MapExternalizer} externalizers

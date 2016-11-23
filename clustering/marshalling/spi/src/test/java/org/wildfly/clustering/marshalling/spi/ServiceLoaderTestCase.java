@@ -20,34 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.time.Instant;
+import java.util.ServiceLoader;
 
-import org.kohsuke.MetaInfServices;
+import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
+ * Validates loading of services.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class InstantExternalizer implements Externalizer<Instant> {
+public class ServiceLoaderTestCase {
 
-    @Override
-    public Class<? extends Instant> getTargetClass() {
-        return Instant.class;
+    @Test
+    public void load() {
+        load(Externalizer.class);
     }
 
-    @Override
-    public void writeObject(ObjectOutput output, Instant instant) throws IOException {
-        output.writeLong(instant.toEpochMilli());
-    }
-
-    @Override
-    public Instant readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return Instant.ofEpochMilli(input.readLong());
+    private static <T> void load(Class<T> targetClass) {
+        System.out.println(targetClass.getName() + ":");
+        ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader()).forEach(object -> System.out.println("\t" + object.getClass().getName()));
     }
 }
