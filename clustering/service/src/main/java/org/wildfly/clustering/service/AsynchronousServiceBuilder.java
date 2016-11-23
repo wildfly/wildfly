@@ -26,7 +26,6 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -40,6 +39,8 @@ import org.jboss.msc.value.InjectedValue;
  * @param <T> the type of value provided by services built by this builder
  */
 public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
+
+    private static final ServiceName EXECUTOR_SERVICE_NAME = ServiceName.JBOSS.append("as", "server-executor");
 
     private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
     private final Service<T> service;
@@ -64,9 +65,7 @@ public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, this)
-                .addDependency(ServiceName.JBOSS.append("as", "server-executor"), ExecutorService.class, this.executor)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return target.addService(this.name, this).addDependency(EXECUTOR_SERVICE_NAME, ExecutorService.class, this.executor);
     }
 
     /**

@@ -30,6 +30,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -84,7 +85,7 @@ public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>
             return cache;
         };
         Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Cache::stop);
-        ServiceBuilder<Cache<K, V>> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target);
+        ServiceBuilder<Cache<K, V>> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
         Stream.of(this.configuration, this.container).forEach(dependency -> dependency.register(builder));
         return builder;
     }
