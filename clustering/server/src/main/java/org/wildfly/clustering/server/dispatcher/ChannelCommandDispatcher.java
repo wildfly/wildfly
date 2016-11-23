@@ -193,6 +193,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
             Future<R> future = this.dispatcher.sendMessageWithFuture(message, options);
             return new SimpleCommandResponse<>(future.get());
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return new SimpleCommandResponse<>(e);
         } catch (ExecutionException e) {
             return new SimpleCommandResponse<>(e);
