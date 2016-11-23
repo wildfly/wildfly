@@ -54,7 +54,7 @@
         <!-- this should be rejected -->
         <profiles>
             <profile name="profile">
-                <!-- FIXME emulate old configuration using discovery -->
+                <!-- TODO Elytron - emulate old configuration using discovery -->
                 <!--<remoting-ejb-receiver name="receiver" outbound-connection-ref="connection-ref" connect-timeout="5000">
                     <channel-creation-options>
                         <option name="READ_TIMEOUT" value="20" type="xnio"/>

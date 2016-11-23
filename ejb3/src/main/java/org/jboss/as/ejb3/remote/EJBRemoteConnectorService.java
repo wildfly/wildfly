@@ -62,7 +62,7 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
- * TODO transactions
+ * TODO Elytron - transaction client integration
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {

@@ -39,7 +39,7 @@ import org.wildfly.discovery.spi.DiscoveryProvider;
  * A service which sets up the {@link EJBClientContext} with appropriate remoting receivers and local receivers.
  * The receivers and the client context are configured in a jboss-ejb-client.xml.
  *
- * TODO emulate old configuration using discovery
+ * TODO Elytron emulate old configuration using discovery
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>

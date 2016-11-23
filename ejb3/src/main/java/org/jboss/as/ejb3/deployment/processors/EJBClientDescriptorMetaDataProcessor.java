@@ -51,7 +51,7 @@ import java.util.Properties;
  * {@link DescriptorBasedEJBClientContextService}. It then attaches the {@link org.jboss.ejb.client.EJBClientContext} as an
  * attachment to the deployment unit, under the key {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT}
  *
- * TODO emulate old configuration using discovery, clustering
+ * TODO Elytron emulate old configuration using discovery, clustering
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -131,7 +131,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
                 profileService);
         profileServiceBuilder.install();
-        //TODO old configuration emulation
+        //TODO Elytron old configuration emulation
         return profileService;
     }
 

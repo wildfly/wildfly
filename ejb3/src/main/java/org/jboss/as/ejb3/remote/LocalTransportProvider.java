@@ -58,7 +58,7 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
     @Override
     public void start(StartContext startContext) throws StartException {
         receiver = new LocalEjbReceiver(allowPassByReference, deploymentRepository.getValue());
-        //FIXME Elytron - this has to be changed when we are connected to discovery subsystem so that all discovery mechanisms are plugged
+        //TODO Elytron - this has to be changed when we are connected to discovery subsystem so that all discovery mechanisms are plugged
         Discovery.getContextManager().setGlobalDefaultSupplier(() -> Discovery.create(receiver));
 
     }

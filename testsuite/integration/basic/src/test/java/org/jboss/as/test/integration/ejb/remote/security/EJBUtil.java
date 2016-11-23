@@ -58,6 +58,7 @@ class EJBUtil {
         jndiProperties.put(Context.PROVIDER_URL, "remote+http://"+host+":"+8080);
         final Context context = new InitialContext(jndiProperties);
 
+        //TODO Eltyron - incorrect distinct name parsing
         return (T) context.lookup("ejb:/" + APPLICATION_NAME + "//" + beanImplClass.getSimpleName() + "!"
                 + remoteInterface.getName());
     }

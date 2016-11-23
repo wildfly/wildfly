@@ -62,6 +62,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+//TODO Elytron
 public class RemoteNamingEjbTestCase {
     private static final String ARCHIVE_NAME = "test";
 
@@ -139,7 +140,7 @@ public class RemoteNamingEjbTestCase {
             try {
                 ctx.lookup("some/entry");
                 fail("expected exception");
-            } catch (NamingException e) {
+            } catch (NameNotFoundException e) {
                 // expected
             }
 

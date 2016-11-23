@@ -30,7 +30,7 @@ import javax.transaction.xa.XAResource;
 import com.arjuna.ats.jta.recovery.SerializableXAResourceDeserializer;
 
 /**
- * TODO wildfly-transaction-client integration
+ * TODO Elytron - transaction client integration
  * A {@link SerializableXAResourceDeserializer} responsible for deserializing EJB XAResource(s)
  *
  * @author Jaikiran Pai

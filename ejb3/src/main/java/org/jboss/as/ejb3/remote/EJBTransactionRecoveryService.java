@@ -41,7 +41,7 @@ import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
 /**
- *  TODO wildfly-transaction-client integration
+ *  TODO Elytron transaction client integration
  * Responsible for handing out the {@link #getXAResources() EJB XAResource(s)} during transaction recovery
  *
  * @author Jaikiran Pai
