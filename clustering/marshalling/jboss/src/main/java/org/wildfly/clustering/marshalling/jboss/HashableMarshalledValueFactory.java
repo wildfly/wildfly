@@ -38,7 +38,7 @@ public class HashableMarshalledValueFactory extends SimpleMarshalledValueFactory
 
     /**
      * {@inheritDoc}
-     * @see org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
+     * @see org.wildfly.clustering.marshalling.spi.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
      */
     @Override
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {

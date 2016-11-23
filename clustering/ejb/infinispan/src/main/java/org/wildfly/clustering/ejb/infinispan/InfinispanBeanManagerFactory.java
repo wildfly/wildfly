@@ -41,10 +41,10 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.registry.Registry;
 
 /**

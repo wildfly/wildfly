@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.marshalling.jboss;
+
+package org.wildfly.clustering.marshalling.spi;
+
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
- * A marshalling strategy for a specific object type.
  * @author Paul Ferraro
- * @param V the value type
- * @param S the serialized form type
  */
-public interface Marshaller<V, S, C> {
-
-    /**
-     * Returns the context of this marshaller
-     * @return a marshalling context
-     */
-    C getContext();
-
-    /**
-     * Reads a value from its marshalled form.
-     * @param value the marshalled form
-     * @return an unmarshalled value/
-     * @throws InvalidSerializedFormException if the serialized form is invalid
-     */
-    V read(S value) throws InvalidSerializedFormException;
-
-    /**
-     * Writes a value to its serialized form
-     * @param a value to marshal.
-     * @return the serialized form of the value
-     */
-    S write(V value);
+public interface MarshalledValue<T, C> extends Serializable {
+    T get(C context) throws IOException, ClassNotFoundException;
 }

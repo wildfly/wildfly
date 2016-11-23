@@ -40,15 +40,15 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValueMarshaller;
-import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
@@ -82,7 +82,7 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
     public <L> SSOManager<A, D, L, TransactionBatch> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
         MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this.configuration.getModuleLoader()), null);
         MarshalledValueFactory<MarshallingContext> marshalledValueFactory = new SimpleMarshalledValueFactory(marshallingContext);
-        Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller = new MarshalledValueMarshaller<>(marshalledValueFactory, marshallingContext);
+        Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller = new MarshalledValueMarshaller<>(marshalledValueFactory, marshallingContext);
         Cache<Key<String>, ?> cache = this.configuration.getCache();
         Configuration config = cache.getCacheConfiguration();
         boolean lockOnRead = cache.getCacheConfiguration().transaction().transactionMode().isTransactional() && (config.transaction().lockingMode() == LockingMode.PESSIMISTIC) && config.locking().isolationLevel() == IsolationLevel.REPEATABLE_READ;

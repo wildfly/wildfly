@@ -969,6 +969,11 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>

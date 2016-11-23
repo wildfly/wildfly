@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
  * {@link org.jboss.marshalling.ClassTable} implementation that dynamically loads {@link ClassTableContributor} instances visible from a given {@link ClassLoader}.

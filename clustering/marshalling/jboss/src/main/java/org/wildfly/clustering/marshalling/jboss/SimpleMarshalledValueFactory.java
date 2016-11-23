@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+
 /**
  * @author Paul Ferraro
  */
@@ -38,7 +40,7 @@ public class SimpleMarshalledValueFactory implements MarshalledValueFactory<Mars
 
     /**
      * {@inheritDoc}
-     * @see org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
+     * @see org.wildfly.clustering.marshalling.spi.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
      */
     @Override
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {

@@ -28,10 +28,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.sso.SSO;
@@ -45,10 +45,10 @@ public class InfinispanSSOFactory<SV, A, D, L> implements SSOFactory<Map.Entry<A
     private final SessionsFactory<SV, D> sessionsFactory;
     private final Cache<AuthenticationKey, AuthenticationEntry<A, L>> cache;
     private final Cache<AuthenticationKey, AuthenticationEntry<A, L>> findCache;
-    private final Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller;
+    private final Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<A, L>> cache, Marshaller<A, MarshalledValue<A, MarshallingContext>, MarshallingContext> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D> sessionsFactory, boolean lockOnRead) {
+    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<A, L>> cache, Marshaller<A, MarshalledValue<A, MarshallingContext>> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D> sessionsFactory, boolean lockOnRead) {
         this.cache = cache;
         this.findCache = lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
         this.marshaller = marshaller;

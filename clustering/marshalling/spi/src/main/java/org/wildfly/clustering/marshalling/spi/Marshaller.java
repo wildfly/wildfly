@@ -19,25 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.io.IOException;
-
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 
 /**
- * A marshalling context for use with a {@link MarshalledValue}.
+ * A marshalling strategy for a specific object type.
  * @author Paul Ferraro
+ * @param V the value type
+ * @param S the serialized form type
  */
-public interface MarshallingContext extends Marshallability {
-    ClassLoader getClassLoader();
+public interface Marshaller<V, S> extends Marshallability {
 
-    int getCurrentVersion();
+    /**
+     * Reads a value from its marshalled form.
+     * @param value the marshalled form
+     * @return an unmarshalled value/
+     * @throws InvalidSerializedFormException if the serialized form is invalid
+     */
+    V read(S value) throws InvalidSerializedFormException;
 
-    Unmarshaller createUnmarshaller(int version) throws IOException;
-
-    Marshaller createMarshaller(int version) throws IOException;
+    /**
+     * Writes a value to its serialized form
+     * @param a value to marshal.
+     * @return the serialized form of the value
+     */
+    S write(V value);
 }

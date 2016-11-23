@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
-
-import java.io.IOException;
-import java.io.Serializable;
+package org.wildfly.clustering.marshalling.spi;
 
 /**
+ * Indicates that the current class definition of an object differs from that of the serialized object
+ * preventing deserialization.
  * @author Paul Ferraro
  */
-public interface MarshalledValue<T, C> extends Serializable {
-    T get(C context) throws IOException, ClassNotFoundException;
+public class InvalidSerializedFormException extends Exception {
+
+    private static final long serialVersionUID = 9102105032200405794L;
+
+    public InvalidSerializedFormException(String message) {
+        super(message);
+    }
+
+    public InvalidSerializedFormException(Throwable cause) {
+        super(cause);
+    }
+
+    public InvalidSerializedFormException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

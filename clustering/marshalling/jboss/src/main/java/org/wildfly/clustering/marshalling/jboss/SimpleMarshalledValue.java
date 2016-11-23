@@ -34,6 +34,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -84,7 +85,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
 
     /**
      * {@inheritDoc}
-     * @see org.wildfly.clustering.marshalling.jboss.MarshalledValue#get(java.lang.Object)
+     * @see org.wildfly.clustering.marshalling.spi.MarshalledValue#get(java.lang.Object)
      */
     @SuppressWarnings("unchecked")
     @Override

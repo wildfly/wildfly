@@ -32,8 +32,7 @@ import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.marshalling.jboss.Marshaller;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
@@ -47,10 +46,10 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
     private final Mutator namesMutator;
     private final Cache<SessionAttributeKey, V> cache;
     private final Map<String, Mutator> mutations = new ConcurrentHashMap<>();
-    private final Marshaller<Object, V, MarshallingContext> marshaller;
+    private final Marshaller<Object, V> marshaller;
     private final CacheProperties properties;
 
-    public FineSessionAttributes(String id, AtomicInteger sequence, ConcurrentMap<String, Integer> names, Mutator namesMutator, Cache<SessionAttributeKey, V> cache, Marshaller<Object, V, MarshallingContext> marshaller, CacheProperties properties) {
+    public FineSessionAttributes(String id, AtomicInteger sequence, ConcurrentMap<String, Integer> names, Mutator namesMutator, Cache<SessionAttributeKey, V> cache, Marshaller<Object, V> marshaller, CacheProperties properties) {
         super(id, names, cache, marshaller);
         this.sequence = sequence;
         this.names = names;
@@ -76,7 +75,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (attribute == null) {
             return this.removeAttribute(name);
         }
-        if (this.properties.isMarshalling() && !this.marshaller.getContext().isMarshallable(attribute)) {
+        if (this.properties.isMarshalling() && !this.marshaller.isMarshallable(attribute)) {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
         V value = this.marshaller.write(attribute);

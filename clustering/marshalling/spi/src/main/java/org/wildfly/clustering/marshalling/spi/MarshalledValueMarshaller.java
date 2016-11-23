@@ -19,17 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.marshalling.jboss;
+package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 
+import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
+
 /**
  * Marshaller that stores attribute values using marshalled values.
  * @author Paul Ferraro
  */
-public class MarshalledValueMarshaller<V, C> implements Marshaller<V, MarshalledValue<V, C>, C> {
+public class MarshalledValueMarshaller<V, C extends Marshallability> implements Marshaller<V, MarshalledValue<V, C>> {
     private final MarshalledValueFactory<C> factory;
     private final C context;
 
@@ -57,7 +59,7 @@ public class MarshalledValueMarshaller<V, C> implements Marshaller<V, Marshalled
     }
 
     @Override
-    public C getContext() {
-        return this.context;
+    public boolean isMarshallable(Object object) {
+        return this.context.isMarshallable(object);
     }
 }

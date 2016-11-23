@@ -35,10 +35,10 @@ import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.Marshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributesFactory;
@@ -54,10 +54,10 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Se
 
     private final Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache;
     private final Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
-    private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller;
+    private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller;
     private final CacheProperties properties;
 
-    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache, Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>, MarshallingContext> marshaller, CacheProperties properties) {
+    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache, Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller, CacheProperties properties) {
         this.namesCache = namesCache;
         this.attributeCache = attributeCache;
         this.marshaller = marshaller;

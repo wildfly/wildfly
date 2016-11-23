@@ -36,8 +36,8 @@ import org.wildfly.clustering.ejb.infinispan.BeanGroupKey;
 import org.wildfly.clustering.ejb.infinispan.BeanKey;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**
  * Encapsulates the cache mapping strategy of a bean group.

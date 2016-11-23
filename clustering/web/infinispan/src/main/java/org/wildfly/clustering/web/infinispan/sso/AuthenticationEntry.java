@@ -23,8 +23,8 @@ package org.wildfly.clustering.web.infinispan.sso;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
  * Cache entry that store authentication data plus any local context.

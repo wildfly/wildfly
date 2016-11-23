@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -22,22 +21,20 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.marshalling.jboss">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-    <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-marshalling-jboss}"/>
-    </resources>
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-clustering-marshalling</artifactId>
+        <version>11.0.0.Alpha1-SNAPSHOT</version>
+    </parent>
 
-    <dependencies>
-        <module name="javax.api"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
-        <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.security.elytron"/>
-    </dependencies>
-</module>
+    <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+    <packaging>jar</packaging>
+
+    <name>WildFly: Clustering marshalling SPI</name>
+
+</project>
