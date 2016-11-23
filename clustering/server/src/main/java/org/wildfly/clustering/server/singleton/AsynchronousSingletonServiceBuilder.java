@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.singleton.SingletonService;
 
 /**
- * Service for building {@link DistributedSingletonServiceBuilder} instances.
+ * Builder for asynchronously started/stopped singleton services.
  * @author Paul Ferraro
+ * @param <T> the type of value provided by services built by this builder
  */
-public class DistributedSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
+public class AsynchronousSingletonServiceBuilder<T> extends AsynchronousServiceBuilder<T> implements SingletonService<T> {
 
-    private final DistributedSingletonServiceBuilderContext context;
+    private final SingletonService<T> service;
 
-    public DistributedSingletonServiceBuilderFactory(DistributedSingletonServiceBuilderContext context) {
-        this.context = context;
+    public AsynchronousSingletonServiceBuilder(ServiceName name, SingletonService<T> service) {
+        super(name, service);
+        this.service = service;
     }
 
     @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
-        return this.createSingletonServiceBuilder(name, service, null);
-    }
-
-    @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService) {
-        return new DistributedSingletonServiceBuilder<>(this.context, name, primaryService, backupService);
+    public boolean isPrimary() {
+        return this.service.isPrimary();
     }
 }

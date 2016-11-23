@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.singleton.SingletonService;
 
 /**
- * Service for building {@link DistributedSingletonServiceBuilder} instances.
+ * Local singleton service implementation.
  * @author Paul Ferraro
  */
-public class DistributedSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
+public class LocalSingletonService<T> implements SingletonService<T> {
 
-    private final DistributedSingletonServiceBuilderContext context;
+    private final Service<T> service;
 
-    public DistributedSingletonServiceBuilderFactory(DistributedSingletonServiceBuilderContext context) {
-        this.context = context;
+    public LocalSingletonService(Service<T> service) {
+        this.service = service;
     }
 
     @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
-        return this.createSingletonServiceBuilder(name, service, null);
+    public void start(StartContext context) throws StartException {
+        this.service.start(context);
     }
 
     @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService) {
-        return new DistributedSingletonServiceBuilder<>(this.context, name, primaryService, backupService);
+    public void stop(StopContext context) {
+        this.service.stop(context);
+    }
+
+    @Override
+    public T getValue() {
+        return this.service.getValue();
+    }
+
+    @Override
+    public boolean isPrimary() {
+        // A local singleton is always primary
+        return true;
     }
 }

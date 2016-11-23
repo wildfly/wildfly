@@ -20,19 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.singleton;
+package org.wildfly.clustering.server.singleton;
+
+import java.util.Optional;
 
 import org.jboss.msc.service.Service;
-import org.wildfly.clustering.service.Builder;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
 /**
  * @author Paul Ferraro
  */
-public interface SingletonBuilder<T> extends Builder<T> {
-    /**
-     * Defines an optional service to run while this node is not the primary singleton provider.
-     * @param service a service
-     * @return this builder
-     */
-    SingletonBuilder<T> backupService(Service<T> service);
+public interface DistributedSingletonServiceContext<T> extends ServiceNameProvider {
+    @SuppressWarnings("rawtypes")
+    Value<ServiceProviderRegistry> getServiceProviderRegistry();
+    Value<CommandDispatcherFactory> getCommandDispatcherFactory();
+    Service<T> getPrimaryService();
+    Optional<Service<T>> getBackupService();
+    SingletonElectionPolicy getElectionPolicy();
+    int getQuorum();
 }

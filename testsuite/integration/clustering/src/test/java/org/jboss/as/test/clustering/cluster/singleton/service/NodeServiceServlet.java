@@ -67,19 +67,21 @@ public class NodeServiceServlet extends HttpServlet {
         @SuppressWarnings("unchecked")
         ServiceController<Node> service = (ServiceController<Node>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
         try {
-            Node node = service.getValue();
+            Node node = service.awaitValue();
             if (expected != null) {
                 for (int i = 0; i < RETRIES; ++i) {
                     if ((node != null) && expected.equals(node.getName())) break;
                     Thread.yield();
-                    node = service.getValue();
+                    node = service.awaitValue();
                 }
             }
             if (node != null) {
                 resp.setHeader(NODE_HEADER, node.getName());
             }
         } catch (IllegalStateException e) {
-            this.log(e.getLocalizedMessage(), e);
+            // Thrown when quorum was not met
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
         resp.getWriter().write("Success");
     }

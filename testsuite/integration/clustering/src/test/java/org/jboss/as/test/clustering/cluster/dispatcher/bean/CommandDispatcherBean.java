@@ -12,6 +12,7 @@ import javax.ejb.Startup;
 
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
@@ -35,22 +36,22 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
     }
 
     @Override
-    public <R> CommandResponse<R> executeOnNode(Command<R, Node> command, Node node) throws Exception {
+    public <R> CommandResponse<R> executeOnNode(Command<R, ? super Node> command, Node node) throws CommandDispatcherException {
         return this.dispatcher.executeOnNode(command, node);
     }
 
     @Override
-    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, Node> command, Node... excludedNodes) throws Exception  {
+    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super Node> command, Node... excludedNodes) throws CommandDispatcherException  {
         return this.dispatcher.executeOnCluster(command, excludedNodes);
     }
 
     @Override
-    public <R> Future<R> submitOnNode(Command<R, Node> command, Node node) throws Exception  {
+    public <R> Future<R> submitOnNode(Command<R, ? super Node> command, Node node) throws CommandDispatcherException  {
         return this.dispatcher.submitOnNode(command, node);
     }
 
     @Override
-    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, Node> command, Node... excludedNodes) throws Exception  {
+    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super Node> command, Node... excludedNodes) throws CommandDispatcherException  {
         return this.dispatcher.submitOnCluster(command, excludedNodes);
     }
 

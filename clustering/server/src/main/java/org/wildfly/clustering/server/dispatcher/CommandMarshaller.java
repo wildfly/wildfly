@@ -38,5 +38,5 @@ public interface CommandMarshaller<C> {
      * @return a serialized command.
      * @throws IOException if marshalling fails.
      */
-    <R> byte[] marshal(Command<R, C> command) throws IOException;
+    <R> byte[] marshal(Command<R, ? super C> command) throws IOException;
 }

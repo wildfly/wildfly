@@ -46,7 +46,7 @@ public class CommandDispatcherMarshaller<C> implements CommandMarshaller<C> {
     }
 
     @Override
-    public <R> byte[] marshal(Command<R, C> command) throws IOException {
+    public <R> byte[] marshal(Command<R, ? super C> command) throws IOException {
         int version = this.context.getCurrentVersion();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(bytes)) {

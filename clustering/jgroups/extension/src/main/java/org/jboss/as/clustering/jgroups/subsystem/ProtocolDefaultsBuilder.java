@@ -33,6 +33,7 @@ import java.util.Map;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
@@ -91,7 +92,7 @@ public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value
 
     @Override
     public ServiceBuilder<ProtocolDefaults> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target);
+        return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     /**

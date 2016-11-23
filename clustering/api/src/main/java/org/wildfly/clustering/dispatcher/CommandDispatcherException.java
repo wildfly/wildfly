@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.singleton;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
+package org.wildfly.clustering.dispatcher;
 
 /**
- * Factory for creating a singleton service builder.
+ * Indicates a failure to dispatch a command.
  * @author Paul Ferraro
  */
-public interface SingletonServiceBuilderFactory extends SingletonPolicy {
+public class CommandDispatcherException extends Exception {
+    private static final long serialVersionUID = 3984965224844057380L;
 
-    @Override
-    <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service);
-
-    @Override
-    <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService);
+    /**
+     * Creates a new CommandDispatcherException using the specified cause.
+     * @param cause the cause of this exception.
+     */
+    public CommandDispatcherException(Throwable cause) {
+        super(cause);
+    }
 }

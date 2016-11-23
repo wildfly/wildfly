@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -71,12 +69,10 @@ public class ValueServiceServlet extends HttpServlet {
         @SuppressWarnings("unchecked")
         ServiceController<Boolean> service = (ServiceController<Boolean>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
         try {
-            Boolean primary = service.awaitValue(5, TimeUnit.SECONDS);
+            Boolean primary = service.awaitValue();
             response.setHeader(PRIMARY_HEADER, primary.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } catch (TimeoutException e) {
-            // Service was not started
         }
         response.getWriter().write("Success");
     }
