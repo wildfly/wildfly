@@ -68,6 +68,7 @@
                 <xs:complexType>
                     <xs:attribute name="enabled" type="xs:boolean" />
                     <xs:attribute name="domain" type="xs:string" />
+                    <xs:attribute name="elytron-domain" type="xs:string"/>
                     <xs:attribute name="invalidation-interval" type="xs:long" />
                     <xs:attribute name="override-in-vm-security" type="xs:boolean" />
                 </xs:complexType>

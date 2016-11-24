@@ -99,7 +99,8 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
 
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // reject journal-datasource, journal-bindings-table introduced in management version 2.0.0 if it is defined and different from the default value.
-        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_DATASOURCE,
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.ELYTRON_DOMAIN,
+                ServerDefinition.JOURNAL_DATASOURCE,
                 ServerDefinition.JOURNAL_MESSAGES_TABLE,
                 ServerDefinition.JOURNAL_BINDINGS_TABLE,
                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
