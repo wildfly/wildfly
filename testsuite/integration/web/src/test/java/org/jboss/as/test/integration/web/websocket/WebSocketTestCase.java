@@ -17,7 +17,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,7 +39,9 @@ public class WebSocketTestCase {
                                 new PropertyPermission("node0", "read"),
                                 new PropertyPermission("jboss.http.port", "read"),
                                 // Needed for the serverContainer.connectToServer()
-                                new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                                new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
+                                // Needed for xnio's WorkerThread which binds to Xnio.ANY_INET_ADDRESS, see WFLY-7538
+                                new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":0", "listen,resolve")
                         ), "permissions.xml")
                 .addAsManifestResource(new StringAsset("io.undertow.websockets.jsr.UndertowContainerProvider"),
                         "services/javax.websocket.ContainerProvider");
@@ -48,9 +49,6 @@ public class WebSocketTestCase {
 
     @Test
     public void testWebSocket() throws Exception {
-        //TODO WFLY-7538 - This needs to be reenabled
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         AnnotatedClient endpoint = new AnnotatedClient();
         WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
         Session session = serverContainer.connectToServer(endpoint, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/websocket/websocket/Stuart", "", ""));
