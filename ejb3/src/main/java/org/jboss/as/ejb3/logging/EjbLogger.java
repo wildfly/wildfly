@@ -3127,4 +3127,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 488, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
     SecurityException ejbAuthenticationRequired();
 
+    @LogMessage(level = WARN)
+    @Message(id = 489, value = "Cache configuration is errorous. Passivation store was not added.")
+    void cachePassivationStoreNotAdded();
+
 }
