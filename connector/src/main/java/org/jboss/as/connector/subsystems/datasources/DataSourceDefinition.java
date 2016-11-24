@@ -53,7 +53,6 @@ import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -88,7 +87,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         super(PATH_DATASOURCE,
                 DataSourcesExtension.getResourceDescriptionResolver(DATA_SOURCE),
                 deployed ? null : DataSourceAdd.INSTANCE,
-                deployed ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
+                deployed ? null : DataSourceRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(DataSourcesExtension.SUBSYSTEM_NAME, DATA_SOURCE);
