@@ -60,7 +60,6 @@ public class SingletonSubsystemParsingTestCase extends ClusteringSubsystemTest {
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
                 { SingletonSchema.VERSION_1_0, 5 },
-                { SingletonSchema.VERSION_2_0, 5 },
         };
         return Arrays.asList(data);
     }
