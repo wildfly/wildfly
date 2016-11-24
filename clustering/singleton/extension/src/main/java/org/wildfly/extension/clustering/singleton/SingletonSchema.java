@@ -32,7 +32,6 @@ import org.jboss.as.clustering.controller.Schema;
 public enum SingletonSchema implements Schema<SingletonSchema> {
 
     VERSION_1_0(1, 0),
-    VERSION_2_0(2, 0),
     ;
     public static final SingletonSchema CURRENT = VERSION_1_0;
 
