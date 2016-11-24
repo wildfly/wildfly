@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
@@ -37,6 +38,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -86,7 +88,12 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {
-                resourceRegistration.registerReadWriteAttribute(attribute, null, new  ReloadRequiredWriteAttributeHandler(attribute));
+                if (attribute.equals(ENLISTMENT_TRACE)) {
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, new EnlistmentTraceAttributeWriteHandler());
+
+                } else {
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler(attribute));
+                }
             }
         }
     }
@@ -109,6 +116,13 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
         resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(readOnly ? null : CDConfigPropertyAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE));
     }
 
+
+    static void registerTransformer400(ResourceTransformationDescriptionBuilder parentBuilder) {
+        parentBuilder.addChildResource(PATH).getAttributeBuilder()
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Constants.ENLISTMENT_TRACE), Constants.ENLISTMENT_TRACE)
+                .end();
+
+    }
 
     static void registerTransformer300(ResourceTransformationDescriptionBuilder parentBuilder) {
         parentBuilder.addChildResource(PATH).getAttributeBuilder()

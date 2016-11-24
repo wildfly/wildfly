@@ -64,6 +64,7 @@ import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraint
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -140,6 +141,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
             for (final SimpleAttributeDefinition attribute : DATASOURCE_ATTRIBUTE) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
+                } else  if (attribute.getName().equals(ENLISTMENT_TRACE.getName())) {
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, new EnlistmentTraceAttributeWriteHandler());
                 } else {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredWriteAttributeHandler);
                 }
@@ -286,6 +289,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, CONNECTION_URL)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
                 .end();
     }
+
 }
