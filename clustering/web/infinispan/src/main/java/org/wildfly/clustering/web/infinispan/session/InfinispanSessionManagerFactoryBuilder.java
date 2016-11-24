@@ -41,6 +41,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -49,7 +50,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
-public class InfinispanSessionManagerFactoryBuilder implements CapabilityServiceBuilder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration {
+public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> implements CapabilityServiceBuilder<SessionManagerFactory<TransactionBatch>>, Value<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration<C> {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @SuppressWarnings("rawtypes")
@@ -57,7 +58,7 @@ public class InfinispanSessionManagerFactoryBuilder implements CapabilityService
     @SuppressWarnings("rawtypes")
     private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
 
-    private final SessionManagerFactoryConfiguration configuration;
+    private final SessionManagerFactoryConfiguration<C> configuration;
     private final String containerName;
     private final CapabilityServiceBuilder<?> configurationBuilder;
     private final CapabilityServiceBuilder<?> cacheBuilder;
@@ -67,7 +68,7 @@ public class InfinispanSessionManagerFactoryBuilder implements CapabilityService
     private volatile ValueDependency<KeyAffinityServiceFactory> affinityFactory;
     private volatile ValueDependency<CommandDispatcherFactory> dispatcherFactory;
 
-    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration configuration) {
+    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration<C> configuration) {
         this.configuration = configuration;
 
         ServiceName baseServiceName = ServiceName.JBOSS.append("infinispan");
@@ -125,11 +126,11 @@ public class InfinispanSessionManagerFactoryBuilder implements CapabilityService
 
     @Override
     public SessionManagerFactory<TransactionBatch> getValue() {
-        return new InfinispanSessionManagerFactory(this);
+        return new InfinispanSessionManagerFactory<>(this);
     }
 
     @Override
-    public SessionManagerFactoryConfiguration getSessionManagerFactoryConfiguration() {
+    public SessionManagerFactoryConfiguration<C> getSessionManagerFactoryConfiguration() {
         return this.configuration;
     }
 

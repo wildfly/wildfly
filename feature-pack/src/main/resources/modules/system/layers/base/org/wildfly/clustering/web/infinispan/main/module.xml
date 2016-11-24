@@ -47,7 +47,6 @@
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.web"/>
-        <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
         <module name="org.jgroups"/>

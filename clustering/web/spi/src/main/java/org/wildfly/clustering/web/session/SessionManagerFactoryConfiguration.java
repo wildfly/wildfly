@@ -21,13 +21,14 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.modules.Module;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**
  * Encapsulates the configuration of a session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration {
+public interface SessionManagerFactoryConfiguration<C extends Marshallability> {
     enum SessionAttributePersistenceStrategy { COARSE, FINE }
 
     int getMaxActiveSessions();
@@ -36,7 +37,9 @@ public interface SessionManagerFactoryConfiguration {
 
     String getDeploymentName();
 
-    Module getModule();
-
     String getCacheName();
+
+    MarshalledValueFactory<C> getMarshalledValueFactory();
+
+    C getMarshallingContext();
 }

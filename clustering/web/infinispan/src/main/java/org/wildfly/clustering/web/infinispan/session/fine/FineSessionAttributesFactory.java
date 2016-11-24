@@ -35,9 +35,7 @@ import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
@@ -50,14 +48,14 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory implements SessionAttributesFactory<SessionAttributeNamesEntry> {
+public class FineSessionAttributesFactory<V> implements SessionAttributesFactory<SessionAttributeNamesEntry> {
 
     private final Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache;
-    private final Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
-    private final Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller;
+    private final Cache<SessionAttributeKey, V> attributeCache;
+    private final Marshaller<Object, V> marshaller;
     private final CacheProperties properties;
 
-    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache, Cache<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributeCache, Marshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller, CacheProperties properties) {
+    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, SessionAttributeNamesEntry> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, CacheProperties properties) {
         this.namesCache = namesCache;
         this.attributeCache = attributeCache;
         this.marshaller = marshaller;
@@ -76,9 +74,9 @@ public class FineSessionAttributesFactory implements SessionAttributesFactory<Se
         SessionAttributeNamesEntry entry = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (entry != null) {
             ConcurrentMap<String, Integer> names = entry.getNames();
-            Map<SessionAttributeKey, MarshalledValue<Object, MarshallingContext>> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));
-            Predicate<Map.Entry<String, MarshalledValue<Object, MarshallingContext>>> invalidAttribute = attribute -> {
-                MarshalledValue<Object, MarshallingContext> value = attribute.getValue();
+            Map<SessionAttributeKey, V> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));
+            Predicate<Map.Entry<String, V>> invalidAttribute = attribute -> {
+                V value = attribute.getValue();
                 if (value == null) {
                     InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getKey());
                     return true;

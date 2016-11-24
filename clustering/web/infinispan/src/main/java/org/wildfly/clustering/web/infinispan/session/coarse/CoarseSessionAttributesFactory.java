@@ -32,9 +32,7 @@ import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
@@ -45,29 +43,29 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  * {@link SessionAttributesFactory} for coarse granularity sessions, where all session attributes are stored in a single cache entry.
  * @author Paul Ferraro
  */
-public class CoarseSessionAttributesFactory implements SessionAttributesFactory<Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>>> {
+public class CoarseSessionAttributesFactory<V> implements SessionAttributesFactory<Map.Entry<Map<String, Object>, V>> {
 
-    private final Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> cache;
-    private final Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller;
+    private final Cache<SessionAttributesKey, V> cache;
+    private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
 
-    public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, MarshalledValue<Map<String, Object>, MarshallingContext>> cache, Marshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller, CacheProperties properties) {
+    public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, V> cache, Marshaller<Map<String, Object>, V> marshaller, CacheProperties properties) {
         this.cache = cache;
         this.marshaller = marshaller;
         this.properties = properties;
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> createValue(String id, Void context) {
+    public Map.Entry<Map<String, Object>, V> createValue(String id, Void context) {
         Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.marshaller.write(attributes);
+        V value = this.marshaller.write(attributes);
         this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
         return new SimpleImmutableEntry<>(attributes, value);
     }
 
     @Override
-    public Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> findValue(String id) {
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.cache.get(new SessionAttributesKey(id));
+    public Map.Entry<Map<String, Object>, V> findValue(String id) {
+        V value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
                 Map<String, Object> attributes = this.marshaller.read(value);
@@ -93,14 +91,14 @@ public class CoarseSessionAttributesFactory implements SessionAttributesFactory<
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> entry) {
+    public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
         SessionAttributesKey key = new SessionAttributesKey(id);
         Mutator mutator = this.properties.isTransactional() && this.cache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, key, entry.getValue());
         return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.properties);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> entry) {
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
         return new CoarseImmutableSessionAttributes(entry.getKey());
     }
 }

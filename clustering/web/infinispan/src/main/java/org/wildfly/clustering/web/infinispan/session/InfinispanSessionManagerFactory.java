@@ -21,17 +21,10 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.io.Externalizable;
-import java.io.Serializable;
-import java.util.function.Function;
-
 import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.modules.Module;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
@@ -41,13 +34,7 @@ import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -66,35 +53,11 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  * Factory for creating session managers.
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactory implements SessionManagerFactory<TransactionBatch> {
+public class InfinispanSessionManagerFactory<C extends Marshallability> implements SessionManagerFactory<TransactionBatch> {
 
-    enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
-        VERSION_1() {
-            @Override
-            public MarshallingConfiguration apply(Module module) {
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setClassTable(new SimpleClassTable(IndexExternalizer.UNSIGNED_BYTE, Serializable.class, Externalizable.class));
-                return config;
-            }
-        },
-        VERSION_2() {
-            @Override
-            public MarshallingConfiguration apply(Module module) {
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setClassTable(new SimpleClassTable(IndexExternalizer.UNSIGNED_BYTE, Serializable.class, Externalizable.class));
-                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
-                return config;
-            }
-        },
-        ;
-        static final MarshallingVersion CURRENT = VERSION_2;
-    }
+    private final InfinispanSessionManagerFactoryConfiguration<C> config;
 
-    private final InfinispanSessionManagerFactoryConfiguration config;
-
-    public InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration config) {
+    public InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration<C> config) {
         this.config = config;
     }
 
@@ -167,17 +130,16 @@ public class InfinispanSessionManagerFactory implements SessionManagerFactory<Tr
     }
 
     private SessionAttributesFactory<?> createSessionAttributesFactory(CacheProperties properties) {
-        SessionManagerFactoryConfiguration config = this.config.getSessionManagerFactoryConfiguration();
-        Module module = config.getModule();
-        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
-        MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
+        SessionManagerFactoryConfiguration<C> config = this.config.getSessionManagerFactoryConfiguration();
+        MarshalledValueFactory<C> factory = config.getMarshalledValueFactory();
+        C context = config.getMarshallingContext();
 
         switch (this.config.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
             case FINE: {
-                return new FineSessionAttributesFactory(this.config.getCache(), this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
+                return new FineSessionAttributesFactory<>(this.config.getCache(), this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
             }
             case COARSE: {
-                return new CoarseSessionAttributesFactory(this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
+                return new CoarseSessionAttributesFactory<>(this.config.getCache(), new MarshalledValueMarshaller<>(factory, context), properties);
             }
             default: {
                 // Impossible

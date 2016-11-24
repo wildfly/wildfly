@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.sso;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
- * Factory for creating SSO manager instances.
  * @author Paul Ferraro
  */
-public interface SSOManagerFactory<A, D, B extends Batch> {
-    <L, C extends Marshallability> SSOManager<A, D, L, B> createSSOManager(SSOManagerConfiguration<L, C> config);
+public interface SSOManagerConfiguration<L, C> {
+    IdentifierFactory<String> getIdentifierFactory();
+    LocalContextFactory<L> getLocalContextFactory();
+    MarshalledValueFactory<C> getMarshalledValueFactory();
+    C getMarshallingContext();
 }
