@@ -25,19 +25,19 @@ package org.wildfly.extension.clustering.singleton;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.wildfly.clustering.singleton.SingletonCacheRequirement;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 
 /**
  * @author Radoslav Husar
@@ -69,8 +69,8 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         switch (version) {
             case EAP_7_0_0:
                 return new String[] {
+                        formatEAP7SubsystemArtifact(version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-extension:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
             default:
@@ -78,9 +78,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         }
     }
 
-    private AdditionalInitialization createAdditionalInitialization() {
-        return new org.jboss.as.clustering.subsystem.AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "binding0", "binding1")
+    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization()
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1")
+                .require(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container")
+                .require(SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container", "singleton-cache")
                 ;
     }
 
@@ -99,7 +101,6 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         checkSubsystemModelTransformation(services, version, null, false);
     }
 
-    @Ignore("https://issues.jboss.org/browse/WFCORE-1892")
     @Test
     public void testRejectionsEAP700() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_7_0_0);
@@ -114,10 +115,10 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         KernelServicesBuilder builder = createKernelServicesBuilder();
 
         // initialize the legacy services
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
-                .addSingleChildFirstClass(org.jboss.as.clustering.subsystem.AdditionalInitialization.class)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controller, version)
+                .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
-                .dontPersistXml();
+        ;
 
         KernelServices services = builder.build();
         KernelServices legacyServices = services.getLegacyServices(version);
@@ -131,17 +132,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static FailedOperationTransformationConfig createFailedOperationConfig(ModelVersion version) {
-
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        PathAddress subsystemAddress = PathAddress.pathAddress(SingletonResourceDefinition.PATH);
-
-        if (SingletonModel.VERSION_2_0_0.requiresTransformation(version)) {
-            PathAddress singletonPolicyAddress = subsystemAddress.append(SingletonPolicyResourceDefinition.WILDCARD_PATH);
-
-            config.addFailedAttribute(singletonPolicyAddress, new FailedOperationTransformationConfig.RejectExpressionsConfig(SingletonPolicyResourceDefinition.Attribute.CACHE.getName(), SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER.getName()));
-        }
-
-        return config;
+        return new FailedOperationTransformationConfig();
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {
@@ -151,10 +142,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     private KernelServices buildKernelServices(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
         KernelServicesBuilder builder = this.createKernelServicesBuilder().setSubsystemXmlResource(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
+                .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(mavenResourceURLs)
                 .skipReverseControllerCheck()
-                .dontPersistXml();
+        ;
 
         KernelServices services = builder.build();
         Assert.assertTrue(ModelTestControllerVersion.MASTER + " boot failed", services.isSuccessfulBoot());

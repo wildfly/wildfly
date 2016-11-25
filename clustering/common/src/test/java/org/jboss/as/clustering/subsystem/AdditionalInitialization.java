@@ -32,6 +32,7 @@ import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -70,6 +71,11 @@ public class AdditionalInitialization extends org.jboss.as.subsystem.test.Additi
 
     public AdditionalInitialization require(UnaryRequirement requirement, String... names) {
         Stream.of(names).forEach(name -> this.requirements.add(requirement.resolve(name)));
+        return this;
+    }
+
+    public AdditionalInitialization require(BinaryRequirement requirement, String parent, String child) {
+        this.requirements.add(requirement.resolve(parent, child));
         return this;
     }
 }
