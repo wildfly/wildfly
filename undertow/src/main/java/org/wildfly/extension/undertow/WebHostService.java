@@ -40,6 +40,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RequestController;
+import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
 
 /**
  * Implementation of WebHost from common web, service starts with few more dependencies than default Host
@@ -49,6 +52,8 @@ import org.jboss.msc.value.InjectedValue;
 class WebHostService implements Service<WebHost>, WebHost {
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
+    private final InjectedValue<RequestController> requestControllerInjectedValue = new InjectedValue<>();
+    private volatile ControlPoint controlPoint;
 
     protected InjectedValue<Server> getServer() {
         return server;
@@ -82,6 +87,10 @@ class WebHostService implements Service<WebHost>, WebHost {
                 s.addInitParam(param.getKey(), param.getValue());
             }
             d.addServlet(s);
+        }
+
+        if (controlPoint != null) {
+            d.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, webDeploymentBuilder.getAllowRequestPredicates()));
         }
 
         return new WebDeploymentControllerImpl(d);
@@ -125,16 +134,25 @@ class WebHostService implements Service<WebHost>, WebHost {
 
     @Override
     public void start(StartContext context) throws StartException {
-
+        RequestController rq = requestControllerInjectedValue.getOptionalValue();
+        if(rq != null) {
+            controlPoint = rq.getControlPoint("", "org.wildfly.undertow.webhost." + server.getValue().getName() + "." + host.getValue().getName());
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-
+        if(controlPoint != null) {
+            requestControllerInjectedValue.getValue().removeControlPoint(controlPoint);
+        }
     }
 
     @Override
     public WebHost getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public InjectedValue<RequestController> getRequestControllerInjectedValue() {
+        return requestControllerInjectedValue;
     }
 }

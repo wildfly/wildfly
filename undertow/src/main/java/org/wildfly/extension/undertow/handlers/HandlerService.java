@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow.handlers;
 
+import java.util.Collections;
+
 import io.undertow.server.HttpHandler;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -53,7 +55,7 @@ public class HandlerService implements Service<HttpHandler> {
         UndertowLogger.ROOT_LOGGER.tracef("starting handler: %s", httpHandler);
         if(requestControllerInjectedValue.getOptionalValue() != null) {
             controlPoint = requestControllerInjectedValue.getValue().getControlPoint("org.wildfly.extension.undertow.handlers", name);
-            realHandler = new GlobalRequestControllerHandler(httpHandler, controlPoint);
+            realHandler = new GlobalRequestControllerHandler(httpHandler, controlPoint, Collections.emptyList());
         } else {
             realHandler = httpHandler;
         }

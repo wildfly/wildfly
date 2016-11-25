@@ -34,6 +34,7 @@ import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.logging.WSLogger;
+import org.jboss.as.webservices.deployers.AllowWSRequestPredicate;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
@@ -206,6 +207,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             }
             deployment.setDocumentRoot(docBase);
             deployment.setClassLoader(unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY));
+            deployment.addAllowedRequestPredicate(new AllowWSRequestPredicate());
 
             addServlets(jbwebMD, deployment);
 
