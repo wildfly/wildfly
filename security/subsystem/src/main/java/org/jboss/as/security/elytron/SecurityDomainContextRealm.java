@@ -24,12 +24,12 @@ import java.util.Set;
 import javax.security.auth.Subject;
 
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.wildfly.security.auth.SupportLevel;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.auth.server.IdentityLocator;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityRealm;
-import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.authz.MapAttributes;
