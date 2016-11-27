@@ -46,6 +46,8 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTION_TTL_OVERRIDE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ID_CACHE_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_DOMAIN;
@@ -145,6 +147,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 
 /**
@@ -281,6 +284,13 @@ class ServerAdd extends AbstractAddStepHandler {
                         SecurityDomainService.SERVICE_NAME.append(domain),
                         SecurityDomainContext.class,
                         serverService.getSecurityDomainContextInjector());
+
+                // Inject a reference to the Elytron security domain if one has been defined.
+                final ModelNode elytronSecurityDomain = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
+                if (elytronSecurityDomain.isDefined()) {
+                    ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomain.asString(), SecurityDomain.class);
+                    serviceBuilder.addDependency(elytronDomainCapability, SecurityDomain.class, serverService.getElytronDomainInjector());
+                }
 
                 // Process acceptors and connectors
                 final Set<String> socketBindings = new HashSet<String>();

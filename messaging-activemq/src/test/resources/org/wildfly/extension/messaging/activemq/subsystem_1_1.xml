@@ -26,6 +26,7 @@
         <security
                 enabled="${security.enabled:false}"
                 domain="someDomain"
+                elytron-domain="elytronDomain"
                 invalidation-interval="${security.invalidation.interval:1234}"
                 override-in-vm-security="${override.in-vm.security:false}"/>
 

@@ -91,8 +91,9 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                                         ServerDefinition.CONNECTION_TTL_OVERRIDE,
                                         ServerDefinition.ASYNC_CONNECTION_EXECUTION_ENABLED,
                                         // security
-                                        ServerDefinition.SECURITY_DOMAIN,
                                         ServerDefinition.SECURITY_ENABLED,
+                                        ServerDefinition.SECURITY_DOMAIN,
+                                        ServerDefinition.ELYTRON_DOMAIN,
                                         ServerDefinition.SECURITY_INVALIDATION_INTERVAL,
                                         ServerDefinition.OVERRIDE_IN_VM_SECURITY,
                                         // cluster

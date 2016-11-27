@@ -147,6 +147,7 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                                 MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ServerDefinition.ELYTRON_DOMAIN,
                                 ServerDefinition.JOURNAL_DATASOURCE,
                                 ServerDefinition.JOURNAL_MESSAGES_TABLE,
                                 ServerDefinition.JOURNAL_BINDINGS_TABLE,
