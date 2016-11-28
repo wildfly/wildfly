@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow.filters;
 
 import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
+import io.undertow.protocols.http2.Http2Channel;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -237,6 +239,8 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE_DEFAULT))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_INITIAL_WINDOW_SIZE = OptionAttributeDefinition.builder("http2-initial-window-size", UndertowOptions.HTTP2_SETTINGS_INITIAL_WINDOW_SIZE)
@@ -244,12 +248,15 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(Http2Channel.DEFAULT_INITIAL_WINDOW_SIZE))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_CONCURRENT_STREAMS = OptionAttributeDefinition.builder("http2-max-concurrent-streams", UndertowOptions.HTTP2_SETTINGS_MAX_CONCURRENT_STREAMS)
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_FRAME_SIZE = OptionAttributeDefinition.builder("http2-max-frame-size", UndertowOptions.HTTP2_SETTINGS_MAX_FRAME_SIZE)
@@ -257,6 +264,8 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(Http2Channel.DEFAULT_MAX_FRAME_SIZE))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_HEADER_LIST_SIZE = OptionAttributeDefinition.builder("http2-max-header-list-size", UndertowOptions.HTTP2_SETTINGS_MAX_HEADER_LIST_SIZE)
@@ -264,6 +273,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final AttributeDefinition MAX_RETRIES = new SimpleAttributeDefinitionBuilder(Constants.MAX_RETRIES, ModelType.INT)

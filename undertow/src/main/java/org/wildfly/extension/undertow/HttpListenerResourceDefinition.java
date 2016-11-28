@@ -23,10 +23,13 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.UndertowOptions;
+import io.undertow.protocols.http2.Http2Channel;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -76,6 +79,8 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE_DEFAULT))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_INITIAL_WINDOW_SIZE = OptionAttributeDefinition.builder("http2-initial-window-size", UndertowOptions.HTTP2_SETTINGS_INITIAL_WINDOW_SIZE)
@@ -83,12 +88,15 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(Http2Channel.DEFAULT_INITIAL_WINDOW_SIZE))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_MAX_CONCURRENT_STREAMS = OptionAttributeDefinition.builder("http2-max-concurrent-streams", UndertowOptions.HTTP2_SETTINGS_MAX_CONCURRENT_STREAMS)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_MAX_FRAME_SIZE = OptionAttributeDefinition.builder("http2-max-frame-size", UndertowOptions.HTTP2_SETTINGS_MAX_FRAME_SIZE)
@@ -96,6 +104,8 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(Http2Channel.DEFAULT_MAX_FRAME_SIZE))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_MAX_HEADER_LIST_SIZE = OptionAttributeDefinition.builder("http2-max-header-list-size", UndertowOptions.HTTP2_SETTINGS_MAX_HEADER_LIST_SIZE)
@@ -103,6 +113,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     protected static final OptionAttributeDefinition REQUIRE_HOST_HTTP11 = OptionAttributeDefinition.builder("require-host-http11", UndertowOptions.REQUIRE_HOST_HTTP11)
