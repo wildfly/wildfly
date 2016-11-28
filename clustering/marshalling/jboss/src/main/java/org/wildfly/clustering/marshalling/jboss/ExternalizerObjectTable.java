@@ -45,7 +45,7 @@ public class ExternalizerObjectTable implements ObjectTable {
     final Externalizer<Integer> indexExternalizer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
-        this(IndexExternalizer.VARIABLE, StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false).toArray(size -> new Externalizer<?>[size]));
+        this(IndexExternalizer.VARIABLE, StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false).toArray(Externalizer[]::new));
     }
 
     public ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {
