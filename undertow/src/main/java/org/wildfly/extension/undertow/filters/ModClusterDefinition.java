@@ -37,6 +37,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -223,6 +224,8 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(4096))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_INITIAL_WINDOW_SIZE = OptionAttributeDefinition.builder("http2-initial-window-size", UndertowOptions.HTTP2_SETTINGS_INITIAL_WINDOW_SIZE)
@@ -230,12 +233,15 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(65535))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_CONCURRENT_STREAMS = OptionAttributeDefinition.builder("http2-max-concurrent-streams", UndertowOptions.HTTP2_SETTINGS_MAX_CONCURRENT_STREAMS)
             .setAllowNull(true)
             .setRestartAllServices()
             .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_FRAME_SIZE = OptionAttributeDefinition.builder("http2-max-frame-size", UndertowOptions.HTTP2_SETTINGS_MAX_FRAME_SIZE)
@@ -243,6 +249,8 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(16384))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final OptionAttributeDefinition HTTP2_MAX_HEADER_LIST_SIZE = OptionAttributeDefinition.builder("http2-max-header-list-size", UndertowOptions.HTTP2_SETTINGS_MAX_HEADER_LIST_SIZE)
@@ -250,6 +258,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setValidator(new IntRangeValidator(1))
             .build();
 
     public static final AttributeDefinition MAX_RETRIES = new SimpleAttributeDefinitionBuilder(Constants.MAX_RETRIES, ModelType.INT)
