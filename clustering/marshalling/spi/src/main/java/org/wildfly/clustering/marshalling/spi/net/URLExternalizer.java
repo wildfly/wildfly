@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.time;
+package org.wildfly.clustering.marshalling.spi.net;
 
-import java.time.Instant;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for a {@link URL}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class URLExternalizer implements Externalizer<URL> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    private static final Externalizer<URI> URI_EXTERNALIZER = new URIExternalizer();
+
+    @Override
+    public void writeObject(ObjectOutput output, URL url) throws IOException {
+        try {
+            URI_EXTERNALIZER.writeObject(output, url.toURI());
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public URL readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return URI_EXTERNALIZER.readObject(input).toURL();
+    }
+
+    @Override
+    public Class<? extends URL> getTargetClass() {
+        return URL.class;
     }
 }

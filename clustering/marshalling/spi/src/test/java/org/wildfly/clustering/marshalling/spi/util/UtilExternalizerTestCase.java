@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.time;
+package org.wildfly.clustering.marshalling.spi.util;
 
-import java.time.Instant;
+import java.io.IOException;
+import java.util.Currency;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Unit test for java.util.* externalizers.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class UtilExternalizerTestCase {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    @Test
+    public void test() throws ClassNotFoundException, IOException {
+        ExternalizerTestUtil.test(new CurrencyExternalizer(), Currency.getInstance(Locale.US));
+        ExternalizerTestUtil.test(new LocaleExternalizer(), Locale.US);
+        ExternalizerTestUtil.test(new OptionalExternalizer(), Optional.empty());
+        ExternalizerTestUtil.test(new UUIDExternalizer(), UUID.randomUUID());
     }
 }

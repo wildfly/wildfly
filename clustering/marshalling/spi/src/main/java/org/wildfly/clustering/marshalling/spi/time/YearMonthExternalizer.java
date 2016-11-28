@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,20 +22,37 @@
 
 package org.wildfly.clustering.marshalling.spi.time;
 
-import java.time.Instant;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.time.Month;
+import java.time.YearMonth;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for a {@link YearMonth}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class YearMonthExternalizer implements Externalizer<YearMonth> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    @Override
+    public void writeObject(ObjectOutput output, YearMonth value) throws IOException {
+        output.writeInt(value.getYear());
+        MonthExternalizer.INSTANCE.writeObject(output, value.getMonth());
+    }
+
+    @Override
+    public YearMonth readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        int year = input.readInt();
+        Month month = MonthExternalizer.INSTANCE.readObject(input);
+        return YearMonth.of(year, month);
+    }
+
+    @Override
+    public Class<? extends YearMonth> getTargetClass() {
+        return YearMonth.class;
     }
 }

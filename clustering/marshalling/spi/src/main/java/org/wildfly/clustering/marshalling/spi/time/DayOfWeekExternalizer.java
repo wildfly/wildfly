@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,20 +22,20 @@
 
 package org.wildfly.clustering.marshalling.spi.time;
 
-import java.time.Instant;
+import java.time.DayOfWeek;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
+import org.wildfly.clustering.marshalling.spi.EnumExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for a {@link DayOfWeek}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class DayOfWeekExternalizer extends EnumExternalizer<DayOfWeek> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    public DayOfWeekExternalizer() {
+        super(DayOfWeek.class);
     }
 }

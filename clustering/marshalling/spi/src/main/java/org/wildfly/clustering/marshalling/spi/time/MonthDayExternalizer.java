@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,20 +22,38 @@
 
 package org.wildfly.clustering.marshalling.spi.time;
 
-import java.time.Instant;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.time.Month;
+import java.time.MonthDay;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for a {@link MonthDay}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class MonthDayExternalizer implements Externalizer<MonthDay> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    @Override
+    public void writeObject(ObjectOutput output, MonthDay monthDay) throws IOException {
+        MonthExternalizer.INSTANCE.writeObject(output, monthDay.getMonth());
+        IndexExternalizer.UNSIGNED_BYTE.writeData(output, monthDay.getDayOfMonth());
+    }
+
+    @Override
+    public MonthDay readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        Month month = MonthExternalizer.INSTANCE.readObject(input);
+        int day = IndexExternalizer.UNSIGNED_BYTE.readData(input);
+        return MonthDay.of(month, day);
+    }
+
+    @Override
+    public Class<? extends MonthDay> getTargetClass() {
+        return MonthDay.class;
     }
 }

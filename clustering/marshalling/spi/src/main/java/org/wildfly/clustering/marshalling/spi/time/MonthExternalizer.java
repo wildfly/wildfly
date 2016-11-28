@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,20 +22,22 @@
 
 package org.wildfly.clustering.marshalling.spi.time;
 
-import java.time.Instant;
+import java.time.Month;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
+import org.wildfly.clustering.marshalling.spi.EnumExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for a {@link Month}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class MonthExternalizer extends EnumExternalizer<Month> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    static final Externalizer<Month> INSTANCE = new MonthExternalizer();
+
+    public MonthExternalizer() {
+        super(Month.class);
     }
 }

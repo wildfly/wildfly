@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.time;
+package org.wildfly.clustering.marshalling.spi.util;
 
-import java.time.Instant;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for an {@link AtomicBoolean}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class AtomicBooleanExternalizer implements Externalizer<AtomicBoolean> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    @Override
+    public void writeObject(ObjectOutput output, AtomicBoolean value) throws IOException {
+        output.writeBoolean(value.get());
+    }
+
+    @Override
+    public AtomicBoolean readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new AtomicBoolean(input.readBoolean());
+    }
+
+    @Override
+    public Class<? extends AtomicBoolean> getTargetClass() {
+        return AtomicBoolean.class;
     }
 }

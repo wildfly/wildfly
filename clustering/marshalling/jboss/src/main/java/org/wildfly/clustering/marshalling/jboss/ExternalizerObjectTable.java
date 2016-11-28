@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.jboss.marshalling.Marshaller;
@@ -45,7 +46,12 @@ public class ExternalizerObjectTable implements ObjectTable {
     final Externalizer<Integer> indexExternalizer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
-        this(IndexExternalizer.VARIABLE, StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false).toArray(Externalizer[]::new));
+        this(IndexExternalizer.VARIABLE, Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static Stream<Externalizer> loadExternalizers(ClassLoader loader) {
+        return StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false);
     }
 
     public ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {

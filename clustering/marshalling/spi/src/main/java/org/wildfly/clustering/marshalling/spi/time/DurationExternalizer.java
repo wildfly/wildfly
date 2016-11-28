@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,20 +22,36 @@
 
 package org.wildfly.clustering.marshalling.spi.time;
 
-import java.time.Instant;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.time.Duration;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.LongExternalizer;
 
 /**
- * Externalizer for an {@link Instant}.
+ * Externalizer for a {@link Duration}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer extends LongExternalizer<Instant> {
+public class DurationExternalizer implements Externalizer<Duration> {
 
-    public InstantExternalizer() {
-        super(Instant.class, Instant::ofEpochMilli, Instant::toEpochMilli);
+    @Override
+    public void writeObject(ObjectOutput output, Duration duration) throws IOException {
+        output.writeLong(duration.getSeconds());
+        output.writeInt(duration.getNano());
+    }
+
+    @Override
+    public Duration readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        long seconds = input.readLong();
+        int nanos = input.readInt();
+        return Duration.ofSeconds(seconds, nanos);
+    }
+
+    @Override
+    public Class<? extends Duration> getTargetClass() {
+        return Duration.class;
     }
 }
