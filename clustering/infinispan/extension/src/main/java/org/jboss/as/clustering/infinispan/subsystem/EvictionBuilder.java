@@ -28,7 +28,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.EvictionResourceDefin
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.EvictionConfigurationBuilder;
-import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -37,11 +36,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
@@ -49,23 +44,18 @@ import org.wildfly.clustering.service.ValueDependency;
 public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> implements ResourceServiceBuilder<EvictionConfiguration> {
 
     private final EvictionConfigurationBuilder builder = new ConfigurationBuilder().eviction();
-    private final ValueDependency<PersistenceConfiguration> persistence;
 
     private volatile EvictionStrategy strategy;
 
     EvictionBuilder(PathAddress cacheAddress) {
         super(CacheComponent.EVICTION, cacheAddress);
-        this.persistence = new InjectedValueDependency<>(CacheComponent.PERSISTENCE.getServiceName(cacheAddress), PersistenceConfiguration.class);
-    }
-
-    @Override
-    public ServiceBuilder<EvictionConfiguration> build(ServiceTarget target) {
-        return this.persistence.register(super.build(target));
     }
 
     @Override
     public Builder<EvictionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.strategy = ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, model), EvictionStrategy.class);
+        // Use MANUAL instead of NONE to silence log WARNs on cache configuration validation
+        this.builder.strategy(this.strategy.isEnabled() ? this.strategy : EvictionStrategy.MANUAL);
         if (this.strategy.isEnabled()) {
             this.builder.type(EvictionType.COUNT).size(MAX_ENTRIES.resolveModelAttribute(context, model).asLong());
         }
@@ -74,10 +64,6 @@ public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> imp
 
     @Override
     public EvictionConfiguration getValue() {
-        if ((this.strategy == EvictionStrategy.NONE) && this.persistence.getValue().passivation()) {
-            // When passivation is enabled, convert NONE to MANUAL, which silences log WARNs on cache configuration validation
-            this.strategy = EvictionStrategy.MANUAL;
-        }
-        return this.builder.strategy(this.strategy).create();
+        return this.builder.create();
     }
 }
