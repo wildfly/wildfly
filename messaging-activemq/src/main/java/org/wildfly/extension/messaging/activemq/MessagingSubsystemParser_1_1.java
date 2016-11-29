@@ -260,7 +260,7 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                                                         PathDefinition.PATHS.get(CommonAttributes.PAGING_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(QueueDefinition.INSTANCE)
+                                        builder(MessagingExtension.QUEUE_PATH)
                                                 .addAttributes(
                                                         QueueDefinition.ADDRESS,
                                                         CommonAttributes.DURABLE,

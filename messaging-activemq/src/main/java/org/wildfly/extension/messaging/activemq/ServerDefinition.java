@@ -32,6 +32,7 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -525,48 +526,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .addOptionalRequirements(JMX_CAPABILITY)
             .build();
 
-    private static PersistentResourceDefinition[] CHILDREN = {
-            // HA policy
-            LiveOnlyDefinition.INSTANCE,
-            ReplicationMasterDefinition.INSTANCE,
-            ReplicationSlaveDefinition.INSTANCE,
-            ReplicationColocatedDefinition.INSTANCE,
-            SharedStoreMasterDefinition.INSTANCE,
-            SharedStoreSlaveDefinition.INSTANCE,
-            SharedStoreColocatedDefinition.INSTANCE,
-
-            AddressSettingDefinition.INSTANCE,
-            SecuritySettingDefinition.INSTANCE,
-
-            // Connectors
-            HTTPConnectorDefinition.INSTANCE,
-            RemoteTransportDefinition.CONNECTOR_INSTANCE,
-            InVMTransportDefinition.CONNECTOR_INSTANCE,
-            GenericTransportDefinition.CONNECTOR_INSTANCE,
-
-            // Acceptors
-            HTTPAcceptorDefinition.INSTANCE,
-            RemoteTransportDefinition.ACCEPTOR_INSTANCE,
-            InVMTransportDefinition.ACCEPTOR_INSTANCE,
-            GenericTransportDefinition.ACCEPTOR_INSTANCE,
-
-            QueueDefinition.INSTANCE,
-            BroadcastGroupDefinition.INSTANCE,
-            DiscoveryGroupDefinition.INSTANCE,
-            BridgeDefinition.INSTANCE,
-            ClusterConnectionDefinition.INSTANCE,
-            DivertDefinition.INSTANCE,
-            ConnectorServiceDefinition.INSTANCE,
-            GroupingHandlerDefinition.INSTANCE,
-
-            // JMS resources
-            JMSQueueDefinition.INSTANCE,
-            JMSTopicDefinition.INSTANCE,
-            ConnectionFactoryDefinition.INSTANCE,
-            LegacyConnectionFactoryDefinition.INSTANCE,
-            PooledConnectionFactoryDefinition.INSTANCE
-    };
-
     private final boolean registerRuntimeOnly;
 
     ServerDefinition(boolean registerRuntimeOnly) {
@@ -607,18 +566,61 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(CHILDREN);
+        List<PersistentResourceDefinition> children = new ArrayList();
+        children.addAll(Arrays.asList(
+                // HA policy
+                LiveOnlyDefinition.INSTANCE,
+                ReplicationMasterDefinition.INSTANCE,
+                ReplicationSlaveDefinition.INSTANCE,
+                ReplicationColocatedDefinition.INSTANCE,
+                SharedStoreMasterDefinition.INSTANCE,
+                SharedStoreSlaveDefinition.INSTANCE,
+                SharedStoreColocatedDefinition.INSTANCE,
+
+                AddressSettingDefinition.INSTANCE,
+                SecuritySettingDefinition.INSTANCE,
+
+                // Connectors
+                HTTPConnectorDefinition.INSTANCE,
+                RemoteTransportDefinition.CONNECTOR_INSTANCE,
+                InVMTransportDefinition.CONNECTOR_INSTANCE,
+                GenericTransportDefinition.CONNECTOR_INSTANCE,
+
+                // Acceptors
+                HTTPAcceptorDefinition.INSTANCE,
+                RemoteTransportDefinition.ACCEPTOR_INSTANCE,
+                InVMTransportDefinition.ACCEPTOR_INSTANCE,
+                GenericTransportDefinition.ACCEPTOR_INSTANCE,
+
+                BroadcastGroupDefinition.INSTANCE,
+                DiscoveryGroupDefinition.INSTANCE,
+                BridgeDefinition.INSTANCE,
+                ClusterConnectionDefinition.INSTANCE,
+                DivertDefinition.INSTANCE,
+                ConnectorServiceDefinition.INSTANCE,
+                GroupingHandlerDefinition.INSTANCE,
+
+                // JMS resources
+                JMSQueueDefinition.INSTANCE,
+                JMSTopicDefinition.INSTANCE,
+                ConnectionFactoryDefinition.INSTANCE,
+                LegacyConnectionFactoryDefinition.INSTANCE,
+                PooledConnectionFactoryDefinition.INSTANCE));
+
+        children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
+
+        return children;
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
-        ManagementResourceRegistration runtimeQueue = resourceRegistration.registerSubModel(QueueDefinition.RUNTIME_INSTANCE);
-        runtimeQueue.setRuntimeOnly(true);
-        ManagementResourceRegistration coreAddress = resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
-        coreAddress.setRuntimeOnly(true);
+        // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
+        if (registerRuntimeOnly) {
+            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly,  MessagingExtension.RUNTIME_QUEUE_PATH));
+            resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
+        }
     }
 
 

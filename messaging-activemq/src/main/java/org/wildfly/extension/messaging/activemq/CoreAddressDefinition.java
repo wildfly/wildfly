@@ -71,6 +71,11 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
     }
 
     @Override
+    public boolean isRuntime() {
+        return true;
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
