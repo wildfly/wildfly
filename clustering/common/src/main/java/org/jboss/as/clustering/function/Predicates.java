@@ -41,12 +41,4 @@ public class Predicates {
     public static <T> Predicate<T> when(boolean condition) {
         return test -> condition;
     }
-
-    public static <T> Predicate<T> isNull() {
-        return test -> test == null;
-    }
-
-    public static <T> Predicate<T> isNotNull() {
-        return test -> test != null;
-    }
 }
