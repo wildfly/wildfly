@@ -47,9 +47,6 @@ import org.wildfly.extension.messaging.activemq.ha.SharedStoreColocatedDefinitio
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreMasterDefinition;
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreSlaveDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
-import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryDefinition;
-import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
-import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFactoryDefinition;
@@ -421,19 +418,19 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(JMSQueueDefinition.INSTANCE)
+                                        builder(MessagingExtension.JMS_QUEUE_PATH)
                                                 .addAttributes(
                                                         CommonAttributes.DESTINATION_ENTRIES,
                                                         CommonAttributes.SELECTOR,
                                                         CommonAttributes.DURABLE,
                                                         CommonAttributes.LEGACY_ENTRIES))
                                 .addChild(
-                                        builder(JMSTopicDefinition.INSTANCE)
+                                        builder(MessagingExtension.JMS_TOPIC_PATH)
                                                 .addAttributes(
                                                         CommonAttributes.DESTINATION_ENTRIES,
                                                         CommonAttributes.LEGACY_ENTRIES))
                                 .addChild(
-                                        builder(ConnectionFactoryDefinition.INSTANCE)
+                                        builder(MessagingExtension.CONNECTION_FACTORY_PATH)
                                                 .addAttributes(
                                                         ConnectionFactoryAttributes.Common.ENTRIES,
                                                         // common

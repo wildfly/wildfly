@@ -47,7 +47,7 @@ public class JMSQueueConfigurationRuntimeHandler extends AbstractJMSRuntimeHandl
         if (destination.hasDefined(attributeName)) {
             context.getResult().set(destination.get(attributeName));
         } else if(includeDefault) {
-            for (AttributeDefinition attr : JMSQueueDefinition.DEPLOYMENT_INSTANCE.getAttributes()) {
+            for (AttributeDefinition attr : JMSQueueDefinition.DEPLOYMENT_ATTRIBUTES) {
                 if(attr.getName().equals(attributeName)) {
                     ModelNode resultNode = context.getResult();
                     ModelNode defaultValue = attr.getDefaultValue();

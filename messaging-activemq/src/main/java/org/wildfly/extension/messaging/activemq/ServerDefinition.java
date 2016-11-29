@@ -567,6 +567,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
         List<PersistentResourceDefinition> children = new ArrayList();
+        // Static resources
         children.addAll(Arrays.asList(
                 // HA policy
                 LiveOnlyDefinition.INSTANCE,
@@ -601,13 +602,14 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 GroupingHandlerDefinition.INSTANCE,
 
                 // JMS resources
-                JMSQueueDefinition.INSTANCE,
-                JMSTopicDefinition.INSTANCE,
-                ConnectionFactoryDefinition.INSTANCE,
                 LegacyConnectionFactoryDefinition.INSTANCE,
                 PooledConnectionFactoryDefinition.INSTANCE));
 
+        // Dynamic resources (depending on registerRuntimeOnly)
         children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
+        children.add(new JMSQueueDefinition(false, registerRuntimeOnly));
+        children.add(new JMSTopicDefinition(false, registerRuntimeOnly));
+        children.add(new ConnectionFactoryDefinition(registerRuntimeOnly));
 
         return children;
     }
