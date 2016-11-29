@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -34,8 +33,10 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.AttachmentKeys;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
@@ -49,6 +50,7 @@ import org.jboss.remoting3.MessageOutputStream;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
+import javax.ejb.EJBException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -59,8 +61,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
-import javax.ejb.EJBException;
 
 /**
  * @author Jaikiran Pai
@@ -186,6 +186,10 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                     // check if it's async. If yes, then notify the client that's it's async method (so that
                     // it can unblock if necessary)
                     if (componentView.isAsynchronous(invokedMethod)) {
+                        // according to the specification, session EJB 3.2 4.5.3, transaction context cannot be passed to
+                        // asynchronous calls, this is the earliest point we know we are dealing with an asynchronous call
+                        // hence, remove the previously passed information here
+                        attachments.remove(AttachmentKeys.TRANSACTION_ID_KEY);
                         try {
                             MethodInvocationMessageHandler.this.writeAsyncMethodNotification(channelAssociation, invocationId);
                         } catch (Throwable t) {
