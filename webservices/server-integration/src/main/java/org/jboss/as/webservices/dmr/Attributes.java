@@ -79,7 +79,7 @@ interface Attributes {
     SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition[] SUBSYSTEM_ATTRIBUTES = {MODIFY_WSDL_ADDRESS, WSDL_HOST, WSDL_PORT, WSDL_SECURE_PORT, WSDL_URI_SCHEME, WSDL_PATH_REWRITE_RULE};
