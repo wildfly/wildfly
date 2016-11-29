@@ -44,7 +44,6 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -206,9 +205,6 @@ public class SendToJMSQueueTest {
 
     @Test
     public void sendMessageWithMissingClientAcknowledge() throws Exception {
-        // WFLY-7346 - Ignore the test if the security manager is installed
-        Assume.assumeTrue(System.getSecurityManager() == null);
-
         Connection senderConnection = null;
         Connection consumerConnection = null;
         Session senderSession = null;
