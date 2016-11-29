@@ -567,7 +567,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PooledConnectionFactoryDefinition.INSTANCE
     };
 
-    protected static final PersistentResourceDefinition INSTANCE = new ServerDefinition(false);
     private final boolean registerRuntimeOnly;
 
     ServerDefinition(boolean registerRuntimeOnly) {
@@ -582,10 +581,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
-        ExportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
-        ImportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
-
         if (registerRuntimeOnly) {
+            ExportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+            ImportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+
             ActiveMQServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
             JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
 

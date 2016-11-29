@@ -74,7 +74,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
     static {
         xmlDescription = builder(MessagingSubsystemRootResourceDefinition.INSTANCE)
                 .addChild(
-                        builder(ServerDefinition.INSTANCE)
+                        builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(
                                         // no attribute groups
                                         ServerDefinition.PERSISTENCE_ENABLED,
