@@ -77,7 +77,7 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
                 .addChild(
-                        builder(ServerDefinition.INSTANCE)
+                        builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(
                                         // no attribute groups
                                         ServerDefinition.PERSISTENCE_ENABLED,
