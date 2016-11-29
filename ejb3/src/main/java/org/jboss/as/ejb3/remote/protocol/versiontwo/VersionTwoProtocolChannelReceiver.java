@@ -29,8 +29,8 @@ import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.MessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 
@@ -51,8 +51,9 @@ public class VersionTwoProtocolChannelReceiver extends VersionOneProtocolChannel
     public VersionTwoProtocolChannelReceiver(final ChannelAssociation channelAssociation, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
                                              final MarshallerFactory marshallerFactory, final ExecutorService executorService,
-                                             final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService, final SuspendController suspendController) {
-        super(channelAssociation, deploymentRepository, transactionsRepository, clientMappingRegistryCollector, marshallerFactory, executorService, asyncInvocationCancelStatusService, suspendController);
+                                             final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService,
+                                             final EJBSuspendHandlerService suspendHandler) {
+        super(channelAssociation, deploymentRepository, transactionsRepository, clientMappingRegistryCollector, marshallerFactory, executorService, asyncInvocationCancelStatusService, suspendHandler);
     }
 
 

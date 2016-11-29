@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
@@ -109,7 +108,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
                 case TwoPhaseOutcome.PREPARE_READONLY:
                     // TODO: Would it be fine to not remove the xid? (Need to understand how the subsequent
                     // flow works)
-                    SubordinationManager.getTransactionImporter().removeImportedTransaction(this.xidTransactionID.getXid());
+                    transactionsRepository.removeImportedTransaction(this.xidTransactionID);
                     return XAResource.XA_RDONLY;
 
                 case TwoPhaseOutcome.PREPARE_OK:
@@ -139,7 +138,7 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
                         xaExceptionCode = XAException.XAER_RMERR;
                     }
                     // remove the transaction
-                    SubordinationManager.getTransactionImporter().removeImportedTransaction(this.xidTransactionID.getXid());
+                    transactionsRepository.removeImportedTransaction(xidTransactionID);
                     final XAException xaException = new XAException(xaExceptionCode);
                     if (initCause != null) {
                         xaException.initCause(initCause);

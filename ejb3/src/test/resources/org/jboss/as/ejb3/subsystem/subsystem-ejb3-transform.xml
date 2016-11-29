@@ -57,5 +57,6 @@
     <default-security-domain value="domain"/>
     <default-missing-method-permissions-deny-access value="false" />
     <disable-default-ejb-permissions value="false"/>
+    <enable-graceful-txn-shutdown value="false" />
     <statistics enabled="${ejb.enable-statistics:true}" />
 </subsystem>

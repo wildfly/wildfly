@@ -57,6 +57,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
     String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
     String DISABLE_DEFAULT_EJB_PERMISSIONS = "disable-default-ejb-permissions";
+    String ENABLE_GRACEFUL_TXN_SHUTDOWN = "enable-graceful-txn-shutdown";
     String LOG_SYSTEM_EXCEPTIONS = "log-system-exceptions";
 
     String ENABLE_STATISTICS = "enable-statistics";

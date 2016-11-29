@@ -78,6 +78,10 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
                 parseAllowEjbNameRegex(reader, ejb3SubsystemAddOperation);
                 break;
             }
+            case ENABLE_GRACEFUL_TXN_SHUTDOWN: {
+                parseEnableGracefulTxnShutdown(reader, ejb3SubsystemAddOperation);
+                break;
+            }
             default: {
                 super.readElement(reader, element, operations, ejb3SubsystemAddOperation);
             }
@@ -177,5 +181,28 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         }
         requireNoContent(reader);
         operations.add(addIdentity);
+    }
+
+    private void parseEnableGracefulTxnShutdown(XMLExtendedStreamReader reader, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.VALUE);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case VALUE:
+                    EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.VALUE);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
     }
 }
