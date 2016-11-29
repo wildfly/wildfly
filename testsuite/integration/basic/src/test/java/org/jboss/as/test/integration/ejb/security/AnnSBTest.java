@@ -302,7 +302,8 @@ public abstract class AnnSBTest {
                         MatchRule.ALL,
                         AuthenticationConfiguration.EMPTY
                                 .useCallbackHandler(new AuthenticationCallbackHandler(username, password))
-                                .allowSaslMechanisms("JBOSS-LOCAL-USER", "DIGEST-MD5"));
+                                .allowSaslMechanisms("JBOSS-LOCAL-USER", "DIGEST-MD5")
+                                .useProvidersFromClassLoader(AnnSBTest.class.getClassLoader()));
         final IoFuture<Connection> futureConnection = endpoint.connect(connectionURI, builder.getMap(), authenticationContext);
         // wait for the connection to be established
         final Connection connection = IoFutureHelper.get(futureConnection, 5000, TimeUnit.MILLISECONDS);
