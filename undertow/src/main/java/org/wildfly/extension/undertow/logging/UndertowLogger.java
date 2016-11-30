@@ -365,9 +365,9 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 87, value = "Duplicate default web module '%s' configured on server '%s', host '%s'")
     IllegalArgumentException duplicateDefaultWebModuleMapping(String defaultDeploymentName, String serverName, String hostName);
 
-    @LogMessage(level = WARN)
-    @Message(id = 88, value = "HTTP/2 will not be enabled as TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 is not enabled. You may need to install JCE to enable strong ciphers to allow HTTP/2 to function.")
-    void noStrongCiphers();
+//    @LogMessage(level = WARN)
+//    @Message(id = 88, value = "HTTP/2 will not be enabled as TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 is not enabled. You may need to install JCE to enable strong ciphers to allow HTTP/2 to function.")
+//    void noStrongCiphers();
 
     @Message(id = 89, value = "Predicate %s was not valid, message was: %s")
     String predicateNotValid(String predicate, String error);
