@@ -21,11 +21,11 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.Map;
-
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
@@ -44,12 +44,17 @@ public class ExpiredSessionRemover<MV, AV, L> implements Remover<String> {
 
     @Override
     public boolean remove(String id) {
-        Map.Entry<MV, AV> value = this.factory.tryValue(id);
-        if (value != null) {
-            ImmutableSession session = this.factory.createImmutableSession(id, value);
-            if (session.getMetaData().isExpired()) {
-                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s has expired.", id);
-                this.listener.sessionExpired(this.factory.createImmutableSession(id, value));
+        MV metaDataValue = this.factory.getMetaDataFactory().tryValue(id);
+        if (metaDataValue != null) {
+            ImmutableSessionMetaData metaData = this.factory.getMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
+            if (metaData.isExpired()) {
+                AV attributesValue = this.factory.getAttributesFactory().findValue(id);
+                if (attributesValue != null) {
+                    ImmutableSessionAttributes attributes = this.factory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
+                    ImmutableSession session = this.factory.createImmutableSession(id, metaData, attributes);
+                    InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s has expired.", id);
+                    this.listener.sessionExpired(session);
+                }
                 return this.factory.remove(id);
             }
         }
