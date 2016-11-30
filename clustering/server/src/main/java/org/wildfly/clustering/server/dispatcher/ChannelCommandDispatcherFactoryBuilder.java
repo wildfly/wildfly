@@ -50,7 +50,6 @@ import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
@@ -71,7 +70,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
             public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
-                config.setClassTable(new DynamicClassTable(IndexExternalizer.UNSIGNED_BYTE, context.getModule().getClassLoader()));
+                config.setClassTable(new DynamicClassTable(context.getModule().getClassLoader()));
                 return config;
             }
         },

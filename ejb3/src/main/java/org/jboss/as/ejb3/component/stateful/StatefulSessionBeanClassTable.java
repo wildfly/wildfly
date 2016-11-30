@@ -44,7 +44,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
@@ -79,6 +78,6 @@ public class StatefulSessionBeanClassTable extends SimpleClassTable {
     };
 
     public StatefulSessionBeanClassTable() {
-        super(IndexExternalizer.UNSIGNED_BYTE, classes);
+        super(classes);
     }
 }

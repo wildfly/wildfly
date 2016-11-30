@@ -107,6 +107,17 @@ public enum IndexExternalizer implements Externalizer<Integer> {
     ;
 
     /**
+     * Returns the most efficient externalizer for a given index size.
+     * @param size the size of the index
+     * @return an index externalizer
+     */
+    public static final Externalizer<Integer> select(int size) {
+        if (size <= (Byte.MAX_VALUE - Byte.MIN_VALUE)) return UNSIGNED_BYTE;
+        if (size <= (Short.MAX_VALUE - Short.MIN_VALUE)) return UNSIGNED_SHORT;
+        return VARIABLE;
+    }
+
+    /**
      * Read an index from the specified input stream.
      * @param input a data input stream
      * @return the index

@@ -47,7 +47,6 @@ import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
@@ -81,7 +80,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
             public MarshallingConfiguration apply(Module module) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setClassTable(new SimpleClassTable(IndexExternalizer.UNSIGNED_BYTE, Serializable.class, Externalizable.class));
+                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
                 return config;
             }
         },
@@ -90,7 +89,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
             public MarshallingConfiguration apply(Module module) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setClassTable(new SimpleClassTable(IndexExternalizer.UNSIGNED_BYTE, Serializable.class, Externalizable.class));
+                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
                 config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
                 return config;
             }

@@ -43,7 +43,6 @@ import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -67,7 +66,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
             public MarshallingConfiguration apply(ModuleLoader loader) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(loader));
-                config.setClassTable(new SimpleClassTable(IndexExternalizer.UNSIGNED_BYTE, Serializable.class, Externalizable.class));
+                config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
                 return config;
             }
         },

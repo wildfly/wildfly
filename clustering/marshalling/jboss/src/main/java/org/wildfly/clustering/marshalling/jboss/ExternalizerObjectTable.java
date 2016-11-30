@@ -43,10 +43,10 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     private final Externalizer<?>[] externalizers;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    final Externalizer<Integer> indexExternalizer;
+    private final Externalizer<Integer> indexExternalizer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
-        this(IndexExternalizer.VARIABLE, Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
+        this(Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
     }
 
     @SuppressWarnings("rawtypes")
@@ -54,7 +54,11 @@ public class ExternalizerObjectTable implements ObjectTable {
         return StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false);
     }
 
-    public ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {
+    public ExternalizerObjectTable(Externalizer<?>... externalizers) {
+        this(IndexExternalizer.select(externalizers.length), externalizers);
+    }
+
+    private ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {
         this.indexExternalizer = indexExternalizer;
         this.externalizers = externalizers;
         for (int i = 0; i < externalizers.length; ++i) {
@@ -66,7 +70,7 @@ public class ExternalizerObjectTable implements ObjectTable {
                 Writer writer = new Writer() {
                     @Override
                     public void writeObject(Marshaller marshaller, Object object) throws IOException {
-                        ExternalizerObjectTable.this.indexExternalizer.writeObject(marshaller, index);
+                        indexExternalizer.writeObject(marshaller, index);
                         externalizer.writeObject(marshaller, object);
                     }
                 };

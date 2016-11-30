@@ -29,26 +29,27 @@ import java.io.ObjectOutput;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Base {@link Externalizer} for enums with fewer than 256 constants.
+ * Base {@link Externalizer} for enumerations.
  * @author Paul Ferraro
  */
 public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
-    private static final Externalizer<Integer> ORDINAL_EXTERNALIZER = IndexExternalizer.UNSIGNED_BYTE;
 
+    private final Externalizer<Integer> ordinalExternalizer;
     private final Class<E> enumClass;
 
     public EnumExternalizer(Class<E> enumClass) {
+        this.ordinalExternalizer = IndexExternalizer.select(enumClass.getEnumConstants().length);
         this.enumClass = enumClass;
     }
 
     @Override
     public void writeObject(ObjectOutput output, E value) throws IOException {
-        ORDINAL_EXTERNALIZER.writeObject(output, value.ordinal());
+        this.ordinalExternalizer.writeObject(output, value.ordinal());
     }
 
     @Override
     public E readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.enumClass.getEnumConstants()[ORDINAL_EXTERNALIZER.readObject(input)];
+        return this.enumClass.getEnumConstants()[this.ordinalExternalizer.readObject(input)];
     }
 
     @Override
