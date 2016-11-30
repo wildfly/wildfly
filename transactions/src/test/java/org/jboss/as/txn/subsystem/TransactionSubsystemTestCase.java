@@ -77,6 +77,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         String transformed = ModelTestUtils.normalizeXML(

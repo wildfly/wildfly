@@ -70,6 +70,12 @@ public class SecurityManagerSubsystem30TestCase extends AbstractSubsystemBaseTes
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testTransformersEAP70() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_7_0_0);
     }
