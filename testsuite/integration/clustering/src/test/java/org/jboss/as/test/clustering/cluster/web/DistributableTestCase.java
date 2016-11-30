@@ -175,7 +175,7 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
     public void testGracefulServeOnUndeploy(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws Exception {
-        this.abstractGracefulServe(baseURL1, true);
+        this.testGracefulServe(baseURL1, new RedeployLifecycle());
     }
 
     /**
@@ -185,10 +185,10 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
     public void testGracefulServeOnShutdown(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws Exception {
-        this.abstractGracefulServe(baseURL1, false);
+        this.testGracefulServe(baseURL1, new RestartLifecycle());
     }
 
-    private void abstractGracefulServe(URL baseURL, boolean undeployOnly) throws URISyntaxException, IOException, InterruptedException {
+    private void testGracefulServe(URL baseURL, Lifecycle lifecycle) throws URISyntaxException, IOException, InterruptedException {
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             URI uri = SimpleServlet.createURI(baseURL);
@@ -209,13 +209,7 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
             // Make sure long request has started
             Thread.sleep(1000);
 
-            if (undeployOnly) {
-                // Undeploy the app only.
-                undeploy(DEPLOYMENT_1);
-            } else {
-                // Shutdown server.
-                stop(CONTAINER_1);
-            }
+            lifecycle.stop(NODE_1);
 
             // Get result of long request
             // This request should succeed since it initiated before server shutdown
@@ -230,17 +224,6 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
             } catch (ExecutionException e) {
                 e.printStackTrace(System.err);
                 Assert.fail(e.getCause().getMessage());
-            }
-
-            if (undeployOnly) {
-                // If we are only undeploying, then subsequent requests should return 404.
-                response = client.execute(new HttpGet(uri));
-                try {
-                    Assert.assertEquals("If we are only undeploying, then subsequent requests should return 404.",
-                            HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
-                } finally {
-                    HttpClientUtils.closeQuietly(response);
-                }
             }
         }
     }
