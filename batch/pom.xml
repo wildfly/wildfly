@@ -42,7 +42,6 @@
     <modules>
         <module>extension</module>
         <module>extension-jberet</module>
-        <module>jberet</module>
     </modules>
 
     <!-- Common dependencies -->

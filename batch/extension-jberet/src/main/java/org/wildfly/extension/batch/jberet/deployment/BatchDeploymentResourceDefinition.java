@@ -22,15 +22,14 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import java.util.Properties;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
-import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
-import java.util.Properties;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -96,7 +95,7 @@ public class BatchDeploymentResourceDefinition extends SimpleResourceDefinition 
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(START_JOB, new JobOperationStepHandler() {
             @Override
-            protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+            protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
                 // Resolve the job XML name
                 final String jobName = resolveValue(context, operation, JOB_XML_NAME).asString();
                 final Properties properties = resolvePropertyValue(context, operation, PROPERTIES);
@@ -111,7 +110,7 @@ public class BatchDeploymentResourceDefinition extends SimpleResourceDefinition 
 
         resourceRegistration.registerOperationHandler(STOP_JOB, new JobOperationStepHandler() {
             @Override
-            protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+            protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
                 // Resolve the execution id
                 final long executionId = resolveValue(context, operation, EXECUTION_ID).asLong();
                 try {
@@ -124,7 +123,7 @@ public class BatchDeploymentResourceDefinition extends SimpleResourceDefinition 
 
         resourceRegistration.registerOperationHandler(RESTART_JOB, new JobOperationStepHandler() {
             @Override
-            protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+            protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
                 // Resolve the execution id
                 final long executionId = resolveValue(context, operation, EXECUTION_ID).asLong();
                 final Properties properties = resolvePropertyValue(context, operation, PROPERTIES);
@@ -142,13 +141,10 @@ public class BatchDeploymentResourceDefinition extends SimpleResourceDefinition 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(JOB_XML_NAMES, new JobOperationStepHandler(false) {
             @Override
-            protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+            protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
                 final ModelNode list = context.getResult().setEmptyList();
-                if (jobOperator instanceof JobOperatorService) {
-                    final JobOperatorService jobOperatorService = (JobOperatorService) jobOperator;
-                    for (String jobXmlName : jobOperatorService.getJobDescriptors().getJobXmlNames()) {
-                        list.add(jobXmlName);
-                    }
+                for (String jobXmlName : jobOperator.getJobXmlNames()) {
+                    list.add(jobXmlName);
                 }
             }
         });

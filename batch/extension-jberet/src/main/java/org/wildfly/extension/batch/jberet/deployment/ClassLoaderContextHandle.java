@@ -20,40 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.impl;
+package org.wildfly.extension.batch.jberet.deployment;
 
-import org.jberet.spi.JobExecutor;
-import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class JobExecutorService implements Service<JobExecutor> {
+class ClassLoaderContextHandle implements ContextHandle {
+    private final ClassLoader classLoader;
 
-    private final InjectedValue<ManagedJBossThreadPoolExecutorService> threadPoolInjector = new InjectedValue<>();
-    private WildFlyJobExecutor jobExecutor;
-
-    @Override
-    public synchronized void start(final StartContext context) throws StartException {
-        jobExecutor = new WildFlyJobExecutor(threadPoolInjector.getValue());
+    ClassLoaderContextHandle(final ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
-        jobExecutor = null;
-    }
-
-    @Override
-    public JobExecutor getValue() throws IllegalStateException, IllegalArgumentException {
-        return jobExecutor;
-    }
-
-    public InjectedValue<ManagedJBossThreadPoolExecutorService> getThreadPoolInjector() {
-        return threadPoolInjector;
+    public Handle setup() {
+        final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+        return new Handle() {
+            @Override
+            public void tearDown() {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        };
     }
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.impl;
+package org.wildfly.extension.batch.jberet.deployment;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -28,14 +28,14 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jberet.creation.AbstractArtifactFactory;
-import org.wildfly.jberet._private.WildFlyBatchLogger;
+import org.wildfly.extension.batch.jberet._private.BatchLogger;
 
 /**
  * ArtifactFactory for Java EE runtime environment.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public final class WildFlyArtifactFactory extends AbstractArtifactFactory {
+class WildFlyArtifactFactory extends AbstractArtifactFactory {
     private final BeanManager beanManager;
 
     public WildFlyArtifactFactory(final BeanManager beanManager) {
@@ -58,15 +58,15 @@ public final class WildFlyArtifactFactory extends AbstractArtifactFactory {
         if (beanManager == null) {
             return null;
         }
-        WildFlyBatchLogger.LOGGER.tracef("Looking up bean reference for '%s'", ref);
+        BatchLogger.LOGGER.tracef("Looking up bean reference for '%s'", ref);
         final Set<Bean<?>> beans = beanManager.getBeans(ref);
         final Iterator<Bean<?>> iter = beans.iterator();
         if (iter.hasNext()) {
             final Bean<?> bean = iter.next();
-            WildFlyBatchLogger.LOGGER.tracef("Found bean '%s' for reference '%s'", bean, ref);
+            BatchLogger.LOGGER.tracef("Found bean '%s' for reference '%s'", bean, ref);
             return bean;
         }
-        WildFlyBatchLogger.LOGGER.tracef("No bean found for reference '%s;'", ref);
+        BatchLogger.LOGGER.tracef("No bean found for reference '%s;'", ref);
         return null;
     }
 }

@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import javax.batch.operations.JobOperator;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -70,25 +68,22 @@ public class BatchJobResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(RUNNING_EXECUTIONS, new JobOperationReadOnlyStepHandler() {
             @Override
-            protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
-                model.set(jobOperator.getRunningExecutions(jobName).size());
+            protected void updateModel(final OperationContext context, final ModelNode model, final WildFlyJobOperator jobOperator, final String jobName) throws OperationFailedException {
+                model.set(jobOperator.allowMissingJob(() -> jobOperator.getRunningExecutions(jobName).size(), 0));
             }
         });
         resourceRegistration.registerReadOnlyAttribute(INSTANCE_COUNT, new JobOperationReadOnlyStepHandler() {
             @Override
-            protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
-                model.set(jobOperator.getJobInstanceCount(jobName));
+            protected void updateModel(final OperationContext context, final ModelNode model, final WildFlyJobOperator jobOperator, final String jobName) throws OperationFailedException {
+                model.set(jobOperator.allowMissingJob(() -> jobOperator.getJobInstanceCount(jobName), 0));
             }
         });
         resourceRegistration.registerReadOnlyAttribute(JOB_XML_NAMES, new JobOperationReadOnlyStepHandler() {
             @Override
-            protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
+            protected void updateModel(final OperationContext context, final ModelNode model, final WildFlyJobOperator jobOperator, final String jobName) throws OperationFailedException {
                 final ModelNode list = model.setEmptyList();
-                if (jobOperator instanceof JobOperatorService) {
-                    final JobOperatorService jobOperatorService = (JobOperatorService) jobOperator;
-                    for (String jobXmlName : jobOperatorService.getJobDescriptors().getJobXmlNames(jobName)) {
-                        list.add(jobXmlName);
-                    }
+                for (String jobXmlName : jobOperator.getJobXmlNames(jobName)) {
+                    list.add(jobXmlName);
                 }
             }
         });

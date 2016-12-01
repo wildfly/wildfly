@@ -25,7 +25,7 @@ package org.wildfly.extension.batch.job.repository;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.wildfly.jberet._private.WildFlyBatchLogger;
+import org.wildfly.extension.batch._private.BatchLogger;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -56,6 +56,6 @@ public enum JobRepositoryType {
         if (MAP.containsKey(value)) {
             return MAP.get(value);
         }
-        throw WildFlyBatchLogger.LOGGER.invalidJobRepositoryType(value);
+        throw BatchLogger.LOGGER.invalidJobRepositoryType(value);
     }
 }
