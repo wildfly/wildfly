@@ -70,7 +70,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
  */
 public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> {
 
-    public static final EJB3Subsystem12Parser INSTANCE = new EJB3Subsystem12Parser();
     protected static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
 
     protected EJB3Subsystem12Parser() {

@@ -51,8 +51,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
  */
 public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
 
-    public static final EJB3Subsystem20Parser INSTANCE = new EJB3Subsystem20Parser();
-
     protected EJB3Subsystem20Parser() {
     }
 

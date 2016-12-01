@@ -40,8 +40,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
  */
 public class EJB3Subsystem14Parser extends EJB3Subsystem13Parser {
 
-    public static final EJB3Subsystem14Parser INSTANCE = new EJB3Subsystem14Parser();
-
     protected EJB3Subsystem14Parser() {
     }
 

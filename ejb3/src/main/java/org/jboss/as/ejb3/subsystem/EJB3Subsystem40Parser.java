@@ -57,8 +57,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INS
  */
 public class EJB3Subsystem40Parser extends EJB3Subsystem30Parser {
 
-    public static final EJB3Subsystem40Parser INSTANCE = new EJB3Subsystem40Parser();
-
     protected EJB3Subsystem40Parser() {
     }
 

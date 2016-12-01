@@ -62,9 +62,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
  */
 public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> {
 
-    public static final EJB3Subsystem11Parser INSTANCE = new EJB3Subsystem11Parser();
-
-    private EJB3Subsystem11Parser() {
+    EJB3Subsystem11Parser() {
     }
 
     /**

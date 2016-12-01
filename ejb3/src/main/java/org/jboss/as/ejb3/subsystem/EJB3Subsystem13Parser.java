@@ -48,8 +48,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
 
-    public static final EJB3Subsystem13Parser INSTANCE = new EJB3Subsystem13Parser();
-
     protected EJB3Subsystem13Parser() {
     }
 

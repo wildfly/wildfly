@@ -58,8 +58,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
  */
 public class EJB3Subsystem30Parser extends EJB3Subsystem20Parser {
 
-    public static final EJB3Subsystem30Parser INSTANCE = new EJB3Subsystem30Parser();
-
     protected EJB3Subsystem30Parser() {
     }
 
