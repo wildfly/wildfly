@@ -25,8 +25,7 @@ import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -97,8 +96,7 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
                 .addAttributes(ProtocolResourceDefinition.Attribute.PROPERTIES)
                 ;
         ResourceServiceHandler handler = new ParentResourceServiceHandler<>(this.builderFactory);
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
 
         new RemoteSiteResourceDefinition(this.builderFactory).register(registration);
 

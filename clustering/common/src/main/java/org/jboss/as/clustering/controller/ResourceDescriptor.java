@@ -37,6 +37,7 @@ import java.util.function.Predicate;
 
 import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -66,6 +67,8 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Map<AttributeDefinition, Attribute> aliases = new TreeMap<>(ATTRIBUTE_COMPARATOR);
+    private final List<OperationStepHandler> translators = new LinkedList<>();
+    private final List<OperationStepHandler> runtimeResourceRegistrations = new LinkedList<>();
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -184,6 +187,26 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor addAlias(Attribute alias, Attribute target) {
         this.aliases.put(alias.getDefinition(), target);
+        return this;
+    }
+
+    @Override
+    public Collection<OperationStepHandler> getOperationTranslators() {
+        return this.translators;
+    }
+
+    public ResourceDescriptor addOperationTranslator(OperationStepHandler translator) {
+        this.translators.add(translator);
+        return this;
+    }
+
+    @Override
+    public Collection<OperationStepHandler> getRuntimeResourceRegistrations() {
+        return this.runtimeResourceRegistrations;
+    }
+
+    public ResourceDescriptor addRuntimeResourceRegistration(OperationStepHandler registration) {
+        this.runtimeResourceRegistrations.add(registration);
         return this;
     }
 }

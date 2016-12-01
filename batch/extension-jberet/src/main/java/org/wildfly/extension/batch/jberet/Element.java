@@ -38,6 +38,7 @@ public enum Element {
     IN_MEMORY("in-memory"),
     NAMED("named"),
     RESTART_JOBS_ON_RESUME("restart-jobs-on-resume"),
+    SECURITY_DOMAIN("security-domain"),
     THREAD_FACTORY("thread-factory"),
     THREAD_POOL("thread-pool"),
     ;

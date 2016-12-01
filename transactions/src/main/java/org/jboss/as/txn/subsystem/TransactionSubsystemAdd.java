@@ -55,6 +55,7 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.deployment.TransactionDependenciesProcessor;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
@@ -425,6 +426,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, recoveryManagerService.getBindingManager())
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, recoveryManagerService.getSuspendControllerInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
                 .setInitialMode(ServiceController.Mode.ACTIVE)

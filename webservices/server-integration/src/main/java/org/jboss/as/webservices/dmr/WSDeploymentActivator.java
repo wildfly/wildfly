@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
+import org.jboss.as.webservices.deployers.GracefulShutdownIntegrationProcessor;
 import org.jboss.as.webservices.deployers.JBossWebservicesDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSClassVerificationProcessor;
 import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
@@ -74,6 +75,7 @@ final class WSDeploymentActivator {
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS, new WSIntegrationProcessorJAXWS_HANDLER());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_WS_SERVICES_DEPS, new WSServiceDependenciesProcessor());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WS_VERIFICATION, new WSClassVerificationProcessor());
+            processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WS_VERIFICATION, new GracefulShutdownIntegrationProcessor());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
             addDeploymentProcessors(processorTarget, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);
         }

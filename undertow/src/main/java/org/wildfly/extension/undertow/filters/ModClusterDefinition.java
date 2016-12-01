@@ -45,6 +45,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowService;
 
 import java.util.Arrays;
@@ -142,6 +143,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setRestartAllServices()
+            .setValidator(PredicateValidator.INSTANCE)
             .build();
 
     public static final AttributeDefinition CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CONNECTIONS_PER_THREAD, ModelType.INT)

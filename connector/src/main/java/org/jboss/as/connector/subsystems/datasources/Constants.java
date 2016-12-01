@@ -246,7 +246,7 @@ public class Constants {
     public static final String STATISTICS = "statistics";
 
 
-    static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, false)
+    static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(DataSource.Tag.CONNECTION_URL.getLocalName())
             .build();
@@ -344,7 +344,7 @@ public class Constants {
     static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.ENLISTMENT_TRACE.getLocalName())
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .build();
 

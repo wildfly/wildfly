@@ -23,10 +23,12 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
@@ -74,14 +76,15 @@ public class UndertowService implements Service<UndertowService> {
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
     private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
-    private final boolean statistics;
+    private volatile boolean statisticsEnabled;
+    private final Set<Consumer<Boolean>> statisticsChangeListenters = new HashSet<>();
 
-    protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean statistics) {
+    protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean statisticsEnabled) {
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
         this.defaultVirtualHost = defaultVirtualHost;
         this.instanceId = instanceId;
-        this.statistics = statistics;
+        this.statisticsEnabled = statisticsEnabled;
     }
 
     public static ServiceName deploymentServiceName(final String serverName, final String virtualHost, final String contextPath) {
@@ -227,7 +230,22 @@ public class UndertowService implements Service<UndertowService> {
     }
 
     public boolean isStatisticsEnabled() {
-        return statistics;
+        return statisticsEnabled;
+    }
+
+    public synchronized void setStatisticsEnabled(boolean statisticsEnabled) {
+        this.statisticsEnabled = statisticsEnabled;
+        for(Consumer<Boolean> listener: statisticsChangeListenters) {
+            listener.accept(statisticsEnabled);
+        }
+    }
+
+    public synchronized void registerStatisticsListener(Consumer<Boolean> listener) {
+        statisticsChangeListenters.add(listener);
+    }
+
+    public synchronized void unregisterStatisticsListener(Consumer<Boolean> listener) {
+        statisticsChangeListenters.remove(listener);
     }
 
     /**

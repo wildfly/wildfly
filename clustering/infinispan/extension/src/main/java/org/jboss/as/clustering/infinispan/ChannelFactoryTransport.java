@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan;
 
 import java.nio.ByteBuffer;
-import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.commons.CacheException;
@@ -36,22 +35,12 @@ import org.infinispan.remoting.transport.jgroups.CommandAwareRpcDispatcher;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.remoting.transport.jgroups.MarshallerAdapter;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Custom {@link JGroupsTransport} that uses a provided channel.
  * @author Paul Ferraro
  */
 public class ChannelFactoryTransport extends JGroupsTransport {
-
-    static {
-        // WFLY-6926 Staggered-gets are buggy, disable them for now
-        PrivilegedAction<Void> action = () -> {
-            System.setProperty("infinispan.stagger.delay", "0");
-            return null;
-        };
-        WildFlySecurityManager.doUnchecked(action);
-    }
 
     private final ChannelFactory factory;
 

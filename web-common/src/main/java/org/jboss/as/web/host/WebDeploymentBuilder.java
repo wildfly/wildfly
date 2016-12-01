@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.undertow.predicate.Predicate;
+
 /**
  * @author Stuart Douglas
  */
@@ -18,6 +20,7 @@ public class WebDeploymentBuilder {
     private ApplicationContextWrapper applicationContextWrapper;
     private final List<ServletBuilder> servlets = new ArrayList<>();
     private final Map<String,String> mimeTypes = new HashMap<>();
+    public final List<Predicate> allowRequestPredicates = new ArrayList<>();
 
     public ClassLoader getClassLoader() {
         return classLoader;
@@ -52,6 +55,15 @@ public class WebDeploymentBuilder {
     public WebDeploymentBuilder setDocumentRoot(final File documentRoot) {
         this.documentRoot = documentRoot;
         return this;
+    }
+
+    public WebDeploymentBuilder addAllowedRequestPredicate(Predicate predicate) {
+        allowRequestPredicates.add(predicate);
+        return this;
+    }
+
+    public List<Predicate> getAllowRequestPredicates() {
+        return Collections.unmodifiableList(allowRequestPredicates);
     }
 
     public Map<String, String> getMimeTypes() {

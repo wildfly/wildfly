@@ -95,11 +95,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.el</groupId>
-            <artifactId>jboss-el-api_3.0_spec</artifactId>
-        </dependency>
-        
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>

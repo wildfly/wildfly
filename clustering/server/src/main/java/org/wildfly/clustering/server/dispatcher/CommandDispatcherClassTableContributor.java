@@ -23,6 +23,7 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.dispatcher.Command;
@@ -37,6 +38,6 @@ public class CommandDispatcherClassTableContributor implements ClassTableContrib
 
     @Override
     public Collection<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(Command.class, NoSuchService.class);
+        return Arrays.<Class<?>>asList(Command.class, NoSuchService.class, ExecutionException.class);
     }
 }

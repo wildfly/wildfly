@@ -18,6 +18,7 @@ package org.wildfly.extension.batch.jberet;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.JobExecutor;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * A configuration for the {@link org.jberet.spi.BatchEnvironment} behavior.
@@ -47,4 +48,11 @@ public interface BatchConfiguration {
      * @return the default job executor
      */
     JobExecutor getDefaultJobExecutor();
+
+    /**
+     * Returns the security domain if defined.
+     *
+     * @return the security domain or {@code null} if not defined
+     */
+    SecurityDomain getSecurityDomain();
 }

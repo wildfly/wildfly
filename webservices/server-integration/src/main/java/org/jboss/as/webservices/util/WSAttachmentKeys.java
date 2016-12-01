@@ -29,6 +29,7 @@ import org.jboss.as.webservices.webserviceref.WSRefRegistry;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.invocation.RejectionRule;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
@@ -54,6 +55,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
     public static final AttachmentKey<WSEndpointConfigMapping> WS_ENDPOINT_CONFIG_MAPPING_KEY = AttachmentKey.create(WSEndpointConfigMapping.class);
     public static final AttachmentKey<ServerConfig> SERVER_CONFIG_KEY = AttachmentKey.create(ServerConfig.class);
+    public static final AttachmentKey<RejectionRule> REJECTION_RULE_KEY = AttachmentKey.create(RejectionRule.class);
 
     private WSAttachmentKeys() {
         // forbidden inheritance

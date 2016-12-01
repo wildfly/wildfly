@@ -100,6 +100,7 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
         TransformationDescription.Tools.register(get130TransformationDescription(), subsystem, ModelVersion.create(1, 3, 0)); //EAP 6.2.0
         TransformationDescription.Tools.register(get200TransformationDescription(), subsystem, ModelVersion.create(2, 0, 0));
         TransformationDescription.Tools.register(get300TransformationDescription(), subsystem, ModelVersion.create(3, 0, 0));
+        TransformationDescription.Tools.register(get400TransformationDescription(), subsystem, ModelVersion.create(4, 0, 0));
     }
 
 
@@ -141,6 +142,15 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
         JdbcDriverDefinition.registerTransformers300(builder);
         DataSourceDefinition.registerTransformers300(builder);
         XaDataSourceDefinition.registerTransformers300(builder);
+        return builder.build();
+    }
+
+    static TransformationDescription get400TransformationDescription() {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        DataSourceDefinition.registerTransformers400(builder);
+        XaDataSourceDefinition.registerTransformers400(builder);
         return builder.build();
     }
 

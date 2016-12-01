@@ -45,15 +45,18 @@ public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> imp
 
     private final EvictionConfigurationBuilder builder = new ConfigurationBuilder().eviction();
 
+    private volatile EvictionStrategy strategy;
+
     EvictionBuilder(PathAddress cacheAddress) {
         super(CacheComponent.EVICTION, cacheAddress);
     }
 
     @Override
     public Builder<EvictionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        EvictionStrategy strategy = ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, model), EvictionStrategy.class);
-        this.builder.strategy(strategy);
-        if (strategy.isEnabled()) {
+        this.strategy = ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, model), EvictionStrategy.class);
+        // Use MANUAL instead of NONE to silence log WARNs on cache configuration validation
+        this.builder.strategy(this.strategy.isEnabled() ? this.strategy : EvictionStrategy.MANUAL);
+        if (this.strategy.isEnabled()) {
             this.builder.type(EvictionType.COUNT).size(MAX_ENTRIES.resolveModelAttribute(context, model).asLong());
         }
         return this;

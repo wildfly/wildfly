@@ -46,6 +46,20 @@
           <artifactId>hibernate-validator</artifactId>
         </dependency>
         <dependency>
+            <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
+                  default configuration-->
+            <groupId>org.jboss.spec.javax.el</groupId>
+            <artifactId>jboss-el-api_3.0_spec</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
+                  default configuration-->
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
@@ -94,12 +108,6 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <!-- Needed for Hibernate Validator since it asserts the existance of javax.el during bootstrap-->
-            <groupId>org.jboss.spec.javax.el</groupId>
-            <artifactId>jboss-el-api_3.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

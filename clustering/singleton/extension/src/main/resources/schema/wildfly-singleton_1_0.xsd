@@ -56,9 +56,12 @@
                 <xs:documentation>Identifies the cache-container used to back the singleton deployment policy.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="cache" type="xs:string" default="default">
+        <xs:attribute name="cache" type="xs:string">
             <xs:annotation>
-                <xs:documentation>Identifies the cache within the given cache container used to back the singleton deployment policy.</xs:documentation>
+                <xs:documentation>
+                    Identifies the cache within the given cache container used to back the singleton deployment policy.
+                    If undefined, the default-cache of the specified cache container will be used.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="quorum" type="xs:integer" default="1">

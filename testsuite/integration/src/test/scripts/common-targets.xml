@@ -136,6 +136,7 @@
                     <include name="**/standalone*-ha.xml"/>
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
+                    <include name="**/standalone-xts.xml"/>
                 </fileset>
                 <param name="portOffset" expression="@{offset}"/>
                 <param name="nativeInterfaceManagementPort" expression="@{nativePort}"/>
@@ -148,6 +149,7 @@
                    <include name="**/standalone*-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>
+                   <include name="**/standalone-xts.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>

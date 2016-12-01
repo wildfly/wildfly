@@ -29,14 +29,9 @@ import java.util.ServiceLoader;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -53,14 +48,6 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
         InfinispanLogger.ROOT_LOGGER.activatingSubsystem();
-
-        OperationStepHandler step = new AbstractDeploymentChainStep() {
-            @Override
-            protected void execute(DeploymentProcessorTarget target) {
-                target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor());
-            }
-        };
-        context.addStep(step, OperationContext.Stage.RUNTIME);
 
         PathAddress address = context.getCurrentAddress();
         ServiceTarget target = context.getServiceTarget();

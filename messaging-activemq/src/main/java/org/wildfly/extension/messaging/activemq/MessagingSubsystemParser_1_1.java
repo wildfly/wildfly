@@ -72,9 +72,12 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(MessagingSubsystemRootResourceDefinition.INSTANCE)
+        xmlDescription = builder(MessagingExtension.SUBSYSTEM_PATH)
+                .addAttributes(
+                        MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
+                        MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
                 .addChild(
-                        builder(ServerDefinition.INSTANCE)
+                        builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(
                                         // no attribute groups
                                         ServerDefinition.PERSISTENCE_ENABLED,
@@ -88,8 +91,9 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
                                         ServerDefinition.CONNECTION_TTL_OVERRIDE,
                                         ServerDefinition.ASYNC_CONNECTION_EXECUTION_ENABLED,
                                         // security
-                                        ServerDefinition.SECURITY_DOMAIN,
                                         ServerDefinition.SECURITY_ENABLED,
+                                        ServerDefinition.SECURITY_DOMAIN,
+                                        ServerDefinition.ELYTRON_DOMAIN,
                                         ServerDefinition.SECURITY_INVALIDATION_INTERVAL,
                                         ServerDefinition.OVERRIDE_IN_VM_SECURITY,
                                         // cluster

@@ -28,24 +28,27 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.CapabilityRegistration;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
-import org.jboss.as.clustering.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
+import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimplePathOperationTransformer;
@@ -285,26 +288,18 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(ProtocolResourceDefinition.Attribute.class)
-                .addExtraParameters(ThreadingAttribute.class)
+                .addAttributes(ThreadingAttribute.class)
                 .addExtraParameters(ProtocolResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(ProtocolResourceDefinition.Capability.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
                 ;
         ResourceServiceHandler handler = new ParentResourceServiceHandler<>(address -> new TransportConfigurationBuilder(address));
-        new RestartParentResourceAddStepHandler<ChannelFactory>(this.parentBuilderFactory, descriptor, handler) {
-            @Override
-            protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-                super.populateModel(operation, model);
-                // Add deprecated threading attributes to the model for now
-                for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
-                    attribute.getDefinition().validateAndSet(operation, model);
-                }
-            }
-        }.register(registration);
+        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
         new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, () -> Stream.concat(EnumSet.allOf(Attribute.class).stream(), EnumSet.allOf(ProtocolResourceDefinition.Attribute.class).stream()).map(attribute -> attribute.getDefinition()).collect(Collectors.toList())).register(registration);
 
-        new ReloadRequiredWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(attribute -> attribute.getDefinition()).collect(Collectors.toList())) {
+        new ModelOnlyWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(attribute -> attribute.getDefinition()).collect(Collectors.toList())) {
             @Override
             protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
                 // Add a new step to validate instead of doing it directly in this method.
@@ -327,6 +322,8 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
                 }, OperationContext.Stage.MODEL);
             }
         }.register(registration);
+
+        new CapabilityRegistration(Capability.class).register(registration);
 
         EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
 

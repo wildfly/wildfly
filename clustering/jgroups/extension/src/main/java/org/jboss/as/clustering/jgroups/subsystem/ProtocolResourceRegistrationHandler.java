@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.STACK;
 import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.MODULE;
 
 import java.util.Collections;
@@ -66,14 +67,6 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
  * @author Paul Ferraro
  */
 public class ProtocolResourceRegistrationHandler implements OperationStepHandler, ProtocolMetricsHandler.ProtocolLocator {
-
-    private final String name;
-    private final PathAddress stackAddress;
-
-    public ProtocolResourceRegistrationHandler(String name, PathAddress stackAddress) {
-        this.name = name;
-        this.stackAddress = stackAddress;
-    }
 
     @Override
     public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
@@ -126,12 +119,14 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         };
 
         Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-        ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate().registerOverrideModel(this.name, provider);
+        String stack = STACK.resolveModelAttribute(context, resource.getModel()).asString();
+        ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate().registerOverrideModel(context.getCurrentAddressValue(), provider);
 
-        Resource stackResource = context.readResourceFromRoot(this.stackAddress, false);
+        PathAddress stackAddress = context.getCurrentAddress().getParent().append(StackResourceDefinition.pathElement(stack));
+        Resource stackResource = context.readResourceFromRoot(stackAddress, false);
 
         for (String name: stackResource.getChildrenNames(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
-            PathAddress transportAddress = this.stackAddress.append(TransportResourceDefinition.pathElement(name));
+            PathAddress transportAddress = stackAddress.append(TransportResourceDefinition.pathElement(name));
             ModelNode transport = context.readResourceFromRoot(transportAddress, false).getModel();
             ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, transport));
             Class<? extends Protocol> transportClass = findProtocolClass(context, name, module);
@@ -140,7 +135,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         }
 
         for (String name: stackResource.getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-            Resource protocolResource = context.readResourceFromRoot(this.stackAddress.append(ProtocolResourceDefinition.pathElement(name)), false);
+            Resource protocolResource = context.readResourceFromRoot(stackAddress.append(ProtocolResourceDefinition.pathElement(name)), false);
             ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, protocolResource.getModel()));
             Class<? extends Protocol> protocolClass = findProtocolClass(context, name, module);
             registration.registerSubModel(this.createProtocolResourceDefinition(name, protocolClass));

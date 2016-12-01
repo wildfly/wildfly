@@ -20,13 +20,16 @@
 
 <configuration>
     <authentication-client xmlns="urn:elytron:1.0">
-        <rules>
-            <rule>
+        <authentication-rules>
+            <rule use-configuration="default" />
+        </authentication-rules>
+        <authentication-configurations>
+            <configuration name="default">
                 <allow-all-sasl-mechanisms />
                 <set-mechanism-properties>
                     <property key="wildfly.sasl.local-user.quiet-auth" value="true" />
                  </set-mechanism-properties>
-            </rule>
-        </rules>
+            </configuration>
+        </authentication-configurations>
     </authentication-client>
 </configuration>

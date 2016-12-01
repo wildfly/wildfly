@@ -21,16 +21,18 @@
  */
 package org.wildfly.extension.undertow.deployment;
 
-import io.undertow.server.HandlerWrapper;
-import io.undertow.servlet.ServletExtension;
-import io.undertow.servlet.api.ThreadSetupHandler;
-import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
+import java.io.File;
+
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 
-import java.io.File;
+import io.undertow.predicate.Predicate;
+import io.undertow.server.HandlerWrapper;
+import io.undertow.servlet.ServletExtension;
+import io.undertow.servlet.api.ThreadSetupHandler;
+import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 
 /**
  * Class defining {@link AttachmentKey}s for Undertow-specific attachments.
@@ -58,6 +60,8 @@ public final class UndertowAttachments {
     public static final AttachmentKey<AttachmentList<File>> EXTERNAL_RESOURCES = AttachmentKey.createList(File.class);
 
     public static final AttachmentKey<ServletContainerService> SERVLET_CONTAINER_SERVICE = AttachmentKey.create(ServletContainerService.class);
+
+    public static final AttachmentKey<AttachmentList<Predicate>> ALLOW_REQUEST_WHEN_SUSPENDED = AttachmentKey.createList(Predicate.class);
 
     private UndertowAttachments() {
     }

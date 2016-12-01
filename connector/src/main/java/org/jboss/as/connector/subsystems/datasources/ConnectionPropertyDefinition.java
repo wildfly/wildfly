@@ -27,7 +27,6 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -50,7 +49,7 @@ public class ConnectionPropertyDefinition extends SimpleResourceDefinition {
         super(PATH_CONNECTION_PROPERTY,
                 DataSourcesExtension.getResourceDescriptionResolver("data-source", "connection-properties"),
                 deployed ? null : ConnectionPropertyAdd.INSTANCE,
-                deployed ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
+                deployed ? null : ConnectionPropertyRemove.INSTANCE);
         this.deployed = deployed;
 
     }

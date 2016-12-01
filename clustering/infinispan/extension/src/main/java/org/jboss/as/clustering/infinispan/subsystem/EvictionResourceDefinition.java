@@ -22,11 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
+
 import org.infinispan.eviction.EvictionStrategy;
-import org.jboss.as.clustering.controller.AddStepHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.clustering.controller.RemoveStepHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -60,7 +61,7 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EVICTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class)),
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL)))),
         MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
         ;
         private final AttributeDefinition definition;
@@ -118,8 +119,7 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new EvictionBuilder(address.getParent()));
-        new AddStepHandler(descriptor, handler).register(registration);
-        new RemoveStepHandler(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);

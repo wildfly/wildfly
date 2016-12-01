@@ -87,6 +87,11 @@
             <artifactId>jgroups</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
             <version>${project.version}</version>

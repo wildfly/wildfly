@@ -28,7 +28,9 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
+import io.undertow.UndertowOptions;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.OpenListener;
@@ -78,7 +80,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     protected volatile OpenListener openListener;
     private volatile boolean enabled;
     private volatile boolean started;
-
+    private Consumer<Boolean> statisticsChangeListener;
 
     protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions) {
         this.name = name;
@@ -179,6 +181,13 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
                 throw UndertowLogger.ROOT_LOGGER.couldNotStartListener(name, e);
             }
         }
+        statisticsChangeListener = (enabled) -> {
+            OptionMap options = openListener.getUndertowOptions();
+            OptionMap.Builder builder = OptionMap.builder().addAll(options);
+            builder.set(UndertowOptions.ENABLE_STATISTICS, enabled);
+            openListener.setUndertowOptions(builder.getMap());
+        };
+        getUndertowService().registerStatisticsListener(statisticsChangeListener);
     }
 
     protected abstract void cleanFailedStart();
@@ -191,6 +200,8 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
             stopListening();
         }
         unregisterBinding();
+        getUndertowService().unregisterStatisticsListener(statisticsChangeListener);
+        statisticsChangeListener = null;
     }
 
     void addWrapperHandler(HandlerWrapper wrapper){

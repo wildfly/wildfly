@@ -151,15 +151,43 @@
 
     <xs:complexType name="defaultWorkmanagerType">
         <xs:all>
-            <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1"></xs:element>
-            <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0"></xs:element>
+            <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Thread pool for short running jobs.
+                        Long running jobs are identified by the HintsContext.LONGRUNNING_HINT with a value of true.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Thread pool for long running jobs.
+                        Long running jobs are identified by the HintsContext.LONGRUNNING_HINT with a value of true.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:all>
     </xs:complexType>
 
     <xs:complexType name="workmanagerType">
         <xs:all>
-            <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1"></xs:element>
-            <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0"></xs:element>
+            <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Thread pool for short running jobs.
+                        Long running jobs are identified by the HintsContext.LONGRUNNING_HINT with a value of true.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Thread pool for long running jobs.
+                        Long running jobs are identified by the HintsContext.LONGRUNNING_HINT with a value of true.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:all>
         <xs:attribute name="name" type="xs:token" use="required">
             <xs:annotation>
@@ -172,8 +200,22 @@
 
   <xs:complexType name="distributedWorkmanagerType">
           <xs:all>
-              <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1"></xs:element>
-              <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0"></xs:element>
+              <xs:element name="short-running-threads" type="thread-pool" maxOccurs="1" minOccurs="1">
+                  <xs:annotation>
+                      <xs:documentation>
+                          Thread pool for short running jobs.
+                          Long running jobs are identified by the HintsContext.LONGRUNNING_HINT with a value of true.
+                      </xs:documentation>
+                  </xs:annotation>
+              </xs:element>
+              <xs:element name="long-running-threads" type="thread-pool" maxOccurs="1" minOccurs="0">
+                  <xs:annotation>
+                      <xs:documentation>
+                          Thread pool for long running jobs.
+                          Long running jobs are identified by the HintsContext.LONGRUNNING_HINT with a value of true.
+                      </xs:documentation>
+                  </xs:annotation>
+              </xs:element>
               <xs:element name="policy" type="policyType" maxOccurs="1" minOccurs="0" />
               <xs:element name="selector" type="selectorType" maxOccurs="1" minOccurs="0" />
           </xs:all>
@@ -194,6 +236,12 @@
     </xs:complexType>
 
     <xs:complexType name="bootstrap-contextType">
+        <xs:annotation>
+            <xs:documentation>
+                This provides a mechanism to pass a bootstrap context to a resource adapter instance when it is bootstrapped.
+                The bootstrap context contains references to useful facilities that could be used by the resource adapter instance.
+            </xs:documentation>
+        </xs:annotation>
         <xs:attribute name="name" type="xs:token" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -211,9 +259,27 @@
     </xs:complexType>
 
     <xs:complexType name="cached-connection-managerType">
-        <xs:attribute name="debug" type="xs:boolean" use="optional"></xs:attribute>
-        <xs:attribute name="error" type="xs:boolean" use="optional"></xs:attribute>
-        <xs:attribute name="ignore-unknown-connections" type="xs:boolean" use="optional"></xs:attribute>
+        <xs:attribute name="debug" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Enable/disable debug information logging
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="error" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Enable/disable error information logging
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ignore-unknown-connections" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Do not cache unknown connections
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
      <xs:complexType name="thread-pool">

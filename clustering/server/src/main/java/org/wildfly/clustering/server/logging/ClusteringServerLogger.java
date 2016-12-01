@@ -82,8 +82,8 @@ public interface ClusteringServerLogger extends BasicLogger {
     @Message(id = 7, value = "Just reached required quorum of %2$d for %1$s service. If this cluster loses another member, no node will be chosen to provide this service.")
     void quorumJustReached(String service, int quorum);
 
-    @Message(id = 8, value = "Expected service %s value from singleton master only, but instead received %d results.")
-    IllegalStateException unexpectedResponseCount(String serviceName, int results);
+    @Message(id = 8, value = "Detected multiple primary providers for %s service: %s")
+    IllegalStateException multiplePrimaryProvidersDetected(String serviceName, Collection<Node> nodes);
 
     @Message(id = 9, value = "Singleton service %s is not started.")
     IllegalStateException notStarted(String serviceName);

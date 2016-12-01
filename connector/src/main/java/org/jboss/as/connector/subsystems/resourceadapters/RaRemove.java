@@ -53,6 +53,7 @@ public class RaRemove implements OperationStepHandler {
 
         final ModelNode opAddr = operation.require(OP_ADDR);
         final String idName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
+        final boolean isModule;
 
 
         // Compensating is add
@@ -62,8 +63,10 @@ public class RaRemove implements OperationStepHandler {
             throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
         if (model.get(ARCHIVE.getName()).isDefined()) {
+            isModule = false;
             archiveOrModuleName = model.get(ARCHIVE.getName()).asString();
         } else {
+            isModule = true;
             archiveOrModuleName = model.get(MODULE.getName()).asString();
         }
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
@@ -82,15 +85,18 @@ public class RaRemove implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final boolean wasActive;
                 wasActive = RaOperationUtil.removeIfActive(context, archiveOrModuleName, idName);
+
                 if (wasActive) {
-                    context.reloadRequired();
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        @Override
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            context.revertReloadRequired();
-                        }
-                    });
-                    return;
+                    if(!context.isResourceServiceRestartAllowed()) {
+                        context.reloadRequired();
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                context.revertReloadRequired();
+                            }
+                        });
+                        return;
+                    }
                 }
 
                 ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, idName);

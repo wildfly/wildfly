@@ -319,6 +319,10 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
             String newKey = newEntry.getKey();
             Object value = newEntry.getValue();
             String legacyKey = PARAM_KEY_MAPPING.getOrDefault(newKey, newKey);
+            if (org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.ACTIVEMQ_SERVER_NAME.equals(legacyKey)) {
+                // property specific to ActiveMQ that can not be mapped to HornetQ
+                continue;
+            }
             legacyParams.put(legacyKey, value);
         }
         return legacyParams;

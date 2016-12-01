@@ -22,6 +22,10 @@
 
 package org.jboss.as.clustering.controller.validation;
 
+import java.lang.reflect.Array;
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 
@@ -31,19 +35,20 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 public class EnumValidatorBuilder<E extends Enum<E>> extends AbstractParameterValidatorBuilder {
 
     private final Class<E> enumClass;
-    private final E[] allowed;
+    private final Set<E> allowed;
 
     public EnumValidatorBuilder(Class<E> enumClass) {
-        this(enumClass, enumClass.getEnumConstants());
+        this(enumClass, EnumSet.allOf(enumClass));
     }
 
-    public EnumValidatorBuilder(Class<E> enumClass, @SuppressWarnings("unchecked") E... allowed) {
+    public EnumValidatorBuilder(Class<E> enumClass, Set<E> allowed) {
         this.enumClass = enumClass;
         this.allowed = allowed;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ParameterValidator build() {
-        return new EnumValidator<>(this.enumClass, this.allowsUndefined, this.allowsExpressions, this.allowed);
+        return new EnumValidator<>(this.enumClass, this.allowsUndefined, this.allowsExpressions, this.allowed.toArray((E[]) Array.newInstance(this.enumClass, this.allowed.size())));
     }
 }

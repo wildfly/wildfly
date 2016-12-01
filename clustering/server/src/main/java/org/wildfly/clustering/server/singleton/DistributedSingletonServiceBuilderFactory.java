@@ -40,6 +40,11 @@ public class DistributedSingletonServiceBuilderFactory implements SingletonServi
 
     @Override
     public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
-        return new DistributedSingletonServiceBuilder<>(this.context, name, service);
+        return this.createSingletonServiceBuilder(name, service, null);
+    }
+
+    @Override
+    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService) {
+        return new DistributedSingletonServiceBuilder<>(this.context, name, primaryService, backupService);
     }
 }

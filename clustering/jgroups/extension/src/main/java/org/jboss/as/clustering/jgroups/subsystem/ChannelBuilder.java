@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -80,7 +81,7 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
 
     @Override
     public ServiceBuilder<Channel> build(ServiceTarget target) {
-        ServiceBuilder<Channel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target);
+        ServiceBuilder<Channel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
         Stream.of(this.factory, this.cluster).forEach(dependency -> dependency.register(builder));
         return (this.server != null) ? this.server.register(builder) : builder;
     }

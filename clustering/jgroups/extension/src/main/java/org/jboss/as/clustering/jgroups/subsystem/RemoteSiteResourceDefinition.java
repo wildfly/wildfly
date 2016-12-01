@@ -21,13 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
+import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
@@ -185,7 +184,6 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RemoteSiteConfigurationBuilder(address.getParent(), address.getLastElement().getValue()));
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
     }
 }

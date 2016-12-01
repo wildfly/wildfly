@@ -100,6 +100,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
 
     protected static final SimpleAttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder(Constants.PREDICATE, ModelType.STRING, true)
             .setAllowExpression(true)
+            .setValidator(PredicateValidator.INSTANCE)
             .setRestartAllServices()
             .build();
 

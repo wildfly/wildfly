@@ -24,10 +24,12 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Map;
 
+import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -44,14 +46,20 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     private final RemoveStepHandlerDescriptor descriptor;
     private final ResourceServiceHandler handler;
-
-    public RemoveStepHandler(RemoveStepHandlerDescriptor descriptor) {
-        this(descriptor, null);
-    }
+    private final OperationEntry.Flag flag;
 
     public RemoveStepHandler(RemoveStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+        this(descriptor, handler, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+    }
+
+    protected RemoveStepHandler(RemoveStepHandlerDescriptor descriptor, OperationEntry.Flag flag) {
+        this(descriptor, null, flag);
+    }
+
+    private RemoveStepHandler(RemoveStepHandlerDescriptor descriptor, ResourceServiceHandler handler, OperationEntry.Flag flag) {
         this.descriptor = descriptor;
         this.handler = handler;
+        this.flag = flag;
     }
 
     @Override
@@ -61,18 +69,48 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        // We explicitly need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
-        PathAddress address = context.getCurrentAddress();
-        this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        // Determine whether super impl will actually remove the resource
+        boolean remove = !resource.getChildTypes().stream().anyMatch(type -> resource.getChildren(type).stream().filter(entry -> !entry.isRuntime()).map(entry -> entry.getPathElement()).anyMatch(path -> resource.hasChild(path)));
+        if (remove) {
+            // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
+            PathAddress address = context.getCurrentAddress();
+            this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
 
-        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
-        registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
-                .filter(access -> access != null)
-                .map(access -> access.getAttributeDefinition())
-                    .filter(attribute -> (attribute != null) && attribute.hasCapabilityRequirements())
-                    .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
+            ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+            registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
+                    .filter(Predicates.isNotNull())
+                    .map(access -> access.getAttributeDefinition())
+                        .filter(Predicates.isNotNull())
+                        .filter(attribute -> attribute.hasCapabilityRequirements())
+                        .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
+
+            // Remove any runtime child resources
+            removeRuntimeChildren(context, PathAddress.EMPTY_ADDRESS);
+        }
 
         super.performRemove(context, operation, model);
+
+        if (remove) {
+            PathAddress address = context.getResourceRegistration().getPathAddress();
+            PathElement path = address.getLastElement();
+            // If override model was registered, unregister it
+            if (!path.isWildcard() && (context.getResourceRegistration().getParent().getSubModel(PathAddress.pathAddress(path.getKey(), PathElement.WILDCARD_VALUE)) != null)) {
+                context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
+            }
+        }
+    }
+
+    private static void removeRuntimeChildren(OperationContext context, PathAddress address) {
+        Resource resource = context.readResource(address);
+        for (String type : resource.getChildTypes()) {
+            for (Resource.ResourceEntry entry : resource.getChildren(type)) {
+                if (entry.isRuntime()) {
+                    removeRuntimeChildren(context, address.append(entry.getPathElement()));
+                    context.removeResource(address);
+                }
+            }
+        }
     }
 
     @Override
@@ -100,6 +138,6 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_RESOURCE_SERVICES).build(), this);
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptor.getDescriptionResolver()).withFlag(this.flag).build(), this);
     }
 }
