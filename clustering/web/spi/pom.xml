@@ -48,23 +48,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
