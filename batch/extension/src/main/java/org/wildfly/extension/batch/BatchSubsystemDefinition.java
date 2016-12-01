@@ -178,7 +178,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model)
+        protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
             final boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
