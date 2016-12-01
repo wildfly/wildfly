@@ -98,7 +98,7 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
         }
     }
 
-    private class DoubleRangeValidator extends ModelTypeValidator {
+    private static class DoubleRangeValidator extends ModelTypeValidator {
         private final Bound lowerBound;
         private final Bound upperBound;
 
