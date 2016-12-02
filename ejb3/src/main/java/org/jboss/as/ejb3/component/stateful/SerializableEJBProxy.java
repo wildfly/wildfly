@@ -22,39 +22,35 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientContextIdentifier;
-import org.jboss.ejb.client.EJBLocator;
-
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBLocator;
+
 /**
- * A serializable EJB proxy which serializes the {@link EJBLocator} and the {@link EJBClientContextIdentifier}
- * associated with the EJB proxy
+ * A serializable EJB proxy which serializes the {@link EJBLocator} and the associated with the EJB proxy
  *
  * @author Jaikiran Pai
  */
-class SerializableEJBProxyWithEJBClientContextIdentifier implements Serializable {
+class SerializableEJBProxy implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private final EJBLocator<?> ejbLocator;
-    private final EJBClientContextIdentifier ejbClientContextIdentifier;
 
     /**
      * @param ejbProxy The EJB proxy
      * @throws IllegalArgumentException If the passed proxy is not an EJB proxy
      */
-    SerializableEJBProxyWithEJBClientContextIdentifier(final Object ejbProxy) {
+    SerializableEJBProxy(final Object ejbProxy) {
         // we hold on to the EJB locator and the EJB client context identifier
         this.ejbLocator = EJBClient.getLocatorFor(ejbProxy);
-        this.ejbClientContextIdentifier = EJBClient.getEJBClientContextIdentifierFor(ejbProxy);
     }
 
     @SuppressWarnings("unused")
     private Object readResolve() throws ObjectStreamException {
         // recreate the proxy using the locator and the EJB client context identifier
-        return EJBClient.createProxy(this.ejbLocator, this.ejbClientContextIdentifier);
+        return EJBClient.createProxy(this.ejbLocator);
     }
 }

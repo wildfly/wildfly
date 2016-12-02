@@ -35,10 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.remote._private.PackedInteger;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.ejb3.remote.protocol.versionone.ProtocolV1ClassTable;
 import org.jboss.as.ejb3.remote.protocol.versionone.ProtocolV1ObjectTable;
-import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.ClassResolver;
@@ -287,4 +287,5 @@ public abstract class AbstractMessageHandler implements MessageHandler {
         marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
         return marshallerFactory.createUnmarshaller(marshallingConfiguration);
     }
+
 }

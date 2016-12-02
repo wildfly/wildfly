@@ -30,19 +30,26 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
-import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.ejb.client.EJBTransportProvider;
+import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.RemotingOptions;
+import org.wildfly.discovery.AttributeValue;
+import org.wildfly.discovery.ServiceURL;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -87,42 +94,42 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                 final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE
                         .resolveModelAttribute(context, profileNode);
                 if (passByValueNode.isDefined()) {
-                    final ServiceName localEjbReceiverServiceName = passByValueNode.asBoolean() == true ? LocalEjbReceiver.BY_VALUE_SERVICE_NAME
-                            : LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME;
-                    builder.addDependency(localEjbReceiverServiceName, LocalEjbReceiver.class,
-                            profileService.getLocalEjbReceiverInjector());
+                    final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() == true ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
+                            : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
+                    final InjectedValue<EJBTransportProvider> localProviderValue = new InjectedValue<>();
+                    builder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, localProviderValue);
+                    profileService.addTransportProvider(localProviderValue);
+
                 } else {
                     // setup a dependency on the default local ejb receiver service configured at the subsystem level
-                    builder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, LocalEjbReceiver.class,
-                            profileService.getLocalEjbReceiverInjector());
+                    final InjectedValue<EJBTransportProvider> localProviderValue = new InjectedValue<>();
+                    builder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, localProviderValue);
+                    profileService.addTransportProvider(localProviderValue);
+
                 }
             }
 
-            if (profileNode.hasDefined(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)) {
-                for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)
-                        .asPropertyList()) {
-                    final ModelNode receiverNode = receiverProperty.getValue();
+            if(profileNode.hasDefined(EJB3SubsystemModel.DISCOVERY)){
+                final ModelNode discoveryNode = profileNode.get(EJB3SubsystemModel.DISCOVERY).get("static");
+                for(final ModelNode urlNode: discoveryNode.get("static-urls").asList()){
+                    ServiceURL.Builder urlBuilder = new ServiceURL.Builder();
+                    for(final Property attribute: urlNode.get("attributes").asPropertyList()){
+                        final String name = attribute.getName();
+                        if(name.equals("uri")){
+                            urlBuilder.setUri(new URI(attribute.getValue().asString()));
+                        } else {
+                            urlBuilder.addAttribute(attribute.getName(), AttributeValue.fromString(attribute.getValue().asString()));
+                        }
+                    }
+                    urlBuilder.setAbstractType(urlNode.get("abstract-type").asString());
+                    urlBuilder.setAbstractTypeAuthority(urlNode.get("abstract-type-authority").asString());
 
-                    final String connectionRef = RemotingEjbReceiverDefinition.OUTBOUND_CONNECTION_REF.resolveModelAttribute(context,
-                            receiverNode).asString();
-                    final long timeout = RemotingEjbReceiverDefinition.CONNECT_TIMEOUT.resolveModelAttribute(context,
-                            receiverNode).asLong();
-                    profileService.addConnectionTimeout(connectionRef, timeout);
-
-                    final ServiceName connectionDependencyService = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME
-                            .append(connectionRef);
-                    final InjectedValue<AbstractOutboundConnectionService> connectionInjector = new InjectedValue<AbstractOutboundConnectionService>();
-                    builder.addDependency(connectionDependencyService, AbstractOutboundConnectionService.class,
-                            connectionInjector);
-                    profileService.addRemotingConnectionInjector(connectionDependencyService, connectionInjector);
-
-                    final ModelNode channelCreationOptionsNode = receiverNode.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
-                    OptionMap channelCreationOptions = createChannelOptionMap(context, channelCreationOptionsNode);
-                    profileService.addChannelCreationOption(connectionRef, channelCreationOptions);
+                    profileService.addServiceUrl(urlBuilder.create());
                 }
+                profileService.addTransportProvider(new ImmediateValue<EJBTransportProvider>(new RemoteTransportProvider()));
             }
             builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | URISyntaxException e) {
             throw new OperationFailedException(e.getLocalizedMessage());
         }
     }

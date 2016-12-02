@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright (c) 2011, Red Hat, Inc., and individual contributors
+  ~ Copyright (c) 2015, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -20,33 +20,15 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.ejb-client">
+<module xmlns="urn:jboss:module:1.0" name="org.wildfly.client.discovery">
 
     <resources>
-        <artifact name="${org.jboss:jboss-ejb-client}"/>
+        <artifact name="${org.wildfly.discovery:wildfly-discovery-client}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.ejb.api"/>
-        <module name="javax.interceptor.api"/>
-        <module name="org.wildfly.client.config"/>
-        <module name="org.wildfly.client.discovery"/>
         <module name="org.wildfly.common"/>
-        <module name="org.wildfly.naming-client"/>
-        <module name="org.jboss.remoting"/>
-        <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river"/>
-        <module name="org.wildfly.security.elytron"/>
-        <module name="javax.transaction.api"/>
-
-        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
-             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
-        <module name="javax.xml.rpc.api"/>
-        <module name="javax.rmi.api"/>
-        <module name="org.omg.api"/>
+        <module name="org.wildfly.client.config"/>
         <module name="org.jboss.modules"/>
     </dependencies>
 </module>

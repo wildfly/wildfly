@@ -31,11 +31,11 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote._private.PackedInteger;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
-import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.MessageOutputStream;
 

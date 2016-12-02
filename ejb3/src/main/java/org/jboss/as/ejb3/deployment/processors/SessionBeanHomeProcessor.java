@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.ejb.EJBHome;
 import javax.ejb.Handle;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -123,7 +124,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         } catch (ClassNotFoundException e) {
                             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                         }
-                        final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
+                        final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass().asSubclass(EJBHome.class), null, true, componentDescription instanceof StatelessComponentDescription);
 
                         //add a dependency on the view to create
                         componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {

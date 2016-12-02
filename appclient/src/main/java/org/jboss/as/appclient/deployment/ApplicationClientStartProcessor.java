@@ -48,8 +48,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -122,7 +120,6 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.OTHER_EE_SETUP_ACTIONS);
 
         if (connectionPropertiesUrl != null) {
-            EJBClientConfiguration configuration;
             try {
                 final File file = new File(connectionPropertiesUrl);
                 final URL url;
@@ -148,21 +145,8 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
                 final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
-                    configuration = new PropertiesBasedEJBClientConfiguration(properties);
 
-                    //if there is no username or callback handler specified in the ejb-client properties file
-                    //we override the default
-                    if (!properties.contains("username") && !properties.contains("callback.handler.class")) {
-                        //no security config so we wrap the configuration
-                        configuration = new ForwardingEjbClientConfiguration(configuration) {
-                            @Override
-                            public CallbackHandler getCallbackHandler() {
-                                return callbackHandler;
-                            }
-                        };
-                    }
-
-                    startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions, configuration);
+                    startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions);
                 } finally {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                 }

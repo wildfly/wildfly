@@ -36,6 +36,7 @@ import java.util.Map;
  */
 @Stateful(passivationCapable = false)
 @Remote(RemoteViewInvoker.class)
+//TODO Elytron - ejb-client4 integration
 public class RemoteViewInvokingBean implements RemoteViewInvoker {
 
     @EJB
@@ -57,10 +58,6 @@ public class RemoteViewInvokingBean implements RemoteViewInvoker {
 
         interceptorData.put(keyOne, valueOne);
         interceptorData.put(keyTwo, valueTwo);
-
-        final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
-        // register the client side interceptor
-        ejbClientContext.registerInterceptor(111112, clientInterceptor);
     }
 
     @Override
