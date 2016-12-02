@@ -231,24 +231,6 @@ public abstract class AnnSBTest {
             Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
         }
 
-        final AuthenticationContext authenticationContext = AuthenticationContext.empty()
-                .with(
-                        MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY
-                                .useCallbackHandler(new AuthenticationCallbackHandler(username, password))
-                                .allowSaslMechanisms("JBOSS-LOCAL-USER", "DIGEST-MD5")
-                                .useProvidersFromClassLoader(AnnSBTest.class.getClassLoader()));
-        final IoFuture<Connection> futureConnection = endpoint.connect(connectionURI, builder.getMap(), authenticationContext);
-        // wait for the connection to be established
-        final Connection connection = IoFutureHelper.get(futureConnection, 5000, TimeUnit.MILLISECONDS);
-        // create a remoting EJB receiver for this connection
-        final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection);
-        // associate it with the client context
-        EJBClientContext context = EJBClientContext.create();
-        context.registerEJBReceiver(receiver);
-        return EJBClientContext.setSelector(new ClosableContextSelector(context, endpoint, connection, receiver));
-    }
-
         try {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
             Assert.assertEquals(echoValue, "alohomora");
