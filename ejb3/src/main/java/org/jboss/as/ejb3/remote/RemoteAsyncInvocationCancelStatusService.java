@@ -41,17 +41,17 @@ public class RemoteAsyncInvocationCancelStatusService implements Service<RemoteA
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "remote-async-invocation-cancellation-tracker");
 
-    private final Map<Short, CancellationFlag> asyncInvocations = new HashMap<Short, CancellationFlag>();
+    private final Map<Integer, CancellationFlag> asyncInvocations = new HashMap<Integer, CancellationFlag>();
 
-    public synchronized void registerAsyncInvocation(final short invocationId, final CancellationFlag cancellationFlag) {
+    public synchronized void registerAsyncInvocation(final int invocationId, final CancellationFlag cancellationFlag) {
         this.asyncInvocations.put(invocationId, cancellationFlag);
     }
 
-    public synchronized CancellationFlag asyncInvocationDone(final short invocationId) {
+    public synchronized CancellationFlag asyncInvocationDone(final int invocationId) {
         return this.asyncInvocations.remove(invocationId);
     }
 
-    public synchronized CancellationFlag getCancelStatus(final short invocationId) {
+    public synchronized CancellationFlag getCancelStatus(final int invocationId) {
         return this.asyncInvocations.get(invocationId);
     }
 

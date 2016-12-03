@@ -41,6 +41,7 @@ import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelRec
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.ejb.protocol.remote.RemoteServer;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.msc.inject.Injector;
@@ -62,7 +63,6 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
- * TODO Elytron - transaction client integration
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
@@ -102,7 +102,8 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public void start(StartContext context) throws StartException {
 
         // Register an EJB channel open listener
-        final OpenListener channelOpenListener = new ChannelOpenListener();
+        OpenListener channelOpenListener = RemoteServer.createOpenListener((server) ->
+                new EJBRemoteServerAssociation(deploymentRepositoryInjectedValue.getValue(),remoteAsyncInvocationCancelStatus.getOptionalValue(),executorService.getOptionalValue()));
         try {
             registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
         } catch (ServiceRegistrationException e) {

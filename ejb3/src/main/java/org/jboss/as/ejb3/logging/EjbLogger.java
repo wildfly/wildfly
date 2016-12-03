@@ -865,8 +865,8 @@ public interface EjbLogger extends BasicLogger {
     void couldNotWriteMethodInvocation(@Cause Throwable cause, Method invokedMethod, String beanName, String appName, String moduleName, String distinctName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 151, value = "Exception while generating session id for component %s with invocation id: %s on channel %s")
-    void exceptionGeneratingSessionId(@Cause Throwable cause, String componentName, short invocationId, Channel channel);
+    @Message(id = 151, value = "Exception while generating session id for component %s with invocation id: %s")
+    void exceptionGeneratingSessionId(@Cause Throwable cause, String componentName, int invocationId);
 
     @LogMessage(level = ERROR)
     @Message(id = 152, value = "Could not write out message to channel due to")

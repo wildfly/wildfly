@@ -136,9 +136,9 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         private final short invocationId;
 
 
-        SessionIDGeneratorTask(final StatefulSessionComponent statefulSessionComponent, final ChannelAssociation channelAssociation, final short invocationId) {
+        SessionIDGeneratorTask(final StatefulSessionComponent statefulSessionComponent, final ChannelAssociation channelAssociation, final int invocationId) {
             this.statefulSessionComponent = statefulSessionComponent;
-            this.invocationId = invocationId;
+            this.invocationId = (short) invocationId;
             this.channelAssociation = channelAssociation;
         }
 
@@ -149,7 +149,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 try {
                     sessionID = statefulSessionComponent.createSessionRemote();
                 } catch (Throwable t) {
-                    EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
+                    //EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), invocationId);
                     SessionOpenRequestHandler.this.writeException(channelAssociation, SessionOpenRequestHandler.this.marshallerFactory, invocationId, t, null);
                     return;
                 }
@@ -157,7 +157,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
                 final Affinity hardAffinity = statefulSessionComponent.getCache().getStrictAffinity();
                 SessionOpenRequestHandler.this.writeSessionId(channelAssociation, invocationId, sessionID, hardAffinity);
             } catch (IOException ioe) {
-                EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(ioe, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
+                //EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(ioe, statefulSessionComponent.getComponentName(), invocationId);
                 // close the channel
                 IoUtils.safeClose(this.channelAssociation.getChannel());
                 return;
