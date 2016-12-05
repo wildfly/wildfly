@@ -25,11 +25,9 @@ package org.jboss.as.naming.subsystem;
 /**
  * @author Eduardo Martins
  */
-public class NamingSubsystem20Parser extends NamingSubsystem14Parser {
+class NamingSubsystem20Parser extends NamingSubsystem14Parser {
 
-    public static final NamingSubsystem20Parser INSTANCE = new NamingSubsystem20Parser();
-
-    private NamingSubsystem20Parser() {
+    NamingSubsystem20Parser() {
         super(NamingSubsystemNamespace.NAMING_2_0);
     }
 }

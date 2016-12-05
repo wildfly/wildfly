@@ -58,9 +58,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>> {
 
-    public static final NamingSubsystem11Parser INSTANCE = new NamingSubsystem11Parser();
-
-    private NamingSubsystem11Parser() {
+    NamingSubsystem11Parser() {
     }
 
     /**
