@@ -23,11 +23,12 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import static org.mockito.Mockito.*;
 
-import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
@@ -39,35 +40,40 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
 public class ExpiredSessionRemoverTestCase {
     @Test
     public void test() {
-        SessionFactory<Object, Object, Object> factory = mock(SessionFactory.class);
+        SessionFactory<UUID, UUID, Object> factory = mock(SessionFactory.class);
+        SessionMetaDataFactory<UUID, Object> metaDataFactory = mock(SessionMetaDataFactory.class);
+        SessionAttributesFactory<UUID> attributesFactory = mock(SessionAttributesFactory.class);
         SessionExpirationListener listener = mock(SessionExpirationListener.class);
-        ImmutableSession validSession = mock(ImmutableSession.class);
-        ImmutableSession expiredSession = mock(ImmutableSession.class);
-        ImmutableSession invalidSession = mock(ImmutableSession.class);
+        ImmutableSessionAttributes expiredAttributes = mock(ImmutableSessionAttributes.class);
         ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
         ImmutableSessionMetaData expiredMetaData = mock(ImmutableSessionMetaData.class);
+        ImmutableSession expiredSession = mock(ImmutableSession.class);
 
         String missingSessionId = "missing";
         String expiredSessionId = "expired";
         String validSessionId = "valid";
 
-        Map.Entry<Object, Object> expiredValue = mock(Map.Entry.class);
-        Map.Entry<Object, Object> validValue = mock(Map.Entry.class);
+        UUID expiredMetaDataValue = UUID.randomUUID();
+        UUID expiredAttributesValue = UUID.randomUUID();
+        UUID validMetaDataValue = UUID.randomUUID();
 
         Remover<String> subject = new ExpiredSessionRemover<>(factory, listener);
 
-        when(factory.tryValue(missingSessionId)).thenReturn(null);
-        when(factory.tryValue(expiredSessionId)).thenReturn(expiredValue);
-        when(factory.tryValue(validSessionId)).thenReturn(validValue);
+        when(factory.getMetaDataFactory()).thenReturn(metaDataFactory);
+        when(factory.getAttributesFactory()).thenReturn(attributesFactory);
+        when(metaDataFactory.tryValue(missingSessionId)).thenReturn(null);
+        when(metaDataFactory.tryValue(expiredSessionId)).thenReturn(expiredMetaDataValue);
+        when(metaDataFactory.tryValue(validSessionId)).thenReturn(validMetaDataValue);
 
-        when(factory.createImmutableSession(expiredSessionId, expiredValue)).thenReturn(expiredSession);
-        when(factory.createImmutableSession(validSessionId, validValue)).thenReturn(validSession);
-
-        when(expiredSession.getMetaData()).thenReturn(expiredMetaData);
-        when(validSession.getMetaData()).thenReturn(validMetaData);
+        when(metaDataFactory.createImmutableSessionMetaData(expiredSessionId, expiredMetaDataValue)).thenReturn(expiredMetaData);
+        when(metaDataFactory.createImmutableSessionMetaData(validSessionId, validMetaDataValue)).thenReturn(validMetaData);
 
         when(expiredMetaData.isExpired()).thenReturn(true);
         when(validMetaData.isExpired()).thenReturn(false);
+
+        when(attributesFactory.findValue(expiredSessionId)).thenReturn(expiredAttributesValue);
+        when(attributesFactory.createImmutableSessionAttributes(expiredSessionId, expiredAttributesValue)).thenReturn(expiredAttributes);
+        when(factory.createImmutableSession(same(expiredSessionId), same(expiredMetaData), same(expiredAttributes))).thenReturn(expiredSession);
 
         subject.remove(missingSessionId);
         subject.remove(expiredSessionId);
@@ -78,7 +84,5 @@ public class ExpiredSessionRemoverTestCase {
         verify(factory, never()).remove(validSessionId);
 
         verify(listener).sessionExpired(expiredSession);
-        verify(listener, never()).sessionExpired(validSession);
-        verify(listener, never()).sessionExpired(invalidSession);
     }
 }

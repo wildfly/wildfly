@@ -28,6 +28,8 @@ import org.wildfly.clustering.ee.infinispan.Evictor;
 import org.wildfly.clustering.ee.infinispan.Locator;
 import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 
 /**
@@ -38,6 +40,11 @@ public interface SessionFactory<MV, AV, L> extends Creator<String, Map.Entry<MV,
     SessionMetaDataFactory<MV, L> getMetaDataFactory();
     SessionAttributesFactory<AV> getAttributesFactory();
 
-    Session<L> createSession(String id, Map.Entry<MV, AV> value);
-    ImmutableSession createImmutableSession(String id, Map.Entry<MV, AV> value);
+    Session<L> createSession(String id, Map.Entry<MV, AV> entry);
+
+    default ImmutableSession createImmutableSession(String id, Map.Entry<MV, AV> entry) {
+        return this.createImmutableSession(id, this.getMetaDataFactory().createImmutableSessionMetaData(id, entry.getKey()), this.getAttributesFactory().createImmutableSessionAttributes(id, entry.getValue()));
+    }
+
+    ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes);
 }
