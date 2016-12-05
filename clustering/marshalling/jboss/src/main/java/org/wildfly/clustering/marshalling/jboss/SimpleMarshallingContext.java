@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import org.jboss.marshalling.ClassExternalizerFactory;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -78,6 +79,8 @@ public class SimpleMarshallingContext implements MarshallingContext {
         try {
             ObjectTable table = configuration.getObjectTable();
             if ((table != null) && table.getObjectWriter(object) != null) return true;
+            ClassExternalizerFactory factory = configuration.getClassExternalizerFactory();
+            if ((factory != null) && (factory.getExternalizer(object.getClass()) != null)) return true;
             SerializabilityChecker checker = configuration.getSerializabilityChecker();
             return ((checker == null) ? SerializabilityChecker.DEFAULT : checker).isSerializable(object.getClass());
         } catch (IOException e) {
