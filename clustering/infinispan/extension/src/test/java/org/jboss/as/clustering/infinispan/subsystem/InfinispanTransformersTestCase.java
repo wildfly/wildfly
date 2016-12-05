@@ -39,6 +39,8 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -46,7 +48,6 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -133,7 +134,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
-                        // Following are needed for LegacyControllerAdditionalInitialization
+                        // Following are needed for InfinispanAdditionalInitialization
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
@@ -145,8 +146,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     }
 
     @Override
-    AdditionalInitialization createAdditionalInitialization() {
-        return new LegacyControllerAdditionalInitialization()
+    org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+        return new InfinispanAdditionalInitialization()
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
@@ -390,7 +391,9 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
         // initialize the legacy services
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
-                .addSingleChildFirstClass(LegacyControllerAdditionalInitialization.class)
+                .addSingleChildFirstClass(InfinispanAdditionalInitialization.class)
+                .addSingleChildFirstClass(JGroupsSubsystemInitialization.class)
+                .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
