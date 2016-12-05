@@ -101,7 +101,7 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/jboss-as-infinispan_%d_%d.xsd", schema.major(), schema.minor());
+        return String.format("schema/jboss-as-infinispan_%d_%d.xsd", this.schema.major(), this.schema.minor());
     }
 
     @Override
