@@ -21,10 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.AbstractMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +30,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -55,37 +52,35 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> result) throws XMLStreamException {
 
-        Map<PathAddress, ModelNode> stackOperations = new LinkedHashMap<>();
+        Map<PathAddress, ModelNode> operations = new LinkedHashMap<>();
 
         PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        stackOperations.put(address, operation);
+        operations.put(address, operation);
 
         if (!this.schema.since(JGroupsSchema.VERSION_3_0)) {
             String defaultStack = require(reader, XMLAttribute.DEFAULT_STACK);
             setAttribute(reader, defaultStack, operation, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK);
         }
 
-        Map<PathAddress, ModelNode> channelOperations = new LinkedHashMap<>();
-
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case CHANNELS: {
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
-                        this.parseChannels(reader, address, channelOperations);
+                        this.parseChannels(reader, address, operations);
                         break;
                     }
                 }
                 case STACKS: {
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
-                        this.parseStacks(reader, address, stackOperations, channelOperations);
+                        this.parseStacks(reader, address, operations);
                         break;
                     }
                 }
                 case STACK: {
                     if (!this.schema.since(JGroupsSchema.VERSION_3_0)) {
-                        this.parseStack(reader, address, stackOperations, channelOperations);
+                        this.parseStack(reader, address, operations);
                         break;
                     }
                 }
@@ -100,7 +95,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         if (!this.schema.since(JGroupsSchema.VERSION_4_0)) {
             ModelNode defaultStack = operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName());
 
-            for (Map.Entry<PathAddress, ModelNode> entry : channelOperations.entrySet()) {
+            for (Map.Entry<PathAddress, ModelNode> entry : operations.entrySet()) {
                 PathAddress opAddr = entry.getKey();
                 if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
                     ModelNode op = entry.getValue();
@@ -111,24 +106,19 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        // Explicitly order operations such that capabilities are defined before they are referenced
-        // This circumvents capability reference integrity issues when operations are not batched
-        result.addAll(stackOperations.values());
-        result.addAll(channelOperations.values());
+        result.addAll(operations.values());
     }
 
     private void parseChannels(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        List<Map.Entry<PathAddress, ModelNode>> tailOperations = new LinkedList<>();
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT: {
-                    ModelNode defaultChannel = readAttribute(reader, i, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL);
-                    ModelNode operation = Operations.createWriteAttributeOperation(address, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL, defaultChannel);
-                    tailOperations.add(new AbstractMap.SimpleImmutableEntry<>(address, operation));
+                    readAttribute(reader, i, operation, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL);
                     break;
                 }
                 default: {
@@ -149,8 +139,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
             }
         }
-
-        tailOperations.forEach(entry -> operations.put(entry.getKey(), entry.getValue()));
     }
 
     private void parseChannel(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
@@ -241,9 +229,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
-    private void parseStacks(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> stackOperations, Map<PathAddress, ModelNode> channelOperations) throws XMLStreamException {
+    private void parseStacks(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        ModelNode operation = stackOperations.get(address);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
@@ -263,7 +251,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case STACK: {
-                    this.parseStack(reader, address, stackOperations, channelOperations);
+                    this.parseStack(reader, address, operations);
                     break;
                 }
                 default: {
@@ -273,26 +261,26 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
-    private void parseStack(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> stackOperations, Map<PathAddress, ModelNode> channelOperations) throws XMLStreamException {
+    private void parseStack(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         String name = require(reader, XMLAttribute.NAME);
         PathAddress address = subsystemAddress.append(StackResourceDefinition.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
-        stackOperations.put(address, operation);
+        operations.put(address, operation);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case TRANSPORT: {
-                    this.parseTransport(reader, address, stackOperations);
+                    this.parseTransport(reader, address, operations);
                     break;
                 }
                 case PROTOCOL: {
-                    this.parseProtocol(reader, address, stackOperations);
+                    this.parseProtocol(reader, address, operations);
                     break;
                 }
                 case RELAY: {
                     if (this.schema.since(JGroupsSchema.VERSION_2_0)) {
-                        this.parseRelay(reader, address, channelOperations);
+                        this.parseRelay(reader, address, operations);
                         break;
                     }
                 }
