@@ -29,6 +29,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.RequestLimitingHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -40,6 +41,7 @@ public class RequestLimitHandler extends Filter {
     public static final RequestLimitHandler INSTANCE = new RequestLimitHandler();
 
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
+            .setValidator(new IntRangeValidator(1, false, true))
             .setAllowExpression(true)
             .setAllowNull(false)
             .setRestartAllServices()
@@ -47,6 +49,7 @@ public class RequestLimitHandler extends Filter {
 
 
     public static final AttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder("queue-size", ModelType.INT)
+            .setValidator(new IntRangeValidator(0, true, true))
             .setAllowExpression(true)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(0))
