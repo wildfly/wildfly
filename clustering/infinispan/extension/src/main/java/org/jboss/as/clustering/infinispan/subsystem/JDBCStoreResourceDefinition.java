@@ -87,13 +87,13 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(Capability.DATA_SOURCE, CommonUnaryRequirement.DATA_SOURCE)),
+        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(Capability.DATA_SOURCE, CommonUnaryRequirement.DATA_SOURCE), DeprecatedAttribute.DATASOURCE.getName()),
         DIALECT("dialect", ModelType.STRING, new EnumValidatorBuilder<>(DatabaseType.class)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type, false).setAllowExpression(false).setCapabilityReference(reference).build();
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference, String... alternatives) {
+            this.definition = createBuilder(name, type, true).setAllowExpression(false).setCapabilityReference(reference).setAlternatives(alternatives).build();
         }
 
         Attribute(String name, ModelType type, ParameterValidatorBuilder validator) {
