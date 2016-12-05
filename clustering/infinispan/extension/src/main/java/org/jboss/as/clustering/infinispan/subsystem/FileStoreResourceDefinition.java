@@ -63,7 +63,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();

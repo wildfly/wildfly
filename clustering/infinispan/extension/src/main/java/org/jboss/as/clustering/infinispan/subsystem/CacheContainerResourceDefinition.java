@@ -154,7 +154,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
 
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setAttributeParser(AttributeParsers.COLLECTION)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
@@ -204,7 +204,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
     static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 ;

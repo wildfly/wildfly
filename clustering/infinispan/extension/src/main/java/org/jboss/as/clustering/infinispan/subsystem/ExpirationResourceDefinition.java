@@ -59,7 +59,7 @@ public class ExpirationResourceDefinition extends ComponentResourceDefinition {
         Attribute(String name, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.LONG)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)

@@ -93,11 +93,11 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type, true).setAllowExpression(false).setCapabilityReference(reference).build();
+            this.definition = createBuilder(name, type, false).setAllowExpression(false).setCapabilityReference(reference).build();
         }
 
         Attribute(String name, ModelType type, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, true).setAllowExpression(true);
+            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, false).setAllowExpression(true);
             this.definition = builder.setValidator(validator.configure(builder).build()).build();
         }
 
@@ -113,7 +113,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, true).setAllowExpression(true).setDeprecated(deprecation.getVersion()).build();
+            this.definition = createBuilder(name, type, false).setAllowExpression(true).setDeprecated(deprecation.getVersion()).build();
         }
 
         @Override
@@ -122,9 +122,9 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean allowNull) {
+    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean required) {
         return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowNull(allowNull)
+                .setRequired(required)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
         ;
     }
@@ -201,12 +201,13 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     static final OperationStepHandler DATA_SOURCE_TRANSLATOR = new OperationStepHandler() {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (!operation.hasDefined(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName())) {
-                if (operation.hasDefined(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.getName())) {
+            String targetAttributeName = JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName();
+            if (!operation.hasDefined(targetAttributeName)) {
+                ModelNode jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.resolveModelAttribute(context, operation);
+                if (jndiName.isDefined()) {
                     // Translate JNDI name into pool name
-                    String jndiName = JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE.resolveModelAttribute(context, operation).asString();
-                    String poolName = findPoolName(context, jndiName);
-                    operation.get(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getName()).set(poolName);
+                    String poolName = findPoolName(context, jndiName.asString());
+                    operation.get(targetAttributeName).set(poolName);
                 } else {
                     throw ControllerLogger.MGMT_OP_LOGGER.validationFailedRequiredParameterNotPresent(JDBCStoreResourceDefinition.Attribute.DATA_SOURCE.getDefinition().getName(), operation.toString());
                 }

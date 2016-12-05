@@ -48,7 +48,7 @@ public abstract class AbstractParameterValidatorBuilder implements ParameterVali
     @Override
     public ParameterValidatorBuilder configure(AttributeDefinition definition) {
         this.allowsExpressions = definition.isAllowExpression();
-        this.allowsUndefined = definition.isAllowNull();
+        this.allowsUndefined = !definition.isRequired();
         return this;
     }
 

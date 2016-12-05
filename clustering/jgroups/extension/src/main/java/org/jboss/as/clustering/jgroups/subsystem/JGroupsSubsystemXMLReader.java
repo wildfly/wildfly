@@ -607,12 +607,4 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, Attribute attribute) throws XMLStreamException {
         attribute.getDefinition().getParser().parseAndSetParameter(attribute.getDefinition(), value, operation, reader);
     }
-
-    private static ModelNode readAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute) throws XMLStreamException {
-        return readAttribute(reader, reader.getAttributeValue(index), attribute);
-    }
-
-    private static ModelNode readAttribute(XMLExtendedStreamReader reader, String value, Attribute attribute) throws XMLStreamException {
-        return attribute.getDefinition().getParser().parse(attribute.getDefinition(), value, reader);
-    }
 }

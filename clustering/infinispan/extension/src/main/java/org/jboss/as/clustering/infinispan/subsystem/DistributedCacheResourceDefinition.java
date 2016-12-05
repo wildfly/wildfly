@@ -78,7 +78,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)

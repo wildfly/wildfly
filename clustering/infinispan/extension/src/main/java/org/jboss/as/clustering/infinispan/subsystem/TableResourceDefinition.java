@@ -52,7 +52,7 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition {
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
@@ -76,18 +76,18 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition {
         ColumnAttribute(String name, String defaultName, String defaultType) {
             this.name = new SimpleAttribute(new SimpleAttributeDefinitionBuilder("name", ModelType.STRING)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(defaultName))
                     .build());
             this.type = new SimpleAttribute(new SimpleAttributeDefinitionBuilder("type", ModelType.STRING)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(defaultType))
                     .build());
             this.definition = ObjectTypeAttributeDefinition.Builder.of(name, this.name.getDefinition(), this.type.getDefinition())
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setSuffix("column")
                     .build();
         }

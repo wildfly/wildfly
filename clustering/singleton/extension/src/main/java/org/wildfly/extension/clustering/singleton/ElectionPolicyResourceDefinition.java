@@ -89,7 +89,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         private static StringListAttributeDefinition.Builder createBuilder(String name, String alternative) {
             return new StringListAttributeDefinition.Builder(name)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setAlternatives(alternative)
                     ;
         }
