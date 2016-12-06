@@ -38,6 +38,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.kohsuke.MetaInfServices;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -46,6 +47,7 @@ import org.jboss.staxmapper.XMLElementReader;
  * @author Tomaz Cerar
  * @author Radoslav Husar
  */
+@MetaInfServices(Extension.class)
 public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
