@@ -59,13 +59,15 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     private final UndertowSessionManager manager;
     private final Batch batch;
+    private final Runnable closeTask;
 
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
 
-    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch) {
+    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch, Runnable closeTask) {
         this.manager = manager;
         this.entry = new SimpleImmutableEntry<>(session, config);
         this.batch = batch;
+        this.closeTask = closeTask;
     }
 
     @Override
@@ -90,6 +92,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
             } catch (Throwable e) {
                 // Don't propagate exceptions at the stage, since response was already committed
                 UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            } finally {
+                this.closeTask.run();
             }
         }
     }
@@ -210,6 +214,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 entry.getValue().clearSession(exchange, id);
             }
             this.batch.close();
+        } finally {
+            this.closeTask.run();
         }
     }
 
