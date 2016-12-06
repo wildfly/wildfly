@@ -232,6 +232,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
                 <version>${version.org.hibernate}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -249,6 +250,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-jpamodelgen</artifactId>
                 <version>${version.org.hibernate-jpamodelgen}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -291,6 +293,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator-annotation-processor</artifactId>
                 <version>${version.org.hibernate.validator}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
@@ -310,6 +313,7 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-dmr</artifactId>
                 <version>${version.org.jboss.jboss-dmr}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -380,6 +384,7 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>jaxb-impl</artifactId>
@@ -391,6 +396,7 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
@@ -432,6 +438,7 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxb-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>jaxb-impl</artifactId>
@@ -443,6 +450,7 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>jcip-annotations</artifactId>
@@ -549,11 +557,13 @@
                 <groupId>org.jboss.security</groupId>
                 <artifactId>jboss-negotiation-common</artifactId>
                 <version>${version.org.jboss.security.negotiation}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.security</groupId>
                 <artifactId>jboss-negotiation-extras</artifactId>
                 <version>${version.org.jboss.security.negotiation}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.security</groupId>
