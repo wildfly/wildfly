@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.extension.mod_cluster;
 
+import static org.jboss.as.controller.transform.description.TransformationDescription.Tools.register;
+
+import java.util.EnumSet;
+
 import org.jboss.as.clustering.controller.Model;
-import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Enumerates the supported model versions.
- *
  * @author Radoslav Husar
  */
-public enum ModClusterModel implements Model {
+@MetaInfServices(ExtensionTransformerRegistration.class)
+public class ModClusterExtensionTransformerRegistration implements ExtensionTransformerRegistration {
 
-    VERSION_1_4_0(1, 4, 0),
-    VERSION_1_5_0(1, 5, 0),
-    VERSION_2_0_0(2, 0, 0),
-    VERSION_3_0_0(3, 0, 0),
-    VERSION_4_0_0(4, 0, 0),
-    ;
-    public static final ModClusterModel CURRENT = VERSION_4_0_0;
-
-    private final ModelVersion version;
-
-    ModClusterModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
+    @Override
+    public String getSubsystemName() {
+        return ModClusterExtension.SUBSYSTEM_NAME;
     }
 
-    public ModelVersion getVersion() {
-        return this.version;
+    @Override
+    public void registerTransformers(SubsystemTransformerRegistration registration) {
+        // Register transformers for all but the current model
+        EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT)).stream().map(Model::getVersion).forEach(version -> register(ModClusterSubsystemResourceDefinition.buildTransformation(version), registration, version));
     }
 }

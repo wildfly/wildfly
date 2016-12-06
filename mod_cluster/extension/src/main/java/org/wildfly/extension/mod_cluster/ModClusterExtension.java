@@ -24,21 +24,18 @@ package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
-import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -88,14 +85,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
-
-        if (context.isRegisterTransformers()) {
-            // Register transformers for all versions except for the current one
-            for (ModClusterModel model : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
-                ModelVersion version = model.getVersion();
-                TransformationDescription.Tools.register(ModClusterSubsystemResourceDefinition.buildTransformation(version), subsystem, version);
-            }
-        }
     }
 
     @Override
