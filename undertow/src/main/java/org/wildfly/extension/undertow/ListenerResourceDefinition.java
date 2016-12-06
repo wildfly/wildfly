@@ -72,8 +72,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     static final String IO_BUFFER_POOL_CAPABILITY = "org.wildfly.io.buffer-pool";
     static final String SOCKET_CAPABILITY = "org.wildfly.network.socket-binding";
 
-    protected static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
-    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(LISTENER_CAPABILITY_NAME, true, ListenerService.class)
+    static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
+    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(LISTENER_CAPABILITY_NAME, true, UndertowListener.class)
             .build();
 
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
@@ -214,8 +214,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     public ListenerResourceDefinition(PathElement pathElement) {
-        super(pathElement, UndertowExtension.getResolver(Constants.LISTENER)
-        );
+        super(new PersistentResourceDefinition.Parameters(pathElement, UndertowExtension.getResolver(Constants.LISTENER))
+                .setCapabilities(LISTENER_CAPABILITY));
     }
 
     public Collection<AttributeDefinition> getAttributes() {
