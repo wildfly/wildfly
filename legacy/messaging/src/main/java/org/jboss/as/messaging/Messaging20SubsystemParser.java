@@ -54,12 +54,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
 
-    private static final Messaging20SubsystemParser INSTANCE = new Messaging20SubsystemParser();
-
-    public static MessagingSubsystemParser getInstance() {
-        return INSTANCE;
-    }
-
     protected Messaging20SubsystemParser() {
     }
 

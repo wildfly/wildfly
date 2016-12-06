@@ -55,9 +55,7 @@ import java.util.EnumSet;
  */
 public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
 
-    public static final EJB3Subsystem50Parser INSTANCE = new EJB3Subsystem50Parser();
-
-    protected EJB3Subsystem50Parser() {
+    EJB3Subsystem50Parser() {
     }
 
     @Override
