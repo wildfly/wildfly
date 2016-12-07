@@ -22,6 +22,7 @@
 package org.jboss.as.jsf.subsystem;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 import java.io.IOException;
 
@@ -49,5 +50,11 @@ public class JSFSubsystemTestCase extends AbstractSubsystemBaseTest {
         return new String[] {
                 "/subsystem-templates/jsf.xml"
         };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 }

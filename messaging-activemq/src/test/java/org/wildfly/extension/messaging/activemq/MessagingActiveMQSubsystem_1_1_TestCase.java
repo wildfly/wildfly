@@ -85,6 +85,12 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         return properties;
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     /////////////////////////////////////////
     //  Tests for HA Policy Configuration  //
     /////////////////////////////////////////

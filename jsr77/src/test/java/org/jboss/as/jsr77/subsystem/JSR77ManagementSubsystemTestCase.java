@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -59,4 +60,9 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
         };
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
 }

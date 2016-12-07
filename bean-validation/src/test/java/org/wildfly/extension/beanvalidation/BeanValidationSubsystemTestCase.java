@@ -25,6 +25,7 @@ package org.wildfly.extension.beanvalidation;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  * Bean Validation subsystem tests.
@@ -52,5 +53,11 @@ public class BeanValidationSubsystemTestCase extends AbstractSubsystemBaseTest {
         return new String[] {
                 "/subsystem-templates/bean-validation.xml"
         };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 }

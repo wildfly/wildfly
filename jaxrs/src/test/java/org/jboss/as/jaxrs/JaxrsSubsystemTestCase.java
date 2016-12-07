@@ -24,6 +24,7 @@ package org.jboss.as.jaxrs;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -49,6 +50,12 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
         return new String[]{
                 "/subsystem-templates/jaxrs.xml"
         };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     //no point in testing 1.0.0 (current) --> 1.0.0 (all previous) for transformers

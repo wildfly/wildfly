@@ -98,6 +98,12 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testTransformersEAP64() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_6_4_0);
     }

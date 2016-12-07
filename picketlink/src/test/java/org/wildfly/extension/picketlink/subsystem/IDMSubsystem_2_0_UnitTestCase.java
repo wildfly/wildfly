@@ -65,6 +65,12 @@ public class IDMSubsystem_2_0_UnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testRuntime() throws Exception {
         System.setProperty("jboss.server.data.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
