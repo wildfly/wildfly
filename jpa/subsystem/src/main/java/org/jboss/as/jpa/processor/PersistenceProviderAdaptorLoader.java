@@ -27,6 +27,7 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.messages.JpaLogger;
@@ -87,6 +88,16 @@ public class PersistenceProviderAdaptorLoader {
 
         @Override
         public void cleanup(PersistenceUnitMetadata pu) {
+        }
+
+        @Override
+        public Object beanManagerLifeCycle(BeanManager beanManager) {
+            return null;
+        }
+
+        @Override
+        public void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle) {
+
         }
     };
 

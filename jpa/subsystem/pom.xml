@@ -106,5 +106,10 @@
             <artifactId>cdi-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
