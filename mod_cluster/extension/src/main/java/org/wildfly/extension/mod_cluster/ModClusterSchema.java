@@ -27,6 +27,7 @@ import org.jboss.staxmapper.XMLElementReader;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 /**
  * @author Jean-Frederic Clere
@@ -35,21 +36,21 @@ import java.util.Locale;
  */
 public enum ModClusterSchema implements Schema<ModClusterSchema> {
 
-    MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
-    MODCLUSTER_1_1(1, 1, new ModClusterSubsystemXMLReader_1_1()),
-    MODCLUSTER_1_2(1, 2, new ModClusterSubsystemXMLReader_1_2()),
-    MODCLUSTER_2_0(2, 0, new ModClusterSubsystemXMLReader_2_0()),
+    MODCLUSTER_1_0(1, 0, ModClusterSubsystemXMLReader_1_0::new),
+    MODCLUSTER_1_1(1, 1, ModClusterSubsystemXMLReader_1_1::new),
+    MODCLUSTER_1_2(1, 2, ModClusterSubsystemXMLReader_1_2::new),
+    MODCLUSTER_2_0(2, 0, ModClusterSubsystemXMLReader_2_0::new),
     ;
     public static final ModClusterSchema CURRENT = MODCLUSTER_2_0;
 
     private final int major;
     private final int minor;
-    private final XMLElementReader<List<ModelNode>> reader;
+    private final Supplier<XMLElementReader<List<ModelNode>>> readerSupplier;
 
-    ModClusterSchema(int major, int minor, XMLElementReader<List<ModelNode>> reader) {
+    ModClusterSchema(int major, int minor, Supplier<XMLElementReader<List<ModelNode>>> readerSupplier) {
         this.major = major;
         this.minor = minor;
-        this.reader = reader;
+        this.readerSupplier = readerSupplier;
     }
 
     @Override
@@ -67,7 +68,7 @@ public enum ModClusterSchema implements Schema<ModClusterSchema> {
         return String.format(Locale.ROOT, "urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
     }
 
-    public XMLElementReader<List<ModelNode>> getXMLReader() {
-        return this.reader;
+    public Supplier<XMLElementReader<List<ModelNode>>> getXMLReaderSupplier() {
+        return this.readerSupplier;
     }
 }
