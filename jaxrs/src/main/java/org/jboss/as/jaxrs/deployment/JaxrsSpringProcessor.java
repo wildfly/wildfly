@@ -72,9 +72,11 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     public static final String ENABLE_PROPERTY = "org.jboss.as.jaxrs.enableSpringIntegration";
     public static final String SERVICE_NAME = "resteasy-spring-integration-resource-root";
 
+    private final ServiceTarget serviceTarget;
     private VirtualFile resourceRoot;
 
-    public JaxrsSpringProcessor() {
+    public JaxrsSpringProcessor(ServiceTarget serviceTarget) {
+        this.serviceTarget = serviceTarget;
     }
 
     /**
@@ -83,9 +85,8 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
      * @return the Seam integration resource loader
      * @throws DeploymentUnitProcessingException
      *          for any error
-     * @param serviceTarget
      */
-    protected synchronized VirtualFile getResteasySpringVirtualFile(ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+    protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
         if(resourceRoot != null) {
             return resourceRoot;
         }
@@ -194,7 +195,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (found) {
                 try {
                     MountHandle mh = new MountHandle(null); // actual close is done by the MSC service above
-                    ResourceRoot resourceRoot = new ResourceRoot(getResteasySpringVirtualFile(phaseContext.getServiceTarget()), mh);
+                    ResourceRoot resourceRoot = new ResourceRoot(getResteasySpringVirtualFile(), mh);
                     ModuleRootMarker.mark(resourceRoot);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
                 } catch (Exception e) {
