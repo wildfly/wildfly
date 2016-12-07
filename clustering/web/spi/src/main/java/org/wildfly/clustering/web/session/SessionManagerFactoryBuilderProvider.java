@@ -23,11 +23,12 @@ package org.wildfly.clustering.web.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
 
 /**
  * Interface for building a session manager factory.
  * @author Paul Ferraro
  */
 public interface SessionManagerFactoryBuilderProvider<B extends Batch> {
-    CapabilityServiceBuilder<SessionManagerFactory<B>> getBuilder(SessionManagerFactoryConfiguration configuration);
+    <C extends Marshallability> CapabilityServiceBuilder<SessionManagerFactory<B>> getBuilder(SessionManagerFactoryConfiguration<C> configuration);
 }

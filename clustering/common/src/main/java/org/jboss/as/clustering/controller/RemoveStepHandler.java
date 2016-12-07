@@ -23,8 +23,8 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Map;
+import java.util.Objects;
 
-import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -79,9 +79,9 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
             ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
             registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
-                    .filter(Predicates.isNotNull())
+                    .filter(Objects::nonNull)
                     .map(access -> access.getAttributeDefinition())
-                        .filter(Predicates.isNotNull())
+                        .filter(Objects::nonNull)
                         .filter(attribute -> attribute.hasCapabilityRequirements())
                         .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
 

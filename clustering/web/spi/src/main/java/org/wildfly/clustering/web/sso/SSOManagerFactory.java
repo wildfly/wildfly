@@ -22,13 +22,12 @@
 package org.wildfly.clustering.web.sso;
 
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
 
 /**
  * Factory for creating SSO manager instances.
  * @author Paul Ferraro
  */
 public interface SSOManagerFactory<A, D, B extends Batch> {
-    <L> SSOManager<A, D, L, B> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory);
+    <L, C extends Marshallability> SSOManager<A, D, L, B> createSSOManager(SSOManagerConfiguration<L, C> config);
 }

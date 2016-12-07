@@ -32,5 +32,6 @@
     </resources>
 
     <dependencies>
+        <module name="net.jcip"/>
     </dependencies>
 </module>

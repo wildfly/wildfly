@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.ee.infinispan.Remover;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;

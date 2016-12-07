@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import org.jboss.as.network.ClientMapping;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro

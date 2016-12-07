@@ -23,25 +23,22 @@ package org.wildfly.clustering.web.infinispan.sso;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.marshalling.jboss.MarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-
 /**
  * Cache entry that store authentication data plus any local context.
  * @author Paul Ferraro
  * @param <A> the identity type
  * @param <L> the local context type
  */
-public class AuthenticationEntry<A, L> {
+public class AuthenticationEntry<V, L> {
 
-    private final MarshalledValue<A, MarshallingContext> authentication;
+    private final V authentication;
     private final AtomicReference<L> localContext = new AtomicReference<>();
 
-    public AuthenticationEntry(MarshalledValue<A, MarshallingContext> authentication) {
+    public AuthenticationEntry(V authentication) {
         this.authentication = authentication;
     }
 
-    public MarshalledValue<A, MarshallingContext> getAuthentication() {
+    public V getAuthentication() {
         return this.authentication;
     }
 

@@ -22,10 +22,10 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.ee.infinispan.Creator;
+import org.wildfly.clustering.ee.Creator;
+import org.wildfly.clustering.ee.Locator;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.Locator;
-import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**

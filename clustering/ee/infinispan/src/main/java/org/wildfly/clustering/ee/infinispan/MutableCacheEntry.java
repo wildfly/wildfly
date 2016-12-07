@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.ee.infinispan;
 
+import org.wildfly.clustering.ee.Mutator;
 
 /**
  * Pairs a cache entry with a mutator capable of mutating the cache entry.

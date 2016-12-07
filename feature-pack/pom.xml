@@ -2333,7 +2333,27 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

@@ -29,7 +29,6 @@ import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -49,7 +48,6 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
     private final String host;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
 
     private final CapabilityServiceBuilder<?> configurationBuilder;
     private final CapabilityServiceBuilder<?> cacheBuilder;
@@ -84,7 +82,6 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
 
         ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
-                .addDependency(ServiceName.JBOSS.append("as", "service-module-loader"), ModuleLoader.class, this.loader)
         ;
         return this.affinityFactory.register(builder);
     }
@@ -102,10 +99,5 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
     @Override
     public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
         return this.affinityFactory.getValue();
-    }
-
-    @Override
-    public ModuleLoader getModuleLoader() {
-        return this.loader.getValue();
     }
 }

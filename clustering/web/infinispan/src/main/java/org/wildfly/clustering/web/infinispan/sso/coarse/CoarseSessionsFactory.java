@@ -29,8 +29,8 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.web.infinispan.sso.SessionsFactory;
 import org.wildfly.clustering.web.sso.Sessions;
 

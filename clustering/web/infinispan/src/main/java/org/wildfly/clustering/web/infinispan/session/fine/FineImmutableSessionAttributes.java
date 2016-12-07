@@ -25,9 +25,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.infinispan.Cache;
-import org.wildfly.clustering.marshalling.jboss.InvalidSerializedFormException;
-import org.wildfly.clustering.marshalling.jboss.Marshaller;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
+import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
@@ -39,9 +38,9 @@ public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttrib
     private final String id;
     private final Map<String, Integer> names;
     private final Cache<SessionAttributeKey, V> cache;
-    private final Marshaller<Object, V, MarshallingContext> marshaller;
+    private final Marshaller<Object, V> marshaller;
 
-    public FineImmutableSessionAttributes(String id, Map<String, Integer> names, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V, MarshallingContext> marshaller) {
+    public FineImmutableSessionAttributes(String id, Map<String, Integer> names, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller) {
         this.id = id;
         this.names = names;
         this.cache = attributeCache;

@@ -23,9 +23,9 @@ package org.wildfly.clustering.web.infinispan.sso;
 
 import java.util.Map;
 
-import org.wildfly.clustering.ee.infinispan.Creator;
-import org.wildfly.clustering.ee.infinispan.Locator;
-import org.wildfly.clustering.ee.infinispan.Remover;
+import org.wildfly.clustering.ee.Creator;
+import org.wildfly.clustering.ee.Locator;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.sso.SSO;
 
 /**

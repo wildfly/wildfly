@@ -25,12 +25,14 @@ import java.io.IOException;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
  * A marshalling context for use with a {@link MarshalledValue}.
  * @author Paul Ferraro
  */
-public interface MarshallingContext {
+public interface MarshallingContext extends Marshallability {
     ClassLoader getClassLoader();
 
     int getCurrentVersion();
@@ -38,11 +40,4 @@ public interface MarshallingContext {
     Unmarshaller createUnmarshaller(int version) throws IOException;
 
     Marshaller createMarshaller(int version) throws IOException;
-
-    /**
-     * Indicates whether the specified object can be marshalled.
-     * @param object an object to be marshalled
-     * @return true, if the specified object can be marshalled, false otherwise
-     */
-    boolean isMarshallable(Object object);
 }

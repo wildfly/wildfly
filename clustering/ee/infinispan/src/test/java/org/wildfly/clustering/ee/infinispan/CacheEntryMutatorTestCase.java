@@ -33,6 +33,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
 import org.infinispan.transaction.TransactionMode;
 import org.junit.Test;
+import org.wildfly.clustering.ee.Mutator;
 
 /**
  * Unit test for {@link CacheEntryMutator}.

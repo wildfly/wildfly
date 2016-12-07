@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
+            <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

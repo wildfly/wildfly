@@ -47,7 +47,6 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
@@ -71,7 +70,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
             public MarshallingConfiguration apply(MarshallingConfigurationContext context) {
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(context.getModuleLoader()));
-                config.setClassTable(new DynamicClassTable(IndexExternalizer.UNSIGNED_BYTE, context.getModule().getClassLoader()));
+                config.setClassTable(new DynamicClassTable(context.getModule().getClassLoader()));
                 return config;
             }
         },

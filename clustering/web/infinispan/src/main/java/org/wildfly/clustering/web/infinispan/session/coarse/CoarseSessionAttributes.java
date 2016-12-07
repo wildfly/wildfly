@@ -26,11 +26,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.commons.marshall.NotSerializableException;
+import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.Mutator;
-import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.web.infinispan.session.MutableDetector;
+import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
+import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
 /**
  * Exposes session attributes for a coarse granularity session.
@@ -40,15 +40,15 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     private final Map<String, Object> attributes;
     private final Set<String> mutations;
     private final Mutator mutator;
-    private final MarshallingContext context;
+    private final Marshallability marshallability;
     private final CacheProperties properties;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, MarshallingContext context, CacheProperties properties) {
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, Marshallability marshallability, CacheProperties properties) {
         super(attributes);
         this.attributes = attributes;
         this.mutations = !properties.isTransactional() ? ConcurrentHashMap.newKeySet() : null;
         this.mutator = mutator;
-        this.context = context;
+        this.marshallability = marshallability;
         this.properties = properties;
     }
 
@@ -67,7 +67,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
         if (value == null) {
             return this.removeAttribute(name);
         }
-        if (this.properties.isMarshalling() && !this.context.isMarshallable(value)) {
+        if (this.properties.isMarshalling() && !this.marshallability.isMarshallable(value)) {
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.attributes.put(name, value);
@@ -81,7 +81,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     @Override
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
-        if (MutableDetector.isMutable(value)) {
+        if (!SessionAttributeImmutability.INSTANCE.test(value)) {
             if (this.mutations != null) {
                 this.mutations.add(name);
             } else {
