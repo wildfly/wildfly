@@ -57,6 +57,6 @@ public class JGroupsExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(JGroupsSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new JGroupsSubsystemXMLReader(schema)));
+        EnumSet.allOf(JGroupsSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new JGroupsSubsystemXMLReader(schema)));
     }
 }
