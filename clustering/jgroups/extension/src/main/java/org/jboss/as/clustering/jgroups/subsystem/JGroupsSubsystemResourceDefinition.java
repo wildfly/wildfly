@@ -85,7 +85,7 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
 
         static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
             return new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setAllowExpression(false) // These are model references
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setXmlName(XMLAttribute.DEFAULT.getLocalName())

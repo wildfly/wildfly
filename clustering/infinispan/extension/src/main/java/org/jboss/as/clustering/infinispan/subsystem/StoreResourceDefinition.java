@@ -70,7 +70,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         Attribute(String name, boolean defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(new ModelNode(defaultValue))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();

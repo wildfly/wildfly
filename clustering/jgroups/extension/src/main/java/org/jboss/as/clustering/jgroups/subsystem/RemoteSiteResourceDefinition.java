@@ -86,7 +86,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
 
         Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
             this.definition = createBuilder(name, type)
-                    .setAllowNull(false)
+                    .setRequired(true)
                     .setCapabilityReference(reference)
                     .build();
         }
@@ -104,7 +104,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type).setAllowNull(true).setDeprecated(deprecation.getVersion()).build();
+            this.definition = createBuilder(name, type).setRequired(false).setDeprecated(deprecation.getVersion()).build();
         }
 
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
