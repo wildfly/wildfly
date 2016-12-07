@@ -144,8 +144,9 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 1, 0);
+    protected static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_1_0;
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
