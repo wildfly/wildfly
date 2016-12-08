@@ -49,6 +49,6 @@ public class SingletonExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(SingletonSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema)));
+        EnumSet.allOf(SingletonSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new SingletonXMLReader(schema)));
     }
 }
