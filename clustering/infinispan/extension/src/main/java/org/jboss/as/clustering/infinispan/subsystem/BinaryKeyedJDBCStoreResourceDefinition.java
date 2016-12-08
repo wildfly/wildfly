@@ -158,11 +158,11 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
                 .addAttributes(StoreResourceDefinition.Attribute.class)
                 .addExtraParameters(DeprecatedAttribute.class)
-                .addExtraParameters(JDBCStoreResourceDefinition.DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
-                .addOperationTranslator(DATA_SOURCE_TRANSLATOR)
+                // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
+                .addAttributeTranslation(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE, JDBCStoreResourceDefinition.Attribute.DATA_SOURCE, JDBCStoreResourceDefinition.POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JDBCStoreResourceDefinition.JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
                 // Translate deprecated TABLE attribute into separate add table operation
                 .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
                 ;

@@ -98,6 +98,9 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 6, value = "Failed to locate a data source bound to %s")
     OperationFailedException dataSourceJndiNameNotFound(String jndiName);
 
+    @Message(id = 7, value = "Failed to locate data source %s")
+    OperationFailedException dataSourceNotFound(String name);
+
     /**
      * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
      * {@code binding} parameter.
