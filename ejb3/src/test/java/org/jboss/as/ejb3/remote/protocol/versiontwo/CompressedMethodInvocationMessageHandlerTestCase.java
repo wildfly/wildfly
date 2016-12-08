@@ -41,7 +41,6 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.reflect.SunReflectiveCreator;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
@@ -134,7 +133,6 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
 //        marshallingConfiguration.setClassTable(ProtocolV1ClassTable.INSTANCE);
 //        marshallingConfiguration.setObjectTable(ProtocolV1ObjectTable.INSTANCE);
         marshallingConfiguration.setVersion(2);
-        marshallingConfiguration.setSerializedCreator(new SunReflectiveCreator());
         final MarshallerFactory marshallerFactory = new RiverMarshallerFactory();
         final Marshaller marshaller = marshallerFactory.createMarshaller(marshallingConfiguration);
         final OutputStream outputStream = new OutputStream() {
