@@ -31,7 +31,9 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 
@@ -46,7 +48,14 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
-    public static final OptionAttributeDefinition MAX_AJP_PACKET_SIZE = OptionAttributeDefinition.builder("max-ajp-packet-size", UndertowOptions.MAX_AJP_PACKET_SIZE).setMeasurementUnit(MeasurementUnit.BYTES).setAllowNull(true).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_AJP_PACKET_SIZE = OptionAttributeDefinition
+            .builder("max-ajp-packet-size", UndertowOptions.MAX_AJP_PACKET_SIZE)
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(8192))
+            .setValidator(new IntRangeValidator(1))
+            .build();
 
     private AjpListenerResourceDefinition() {
         super(UndertowExtension.AJP_LISTENER_PATH);
