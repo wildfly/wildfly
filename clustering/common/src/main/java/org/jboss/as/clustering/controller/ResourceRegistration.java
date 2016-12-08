@@ -22,15 +22,7 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Registers add, remove, and write-attribute operation handlers and capabilities.
@@ -60,27 +52,8 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
         this.removeRegistration.register(registration);
         this.writeAttributeRegistration.register(registration);
 
-        // Register read/write handlers for attribute aliases
-        for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
-            Attribute target = entry.getValue();
-            String targetName = target.getDefinition().getName();
-            AttributeAccess targetAccess = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetName);
-            // If target attribute has no read handler, synthesize one
-            OperationStepHandler readHandler = (targetAccess.getReadHandler() != null) ? targetAccess.getReadHandler() : (context, operation) -> {
-                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                ModelNode result = context.getResult();
-                if (model.hasDefined(targetName)) {
-                    result.set(model.get(targetName));
-                } else if (Operations.isIncludeDefaults(operation)) {
-                    result.set(target.getDefinition().getDefaultValue());
-                }
-            };
-            OperationStepHandler writeHandler = targetAccess.getWriteHandler();
-            // Delegate read/write attribute operations to target attribute
-            registration.registerReadWriteAttribute(entry.getKey(),
-                    (context, operation) -> context.addStep(Operations.createReadAttributeOperation(context.getCurrentAddress(), target), readHandler, OperationContext.Stage.MODEL),
-                    (context, operation) -> context.addStep(Operations.createWriteAttributeOperation(context.getCurrentAddress(), target, Operations.getAttributeValue(operation)), writeHandler, OperationContext.Stage.MODEL));
-        }
+        // Register read/write handlers for attribute translations
+        this.descriptor.getAttributeTranslations().entrySet().forEach(entry -> registration.registerReadWriteAttribute(entry.getKey(), new ReadAttributeTranslationHandler(entry.getValue()), new WriteAttributeTranslationHandler(entry.getValue())));
 
         new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
     }

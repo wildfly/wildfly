@@ -66,7 +66,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final List<AttributeDefinition> parameters = new LinkedList<>();
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
-    private final Map<AttributeDefinition, Attribute> aliases = new TreeMap<>(ATTRIBUTE_COMPARATOR);
+    private final Map<AttributeDefinition, AttributeTranslation> attributeTranslations = new TreeMap<>(ATTRIBUTE_COMPARATOR);
     private final List<OperationStepHandler> translators = new LinkedList<>();
     private final List<OperationStepHandler> runtimeResourceRegistrations = new LinkedList<>();
 
@@ -105,8 +105,8 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     @Override
-    public Map<AttributeDefinition, Attribute> getAttributeAliases() {
-        return this.aliases;
+    public Map<AttributeDefinition, AttributeTranslation> getAttributeTranslations() {
+        return this.attributeTranslations;
     }
 
     public <E extends Enum<E> & Attribute> ResourceDescriptor addAttributes(Class<E> enumClass) {
@@ -186,7 +186,27 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public ResourceDescriptor addAlias(Attribute alias, Attribute target) {
-        this.aliases.put(alias.getDefinition(), target);
+        this.attributeTranslations.put(alias.getDefinition(), () -> target);
+        return this;
+    }
+
+    public ResourceDescriptor addAttributeTranslation(Attribute sourceAttribute, Attribute targetAttribute, AttributeValueTranslator readAttributeTranslator, AttributeValueTranslator writeAttributeTranslator) {
+        this.attributeTranslations.put(sourceAttribute.getDefinition(), new AttributeTranslation() {
+            @Override
+            public Attribute getTargetAttribute() {
+                return targetAttribute;
+            }
+
+            @Override
+            public AttributeValueTranslator getReadTranslator() {
+                return readAttributeTranslator;
+            }
+
+            @Override
+            public AttributeValueTranslator getWriteTranslator() {
+                return writeAttributeTranslator;
+            }
+        });
         return this;
     }
 
