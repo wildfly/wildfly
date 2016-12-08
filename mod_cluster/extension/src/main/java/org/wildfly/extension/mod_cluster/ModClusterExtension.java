@@ -24,7 +24,7 @@ package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
-import java.util.List;
+import java.util.EnumSet;
 
 import javax.xml.stream.XMLStreamConstants;
 
@@ -36,8 +36,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -91,12 +89,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (ModClusterSchema schema : ModClusterSchema.values()) {
-            XMLElementReader<List<ModelNode>> reader = schema.getXMLReader();
-            if (reader != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), schema.getXMLReader());
-            }
-        }
+        EnumSet.allOf(ModClusterSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), schema.getXMLReaderSupplier()));
     }
 
 }
