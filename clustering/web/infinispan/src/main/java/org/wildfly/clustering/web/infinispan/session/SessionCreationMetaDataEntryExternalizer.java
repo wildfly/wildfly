@@ -45,13 +45,13 @@ public class SessionCreationMetaDataEntryExternalizer implements Externalizer<Se
     public void writeObject(ObjectOutput output, SessionCreationMetaDataEntry<Object> entry) throws IOException {
         SessionCreationMetaData metaData = entry.getMetaData();
         INSTANT_EXTERNALIZER.writeObject(output, metaData.getCreationTime());
-        IndexExternalizer.VARIABLE.writeObject(output, (int) metaData.getMaxInactiveInterval().getSeconds());
+        IndexExternalizer.VARIABLE.writeData(output, (int) metaData.getMaxInactiveInterval().getSeconds());
     }
 
     @Override
     public SessionCreationMetaDataEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(INSTANT_EXTERNALIZER.readObject(input));
-        metaData.setMaxInactiveInterval(Duration.ofSeconds(IndexExternalizer.VARIABLE.readObject(input)));
+        metaData.setMaxInactiveInterval(Duration.ofSeconds(IndexExternalizer.VARIABLE.readData(input)));
         return new SessionCreationMetaDataEntry<>(metaData);
     }
 
