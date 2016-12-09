@@ -28,7 +28,6 @@ import java.util.Map;
 import org.jboss.marshalling.ClassTable;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
@@ -39,13 +38,13 @@ public class SimpleClassTable implements ClassTable {
 
     private final Class<?>[] classes;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    private final Externalizer<Integer> indexExternalizer;
+    private final IndexExternalizer indexExternalizer;
 
     public SimpleClassTable(Class<?>... classes) {
         this(IndexExternalizer.select(classes.length), classes);
     }
 
-    private SimpleClassTable(Externalizer<Integer> indexExternalizer, Class<?>... classes) {
+    private SimpleClassTable(IndexExternalizer indexExternalizer, Class<?>... classes) {
         this.indexExternalizer = indexExternalizer;
         this.classes = classes;
         for (int i = 0; i < classes.length; i++) {
@@ -53,7 +52,7 @@ public class SimpleClassTable implements ClassTable {
             Writer writer = new Writer() {
                 @Override
                 public void writeClass(Marshaller output, Class<?> clazz) throws IOException {
-                    indexExternalizer.writeObject(output, index);
+                    indexExternalizer.writeData(output, index);
                 }
             };
             this.writers.put(classes[i], writer);
@@ -67,6 +66,6 @@ public class SimpleClassTable implements ClassTable {
 
     @Override
     public Class<?> readClass(Unmarshaller input) throws IOException, ClassNotFoundException {
-        return this.classes[this.indexExternalizer.readObject(input)];
+        return this.classes[this.indexExternalizer.readData(input)];
     }
 }

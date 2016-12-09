@@ -27,6 +27,7 @@ import java.io.ObjectOutput;
 
 import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
@@ -34,23 +35,23 @@ import org.wildfly.clustering.marshalling.Externalizer;
 public class SessionIDExternalizer implements Externalizer<SessionID> {
 
     private final Class<? extends SessionID> targetClass;
-    private final Externalizer<Integer> externalizer;
+    private final IndexExternalizer lengthExternalizer;
 
-    SessionIDExternalizer(Class<? extends SessionID> targetClass, Externalizer<Integer> externalizer) {
+    SessionIDExternalizer(Class<? extends SessionID> targetClass, IndexExternalizer lengthExternalizer) {
         this.targetClass = targetClass;
-        this.externalizer = externalizer;
+        this.lengthExternalizer = lengthExternalizer;
     }
 
     @Override
     public void writeObject(ObjectOutput output, SessionID id) throws IOException {
         byte[] encoded = id.getEncodedForm();
-        this.externalizer.writeObject(output, encoded.length);
+        this.lengthExternalizer.writeData(output, encoded.length);
         output.write(encoded);
     }
 
     @Override
     public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        byte[] encoded = new byte[this.externalizer.readObject(input)];
+        byte[] encoded = new byte[this.lengthExternalizer.readData(input)];
         input.readFully(encoded);
         return SessionID.createSessionID(encoded);
     }
