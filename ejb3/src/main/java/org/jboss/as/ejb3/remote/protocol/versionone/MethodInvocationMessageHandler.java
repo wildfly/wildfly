@@ -186,10 +186,6 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                     // check if it's async. If yes, then notify the client that's it's async method (so that
                     // it can unblock if necessary)
                     if (componentView.isAsynchronous(invokedMethod)) {
-                        // according to the specification, session EJB 3.2 4.5.3, transaction context cannot be passed to
-                        // asynchronous calls, this is the earliest point we know we are dealing with an asynchronous call
-                        // hence, remove the previously passed information here
-                        attachments.remove(AttachmentKeys.TRANSACTION_ID_KEY);
                         try {
                             MethodInvocationMessageHandler.this.writeAsyncMethodNotification(channelAssociation, invocationId);
                         } catch (Throwable t) {
@@ -301,6 +297,13 @@ public class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHan
                 if (EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY.equals(key)) {
                     final Map<?, ?> privateAttachments = (Map<?, ?>) value;
                     for (final Map.Entry<?, ?> privateAttachment : privateAttachments.entrySet()) {
+                        // according to the specification, session EJB 3.2 4.5.3, transaction context cannot be passed to
+                        // asynchronous calls,
+                        // too bad we have to do this check in this loop, but we cant remove the key from the unmarshalled
+                        // attachments collection because it is unmodifiable
+                        if (privateAttachment.getKey().equals(AttachmentKeys.TRANSACTION_ID_KEY) &&
+                                componentView.isAsynchronous(method))
+                            continue;
                         interceptorContext.putPrivateData(privateAttachment.getKey(), privateAttachment.getValue());
                     }
                 } else {
