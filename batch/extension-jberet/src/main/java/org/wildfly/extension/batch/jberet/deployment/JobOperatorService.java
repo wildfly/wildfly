@@ -22,12 +22,15 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +51,7 @@ import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
 import org.jberet.operations.AbstractJobOperator;
+import org.jberet.runtime.JobExecutionImpl;
 import org.jberet.spi.BatchEnvironment;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
@@ -60,6 +64,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -81,11 +87,11 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     private static final Properties RESTART_PROPS = new Properties();
 
     private final InjectedValue<BatchConfiguration> batchConfigurationInjector = new InjectedValue<>();
-    private final InjectedValue<BatchEnvironment> batchEnvironmentInjector = new InjectedValue<>();
+    private final InjectedValue<SecurityAwareBatchEnvironment> batchEnvironmentInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
 
-    private volatile BatchEnvironment batchEnvironment;
+    private volatile SecurityAwareBatchEnvironment batchEnvironment;
     private volatile ClassLoader classLoader;
     private final Boolean restartJobsOnResume;
     private final WildFlyJobXmlResolver resolver;
@@ -135,7 +141,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     }
 
     @Override
-    protected BatchEnvironment getBatchEnvironment() {
+    protected SecurityAwareBatchEnvironment getBatchEnvironment() {
         if (batchEnvironment == null) {
             throw BatchLogger.LOGGER.jobOperatorServiceStopped();
         }
@@ -213,7 +219,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                 jobXml = jobXMLName + ".xml";
             }
             if (resolver.isValidJobXmlName(jobXml)) {
-                return super.start(jobXml, jobParameters);
+                return super.start(jobXml, jobParameters, getBatchEnvironment().getCurrentUserName());
             }
             throw BatchLogger.LOGGER.couldNotFindJobXml(jobXMLName);
         } finally {
@@ -229,7 +235,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             final JobInstance instance = super.getJobInstance(executionId);
             validateJob(instance.getJobName());
-            return super.restart(executionId, restartParameters);
+            return super.restart(executionId, restartParameters, getBatchEnvironment().getCurrentUserName());
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
         }
@@ -342,7 +348,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
      *
      * @return the injector used to inject the value in
      */
-    public Injector<BatchEnvironment> getBatchEnvironmentInjector() {
+    public Injector<SecurityAwareBatchEnvironment> getBatchEnvironmentInjector() {
         return batchEnvironmentInjector;
     }
 
@@ -447,12 +453,21 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                     }
                     for (Long id : ids) {
                         String jobName = null;
+                        String user = null;
                         try {
-                            jobName = getJobExecutionImpl(id).getJobName();
+                            final JobExecutionImpl execution = getJobExecutionImpl(id);
+                            jobName = execution.getJobName();
+                            user = execution.getUser();
                         } catch (Exception ignore) {
                         }
                         try {
-                            final long newId = restart(id, RESTART_PROPS);
+                            final long newId;
+                            // If the user is not null we need to restart the job with the user specified
+                            if (user == null) {
+                                newId = restart(id, RESTART_PROPS);
+                            } else {
+                                newId = privilegedRunAs(user, () -> restart(id, RESTART_PROPS));
+                            }
                             BatchLogger.LOGGER.restartingJob(jobName, id, newId);
                         } catch (Exception e) {
                             BatchLogger.LOGGER.failedRestartingJob(e, id, jobName, deploymentName);
@@ -464,6 +479,24 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                     jobsRestarted.set(false);
                 }
             }
+        }
+
+        private <V> V privilegedRunAs(final String user, final Callable<V> callable) throws Exception {
+            final SecurityDomain securityDomain = getBatchEnvironment().getSecurityDomain();
+            if (securityDomain == null) {
+                return callable.call();
+            }
+            final SecurityIdentity securityIdentity;
+            if (user != null) {
+                if (WildFlySecurityManager.isChecking()) {
+                    securityIdentity = AccessController.doPrivileged((PrivilegedAction<SecurityIdentity>) () -> securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(user, false));
+                } else {
+                    securityIdentity = securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(user);
+                }
+            } else {
+                securityIdentity = securityDomain.getCurrentSecurityIdentity();
+            }
+            return securityIdentity.runAs(callable);
         }
 
         private boolean isRestartOnResume() {

@@ -53,6 +53,7 @@
         <module name="org.picketbox"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.wildfly.common"/>
         <module name="org.wildfly.extension.request-controller"/>
         <module name="org.wildfly.security.elytron"/>
     </dependencies>

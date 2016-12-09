@@ -26,7 +26,6 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
 import org.jberet.repository.JobRepository;
-import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobOperatorContext;
@@ -116,7 +115,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             // Create the batch environment
             final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName);
-            final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
+            final ServiceBuilder<SecurityAwareBatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
 
             // Add a dependency to the thread-pool
             if (jobExecutorName != null) {
@@ -154,7 +153,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             Services.addServerExecutorDependency(serviceTarget.addService(BatchServiceNames.jobOperatorServiceName(deploymentUnit), jobOperatorService)
                             .addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, jobOperatorService.getBatchConfigurationInjector())
                             .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, jobOperatorService.getSuspendControllerInjector())
-                            .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), BatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
+                            .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), SecurityAwareBatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
                     jobOperatorService.getExecutorServiceInjector(), false)
                     .install();
 

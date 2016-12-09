@@ -25,7 +25,6 @@ package org.wildfly.extension.batch.deployment;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
-import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -48,9 +47,10 @@ import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch._private.Capabilities;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.deployment.BatchAttachments;
-import org.wildfly.extension.batch.jberet.deployment.JobOperatorService;
-import org.wildfly.extension.batch.jberet.deployment.WildFlyJobXmlResolver;
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentService;
+import org.wildfly.extension.batch.jberet.deployment.JobOperatorService;
+import org.wildfly.extension.batch.jberet.deployment.SecurityAwareBatchEnvironment;
+import org.wildfly.extension.batch.jberet.deployment.WildFlyJobXmlResolver;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.requestcontroller.RequestController;
 
@@ -89,7 +89,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             // until deployment time because the default JNDI data-source name is only known during DUP processing
             service.getJobRepositoryInjector().setValue(new ImmediateValue<>(JobRepositoryFactory.getInstance().getJobRepository(moduleDescription)));
 
-            final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
+            final ServiceBuilder<SecurityAwareBatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
             // Register the required services
             serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, service.getBatchConfigurationInjector());
             serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, service.getTransactionManagerInjector());
@@ -113,7 +113,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             Services.addServerExecutorDependency(serviceTarget.addService(org.wildfly.extension.batch.jberet.BatchServiceNames.jobOperatorServiceName(deploymentUnit), jobOperatorService)
                             .addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, jobOperatorService.getBatchConfigurationInjector())
                             .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, jobOperatorService.getSuspendControllerInjector())
-                            .addDependency(org.wildfly.extension.batch.jberet.BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), BatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
+                            .addDependency(org.wildfly.extension.batch.jberet.BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), SecurityAwareBatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
                     jobOperatorService.getExecutorServiceInjector(), false)
                     .install();
 

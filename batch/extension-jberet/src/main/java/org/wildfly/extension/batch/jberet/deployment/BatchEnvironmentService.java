@@ -48,7 +48,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BatchEnvironmentService implements Service<BatchEnvironment> {
+public class BatchEnvironmentService implements Service<SecurityAwareBatchEnvironment> {
 
     private static final Properties PROPS = new Properties();
 
@@ -62,7 +62,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final ClassLoader classLoader;
     private final JobXmlResolver jobXmlResolver;
     private final String deploymentName;
-    private BatchEnvironment batchEnvironment = null;
+    private SecurityAwareBatchEnvironment batchEnvironment = null;
     private volatile ControlPoint controlPoint;
 
     public BatchEnvironmentService(final ClassLoader classLoader, final JobXmlResolver jobXmlResolver, final String deploymentName) {
@@ -109,7 +109,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     }
 
     @Override
-    public synchronized BatchEnvironment getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized SecurityAwareBatchEnvironment getValue() throws IllegalStateException, IllegalArgumentException {
         return batchEnvironment;
     }
 
@@ -137,12 +137,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return batchConfigurationInjector;
     }
 
-    private SecurityIdentity getIdentity() {
-        final SecurityDomain securityDomain = batchConfigurationInjector.getValue().getSecurityDomain();
-        return securityDomain == null ? null : securityDomain.getCurrentSecurityIdentity();
-    }
-
-    private class WildFlyBatchEnvironment implements BatchEnvironment {
+    private class WildFlyBatchEnvironment implements BatchEnvironment, SecurityAwareBatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
         private final JobExecutor jobExecutor;
@@ -222,6 +217,11 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         @Override
         public Properties getBatchConfigurationProperties() {
             return PROPS;
+        }
+
+        @Override
+        public SecurityDomain getSecurityDomain() {
+            return batchConfigurationInjector.getValue().getSecurityDomain();
         }
 
         private ContextHandle createContextHandle() {
