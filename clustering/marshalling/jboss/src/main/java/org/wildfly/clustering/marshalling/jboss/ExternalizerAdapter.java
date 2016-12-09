@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.jboss.marshalling.Creator;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -51,12 +50,8 @@ public class ExternalizerAdapter implements org.jboss.marshalling.Externalizer {
     }
 
     @Override
-    public Object createExternal(Class<?> subjectType, ObjectInput input, Creator defaultCreator) throws IOException, ClassNotFoundException {
+    public Object createExternal(Class<?> subjectType, ObjectInput input) throws IOException, ClassNotFoundException {
         return this.externalizer.readObject(input);
     }
 
-    @Override
-    public void readExternal(Object subject, ObjectInput input) throws IOException, ClassNotFoundException {
-        // Do nothing
-    }
 }
