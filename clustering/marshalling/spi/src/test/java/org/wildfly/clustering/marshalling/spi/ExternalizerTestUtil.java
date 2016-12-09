@@ -53,6 +53,7 @@ public class ExternalizerTestUtil {
         try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(out.toByteArray()))) {
             T result = externalizer.readObject(input);
             assertion.accept(subject, result);
+            assertTrue(externalizer.getTargetClass().isInstance(result));
         }
     }
 }
