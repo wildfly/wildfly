@@ -52,11 +52,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-remote-naming</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>
@@ -94,6 +89,11 @@
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-nio</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client</artifactId>
         </dependency>
 
         <dependency>

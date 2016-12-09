@@ -58,6 +58,6 @@
         <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.jboss.remote-naming"/>
+        <module name="org.wildfly.naming-client"/>
     </dependencies>
 </module>
