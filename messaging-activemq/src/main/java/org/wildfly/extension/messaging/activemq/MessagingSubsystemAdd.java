@@ -22,8 +22,12 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY;
+import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.THREAD_POOL_MAX_SIZE_PROPERTY_KEY;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE;
+
+import java.util.Properties;
 
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -43,6 +47,7 @@ import org.wildfly.extension.messaging.activemq.deployment.MessagingDependencyPr
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlParsingDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.injection.CDIDeploymentProcessor;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Add handler for the messaging subsystem.
@@ -76,8 +81,31 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        int threadPoolMaxSize = GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
-        int scheduledThreadPoolMaxSize = GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
-        ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSize, scheduledThreadPoolMaxSize);
+        ModelNode threadPoolMaxSize = operation.get(GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.getName());
+        ModelNode scheduledThreadPoolMaxSize = operation.get(GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.getName());
+        final int threadPoolMaxSizeValue;
+        final int scheduledThreadPoolMaxSizeValue;
+
+        // if Artemis System properties are defined, they have precedence over the default values of undefined
+        // attributes from the management mode (for backwards compatibility).
+        // if the attributes are defined, their value is used (and the system properties are ignored)
+        Properties sysprops = System.getProperties();
+
+        if (!threadPoolMaxSize.isDefined()
+                && sysprops.containsKey(THREAD_POOL_MAX_SIZE_PROPERTY_KEY)) {
+            threadPoolMaxSizeValue = Integer.parseInt(sysprops.getProperty(THREAD_POOL_MAX_SIZE_PROPERTY_KEY));
+        } else {
+            threadPoolMaxSizeValue = GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+        }
+
+        if (!scheduledThreadPoolMaxSize.isDefined()
+                && sysprops.containsKey(SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY)) {
+            scheduledThreadPoolMaxSizeValue = Integer.parseInt(sysprops.getProperty(SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY));
+        } else {
+            scheduledThreadPoolMaxSizeValue = GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+        }
+
+        MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
+        ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
     }
 }
