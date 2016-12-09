@@ -169,6 +169,12 @@ public enum Immutability implements Predicate<Object> {
             return this.immutableClasses.stream().anyMatch(immutableClass -> immutableClass.isInstance(object));
         }
     },
+    COLLECTION() {
+        @Override
+        public boolean test(Object object) {
+            return COLLECTION_INSTANCE.test(object);
+        }
+    },
     ANNOTATION() {
         @Override
         public boolean test(Object object) {
@@ -178,6 +184,7 @@ public enum Immutability implements Predicate<Object> {
     ;
 
     public static final Predicate<Object> INSTANCE = object -> EnumSet.allOf(Immutability.class).stream().anyMatch(predicate -> predicate.test(object));
+    static final Predicate<Object> COLLECTION_INSTANCE = new CollectionImmutability(INSTANCE);
 
     static <T> Set<T> createIdentitySet(Collection<T> list) {
         Set<T> result = Collections.newSetFromMap(new IdentityHashMap<>(list.size()));

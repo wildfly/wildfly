@@ -24,6 +24,9 @@ package org.wildfly.clustering.web.session;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.function.Predicate;
+
 import org.junit.Test;
 import org.wildfly.clustering.ee.ImmutabilityTestCase;
 import org.wildfly.clustering.web.annotation.Immutable;
@@ -36,9 +39,17 @@ public class SessionAttributeImmutabilityTestCase extends ImmutabilityTestCase {
     @Override
     @Test
     public void test() throws Exception {
-        super.test(SessionAttributeImmutability.INSTANCE);
+        this.test(SessionAttributeImmutability.INSTANCE);
+    }
 
-        assertTrue(SessionAttributeImmutability.INSTANCE.test(new ImmutableObject()));
+    @Override
+    protected void test(Predicate<Object> immutability) throws Exception {
+        super.test(immutability);
+
+        assertTrue(immutability.test(new ImmutableObject()));
+        assertTrue(immutability.test(Collections.singleton(new ImmutableObject())));
+        assertTrue(immutability.test(Collections.singletonList(new ImmutableObject())));
+        assertTrue(immutability.test(Collections.singletonMap("1", new ImmutableObject())));
     }
 
     @Immutable
