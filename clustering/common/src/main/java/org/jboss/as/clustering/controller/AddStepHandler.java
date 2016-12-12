@@ -123,15 +123,17 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
         }
-        // Validate and apply attribute aliases
-        for (Map.Entry<AttributeDefinition, Attribute> entry : this.descriptor.getAttributeAliases().entrySet()) {
+        // Validate and apply attribute translations
+        for (Map.Entry<AttributeDefinition, AttributeTranslation> entry : this.descriptor.getAttributeTranslations().entrySet()) {
             AttributeDefinition alias = entry.getKey();
-            Attribute target = entry.getValue();
-            String targetName = target.getDefinition().getName();
+            AttributeTranslation translation = entry.getValue();
+            Attribute target = translation.getTargetAttribute();
+            String targetName = target.getName();
             if (operation.hasDefined(alias.getName()) && !operation.hasDefined(targetName)) {
                 ModelNode value = alias.validateOperation(operation);
+                ModelNode translatedValue = translation.getWriteTranslator().translate(context, value);
                 // Target attribute will be validated by super implementation
-                operation.get(targetName).set(value);
+                operation.get(targetName).set(translatedValue);
             }
         }
 
@@ -181,7 +183,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         }
         Stream<AttributeDefinition> parameters = this.descriptor.getAttributes().stream();
         parameters = Stream.concat(parameters, this.descriptor.getExtraParameters().stream());
-        parameters = Stream.concat(parameters, this.descriptor.getAttributeAliases().keySet().stream());
+        parameters = Stream.concat(parameters, this.descriptor.getAttributeTranslations().keySet().stream());
         parameters.forEach(attribute -> builder.addParameter(attribute));
         registration.registerOperationHandler(builder.build(), this);
     }
