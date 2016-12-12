@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -69,7 +70,12 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
+    static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
+    static final RuntimeCapability<Void> CONNECTOR_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.mod_cluster.connector", true)
+            .build();
+
     static final SimpleAttributeDefinition CONNECTOR = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONNECTOR, ModelType.STRING, false)
+            .setCapabilityReference(LISTENER_CAPABILITY_NAME, CONNECTOR_CAPABILITY)
             .setRestartAllServices()
             .build();
 
@@ -342,7 +348,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION),
                 ModClusterConfigAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                new ReloadRequiredRemoveStepHandler(CONNECTOR_CAPABILITY));
     }
 
     @Override
