@@ -145,7 +145,7 @@
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
         <version.org.hibernate>5.1.3.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.1.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.validator>5.3.3.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>5.3.4.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.search>5.5.5.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
@@ -168,7 +168,6 @@
         <version.org.jboss.mod_cluster>1.3.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.0.6.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
-        <version.org.jboss.remote-naming>2.0.4.Final</version.org.jboss.remote-naming>
         <version.org.jboss.resteasy>3.1.0.CR3</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.3.Final</version.org.jboss.security.jboss-negotiation>
@@ -215,12 +214,12 @@
         <version.org.picketlink>2.5.5.SP4</version.org.picketlink>
         <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.wildfly.build-tools>1.1.7.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.1.8.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Alpha13</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.0.Alpha15</version.org.wildfly.core>
         <version.org.wildfly.arquillian>2.0.0.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.naming-client>1.0.0.Beta4</version.org.wildfly.naming-client>
-        <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha15</version.org.wildfly.security.elytron-subsystem>
+        <version.org.wildfly.naming-client>1.0.0.Beta6</version.org.wildfly.naming-client>
+        <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha16</version.org.wildfly.security.elytron-subsystem>
         <version.org.wildfly.client-config>1.0.0.Beta1</version.org.wildfly.client-config>
         <version.org.wildfly.common>1.2.0.Beta1</version.org.wildfly.common>
         <version.org.wildfly.discovery-client>1.0.0.Beta3</version.org.wildfly.discovery-client>
@@ -301,7 +300,6 @@
         <module>pojo</module>
         <module>sar</module>
         <module>security</module>
-        <module>security-manager</module>
         <module>system-jmx</module>
         <module>spec-api</module>
         <module>transactions</module>
@@ -831,6 +829,7 @@
         <dependency>
             <groupId>org.wildfly.checkstyle</groupId>
             <artifactId>wildfly-checkstyle-config</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -981,6 +980,16 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-marshalling-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1196,6 +1205,12 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-naming-client</artifactId>
                 <version>${version.org.wildfly.naming-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1229,12 +1244,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-security</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-security-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -4300,18 +4309,6 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-iiop-client</artifactId>
                 <version>${version.org.jboss.iiop-client}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-remote-naming</artifactId>
-                <version>${version.org.jboss.remote-naming}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.remoting3</groupId>
-                        <artifactId>jboss-remoting</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

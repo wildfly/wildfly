@@ -21,8 +21,6 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import java.util.concurrent.Executors;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,8 +31,8 @@ import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.naming.remote.server.RemoteNamingService;
 import org.jboss.remoting3.Endpoint;
+import org.wildfly.naming.client.remote.RemoteNamingService;
 
 /**
  * A {@link org.jboss.as.controller.AbstractAddStepHandler} to handle the add operation for simple JNDI bindings
@@ -61,7 +59,6 @@ public class RemoteNamingAdd extends AbstractAddStepHandler {
         final ServiceBuilder<RemoteNamingService> builder = context.getServiceTarget().addService(RemoteNamingServerService.SERVICE_NAME, remoteNamingServerService);
         builder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteNamingServerService.getEndpointInjector())
                 .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, remoteNamingServerService.getNamingStoreInjector())
-                .addInjection(remoteNamingServerService.getExecutorServiceInjector(), Executors.newFixedThreadPool(10))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

@@ -184,7 +184,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
         ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
         for (AttributeDefinition attr : getAttributes()) {
             if(attr == STATISTICS_ENABLED) {
-                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void> () {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void> (STATISTICS_ENABLED) {
                     @Override
                     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
                         ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);

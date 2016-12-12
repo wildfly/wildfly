@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.web.sso.Sessions;
 
 public class CoarseSessionsTestCase {

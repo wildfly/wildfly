@@ -50,7 +50,7 @@ public class SimpleElectionPolicyResourceDefinition extends ElectionPolicyResour
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .build();
         }

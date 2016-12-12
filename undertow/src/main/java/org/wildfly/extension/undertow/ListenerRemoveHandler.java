@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
 class ListenerRemoveHandler extends ServiceRemoveStepHandler {
 
     ListenerRemoveHandler(ListenerAdd addOperation) {
-        super(addOperation, ListenerResourceDefinition.LISTENER_CAPABILITY);
+        super(addOperation);
     }
 
     @Override

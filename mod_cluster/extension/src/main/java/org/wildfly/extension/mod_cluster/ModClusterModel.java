@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -21,15 +21,15 @@
  */
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.clustering.controller.Model;
 import org.jboss.as.controller.ModelVersion;
 
 /**
  * Enumerates the supported model versions.
  *
  * @author Radoslav Husar
- * @version Jun 2014
  */
-public enum ModClusterModel {
+public enum ModClusterModel implements Model {
 
     VERSION_1_4_0(1, 4, 0),
     VERSION_1_5_0(1, 5, 0),
@@ -47,15 +47,5 @@ public enum ModClusterModel {
 
     public ModelVersion getVersion() {
         return this.version;
-    }
-
-    /**
-     * Indicates whether this model is more recent than the specified version and thus requires transformation
-     *
-     * @param version a model version
-     * @return true this this model is more recent than the specified version, false otherwise
-     */
-    public boolean requiresTransformation(ModelVersion version) {
-        return ModelVersion.compare(this.version, version) < 0;
     }
 }

@@ -28,7 +28,7 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
-import org.wildfly.clustering.ee.infinispan.Remover;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
 

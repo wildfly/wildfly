@@ -25,16 +25,21 @@ package org.wildfly.clustering.web.infinispan;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ServiceLoader;
 import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.web.IdentifierExternalizerProvider;
 
 /**
  * Base externalizer for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
 public abstract class SessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
+
+    private static final Externalizer<String> EXTERNALIZER = StreamSupport.stream(ServiceLoader.load(IdentifierExternalizerProvider.class, IdentifierExternalizerProvider.class.getClassLoader()).spliterator(), false).findFirst().get().getExternalizer();
 
     protected interface KeyFactory<K extends Key<String>> {
         K createKey(String id, ObjectInput input) throws IOException, ClassNotFoundException;
@@ -54,12 +59,12 @@ public abstract class SessionKeyExternalizer<K extends Key<String>> implements E
 
     @Override
     public void writeObject(ObjectOutput output, K key) throws IOException {
-        SessionIdentifierExternalizer.BASE64.writeObject(output, key.getValue());
+        EXTERNALIZER.writeObject(output, key.getValue());
     }
 
     @Override
     public K readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.factory.createKey(SessionIdentifierExternalizer.BASE64.readObject(input), input);
+        return this.factory.createKey(EXTERNALIZER.readObject(input), input);
     }
 
     @Override

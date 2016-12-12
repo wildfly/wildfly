@@ -69,6 +69,7 @@ public class CreateJMSBridgeSetupTask extends CreateQueueSetupTask {
         jmsBridgeAttributes.get("max-batch-size").set(1024);
         jmsBridgeAttributes.get("max-batch-time").set(100);
         jmsBridgeAttributes.get("add-messageID-in-header").set("true");
+        jmsBridgeAttributes.get("module").set("org.apache.activemq.artemis:main");
         jmsOperations.addJmsBridge(JMS_BRIDGE_NAME, jmsBridgeAttributes);
     }
 

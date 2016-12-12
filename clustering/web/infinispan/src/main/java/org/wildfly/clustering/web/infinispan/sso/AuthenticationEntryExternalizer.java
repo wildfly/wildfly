@@ -27,34 +27,30 @@ import java.io.ObjectOutput;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValue;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueExternalizer;
 
 /**
  * Externalizer for {@link AuthenticationEntry}.
  * @author Paul Ferraro
- * @param <A>
- * @param <D>
+ * @param <V> Authentication persistence type
+ * @param <L> Local context type
  */
 @MetaInfServices(Externalizer.class)
-public class AuthenticationEntryExternalizer<A, L> implements Externalizer<AuthenticationEntry<A, L>> {
-
-    private final Externalizer<SimpleMarshalledValue<A>> externalizer = new SimpleMarshalledValueExternalizer<>();
+public class AuthenticationEntryExternalizer<V, L> implements Externalizer<AuthenticationEntry<V, L>> {
 
     @Override
-    public void writeObject(ObjectOutput output, AuthenticationEntry<A, L> entry) throws IOException {
-        SimpleMarshalledValue<A> value = (SimpleMarshalledValue<A>) entry.getAuthentication();
-        this.externalizer.writeObject(output, value);
+    public void writeObject(ObjectOutput output, AuthenticationEntry<V, L> entry) throws IOException {
+        output.writeObject(entry.getAuthentication());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public AuthenticationEntry<A, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new AuthenticationEntry<>(this.externalizer.readObject(input));
+    public AuthenticationEntry<V, L> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new AuthenticationEntry<>((V) input.readObject());
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Class<AuthenticationEntry<A, L>> getTargetClass() {
+    public Class<AuthenticationEntry<V, L>> getTargetClass() {
         Class targetClass = AuthenticationEntry.class;
         return targetClass;
     }

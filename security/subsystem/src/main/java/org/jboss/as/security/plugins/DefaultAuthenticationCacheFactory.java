@@ -26,7 +26,6 @@ import java.security.Principal;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.security.lru.LRUCache;
-import org.jboss.as.security.lru.RemoveCallback;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
@@ -42,14 +41,10 @@ public class DefaultAuthenticationCacheFactory implements AuthenticationCacheFac
      * @return cache implementation
      */
     public ConcurrentMap<Principal, DomainInfo> getCache() {
-        ConcurrentMap<Principal, DomainInfo> map = new LRUCache<>(1000,  new RemoveCallback<Principal, DomainInfo>() {
-            @Override
-            public void afterRemove(Principal key, DomainInfo value) {
-                if (value != null) {
-                    value.logout();
-                }
+        return new LRUCache<>(1000, (key, value) -> {
+            if (value != null) {
+                value.logout();
             }
         });
-        return map;
     }
 }

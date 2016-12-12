@@ -25,7 +25,7 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.ee.Mutator;
 
 /**
  * @author Paul Ferraro

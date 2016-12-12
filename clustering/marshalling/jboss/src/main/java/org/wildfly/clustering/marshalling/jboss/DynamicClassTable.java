@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 
 /**
  * {@link org.jboss.marshalling.ClassTable} implementation that dynamically loads {@link ClassTableContributor} instances visible from a given {@link ClassLoader}.
@@ -36,11 +36,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 public class DynamicClassTable extends SimpleClassTable {
 
     public DynamicClassTable(ClassLoader loader) {
-        this(IndexExternalizer.VARIABLE, loader);
-    }
-
-    public DynamicClassTable(Externalizer<Integer> indexExternalizer, ClassLoader loader) {
-        super(indexExternalizer, findClasses(loader));
+        super(findClasses(loader));
     }
 
     private static Class<?>[] findClasses(ClassLoader loader) {

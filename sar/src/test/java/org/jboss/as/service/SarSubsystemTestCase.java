@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -57,5 +58,11 @@ public class SarSubsystemTestCase extends AbstractSubsystemBaseTest {
         return new String[]{
                 "/subsystem-templates/sar.xml"
         };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 }

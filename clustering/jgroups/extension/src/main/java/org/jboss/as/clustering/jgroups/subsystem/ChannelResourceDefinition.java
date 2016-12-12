@@ -122,7 +122,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
             this.definition = createBuilder(name, type)
                     .setAllowExpression(false)
-                    .setAllowNull(false)
+                    .setRequired(true)
                     .setCapabilityReference(reference)
                     .build();
         }
@@ -130,7 +130,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
         }

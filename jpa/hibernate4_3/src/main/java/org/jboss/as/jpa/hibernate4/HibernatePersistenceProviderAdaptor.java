@@ -27,6 +27,7 @@ import static org.jipijapa.JipiLogger.JPA_LOGGER;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.spi.PersistenceUnitInfo;
 
@@ -169,6 +170,16 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public void cleanup(PersistenceUnitMetadata pu) {
+
+    }
+
+    @Override
+    public Object beanManagerLifeCycle(BeanManager beanManager) {
+        return null;
+    }
+
+    @Override
+    public void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle) {
 
     }
 

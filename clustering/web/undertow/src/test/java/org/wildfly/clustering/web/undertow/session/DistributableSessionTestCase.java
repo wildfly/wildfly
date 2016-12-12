@@ -68,8 +68,9 @@ public class DistributableSessionTestCase {
     private final SessionConfig config = mock(SessionConfig.class);
     private final Session<LocalSessionContext> session = mock(Session.class);
     private final Batch batch = mock(Batch.class);
+    private final Runnable closeTask = mock(Runnable.class);
 
-    private final io.undertow.server.session.Session adapter = new DistributableSession(this.manager, this.session, this.config, this.batch);
+    private final io.undertow.server.session.Session adapter = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
     @Test
     public void getId() {
@@ -98,8 +99,9 @@ public class DistributableSessionTestCase {
         verify(this.session).close();
         verify(this.batch).close();
         verify(context).close();
+        verify(this.closeTask).run();
 
-        reset(this.batch, this.session, context);
+        reset(this.batch, this.session, context, this.closeTask);
 
         when(this.session.isValid()).thenReturn(false);
 
@@ -108,6 +110,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.batch, never()).close();
         verify(context, never()).close();
+        verify(this.closeTask, never()).run();
     }
 
     @Test
@@ -553,7 +556,6 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         when(this.session.getId()).thenReturn(sessionId);
         when(this.manager.getSessionManager()).thenReturn(manager);
-        when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
 
@@ -564,6 +566,7 @@ public class DistributableSessionTestCase {
         verify(listener).sessionDestroyed(this.adapter, exchange, SessionDestroyedReason.INVALIDATED);
         verify(this.batch).close();
         verify(context).close();
+        verify(this.closeTask).run();
     }
 
     @Test

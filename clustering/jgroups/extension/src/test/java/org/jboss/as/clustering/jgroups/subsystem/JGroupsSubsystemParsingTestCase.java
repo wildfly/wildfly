@@ -73,9 +73,9 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
         Object[][] data = new Object[][] {
                 { JGroupsSchema.VERSION_1_1, 20 },
                 { JGroupsSchema.VERSION_2_0, 22 },
-                { JGroupsSchema.VERSION_3_0, 30 },
-                { JGroupsSchema.VERSION_4_0, 30 },
-                { JGroupsSchema.VERSION_4_1, 31 },
+                { JGroupsSchema.VERSION_3_0, 29 },
+                { JGroupsSchema.VERSION_4_0, 29 },
+                { JGroupsSchema.VERSION_4_1, 30 },
         };
         return Arrays.asList(data);
     }
@@ -97,7 +97,7 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
     }
 
     @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
+    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
                 ;

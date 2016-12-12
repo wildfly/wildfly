@@ -40,6 +40,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.singleton.SingletonCacheRequirement;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 
 /**
  * @author Paul Ferraro
@@ -82,7 +84,11 @@ public class SingletonSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization().require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1");
+        return new AdditionalInitialization()
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1")
+                .require(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container")
+                .require(SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container", "singleton-cache")
+                ;
     }
 
     @Override

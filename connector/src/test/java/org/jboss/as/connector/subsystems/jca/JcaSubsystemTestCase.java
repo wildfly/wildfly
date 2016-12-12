@@ -71,6 +71,12 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());

@@ -45,7 +45,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -97,21 +96,24 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
     }
 
     /**
-     * Tests if deployment fails, when maximum-permissions is not defined and permissions.xml requests some permissions.
+     * Tests if deployment fails
+     * <ul>
+     * <li>when maximum-permissions is not defined and {@code permissions.xml} requests some permissions;</li>
+     * <li>when maximum-permissions is not defined and {@code jboss-permissions.xml} requests some permissions.</li>
+     * </ul>
      */
     @Test
-    @Ignore("WFLY-4882")
     public void testMaximumPermissionsEmpty() throws Exception {
-        assertNotDeployable(DEPLOYMENT_PERM);
-    }
-
-    /**
-     * Tests if deployment fails, when maximum-permissions is not defined and jboss-permissions.xml requests some permissions.
-     */
-    @Test
-    @Ignore("WFLY-4882")
-    public void testMaximumPermissionsEmptyJBoss() throws Exception {
-        assertNotDeployable(DEPLOYMENT_JBOSS_PERM);
+        try {
+            doCliOperation(
+                    "/subsystem=security-manager/deployment-permissions=default:add(maximum-permissions=[])");
+            reloadServer();
+            assertNotDeployable(DEPLOYMENT_PERM);
+            assertNotDeployable(DEPLOYMENT_JBOSS_PERM);
+        } finally {
+            doCliOperationWithoutChecks("/subsystem=security-manager/deployment-permissions=default:remove()");
+            reloadServer();
+        }
     }
 
     /**
@@ -127,7 +129,6 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
      * Tests if deployment fails, when maximum-permissions is contains another permissions than requested by deployment.
      */
     @Test
-    @Ignore("WFLY-4882")
     public void testFilePerm(@ArquillianResource URL webAppURL) throws Exception {
         try {
             doCliOperation(
@@ -168,7 +169,6 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
      * Tests if deployments succeeds and permissions are granted, when maximum-permissions contains AllPermission entry.
      */
     @Test
-    @Ignore("WFLY-4882")
     public void testAllPermAndEmptySet(@ArquillianResource URL webAppURL) throws Exception {
         try {
             doCliOperation(
@@ -187,7 +187,7 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
                     // after removing permissions from maximum-set the deployment which requests non-granted permissions should
                     // fail.
                     doCliOperation(
-                            "/subsystem=security-manager/deployment-permissions=default:undefine-attribute(name=maximum-permissions)");
+                            "/subsystem=security-manager/deployment-permissions=default:write-attribute(name=maximum-permissions, value=[])");
                     reloadServer();
 
                     assertNotDeployed(DEPLOYMENT_PERM);
@@ -274,10 +274,15 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
     protected void assertNotDeployable(String deploymentName) {
         try {
             deployer.deploy(deploymentName);
-            deployer.undeploy(deploymentName);
             fail("Deployment failure expected for deployment: " + deploymentName);
         } catch (Exception e) {
             // expected
+        } finally {
+            try {
+                deployer.undeploy(deploymentName);
+            } catch (Exception e) {
+                LOGGER.debug(e);
+            }
         }
     }
 

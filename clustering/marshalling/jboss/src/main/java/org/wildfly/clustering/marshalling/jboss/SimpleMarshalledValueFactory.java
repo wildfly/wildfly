@@ -22,7 +22,10 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+
 /**
+ * Factory for creating a {@link SimpleMarshalledValue}.
  * @author Paul Ferraro
  */
 public class SimpleMarshalledValueFactory implements MarshalledValueFactory<MarshallingContext> {
@@ -36,10 +39,6 @@ public class SimpleMarshalledValueFactory implements MarshalledValueFactory<Mars
         this.context = context;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
-     */
     @Override
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {
         return new SimpleMarshalledValue<>(object, this.context);

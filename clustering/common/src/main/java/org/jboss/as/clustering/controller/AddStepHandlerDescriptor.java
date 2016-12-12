@@ -56,10 +56,10 @@ public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescr
     Set<PathElement> getRequiredSingletonChildren();
 
     /**
-     * Returns a mapping of attribute alias definition -> target attribute
-     * @return an attribute alias mapping
+     * Returns a mapping of attribute translations
+     * @return an attribute translation mapping
      */
-    Map<AttributeDefinition, Attribute> getAttributeAliases();
+    Map<AttributeDefinition, AttributeTranslation> getAttributeTranslations();
 
     /**
      * Returns a collection of translators for an add operation.

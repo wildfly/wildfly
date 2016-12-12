@@ -21,10 +21,10 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.infinispan.Creator;
+import org.wildfly.clustering.ee.Creator;
+import org.wildfly.clustering.ee.Locator;
+import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.Locator;
-import org.wildfly.clustering.ee.infinispan.Remover;
 
 /**
  * A factory for creating a {@link BeanGroup}.

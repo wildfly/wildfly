@@ -22,15 +22,13 @@
 
 package org.wildfly.extension.undertow;
 
-import org.wildfly.extension.undertow.filters.FilterRef;
-
 /**
  * @author Stuart Douglas
  */
 public interface FilterLocation {
 
-    void addFilterRef(FilterRef filterRef);
+    void addFilter(UndertowFilter filterRef);
 
-    void removeFilterRef(FilterRef filterRef);
+    void removeFilter(UndertowFilter filterRef);
 
 }

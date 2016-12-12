@@ -141,7 +141,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
             return new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             ;
         }

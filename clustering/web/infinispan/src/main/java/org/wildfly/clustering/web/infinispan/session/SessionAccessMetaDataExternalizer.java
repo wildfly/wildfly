@@ -29,7 +29,7 @@ import java.time.Duration;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.jboss.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * Optimize marshalling of last accessed timestamp.

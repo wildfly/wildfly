@@ -61,7 +61,7 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
         Attribute(String name, ModelType type) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setAllowNull(false)
+                    .setRequired(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }

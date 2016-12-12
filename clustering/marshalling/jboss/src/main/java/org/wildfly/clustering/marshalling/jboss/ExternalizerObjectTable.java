@@ -26,12 +26,14 @@ import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * {@link ObjectTable} implementation that dynamically loads {@link Externalizer} instances available from a given {@link ClassLoader}.
@@ -41,13 +43,22 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     private final Externalizer<?>[] externalizers;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    final Externalizer<Integer> indexExternalizer;
+    private final Externalizer<Integer> indexExternalizer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
-        this(IndexExternalizer.VARIABLE, StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false).toArray(size -> new Externalizer<?>[size]));
+        this(Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
     }
 
-    public ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {
+    @SuppressWarnings("rawtypes")
+    private static Stream<Externalizer> loadExternalizers(ClassLoader loader) {
+        return StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false);
+    }
+
+    public ExternalizerObjectTable(Externalizer<?>... externalizers) {
+        this(IndexExternalizer.select(externalizers.length), externalizers);
+    }
+
+    private ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {
         this.indexExternalizer = indexExternalizer;
         this.externalizers = externalizers;
         for (int i = 0; i < externalizers.length; ++i) {
@@ -59,7 +70,7 @@ public class ExternalizerObjectTable implements ObjectTable {
                 Writer writer = new Writer() {
                     @Override
                     public void writeObject(Marshaller marshaller, Object object) throws IOException {
-                        ExternalizerObjectTable.this.indexExternalizer.writeObject(marshaller, index);
+                        indexExternalizer.writeObject(marshaller, index);
                         externalizer.writeObject(marshaller, object);
                     }
                 };

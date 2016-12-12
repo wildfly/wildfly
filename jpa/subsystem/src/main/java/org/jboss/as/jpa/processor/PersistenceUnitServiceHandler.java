@@ -57,6 +57,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
@@ -91,6 +92,7 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jandex.Index;
@@ -347,8 +349,12 @@ public class PersistenceUnitServiceHandler {
                 // Get the CDI-enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
+            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION));
+            final PersistenceUnitServiceImpl service =
+                    new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE,
+                            deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
+                            beanManagerAfterDeploymentValidation );
 
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
@@ -588,8 +594,8 @@ public class PersistenceUnitServiceHandler {
                 // Get the CDI-enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
-
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION));
+            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION), beanManagerAfterDeploymentValidation);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 
@@ -1160,6 +1166,25 @@ public class PersistenceUnitServiceHandler {
     private static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+    }
+
+    private static BeanManagerAfterDeploymentValidation registerJPAEntityListenerRegister(DeploymentUnit deploymentUnit) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+            synchronized (deploymentUnit) {
+                BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = deploymentUnit.getAttachment(JpaAttachments.BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY);
+                if (null == beanManagerAfterDeploymentValidation) {
+                    beanManagerAfterDeploymentValidation = new BeanManagerAfterDeploymentValidation();
+                    deploymentUnit.putAttachment(JpaAttachments.BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY, beanManagerAfterDeploymentValidation);
+                    WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
+                    extensions.registerExtensionInstance(beanManagerAfterDeploymentValidation, deploymentUnit);
+                }
+                return beanManagerAfterDeploymentValidation;
+            }
+        }
+        else {
+            return new BeanManagerAfterDeploymentValidation(true);
+        }
     }
 
     private static class PersistenceAdaptorRemoval {

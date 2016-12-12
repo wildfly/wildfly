@@ -73,6 +73,12 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
         };
     }
 
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
             @Override

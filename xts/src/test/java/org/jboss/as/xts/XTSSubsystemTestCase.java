@@ -63,6 +63,12 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Test
     public void testBootEAP620() throws Exception {
         testBoot1_1_0(ModelTestControllerVersion.EAP_6_2_0);
     }

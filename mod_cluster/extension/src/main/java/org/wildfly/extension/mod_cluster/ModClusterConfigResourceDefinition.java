@@ -86,7 +86,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final StringListAttributeDefinition PROXIES = new StringListAttributeDefinition.Builder(CommonAttributes.PROXIES)
             // We don't allow expressions for model references!
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
             .setRestartAllServices()

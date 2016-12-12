@@ -22,18 +22,6 @@
 
 package org.jboss.as.naming.subsystem;
 
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
@@ -50,14 +38,28 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
 /**
  * @author Eduardo Martins
  */
 public class NamingSubsystem14Parser implements XMLElementReader<List<ModelNode>> {
 
-    public static final NamingSubsystem14Parser INSTANCE = new NamingSubsystem14Parser(NamingSubsystemNamespace.NAMING_1_4);
-
     private final NamingSubsystemNamespace validNamespace;
+
+    NamingSubsystem14Parser() {
+        this.validNamespace = NamingSubsystemNamespace.NAMING_1_4;
+    }
+
     NamingSubsystem14Parser(NamingSubsystemNamespace validNamespace) {
         this.validNamespace = validNamespace;
     }

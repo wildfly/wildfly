@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.jboss;
 
 
 /**
+ * Factory for creating a {@link HashableMarshalledValue}.
  * @author Paul Ferraro
  */
 public class HashableMarshalledValueFactory extends SimpleMarshalledValueFactory {
@@ -36,10 +37,6 @@ public class HashableMarshalledValueFactory extends SimpleMarshalledValueFactory
         super(context);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.wildfly.clustering.marshalling.jboss.MarshalledValueFactory#createMarshalledValue(java.lang.Object)
-     */
     @Override
     public <T> SimpleMarshalledValue<T> createMarshalledValue(T object) {
         return new HashableMarshalledValue<>(object, this.context);
