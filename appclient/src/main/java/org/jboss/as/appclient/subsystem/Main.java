@@ -54,6 +54,8 @@ import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
+
 /**
  * The application client entry point
  *
