@@ -31,7 +31,7 @@
         <module name="javax.ejb.api"/>
         <module name="javax.interceptor.api"/>
         <module name="org.wildfly.client.config"/>
-        <module name="org.wildfly.client.discovery"/>
+        <module name="org.wildfly.discovery"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.naming-client"/>
         <module name="org.jboss.remoting"/>
