@@ -80,6 +80,11 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
     protected InjectedValue<ChannelUpgradeHandler> injectedRegistry = new InjectedValue<>();
     protected InjectedValue<ListenerRegistry> listenerRegistry = new InjectedValue<>();
 
+    // Keep a reference to the HttpUpgradeListener that is created when the service is started.
+    // There are many HttpUpgradeListener fro the artemis-remoting protocol (one per http-acceptor, for each
+    // activemq server) and only this httpUpgradeListener must be removed from the ChannelUpgradeHandler registry
+    // when this service is stopped.
+    private HttpUpgradeListener httpUpgradeListener;
     private ListenerRegistry.HttpUpgradeMetadata httpUpgradeMetadata;
 
     public HTTPUpgradeService(String activeMQServerName, String acceptorName, String httpListenerName) {
@@ -111,8 +116,9 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         ServiceController<?> activeMQService = context.getController().getServiceContainer().getService(MessagingServices.getActiveMQServiceName(activeMQServerName));
         ActiveMQServer activeMQServer = ActiveMQServer.class.cast(activeMQService.getValue());
 
+        httpUpgradeListener = switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol());
         injectedRegistry.getValue().addProtocol(getProtocol(),
-                switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol()),
+                httpUpgradeListener,
                 new SimpleHttpUpgradeHandshake(MAGIC_NUMBER, getSecKeyHeader(), getSecAcceptHeader()) {
                     /**
                      * override the default upgrade handshake to take into account the {@code TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME} header
@@ -168,7 +174,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
     public void stop(StopContext context) {
         listenerRegistry.getValue().getListener(httpListenerName).removeHttpUpgradeMetadata(httpUpgradeMetadata);
         httpUpgradeMetadata = null;
-        injectedRegistry.getValue().removeProtocol(getProtocol());
+        injectedRegistry.getValue().removeProtocol(getProtocol(), httpUpgradeListener);
+        httpUpgradeListener = null;
     }
 
     @Override
