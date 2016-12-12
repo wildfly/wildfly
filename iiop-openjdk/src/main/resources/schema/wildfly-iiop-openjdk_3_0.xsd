@@ -26,7 +26,7 @@
            xmlns="urn:jboss:domain:iiop-openjdk:3.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="3.0">
 
     <!-- The iiop subsystem root element -->
     <xs:element name="subsystem" type="iiopSubsystemType"/>
@@ -137,11 +137,22 @@
                 <![CDATA[
                 The securityConfigType specifies the attributes used to configure the ORB security features.
 
-                * support-ssl: indicates whether SSL is to be supported (true) or not (false).
-                * security-domain: the name of the security domain that holds the key and trust stores that will be used
-                                   to establish SSL connections.
+                * support-ssl: indicates whether SSL is to be supported (true) or not (false). If set to true, then either
+                        the security-domain attribute must be set or the server-ssl-context and client-ssl-context pair
+                        must be set. The former tells the subsystem to use a legacy JSSE domain to build SSL contexts
+                        while the other two tell the subsystem to use the org.wildfly.security.ssl-context capability
+                        to obtain the server and client side SSL contexts.
+                * security-domain: the name of the legacy JSSE domain that holds the key and trust stores that will
+                        be used to create the SSL context when establishing SSL connections. if defined , then the
+                        server-ssl-context and client-ssl-contexts attributes must not be set.
+                * server-ssl-context: the dynamic name of the capability that provides the SSL context that will be used
+                        to create server side SSL sockets. If the defined, the client-ssl-context attribute must also be
+                        defined and the security-domain attribute must not be set.
+                * client-ssl-context: the dynamic name of the capability that provides the SSL context that will be used
+                        to create client side SSL sockets. If the defined, the server-ssl-context attribute must also be
+                        defined and the security-domain attribute must not be set.
                 * add-component-via-interceptor: indicates whether SSL components should be added by an IOR interceptor
-                                                 (true) or not (false).
+                        (true) or not (false).
                 * server-requires-ssl: indicates wheter IIOP connections to the server require SSL
                 * client-requires-ssl: indicates wheter IIOP connections from the server require SSL
                         ]]>
@@ -149,6 +160,8 @@
         </xs:annotation>
         <xs:attribute name="support-ssl" type="trueFalseType" use="optional" default="false"/>
         <xs:attribute name="security-domain" type="xs:string" use="optional"/>
+        <xs:attribute name="server-ssl-context" type="xs:string" use="optional"/>
+        <xs:attribute name="client-ssl-context" type="xs:string" use="optional"/>
         <xs:attribute name="add-component-via-interceptor" type="trueFalseType" use="optional" default="true"/>
         <xs:attribute name="server-requires-ssl" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="client-requires-ssl" type="xs:boolean" use="optional" default="false"/>

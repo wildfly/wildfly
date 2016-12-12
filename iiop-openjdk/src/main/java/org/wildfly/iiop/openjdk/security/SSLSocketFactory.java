@@ -1,25 +1,18 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * Copyright 2016 Red Hat, Inc.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.wildfly.iiop.openjdk.security;
 
 import java.io.IOException;
@@ -27,63 +20,59 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.AccessController;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
-
-import org.jboss.security.JSSESecurityDomain;
-import org.jboss.security.SecurityConstants;
-import org.wildfly.iiop.openjdk.Constants;
-import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 
 import com.sun.corba.se.spi.orb.ORB;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.iiop.openjdk.Constants;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * <p>
- *  This class is responsible for creating Sockets used by IIOP subsystem.
- * <p>
+ * A {@link com.sun.corba.se.spi.transport.ORBSocketFactory} implementation that uses Elytron supplied {@link SSLContext}s
+ * to create client and server side SSL sockets.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-
 public class SSLSocketFactory extends SocketFactoryBase {
 
-    private static String securityDomain = null;
+    private static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
 
-    public static void setSecurityDomain(final String securityDomain) {
-        SSLSocketFactory.securityDomain = securityDomain;
+    private static final RuntimeCapability<Void> SSL_CONTEXT_RUNTIME_CAPABILITY = RuntimeCapability
+        .Builder.of(SSL_CONTEXT_CAPABILITY, true, SSLContext.class)
+        .build();
+
+    private static String serverSSLContextName = null;
+
+    public static void setServerSSLContextName(final String serverSSLContextName) {
+        SSLSocketFactory.serverSSLContextName = serverSSLContextName;
     }
 
-    private ORB orb;
+    private static String clientSSLContextName = null;
 
-    private SSLContext sslContext = null;
+    public static void setClientSSLContextName(final String clientSSLContextName) {
+        SSLSocketFactory.clientSSLContextName = clientSSLContextName;
+    }
 
-    private JSSESecurityDomain jsseSecurityDomain = null;
+    private SSLContext serverSSLContext = null;
 
-    private boolean request_mutual_auth = false;
-
-    private boolean require_mutual_auth = false;
+    private SSLContext clientSSLContext = null;
 
     @Override
     public void setORB(ORB orb) {
         super.setORB(orb);
-        this.orb = orb;
 
-        try {
-            InitialContext context = new InitialContext();
-            jsseSecurityDomain = (JSSESecurityDomain) context.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + securityDomain
-                    + "/jsse");
-            IIOPLogger.ROOT_LOGGER.debugf("Obtained JSSE security domain with name %s", securityDomain);
-        } catch (NamingException ne) {
-            IIOPLogger.ROOT_LOGGER.failedToObtainJSSEDomain(securityDomain);
-        }
-        if (jsseSecurityDomain == null)
-            throw new RuntimeException(IIOPLogger.ROOT_LOGGER.failedToLookupJSSEDomain());
+        ServiceContainer container = this.currentServiceContainer();
+        final ServiceName serverContextServiceName = SSL_CONTEXT_RUNTIME_CAPABILITY.getCapabilityServiceName(serverSSLContextName);
+        this.serverSSLContext = (SSLContext) container.getRequiredService(serverContextServiceName).getValue();
+
+        final ServiceName clientContextServiceName = SSL_CONTEXT_RUNTIME_CAPABILITY.getCapabilityServiceName(clientSSLContextName);
+        this.clientSSLContext = (SSLContext) container.getRequiredService(clientContextServiceName).getValue();
     }
 
     @Override
@@ -106,39 +95,20 @@ public class SSLSocketFactory extends SocketFactoryBase {
     }
 
     public Socket createSSLSocket(String host, int port) throws IOException {
-        this.initSSLContext();
         InetAddress address = InetAddress.getByName(host);
-
-        javax.net.ssl.SSLSocketFactory socketFactory = this.sslContext.getSocketFactory();
-        SSLSocket socket = (SSLSocket) socketFactory.createSocket(address, port);
-        if (this.jsseSecurityDomain.getProtocols() != null)
-            socket.setEnabledProtocols(this.jsseSecurityDomain.getProtocols());
-        if (this.jsseSecurityDomain.getCipherSuites() != null)
-            socket.setEnabledCipherSuites(this.jsseSecurityDomain.getCipherSuites());
-        socket.setNeedClientAuth(this.jsseSecurityDomain.isClientAuth());
-        return socket;
+        javax.net.ssl.SSLSocketFactory socketFactory = this.clientSSLContext.getSocketFactory();
+        return socketFactory.createSocket(address, port);
     }
 
     public ServerSocket createSSLServerSocket(int port, int backlog, InetAddress inetAddress) throws IOException {
-        this.initSSLContext();
-        SSLServerSocketFactory serverSocketFactory = this.sslContext.getServerSocketFactory();
-        SSLServerSocket serverSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port, backlog, inetAddress);
-        if (this.jsseSecurityDomain.getProtocols() != null)
-            serverSocket.setEnabledProtocols(this.jsseSecurityDomain.getProtocols());
-        if (this.jsseSecurityDomain.getCipherSuites() != null)
-            serverSocket.setEnabledCipherSuites(this.jsseSecurityDomain.getCipherSuites());
-
-        if (this.jsseSecurityDomain.isClientAuth() || this.require_mutual_auth)
-            serverSocket.setNeedClientAuth(true);
-        else
-            serverSocket.setWantClientAuth(this.request_mutual_auth);
-
-        return serverSocket;
+        SSLServerSocketFactory serverSocketFactory = this.serverSSLContext.getServerSocketFactory();
+        return serverSocketFactory.createServerSocket(port, backlog, inetAddress);
     }
 
-    private void initSSLContext() throws IOException {
-        if (this.sslContext != null)
-            return;
-        this.sslContext = Util.forDomain(this.jsseSecurityDomain);
+    private ServiceContainer currentServiceContainer() {
+        if(WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+        }
+        return CurrentServiceContainer.getServiceContainer();
     }
 }

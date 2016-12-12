@@ -39,6 +39,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -132,6 +133,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .build();
 
     //Security attributes
+    private static final StringLengthValidator LENGTH_VALIDATOR = new StringLengthValidator(1, Integer.MAX_VALUE, true, false);
 
     public static final AttributeDefinition SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SUPPORT_SSL, ModelType.BOOLEAN, true)
@@ -146,8 +148,32 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setValidator(LENGTH_VALIDATOR)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(IIOP_SECURITY_DEF)
+            .setAlternatives(Constants.SERVER_SSL_CONTEXT, Constants.CLIENT_SSL_CONTEXT)
+            .build();
+
+    public static final AttributeDefinition SERVER_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(
+            Constants.SERVER_SSL_CONTEXT, ModelType.STRING, true)
+            .setAttributeGroup(Constants.SECURITY)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(LENGTH_VALIDATOR)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .setAlternatives(Constants.SECURITY_SECURITY_DOMAIN)
+            .setRequires(Constants.CLIENT_SSL_CONTEXT)
+            .build();
+
+    public static final AttributeDefinition CLIENT_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(
+            Constants.CLIENT_SSL_CONTEXT, ModelType.STRING, true)
+            .setAttributeGroup(Constants.SECURITY)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .setValidator(LENGTH_VALIDATOR
+
+            )
+            .setAlternatives(Constants.SECURITY_SECURITY_DOMAIN)
+            .setRequires(Constants.SERVER_SSL_CONTEXT)
             .build();
 
     @Deprecated
@@ -338,8 +364,9 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC);
 
     // list that contains security attributes definitions
-    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN, SERVER_REQUIRES_SSL,
-            CLIENT_REQUIRES_SSL, ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
+    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN,
+            SERVER_SSL_CONTEXT, CLIENT_SSL_CONTEXT, SERVER_REQUIRES_SSL, CLIENT_REQUIRES_SSL,
+            ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
 
     //list that contains tcp attributes definitions
     protected static final List<AttributeDefinition> TCP_ATTRIBUTES = Arrays.asList(HIGH_WATER_MARK,

@@ -46,11 +46,12 @@ public class ConfigValidator {
         final ModelNode supportSSLNode = IIOPRootDefinition.SUPPORT_SSL.resolveModelAttribute(context, model);
         final boolean supportSSL = supportSSLNode.isDefined() ? supportSSLNode.asBoolean() : false;
         final ModelNode securityDomainNode = IIOPRootDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, model);
-        final String securityDomain = securityDomainNode.isDefined() ? securityDomainNode.asString() : null;
+        final ModelNode serverSSLContextNode = IIOPRootDefinition.SERVER_SSL_CONTEXT.resolveModelAttribute(context, model);
+        final ModelNode clientSSLContextNode = IIOPRootDefinition.CLIENT_SSL_CONTEXT.resolveModelAttribute(context, model);
         if (supportSSL) {
-            // if SSL is to be used, check if a security domain has been specified.
-            if (securityDomain == null || securityDomain.isEmpty()) {
-                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainSpecified();
+            // if SSL is to be used, then either a JSSE domain or a pair of client/server SSL contexts must be defined.
+            if (!securityDomainNode.isDefined() && (!serverSSLContextNode.isDefined() || !clientSSLContextNode.isDefined())) {
+                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
             }
             return true;
         }

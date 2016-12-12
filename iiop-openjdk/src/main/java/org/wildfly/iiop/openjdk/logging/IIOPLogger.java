@@ -111,8 +111,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 12, value = "Could not deactivate anonymous IR object")
     void warnCouldNotDeactivateAnonIRObject(@Cause Throwable cause);
 
-    @Message(id = 13, value = "SSL support has been enabled but no security domain has been specified")
-    OperationFailedException noSecurityDomainSpecified();
+    @Message(id = 13, value = "SSL support has been enabled but no security domain or client/server SSL contexts have been specified")
+    OperationFailedException noSecurityDomainOrSSLContextsSpecified();
 
     @Message(id = 14, value = "Unexpected exception")
     RuntimeException unexpectedException(@Cause Throwable cause);

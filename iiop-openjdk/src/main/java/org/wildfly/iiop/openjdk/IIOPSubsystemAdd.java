@@ -28,6 +28,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -61,6 +63,7 @@ import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 import org.wildfly.iiop.openjdk.naming.jndi.JBossCNCtxFactory;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.security.NoSSLSocketFactory;
+import org.wildfly.iiop.openjdk.security.LegacySSLSocketFactory;
 import org.wildfly.iiop.openjdk.security.SSLSocketFactory;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.iiop.openjdk.service.CorbaORBService;
@@ -87,6 +90,8 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
+
+    private static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
 
     public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
         super(attributes);
@@ -165,8 +170,20 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
-        if (securityDomain != null && !securityDomain.isEmpty())
+        if (securityDomain != null)
             builder.addDependency(SECURITY_DOMAIN_SERVICE_NAME.append(securityDomain));
+
+        // add dependencies to the ssl context services if needed.
+        final String serverSSLContextName = props.getProperty(Constants.SERVER_SSL_CONTEXT);
+        if (serverSSLContextName != null) {
+            ServiceName serverContextServiceName = context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, serverSSLContextName, SSLContext.class);
+            builder.addDependency(serverContextServiceName);
+        }
+        final String clientSSLContextName = props.getProperty(Constants.CLIENT_SSL_CONTEXT);
+        if (clientSSLContextName != null) {
+            ServiceName clientContextServiceName = context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, clientSSLContextName, SSLContext.class);
+            builder.addDependency(clientContextServiceName);
+        }
 
         // inject the socket bindings that specify IIOP and IIOP/SSL ports.
         String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
@@ -335,13 +352,20 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final boolean sslConfigured;
         if (supportSSL) {
-            // if SSL is to be used, check if a security domain has been specified.
-            final String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
-            // add the domain socket factories.
-
-            SSLSocketFactory.setSecurityDomain(securityDomain);
-            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SSLSocketFactory.class.getName());
-
+            // if the config is using Elytron supplied SSL contexts, install the SSLSocketFactory.
+            final String serverSSLContextName = props.getProperty(Constants.SERVER_SSL_CONTEXT);
+            final String clientSSLContextName = props.getProperty(Constants.CLIENT_SSL_CONTEXT);
+            if (serverSSLContextName != null && clientSSLContextName != null) {
+                SSLSocketFactory.setServerSSLContextName(serverSSLContextName);
+                SSLSocketFactory.setClientSSLContextName(clientSSLContextName);
+                props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SSLSocketFactory.class.getName());
+            }
+            else {
+                // if the config only has a legacy JSSE domain reference, install the LegacySSLSocketFactory.
+                final String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
+                LegacySSLSocketFactory.setSecurityDomain(securityDomain);
+                props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, LegacySSLSocketFactory.class.getName());
+            }
             sslConfigured = true;
         } else {
             props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, NoSSLSocketFactory.class.getName());

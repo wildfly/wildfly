@@ -99,6 +99,8 @@ public class IIOPExtension implements Extension {
 
         ResourceTransformationDescriptionBuilder builder = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_1);
         builder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.SERVER_SSL_CONTEXT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                     @Override
                     protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
