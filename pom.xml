@@ -826,6 +826,7 @@
         <dependency>
             <groupId>org.wildfly.checkstyle</groupId>
             <artifactId>wildfly-checkstyle-config</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
