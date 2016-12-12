@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -80,7 +81,8 @@ class HostAdd extends AbstractAddStepHandler {
         final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
+                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
+                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjectedValue());
 
         builder.setInitialMode(Mode.ON_DEMAND);
 

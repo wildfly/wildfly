@@ -29,7 +29,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class LocationService implements Service<LocationService>, FilterLocation
     private final String locationPath;
     private final InjectedValue<HttpHandler> httpHandler = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
-    private final CopyOnWriteArrayList<FilterRef> filters = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<UndertowFilter> filters = new CopyOnWriteArrayList<>();
     private final LocationHandler locationHandler = new LocationHandler();
     private volatile HttpHandler configuredHandler;
 
@@ -87,34 +86,34 @@ public class LocationService implements Service<LocationService>, FilterLocation
     }
 
     private HttpHandler configureHandler() {
-        ArrayList<FilterRef> filters = new ArrayList<>(this.filters);
+        ArrayList<UndertowFilter> filters = new ArrayList<>(this.filters);
         return configureHandlerChain(getHttpHandler().getValue(), filters);
     }
 
-    protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<FilterRef> filters) {
-        Collections.sort(filters, new Comparator<FilterRef>() {
+    protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<UndertowFilter> filters) {
+        Collections.sort(filters, new Comparator<UndertowFilter>() {
             @Override
-            public int compare(FilterRef o1, FilterRef o2) {
+            public int compare(UndertowFilter o1, UndertowFilter o2) {
                 return o1.getPriority() >= o2.getPriority() ? 1 : -1;
             }
         });
         Collections.reverse(filters); //handler chain goes last first
         HttpHandler handler = rootHandler;
-        for (FilterRef filter : filters) {
-            handler = filter.createHttpHandler(handler);
+        for (UndertowFilter filter : filters) {
+            handler = filter.wrap(handler);
         }
 
         return handler;
     }
 
     @Override
-    public void addFilterRef(FilterRef filterRef) {
+    public void addFilter(UndertowFilter filterRef) {
         filters.add(filterRef);
         configuredHandler = null;
     }
 
     @Override
-    public void removeFilterRef(FilterRef filterRef) {
+    public void removeFilter(UndertowFilter filterRef) {
         filters.remove(filterRef);
         configuredHandler = null;
     }

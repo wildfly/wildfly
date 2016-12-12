@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -48,6 +49,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
@@ -209,6 +211,9 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
             target.addService(IOServices.WORKER.append("non-default"),
                     new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+            target.addService(ControlledProcessStateService.SERVICE_NAME,new AbstractService<ControlledProcessStateService>() {
+            }).install();
 
             target.addService(IOServices.BUFFER_POOL.append("default"), new BufferPoolService(2048, 2048, true))
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();

@@ -282,7 +282,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))
-                .setTopLevelDeploymentName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName())
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)
@@ -314,10 +313,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         ServiceBuilder<DeploymentInfo> infoBuilder = serviceTarget.addService(deploymentInfoServiceName, undertowDeploymentInfoService)
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainerName), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
-                .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue())
-                .addDependencies(additionalDependencies);
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue());
         if(securityDomain != null) {
             if (knownSecurityDomain.test(securityDomain)) {
                 infoBuilder.addDependency(
