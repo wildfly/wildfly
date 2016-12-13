@@ -36,6 +36,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.ejb.client.InvocationInformation;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
@@ -79,7 +80,7 @@ public class EJBRemoteServerAssociation implements RemoteServer.Association{
     @Override
     public AsynchronousInterceptor.CancellationHandle receiveInvocationRequest(RemoteServer.IncomingInvocation incomingInvocation) {
 
-        final int invocationId = incomingInvocation.getInvId();
+        final InvocationInformation invocationInformation = incomingInvocation.getInvocationInformation();
 
         final EJBLocator<?> ejbLocator = incomingInvocation.getEjbLocator();
 
@@ -127,31 +128,30 @@ public class EJBRemoteServerAssociation implements RemoteServer.Association{
                 Object result = null;
                 //SecurityActions.remotingContextSetConnection(channelAssociation.getChannel().getConnection());
                 try {
-                    result = invokeMethod(invocationId, componentView, invokedMethod, incomingInvocation);
-                } catch (Throwable throwable) {
+                    result = invokeMethod(componentView, invokedMethod, incomingInvocation);
+                } catch (Exception exception) {
                     try {
                         // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
                         // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
-                        if (throwable instanceof EJBComponentUnavailableException) {
+                        if (exception instanceof EJBComponentUnavailableException) {
                             EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component unavailability exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
                              incomingInvocation.writeNoSuchEJBFailureMessage();
                             // WFLY-7139
-                        } else if (throwable instanceof ComponentIsStoppedException) {
-                            //TODO Elytron
+                        } else if (exception instanceof ComponentIsStoppedException) {
                             EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component stopped exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
                             incomingInvocation.writeNoSuchEJBFailureMessage();
                         } else {
                             // write out the failure
-                            Throwable throwableToWrite = throwable;
-                            final Throwable cause = throwable.getCause();
-                            if (componentView.getComponent() instanceof StatefulSessionComponent && throwable instanceof EJBException && cause != null) {
+                            Exception exceptionToWrite = exception;
+                            final Throwable cause = exception.getCause();
+                            if (componentView.getComponent() instanceof StatefulSessionComponent && exception instanceof EJBException && cause != null) {
                                 if (!(componentView.getComponent().isRemotable(cause))) {
                                     // Avoid serializing the cause of the exception in case it is not remotable
                                     // Client might not be able to deserialize and throw ClassNotFoundException
-                                    throwableToWrite = new EJBException(throwable.getLocalizedMessage());
+                                    exceptionToWrite = new EJBException(exception.getLocalizedMessage());
                                 }
                             }
-                            incomingInvocation.writeThrowable(throwableToWrite);
+                            incomingInvocation.writeException(exceptionToWrite);
                         }
                     } catch (Throwable ioe) {
 
@@ -261,7 +261,8 @@ public class EJBRemoteServerAssociation implements RemoteServer.Association{
 
 
 
-    private Object invokeMethod(final int invocationId, final ComponentView componentView, final Method method, final RemoteServer.IncomingInvocation incomingInvocation) throws Throwable {
+    private Object invokeMethod(final ComponentView componentView, final Method method, final RemoteServer.IncomingInvocation incomingInvocation) throws Exception {
+        final int invocationId = incomingInvocation.getInvocationInformation().getInvocationId();
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(incomingInvocation.getParameters());
         interceptorContext.setMethod(method);
@@ -368,8 +369,8 @@ public class EJBRemoteServerAssociation implements RemoteServer.Association{
             try {
                 sessionID = statefulSessionComponent.createSessionRemote();
             } catch (Exception t) {
-                EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), incomingSessionOpen.getInvId());
-                incomingSessionOpen.writeThrowable(t);
+                EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), incomingSessionOpen.getInvocationInformation());
+                incomingSessionOpen.writeException(t);
                 return;
             }
             incomingSessionOpen.writeResponse(sessionID);
