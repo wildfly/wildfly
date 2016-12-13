@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -36,9 +35,6 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote._private.PackedInteger;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
-import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
-import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelReceiver;
-import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.protocol.remote.RemoteServer;
@@ -51,15 +47,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
-import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
@@ -163,117 +155,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         } finally {
             channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
             outputStream.close();
-        }
-    }
-
-    private class ChannelOpenListener implements OpenListener {
-
-        @Override
-        public void channelOpened(Channel channel) {
-            final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
-
-            EjbLogger.REMOTE_LOGGER.tracef("Welcome %s to the %s channel", channel, EJB_CHANNEL_NAME);
-            channel.addCloseHandler(new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(Channel closed, IOException exception) {
-                    // do nothing
-                    EjbLogger.REMOTE_LOGGER.tracef("channel %s closed", closed);
-                }
-            });
-            // send the server version and supported marshalling types to the client
-            try {
-                EJBRemoteConnectorService.this.sendVersionMessage(channelAssociation);
-            } catch (IOException e) {
-                EjbLogger.REMOTE_LOGGER.closingChannel(channel, e);
-                IoUtils.safeClose(channel);
-            }
-
-            // receive messages from the client
-            channel.receiveMessage(new ClientVersionMessageReceiver(channelAssociation));
-        }
-
-        @Override
-        public void registrationTerminated() {
-        }
-    }
-
-    private class ClientVersionMessageReceiver implements Channel.Receiver {
-
-        private final ChannelAssociation channelAssociation;
-
-        ClientVersionMessageReceiver(final ChannelAssociation channelAssociation) {
-            this.channelAssociation = channelAssociation;
-        }
-
-        @Override
-        public void handleError(Channel channel, IOException error) {
-            EjbLogger.REMOTE_LOGGER.closingChannel(channel, error);
-            try {
-                channel.close();
-            } catch (IOException ioe) {
-                // ignore
-            }
-        }
-
-        @Override
-        public void handleEnd(Channel channel) {
-            EjbLogger.REMOTE_LOGGER.closingChannelOnChannelEnd(channel);
-            try {
-                channel.close();
-            } catch (IOException ioe) {
-                // ignore
-            }
-        }
-
-        @Override
-        public void handleMessage(Channel channel, MessageInputStream messageInputStream) {
-            final DataInputStream dataInputStream = new DataInputStream(messageInputStream);
-            try {
-                final byte version = dataInputStream.readByte();
-                final String clientMarshallingStrategy = dataInputStream.readUTF();
-                EjbLogger.REMOTE_LOGGER.debugf("Client with protocol version %s and marshalling strategy %s trying to communicate on %s",
-                        version, clientMarshallingStrategy, channel);
-                if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
-                    EjbLogger.REMOTE_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
-                    channel.close();
-                    return;
-                }
-                final MarshallerFactory marshallerFactory = EJBRemoteConnectorService.this.getMarshallerFactory(clientMarshallingStrategy);
-                // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
-                final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
-                final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
-                final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus = EJBRemoteConnectorService.this.remoteAsyncInvocationCancelStatus.getValue();
-                final SuspendController suspendController = EJBRemoteConnectorService.this.suspendControllerInjectedValue.getValue();
-
-                switch (version) {
-                    case 0x01:
-                        final VersionOneProtocolChannelReceiver versionOneProtocolHandler = new VersionOneProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getOptionalValue(), asyncInvocationCancelStatus, suspendController);
-                        // trigger the receiving
-                        versionOneProtocolHandler.startReceiving();
-                        break;
-                    case 0x02:
-                        final VersionTwoProtocolChannelReceiver versionTwoProtocolHandler = new VersionTwoProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getOptionalValue(), asyncInvocationCancelStatus, suspendController);
-                        // trigger the receiving
-                        versionTwoProtocolHandler.startReceiving();
-                        break;
-
-                    default:
-                        throw EjbLogger.ROOT_LOGGER.ejbRemoteServiceCannotHandleClientVersion(version);
-                }
-
-            } catch (IOException e) {
-                // log it
-                EjbLogger.REMOTE_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
-                IoUtils.safeClose(channel);
-            } finally {
-                IoUtils.safeClose(messageInputStream);
-            }
-
-
         }
     }
 
