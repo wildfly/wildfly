@@ -59,6 +59,7 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
             builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, builder -> {
                 CacheMode mode = builder.clustering().cacheMode();
                 builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+                builder.clustering().l1().disable();
                 builder.persistence().clearStores();
             }));
             builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
