@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -46,9 +47,9 @@ public class InfinispanSSOFactory<AV, SV, A, D, L> implements SSOFactory<Map.Ent
     private final Marshaller<A, AV> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D> sessionsFactory, boolean lockOnRead) {
+    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, CacheProperties properties, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D> sessionsFactory) {
         this.cache = cache;
-        this.findCache = lockOnRead ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
+        this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
         this.sessionsFactory = sessionsFactory;
