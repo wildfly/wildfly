@@ -40,13 +40,13 @@ import org.infinispan.marshall.core.Ids;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.JBossMarshaller;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
@@ -67,8 +67,8 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class GlobalConfigurationBuilder implements ResourceServiceBuilder<GlobalConfiguration>, Value<GlobalConfiguration> {
 
-    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<Module> module = new InjectedValue<>();
+    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<TransportConfiguration> transport = new InjectedValue<>();
     private final InjectedValue<SiteConfiguration> site = new InjectedValue<>();
     private final Map<ThreadPoolResourceDefinition, ValueDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
@@ -113,9 +113,8 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
                 .siteId(transport.siteId())
         ;
 
-        ModuleLoader moduleLoader = this.loader.getValue();
-        builder.serialization().classResolver(ModularClassResolver.getInstance(moduleLoader));
         Module module = this.module.getValue();
+        builder.serialization().marshaller(new JBossMarshaller(this.loader.getValue()));
         builder.classLoader(module.getClassLoader());
         int id = Ids.MAX_ID;
         for (Externalizer<?> externalizer : module.loadService(Externalizer.class)) {
@@ -148,10 +147,10 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     @Override
     public ServiceBuilder<GlobalConfiguration> build(ServiceTarget target) {
         ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .addDependency(CacheContainerComponent.TRANSPORT.getServiceName(this.address), TransportConfiguration.class, this.transport)
                 .addDependency(CacheContainerComponent.SITE.getServiceName(this.address), SiteConfiguration.class, this.site)
                 .addDependency(CacheContainerComponent.MODULE.getServiceName(this.address), Module.class, this.module)
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
         this.pools.values().forEach(dependency -> dependency.register(builder));
