@@ -73,27 +73,12 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        Runnable action = new Runnable() {
-            @Override
-            public void run() {
-                deploymentRepository.getValue().add(identifier, ModuleDeployment.this);
-            }
-        };
-        if (startupCountdown == null) action.run();
-        else startupCountdown.addCallback(action);
+        deploymentRepository.getValue().add(identifier, ModuleDeployment.this);
     }
 
     @Override
     public void stop(StopContext context) {
-        Runnable action = new Runnable() {
-            @Override
-            public void run() {
-                deploymentRepository.getValue().remove(identifier);
-            }
-        };
-        if (startupCountdown == null) action.run();
-        else startupCountdown.addCallback(action);
-
+        deploymentRepository.getValue().remove(identifier);
     }
 
     @Override
