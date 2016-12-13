@@ -34,7 +34,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote._private.PackedInteger;
-import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.protocol.remote.RemoteServer;
