@@ -191,8 +191,8 @@ public class MessagingExtension implements Extension {
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")));
             final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(SERVER_PATH, getResourceDescriptionResolver(SERVER)));
-            deployedServer.registerSubModel(JMSQueueDefinition.DEPLOYMENT_INSTANCE);
-            deployedServer.registerSubModel(JMSTopicDefinition.DEPLOYMENT_INSTANCE);
+            deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnly));
+            deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(PooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
         }
 

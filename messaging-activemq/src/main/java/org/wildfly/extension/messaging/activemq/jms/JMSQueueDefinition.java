@@ -58,7 +58,7 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
     /**
      * Attributes for deployed JMS queue are stored in runtime
      */
-    private static AttributeDefinition[] DEPLOYMENT_ATTRIBUTES = {
+    static AttributeDefinition[] DEPLOYMENT_ATTRIBUTES = {
             new StringListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES)
                     .setStorageRuntime()
                     .build(),
@@ -103,18 +103,16 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
             CommonAttributes.CONSUMER_COUNT
     };
 
-    public static final JMSQueueDefinition INSTANCE = new JMSQueueDefinition(false);
-
-    public static final JMSQueueDefinition DEPLOYMENT_INSTANCE = new JMSQueueDefinition(true);
-
     private final boolean deployed;
+    private final boolean registerRuntimeOnly;
 
-    private JMSQueueDefinition(final boolean deployed) {
+    public JMSQueueDefinition(final boolean deployed, final boolean registerRuntimeOnly) {
         super(MessagingExtension.JMS_QUEUE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_QUEUE),
                 deployed ? null : JMSQueueAdd.INSTANCE,
                 deployed ? null : JMSQueueRemove.INSTANCE);
         this.deployed = deployed;
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -156,10 +154,11 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
-        JMSQueueControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
-
-        if (!deployed) {
-            JMSQueueUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
+        if (registerRuntimeOnly) {
+            JMSQueueControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
+            if (!deployed) {
+                JMSQueueUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
+            }
         }
     }
 
