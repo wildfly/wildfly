@@ -33,8 +33,11 @@ import java.util.function.Supplier;
 
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.marshall.core.ExternalizerTable;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
@@ -46,6 +49,7 @@ import org.jboss.as.clustering.infinispan.BatcherFactory;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanBatcherFactory;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.JBossMarshaller;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -103,6 +107,14 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
             GlobalConfiguration config = this.configuration.getValue();
             EmbeddedCacheManager manager = new DefaultCacheManager(config, null, false);
             manager.addListener(this);
+
+            // We need to configure our custom marshaller with Infinispan's object table
+            GlobalComponentRegistry registry = manager.getGlobalComponentRegistry();
+            ExternalizerTable table = new ExternalizerTable();
+            registry.registerComponent(table, ExternalizerTable.class);
+            JBossMarshaller marshaller = registry.getComponent(JBossMarshaller.class, KnownComponentNames.GLOBAL_MARSHALLER);
+            marshaller.inject(table);
+
             manager.start();
             InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
             return manager;
