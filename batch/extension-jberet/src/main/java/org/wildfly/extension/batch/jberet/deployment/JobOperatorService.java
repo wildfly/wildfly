@@ -98,6 +98,8 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     private final BatchJobServerActivity serverActivity;
     private final String deploymentName;
 
+    private final ThreadLocal<Boolean> permissionsCheckEnabled = ThreadLocal.withInitial(() -> Boolean.TRUE);
+
     public JobOperatorService(final Boolean restartJobsOnResume, final String deploymentName, final WildFlyJobXmlResolver resolver) {
         this.restartJobsOnResume = restartJobsOnResume;
         this.deploymentName = deploymentName;
@@ -208,7 +210,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
 
     @Override
     public long start(final String jobXMLName, final Properties jobParameters) throws JobStartException, JobSecurityException {
-        checkState();
+        checkState(null, "start");
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
@@ -229,7 +231,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
 
     @Override
     public long restart(final long executionId, final Properties restartParameters) throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
-        checkState();
+        checkState(null, "restart");
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
@@ -243,7 +245,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
 
     @Override
     public void stop(final long executionId) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
-        checkState();
+        checkState(null, "stop");
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
@@ -257,7 +259,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
 
     @Override
     public void abandon(final long executionId) throws NoSuchJobExecutionException, JobExecutionIsRunningException, JobSecurityException {
-        checkState();
+        checkState(null, "abandon");
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
@@ -365,11 +367,29 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     }
 
     private void checkState(final String jobName) {
+        checkState(jobName, "read");
+    }
+
+    private void checkState(final String jobName, final String targetName) {
         if (batchEnvironment == null || classLoader == null) {
             throw BatchLogger.LOGGER.jobOperatorServiceStopped();
         }
+        checkPermission(targetName);
         if (jobName != null) {
             validateJob(jobName);
+        }
+    }
+
+    private void checkPermission(final String targetName) {
+        if (permissionsCheckEnabled.get()) {
+            final SecurityAwareBatchEnvironment environment = getBatchEnvironment();
+            final SecurityIdentity identity = environment.getIdentity();
+            if (identity != null) {
+                final BatchPermission permission = BatchPermission.forName(targetName);
+                if (!identity.implies(permission)) {
+                    throw BatchLogger.LOGGER.unauthorized(identity.getPrincipal().getName(), permission);
+                }
+            }
         }
     }
 
@@ -412,6 +432,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
         private void stopRunningJobs(final boolean queueForRestart) {
             if (jobsStopped.compareAndSet(false, true)) {
                 final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                permissionsCheckEnabled.set(Boolean.FALSE);
                 try {
                     // Use the deployment's class loader to stop jobs
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
@@ -422,6 +443,8 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                         for (Long id : runningJobs) {
                             try {
                                 BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
+                                // We want to skip the permissions check, we need to stop jobs regardless of the
+                                // permissions
                                 stop(id);
                                 // Queue for a restart on resume if required
                                 if (queueForRestart) {
@@ -436,6 +459,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
                     // Reset the stopped state
                     jobsStopped.set(false);
+                    permissionsCheckEnabled.set(Boolean.TRUE);
                 }
             }
         }
