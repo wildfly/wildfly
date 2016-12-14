@@ -159,6 +159,7 @@ public interface Constants {
     String REQUEST_QUEUE_SIZE = "request-queue-size";
     String CACHED_CONNECTIONS_PER_THREAD = "cached-connections-per-thread";
     String CONNECTION_IDLE_TIMEOUT = "connection-idle-timeout";
+    String DETERMINISTIC_FAILOVER = "deterministic-failover";
 
     String USE_SERVER_LOG = "use-server-log";
     String VALUE = "value";
