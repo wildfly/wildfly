@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
 public class DefaultDistinctNameTestCase {
 
     @ArquillianResource
-    private static Context context;
+    private Context context;
 
     private static final String APP_NAME = "";
     private static final String DISTINCT_NAME = "distinct-name-in-jboss-ejb3-xml";

@@ -107,6 +107,7 @@ public class PassivationTestCase {
         }
         Assert.assertTrue("invalid: " + PassivationInterceptor.getPrePassivateTarget(), PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
         Assert.assertTrue("invalid: " + PassivationInterceptor.getPostActivateTarget(), PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
+        PassivationInterceptor.reset();
     }
 
     /**
@@ -247,5 +248,6 @@ public class PassivationTestCase {
         } catch (NoSuchEJBException e) {
             // Expected
         }
+        PassivationInterceptor.reset();
     }
 }

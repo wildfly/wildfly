@@ -24,19 +24,8 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
@@ -60,7 +49,7 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
 
     static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:1.1";
 
@@ -69,7 +58,7 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
-        xmlDescription = builder(MessagingExtension.SUBSYSTEM_PATH)
+        xmlDescription = builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
@@ -608,14 +597,7 @@ public class MessagingSubsystemParser_1_1 implements XMLStreamConstants, XMLElem
     }
 
     @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(MessagingSubsystemRootResourceDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());
-        xmlDescription.persist(writer, model, NAMESPACE);
-    }
-
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
+    public PersistentResourceXMLDescription getParserDescription() {
+        return xmlDescription;
     }
 }
