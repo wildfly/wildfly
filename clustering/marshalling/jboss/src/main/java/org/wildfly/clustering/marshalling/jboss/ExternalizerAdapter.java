@@ -32,18 +32,16 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * Adapts a {@link org.wildfly.clustering.marshalling.Externalizer} to a JBoss Marshalling {@link org.jboss.marshalling.Externalizer}.
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
 public class ExternalizerAdapter implements org.jboss.marshalling.Externalizer {
     private static final long serialVersionUID = 1714120446322944436L;
 
-    @SuppressWarnings("rawtypes")
-    private final Externalizer externalizer;
-
-    public ExternalizerAdapter(Externalizer<?> externalizer) {
-        this.externalizer = externalizer;
-    }
+    private final Externalizer<Object> externalizer;
 
     @SuppressWarnings("unchecked")
+    public ExternalizerAdapter(Externalizer<?> externalizer) {
+        this.externalizer = (Externalizer<Object>) externalizer;
+    }
+
     @Override
     public void writeExternal(Object subject, ObjectOutput output) throws IOException {
         this.externalizer.writeObject(output, subject);
@@ -53,5 +51,4 @@ public class ExternalizerAdapter implements org.jboss.marshalling.Externalizer {
     public Object createExternal(Class<?> subjectType, ObjectInput input) throws IOException, ClassNotFoundException {
         return this.externalizer.readObject(input);
     }
-
 }
