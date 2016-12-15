@@ -346,12 +346,12 @@
                 </xs:attribute>
                 <xs:attribute name="queue-size" type="xs:int" default="0">
                     <xs:annotation>
-                        <xs:documentation>In ASYNC mode, this attribute can be used to trigger flushing of the queue when it reaches a specific threshold.</xs:documentation>
+                        <xs:documentation>Deprecated. In ASYNC mode, this attribute can be used to trigger flushing of the queue when it reaches a specific threshold.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="queue-flush-interval" type="xs:long" default="10">
                     <xs:annotation>
-                        <xs:documentation>In ASYNC mode, this attribute controls how often the asynchronous thread used to flush the replication queue runs. This should be a positive integer which represents thread wakeup time in milliseconds.</xs:documentation>
+                        <xs:documentation>Deprecated. In ASYNC mode, this attribute controls how often the asynchronous thread used to flush the replication queue runs. This should be a positive integer which represents thread wakeup time in milliseconds.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="remote-timeout" type="xs:long" default="10000">
