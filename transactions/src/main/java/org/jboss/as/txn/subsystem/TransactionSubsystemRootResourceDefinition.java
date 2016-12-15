@@ -511,11 +511,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     private static class StatisticsEnabledHandler extends AbstractWriteAttributeHandler<Void> {
 
-        final CoordinatorEnvironmentBean coordinatorEnvironmentBean;
+        private volatile CoordinatorEnvironmentBean coordinatorEnvironmentBean;
 
         public StatisticsEnabledHandler(final AttributeDefinition... definitions) {
             super(definitions);
-            this.coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
         }
 
 
@@ -524,6 +523,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                                final String attributeName, final ModelNode resolvedValue,
                                                final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
             throws OperationFailedException {
+            if (this.coordinatorEnvironmentBean == null) {
+                this.coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
+            }
             coordinatorEnvironmentBean.setEnableStatistics(resolvedValue.asBoolean());
             return false;
         }
@@ -533,6 +535,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                              final String attributeName, final ModelNode valueToRestore,
                                              final ModelNode valueToRevert, final Void handback)
             throws OperationFailedException {
+            if (this.coordinatorEnvironmentBean == null) {
+                this.coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
+            }
             coordinatorEnvironmentBean.setEnableStatistics(valueToRestore.asBoolean());
         }
     }
