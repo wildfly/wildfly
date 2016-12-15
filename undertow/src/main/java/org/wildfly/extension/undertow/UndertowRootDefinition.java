@@ -161,6 +161,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1)), Constants.MAX_RETRIES)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.ADVERTISE_SOCKET_BINDING)
                     .end();
 
         builder.addChildResource(UndertowExtension.PATH_HANDLERS)

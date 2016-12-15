@@ -74,7 +74,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final AttributeDefinition ADVERTISE_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.ADVERTISE_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(false)
+            .setRequired(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .setRestartAllServices()
             .build();
