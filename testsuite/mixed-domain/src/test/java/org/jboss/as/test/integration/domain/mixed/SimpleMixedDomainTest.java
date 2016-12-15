@@ -37,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -44,11 +45,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_PROFILE;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
@@ -213,6 +216,31 @@ public abstract class SimpleMixedDomainTest  {
             compositeOp.get(STEPS).add(createProtocolPutPropertyOperation("tcp", "MPING", "receive_on_all_interfaces", "true"));
 
             DomainTestUtils.executeForResult(compositeOp, masterClient);
+        } finally {
+            IoUtils.safeClose(masterClient);
+        }
+    }
+
+
+    /**
+     * Tests test-connection-in-pool() of ExampleDS.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void test00011_ExampleDSConnection() throws Exception{
+        if (version == Version.AsVersion.EAP_6_2_0) {
+            // see: https://issues.jboss.org/browse/WFLY-7792
+            return;
+        }
+        PathAddress exampleDSAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, "slave"),
+                PathElement.pathElement(RUNNING_SERVER, "server-one"), PathElement.pathElement(SUBSYSTEM, "datasources"),
+                PathElement.pathElement("data-source", "ExampleDS"));
+        DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+        try {
+            ModelNode op = Util.createOperation("test-connection-in-pool", PathAddress.pathAddress(exampleDSAddress));
+            ModelNode response = masterClient.execute(op);
+            assertEquals(op.toString() + '\n' + response.toString(), SUCCESS, response.get(OUTCOME).asString());
         } finally {
             IoUtils.safeClose(masterClient);
         }

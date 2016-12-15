@@ -60,6 +60,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -205,7 +206,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     }
                 }, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CONNECTION_URL)
+                .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
@@ -225,7 +226,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 }, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CONNECTION_URL).end();
+                .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL).end();
     }
 
     static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -260,7 +261,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     }
                 }, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CONNECTION_URL)
+                .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
@@ -279,7 +280,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CONNECTION_URL)
+                .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .end();
     }
 
@@ -287,9 +288,34 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
     static void registerTransformers400(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CONNECTION_URL)
+                .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
                 .end();
     }
 
+    private static RejectAttributeChecker createConnURLRejectChecker() {
+        return new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+            @Override
+            public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                return RejectAttributeChecker.UNDEFINED.getRejectionLogMessage(attributes);
+            }
+
+            @Override
+            public boolean rejectOperationParameter(PathAddress address, String attributeName,
+                    ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                if (operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.ADD)
+                        && !attributeValue.isDefined()) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                    TransformationContext context) {
+                return !attributeValue.isDefined();
+            }
+        };
+    }
 }
