@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jboss;
+package org.jboss.as.clustering.infinispan;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.infinispan.commons.marshall.Externalizer;
 
 /**
- * Adapts a {@link org.wildfly.clustering.marshalling.Externalizer} to a JBoss Marshalling {@link org.jboss.marshalling.Externalizer}.
+ * Adapts an Infinispan {@link Externalizer} to a JBM2 {@link org.jboss.marshalling.Externalizer}.
  * @author Paul Ferraro
  */
 public class ExternalizerAdapter implements org.jboss.marshalling.Externalizer {
-    private static final long serialVersionUID = 1714120446322944436L;
+    private static final long serialVersionUID = -8895560386441863197L;
 
     private final Externalizer<Object> externalizer;
 
