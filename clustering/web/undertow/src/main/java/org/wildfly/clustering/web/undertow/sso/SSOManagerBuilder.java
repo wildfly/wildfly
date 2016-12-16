@@ -28,6 +28,7 @@ import java.util.function.Function;
 
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -38,6 +39,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
+import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
@@ -60,24 +63,35 @@ import io.undertow.server.session.SessionIdGenerator;
  */
 public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSession, String, Void, Batch>>, Service<SSOManager<AuthenticatedSession, String, Void, Batch>>, SSOManagerConfiguration<Void, MarshallingContext> {
 
-    enum MarshallingVersion implements Function<ModuleLoader, MarshallingConfiguration> {
+    enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
             @Override
-            public MarshallingConfiguration apply(ModuleLoader loader) {
+            public MarshallingConfiguration apply(Module module) {
+                ModuleLoader loader = module.getModuleLoader();
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(loader));
                 config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
                 return config;
             }
         },
+        VERSION_2() {
+            @Override
+            public MarshallingConfiguration apply(Module module) {
+                ModuleLoader loader = module.getModuleLoader();
+                MarshallingConfiguration config = new MarshallingConfiguration();
+                config.setClassResolver(ModularClassResolver.getInstance(loader));
+                config.setClassTable(new DynamicClassTable(module.getClassLoader()));
+                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
+                return config;
+            }
+        },
         ;
-        static final MarshallingVersion CURRENT = VERSION_1;
+        static final MarshallingVersion CURRENT = VERSION_2;
     }
 
     private final InjectedValue<SessionIdGenerator> generator = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<SSOManagerFactory> factory = new InjectedValue<>();
-    private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final ServiceName factoryServiceName;
     private final ServiceName generatorServiceName;
 
@@ -99,14 +113,14 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
         return target.addService(this.getServiceName(), this)
                 .addDependency(this.factoryServiceName, SSOManagerFactory.class, this.factory)
                 .addDependency(this.generatorServiceName, SessionIdGenerator.class, this.generator)
-                .addDependency(ServiceName.JBOSS.append("as", "service-module-loader"), ModuleLoader.class, this.loader)
                 ;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         SSOManagerFactory<AuthenticatedSession, String, Batch> factory = this.factory.getValue();
-        this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this.loader.getValue()), null);
+        Module module = Module.forClass(this.getClass());
+        this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
         this.manager = factory.createSSOManager(this);
         this.manager.start();
     }
