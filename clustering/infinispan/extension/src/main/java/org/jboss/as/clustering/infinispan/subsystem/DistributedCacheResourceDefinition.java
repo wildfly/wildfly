@@ -28,6 +28,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -60,7 +61,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE)),
         CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name()), new EnumValidatorBuilder<>(ConsistentHashStrategy.class)),
-        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(600000L), new DoubleRangeValidatorBuilder().lowerBound(0)),
+        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(600000L), new LongRangeValidatorBuilder().min(0)),
         OWNERS("owners", ModelType.INT, new ModelNode(2), new IntRangeValidatorBuilder().min(1)),
         SEGMENTS("segments", ModelType.INT, new ModelNode(256), new IntRangeValidatorBuilder().min(1)),
         ;
