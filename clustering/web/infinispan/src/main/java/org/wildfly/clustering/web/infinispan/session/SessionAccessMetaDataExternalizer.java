@@ -40,13 +40,13 @@ public class SessionAccessMetaDataExternalizer implements Externalizer<SessionAc
 
     @Override
     public void writeObject(ObjectOutput output, SessionAccessMetaData metaData) throws IOException {
-        IndexExternalizer.VARIABLE.writeObject(output, (int) metaData.getLastAccessedDuration().getSeconds());
+        IndexExternalizer.VARIABLE.writeData(output, (int) metaData.getLastAccessedDuration().getSeconds());
     }
 
     @Override
     public SessionAccessMetaData readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         SessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
-        metaData.setLastAccessedDuration(Duration.ofSeconds(IndexExternalizer.VARIABLE.readObject(input)));
+        metaData.setLastAccessedDuration(Duration.ofSeconds(IndexExternalizer.VARIABLE.readData(input)));
         return metaData;
     }
 

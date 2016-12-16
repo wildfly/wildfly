@@ -22,15 +22,23 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 
 /**
@@ -42,8 +50,23 @@ public class MapExternalizerTestCase {
     @Test
     public void test() throws ClassNotFoundException, IOException {
         Map<Object, Object> basis = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
-        ExternalizerTestUtil.test(new MapExternalizer.ConcurrentHashMapExternalizer(), new ConcurrentHashMap<>(basis));
-        ExternalizerTestUtil.test(new MapExternalizer.HashMapExternalizer(), new HashMap<>(basis));
-        ExternalizerTestUtil.test(new MapExternalizer.LinkedHashMapExternalizer(), new LinkedHashMap<>(basis));
+        test(new MapExternalizer.ConcurrentHashMapExternalizer(), new ConcurrentHashMap<>(basis));
+        test(new MapExternalizer.HashMapExternalizer(), new HashMap<>(basis));
+        test(new MapExternalizer.LinkedHashMapExternalizer(), new LinkedHashMap<>(basis));
+
+        test(new EmptyCollectionExternalizer.EmptyMapExternalizer(), Collections.emptyMap());
+        test(new EmptyCollectionExternalizer.EmptyNavigableMapExternalizer(), Collections.emptyNavigableMap());
+        test(new EmptyCollectionExternalizer.EmptySortedMapExternalizer(), Collections.emptySortedMap());
+
+        test(new SingletonMapExternalizer(), Collections.singletonMap(1, 2));
+
+        test(new SortedMapExternalizer.ConcurrentSkipListMapExternalizer(), new ConcurrentSkipListMap<>(basis));
+        test(new SortedMapExternalizer.TreeMapExternalizer(), new TreeMap<>(basis));
+    }
+
+    public static <T extends Map<Object, Object>> void test(Externalizer<T> externalizer, T collection) throws ClassNotFoundException, IOException {
+        BiConsumer<T, T> assertSize = (expected, actual) -> assertEquals(expected.size(), actual.size());
+        BiConsumer<T, T> assertContents = (expected, actual) -> assertTrue(actual.keySet().containsAll(expected.keySet()));
+        ExternalizerTestUtil.test(externalizer, collection, assertSize.andThen(assertContents));
     }
 }
