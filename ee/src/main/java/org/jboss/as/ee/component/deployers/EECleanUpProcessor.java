@@ -26,6 +26,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.el.cache.FactoryFinderCache;
+import org.jboss.modules.Module;
 
 /**
  * Cleans up references to EE structures in the deployment unit
@@ -46,6 +48,7 @@ public class EECleanUpProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-
+        final Module module = context.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        FactoryFinderCache.clearClassLoader(module.getClassLoader());
     }
 }

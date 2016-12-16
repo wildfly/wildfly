@@ -31,12 +31,11 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -47,18 +46,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(CommonCriteria.class)
 public class EJBSecurityTestCase {
-    private static Context ctx;
 
-    @AfterClass
-    public static void afterClass() throws NamingException {
-        if (ctx != null)
-            ctx.close();
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        ctx = new InitialContext();
-    }
+    @ArquillianResource
+    private Context ctx;
 
     @Deployment
     public static JavaArchive createDeployment() {
@@ -70,9 +60,7 @@ public class EJBSecurityTestCase {
         return jar;
     }
 
-    private static <T> T lookup(final Class<?> beanClass, final Class<T> viewClass) throws NamingException {
-        if (ctx == null)
-            ctx = new InitialContext(); // to circumvent an Arquillian issue
+    private <T> T lookup(final Class<?> beanClass, final Class<T> viewClass) throws NamingException {
         return viewClass.cast(ctx.lookup("java:module/" + beanClass.getSimpleName() + "!" + viewClass.getName()));
     }
 
