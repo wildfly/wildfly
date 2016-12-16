@@ -195,8 +195,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     @Override
                     protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
                                                       TransformationContext context) {
-                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
-                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                        //This will not get called if it was discarded, so reject if it is defined and != 'true'
+                        return attributeValue.isDefined() && !attributeValue.asString().equals("true");
                     }
                 }, STATISTICS_ENABLED)
                 .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {

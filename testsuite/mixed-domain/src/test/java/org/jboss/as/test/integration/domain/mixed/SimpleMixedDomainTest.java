@@ -229,10 +229,6 @@ public abstract class SimpleMixedDomainTest  {
      */
     @Test
     public void test00011_ExampleDSConnection() throws Exception{
-        if (version == Version.AsVersion.EAP_6_2_0) {
-            // see: https://issues.jboss.org/browse/WFLY-7792
-            return;
-        }
         PathAddress exampleDSAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, "slave"),
                 PathElement.pathElement(RUNNING_SERVER, "server-one"), PathElement.pathElement(SUBSYSTEM, "datasources"),
                 PathElement.pathElement("data-source", "ExampleDS"));
