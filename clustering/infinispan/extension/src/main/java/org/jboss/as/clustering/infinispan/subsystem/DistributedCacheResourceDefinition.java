@@ -67,10 +67,6 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
         Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
             SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
             this.definition = builder.setValidator(validator.configure(builder).build()).build();
