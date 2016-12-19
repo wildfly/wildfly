@@ -38,7 +38,7 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
 
     /**
      * Sets an inclusive lower bound of this validator.
-     * @param lowerBound the lower bound
+     * @param value the lower bound
      */
     public DoubleRangeValidatorBuilder lowerBound(double value) {
         this.lowerBound = new Bound(value, false);
@@ -47,7 +47,7 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
 
     /**
      * Sets an exclusive lower bound of this validator.
-     * @param lowerBound the lower bound
+     * @param value the lower bound
      */
     public DoubleRangeValidatorBuilder lowerBoundExclusive(double value) {
         this.lowerBound = new Bound(value, true);
@@ -56,7 +56,7 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
 
     /**
      * Sets the inclusive upper bound of this validator.
-     * @param upperBound the upper bound
+     * @param value the upper bound
      */
     public DoubleRangeValidatorBuilder upperBound(double value) {
         this.upperBound = new Bound(value, false);
@@ -65,16 +65,13 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
 
     /**
      * Sets the exclusive upper bound of this validator.
-     * @param upperBound the upper bound
+     * @param value the upper bound
      */
     public DoubleRangeValidatorBuilder upperBoundExclusive(double value) {
         this.upperBound = new Bound(value, true);
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ParameterValidator build() {
         return new DoubleRangeValidator(this.lowerBound, this.upperBound, this.allowsUndefined, this.allowsExpressions);
@@ -105,7 +102,7 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
         /**
          * Creates an upper- and lower-bounded validator.
          * @param lowerBound the lower bound
-         * @param lowerBound the upper bound
+         * @param upperBound the upper bound
          * @param nullable indicates whether {@link ModelType#UNDEFINED} is allowed
          * @param allowExpressions whether {@link ModelType#EXPRESSION} is allowed
          */
@@ -115,9 +112,6 @@ public class DoubleRangeValidatorBuilder extends AbstractParameterValidatorBuild
             this.upperBound = upperBound;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public void validateParameter(String parameterName, ModelNode parameterValue) throws OperationFailedException {
             super.validateParameter(parameterName, parameterValue);
