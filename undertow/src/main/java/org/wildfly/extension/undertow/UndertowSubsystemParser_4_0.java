@@ -277,6 +277,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                         ModClusterDefinition.ADVERTISE_PROTOCOL,
                                         ModClusterDefinition.ADVERTISE_PATH,
                                         ModClusterDefinition.ADVERTISE_FREQUENCY,
+                                        ModClusterDefinition.DETERMINISTIC_FAILOVER,
                                         ModClusterDefinition.HEALTH_CHECK_INTERVAL,
                                         ModClusterDefinition.BROKEN_NODE_TIMEOUT,
                                         ModClusterDefinition.WORKER,

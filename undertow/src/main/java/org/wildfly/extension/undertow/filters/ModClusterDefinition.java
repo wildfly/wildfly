@@ -107,6 +107,13 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final AttributeDefinition DETERMINISTIC_FAILOVER = new SimpleAttributeDefinitionBuilder(Constants.DETERMINISTIC_FAILOVER, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
     public static final AttributeDefinition HEALTH_CHECK_INTERVAL = new SimpleAttributeDefinitionBuilder(Constants.HEALTH_CHECK_INTERVAL, ModelType.INT)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
@@ -260,7 +267,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
-                ADVERTISE_PATH, ADVERTISE_FREQUENCY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
+            ADVERTISE_PATH, ADVERTISE_FREQUENCY, DETERMINISTIC_FAILOVER, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
             CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
             HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES));
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();

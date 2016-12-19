@@ -587,6 +587,13 @@
         <xs:attribute name="advertise-protocol" type="xs:string" use="optional"/>
         <xs:attribute name="advertise-path" type="xs:string" use="optional"/>
         <xs:attribute name="advertise-frequency" type="xs:int" use="optional"/>
+        <xs:attribute name="deterministic-failover" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Configures whether a node upon failover is chosen deterministically from session ID.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="health-check-interval" type="xs:int" use="optional"/>
         <xs:attribute name="broken-node-timeout" type="xs:int" use="optional"/>
         <xs:attribute name="worker" type="xs:string" use="optional" />
