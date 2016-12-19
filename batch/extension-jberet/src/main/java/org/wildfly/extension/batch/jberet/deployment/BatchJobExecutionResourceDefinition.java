@@ -28,7 +28,6 @@ import java.util.Properties;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
-import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
@@ -112,7 +111,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(INSTANCE_ID, new JobOperationReadOnlyStepHandler() {
             @Override
-            protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
+            protected void updateModel(final OperationContext context, final ModelNode model, final WildFlyJobOperator jobOperator, final String jobName) throws OperationFailedException {
                 final JobInstance jobInstance = jobOperator.getJobInstance(Long.parseLong(context.getCurrentAddressValue()));
                 model.set(jobInstance.getInstanceId());
             }
@@ -167,7 +166,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
 
         resourceRegistration.registerOperationHandler(STOP_JOB, new JobOperationStepHandler() {
             @Override
-            protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+            protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
                 // Resolve the execution id
                 final long executionId = Long.parseLong(context.getCurrentAddressValue());
                 try {
@@ -180,7 +179,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
 
         resourceRegistration.registerOperationHandler(RESTART_JOB, new JobOperationStepHandler() {
             @Override
-            protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+            protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
                 // Resolve the execution id
                 final long executionId = Long.parseLong(context.getCurrentAddressValue());
                 // Get the properties
@@ -197,7 +196,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
 
     abstract static class JobExecutionOperationStepHandler extends JobOperationReadOnlyStepHandler {
         @Override
-        protected void updateModel(final OperationContext context, final ModelNode model, final JobOperator jobOperator, final String jobName) throws OperationFailedException {
+        protected void updateModel(final OperationContext context, final ModelNode model, final WildFlyJobOperator jobOperator, final String jobName) throws OperationFailedException {
             final JobExecution jobExecution = jobOperator.getJobExecution(Long.parseLong(context.getCurrentAddressValue()));
             updateModel(model, jobExecution);
         }

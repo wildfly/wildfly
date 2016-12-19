@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.batch.operations.JobOperator;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 
@@ -48,16 +46,16 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
 public class BatchJobExecutionResource implements Resource {
 
     private final Resource delegate;
-    private final JobOperator jobOperator;
+    private final WildFlyJobOperator jobOperator;
     private final String jobName;
     // Should be guarded by it's instance
     private final Set<String> children = new LinkedHashSet<>();
 
-    public BatchJobExecutionResource(final JobOperator jobOperator, final String jobName) {
+    BatchJobExecutionResource(final WildFlyJobOperator jobOperator, final String jobName) {
         this(Factory.create(true), jobOperator, jobName);
     }
 
-    public BatchJobExecutionResource(final Resource delegate, final JobOperator jobOperator, final String jobName) {
+    private BatchJobExecutionResource(final Resource delegate, final WildFlyJobOperator jobOperator, final String jobName) {
         this.delegate = delegate;
         this.jobOperator = jobOperator;
         this.jobName = jobName;
@@ -218,7 +216,8 @@ public class BatchJobExecutionResource implements Resource {
      */
     private void refreshChildren() {
         final List<JobExecution> executions = new ArrayList<>();
-        final List<JobInstance> instances = jobOperator.getJobInstances(jobName, 0, jobOperator.getJobInstanceCount(jobName));
+        final List<JobInstance> instances = jobOperator.allowMissingJob(() -> jobOperator.getJobInstances(jobName, 0, jobOperator.getJobInstanceCount(jobName))
+                , Collections.emptyList());
         for (JobInstance instance : instances) {
             executions.addAll(jobOperator.getJobExecutions(instance));
         }

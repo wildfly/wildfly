@@ -43,7 +43,7 @@ abstract class JobOperationReadOnlyStepHandler extends JobOperationStepHandler {
     }
 
     @Override
-    protected void execute(final OperationContext context, final ModelNode operation, final JobOperator jobOperator) throws OperationFailedException {
+    protected void execute(final OperationContext context, final ModelNode operation, final WildFlyJobOperator jobOperator) throws OperationFailedException {
         updateModel(context, context.getResult(), jobOperator, context.getCurrentAddressValue());
     }
 
@@ -57,5 +57,5 @@ abstract class JobOperationReadOnlyStepHandler extends JobOperationStepHandler {
      *
      * @throws OperationFailedException if an update failure occurs
      */
-    protected abstract void updateModel(OperationContext context, ModelNode model, JobOperator jobOperator, String jobName) throws OperationFailedException;
+    protected abstract void updateModel(OperationContext context, ModelNode model, WildFlyJobOperator jobOperator, String jobName) throws OperationFailedException;
 }

@@ -24,6 +24,7 @@ package org.wildfly.extension.batch._private;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
@@ -35,5 +36,15 @@ public interface BatchLogger extends BasicLogger {
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
     BatchLogger LOGGER = Logger.getMessageLogger(BatchLogger.class, "org.wildfly.extension.batch");
+
+    /**
+     * Creates an exception indicating the job repository type was invalid.
+     *
+     * @param type the invalid type
+     *
+     * @return an {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 2, value = "Invalid job repository type '%s'.")
+    IllegalArgumentException invalidJobRepositoryType(String type);
 
 }

@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.impl;
+package org.wildfly.extension.batch.jberet.deployment;
 
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class ClassLoaderContextHandle implements ContextHandle {
-    private final ClassLoader classLoader;
+class NamespaceContextHandle implements ContextHandle {
 
-    ClassLoaderContextHandle(final ClassLoader classLoader) {
-        this.classLoader = classLoader;
+    private final NamespaceContextSelector namespaceContextSelector;
+
+    NamespaceContextHandle() {
+        this.namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
     }
 
     @Override
     public Handle setup() {
-        final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
         return new Handle() {
             @Override
             public void tearDown() {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+                NamespaceContextSelector.popCurrentSelector();
             }
         };
     }

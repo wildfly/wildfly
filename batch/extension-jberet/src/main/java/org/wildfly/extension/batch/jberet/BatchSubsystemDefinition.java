@@ -27,7 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.Collections;
 
 import org.jberet.repository.JobRepository;
+import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobExecutor;
+import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
@@ -55,6 +57,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
+import org.wildfly.extension.batch.jberet.deployment.BatchAttachments;
 import org.wildfly.extension.batch.jberet.deployment.BatchCleanupProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_1_0;
@@ -167,11 +170,13 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
      * Handler responsible for adding the subsystem resource to the model.
      */
     static class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
-
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
+        private final ContextClassLoaderJobOperatorContextSelector selector;
 
         private BatchSubsystemAdd() {
             super(Collections.singleton(Capabilities.BATCH_CONFIGURATION_CAPABILITY), DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME, SECURITY_DOMAIN);
+            selector = new ContextClassLoaderJobOperatorContextSelector(() -> JobOperatorContext.create(DefaultBatchEnvironment.INSTANCE));
+            JobOperatorContext.setJobOperatorContextSelector(selector);
         }
 
         @Override
@@ -185,11 +190,11 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_BATCH,
                             new JBossAllXmlParserRegisteringProcessor<>(BatchDeploymentDescriptorParser_1_0.ROOT_ELEMENT,
-                                    BatchDeploymentDescriptorParser_1_0.ATTACHMENT_KEY, new BatchDeploymentDescriptorParser_1_0()));
+                                    BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_1_0()));
                     processorTarget.addDeploymentProcessor(NAME,
                             Phase.DEPENDENCIES, Phase.DEPENDENCIES_BATCH, new BatchDependencyProcessor());
                     processorTarget.addDeploymentProcessor(NAME,
-                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent));
+                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent, selector));
                     processorTarget.addDeploymentProcessor(NAME,
                             Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor(NAME));
                     processorTarget.addDeploymentProcessor(NAME,

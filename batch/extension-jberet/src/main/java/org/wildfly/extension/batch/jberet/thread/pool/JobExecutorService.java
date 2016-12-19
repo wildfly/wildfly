@@ -20,29 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.impl;
+package org.wildfly.extension.batch.jberet.thread.pool;
 
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jberet.spi.JobExecutor;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class NamespaceContextHandle implements ContextHandle {
+public class JobExecutorService implements Service<JobExecutor> {
 
-    private final NamespaceContextSelector namespaceContextSelector;
+    private final InjectedValue<ManagedJBossThreadPoolExecutorService> threadPoolInjector = new InjectedValue<>();
+    private WildFlyJobExecutor jobExecutor;
 
-    NamespaceContextHandle() {
-        this.namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
+    @Override
+    public synchronized void start(final StartContext context) throws StartException {
+        jobExecutor = new WildFlyJobExecutor(threadPoolInjector.getValue());
     }
 
     @Override
-    public Handle setup() {
-        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
-        return new Handle() {
-            @Override
-            public void tearDown() {
-                NamespaceContextSelector.popCurrentSelector();
-            }
-        };
+    public synchronized void stop(final StopContext context) {
+        jobExecutor = null;
+    }
+
+    @Override
+    public JobExecutor getValue() throws IllegalStateException, IllegalArgumentException {
+        return jobExecutor;
+    }
+
+    public InjectedValue<ManagedJBossThreadPoolExecutorService> getThreadPoolInjector() {
+        return threadPoolInjector;
     }
 }

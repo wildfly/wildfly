@@ -54,7 +54,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
-import org.wildfly.extension.batch.jberet.impl.JobExecutorService;
 
 /**
  * A resource definition for the batch thread pool.

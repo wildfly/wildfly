@@ -30,6 +30,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.CountingItemReader;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
@@ -100,6 +101,19 @@ public class DeploymentResourceTestCase extends AbstractBatchTestCase {
         validateJobXmlNames(address, "test-chunk.xml", "same-test-chunk.xml");
         address = Operations.createAddress("deployment", DEPLOYMENT_NAME_2, "subsystem", "batch-jberet", "job", "test-chunk-other");
         validateJobXmlNames(address, "test-chunk-other.xml");
+    }
+
+    @Test
+    public void testEmptyResources() throws Exception {
+        final ModelNode address = Operations.createAddress("deployment", DEPLOYMENT_NAME_2, "subsystem", "batch-jberet");
+        final ModelNode op = Operations.createReadResourceOperation(address, true);
+        op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
+        final ModelNode result = executeOperation(op);
+        final ModelNode otherJob = result.get("job", "test-chunk-other");
+        Assert.assertTrue("Expected the test-chunk-other job resource to exist", otherJob.isDefined());
+        Assert.assertEquals(0, otherJob.get("instance-count").asInt());
+        Assert.assertEquals(0, otherJob.get("running-executions").asInt());
+        Assert.assertFalse(otherJob.get("executions").isDefined());
     }
 
     private void validateJobXmlNames(final String deploymentName, final String... expectedDescriptors) throws IOException {

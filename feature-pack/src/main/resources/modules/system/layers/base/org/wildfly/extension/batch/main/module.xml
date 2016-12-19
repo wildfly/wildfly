@@ -50,7 +50,6 @@
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.extension.request-controller"/>
         <module name="org.wildfly.extension.batch.jberet"/>
-        <module name="org.wildfly.jberet" services="import"/>
         <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>

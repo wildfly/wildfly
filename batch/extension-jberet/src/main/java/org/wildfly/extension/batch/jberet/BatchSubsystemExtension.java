@@ -61,8 +61,7 @@ public class BatchSubsystemExtension implements Extension {
         if (context.isRuntimeOnlyRegistrationValid()) {
             final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(new BatchDeploymentResourceDefinition());
             final ManagementResourceRegistration jobRegistration = deployments.registerSubModel(BatchJobResourceDefinition.INSTANCE);
-            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
-            jobRegistration.registerSubModel(new BatchJobExecutionResourceDefinition()).setRuntimeOnly(true);
+            jobRegistration.registerSubModel(new BatchJobExecutionResourceDefinition());
         }
 
     }

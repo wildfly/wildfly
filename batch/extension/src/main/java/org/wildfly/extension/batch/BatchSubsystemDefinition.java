@@ -27,7 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobExecutor;
+import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
@@ -60,9 +62,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch._private.Capabilities;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
+import org.wildfly.extension.batch.jberet.DefaultBatchEnvironment;
 import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
-import org.wildfly.extension.batch.jberet.impl.JobExecutorService;
+import org.wildfly.extension.batch.jberet.thread.pool.JobExecutorService;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.batch.job.repository.JobRepositoryType;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
@@ -131,7 +134,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
         // thread-pool resource
         final UnboundedQueueThreadPoolResourceDefinition threadPoolResource = UnboundedQueueThreadPoolResourceDefinition.create(THREAD_POOL_PATH,
-                BatchThreadFactoryResolver.INSTANCE, BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME, false); // TODO (jrp) verify false value
+                BatchThreadFactoryResolver.INSTANCE, BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME, false);
         resourceRegistration.registerSubModel(threadPoolResource);
 
         // thread-factory resource
@@ -166,9 +169,12 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     static class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
+        private final ContextClassLoaderJobOperatorContextSelector selector;
 
         private BatchSubsystemAdd() {
             super(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
+            selector = new ContextClassLoaderJobOperatorContextSelector(() -> JobOperatorContext.create(DefaultBatchEnvironment.INSTANCE));
+            JobOperatorContext.setJobOperatorContextSelector(selector);
         }
 
         @Override
@@ -188,7 +194,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.DEPENDENCIES, Phase.DEPENDENCIES_BATCH, new BatchDependencyProcessor());
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
-                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent));
+                            Phase.POST_MODULE, Phase.POST_MODULE_BATCH_ENVIRONMENT, new BatchEnvironmentProcessor(rcPresent, selector));
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,
                             Phase.INSTALL, Phase.INSTALL_BATCH_RESOURCES, new BatchDeploymentResourceProcessor(NAME));
 
