@@ -582,7 +582,7 @@
     <xs:complexType name="modClusterType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="management-socket-binding" type="xs:string" use="required"/>
-        <xs:attribute name="advertise-socket-binding" type="xs:string" use="required"/>
+        <xs:attribute name="advertise-socket-binding" type="xs:string" use="optional"/>
         <xs:attribute name="security-key" type="xs:string" use="optional"/>
         <xs:attribute name="advertise-protocol" type="xs:string" use="optional"/>
         <xs:attribute name="advertise-path" type="xs:string" use="optional"/>

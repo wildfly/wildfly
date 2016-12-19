@@ -145,19 +145,22 @@ public class ModClusterService extends FilterService {
                 .build();
 
         MCMPConfig.Builder builder = MCMPConfig.builder();
-        InetAddress multicastAddress = advertiseSocketBinding.getValue().getMulticastAddress();
-        if(multicastAddress == null) {
-            throw UndertowLogger.ROOT_LOGGER.advertiseSocketBindingRequiresMulticastAddress();
-        }
-        if(advertiseFrequency > 0) {
-            builder.enableAdvertise()
-                    .setAdvertiseAddress(advertiseSocketBinding.getValue().getSocketAddress().getAddress().getHostAddress())
-                    .setAdvertiseGroup(multicastAddress.getHostAddress())
-                    .setAdvertisePort(advertiseSocketBinding.getValue().getMulticastPort())
-                    .setAdvertiseFrequency(advertiseFrequency)
-                    .setPath(advertisePath)
-                    .setProtocol(advertiseProtocol)
-                    .setSecurityKey(securityKey);
+        final SocketBinding advertiseBinding = advertiseSocketBinding.getOptionalValue();
+        if (advertiseBinding != null) {
+            InetAddress multicastAddress = advertiseBinding.getMulticastAddress();
+            if (multicastAddress == null) {
+                throw UndertowLogger.ROOT_LOGGER.advertiseSocketBindingRequiresMulticastAddress();
+            }
+            if (advertiseFrequency > 0) {
+                builder.enableAdvertise()
+                        .setAdvertiseAddress(advertiseBinding.getSocketAddress().getAddress().getHostAddress())
+                        .setAdvertiseGroup(multicastAddress.getHostAddress())
+                        .setAdvertisePort(advertiseBinding.getMulticastPort())
+                        .setAdvertiseFrequency(advertiseFrequency)
+                        .setPath(advertisePath)
+                        .setProtocol(advertiseProtocol)
+                        .setSecurityKey(securityKey);
+            }
         }
         builder.setManagementHost(managementSocketBinding.getValue().getSocketAddress().getHostString());
         builder.setManagementPort(managementSocketBinding.getValue().getSocketAddress().getPort());
@@ -165,7 +168,7 @@ public class ModClusterService extends FilterService {
         config = builder.build();
 
 
-        if(advertiseFrequency > 0) {
+        if (advertiseBinding != null && advertiseFrequency > 0) {
             try {
                 modCluster.advertise(config);
             } catch (IOException e) {
@@ -260,7 +263,10 @@ public class ModClusterService extends FilterService {
                 builder.getMap());
         ServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);
+        final ModelNode advertiseSocketBinding = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
+        if (advertiseSocketBinding.isDefined()) {
+            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(advertiseSocketBinding.asString()), SocketBinding.class, service.advertiseSocketBinding);
+        }
         serviceBuilder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
 
         if (sslContext.isDefined()) {
