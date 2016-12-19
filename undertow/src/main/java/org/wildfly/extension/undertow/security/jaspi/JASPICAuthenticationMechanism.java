@@ -80,7 +80,6 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
 
     public static final AttachmentKey<Boolean> AUTH_RUN = AttachmentKey.create(Boolean.class);
-    public static final int DEFAULT_ERROR_CODE = StatusCodes.UNAUTHORIZED;
 
     private final String securityDomain;
     private final String configuredAuthMethod;
@@ -150,9 +149,9 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPIC authentication failed.", authType);
 
-            // make sure we don't return status OK if the AuthException was thrown
-            if (wasAuthExceptionThrown(exchange) && !statusIndicatesError(exchange)) {
-                exchange.setResponseCode(DEFAULT_ERROR_CODE);
+            //Undertow requires that an explicit error code is set if authentication is mandatory, but unsuccessful
+            if(!statusIndicatesError(exchange)){
+                exchange.setStatusCode(StatusCodes.FORBIDDEN);
             }
         }
 
@@ -283,7 +282,7 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
     }
 
     private boolean statusIndicatesError(HttpServerExchange exchange) {
-        return exchange.getResponseCode() != StatusCodes.OK;
+        return exchange.getStatusCode() != StatusCodes.OK;
     }
 
 
