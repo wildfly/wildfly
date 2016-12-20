@@ -34,6 +34,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
@@ -439,7 +440,8 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                     final Collection<String> jobNames = getJobNames();
                     // Look for running jobs and attempt to stop each one
                     for (String jobName : jobNames) {
-                        final List<Long> runningJobs = allowMissingJob(() -> getRunningExecutions(jobName), Collections.emptyList());
+                        // Casting to (Supplier<List<Long>>) is done here on purpose as a workaround for a bug in 1.8.0_45
+                        final List<Long> runningJobs = allowMissingJob((Supplier<List<Long>>) () -> getRunningExecutions(jobName), Collections.emptyList());
                         for (Long id : runningJobs) {
                             try {
                                 BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);

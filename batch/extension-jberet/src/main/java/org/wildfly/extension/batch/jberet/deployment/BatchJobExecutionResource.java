@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 
@@ -216,7 +217,8 @@ public class BatchJobExecutionResource implements Resource {
      */
     private void refreshChildren() {
         final List<JobExecution> executions = new ArrayList<>();
-        final List<JobInstance> instances = jobOperator.allowMissingJob(() -> jobOperator.getJobInstances(jobName, 0, jobOperator.getJobInstanceCount(jobName))
+        // Casting to (Supplier<List<JobInstance>>) is done here on purpose as a workaround for a bug in 1.8.0_45
+        final List<JobInstance> instances = jobOperator.allowMissingJob((Supplier<List<JobInstance>>)() -> jobOperator.getJobInstances(jobName, 0, jobOperator.getJobInstanceCount(jobName))
                 , Collections.emptyList());
         for (JobInstance instance : instances) {
             executions.addAll(jobOperator.getJobExecutions(instance));
