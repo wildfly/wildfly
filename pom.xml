@@ -221,7 +221,6 @@
         <version.org.wildfly.naming-client>1.0.0.Beta7</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Alpha16</version.org.wildfly.security.elytron-subsystem>
         <version.org.wildfly.client-config>1.0.0.Beta1</version.org.wildfly.client-config>
-        <version.org.wildfly.common>1.2.0.Beta1</version.org.wildfly.common>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
@@ -901,12 +900,6 @@
                 <groupId>org.wildfly.client</groupId>
                 <artifactId>wildfly-client-config</artifactId>
                 <version>${version.org.wildfly.client-config}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.common</groupId>
-                <artifactId>wildfly-common</artifactId>
-                <version>${version.org.wildfly.common}</version>
             </dependency>
 
             <dependency>
