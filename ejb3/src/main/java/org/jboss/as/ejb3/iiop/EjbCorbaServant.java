@@ -55,7 +55,6 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
-import org.jboss.security.SimplePrincipal;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.ORB;
@@ -70,6 +69,12 @@ import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
 import org.wildfly.iiop.openjdk.rmi.RmiIdlUtil;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
+import org.wildfly.security.auth.principal.NamePrincipal;
+import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.auth.server.ServerAuthenticationContext;
+import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -118,7 +123,12 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
     /**
      * The security domain for CORBA invocations
      */
-    private final String securityDomain;
+    private final String legacySecurityDomain;
+
+    /**
+     * The Elytron security domain for CORBA invocations
+     */
+    private final SecurityDomain securityDomain;
 
     /**
      * If true this is the servant for an EJBHome object
@@ -168,7 +178,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      * Constructs an <code>EjbObjectCorbaServant></code>.
      */
     public EjbCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
-                           final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader, final boolean home, final String securityDomain) {
+                           final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory,
+                           final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader,
+                           final boolean home, final String legacySecurityDomain, final SecurityDomain securityDomain) {
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -180,6 +192,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         this.transactionManager = transactionManager;
         this.classLoader = classLoader;
         this.home = home;
+        this.legacySecurityDomain = legacySecurityDomain;
         this.securityDomain = securityDomain;
 
         SASCurrent sasCurrent;
@@ -254,8 +267,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         transactionManager.resume(tx);
                     }
                     try {
-                        SimplePrincipal principal = null;
+                        Principal principal = null;
                         Object credential = null;
+                        boolean receivedIdentityPrincipal = false;
 
                         if (sasCurrent != null) {
                             final byte[] incomingName = sasCurrent.get_incoming_principal_name();
@@ -267,11 +281,8 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                     int domainIndex = name.indexOf('@');
                                     if (domainIndex > 0)
                                         name = name.substring(0, domainIndex);
-                                    principal = new SimplePrincipal(name);
-                                    //we don't have any real way to establish trust here
-                                    //we just use the SASCurrent as a credential, and a custom login
-                                    //module can make a decision for us.
-                                    credential = sasCurrent;
+                                    principal = new NamePrincipal(name);
+                                    receivedIdentityPrincipal = true;
                                 }
                             } else {
                                 //the client has just sent a username and password
@@ -283,23 +294,26 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                     if (domainIndex > 0) {
                                         name = name.substring(0, domainIndex);
                                     }
-                                    principal = new SimplePrincipal(name);
+                                    principal = new NamePrincipal(name);
                                     credential = new String(incomingPassword, StandardCharsets.UTF_8).toCharArray();
                                 }
                             }
 
-                            if (securityDomain != null) {
+                            if (legacySecurityDomain != null) {
+                                // we don't have any real way to establish trust in identity based auth so we just use
+                                // the SASCurrent as a credential, and a custom legacy login module can make a decision for us.
+                                final Object legacyCredential = receivedIdentityPrincipal ? sasCurrent : credential;
+
                                 if(WildFlySecurityManager.isChecking()) {
-                                    final SimplePrincipal finalPrincipal = principal;
-                                    final Object finalCredential = credential;
+                                    final Principal finalPrincipal = principal;
                                     sc = AccessController.doPrivileged((PrivilegedExceptionAction<SecurityContext>) () -> {
-                                        SecurityContext sc1 = SecurityContextFactory.createSecurityContext(securityDomain);
-                                        sc1.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
+                                        SecurityContext sc1 = SecurityContextFactory.createSecurityContext(legacySecurityDomain);
+                                        sc1.getUtil().createSubjectInfo(finalPrincipal, legacyCredential, null);
                                         return sc1;
                                     });
                                 } else {
-                                    sc = SecurityContextFactory.createSecurityContext(securityDomain);
-                                    sc.getUtil().createSubjectInfo(principal, credential, null);
+                                    sc = SecurityContextFactory.createSecurityContext(legacySecurityDomain);
+                                    sc.getUtil().createSubjectInfo(principal, legacyCredential, null);
                                 }
                             }
                         }
@@ -314,21 +328,60 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                 retVal = false;
                             }
                         } else {
+                            if (this.securityDomain != null) {
+                                // an elytron security domain is available: authenticate and authorize the client before invoking the component.
+                                SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
 
-                            if (sc != null) {
-                                setSecurityContextOnAssociation(sc);
-                            }
-                            try {
-                                final InterceptorContext interceptorContext = new InterceptorContext();
-
-                                if (sc != null) {
-                                    interceptorContext.putPrivateData(SecurityContext.class, sc);
+                                if (receivedIdentityPrincipal) {
+                                    // we have an identity token: try to run as the incoming identity.
+                                    identity = this.securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(principal.getName(), true);
+                                    // TODO once we have access to the TLS identity we must use the TLS identity instead of the anonymous above.
+                                } else if (principal != null) {
+                                    // we have an initial context token containing a username/password pair.
+                                    ServerAuthenticationContext context = this.securityDomain.createNewAuthenticationContext();
+                                    PasswordGuessEvidence evidence = new PasswordGuessEvidence((char[]) credential);
+                                    try {
+                                        context.setAuthenticationPrincipal(principal);
+                                        if (context.verifyEvidence(evidence)) {
+                                            if (context.authorize()) {
+                                                context.succeed();
+                                                identity = context.getAuthorizedIdentity();
+                                            } else {
+                                                context.fail();
+                                                throw new SecurityException("Authorization failed");
+                                            }
+                                        } else {
+                                            context.fail();
+                                            throw new SecurityException("Authentication failed");
+                                        }
+                                    } catch (IllegalArgumentException | IllegalStateException | RealmUnavailableException e) {
+                                        context.fail();
+                                        throw new SecurityException(e.getMessage(), e);
+                                    } finally {
+                                        evidence.destroy();
+                                    }
                                 }
-                                prepareInterceptorContext(op, params, interceptorContext);
-                                retVal = componentView.invoke(interceptorContext);
-                            } finally {
+                                final InterceptorContext interceptorContext = new InterceptorContext();
+                                this.prepareInterceptorContext(op, params, interceptorContext);
+                                retVal = identity.runAs((PrivilegedExceptionAction<Object>) () -> componentView.invoke(interceptorContext));
+                            } else {
+                                // legacy security behavior: setup the security context and invoke the component. One of the security interceptors
+                                // will authenticate and authorize the client.
                                 if (sc != null) {
-                                    clearSecurityContextOnAssociation();
+                                    setSecurityContextOnAssociation(sc);
+                                }
+                                try {
+                                    final InterceptorContext interceptorContext = new InterceptorContext();
+
+                                    if (sc != null) {
+                                        interceptorContext.putPrivateData(SecurityContext.class, sc);
+                                    }
+                                    prepareInterceptorContext(op, params, interceptorContext);
+                                    retVal = componentView.invoke(interceptorContext);
+                                } finally {
+                                    if (sc != null) {
+                                        clearSecurityContextOnAssociation();
+                                    }
                                 }
                             }
                         }
@@ -370,7 +423,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                 interceptorContext.putPrivateData(SessionID.class, sessionID);
             }
         }
-        interceptorContext.setContextData(new HashMap<String, Object>());
+        interceptorContext.setContextData(new HashMap<>());
         interceptorContext.setParameters(params);
         interceptorContext.setMethod(op.getMethod());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
@@ -443,24 +496,16 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
 
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            SecurityContextAssociation.setSecurityContext(sc);
+            return null;
         });
     }
 
     private static void clearSecurityContextOnAssociation() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            SecurityContextAssociation.clearSecurityContext();
+            return null;
         });
     }
 }
