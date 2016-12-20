@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.impl;
+package org.wildfly.extension.batch.jberet.deployment;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;

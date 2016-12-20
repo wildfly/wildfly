@@ -29,7 +29,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jberet.repository.InMemoryRepository;
 import org.jberet.repository.JobRepository;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -44,7 +43,6 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  */
 public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, JBossAllXMLParser<BatchEnvironmentMetaData> {
 
-    public static final AttachmentKey<BatchEnvironmentMetaData> ATTACHMENT_KEY = AttachmentKey.create(BatchEnvironmentMetaData.class);
     public static final String NAMESPACE = "urn:jboss:batch-jberet:1.0";
     public static final QName ROOT_ELEMENT = new QName(NAMESPACE, "batch");
 

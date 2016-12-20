@@ -238,7 +238,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         protected ServiceName serviceName(String name) {
             RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
-            return dynamicCapability.getCapabilityServiceName(HttpAuthenticationFactory.class);
+            return dynamicCapability.getCapabilityServiceName(Function.class);
         }
 
     }

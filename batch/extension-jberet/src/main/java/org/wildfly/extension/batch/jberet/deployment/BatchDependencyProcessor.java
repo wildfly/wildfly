@@ -39,11 +39,7 @@ import org.jboss.modules.ModuleLoader;
 public class BatchDependencyProcessor implements DeploymentUnitProcessor {
 
     private final ModuleIdentifier batchModule = ModuleIdentifier.create("javax.batch.api");
-
-    private final ModuleIdentifier[] jberetModules = {
-            ModuleIdentifier.create("org.jberet.jberet-core"),
-            ModuleIdentifier.create("org.wildfly.jberet")
-    };
+    private final ModuleIdentifier jberetModule = ModuleIdentifier.create("org.jberet.jberet-core");
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -52,9 +48,7 @@ public class BatchDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, batchModule, false, false, false, false));
-        for (ModuleIdentifier moduleIdentifier : jberetModules) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
-        }
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jberetModule, false, false, true, false));
     }
 
     @Override

@@ -40,8 +40,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jberet</artifactId>
+            <groupId>org.jboss.spec.javax.batch</groupId>
+            <artifactId>jboss-batch-api_1.0_spec</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

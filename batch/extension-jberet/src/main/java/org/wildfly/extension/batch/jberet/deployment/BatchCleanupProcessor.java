@@ -30,9 +30,11 @@ public class BatchCleanupProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         // Clean up job XML resolvers
-        phaseContext.getDeploymentUnit().removeAttachment(BatchEnvironmentProcessor.JOB_XML_RESOLVER);
+        phaseContext.getDeploymentUnit().removeAttachment(BatchAttachments.JOB_XML_RESOLVER);
         // Clean jboss-all meta-data
-        phaseContext.getDeploymentUnit().removeAttachment(BatchDeploymentDescriptorParser_1_0.ATTACHMENT_KEY);
+        phaseContext.getDeploymentUnit().removeAttachment(BatchAttachments.BATCH_ENVIRONMENT_META_DATA);
+        // Remove the JobOperatorService from the deployment unit
+        phaseContext.getDeploymentUnit().removeAttachment(BatchAttachments.JOB_OPERATOR);
     }
 
     @Override
