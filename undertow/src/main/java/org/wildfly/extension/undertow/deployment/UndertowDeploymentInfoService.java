@@ -713,6 +713,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
 
+
             final List<JBossServletMetaData> servlets = new ArrayList<JBossServletMetaData>();
             for (JBossServletMetaData servlet : mergedMetaData.getServlets()) {
                 servlets.add(servlet);
@@ -757,6 +758,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
 
                 handleServletMappings(is22OrOlder, seenMappings, servletMappings, s);
+
                 if (servlet.getInitParam() != null) {
                     for (ParamValueMetaData initParam : servlet.getInitParam()) {
                         if (!s.getInitParams().containsKey(initParam.getParamName())) {
@@ -793,6 +795,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
 
                 d.addServlet(s);
+            }
+
+            if(jspServlet != null) {
+                if(!seenMappings.contains("*.jsp")) {
+                    jspServlet.addMapping("*.jsp");
+                }
+                if(!seenMappings.contains("*.jspx")) {
+                    jspServlet.addMapping("*.jspx");
+                }
             }
 
             //we explicitly add the default servlet, to allow it to be mapped
