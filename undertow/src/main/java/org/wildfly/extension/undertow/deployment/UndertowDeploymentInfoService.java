@@ -661,7 +661,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
                 final Set<String> jspPropertyGroupMappings = propertyGroups.keySet();
                 for (final String mapping : jspPropertyGroupMappings) {
-                    jspServlet.addMapping(mapping);
+                    if(!jspServlet.getMappings().contains(mapping)) {
+                        jspServlet.addMapping(mapping);
+                    }
                 }
                 seenMappings.addAll(jspPropertyGroupMappings);
                 //setup JSP application context initializing listener
