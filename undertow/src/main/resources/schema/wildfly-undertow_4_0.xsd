@@ -587,6 +587,13 @@
         <xs:attribute name="advertise-protocol" type="xs:string" use="optional"/>
         <xs:attribute name="advertise-path" type="xs:string" use="optional"/>
         <xs:attribute name="advertise-frequency" type="xs:int" use="optional"/>
+        <xs:attribute name="failover-strategy" type="failoverStrategy" default="LOAD_BALANCED" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Determines how a failover node is chosen, in the event that the node to which a session has affinity is not available.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="health-check-interval" type="xs:int" use="optional"/>
         <xs:attribute name="broken-node-timeout" type="xs:int" use="optional"/>
         <xs:attribute name="worker" type="xs:string" use="optional" />
@@ -609,7 +616,26 @@
         <xs:attribute name="http2-max-header-list-size" type="xs:int" use="optional" />
         <xs:attribute name="max-retries" type="xs:int" use="optional" />
     </xs:complexType>
-    
+
+    <xs:simpleType name="failoverStrategy">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="LOAD_BALANCED">
+                <xs:annotation>
+                    <xs:documentation>
+                        Failover target chosen via load balancing mechanism.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="DETERMINISTIC">
+                <xs:annotation>
+                    <xs:documentation>
+                        Failover target chosen deterministically from the associated session identifier.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:complexType name="applicationSecurityDomainsType">
         <xs:annotation>
             <xs:documentation>
@@ -639,7 +665,7 @@
                             <xs:documentation>
                                 The references HttpServerAuthenticationMechanismFactory contains it's own policy configuration
                                 to control the authentication mechanisms it supports, if this attribute is set to 'true'
-                                that policy will override the methods specified within the deployment. 
+                                that policy will override the methods specified within the deployment.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
