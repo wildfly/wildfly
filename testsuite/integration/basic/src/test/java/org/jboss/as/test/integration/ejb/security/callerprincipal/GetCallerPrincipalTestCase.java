@@ -34,7 +34,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -65,8 +64,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import java.util.Hashtable;
 
 /**
  * The Bean Provider can invoke the getCallerPrincipal and isCallerInRole methods only
@@ -99,6 +96,9 @@ public class GetCallerPrincipalTestCase {
 
     @ArquillianResource
     Deployer deployer;
+
+    @ArquillianResource
+    private InitialContext initialContext;
 
     static class JmsQueueSetup extends AbstractMgmtServerSetupTask {
 
@@ -182,7 +182,7 @@ public class GetCallerPrincipalTestCase {
     }
 
     private ITestResultsSingleton getResultsSingleton() throws NamingException {
-        return (ITestResultsSingleton) getInitialContext().lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
+        return (ITestResultsSingleton) initialContext.lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
     }
 
     private SecurityClient login() throws Exception {
@@ -198,7 +198,7 @@ public class GetCallerPrincipalTestCase {
         SecurityClient client = this.login();
         try {
             ITestResultsSingleton results = this.getResultsSingleton();
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) getInitialContext().lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
+            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
             log.trace("Stateless bean returns: " + bean.get());
 
             Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
@@ -217,7 +217,7 @@ public class GetCallerPrincipalTestCase {
         SecurityClient client = this.login();
         ITestResultsSingleton results = this.getResultsSingleton();
         try {
-            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) getInitialContext().lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
+            IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
             log.trace("Stateful bean returns: " + bean.get());
 
             Assert.assertEquals(ANONYMOUS + "start", results.getSfsb("postconstruct"));
@@ -289,14 +289,6 @@ public class GetCallerPrincipalTestCase {
             }
             client.logout();
         }
-    }
-
-    private InitialContext getInitialContext() throws NamingException {
-        final Hashtable props = new Hashtable();
-        props.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
-        //TODO Elytron - ejb-client4 integration configurable host
-        props.put(Context.PROVIDER_URL, "remote+http://" + "localhost"+ ":" + 8080);
-        return new InitialContext(props);
     }
 
 }
