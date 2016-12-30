@@ -101,6 +101,7 @@ public class IIOPExtension implements Extension {
         builder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.SERVER_SSL_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.AUTHENTICATION_CONTEXT)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                     @Override
                     protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
@@ -112,6 +113,17 @@ public class IIOPExtension implements Extension {
                         return IIOPLogger.ROOT_LOGGER.serverRequiresSslNotSupportedInPreviousVersions();
                     }
                 }, IIOPRootDefinition.SERVER_REQUIRES_SSL)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                    @Override
+                    protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
+                        return attributeValue.asString().equalsIgnoreCase(Constants.ELYTRON);
+                    }
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> map) {
+                        return IIOPLogger.ROOT_LOGGER.elytronInitializerNotSupportedInPreviousVersions();
+                    }
+                }, IIOPRootDefinition.SECURITY)
                 .setValueConverter(new AttributeConverter() {
                     @Override
                     public void convertOperationParameter(PathAddress pathAddress, String s, ModelNode attributeValue, ModelNode operation, TransformationContext transformationContext) {
@@ -131,7 +143,6 @@ public class IIOPExtension implements Extension {
                             attributeValue.set(SSLConfigValue.NONE.toString());
                         }
                     }
-
                 } , IIOPRootDefinition.CLIENT_REQUIRES_SSL);
 
         chained.buildAndRegister(subsystem, new ModelVersion[]{

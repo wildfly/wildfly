@@ -57,6 +57,8 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     static final ParameterValidator SSL_CONFIG_VALIDATOR = new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
 
+    static final StringLengthValidator LENGTH_VALIDATOR = new StringLengthValidator(1, Integer.MAX_VALUE, true, false);
+
     static final SensitivityClassification IIOP_SECURITY = new SensitivityClassification(IIOPExtension.SUBSYSTEM_NAME,
             "iiop-security", false, false, true);
 
@@ -107,6 +109,14 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true)
             .addAccessConstraint(IIOP_SECURITY_DEF).build();
 
+    protected static final AttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(
+            Constants.ORB_INIT_AUTH_CONTEXT, ModelType.STRING, true)
+            .setAttributeGroup(Constants.ORB_INIT)
+            .setValidator(LENGTH_VALIDATOR)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .addAccessConstraint(IIOP_SECURITY_DEF).build();
+
     protected static final AttributeDefinition TRANSACTIONS = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setAttributeGroup(Constants.ORB_INIT)
@@ -115,7 +125,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
     //Naming attributes
-
     protected static final AttributeDefinition ROOT_CONTEXT = new SimpleAttributeDefinitionBuilder(
             Constants.NAMING_ROOT_CONTEXT, ModelType.STRING, true)
             .setAttributeGroup(Constants.NAMING)
@@ -133,8 +142,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .build();
 
     //Security attributes
-    private static final StringLengthValidator LENGTH_VALIDATOR = new StringLengthValidator(1, Integer.MAX_VALUE, true, false);
-
     public static final AttributeDefinition SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SUPPORT_SSL, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.SECURITY)
@@ -358,7 +365,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             SSL_SOCKET_BINDING);
 
     // list that contains initializers attribute definitions
-    static final List<AttributeDefinition> INITIALIZERS_ATTRIBUTES = Arrays.asList(SECURITY,TRANSACTIONS);
+    static final List<AttributeDefinition> INITIALIZERS_ATTRIBUTES = Arrays.asList(SECURITY, AUTHENTICATION_CONTEXT, TRANSACTIONS);
 
     // list that contains naming attributes definitions
     static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC);

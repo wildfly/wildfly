@@ -95,23 +95,31 @@
                 <![CDATA[
                 The initializersConfigType specifies the attributes used to configure the ORB initializers.
 
-                * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are three possibilities:
-                    identity - The server will just send the current username. The recieving server must trust this
+                * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are four possibilities:
+                    identity - The server will just send the current username. The receiving server must trust this
                                server.
                     client   - The client interceptor will be installed. Remote calls from this server will propagate
                                by sending the current username and password
+                    elytron  - The client-side interceptor uses Elytron authentication configurations that match the target
+                               URI to obtain the security identity (and associated password) that will be relayed to the
+                               server. It combines the previous two modes by checking the target security requirements in
+                               order to determine the type of security token that must be constructed.
                     none      - Security interceptors are not installed
+                * authentication-context: when the security attribute is set to 'elytron', the authentication-context
+                    attribute must be defined to indicate the name of the Elytron authentication context that will be
+                    used to match the target URI in order to obtain an authentication configuration.
                 * transactions: indicates which transaction initializers should be installed. There are three possibilities:
                     full   - This requires JTS to be enabled in the transactions subsystem config, and will enable full transaction
-                           interaoprability with other JBoss AS instances.
+                           interoperability with other JBoss AS instances.
                     spec - This does not require JTS to be enabled, but will install the minimum set of transaction interceptors
                            required for EJB spec compliance. These interceptors detect an incoming transaction and throw an
                            exception if the invocation should be run in the incoming transaction context.
-                    none  - No transaction initalizers will be installed.
+                    none  - No transaction initializers will be installed.
                         ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="security" type="securityEnabledType" use="optional" default="none"/>
+        <xs:attribute name="authentication-context" type="xs:string" use="optional" default="none"/>
         <xs:attribute name="transactions" type="transactionEnabledType" use="optional" default="none"/>
     </xs:complexType>
 
@@ -326,6 +334,7 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="identity"/>
             <xs:enumeration value="client"/>
+            <xs:enumeration value="elytron"/>
             <xs:enumeration value="none"/>
         </xs:restriction>
     </xs:simpleType>

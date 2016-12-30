@@ -4,7 +4,7 @@
     </properties>
     <orb giop-version="${test.exp:1.2}" socket-binding="iiop2" ssl-socket-binding="iiop-ssl2"/>
     <tcp high-water-mark="${test.exp:100}" number-to-reclaim="${test.exp:30}"/>
-    <initializers security="${test.exp:off}" transactions="${test.exp:spec}"/>
+    <initializers security="${test.exp:none}" transactions="${test.exp:spec}"/>
     <naming root-context="${test.exp:JBoss/Naming/root}" export-corbaloc="${test.exp:false}"/>
     <security support-ssl="${test.exp:false}" add-component-via-interceptor="${test.exp:true}" server-requires-ssl="${test.exp:true}"  client-requires-ssl="${test.exp:true}"/>
 </subsystem>

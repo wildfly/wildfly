@@ -55,6 +55,7 @@ public final class Constants {
     public static final String ORB_PERSISTENT_SERVER_ID = "persistent-server-id";
     public static final String ORB_INIT = "initializers";
     public static final String ORB_INIT_SECURITY = "security";
+    public static final String ORB_INIT_AUTH_CONTEXT = "authentication-context";
     public static final String ORB_INIT_TRANSACTIONS = "transactions";
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
@@ -62,6 +63,7 @@ public final class Constants {
     public static final String NONE = "none";
     public static final String IDENTITY = "identity";
     public static final String SECURITY = "security";
+    public static final String ELYTRON = "elytron";
     public static final String SPEC = "spec";
     public static final String FULL = "full";
     public static final String SECURITY_SUPPORT_SSL = "support-ssl";

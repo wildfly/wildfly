@@ -40,6 +40,17 @@ public class ConfigValidator {
         final ModelNode serverRequiresSslNode = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel);
         final Boolean serverRequiresSsl = serverRequiresSslNode.isDefined() ? serverRequiresSslNode.asBoolean() : null;
         validateIORTransportConfig(context, resourceModel, sslConfigured, serverRequiresSsl);
+        // validate the elytron initializer configuration: it requires an authentication-context name.
+        final ModelNode securityInitializerNode = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, resourceModel);
+        final ModelNode authContextNode = IIOPRootDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel);
+        if (securityInitializerNode.isDefined() && securityInitializerNode.asString().equalsIgnoreCase(Constants.ELYTRON)) {
+            if (!authContextNode.isDefined()) {
+                throw IIOPLogger.ROOT_LOGGER.elytronInitializerMissingAuthContext();
+            }
+        } else if (authContextNode.isDefined()) {
+            // authentication-context has been specified but is ineffective because the security initializer is not set to 'elytron'.
+            throw IIOPLogger.ROOT_LOGGER.ineffectiveAuthenticationContextConfiguration();
+        }
     }
 
     private static boolean validateSSLConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {

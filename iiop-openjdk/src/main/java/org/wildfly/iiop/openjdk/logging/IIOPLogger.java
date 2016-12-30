@@ -398,4 +398,13 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 108, value = "SSL has not been configured but ssl-port property has been specified")
     OperationFailedException sslPortWithoutSslConfiguration();
+
+    @Message(id = 109, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
+    OperationFailedException elytronInitializerMissingAuthContext();
+
+    @Message(id = 110, value = "Authentication context has been defined but it is ineffective because the security initializer is not set to 'elytron'")
+    OperationFailedException ineffectiveAuthenticationContextConfiguration();
+
+    @Message(id = 111, value = "Elytron security initializer not supported in previous iiop-openjdk versions and can't be converted")
+    String elytronInitializerNotSupportedInPreviousVersions();
 }

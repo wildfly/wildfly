@@ -57,6 +57,7 @@ import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
 import org.wildfly.iiop.openjdk.csiv2.CSIV2IORToSocketInfo;
+import org.wildfly.iiop.openjdk.csiv2.ElytronSASClientInterceptor;
 import org.wildfly.iiop.openjdk.deployment.IIOPDependencyProcessor;
 import org.wildfly.iiop.openjdk.deployment.IIOPMarkerProcessor;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
@@ -69,6 +70,7 @@ import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.iiop.openjdk.service.CorbaORBService;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
+import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import com.sun.corba.se.impl.orbutil.ORBConstants;
@@ -92,6 +94,8 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
+
+    private static final String AUTH_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
 
     public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
         super(attributes);
@@ -183,6 +187,13 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (clientSSLContextName != null) {
             ServiceName clientContextServiceName = context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, clientSSLContextName, SSLContext.class);
             builder.addDependency(clientContextServiceName);
+        }
+
+        // if an authentication context has ben specified, add a dependency to its service.
+        final String authContext = props.getProperty(Constants.ORB_INIT_AUTH_CONTEXT);
+        if (authContext != null) {
+            ServiceName authContextServiceName = context.getCapabilityServiceName(AUTH_CONTEXT_CAPABILITY, authContext, AuthenticationContext.class);
+            builder.addDependency(authContextServiceName);
         }
 
         // inject the socket bindings that specify IIOP and IIOP/SSL ports.
@@ -322,6 +333,10 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_CLIENT.getInitializerClasses()));
         } else if (installSecurity.equalsIgnoreCase(Constants.IDENTITY)) {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_IDENTITY.getInitializerClasses()));
+        } else if (installSecurity.equalsIgnoreCase(Constants.ELYTRON)) {
+            final String authContext = props.getProperty(Constants.ORB_INIT_AUTH_CONTEXT);
+            ElytronSASClientInterceptor.setAuthenticationContextName(authContext);
+            orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_ELYTRON.getInitializerClasses()));
         }
 
         String installTransaction = (String) props.remove(Constants.ORB_INIT_TRANSACTIONS);
