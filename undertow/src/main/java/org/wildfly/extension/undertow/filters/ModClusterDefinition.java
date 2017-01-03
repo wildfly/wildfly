@@ -37,6 +37,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -105,6 +106,13 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRequired(false)
             .setDefaultValue(new ModelNode(10000))
             .setRestartAllServices()
+            .build();
+
+    public static final AttributeDefinition FAILOVER_STRATEGY = new SimpleAttributeDefinitionBuilder(Constants.FAILOVER_STRATEGY, ModelType.STRING)
+            .setRequired(false)
+            .setValidator(new EnumValidator<>(FailoverStrategy.class, true, true))
+            .setRestartAllServices()
+            .setDefaultValue(new ModelNode(FailoverStrategy.LOAD_BALANCED.name()))
             .build();
 
     public static final AttributeDefinition HEALTH_CHECK_INTERVAL = new SimpleAttributeDefinitionBuilder(Constants.HEALTH_CHECK_INTERVAL, ModelType.INT)
@@ -260,7 +268,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
-                ADVERTISE_PATH, ADVERTISE_FREQUENCY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
+            ADVERTISE_PATH, ADVERTISE_FREQUENCY, FAILOVER_STRATEGY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
             CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
             HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES));
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();

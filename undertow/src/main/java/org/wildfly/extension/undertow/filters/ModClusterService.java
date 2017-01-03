@@ -64,6 +64,7 @@ public class ModClusterService extends FilterService {
     private final int requestQueueSize;
     private final boolean useAlias;
     private final int maxRetries;
+    private final FailoverStrategy failoverStrategy;
 
     private ModCluster modCluster;
     private MCMPConfig config;
@@ -84,6 +85,7 @@ public class ModClusterService extends FilterService {
                       int requestQueueSize,
                       boolean useAlias,
                       int maxRetries,
+                      FailoverStrategy failoverStrategy,
                       OptionMap clientOptions) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
@@ -100,6 +102,7 @@ public class ModClusterService extends FilterService {
         this.requestQueueSize = requestQueueSize;
         this.useAlias = useAlias;
         this.maxRetries = maxRetries;
+        this.failoverStrategy = failoverStrategy;
         this.clientOptions = clientOptions;
     }
 
@@ -129,9 +132,10 @@ public class ModClusterService extends FilterService {
             XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
             modClusterBuilder = ModCluster.builder(worker, UndertowClient.getInstance(), xnioSsl);
         }
-        modClusterBuilder.setMaxRetries(maxRetries);
-        modClusterBuilder.setClientOptions(clientOptions);
-        modClusterBuilder.setHealthCheckInterval(healthCheckInterval)
+        modClusterBuilder
+                .setMaxRetries(maxRetries)
+                .setClientOptions(clientOptions)
+                .setHealthCheckInterval(healthCheckInterval)
                 .setMaxRequestTime(maxRequestTime)
                 .setCacheConnections(cachedConnections)
                 .setQueueNewRequests(requestQueueSize > 0)
@@ -141,8 +145,11 @@ public class ModClusterService extends FilterService {
                 .setMaxConnections(connectionsPerThread)
                 .setUseAlias(useAlias);
 
-        modCluster = modClusterBuilder
-                .build();
+        if (FailoverStrategy.DETERMINISTIC.equals(failoverStrategy)) {
+            modClusterBuilder.setDeterministicFailover(true);
+        }
+
+        modCluster = modClusterBuilder.build();
 
         MCMPConfig.Builder builder = MCMPConfig.builder();
         final SocketBinding advertiseBinding = advertiseSocketBinding.getOptionalValue();
@@ -260,6 +267,7 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.USE_ALIAS.resolveModelAttribute(operationContext, model).asBoolean(),
                 ModClusterDefinition.MAX_RETRIES.resolveModelAttribute(operationContext, model).asInt(),
+                Enum.valueOf(FailoverStrategy.class, ModClusterDefinition.FAILOVER_STRATEGY.resolveModelAttribute(operationContext, model).asString()),
                 builder.getMap());
         ServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);

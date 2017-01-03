@@ -49,6 +49,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.security.SecurityConstants;
+import org.wildfly.extension.undertow.filters.FailoverStrategy;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 
@@ -162,6 +163,8 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1)), Constants.MAX_RETRIES)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.ADVERTISE_SOCKET_BINDING)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(FailoverStrategy.LOAD_BALANCED.name())), Constants.FAILOVER_STRATEGY)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.FAILOVER_STRATEGY)
                     .end();
 
         builder.addChildResource(UndertowExtension.PATH_HANDLERS)
