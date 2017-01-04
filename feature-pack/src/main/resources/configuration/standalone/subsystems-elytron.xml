@@ -25,7 +25,7 @@
       <subsystem>request-controller.xml</subsystem>
       <subsystem>sar.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
-      <subsystem>elytron.xml</subsystem>
+      <subsystem supplement="standalone-wildfly">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="elytron">undertow.xml</subsystem>
