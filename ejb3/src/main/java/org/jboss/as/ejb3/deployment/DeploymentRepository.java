@@ -85,11 +85,12 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
         }
     }
 
-    public void startDeployment(DeploymentModuleIdentifier identifier) {
+    public boolean startDeployment(DeploymentModuleIdentifier identifier) {
         DeploymentHolder deployment;
         final List<DeploymentRepositoryListener> listeners;
         synchronized (this) {
             deployment = modules.get(identifier);
+            if (deployment == null) return false;
             deployment.started = true;
             listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
         }
@@ -100,6 +101,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
                 EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
             }
         }
+        return true;
     }
 
 

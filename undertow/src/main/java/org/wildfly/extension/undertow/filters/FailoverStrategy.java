@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.jberet.impl;
-
-import org.jberet.spi.JobExecutor;
-import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
+package org.wildfly.extension.undertow.filters;
 
 /**
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author Radoslav Husar
  */
-class WildFlyJobExecutor extends JobExecutor {
-    private final ManagedJBossThreadPoolExecutorService delegate;
-
-    public WildFlyJobExecutor(final ManagedJBossThreadPoolExecutorService delegate) {
-        super(delegate);
-        this.delegate = delegate;
-    }
-
-    @Override
-    protected int getMaximumPoolSize() {
-        return delegate.getMaxThreads();
-    }
+public enum FailoverStrategy {
+    /**
+     * Failover target chosen via load balancing mechanism.
+     */
+    LOAD_BALANCED,
+    /**
+     * Failover target chosen deterministically from the associated session identifier.
+     */
+    DETERMINISTIC,
+    ;
 }

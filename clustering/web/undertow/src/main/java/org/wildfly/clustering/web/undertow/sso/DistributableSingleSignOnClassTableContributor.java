@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.web.undertow.sso;
 
-import java.io.IOException;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.junit.Test;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.extension.undertow.security.AccountImpl;
+
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.security.idm.Account;
 
 /**
- * Unit test for {@link CopyOnWriteCollectionExternalizer} externalizers.
  * @author Paul Ferraro
  */
-public class CopyOnWriteCollectionExternalizerTestCase {
+@MetaInfServices(ClassTableContributor.class)
+public class DistributableSingleSignOnClassTableContributor implements ClassTableContributor {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Collection<Object> basis = Arrays.<Object>asList(1, 2, 3, 4, 5);
-        CollectionExternalizerTestCase.test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArrayListExternalizer(), new CopyOnWriteArrayList<>(basis));
-        CollectionExternalizerTestCase.test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArraySetExternalizer(), new CopyOnWriteArraySet<>(basis));
+    @Override
+    public Collection<Class<?>> getKnownClasses() {
+        return Arrays.asList(
+                AuthenticatedSession.class,
+                Account.class,
+                AccountImpl.class,
+                Principal.class,
+                // AccountImpl.AccountPrincipal is not visible
+                new AccountImpl("").getPrincipal().getClass()
+        );
     }
 }

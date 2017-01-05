@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.IntFunction;
@@ -95,6 +96,13 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
     public static class ArrayListExternalizer extends CollectionExternalizer<ArrayList<Object>> {
         public ArrayListExternalizer() {
             super(ArrayList.class, ArrayList::new);
+        }
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class ConcurrentHashSetExternalizer extends CollectionExternalizer<ConcurrentHashMap.KeySetView<Object, Boolean>> {
+        public ConcurrentHashSetExternalizer() {
+            super(ConcurrentHashMap.KeySetView.class, capacity -> ConcurrentHashMap.newKeySet(capacity));
         }
     }
 

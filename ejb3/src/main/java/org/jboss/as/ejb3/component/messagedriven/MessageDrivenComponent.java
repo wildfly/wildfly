@@ -74,6 +74,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final ServiceName deliveryControllerName;
     private Endpoint endpoint;
     private String activationName;
+    private volatile boolean suspended = false;
 
     /**
      * Server activity that stops delivery before suspend starts.
@@ -96,12 +97,14 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         }
 
         public void suspended(ServerActivityCallback listener) {
+            suspended = true;
             listener.done();
         }
 
         @Override
         public void resume() {
             synchronized (MessageDrivenComponent.this) {
+                suspended = false;
                 if (deliveryActive) {
                     activate();
                 }
@@ -227,9 +230,11 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
         super.start();
 
+        suspendController.registerActivity(serverActivity);
+
         synchronized (this) {
             this.started = true;
-            if (this.deliveryActive) {
+            if (this.deliveryActive && !suspended) {
                 this.activate();
             }
         }
@@ -237,7 +242,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         if (this.pool != null) {
             this.pool.start();
         }
-        suspendController.registerActivity(serverActivity);
 
     }
 

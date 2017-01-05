@@ -25,6 +25,7 @@ package org.wildfly.clustering.web.session;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
+import org.wildfly.clustering.ee.CollectionImmutability;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.web.annotation.Immutable;
 
@@ -35,7 +36,14 @@ public enum SessionAttributeImmutability implements Predicate<Object> {
     JDK() {
         @Override
         public boolean test(Object object) {
-            return Immutability.INSTANCE.test(object);
+            // Skip Collection test, we override this below to extend the immutability test for collection elements.
+            return EnumSet.complementOf(EnumSet.of(Immutability.COLLECTION)).stream().anyMatch(predicate -> predicate.test(object));
+        }
+    },
+    COLLECTION() {
+        @Override
+        public boolean test(Object object) {
+            return COLLECTION_INSTANCE.test(object);
         }
     },
     ANNOTATION() {
@@ -47,4 +55,5 @@ public enum SessionAttributeImmutability implements Predicate<Object> {
     ;
 
     public static final Predicate<Object> INSTANCE = object -> EnumSet.allOf(SessionAttributeImmutability.class).stream().anyMatch(predicate -> predicate.test(object));
+    static final Predicate<Object> COLLECTION_INSTANCE = new CollectionImmutability(INSTANCE);
 }

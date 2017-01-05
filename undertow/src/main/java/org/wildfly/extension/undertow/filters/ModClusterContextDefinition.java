@@ -50,12 +50,12 @@ public class ModClusterContextDefinition extends SimpleResourceDefinition {
 
 
     public static final AttributeDefinition STATUS = new SimpleAttributeDefinitionBuilder(Constants.STATUS, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition REQUESTS = new SimpleAttributeDefinitionBuilder(Constants.REQUESTS, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 

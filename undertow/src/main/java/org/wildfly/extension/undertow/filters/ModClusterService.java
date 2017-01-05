@@ -64,6 +64,7 @@ public class ModClusterService extends FilterService {
     private final int requestQueueSize;
     private final boolean useAlias;
     private final int maxRetries;
+    private final FailoverStrategy failoverStrategy;
 
     private ModCluster modCluster;
     private MCMPConfig config;
@@ -84,6 +85,7 @@ public class ModClusterService extends FilterService {
                       int requestQueueSize,
                       boolean useAlias,
                       int maxRetries,
+                      FailoverStrategy failoverStrategy,
                       OptionMap clientOptions) {
         super(ModClusterDefinition.INSTANCE, model);
         this.healthCheckInterval = healthCheckInterval;
@@ -100,6 +102,7 @@ public class ModClusterService extends FilterService {
         this.requestQueueSize = requestQueueSize;
         this.useAlias = useAlias;
         this.maxRetries = maxRetries;
+        this.failoverStrategy = failoverStrategy;
         this.clientOptions = clientOptions;
     }
 
@@ -129,9 +132,10 @@ public class ModClusterService extends FilterService {
             XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
             modClusterBuilder = ModCluster.builder(worker, UndertowClient.getInstance(), xnioSsl);
         }
-        modClusterBuilder.setMaxRetries(maxRetries);
-        modClusterBuilder.setClientOptions(clientOptions);
-        modClusterBuilder.setHealthCheckInterval(healthCheckInterval)
+        modClusterBuilder
+                .setMaxRetries(maxRetries)
+                .setClientOptions(clientOptions)
+                .setHealthCheckInterval(healthCheckInterval)
                 .setMaxRequestTime(maxRequestTime)
                 .setCacheConnections(cachedConnections)
                 .setQueueNewRequests(requestQueueSize > 0)
@@ -141,23 +145,29 @@ public class ModClusterService extends FilterService {
                 .setMaxConnections(connectionsPerThread)
                 .setUseAlias(useAlias);
 
-        modCluster = modClusterBuilder
-                .build();
+        if (FailoverStrategy.DETERMINISTIC.equals(failoverStrategy)) {
+            modClusterBuilder.setDeterministicFailover(true);
+        }
+
+        modCluster = modClusterBuilder.build();
 
         MCMPConfig.Builder builder = MCMPConfig.builder();
-        InetAddress multicastAddress = advertiseSocketBinding.getValue().getMulticastAddress();
-        if(multicastAddress == null) {
-            throw UndertowLogger.ROOT_LOGGER.advertiseSocketBindingRequiresMulticastAddress();
-        }
-        if(advertiseFrequency > 0) {
-            builder.enableAdvertise()
-                    .setAdvertiseAddress(advertiseSocketBinding.getValue().getSocketAddress().getAddress().getHostAddress())
-                    .setAdvertiseGroup(multicastAddress.getHostAddress())
-                    .setAdvertisePort(advertiseSocketBinding.getValue().getMulticastPort())
-                    .setAdvertiseFrequency(advertiseFrequency)
-                    .setPath(advertisePath)
-                    .setProtocol(advertiseProtocol)
-                    .setSecurityKey(securityKey);
+        final SocketBinding advertiseBinding = advertiseSocketBinding.getOptionalValue();
+        if (advertiseBinding != null) {
+            InetAddress multicastAddress = advertiseBinding.getMulticastAddress();
+            if (multicastAddress == null) {
+                throw UndertowLogger.ROOT_LOGGER.advertiseSocketBindingRequiresMulticastAddress();
+            }
+            if (advertiseFrequency > 0) {
+                builder.enableAdvertise()
+                        .setAdvertiseAddress(advertiseBinding.getSocketAddress().getAddress().getHostAddress())
+                        .setAdvertiseGroup(multicastAddress.getHostAddress())
+                        .setAdvertisePort(advertiseBinding.getMulticastPort())
+                        .setAdvertiseFrequency(advertiseFrequency)
+                        .setPath(advertisePath)
+                        .setProtocol(advertiseProtocol)
+                        .setSecurityKey(securityKey);
+            }
         }
         builder.setManagementHost(managementSocketBinding.getValue().getSocketAddress().getHostString());
         builder.setManagementPort(managementSocketBinding.getValue().getSocketAddress().getPort());
@@ -165,7 +175,7 @@ public class ModClusterService extends FilterService {
         config = builder.build();
 
 
-        if(advertiseFrequency > 0) {
+        if (advertiseBinding != null && advertiseFrequency > 0) {
             try {
                 modCluster.advertise(config);
             } catch (IOException e) {
@@ -257,10 +267,14 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.REQUEST_QUEUE_SIZE.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.USE_ALIAS.resolveModelAttribute(operationContext, model).asBoolean(),
                 ModClusterDefinition.MAX_RETRIES.resolveModelAttribute(operationContext, model).asInt(),
+                Enum.valueOf(FailoverStrategy.class, ModClusterDefinition.FAILOVER_STRATEGY.resolveModelAttribute(operationContext, model).asString()),
                 builder.getMap());
         ServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
         serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);
+        final ModelNode advertiseSocketBinding = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
+        if (advertiseSocketBinding.isDefined()) {
+            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(advertiseSocketBinding.asString()), SocketBinding.class, service.advertiseSocketBinding);
+        }
         serviceBuilder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
 
         if (sslContext.isDefined()) {

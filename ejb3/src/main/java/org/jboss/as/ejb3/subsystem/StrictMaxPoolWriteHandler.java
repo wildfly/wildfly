@@ -22,9 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -40,13 +42,10 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
+class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public static final StrictMaxPoolWriteHandler INSTANCE = new StrictMaxPoolWriteHandler();
-
-    private StrictMaxPoolWriteHandler() {
-        super(StrictMaxPoolResourceDefinition.MAX_POOL_SIZE, StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT,
-                StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT);
+    StrictMaxPoolWriteHandler(Collection<AttributeDefinition> attributes) {
+        super(attributes);
     }
 
     @Override

@@ -23,11 +23,13 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.time.Clock;
+import java.time.ZoneId;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
-
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import java.util.TimeZone;
 
 /**
  * {@link org.jboss.marshalling.ClassTable} implementation that dynamically loads {@link ClassTableContributor} instances visible from a given {@link ClassLoader}.
@@ -43,9 +45,41 @@ public class DynamicClassTable extends SimpleClassTable {
         List<Class<?>> classes = new LinkedList<>();
         classes.add(Serializable.class);
         classes.add(Externalizable.class);
-        classes.add(MarshalledValue.class);
-        classes.add(SimpleMarshalledValue.class);
-        classes.add(HashableMarshalledValue.class);
+
+        // Add common-use non-public JDK implementation classes
+        classes.add(Clock.systemDefaultZone().getClass());
+        classes.add(TimeZone.getDefault().getClass());
+        classes.add(ZoneId.systemDefault().getClass());
+
+        // Add collection wrapper types
+        classes.add(Collections.checkedCollection(Collections.emptyList(), Void.class).getClass());
+        classes.add(Collections.checkedList(Collections.emptyList(), Void.class).getClass());
+        classes.add(Collections.checkedMap(Collections.emptyMap(), Void.class, Void.class).getClass());
+        classes.add(Collections.checkedNavigableMap(Collections.emptyNavigableMap(), Void.class, Void.class).getClass());
+        classes.add(Collections.checkedNavigableSet(Collections.emptyNavigableSet(), Void.class).getClass());
+        classes.add(Collections.checkedQueue(new LinkedList<>(), Void.class).getClass());
+        classes.add(Collections.checkedSet(Collections.emptySet(), Void.class).getClass());
+        classes.add(Collections.checkedSortedMap(Collections.emptySortedMap(), Void.class, Void.class).getClass());
+        classes.add(Collections.checkedSortedSet(Collections.emptySortedSet(), Void.class).getClass());
+
+        classes.add(Collections.synchronizedCollection(Collections.emptyList()).getClass());
+        classes.add(Collections.synchronizedList(Collections.emptyList()).getClass());
+        classes.add(Collections.synchronizedMap(Collections.emptyMap()).getClass());
+        classes.add(Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass());
+        classes.add(Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass());
+        classes.add(Collections.synchronizedSet(Collections.emptySet()).getClass());
+        classes.add(Collections.synchronizedSortedMap(Collections.emptySortedMap()).getClass());
+        classes.add(Collections.synchronizedSortedSet(Collections.emptySortedSet()).getClass());
+
+        classes.add(Collections.unmodifiableCollection(Collections.emptyList()).getClass());
+        classes.add(Collections.unmodifiableList(Collections.emptyList()).getClass());
+        classes.add(Collections.unmodifiableMap(Collections.emptyMap()).getClass());
+        classes.add(Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass());
+        classes.add(Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()).getClass());
+        classes.add(Collections.unmodifiableSet(Collections.emptySet()).getClass());
+        classes.add(Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass());
+        classes.add(Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass());
+
         ServiceLoader.load(ClassTableContributor.class, loader).forEach(contributor -> classes.addAll(contributor.getKnownClasses()));
         return classes.toArray(new Class<?>[classes.size()]);
     }

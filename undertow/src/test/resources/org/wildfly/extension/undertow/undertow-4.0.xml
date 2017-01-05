@@ -112,15 +112,23 @@
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip"/>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
-        <mod-cluster advertise-frequency="1000"  advertise-protocol="ajp" advertise-path="/foo"
-                     advertise-socket-binding="test2" broken-node-timeout="1000"
+        <mod-cluster advertise-frequency="1000"
+                     advertise-protocol="ajp"
+                     advertise-path="/foo"
+                     advertise-socket-binding="test2"
+                     broken-node-timeout="1000"
                      cached-connections-per-thread="10"
-                     connection-idle-timeout="10" health-check-interval="600"
+                     connection-idle-timeout="10"
+                     failover-strategy="DETERMINISTIC"
+                     health-check-interval="600"
                      management-access-predicate="method[GET]"
-                     management-socket-binding="test3" max-request-time="1000"
+                     management-socket-binding="test3"
+                     max-request-time="1000"
+                     max-retries="10"
+                     name="mod-cluster"
+                     security-key="password"
                      ssl-context="foo"
-                     name="mod-cluster" security-key="password"
-                     max-retries="10"/>
+        />
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
         <expression-filter name="requestDumper" expression="dump-request" />
         <rewrite name="redirects" target="'/foo/'" redirect="true" />

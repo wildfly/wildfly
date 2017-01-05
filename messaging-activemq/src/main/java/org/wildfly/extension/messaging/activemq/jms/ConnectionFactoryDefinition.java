@@ -58,8 +58,6 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    public static final ConnectionFactoryDefinition INSTANCE = new ConnectionFactoryDefinition(false);
-
     public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
         super(MessagingExtension.CONNECTION_FACTORY_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),

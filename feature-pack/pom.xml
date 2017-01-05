@@ -2519,17 +2519,6 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jberet</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-connector</artifactId>
             <exclusions>
                 <exclusion>

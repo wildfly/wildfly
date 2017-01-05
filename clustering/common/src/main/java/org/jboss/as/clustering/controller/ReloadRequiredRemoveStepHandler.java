@@ -36,6 +36,11 @@ public class ReloadRequiredRemoveStepHandler extends RemoveStepHandler {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime();
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         context.reloadRequired();
     }

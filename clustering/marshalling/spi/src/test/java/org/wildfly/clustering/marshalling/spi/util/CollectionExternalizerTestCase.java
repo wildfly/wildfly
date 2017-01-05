@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -30,11 +31,19 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 
 import org.junit.Test;
@@ -57,11 +66,39 @@ public class CollectionExternalizerTestCase {
         test(new CollectionExternalizer.HashSetExternalizer(), new HashSet<>(basis));
         test(new CollectionExternalizer.LinkedHashSetExternalizer(), new LinkedHashSet<>(basis));
         test(new CollectionExternalizer.LinkedListExternalizer(), new LinkedList<>(basis));
+        ConcurrentHashMap.KeySetView<Object, Boolean> keySetView = ConcurrentHashMap.newKeySet();
+        keySetView.addAll(basis);
+        test(new CollectionExternalizer.ConcurrentHashSetExternalizer(), keySetView);
+
+        test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArrayListExternalizer(), new CopyOnWriteArrayList<>(basis));
+        test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArraySetExternalizer(), new CopyOnWriteArraySet<>(basis));
+
+        test(new EmptyCollectionExternalizer.EmptyEnumerationExternalizer(), Collections.emptyEnumeration());
+        test(new EmptyCollectionExternalizer.EmptyIteratorExternalizer(), Collections.emptyIterator());
+        test(new EmptyCollectionExternalizer.EmptyListExternalizer(), Collections.emptyList());
+        test(new EmptyCollectionExternalizer.EmptyListIteratorExternalizer(), Collections.emptyListIterator());
+        test(new EmptyCollectionExternalizer.EmptyNavigableSetExternalizer(), Collections.emptyNavigableSet());
+        test(new EmptyCollectionExternalizer.EmptySetExternalizer(), Collections.emptySet());
+        test(new EmptyCollectionExternalizer.EmptySortedSetExternalizer(), Collections.emptySortedSet());
+
+        test(new SingletonCollectionExternalizer.SingletonListExternalizer(), Collections.singletonList(1));
+        test(new SingletonCollectionExternalizer.SingletonSetExternalizer(), Collections.singleton(1));
+
+        test(new SortedSetExternalizer.ConcurrentSkipListSetExternalizer(), new ConcurrentSkipListSet<>(basis));
+        test(new SortedSetExternalizer.TreeSetExternalizer(), new TreeSet<>(basis));
     }
 
     public static <T extends Collection<Object>> void test(Externalizer<T> externalizer, T collection) throws ClassNotFoundException, IOException {
         BiConsumer<T, T> assertSize = (expected, actual) -> assertEquals(expected.size(), actual.size());
         BiConsumer<T, T> assertContents = (expected, actual) -> assertTrue(actual.containsAll(expected));
         ExternalizerTestUtil.test(externalizer, collection, assertSize.andThen(assertContents));
+    }
+
+    public static <T extends Enumeration<Object>> void test(Externalizer<T> externalizer, T enumeration) throws ClassNotFoundException, IOException {
+        ExternalizerTestUtil.test(externalizer, enumeration, (expected, actual) -> assertFalse(actual.hasMoreElements()));
+    }
+
+    public static <T extends Iterator<Object>> void test(Externalizer<T> externalizer, T iterator) throws ClassNotFoundException, IOException {
+        ExternalizerTestUtil.test(externalizer, iterator, (expected, actual) -> assertFalse(actual.hasNext()));
     }
 }

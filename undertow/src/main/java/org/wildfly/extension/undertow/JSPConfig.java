@@ -46,9 +46,7 @@ public class JSPConfig {
             servletInfo = null;
         } else {
 
-            final io.undertow.servlet.api.ServletInfo jspServlet = new ServletInfo("jsp", JspServlet.class)
-                    .addMapping("*.jsp")
-                    .addMapping("*.jspx");
+            final io.undertow.servlet.api.ServletInfo jspServlet = new ServletInfo("jsp", JspServlet.class);
             jspServlet.setRequireWelcomeFileMapping(true);
 
             jspServlet.addInitParam("development", Boolean.toString(developmentMode));

@@ -149,7 +149,6 @@ public interface Constants {
     String MANAGEMENT_SOCKET_BINDING = "management-socket-binding";
     String ADVERTISE_SOCKET_BINDING = "advertise-socket-binding";
     String SECURITY_KEY = "security-key";
-    String ADVERTISE_MULTICAST_SOCKET_BINDING = "advertise-multicast-socket-binding";
     String ADVERTISE_PROTOCOL = "advertise-protocol";
     String ADVERTISE_PATH = "advertise-path";
     String ADVERTISE_FREQUENCY = "advertise-frequency";
@@ -159,6 +158,7 @@ public interface Constants {
     String REQUEST_QUEUE_SIZE = "request-queue-size";
     String CACHED_CONNECTIONS_PER_THREAD = "cached-connections-per-thread";
     String CONNECTION_IDLE_TIMEOUT = "connection-idle-timeout";
+    String FAILOVER_STRATEGY = "failover-strategy";
 
     String USE_SERVER_LOG = "use-server-log";
     String VALUE = "value";

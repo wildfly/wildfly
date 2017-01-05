@@ -43,7 +43,7 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     private final Externalizer<?>[] externalizers;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    private final Externalizer<Integer> indexExternalizer;
+    private final IndexExternalizer indexExternalizer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
         this(Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
@@ -58,7 +58,7 @@ public class ExternalizerObjectTable implements ObjectTable {
         this(IndexExternalizer.select(externalizers.length), externalizers);
     }
 
-    private ExternalizerObjectTable(Externalizer<Integer> indexExternalizer, Externalizer<?>... externalizers) {
+    private ExternalizerObjectTable(IndexExternalizer indexExternalizer, Externalizer<?>... externalizers) {
         this.indexExternalizer = indexExternalizer;
         this.externalizers = externalizers;
         for (int i = 0; i < externalizers.length; ++i) {
@@ -70,7 +70,7 @@ public class ExternalizerObjectTable implements ObjectTable {
                 Writer writer = new Writer() {
                     @Override
                     public void writeObject(Marshaller marshaller, Object object) throws IOException {
-                        indexExternalizer.writeObject(marshaller, index);
+                        indexExternalizer.writeData(marshaller, index);
                         externalizer.writeObject(marshaller, object);
                     }
                 };
@@ -86,7 +86,7 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     @Override
     public Object readObject(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
-        int index = this.indexExternalizer.readObject(unmarshaller);
+        int index = this.indexExternalizer.readData(unmarshaller);
         if (index >= this.externalizers.length) {
             throw new IllegalStateException();
         }

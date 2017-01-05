@@ -108,17 +108,16 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
     };
 
     private final boolean deployed;
+    private final boolean registerRuntimeOnly;
 
-    public static final JMSTopicDefinition INSTANCE = new JMSTopicDefinition(false);
-
-    public static final JMSTopicDefinition DEPLOYMENT_INSTANCE = new JMSTopicDefinition(true);
-
-    private JMSTopicDefinition(final boolean deployed) {
+    public JMSTopicDefinition(final boolean deployed,
+                               final boolean registerRuntimeOnly) {
         super(MessagingExtension.JMS_TOPIC_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_TOPIC),
                 deployed ? null : JMSTopicAdd.INSTANCE,
                 deployed ? null : JMSTopicRemove.INSTANCE);
         this.deployed = deployed;
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -159,11 +158,13 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
-        if (!deployed) {
-            JMSTopicUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
-        }
+        if (registerRuntimeOnly) {
+            JMSTopicControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
-        JMSTopicControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
+            if (!deployed) {
+                JMSTopicUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
+            }
+        }
     }
 
     @Override

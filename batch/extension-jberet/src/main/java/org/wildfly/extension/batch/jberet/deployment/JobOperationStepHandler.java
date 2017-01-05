@@ -56,7 +56,7 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
     /**
      * Creates a new step handler.
      *
-     * @param modify {@code true} if the {@link #execute(OperationContext, ModelNode, JobOperator)} will modify a job
+     * @param modify {@code true} if the {@link #execute(OperationContext, ModelNode, WildFlyJobOperator)} will modify a job
      *               repository, {@code false} for a read-only service
      */
     protected JobOperationStepHandler(final boolean modify) {
@@ -66,7 +66,7 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
     @Override
     public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final ServiceController<?> controller = context.getServiceRegistry(modify).getService(getServiceName(context));
-        final JobOperator jobOperator = (JobOperator) controller.getService();
+        final WildFlyJobOperator jobOperator = (WildFlyJobOperator) controller.getService();
         execute(context, operation, jobOperator);
     }
 
@@ -79,7 +79,7 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
      *
      * @throws OperationFailedException if there is a step failure
      */
-    protected abstract void execute(OperationContext context, ModelNode operation, JobOperator jobOperator) throws OperationFailedException;
+    protected abstract void execute(OperationContext context, ModelNode operation, WildFlyJobOperator jobOperator) throws OperationFailedException;
 
     static ModelNode resolveValue(final OperationContext context, final ModelNode operation, final AttributeDefinition attribute) throws OperationFailedException {
         final ModelNode value = new ModelNode();

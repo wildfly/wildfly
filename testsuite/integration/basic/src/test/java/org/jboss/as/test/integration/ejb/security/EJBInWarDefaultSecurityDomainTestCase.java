@@ -30,15 +30,14 @@ import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -50,18 +49,8 @@ import org.junit.runner.RunWith;
 @Category(CommonCriteria.class)
 @ServerSetup({EjbSecurityDomainSetup.class})
 public class EJBInWarDefaultSecurityDomainTestCase {
-    private static Context ctx;
-
-    @AfterClass
-    public static void afterClass() throws NamingException {
-        if (ctx != null)
-            ctx.close();
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        ctx = new InitialContext();
-    }
+    @ArquillianResource
+    private Context ctx;
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -78,9 +67,7 @@ public class EJBInWarDefaultSecurityDomainTestCase {
         return war;
     }
 
-    private static <T> T lookup(final Class<?> beanClass, final Class<T> viewClass) throws NamingException {
-        if (ctx == null)
-            ctx = new InitialContext(); // to circumvent an Arquillian issue
+    private <T> T lookup(final Class<?> beanClass, final Class<T> viewClass) throws NamingException {
         return viewClass.cast(ctx.lookup("java:module/" + beanClass.getSimpleName() + "!" + viewClass.getName()));
     }
 

@@ -39,10 +39,6 @@
     <name>WildFly: Batch Integration Subsystem</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jberet</artifactId>
-        </dependency>
         <!-- Used to inherit some stuff from the new subsystem -->
         <dependency>
             <groupId>org.wildfly</groupId>

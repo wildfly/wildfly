@@ -24,7 +24,7 @@
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>request-controller.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">elytron.xml</subsystem>
+      <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
@@ -57,7 +57,7 @@
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>request-controller.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">elytron.xml</subsystem>
+      <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>singleton.xml</subsystem>
@@ -92,7 +92,7 @@
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>request-controller.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">elytron.xml</subsystem>
+      <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
@@ -128,7 +128,7 @@
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>request-controller.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">elytron.xml</subsystem>
+      <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
       <subsystem>security.xml</subsystem>
       <subsystem>security-manager.xml</subsystem>
       <subsystem>singleton.xml</subsystem>

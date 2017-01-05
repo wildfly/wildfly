@@ -47,38 +47,38 @@ public class ModClusterBalancerDefinition extends SimpleResourceDefinition {
     public static ModClusterBalancerDefinition INSTANCE = new ModClusterBalancerDefinition();
 
     public static final AttributeDefinition STICKY_SESSION_COOKIE = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION_COOKIE, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition STICKY_SESSION_PATH = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION_PATH, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition MAX_ATTEMPTS = new SimpleAttributeDefinitionBuilder(Constants.MAX_ATTEMPTS, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition WAIT_WORKER = new SimpleAttributeDefinitionBuilder(Constants.WAIT_WORKER, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition STICKY_SESSION = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition STICKY_SESSION_FORCE = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION_FORCE, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
 
     public static final AttributeDefinition STICKY_SESSION_REMOVE = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION_REMOVE, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 

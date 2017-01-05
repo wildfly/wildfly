@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.batch.jberet._private;
 
+import java.security.Permission;
+import javax.batch.operations.BatchRuntimeException;
+import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobException;
 
@@ -194,4 +197,22 @@ public interface BatchLogger extends BasicLogger {
      */
     @Message(id = 18, value = "The job repository has been shutdown. Job operations can no longer be executed.")
     IllegalStateException jobRepositoryShutdown();
+
+    /**
+     * Creates an exception indicating the batch environment was not found for the {@linkplain ClassLoader class loader}.
+     *
+     * @return an {@link BatchRuntimeException} for the error
+     */
+    @Message(id = 19, value = "No batch environment was found for class loader: %s")
+    BatchRuntimeException noBatchEnvironmentFound(ClassLoader cl);
+
+    /**
+     * Creates an exception indicating the user is not authorized for the batch operation.
+     * @param op the operation
+     * @param user the
+     * @return
+     * Operation requires %s permissions. User %s is not authorized for this operation.
+     */
+    @Message(id = 20, value = "Permission denied. User %s does not have %s permissions.")
+    JobSecurityException unauthorized(String user, Permission permission);
 }

@@ -20,27 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.extension.batch.jberet.thread.pool;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
-
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.jberet.spi.JobExecutor;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 
 /**
- * Unit test for {@link SortedSetExternalizer} externalizers
- * @author Paul Ferraro
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class SortedSetExternalizerTestCase {
+class WildFlyJobExecutor extends JobExecutor {
+    private final ManagedJBossThreadPoolExecutorService delegate;
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Collection<Object> basis = Arrays.<Object>asList(1, 2, 3, 4, 5);
-        ExternalizerTestUtil.test(new SortedSetExternalizer.ConcurrentSkipListSetExternalizer(), new ConcurrentSkipListSet<>(basis));
-        ExternalizerTestUtil.test(new SortedSetExternalizer.TreeSetExternalizer(), new TreeSet<>(basis));
+    public WildFlyJobExecutor(final ManagedJBossThreadPoolExecutorService delegate) {
+        super(delegate);
+        this.delegate = delegate;
+    }
+
+    @Override
+    protected int getMaximumPoolSize() {
+        return delegate.getMaxThreads();
     }
 }

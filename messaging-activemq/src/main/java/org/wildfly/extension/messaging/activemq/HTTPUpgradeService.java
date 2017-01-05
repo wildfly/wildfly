@@ -134,7 +134,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                             // If ActiveMQ remoting service is stopped (eg during shutdown), refuse
                             // the handshake so that the ActiveMQ client will detect the connection has failed
                             RemotingService remotingService = server.getRemotingService();
-                            if (!remotingService.isStarted() || remotingService.isPaused()) {
+                            if (!server.isActive() || !remotingService.isStarted()) {
                                 return false;
                             }
                             final String endpoint = exchange.getRequestHeaders().getFirst(getHttpUpgradeEndpointKey());
@@ -193,8 +193,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                         MessagingLogger.ROOT_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", protocolName, acceptorName);
                         ActiveMQServer server = selectServer(exchange, activemqServer);
                         RemotingService remotingService = server.getRemotingService();
-                        if (!remotingService.isStarted() || remotingService.isPaused()) {
-                            // ActiveMQ no longer accepts connection
+                        if (!server.isActive() || !remotingService.isStarted()) {
+                            // ActiveMQ does not accept connection
                             IoUtils.safeClose(connection);
                             return;
                         }

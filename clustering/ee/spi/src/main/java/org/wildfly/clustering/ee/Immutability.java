@@ -65,7 +65,6 @@ import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -81,9 +80,16 @@ public enum Immutability implements Predicate<Object> {
         // Singleton immutable objects detectable via reference equality test
         private final Set<Object> immutableObjects = createIdentitySet(Arrays.asList(
                 null,
-                Collections.EMPTY_LIST,
-                Collections.EMPTY_MAP,
-                Collections.EMPTY_SET
+                Collections.emptyEnumeration(),
+                Collections.emptyIterator(),
+                Collections.emptyList(),
+                Collections.emptyListIterator(),
+                Collections.emptyMap(),
+                Collections.emptyNavigableMap(),
+                Collections.emptyNavigableSet(),
+                Collections.emptySet(),
+                Collections.emptySortedMap(),
+                Collections.emptySortedSet()
         ));
 
         @Override
@@ -163,6 +169,12 @@ public enum Immutability implements Predicate<Object> {
             return this.immutableClasses.stream().anyMatch(immutableClass -> immutableClass.isInstance(object));
         }
     },
+    COLLECTION() {
+        @Override
+        public boolean test(Object object) {
+            return COLLECTION_INSTANCE.test(object);
+        }
+    },
     ANNOTATION() {
         @Override
         public boolean test(Object object) {
@@ -172,12 +184,11 @@ public enum Immutability implements Predicate<Object> {
     ;
 
     public static final Predicate<Object> INSTANCE = object -> EnumSet.allOf(Immutability.class).stream().anyMatch(predicate -> predicate.test(object));
+    static final Predicate<Object> COLLECTION_INSTANCE = new CollectionImmutability(INSTANCE);
 
     static <T> Set<T> createIdentitySet(Collection<T> list) {
-        Map<T, Void> result = new IdentityHashMap<>(list.size());
-        for (T element : list) {
-            result.put(element, null);
-        }
-        return Collections.unmodifiableSet(result.keySet());
+        Set<T> result = Collections.newSetFromMap(new IdentityHashMap<>(list.size()));
+        result.addAll(list);
+        return Collections.unmodifiableSet(result);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,25 +23,35 @@
 package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Unit test for {@link SortedMapExternalizer} externalizers.
  * @author Paul Ferraro
  */
-public class SortedMapExternalizerTestCase {
+@MetaInfServices(Externalizer.class)
+public class SingletonMapExternalizer implements Externalizer<Map<Object, Object>> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Map<Object, Object> basis = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
-        ExternalizerTestUtil.test(new SortedMapExternalizer.ConcurrentSkipListMapExternalizer(), new ConcurrentSkipListMap<>(basis));
-        ExternalizerTestUtil.test(new SortedMapExternalizer.TreeMapExternalizer(), new TreeMap<>(basis));
+    @Override
+    public void writeObject(ObjectOutput output, Map<Object, Object> map) throws IOException {
+        Map.Entry<Object, Object> entry = map.entrySet().stream().findFirst().get();
+        output.writeObject(entry.getKey());
+        output.writeObject(entry.getValue());
+    }
+
+    @Override
+    public Map<Object, Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return Collections.singletonMap(input.readObject(), input.readObject());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends Map<Object, Object>> getTargetClass() {
+        return (Class<? extends Map<Object, Object>>) Collections.singletonMap(null, null).getClass();
     }
 }

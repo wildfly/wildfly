@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,7 +44,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-7747")
 public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
 
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);

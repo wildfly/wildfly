@@ -111,8 +111,10 @@ public class Host implements Service<Host>, FilterLocation {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     controlledProcessStateService.removePropertyChangeListener(this);
-                    gateHandlerWrapper.open();
-                    gateHandlerWrapper = null;
+                    if(gateHandlerWrapper != null) {
+                        gateHandlerWrapper.open();
+                        gateHandlerWrapper = null;
+                    }
                     rootHandler = null;
                 }
             });
@@ -148,7 +150,10 @@ public class Host implements Service<Host>, FilterLocation {
     public void stop(StopContext context) {
         server.getValue().unregisterHost(this);
         pathHandler.clearPaths();
-        gateHandlerWrapper = null;
+        if(gateHandlerWrapper != null) {
+            gateHandlerWrapper.open();
+            gateHandlerWrapper = null;
+        }
         UndertowLogger.ROOT_LOGGER.hostStopping(name);
     }
 

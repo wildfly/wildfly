@@ -30,7 +30,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridge;
-import org.jboss.narayana.rest.bridge.inbound.InboundBridgeManager;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridgeOrphanFilter;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridgeRecoveryModule;
 import org.wildfly.extension.rts.logging.RTSLogger;
@@ -50,7 +49,6 @@ public class InboundBridgeService implements Service<InboundBridgeService> {
 
         addDeserializerAndOrphanFilter();
         addRecoveryModule();
-        InboundBridgeManager.getInstance(); // This will trigger participant deserializer registration
     }
 
     @Override
