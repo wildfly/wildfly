@@ -391,4 +391,7 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 95, value = "the path ['%s'] doesn't exist on file system")
     String unableAddHandlerForPath(String path);
 
+    @Message(id = 96, value = "If http-upgrade is enabled, remoting worker and http(s) worker must be the same. Please adjust values if need be.")
+    String workerValueInHTTPListenerMustMatchRemoting();
+
 }
