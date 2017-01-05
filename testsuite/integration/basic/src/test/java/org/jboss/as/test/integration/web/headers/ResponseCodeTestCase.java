@@ -103,6 +103,16 @@ public class ResponseCodeTestCase {
         doContentTypeChecks(response, 500);
     }
 
+     @Test
+    public void testServerInfo() throws Exception {
+        final HttpGet get = new HttpGet(url.toExternalForm() + "jaxrs/test/server/info");
+        final HttpResponse response = HTTP_CLIENT.execute(get);
+         final HttpEntity entity = response.getEntity();
+         Assert.assertNotNull("Null entity!", entity);
+         final String content = EntityUtils.toString(response.getEntity());
+         Assert.assertTrue("Wrong content! " + content, content.matches("WildFly Full .*\\(WildFly Core .*\\) - .*"));
+    }
+
     /**
      * @param execute
      * @param i

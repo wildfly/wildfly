@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.web.headers;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -48,5 +49,12 @@ public class RSCodeResponder {
         resp.setContentType("application/json");
         resp.getOutputStream().write((CONTENT).getBytes());
         return Response.status(Integer.parseInt(code)).build();
+    }
+
+    @GET
+    @Path("server/info")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String return204(@Context ServletContext servletContext) throws Exception{
+        return servletContext.getServerInfo();
     }
 }

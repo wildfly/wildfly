@@ -83,7 +83,6 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController;
-import org.jboss.as.version.Version;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
@@ -193,6 +192,7 @@ import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICAT
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager;
 
 /**
@@ -244,6 +244,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
     private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> serverEnvironmentInjectedValue = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
     private final WebSocketDeploymentInfo webSocketDeploymentInfo;
     private final File tempDir;
@@ -412,7 +413,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     deploymentInfo.addThreadSetupAction(threadSetupAction);
                 }
             }
-            deploymentInfo.setServerName("WildFly " + Version.AS_VERSION);
+            deploymentInfo.setServerName(serverEnvironmentInjectedValue.getValue().getProductConfig().getPrettyVersionString());
             if (undertowService.getValue().isStatisticsEnabled()) {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
             }
@@ -1451,6 +1452,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<SuspendController> getSuspendControllerInjectedValue() {
         return suspendControllerInjectedValue;
+    }
+
+    public InjectedValue<ServerEnvironment> getServerEnvironmentInjectedValue() {
+        return serverEnvironmentInjectedValue;
     }
 
     public Injector<Function> getSecurityFunctionInjector() {
