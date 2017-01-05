@@ -36,10 +36,79 @@ public class ConfigValidator {
     }
 
     public static void validateConfig(final OperationContext context, final ModelNode resourceModel) throws OperationFailedException {
-        final boolean sslConfigured = validateSSLConfig(context, resourceModel);
-        final ModelNode serverRequiresSslNode = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel);
-        final Boolean serverRequiresSsl = serverRequiresSslNode.isDefined() ? serverRequiresSslNode.asBoolean() : null;
-        validateIORTransportConfig(context, resourceModel, sslConfigured, serverRequiresSsl);
+        final boolean supportSSL = IIOPRootDefinition.SUPPORT_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
+        final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
+        final boolean clientRequiresSsl = IIOPRootDefinition.CLIENT_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
+
+        validateSSLConfig(context, resourceModel, supportSSL, serverRequiresSsl, clientRequiresSsl);
+        validateIORTransportConfig(context, resourceModel, supportSSL, serverRequiresSsl);
+        validateORBInitializerConfig(context, resourceModel);
+    }
+
+    private static void validateSSLConfig(final OperationContext context, final ModelNode model, final boolean supportSSL,
+                                          final boolean serverRequiresSsl, final boolean clientRequiresSsl) throws OperationFailedException {
+
+        if (supportSSL) {
+            // if SSL is to be used, then either a JSSE domain or a pair of client/server SSL contexts must be defined.
+            final ModelNode securityDomainNode = IIOPRootDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, model);
+            final ModelNode serverSSLContextNode = IIOPRootDefinition.SERVER_SSL_CONTEXT.resolveModelAttribute(context, model);
+            final ModelNode clientSSLContextNode = IIOPRootDefinition.CLIENT_SSL_CONTEXT.resolveModelAttribute(context, model);
+            if (!securityDomainNode.isDefined() && (!serverSSLContextNode.isDefined() || !clientSSLContextNode.isDefined())) {
+                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
+            }
+        } else if(serverRequiresSsl || clientRequiresSsl) {
+            // if either the server or the client requires SSL, then SSL support must have been enabled.
+            throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
+        }
+    }
+
+    private static void validateIORTransportConfig(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured,
+                                                   final boolean serverRequiresSsl) throws OperationFailedException {
+        validateSSLAttribute(context, resourceModel, sslConfigured, serverRequiresSsl, IIOPRootDefinition.INTEGRITY);
+        validateSSLAttribute(context, resourceModel, sslConfigured, serverRequiresSsl, IIOPRootDefinition.CONFIDENTIALITY);
+        validateSSLAttribute(context, resourceModel, sslConfigured, serverRequiresSsl, IIOPRootDefinition.TRUST_IN_CLIENT);
+        validateTrustInTarget(context, resourceModel, sslConfigured);
+        validateSupportedAttribute(context, resourceModel, IIOPRootDefinition.DETECT_MISORDERING);
+        validateSupportedAttribute(context, resourceModel, IIOPRootDefinition.DETECT_REPLAY);
+    }
+
+    private static void validateSSLAttribute(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured, final boolean serverRequiresSsl, final AttributeDefinition attributeDefinition) throws OperationFailedException {
+        final ModelNode attributeNode = attributeDefinition.resolveModelAttribute(context, resourceModel);
+        if(attributeNode.isDefined()){
+            final String attribute = attributeNode.asString();
+            if(sslConfigured) {
+                if(attribute.equals(Constants.IOR_NONE)){
+                    throw IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName());
+                }
+                if (serverRequiresSsl && serverRequiresSsl && attribute.equals(Constants.IOR_SUPPORTED)) {
+                    throw IIOPLogger.ROOT_LOGGER.inconsistentRequiredTransportConfig(Constants.SECURITY_SERVER_REQUIRES_SSL, attributeDefinition.getName());
+                }
+            } else {
+                if(!attribute.equals(Constants.IOR_NONE)){
+                    throw IIOPLogger.ROOT_LOGGER.inconsistentUnsupportedTransportConfig(attributeDefinition.getName());
+                }
+            }
+        }
+    }
+
+    private static void validateTrustInTarget(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured) throws OperationFailedException {
+        final ModelNode establishTrustInTargetNode = IIOPRootDefinition.TRUST_IN_TARGET.resolveModelAttribute(context, resourceModel);
+        if(establishTrustInTargetNode.isDefined()){
+            final String establishTrustInTarget = establishTrustInTargetNode.asString();
+            if(sslConfigured && establishTrustInTarget.equals(Constants.IOR_NONE)){
+                throw IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(Constants.IOR_TRANSPORT_TRUST_IN_TARGET);
+            }
+        }
+    }
+
+    private static void validateSupportedAttribute(final OperationContext context, final ModelNode resourceModel, final AttributeDefinition attributeDefinition) throws OperationFailedException{
+        final ModelNode attributeNode = attributeDefinition.resolveModelAttribute(context, resourceModel);
+        if(attributeNode.isDefined() && !attributeNode.asString().equals(Constants.IOR_SUPPORTED)) {
+            throw IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName());
+        }
+    }
+
+    private static void validateORBInitializerConfig(final OperationContext context, final ModelNode resourceModel) throws OperationFailedException {
         // validate the elytron initializer configuration: it requires an authentication-context name.
         final ModelNode securityInitializerNode = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, resourceModel);
         final ModelNode authContextNode = IIOPRootDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel);
@@ -50,67 +119,6 @@ public class ConfigValidator {
         } else if (authContextNode.isDefined()) {
             // authentication-context has been specified but is ineffective because the security initializer is not set to 'elytron'.
             throw IIOPLogger.ROOT_LOGGER.ineffectiveAuthenticationContextConfiguration();
-        }
-    }
-
-    private static boolean validateSSLConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
-        final ModelNode supportSSLNode = IIOPRootDefinition.SUPPORT_SSL.resolveModelAttribute(context, model);
-        final boolean supportSSL = supportSSLNode.isDefined() ? supportSSLNode.asBoolean() : false;
-        final ModelNode securityDomainNode = IIOPRootDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, model);
-        final ModelNode serverSSLContextNode = IIOPRootDefinition.SERVER_SSL_CONTEXT.resolveModelAttribute(context, model);
-        final ModelNode clientSSLContextNode = IIOPRootDefinition.CLIENT_SSL_CONTEXT.resolveModelAttribute(context, model);
-        if (supportSSL) {
-            // if SSL is to be used, then either a JSSE domain or a pair of client/server SSL contexts must be defined.
-            if (!securityDomainNode.isDefined() && (!serverSSLContextNode.isDefined() || !clientSSLContextNode.isDefined())) {
-                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private static void validateIORTransportConfig(final OperationContext context, final ModelNode resourceModel, final Boolean sslConfigured, final Boolean serverRequiresSsl) throws OperationFailedException {
-        validateSSLAttribute(context, resourceModel, sslConfigured, serverRequiresSsl, IIOPRootDefinition.INTEGRITY);
-        validateSSLAttribute(context, resourceModel, sslConfigured, serverRequiresSsl, IIOPRootDefinition.CONFIDENTIALITY);
-        validateTrustInTarget(context, resourceModel, sslConfigured);
-        validateSSLAttribute(context, resourceModel, sslConfigured, serverRequiresSsl, IIOPRootDefinition.TRUST_IN_CLIENT);
-        validateSupportedAttribute(context, resourceModel, IIOPRootDefinition.DETECT_MISORDERING);
-        validateSupportedAttribute(context, resourceModel, IIOPRootDefinition.DETECT_REPLAY);
-    }
-
-    private static void validateSSLAttribute(final OperationContext context, final ModelNode resourceModel, final Boolean sslConfigured, final Boolean serverRequiresSsl, final AttributeDefinition attributeDefinition) throws OperationFailedException {
-        final ModelNode attributeNode = attributeDefinition.resolveModelAttribute(context, resourceModel);
-        if(attributeNode.isDefined()){
-            final String attribute = attributeNode.asString();
-            if(sslConfigured) {
-                if(attribute.equals(Constants.IOR_NONE)){
-                    throw IIOPLogger.ROOT_LOGGER.inconsistentTransportConfig(attributeDefinition.getName()+" is supported but it is configured with NONE value");
-                }
-                if ((serverRequiresSsl != null) && serverRequiresSsl && attribute.equals(Constants.IOR_SUPPORTED)) {
-                    throw IIOPLogger.ROOT_LOGGER.inconsistentTransportConfig(Constants.SECURITY_SERVER_REQUIRES_SSL + " is set to true, but " + attributeDefinition.getName() + " is not configured as required");
-                }
-            } else {
-                if(!attribute.equals(Constants.IOR_NONE)){
-                    throw IIOPLogger.ROOT_LOGGER.inconsistentTransportConfig(Constants.IOR_TRANSPORT_INTEGRITY+" is not supported but it is not configured with NONE value");
-                }
-            }
-        }
-    }
-
-    private static void validateTrustInTarget(final OperationContext context, final ModelNode resourceModel, final Boolean sslConfigured) throws OperationFailedException {
-        final ModelNode establishTrustInTargetNode = IIOPRootDefinition.TRUST_IN_TARGET.resolveModelAttribute(context, resourceModel);
-        if(establishTrustInTargetNode.isDefined()){
-            final String establishTrustInTarget = establishTrustInTargetNode.asString();
-            if(sslConfigured && establishTrustInTarget.equals(Constants.IOR_NONE)){
-                throw IIOPLogger.ROOT_LOGGER.inconsistentTransportConfig(Constants.IOR_TRANSPORT_TRUST_IN_TARGET+" is supported but it is configured with NONE value");
-            }
-        }
-    }
-
-    private static void validateSupportedAttribute(final OperationContext context, final ModelNode resourceModel, final AttributeDefinition attributeDefinition) throws OperationFailedException{
-        final ModelNode attributeNode = attributeDefinition.resolveModelAttribute(context, resourceModel);
-        if(attributeNode.isDefined() && ! attributeNode.asString().equals(Constants.IOR_SUPPORTED)) {
-            throw IIOPLogger.ROOT_LOGGER.inconsistentTransportConfig(attributeDefinition.getName()+" is supported but is not configured as such");
         }
     }
 }

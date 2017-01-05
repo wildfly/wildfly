@@ -384,27 +384,36 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
     OperationFailedException sslNotConfigured();
 
-    @Message(id = 104, value = "Inconsistent transport-config configuration: %s")
-    OperationFailedException inconsistentTransportConfig(String cause);
+    @Message(id = 104, value = "Inconsistent transport-config configuration: %s is supported but it is configured with NONE value")
+    OperationFailedException inconsistentSupportedTransportConfig(final String transportAttributeName);
 
-    @Message(id = 105, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
+    @Message(id = 105, value = "Inconsistent transport-config configuration: %s is not supported but it is not configured with NONE value")
+    OperationFailedException inconsistentUnsupportedTransportConfig(final String transportAttributeName);
+
+    @Message(id = 106, value = "Inconsistent transport-config configuration: %s is set to true, but %s is not configured as required")
+    OperationFailedException inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
+
+    @Message(id = 107, value = "Inconsistent transport-config configuration: %s is set to false, but %s is configured as required")
+    OperationFailedException inconsistentNotRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
+
+    @Message(id = 108, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
     String serverRequiresSslNotSupportedInPreviousVersions();
 
-    @Message(id = 106, value = "SSL socket is required by server but secure connections have not been configured")
+    @Message(id = 109, value = "SSL socket is required by server but secure connections have not been configured")
     COMM_FAILURE cannotCreateSSLSocket();
 
-    @Message(id = 107, value = "Client requires SSL but server does not support it")
+    @Message(id = 110, value = "Client requires SSL but server does not support it")
     IllegalStateException serverDoesNotSupportSsl();
 
-    @Message(id = 108, value = "SSL has not been configured but ssl-port property has been specified")
+    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified")
     OperationFailedException sslPortWithoutSslConfiguration();
 
-    @Message(id = 109, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
+    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
     OperationFailedException elytronInitializerMissingAuthContext();
 
-    @Message(id = 110, value = "Authentication context has been defined but it is ineffective because the security initializer is not set to 'elytron'")
+    @Message(id = 113, value = "Authentication context has been defined but it is ineffective because the security initializer is not set to 'elytron'")
     OperationFailedException ineffectiveAuthenticationContextConfiguration();
 
-    @Message(id = 111, value = "Elytron security initializer not supported in previous iiop-openjdk versions and can't be converted")
+    @Message(id = 114, value = "Elytron security initializer not supported in previous iiop-openjdk versions and can't be converted")
     String elytronInitializerNotSupportedInPreviousVersions();
 }
