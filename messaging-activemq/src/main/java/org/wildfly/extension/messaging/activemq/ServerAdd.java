@@ -57,6 +57,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_BUFFER_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_COMPACT_MIN_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_COMPACT_PERCENTAGE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATABASE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATASOURCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE;
@@ -64,7 +65,6 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MIN_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_POOL_FILES;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SQL_PROVIDER_FACTORY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_NON_TRANSACTIONAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_TRANSACTIONAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_TYPE;
@@ -96,6 +96,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.TRANSACT
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.WILD_CARD_ROUTING_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder.addHAPolicyConfiguration;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -117,7 +118,6 @@ import org.apache.activemq.artemis.core.security.Role;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
-import org.apache.activemq.artemis.jdbc.store.sql.SQLProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -488,16 +488,12 @@ class ServerAdd extends AbstractAddStepHandler {
         storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
 
-        ModelNode sqlProviderFactoryClassModel = JOURNAL_SQL_PROVIDER_FACTORY.resolveModelAttribute(context, model);
-        if (sqlProviderFactoryClassModel.isDefined()) {
-            Class sqlProviderFactoryClass = unwrapClass(sqlProviderFactoryClassModel);
-            try {
-                SQLProvider.Factory factory = SQLProvider.Factory.class.cast(sqlProviderFactoryClass.newInstance());
-                storageConfiguration.setSqlProvider(factory);
-            } catch (Exception e) {
-                throw new OperationFailedException(e);
-            }
-
+        ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
+        final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
+        try {
+            storageConfiguration.setSqlProvider(new PropertySQLProviderFactory(database));
+        } catch (IOException e) {
+            throw new OperationFailedException(e);
         }
         configuration.setStoreConfiguration(storageConfiguration);
     }

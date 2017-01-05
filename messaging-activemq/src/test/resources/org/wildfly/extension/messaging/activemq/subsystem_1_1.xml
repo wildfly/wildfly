@@ -55,11 +55,10 @@
                 create-bindings-dir="${create.bindings.dir:false}"
                 create-journal-dir="${create.journal.dir:true}"
                 datasource="fooDS"
+                database="mysql"
                 messages-table="${journal.message.table:MESSAGES}"
                 bindings-table="${journal.bindings.table:BINDINGS}"
-                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}">
-            <sql-provider-factory-class name="org.foo.MySQLProviderFactory" module="com.acme" />
-        </journal>
+                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}" />
 
         <statistics
                 enabled="${statistics.enabled:true}"

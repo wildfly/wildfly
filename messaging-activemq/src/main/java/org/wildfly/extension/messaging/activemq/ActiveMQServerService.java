@@ -312,6 +312,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             if (ds != null) {
                 DatabaseStorageConfiguration dbConfiguration = (DatabaseStorageConfiguration) configuration.getStoreConfiguration();
                 dbConfiguration.setDataSource(ds);
+                // inject the datasource into the PropertySQLProviderFactory to be able to determine the
+                // type of database for the datasource metadata
+                PropertySQLProviderFactory sqlProviderFactory = (PropertySQLProviderFactory)dbConfiguration.getSqlProviderFactory();
+                sqlProviderFactory.investigateDialect(ds);
                 configuration.setStoreConfiguration(dbConfiguration);
                 ROOT_LOGGER.infof("use JDBC store for Artemis server, bindingsTable:%s",
                         dbConfiguration.getBindingsTableName());
