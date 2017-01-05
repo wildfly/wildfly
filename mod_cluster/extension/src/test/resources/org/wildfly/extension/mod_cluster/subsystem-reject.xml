@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:modcluster:2.0">
+<subsystem xmlns="urn:jboss:domain:modcluster:3.0">
     <!-- Note: attributes below the blank line are subjected to rejection -->
     <mod-cluster-config advertise="${modcluster.advertise:true}"
                         advertise-security-key="${modcluster.advertise-security-key:mysecurekey!}"

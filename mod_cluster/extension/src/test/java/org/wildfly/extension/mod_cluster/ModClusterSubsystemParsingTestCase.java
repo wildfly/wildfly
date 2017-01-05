@@ -42,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -60,14 +61,14 @@ public class ModClusterSubsystemParsingTestCase extends ClusteringSubsystemTest 
         this.expectedOperationCount = expectedOperationCount;
     }
 
-    @Parameterized.Parameters
+    @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
                 { ModClusterSchema.MODCLUSTER_1_0, 13 },
                 { ModClusterSchema.MODCLUSTER_1_1, 13 },
                 { ModClusterSchema.MODCLUSTER_1_2, 15 },
                 { ModClusterSchema.MODCLUSTER_2_0, 15 },
-
+                { ModClusterSchema.MODCLUSTER_3_0, 15 },
         };
         return Arrays.asList(data);
     }
