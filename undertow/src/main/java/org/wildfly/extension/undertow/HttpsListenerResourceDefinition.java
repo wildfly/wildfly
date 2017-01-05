@@ -38,6 +38,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
@@ -148,5 +149,14 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
     @Override
     protected ListenerAdd getAddHandler() {
         return new HttpsListenerAdd(this);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        //register as normal
+        super.registerAttributes(resourceRegistration);
+        //override
+        resourceRegistration.unregisterAttribute(WORKER.getName());
+        resourceRegistration.registerReadWriteAttribute(WORKER, null, new HttpListenerWorkerAttributeWriteHandler(WORKER));
     }
 }
