@@ -31,7 +31,6 @@ import static org.hornetq.core.remoting.impl.netty.NettyConnector.HORNETQ_REMOTI
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_ACCEPT;
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_KEY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CORE;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.LEGACY;
 
 import java.io.IOException;
 import java.util.Map;
@@ -51,7 +50,6 @@ import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.SimpleHttpUpgradeHandshake;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -70,9 +68,6 @@ import org.xnio.netty.transport.WrappingXnioSocketChannel;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
-
-    public static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
-    public static final ServiceName UPGRADE_SERVICE_NAME = MessagingServices.JBOSS_MESSAGING_ACTIVEMQ.append("http-upgrade-service");
 
     private final String activeMQServerName;
     private final String acceptorName;
@@ -97,8 +92,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         final HTTPUpgradeService service = new HTTPUpgradeService(activeMQServerName, acceptorName, httpListenerName);
 
-        serviceTarget.addService(UPGRADE_SERVICE_NAME.append(acceptorName), service)
-                .addDependency(HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
+        serviceTarget.addService(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName), service)
+                .addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
                 .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
                 .addDependency(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)))
                 .setInitialMode(ServiceController.Mode.PASSIVE)
@@ -240,8 +235,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
             final LegacyHttpUpgradeService service = new LegacyHttpUpgradeService(activeMQServerName, acceptorName, httpListenerName);
 
-            serviceTarget.addService(UPGRADE_SERVICE_NAME.append(acceptorName, LEGACY), service)
-                    .addDependency(HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
+            serviceTarget.addService(MessagingServices.getLegacyHttpUpgradeServiceName(activeMQServerName, acceptorName), service)
+                    .addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
                     .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
                     .addDependency(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)))
                     .setInitialMode(ServiceController.Mode.PASSIVE)

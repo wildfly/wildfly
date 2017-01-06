@@ -302,7 +302,7 @@ class ServerAdd extends AbstractAddStepHandler {
                 if (model.hasDefined(HTTP_ACCEPTOR)) {
                     for (final Property property : model.get(HTTP_ACCEPTOR).asPropertyList()) {
                         String httpListener = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, property.getValue()).asString();
-                        serviceBuilder.addDependency(HTTPUpgradeService.HTTP_UPGRADE_REGISTRY.append(httpListener));
+                        serviceBuilder.addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListener));
                     }
                 }
 
