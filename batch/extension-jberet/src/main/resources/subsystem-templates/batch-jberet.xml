@@ -29,8 +29,8 @@
     <extension-module>org.wildfly.extension.batch.jberet</extension-module>
     <subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
         <default-job-repository name="in-memory"/>
-        <?ELYTRON?>
         <default-thread-pool name="batch"/>
+        <?ELYTRON?>
         <job-repository name="in-memory">
             <in-memory/>
         </job-repository>
