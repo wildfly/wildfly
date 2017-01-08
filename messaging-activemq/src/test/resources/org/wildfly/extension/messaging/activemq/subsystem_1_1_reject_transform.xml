@@ -6,11 +6,10 @@
         <security elytron-domain="elytronDomain"/>
 
         <journal datasource="fooDS"
+                 database="mysql"
                  messages-table="MY_MESSAGES"
                  bindings-table="MY_BINDINGS"
-                 large-messages-table="MY_LARGE_MESSAGES">
-            <sql-provider-factory-class name="org.foo.MySQLProviderFactory" module="com.acme" />
-        </journal>
+                 large-messages-table="MY_LARGE_MESSAGES" />
 
         <cluster-connection name="cc1"
                             address="${address:cc1-address}"
