@@ -98,6 +98,11 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
+    public void testStandaloneElytron() throws Exception {
+        parseXml("standalone/configuration/standalone-elytron.xml");
+    }
+
+    @Test
     public void testStandaloneHA() throws Exception {
         parseXml("standalone/configuration/standalone-ha.xml");
     }
