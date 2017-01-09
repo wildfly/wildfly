@@ -52,10 +52,9 @@ class EJBUtil {
      * @throws NamingException
      */
     @SuppressWarnings("unchecked")
-    public static <T> T lookupEJB(Class<? extends T> beanImplClass, Class<T> remoteInterface, String host) throws NamingException {
+    public static <T> T lookupEJB(Class<? extends T> beanImplClass, Class<T> remoteInterface) throws NamingException {
         final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
-        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
-        jndiProperties.put(Context.PROVIDER_URL, "remote+http://"+host+":"+8080);
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context context = new InitialContext(jndiProperties);
 
         return (T) context.lookup("ejb:/" + APPLICATION_NAME + "/" + beanImplClass.getSimpleName() + "!"

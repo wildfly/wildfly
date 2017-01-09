@@ -34,7 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -42,13 +42,13 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,10 +70,11 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 @ServerSetup(EjbInvocationStatisticsTestCaseSetup.class)
 public class EjbInvocationStatisticsTestCase {
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
-
     private Boolean statisticsEnabled;
+
+    private static InitialContext context;
 
     @After
     public void after() throws IOException {
@@ -85,6 +86,13 @@ public class EjbInvocationStatisticsTestCase {
         statisticsEnabled = getEnableStatistics(managementClient);
         setEnableStatistics(managementClient, true);
         assertEquals(Boolean.TRUE, getEnableStatistics(managementClient));
+    }
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        final Hashtable props = new Hashtable();
+        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        context = new InitialContext(props);
     }
 
     @Deployment
@@ -146,7 +154,7 @@ public class EjbInvocationStatisticsTestCase {
     */
     private void validateWaitTimeStatistic(final EJBComponentType type, final Class<?> beanClass) throws Exception {
         final String name = beanClass.getSimpleName();
-        final BusinessInterface bean = (BusinessInterface) getContext().lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
         final Runnable invocationRunnable = new Runnable() {
             @Override
             public void run() {
@@ -190,7 +198,7 @@ public class EjbInvocationStatisticsTestCase {
                 assertEquals(0L, result.get("total-size").asLong());
             }
         }
-        final BusinessInterface bean = (BusinessInterface) getContext().lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
         bean.doIt();
         {
             ModelNode result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
@@ -213,7 +221,7 @@ public class EjbInvocationStatisticsTestCase {
                 assertEquals(1L, result.get("total-size").asLong());
 
                 // Create a second bean forcing the first bean to passivate
-                BusinessInterface bean2 = (BusinessInterface) getContext().lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+                BusinessInterface bean2 = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
                 bean2.doIt();
 
                 // Eviction is asynchronous, so wait a bit for this to take effect
@@ -250,12 +258,5 @@ public class EjbInvocationStatisticsTestCase {
         op.get(ModelDescriptionConstants.NAME).set(attributeName);
         op.get(ModelDescriptionConstants.VALUE).set(value);
         return execute(managementClient, op);
-    }
-
-    private InitialContext getContext() throws Exception {
-        final Hashtable props = new Hashtable();
-        props.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
-        props.put(Context.PROVIDER_URL, "remote+http://"+ Utils.getHost(managementClient)+":"+8080);
-        return new InitialContext(props);
     }
 }

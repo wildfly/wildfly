@@ -30,9 +30,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-//import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -66,27 +64,27 @@ public class RemoteIdentityTestCase {
 
     @Test
     public void testDirect() throws Exception {
-        final SecurityInformation targetBean = EJBUtil.lookupEJB(SecuredBean.class, SecurityInformation.class, Utils.getHost(mgmtClient));
+        final SecurityInformation targetBean = EJBUtil.lookupEJB(SecuredBean.class, SecurityInformation.class);
 
         assertEquals("guest", targetBean.getPrincipalName());
     }
 
     @Test
     public void testUnsecured() throws Exception {
-        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class, Utils.getHost(mgmtClient));
+        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
         assertEquals("anonymous", targetBean.getPrincipalName());
     }
 
     @Test
     public void testSwitched() throws Exception {
-        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class, Utils.getHost(mgmtClient));
+        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
 
         assertEquals("user1", targetBean.getPrincipalName("user1", "password1"));
     }
 
     @Test
     public void testNotSwitched() throws Exception {
-        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class, Utils.getHost(mgmtClient));
+        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
 
         assertEquals("guest", targetBean.getPrincipalName(null, null));
     }
