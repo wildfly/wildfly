@@ -37,6 +37,7 @@ public class MessagingServices {
      * The service name is "jboss.messaging-activemq"
      */
     static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
+    static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
 
    public static ServiceName getActiveMQServiceName(PathAddress pathAddress) {
          // We need to figure out what ActiveMQ this operation is targeting.
@@ -72,7 +73,15 @@ public class MessagingServices {
        return serverServiceName.append(CommonAttributes.QUEUE);
    }
 
-   public static ServiceName getJMSBridgeServiceName(String bridgeName) {
+    static ServiceName getHttpUpgradeServiceName(String activemqServerName, String acceptorName) {
+        return getActiveMQServiceName(activemqServerName).append("http-upgrade-service", acceptorName);
+    }
+
+    static ServiceName getLegacyHttpUpgradeServiceName(String activemqServerName, String acceptorName) {
+        return getActiveMQServiceName(activemqServerName).append(CommonAttributes.LEGACY, "http-upgrade-service", acceptorName);
+    }
+
+    public static ServiceName getJMSBridgeServiceName(String bridgeName) {
        return JBOSS_MESSAGING_ACTIVEMQ.append(JMS_BRIDGE).append(bridgeName);
    }
 
