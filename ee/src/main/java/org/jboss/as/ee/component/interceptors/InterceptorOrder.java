@@ -185,6 +185,10 @@ public class InterceptorOrder {
         public static final int EJB_WAIT_TIME_INTERCEPTOR = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
+        /**
+         * @deprecated Remove this field once WFLY-7680 is resolved.
+         */
+        @Deprecated
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;
         public static final int CDI_REQUEST_SCOPE = 0x480;
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;

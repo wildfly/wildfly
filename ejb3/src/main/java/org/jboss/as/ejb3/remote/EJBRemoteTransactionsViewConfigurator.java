@@ -36,7 +36,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
  * of whoever sets up this view configurator to make sure that the view being configured is a remote view
  *
  * @author Jaikiran Pai
+ * @deprecated Remove this class once WFLY-7680 is resolved.
  */
+@Deprecated
 public class EJBRemoteTransactionsViewConfigurator implements ViewConfigurator {
 
     @Override

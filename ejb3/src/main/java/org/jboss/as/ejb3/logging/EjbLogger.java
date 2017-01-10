@@ -92,7 +92,6 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.InvocationInformation;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.XidTransactionID;
@@ -867,7 +866,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 151, value = "Exception while generating session id for component %s with invocation %s")
-    void exceptionGeneratingSessionId(@Cause Throwable cause, String componentName, InvocationInformation invocationInformation);
+    void exceptionGeneratingSessionId(@Cause Throwable cause, String componentName, Object invocationInformation);
 
     @LogMessage(level = ERROR)
     @Message(id = 152, value = "Could not write out message to channel due to")
