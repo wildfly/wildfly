@@ -106,5 +106,17 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <modular.jdk.testsuite.args>${modular.jdk.args}
+                    --add-exports-private=java.base/java.lang=ALL-UNNAMED
+                    --add-exports-private=java.base/java.security=ALL-UNNAMED
+                    --add-exports-private=java.base/java.io=ALL-UNNAMED</modular.jdk.testsuite.args>
+            </properties>
+        </profile>
     </profiles>
 </project>
