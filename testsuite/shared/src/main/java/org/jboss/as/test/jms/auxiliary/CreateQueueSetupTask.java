@@ -24,7 +24,7 @@ public class CreateQueueSetupTask implements ServerSetupTask {
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        adminOperations = JMSOperationsProvider.getInstance(managementClient);
+        adminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         adminOperations.createJmsQueue(QUEUE1_NAME, QUEUE1_JNDI_NAME);
         adminOperations.createJmsQueue(QUEUE2_NAME, QUEUE2_JNDI_NAME);
         adminOperations.createJmsQueue(QUEUE3_NAME, QUEUE3_JNDI_NAME);

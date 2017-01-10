@@ -64,9 +64,9 @@ public class JCETestCase {
     public static Archive<?> deployment() throws Exception {
         final JavaArchive jce = ShrinkWrap.create(JavaArchive.class, "jcetest.jar")
                 .addPackage(DummyProvider.class.getPackage());
-        final File jceJar = new File("target/jcetest.jar");
+        final File jceJar = new File("jcetest.jar");
         jce.as(ZipExporter.class).exportTo(jceJar, true);
-        final File signedJceJar = new File("target/jcetestsigned.jar");
+        final File signedJceJar = new File("jcetestsigned.jar");
         JavaArchive signedJce;
         if (isJCETestable())  {
             // see genkey-jcetest-keystore in pom.xml for the keystore creation

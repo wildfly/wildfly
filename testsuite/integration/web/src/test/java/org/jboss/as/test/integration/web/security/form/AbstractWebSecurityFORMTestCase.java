@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.web.security.form;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -103,7 +103,7 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
-            httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
 
             response = httpclient.execute(httpPost);
             entity = response.getEntity();

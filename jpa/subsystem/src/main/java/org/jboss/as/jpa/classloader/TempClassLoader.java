@@ -56,7 +56,7 @@ public class TempClassLoader extends ConcurrentClassLoader {
     }
 
     TempClassLoader(final ClassLoader delegate) {
-        super(null);
+        super((ConcurrentClassLoader) null);
         this.delegate = delegate;
     }
 

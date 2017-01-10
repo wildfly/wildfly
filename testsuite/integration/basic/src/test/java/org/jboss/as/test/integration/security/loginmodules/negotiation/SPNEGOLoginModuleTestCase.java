@@ -100,7 +100,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -155,9 +155,9 @@ public class SPNEGOLoginModuleTestCase {
 
     // Public methods --------------------------------------------------------
 
-    @BeforeClass
-    public static void beforeClass() {
-        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    @Before
+    public void before() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
     }
 
     /**
@@ -278,6 +278,7 @@ public class SPNEGOLoginModuleTestCase {
     @Test
     @OperateOnDeployment("WEB")
     public void testIdentityPropagation(@ArquillianResource URL webAppURL) throws Exception {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
         final URI servletUri = getServletURI(webAppURL, PropagateIdentityServlet.SERVLET_PATH);
 
         LOGGER.trace("Testing identity propagation " + servletUri);
@@ -293,6 +294,7 @@ public class SPNEGOLoginModuleTestCase {
     @Test
     @OperateOnDeployment("WEB-FORM")
     public void testFormFallback(@ArquillianResource URL webAppURL) throws Exception {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
 
         LOGGER.trace("Testing fallback to FORM authentication. " + servletUri);
@@ -318,6 +320,7 @@ public class SPNEGOLoginModuleTestCase {
     @Test
     @OperateOnDeployment("WEB")
     public void testSimpleSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         final String[] mechTypes = new String[]{OID_KERBEROS_V5};
         assertSpnegoWorkflow(uri, mechTypes, createNewKerberosTicketForHttp(uri), null, false, true);
@@ -330,6 +333,7 @@ public class SPNEGOLoginModuleTestCase {
     @Test
     @OperateOnDeployment("WEB")
     public void testMoreMechTypesSpnegoWorkflow(@ArquillianResource URL webAppURL) throws Exception {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         final String[] mechTypes = new String[]{OID_KERBEROS_V5, OID_DUMMY, OID_KERBEROS_V5_LEGACY};
         assertSpnegoWorkflow(uri, mechTypes, createNewKerberosTicketForHttp(uri), null, false, true);
@@ -414,7 +418,9 @@ public class SPNEGOLoginModuleTestCase {
             EntityUtils.consume(response.getEntity());
             httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(kerberosToken));
             response = httpClient.execute(httpGet);
-            LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            }
             assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY,
                     EntityUtils.toString(response.getEntity()));
@@ -487,7 +493,9 @@ public class SPNEGOLoginModuleTestCase {
             httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(spnegoInitToken));
 
             response = httpClient.execute(httpGet);
-            LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+            }
 
             if (continuationExpected) {
                 assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
@@ -498,7 +506,9 @@ public class SPNEGOLoginModuleTestCase {
                 byte[] spnegoRespToken = KerberosTestUtils.generateSpnegoTokenResp(responseToken);
                 httpGet.setHeader(HEADER_AUTHORIZATION, "Negotiate " + Base64.getEncoder().encodeToString(spnegoRespToken));
                 response = httpClient.execute(httpGet);
-                LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Negotiate response in HTTP header:\n" + KerberosTestUtils.dumpNegotiateHeader(response));
+                }
             }
             if (successExpected) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -653,8 +663,8 @@ public class SPNEGOLoginModuleTestCase {
                         .putOption("doNotPrompt", TRUE);
             }
             final String host = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
-            kerberosModuleBuilder.putOption("principal", "HTTP/" + host + "@JBOSS.ORG") //
-                    .putOption("debug", TRUE);
+            kerberosModuleBuilder.putOption("principal", "HTTP/" + host + "@JBOSS.ORG"); //
+                    //.putOption("debug", Boolean.FALSE.toString());
             final SecurityDomain hostDomain = new SecurityDomain.Builder().name("host")
                     .loginModules(kerberosModuleBuilder.build()) //
                     .build();
@@ -707,7 +717,7 @@ public class SPNEGOLoginModuleTestCase {
         protected SystemProperty[] getSystemProperties() {
             final Map<String, String> map = new HashMap<String, String>();
             map.put("java.security.krb5.conf", Krb5ConfServerSetupTask.getKrb5ConfFullPath());
-            map.put("sun.security.krb5.debug", TRUE);
+            //map.put("sun.security.krb5.debug", TRUE);
             map.put(SecurityConstants.DISABLE_SECDOMAIN_OPTION, TRUE);
             return mapToSystemProperties(map);
         }
