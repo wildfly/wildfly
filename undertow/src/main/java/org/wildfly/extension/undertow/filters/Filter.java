@@ -58,11 +58,6 @@ abstract class Filter extends AbstractHandlerDefinition {
 
     }
 
-    @Override
-    public String getXmlElementName() {
-        return name;
-    }
-
     public HttpHandler createHttpHandler(final Predicate predicate, final ModelNode model, HttpHandler next) {
         List<AttributeDefinition> attributes = new ArrayList<>(getAttributes());
         HttpHandler handler = createHandler(getHandlerClass(), model, attributes, next);

@@ -1,6 +1,6 @@
 package org.wildfly.extension.undertow.filters;
 
-import static org.wildfly.extension.undertow.filters.ModClusterDefinition.SSL_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.undertow.filters.ModClusterDefinition.SSL_CONTEXT_CAPABILITY_NAME;
 import io.undertow.Handlers;
 import io.undertow.UndertowOptions;
 import io.undertow.client.UndertowClient;
@@ -278,7 +278,7 @@ public class ModClusterService extends FilterService {
         serviceBuilder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
 
         if (sslContext.isDefined()) {
-            serviceBuilder.addDependency(operationContext.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, sslContext.asString(), SSLContext.class), SSLContext.class, service.sslContext);
+            serviceBuilder.addDependency(operationContext.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext.asString(), SSLContext.class), SSLContext.class, service.sslContext);
         }
         if(securityRealm.isDefined()) {
             SecurityRealm.ServiceUtil.addDependency(serviceBuilder, service.securityRealm, securityRealm.asString(), false);

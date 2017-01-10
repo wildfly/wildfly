@@ -36,6 +36,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -47,12 +48,14 @@ import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.PredicateValidator;
+import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
@@ -64,7 +67,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     private static final String MOD_CLUSTER_FILTER_CAPABILITY_NAME = "org.wildfly.undertow.mod_cluster_filter";
-    static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
+    public static final RuntimeCapability<Void> MOD_CLUSTER_FILTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_FILTER_CAPABILITY_NAME, true, Void.class).build();
+
+    static final String SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.security.ssl-context";
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
@@ -186,7 +191,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, MOD_CLUSTER_FILTER_CAPABILITY_NAME, true)
+            .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_FILTER_CAPABILITY_NAME, true)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .build();
@@ -274,7 +279,11 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     public static final ModClusterDefinition INSTANCE = new ModClusterDefinition();
 
     private ModClusterDefinition() {
-        super(Constants.MOD_CLUSTER, new ModClusterAdd(), new ServiceRemoveStepHandler(UndertowService.FILTER, new ModClusterAdd()));
+        super(new Parameters(pathElement(Constants.MOD_CLUSTER), UndertowExtension.getResolver(Constants.HANDLER, Constants.MOD_CLUSTER))
+                .setAddHandler(new ModClusterAdd())
+                .setRemoveHandler(new ServiceRemoveStepHandler(UndertowService.FILTER, new ModClusterAdd()))
+                .setCapabilities(MOD_CLUSTER_FILTER_CAPABILITY)
+        );
     }
 
     @Override
