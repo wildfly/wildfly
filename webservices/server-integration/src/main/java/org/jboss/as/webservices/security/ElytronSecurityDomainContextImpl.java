@@ -21,12 +21,7 @@
  */
 package org.jboss.as.webservices.security;
 
-import java.io.Serializable;
 import java.security.Principal;
-import java.security.acl.Group;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -43,8 +38,8 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
 
 public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
 
-    private SecurityDomain securityDomain;
-    private ThreadLocal<SecurityIdentity> currentIdentity = new ThreadLocal<SecurityIdentity>();
+    private final SecurityDomain securityDomain;
+    private final ThreadLocal<SecurityIdentity> currentIdentity = new ThreadLocal<SecurityIdentity>();
 
     public ElytronSecurityDomainContextImpl(SecurityDomain securityDomain) {
         this.securityDomain = securityDomain;
@@ -85,9 +80,11 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
     }
 
     public void runAs(Callable<Void> action) throws Exception {
-        if (currentIdentity.get() != null) {
+        final SecurityIdentity ci = currentIdentity.get();
+        if (ci != null) {
             //there is no security constrains in servlet and directly with jaas
-            currentIdentity.get().runAs(action);
+            ci.runAs(action);
+            currentIdentity.set(null);
         } else {
             //undertow's ElytronRunAsHandler will propagate the SecurityIndentity to SecurityDomain and directly run this action
             action.call();
@@ -124,92 +121,4 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
         }
         return null;
     }
-    //TODO:create a util to build subject from SecurityIdentity
-    public class SimplePrincipal implements Principal, Serializable {
-        private static final long serialVersionUID = -7703975471290155466L;
-        private String name;
-
-        public SimplePrincipal(String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("Principal name can not be null");
-            }
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public boolean equals(Object obj) {
-            if (!(obj instanceof SimplePrincipal)) {
-                return false;
-            }
-
-            return name.equals(((SimplePrincipal) obj).name);
-        }
-
-        public int hashCode() {
-            return name.hashCode();
-        }
-
-        public String toString() {
-            return name;
-        }
-    }
-
-    public class SimpleGroup extends SimplePrincipal implements Group {
-        private static final long serialVersionUID = -6684520988041121094L;
-        private Set<Principal> members = new HashSet<Principal>();
-
-        public SimpleGroup(String groupName) {
-            super(groupName);
-        }
-
-        public SimpleGroup(String groupName, Principal member) {
-            super(groupName);
-            members.add(member);
-        }
-
-        public boolean isMember(Principal p) {
-            return members.contains(p);
-        }
-
-        public boolean addMember(Principal p) {
-            return members.add(p);
-        }
-
-        public Enumeration<? extends Principal> members() {
-
-            final Iterator<Principal> it = members.iterator();
-
-            return new Enumeration<Principal>() {
-
-                public boolean hasMoreElements() {
-                    return it.hasNext();
-                }
-
-                public Principal nextElement() {
-                    return it.next();
-                }
-
-            };
-        }
-
-        public boolean removeMember(Principal p) {
-            return members.remove(p);
-        }
-
-        public boolean equals(Object obj) {
-            if (!(obj instanceof SimpleGroup)) {
-                return false;
-            }
-            SimpleGroup other = (SimpleGroup) obj;
-            return getName().equals(other.getName()) && members.equals(other.members);
-        }
-
-        public int hashCode() {
-            return getName().hashCode() + 37 * members.hashCode();
-        }
-    }
-
 }
