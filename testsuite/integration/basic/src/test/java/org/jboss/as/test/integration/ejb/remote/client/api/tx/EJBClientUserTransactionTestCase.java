@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,6 +37,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +47,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client4
 public class EJBClientUserTransactionTestCase {
     private static final Logger logger = Logger.getLogger(EJBClientUserTransactionTestCase.class);
 
@@ -109,6 +110,19 @@ public class EJBClientUserTransactionTestCase {
         final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
         userTransaction.begin();
         userTransaction.rollback();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        // set the tx context
+        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+
     }
 
     /**

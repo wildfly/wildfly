@@ -73,6 +73,12 @@ import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBClientInterceptor.Registration;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
@@ -195,6 +201,10 @@ public class SwitchIdentityTestCase {
                     CLIENT_LOGIN_CONFIG);
             loginContext.login();
 
+            // register the client side interceptor
+            final Registration clientInterceptorHandler = EJBClientContext.requireCurrent().registerInterceptor(112567,
+                    new ClientSecurityInterceptor());
+
             final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
             final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
 
@@ -208,6 +218,7 @@ public class SwitchIdentityTestCase {
             testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
             testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
 
+            clientInterceptorHandler.remove();
         } finally {
             if (loginContext != null) {
                 loginContext.logout();
@@ -221,6 +232,12 @@ public class SwitchIdentityTestCase {
     private void callUsingSecurityContextAssociation(String userName, boolean hasRole1, boolean hasRole2) throws Exception {
         try {
             final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
+            EJBClientConfiguration cc = new PropertiesBasedEJBClientConfiguration(ejbClientConfiguration);
+            final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
+            EJBClientContext.setSelector(selector);
+            // register the client side interceptor
+            final Registration clientInterceptorHandler = EJBClientContext.requireCurrent().registerInterceptor(112567,
+                    new ClientSecurityInterceptor());
             SecurityContextAssociation.setPrincipal(new SimplePrincipal(userName));
 
             final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
@@ -236,6 +253,7 @@ public class SwitchIdentityTestCase {
             testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
             testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
 
+            clientInterceptorHandler.remove();
         } finally {
             SecurityContextAssociation.clearSecurityContext();
         }

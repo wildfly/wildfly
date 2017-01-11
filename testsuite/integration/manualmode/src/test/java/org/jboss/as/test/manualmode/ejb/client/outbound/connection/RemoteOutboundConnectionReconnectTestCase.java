@@ -30,6 +30,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.ejb.Util;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -43,6 +48,10 @@ import org.junit.runner.RunWith;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * Tests that an EJB client context containing a reference to a remote outbound connection, has the ability to
  * reconnect a failed connection
@@ -52,7 +61,6 @@ import javax.naming.NamingException;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client4 integration
 public class RemoteOutboundConnectionReconnectTestCase {
 
     private static final Logger logger = Logger.getLogger(RemoteOutboundConnectionReconnectTestCase.class);
@@ -73,14 +81,20 @@ public class RemoteOutboundConnectionReconnectTestCase {
     private Deployer deployer;
 
     private Context context;
+    private ContextSelector<EJBClientContext> previousClientContextSelector;
 
     @Before
     public void before() throws Exception {
         this.context = Util.createNamingContext();
+        // setup the client context selector
+        this.previousClientContextSelector = setupEJBClientContextSelector();
     }
 
     @After
     public void after() throws NamingException {
+        if (this.previousClientContextSelector != null) {
+            EJBClientContext.setSelector(this.previousClientContextSelector);
+        }
         this.context.close();
     }
 
@@ -237,5 +251,28 @@ public class RemoteOutboundConnectionReconnectTestCase {
                 }
             }
         }
+
+    }
+
+    /**
+     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
+     * based on this testcase specific jboss-ejb-client.properties file
+     *
+     * @return
+     * @throws java.io.IOException
+     */
+    private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
+        // setup the selector
+        final String clientPropertiesFile = "org/jboss/as/test/manualmode/ejb/client/outbound/connection/jboss-ejb-client.properties";
+        final InputStream inputStream = RemoteOutboundConnectionReconnectTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
+        if (inputStream == null) {
+            throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
+        }
+        final Properties properties = new Properties();
+        properties.load(inputStream);
+        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
+        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
+
+        return EJBClientContext.setSelector(selector);
     }
 }

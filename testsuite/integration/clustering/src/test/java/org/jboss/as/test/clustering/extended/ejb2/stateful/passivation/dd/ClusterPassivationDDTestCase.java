@@ -42,6 +42,7 @@ import org.jboss.as.test.clustering.extended.ejb2.stateful.passivation.StatefulB
 import org.jboss.as.test.clustering.extended.ejb2.stateful.passivation.StatefulRemote;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.passivation.StatefulRemoteHome;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,7 +59,6 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client 4 integration
 public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationDDTestCase.class);
 
@@ -134,6 +134,9 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
         setPassivationAttributes(client1.getControllerClient());
         setPassivationAttributes(client2.getControllerClient());
 
+        // Setting context from .properties file to get ejb:/ remote context
+        setupEJBClientContextSelector();
+
         StatefulRemoteHome home = directory.lookupHome(StatefulBeanDD.class, StatefulRemoteHome.class);
         StatefulRemote statefulBean = home.create();
 
@@ -148,6 +151,11 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
             @OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
             @OperateOnDeployment(DEPLOYMENT_2) @ArquillianResource ManagementClient client2) throws Exception {
         log.trace("Stop&Clean...");
+
+        // returning to the previous context selector, @see {RemoteEJBClientDDBasedSFSBFailoverTestCase}
+        if (previousSelector != null) {
+            EJBClientContext.setSelector(previousSelector);
+        }
 
         // unset & undeploy & stop
         if (client1.isServerInRunningState()) {

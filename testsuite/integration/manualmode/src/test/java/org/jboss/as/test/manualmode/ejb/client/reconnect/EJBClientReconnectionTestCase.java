@@ -29,8 +29,14 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.ejb.Util;
+import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBClientTransactionContext;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
 import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,6 +48,10 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -55,7 +65,6 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client4 integration
 public class EJBClientReconnectionTestCase {
     private static final Logger log = Logger.getLogger(EJBClientReconnectionTestCase.class);
 
@@ -69,6 +78,8 @@ public class EJBClientReconnectionTestCase {
     private Deployer deployer;
 
     private Context context;
+    private ContextSelector<EJBClientContext> previousClientContextSelector;
+
 
     @Deployment(name = DEPLOYMENT, managed = false, testable = false)
     @TargetsContainer(CONTAINER)
@@ -80,6 +91,8 @@ public class EJBClientReconnectionTestCase {
     @Before
     public void before() throws Exception {
         this.context = Util.createNamingContext();
+        // setup the client context selector
+        this.previousClientContextSelector = setupEJBClientContextSelector();
 
         controller.start(CONTAINER);
         log.trace("===appserver started===");
@@ -89,6 +102,9 @@ public class EJBClientReconnectionTestCase {
 
     @After
     public void after() throws Exception {
+        if (this.previousClientContextSelector != null) {
+            EJBClientContext.setSelector(this.previousClientContextSelector);
+        }
         this.context.close();
 
         try {
@@ -123,6 +139,9 @@ public class EJBClientReconnectionTestCase {
 
     @Test
     public void testReconnectionWithClientAPI() throws Throwable {
+        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+
         final StatelessEJBLocator<SimpleCrashBeanRemote> locator = new StatelessEJBLocator(SimpleCrashBeanRemote.class, "", DEPLOYMENT, SimpleCrashBean.class.getSimpleName(), "");
         final SimpleCrashBeanRemote proxy = EJBClient.createProxy(locator);
 
@@ -155,4 +174,28 @@ public class EJBClientReconnectionTestCase {
 
         return remoteClass.cast(context.lookup(myContext));
     }
+
+    /**
+     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
+     * based on this testcase specific jboss-ejb-client.properties file
+     *
+     * @return
+     * @throws java.io.IOException
+     */
+    private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
+        // setup the selector
+        final String clientPropertiesFile = "jboss-ejb-client.properties";
+        final InputStream inputStream = EJBClientReconnectionTestCase.class.getResourceAsStream(clientPropertiesFile);
+        if (inputStream == null) {
+            throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
+        }
+        final Properties properties = new Properties();
+        properties.load(inputStream);
+        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
+        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
+
+        return EJBClientContext.setSelector(selector);
+    }
+
+
 }

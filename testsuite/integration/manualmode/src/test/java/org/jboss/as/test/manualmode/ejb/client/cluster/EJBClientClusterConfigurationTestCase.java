@@ -37,6 +37,11 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.manualmode.ejb.Util;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -52,8 +57,11 @@ import org.wildfly.test.api.Authentication;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
@@ -68,7 +76,6 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 @RunWith(Arquillian.class)
 @RunAsClient
 @Ignore("WFLY-4421")
-//TODO Elytron - ejb-client4 integration
 public class EJBClientClusterConfigurationTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientClusterConfigurationTestCase.class);
@@ -92,14 +99,21 @@ public class EJBClientClusterConfigurationTestCase {
     private Deployer deployer;
 
     private Context context;
+    private ContextSelector<EJBClientContext> previousClientContextSelector;
 
     @Before
     public void before() throws Exception {
         this.context = Util.createNamingContext();
+        // setup the client context selector
+        this.previousClientContextSelector = setupEJBClientContextSelector();
+
     }
 
     @After
     public void after() throws NamingException {
+        if (this.previousClientContextSelector != null) {
+            EJBClientContext.setSelector(this.previousClientContextSelector);
+        }
         this.context.close();
     }
 
@@ -196,6 +210,29 @@ public class EJBClientClusterConfigurationTestCase {
             }
             serverBClient.close();
         }
+
+    }
+
+    /**
+     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
+     * based on this testcase specific jboss-ejb-client.properties file
+     *
+     * @return
+     * @throws java.io.IOException
+     */
+    private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
+        // setup the selector
+        final String clientPropertiesFile = "jboss-ejb-client.properties";
+        final InputStream inputStream = EJBClientClusterConfigurationTestCase.class.getResourceAsStream(clientPropertiesFile);
+        if (inputStream == null) {
+            throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
+        }
+        final Properties properties = new Properties();
+        properties.load(inputStream);
+        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
+        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
+
+        return EJBClientContext.setSelector(selector);
     }
 
     private static ModelControllerClient createModelControllerClient(final String container) throws UnknownHostException {

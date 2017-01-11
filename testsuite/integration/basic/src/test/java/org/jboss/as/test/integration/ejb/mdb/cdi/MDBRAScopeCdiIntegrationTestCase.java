@@ -68,7 +68,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ MDBRAScopeCdiIntegrationTestCase.JmsQueueSetup.class })
-//TODO Elytron - ejb-client4 integration
 public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestBase {
 
     public static final String testDeploymentName = "test.jar";

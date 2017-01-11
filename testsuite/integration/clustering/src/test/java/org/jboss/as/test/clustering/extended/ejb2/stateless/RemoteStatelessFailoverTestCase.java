@@ -44,10 +44,13 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -67,7 +70,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client 4 integration
 public class RemoteStatelessFailoverTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
@@ -185,6 +187,8 @@ public class RemoteStatelessFailoverTestCase {
         this.start(CONTAINER_1);
         this.deploy(CONTAINER_1, deployment1);
 
+        final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+
         try {
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
@@ -202,6 +206,10 @@ public class RemoteStatelessFailoverTestCase {
 
             assertEquals("Only " + NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", NODES[1], bean.getNodeName());
         } finally {
+            // reset the selector
+            if (selector != null) {
+                EJBClientContext.setSelector(selector);
+            }
             // need to have the container started to undeploy deployment afterwards
             this.start(CONTAINER_1);
             // shutdown the containers
@@ -229,6 +237,8 @@ public class RemoteStatelessFailoverTestCase {
         this.start(CONTAINER_2);
         this.deploy(CONTAINER_2, deployment2);
 
+        final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+
         int numberOfServers = 2;
         int numberOfCalls = 40;
         // there will be at least 20% of calls processed by all servers
@@ -246,6 +256,7 @@ public class RemoteStatelessFailoverTestCase {
             Properties contextChangeProperties = new Properties();
             contextChangeProperties.put(REMOTE_PORT_PROPERTY_NAME, PORT_2.toString());
             contextChangeProperties.put(REMOTE_HOST_PROPERTY_NAME, HOST_2.toString());
+            EJBClientContextSelector.setup(CLIENT_PROPERTIES, contextChangeProperties);
 
             bean = home.create();
             node = bean.getNodeName();
@@ -253,6 +264,10 @@ public class RemoteStatelessFailoverTestCase {
 
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
         } finally {
+            // reset the selector
+            if (previousSelector != null) {
+                EJBClientContext.setSelector(previousSelector);
+            }
             // undeploy&shutdown the containers
             undeployAll();
             shutdownAll();

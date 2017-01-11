@@ -54,7 +54,6 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-//TODO Elytron - ejb-client4 integration
 public class ContainerInterceptorsTestCase {
 
     private static final int CLIENT_INTERCEPTOR_ORDER = 0x99999;
@@ -177,6 +176,8 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         final Map<String, Object> interceptorData = new HashMap<String, Object>();
         interceptorData.put(FlowTrackingBean.CONTEXT_DATA_KEY, ContainerInterceptorOne.class.getName());
         final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
+        // register the client side interceptor
+        ejbClientContext.registerInterceptor(CLIENT_INTERCEPTOR_ORDER, clientInterceptor);
 
         final Hashtable<String, Object> jndiProps = new Hashtable<String, Object>();
         jndiProps.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");

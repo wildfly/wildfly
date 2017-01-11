@@ -34,6 +34,10 @@ import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBClientConfiguration;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
+import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -69,7 +73,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(DatabaseTimerServiceMultiNodeTestCase.DatabaseTimerServiceTestCaseServerSetup.class)
-//TODO Elytron - ejb-client4 integration
 public class DatabaseTimerServiceMultiNodeTestCase {
 
     public static final String ARCHIVE_NAME = "testTimerServiceSimple";
@@ -259,5 +262,9 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         config.put("remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
         config.put("remote.connection.default.host", managementClient.getWebUri().getHost());
         config.put("remote.connection.default.port", String.valueOf(managementClient.getWebUri().getPort()));
+
+        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(config);
+        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
+        EJBClientContext.setSelector(selector);
     }
 }

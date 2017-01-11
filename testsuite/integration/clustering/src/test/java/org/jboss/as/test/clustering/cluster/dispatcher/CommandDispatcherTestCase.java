@@ -6,6 +6,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
@@ -13,6 +14,8 @@ import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetri
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -46,6 +49,8 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
+
+        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
@@ -90,6 +95,11 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
             assertTrue(topology.getNodes().toString() + " should contain " + NODE_1, topology.getNodes().contains(NODE_1));
             assertTrue(topology.getNodes().toString() + " should contain " + NODE_2, topology.getNodes().contains(NODE_2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
+        } finally {
+            // reset the selector
+            if (selector != null) {
+                EJBClientContext.setSelector(selector);
+            }
         }
     }
 }

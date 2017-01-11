@@ -45,6 +45,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.InfinispanExceptionThrowingIncrementorBean;
@@ -56,6 +57,8 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementor
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.ejb.client.ContextSelector;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -71,7 +74,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - remoting 4 integration
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-failover-test";
     private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
@@ -117,6 +119,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     private void testStatelessFailover(String properties, Class<? extends Incrementor> beanClass) throws Exception {
+        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(properties);
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = context.lookupStateless(beanClass, Incrementor.class);
 
@@ -188,12 +191,15 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 int frequency = Collections.frequency(results, node);
                 assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
             }
+        } finally {
+            EJBClientContext.setSelector(selector);
         }
     }
 
     @InSequence(2)
     @Test
     public void testStatefulFailover() throws Exception {
+        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = context.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
@@ -273,6 +279,8 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
                 Assert.assertEquals(count++, result.getValue().intValue());
                 Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
+        } finally {
+            EJBClientContext.setSelector(selector);
         }
     }
 
@@ -288,6 +296,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     public void testConcurrentFailover(Lifecycle lifecycle) throws Exception {
+        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
             AtomicInteger count = new AtomicInteger();
@@ -331,6 +340,8 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             } finally {
                 executor.shutdownNow();
             }
+        } finally {
+            EJBClientContext.setSelector(selector);
         }
     }
 
@@ -340,6 +351,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     @InSequence(5)
     @Test
     public void testClientException() throws Exception {
+        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = context.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
 
@@ -348,6 +360,8 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
             assertTrue("Expected exception wrapped in EJBException", ejbException instanceof EJBException);
             assertNull("Cause of EJBException has not been removed", ejbException.getCause());
             return;
+        } finally {
+            EJBClientContext.setSelector(selector);
         }
         fail("Expected EJBException but didn't catch it");
     }

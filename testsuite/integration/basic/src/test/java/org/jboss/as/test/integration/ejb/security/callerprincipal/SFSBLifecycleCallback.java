@@ -30,8 +30,6 @@ import javax.ejb.Remote;
 import javax.ejb.Remove;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
@@ -57,8 +55,7 @@ public class SFSBLifecycleCallback implements IBeanLifecycleCallback {
     }
 
     @PostConstruct
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void init() {
+    public void init() throws Exception {
         // on Stateful bean is permitted to call getCallerPrincipal on @PostConstruct
         ITestResultsSingleton results = this.getSingleton();
 
@@ -68,8 +65,7 @@ public class SFSBLifecycleCallback implements IBeanLifecycleCallback {
     }
 
     @PreDestroy
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void tearDown() {
+    public void tearDown() throws Exception {
         // on Stateful bean is permitted to call getCallerPrincipal on @PreDestroy
         ITestResultsSingleton results = this.getSingleton();
 
