@@ -31,7 +31,6 @@ import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.resource.spi.XATerminator;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -241,10 +240,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
         final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();
         context.getServiceTarget().addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
-                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, XATerminator.class, localTransactionContextService.getXATerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, localTransactionContextService.getTransactionManagerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, localTransactionContextService.getTransactionSynchronizationRegistryInjector())
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER) // no injection
                 .setInitialMode(Mode.ACTIVE)
                 .install();

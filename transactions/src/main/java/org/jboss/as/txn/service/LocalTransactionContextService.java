@@ -26,10 +26,6 @@ import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
 
-import javax.resource.spi.XATerminator;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -46,10 +42,8 @@ import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvid
  */
 public final class LocalTransactionContextService implements Service<LocalTransactionContext> {
     private LocalTransactionContext context;
-    private final InjectedValue<XATerminator> xaTerminatorInjector = new InjectedValue<>();
     private final InjectedValue<ExtendedJBossXATerminator> extendedJBossXATerminatorInjector = new InjectedValue<>();
-    private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
-    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryInjector = new InjectedValue<>();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerInjector = new InjectedValue<>();
 
     public LocalTransactionContextService() {
     }
@@ -57,9 +51,9 @@ public final class LocalTransactionContextService implements Service<LocalTransa
     public void start(final StartContext context) throws StartException {
         JBossLocalTransactionProvider.Builder builder = JBossLocalTransactionProvider.builder();
         builder.setExtendedJBossXATerminator(extendedJBossXATerminatorInjector.getValue());
-        builder.setTransactionManager(transactionManagerInjector.getValue());
-        builder.setTransactionSynchronizationRegistry(transactionSynchronizationRegistryInjector.getValue());
-        builder.setXATerminator(xaTerminatorInjector.getValue());
+        builder.setTransactionManager(transactionManagerInjector.getValue().getTransactionManager());
+        builder.setTransactionSynchronizationRegistry(transactionManagerInjector.getValue().getTransactionSynchronizationRegistry());
+        builder.setXATerminator(transactionManagerInjector.getValue().getJbossXATerminator());
         final LocalTransactionContext transactionContext = this.context = new LocalTransactionContext(builder.build());
         // TODO: replace this with per-CL settings for embedded use and to support remote UserTransaction
         doPrivileged((PrivilegedAction<Void>) () -> {
@@ -77,20 +71,12 @@ public final class LocalTransactionContextService implements Service<LocalTransa
         });
     }
 
-    public InjectedValue<XATerminator> getXATerminatorInjector() {
-        return xaTerminatorInjector;
-    }
-
     public InjectedValue<ExtendedJBossXATerminator> getExtendedJBossXATerminatorInjector() {
         return extendedJBossXATerminatorInjector;
     }
 
-    public InjectedValue<TransactionManager> getTransactionManagerInjector() {
+    public InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTransactionManagerInjector() {
         return transactionManagerInjector;
-    }
-
-    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-        return transactionSynchronizationRegistryInjector;
     }
 
     public LocalTransactionContext getValue() throws IllegalStateException, IllegalArgumentException {
