@@ -91,7 +91,7 @@ public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCa
     public void test(
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws IOException, URISyntaxException, Exception {
 
         URI uri1 = SecureServlet.createURI(baseURL1);
         URI uri2 = SecureServlet.createURI(baseURL2);
@@ -112,6 +112,9 @@ public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCa
             pairs.add(new BasicNameValuePair("j_password", "password"));
 
             login.setEntity(new UrlEncodedFormEntity(pairs, "UTF-8"));
+            //WFLY-4810 we need to make sure the server side of the request has finished, so the data is commited to
+            //the cache. I think 500ms should be enough
+            Thread.sleep(500);
             response = client.execute(login);
             try {
                 Assert.assertEquals(HttpServletResponse.SC_FOUND, response.getStatusLine().getStatusCode());
