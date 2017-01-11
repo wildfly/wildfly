@@ -103,6 +103,8 @@
         <version.groovy-all>2.4.3</version.groovy-all>
         <version.httpunit>1.7</version.httpunit>
         <version.io.netty>4.0.35.Final</version.io.netty>
+        <!-- TODO remove as it is managed in core -->
+        <version.io.undertow>1.4.6.Final</version.io.undertow>
         <version.io.undertow.jastow>2.0.1.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
@@ -4663,6 +4665,49 @@
                 <artifactId>netty-all</artifactId>
                 <version>${version.io.netty}</version>
             </dependency>
+
+            <!-- TODO remove this, overriden from wildfly-core-->
+
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${version.io.undertow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-build-config</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-servlet</artifactId>
+                <version>${version.io.undertow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-build-config</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
+                        <artifactId>jboss-jsp-api_2.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-websockets-jsr</artifactId>
+                <version>${version.io.undertow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-build-config</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+           <!-- END REMOVE THIS -->
 
             <dependency>
                 <groupId>io.undertow.jastow</groupId>
