@@ -71,12 +71,7 @@ import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBClientInterceptor.Registration;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
@@ -230,9 +225,9 @@ public class SwitchIdentityTestCase {
     private void callUsingSecurityContextAssociation(String userName, boolean hasRole1, boolean hasRole2) throws Exception {
         try {
             final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
-            EJBClientConfiguration cc = new PropertiesBasedEJBClientConfiguration(ejbClientConfiguration);
-            final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
-            EJBClientContext.setSelector(selector);
+            // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+            // that should be used for this test using ejbClientConfiguration
+
             // register the client side interceptor
             final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
             SecurityContextAssociation.setPrincipal(new SimplePrincipal(userName));

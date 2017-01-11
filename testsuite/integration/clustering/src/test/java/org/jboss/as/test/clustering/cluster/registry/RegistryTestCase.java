@@ -17,8 +17,6 @@ import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,7 +53,10 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
     @Test
     public void test() throws Exception {
 
-        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
@@ -89,11 +90,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
             assertEquals(2, names.size());
             assertTrue(names.contains(NODE_1));
             assertTrue(names.contains(NODE_2));
-        } finally {
-            // reset the selector
-            if (selector != null) {
-                EJBClientContext.setSelector(selector);
-            }
         }
     }
 }

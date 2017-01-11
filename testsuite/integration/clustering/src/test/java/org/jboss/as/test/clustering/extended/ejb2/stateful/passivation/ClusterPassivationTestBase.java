@@ -43,7 +43,6 @@ import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ClusterContext;
-import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.junit.AfterClass;
@@ -71,7 +70,6 @@ public abstract class ClusterPassivationTestBase {
     }
 
     // Properties pass amongst tests
-    protected static ContextSelector<EJBClientContext> previousSelector;
     protected static Map<String, String> node2deployment = new HashMap<String, String>();
     protected static Map<String, String> node2container = new HashMap<String, String>();
 
@@ -94,7 +92,10 @@ public abstract class ClusterPassivationTestBase {
      * specific jboss-ejb-client.properties file
      */
     protected void setupEJBClientContextSelector() throws IOException {
-        previousSelector = EJBClientContextSelector
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using sfsb-failover-jboss-ejb-client.properties and ensure the EJB client
+        // context is reset to its original state at the end of the test
+        EJBClientContextSelector
                 .setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
     }
 
