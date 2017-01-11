@@ -201,23 +201,22 @@ public class SwitchIdentityTestCase {
             loginContext.login();
 
             // register the client side interceptor
-            final Registration clientInterceptorHandler = EJBClientContext.requireCurrent().registerInterceptor(112567,
-                    new ClientSecurityInterceptor());
+            final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
+            ejbClientContext.runCallable(() -> {
+                final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
+                final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
 
-            final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
-            final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
+                //test direct access
+                testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
 
-            //test direct access
-            testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
-
-            //test security context propagation
-            testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
-
-            clientInterceptorHandler.remove();
+                //test security context propagation
+                testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
+                return null;
+            });
         } finally {
             if (loginContext != null) {
                 loginContext.logout();
@@ -235,24 +234,24 @@ public class SwitchIdentityTestCase {
             final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
             EJBClientContext.setSelector(selector);
             // register the client side interceptor
-            final Registration clientInterceptorHandler = EJBClientContext.requireCurrent().registerInterceptor(112567,
-                    new ClientSecurityInterceptor());
+            final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
             SecurityContextAssociation.setPrincipal(new SimplePrincipal(userName));
 
-            final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
-            final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
+            ejbClientContext.runCallable(() -> {
+                final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
+                final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
 
-            //test direct access
-            testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
+                //test direct access
+                testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
 
-            //test security context propagation
-            testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
-
-            clientInterceptorHandler.remove();
+                //test security context propagation
+                testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
+                return null;
+            });
         } finally {
             SecurityContextAssociation.clearSecurityContext();
         }
