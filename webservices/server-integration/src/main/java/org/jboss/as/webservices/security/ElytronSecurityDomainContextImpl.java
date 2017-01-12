@@ -117,6 +117,7 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
             context.fail();
             WSLogger.ROOT_LOGGER.failedAuthenticationWithException(e, username, e.getMessage());
         } finally {
+            if (!context.isDone()) context.fail(); //prevent leaks of RealmIdentity instances
             evidence.destroy();
         }
         return null;
