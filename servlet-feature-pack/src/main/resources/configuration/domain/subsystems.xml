@@ -8,6 +8,7 @@
         <subsystem>jmx.xml</subsystem>
         <subsystem supplement="web-build">naming.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
+        <subsystem supplement="domain">elytron.xml</subsystem>
         <subsystem supplement="web-build">security.xml</subsystem>
         <subsystem>undertow.xml</subsystem>
     </subsystems>

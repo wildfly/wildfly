@@ -40,9 +40,4 @@
             <keepalive-time time="30" unit="seconds"/>
         </thread-pool>
     </subsystem>
-    <supplement name="elytron">
-        <replacement placeholder="ELYTRON">
-            <security-domain name="ApplicationDomain"/>
-        </replacement>
-    </supplement>
 </config>

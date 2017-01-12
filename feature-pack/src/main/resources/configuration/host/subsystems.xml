@@ -25,5 +25,6 @@
 <config>
     <subsystems>
         <subsystem>jmx.xml</subsystem>
+        <subsystem supplement="host">elytron.xml</subsystem>
     </subsystems>
 </config>
