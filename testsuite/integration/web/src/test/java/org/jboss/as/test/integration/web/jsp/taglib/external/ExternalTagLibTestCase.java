@@ -26,7 +26,8 @@ import java.net.URL;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -87,38 +88,24 @@ public class ExternalTagLibTestCase {
 
     @Test
     public void testExternalTagLibOnly() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpget = new HttpGet(external_dependency_only_url.toExternalForm() + TEST_JSP);
-            HttpResponse response = httpclient.execute(httpget);
+            HttpResponse response = httpClient.execute(httpget);
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
             Assert.assertTrue(result, result.contains("External Tag!"));
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 
     @Test
     public void testExternalAndInternalTagLib() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpget = new HttpGet(both_dependencies_url.toExternalForm() + TEST_JSP);
-            HttpResponse response = httpclient.execute(httpget);
+            HttpResponse response = httpClient.execute(httpget);
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
             Assert.assertTrue(result, result.contains("External Tag!"));
             Assert.assertTrue(result, result.contains("Internal Tag!"));
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 

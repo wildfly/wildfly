@@ -24,7 +24,8 @@ package org.jboss.as.test.integration.web.sessionpersistence;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -62,21 +63,22 @@ public class SessionPersistenceTestCase {
 
     @Test
     public void testLifeCycle() throws Exception {
-        HttpClient client = new DefaultHttpClient();
-        HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/sessionPersistence/SessionPersistenceServlet");
-        deployer.deploy("web");
-        String result = runGet(get, client);
-        assertEquals("0", result);
-        result = runGet(get, client);
-        assertEquals("1", result);
-        result = runGet(get, client);
-        assertEquals("2", result);
-        deployer.undeploy("web");
-        deployer.deploy("web");
-        result = runGet(get, client);
-        assertEquals("3", result);
-        result = runGet(get, client);
-        assertEquals("4", result);
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/sessionPersistence/SessionPersistenceServlet");
+            deployer.deploy("web");
+            String result = runGet(get, client);
+            assertEquals("0", result);
+            result = runGet(get, client);
+            assertEquals("1", result);
+            result = runGet(get, client);
+            assertEquals("2", result);
+            deployer.undeploy("web");
+            deployer.deploy("web");
+            result = runGet(get, client);
+            assertEquals("3", result);
+            result = runGet(get, client);
+            assertEquals("4", result);
+        }
     }
 
     private String runGet(HttpGet get, HttpClient client) throws IOException {

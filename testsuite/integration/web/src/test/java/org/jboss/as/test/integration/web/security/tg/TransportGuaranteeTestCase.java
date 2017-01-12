@@ -30,9 +30,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -159,47 +161,53 @@ public class TransportGuaranteeTestCase {
 
         log.trace("Checking URL=" + url);
 
-        HttpClient httpClient;
-        if (url.startsWith("https")) {
-            httpClient = TestHttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
-        } else {
-            httpClient = new DefaultHttpClient();
-        }
-
-        ((DefaultHttpClient) httpClient).getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY),
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY),
                 new UsernamePasswordCredentials(user, pass));
+
+        CloseableHttpClient httpClient;
+        if (url.startsWith("https")) {
+            httpClient = TestHttpClientUtils.getHttpsClient(credentialsProvider);
+        } else {
+            httpClient = HttpClientBuilder.create()
+                    .setDefaultCredentialsProvider(credentialsProvider)
+                    .build();
+        }
 
         HttpGet get = new HttpGet(url);
         HttpResponse hr;
         try {
-            hr = httpClient.execute(get);
-        } catch (Exception e) {
-            if (responseSubstring == null)
+            try {
+                hr = httpClient.execute(get);
+            } catch (Exception e) {
+                if (responseSubstring == null) { return false; } else // in case substring is defined, rethrow exception so, we can easier analyze the cause
+                { throw new Exception(e); }
+            }
+
+            int statusCode = hr.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.trace("statusCode not expected. statusCode=" + statusCode + ", URL=" + url);
                 return false;
-            else // in case substring is defined, rethrow exception so, we can easier analyze the cause
-                throw new Exception(e);
-        }
+            }
 
-        int statusCode = hr.getStatusLine().getStatusCode();
-        if (statusCode != 200) {
-            log.trace("statusCode not expected. statusCode=" + statusCode + ", URL=" + url);
-            return false;
-        }
+            if (responseSubstring == null) {
+                // this indicates that negative test had problems
+                log.trace("statusCode==200 on URL=" + url);
+                return true;
+            }
 
-        if (responseSubstring == null) {
-            // this indicates that negative test had problems
-            log.trace("statusCode==200 on URL=" + url);
-            return true;
+            String response = EntityUtils.toString(hr.getEntity());
+            if (response.indexOf(responseSubstring) != -1) {
+                return true;
+            } else {
+                log.trace("Response doesn't contain expected substring (" + responseSubstring + ")");
+                return false;
+            }
+        } finally {
+            if (httpClient != null) {
+                httpClient.close();
+            }
         }
-
-        String response = EntityUtils.toString(hr.getEntity());
-        if (response.indexOf(responseSubstring) != -1) {
-            return true;
-        } else {
-            log.trace("Response doesn't contain expected substring (" + responseSubstring + ")");
-            return false;
-        }
-
     }
 
     @Test

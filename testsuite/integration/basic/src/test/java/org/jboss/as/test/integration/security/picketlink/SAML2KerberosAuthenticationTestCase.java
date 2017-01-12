@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import javax.naming.Context;
 import javax.security.auth.Subject;
 import javax.security.auth.login.Configuration;
@@ -53,12 +52,17 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
@@ -89,7 +93,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,9 +143,9 @@ public class SAML2KerberosAuthenticationTestCase {
     /**
      * Skip unsupported/unstable/buggy Kerberos configurations.
      */
-    @BeforeClass
-    public static void beforeClass() {
-        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    @Before
+    public static void before() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
     }
 
     /**
@@ -417,10 +421,18 @@ public class SAML2KerberosAuthenticationTestCase {
          */
         @Override
         public String run() throws Exception {
-            final DefaultHttpClient httpClient = new DefaultHttpClient();
+            Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
+                    .register(AuthSchemes.SPNEGO, new JBossNegotiateSchemeFactory(true))
+                    .build();
+
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
+
+
+            /*final DefaultHttpClient httpClient = new DefaultHttpClient();
             httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
-
+*/
             final HttpParams doNotRedirect = new BasicHttpParams();
             doNotRedirect.setParameter(ClientPNames.HANDLE_REDIRECTS, false);
             doNotRedirect.setParameter(ClientPNames.HANDLE_AUTHENTICATION, true);
@@ -429,7 +441,10 @@ public class SAML2KerberosAuthenticationTestCase {
             doRedirect.setParameter(ClientPNames.HANDLE_AUTHENTICATION, true);
             doRedirect.setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 
-            try {
+            try (final CloseableHttpClient httpClient = HttpClientBuilder.create()
+                                   .setDefaultAuthSchemeRegistry(authSchemeRegistry)
+                                   .setDefaultCredentialsProvider(credentialsProvider)
+                                   .build()){
                 // 1. Login to IdP
                 HttpGet initialIdpHttpGet = new HttpGet(this.idpUri); // GET /idp-test-DEP1
                 initialIdpHttpGet.setParams(doRedirect);
@@ -471,11 +486,6 @@ public class SAML2KerberosAuthenticationTestCase {
                 assertThat("Unexpected status code when expecting succesfull authentication to the SP", response
                         .getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 return EntityUtils.toString(response.getEntity());
-            } finally {
-                // When HttpClient instance is no longer needed,
-                // shut down the connection manager to ensure
-                // immediate deallocation of all system resources
-                httpClient.getConnectionManager().shutdown();
             }
         }
     }

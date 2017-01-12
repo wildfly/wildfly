@@ -23,8 +23,8 @@ package org.jboss.as.test.integration.security.common.negotiation;
 
 import org.apache.http.annotation.Immutable;
 import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthSchemeFactory;
-import org.apache.http.params.HttpParams;
+import org.apache.http.auth.AuthSchemeProvider;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * SPNEGO (Simple and Protected GSSAPI Negotiation Mechanism) authentication scheme factory. Provides
@@ -33,7 +33,7 @@ import org.apache.http.params.HttpParams;
  * @author Josef Cacek
  */
 @Immutable
-public class JBossNegotiateSchemeFactory implements AuthSchemeFactory {
+public class JBossNegotiateSchemeFactory implements AuthSchemeProvider {
 
     // Constructors ----------------------------------------------------------
 
@@ -45,7 +45,8 @@ public class JBossNegotiateSchemeFactory implements AuthSchemeFactory {
 
     // Public methods --------------------------------------------------------
 
-    public AuthScheme newInstance(final HttpParams params) {
+    @Override
+    public AuthScheme create(HttpContext context) {
         return new JBossNegotiateScheme(stripPort);
     }
 }

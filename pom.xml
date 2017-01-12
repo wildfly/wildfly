@@ -121,7 +121,7 @@
         <version.org.apache.cxf>3.1.8</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
-        <version.org.apache.httpcomponents.httpasyncclient>4.1</version.org.apache.httpcomponents.httpasyncclient>
+        <version.org.apache.httpcomponents.httpasyncclient>4.1.2</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.jstl>1.2.5</version.org.apache.jstl>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>5.3.1</version.org.apache.lucene>
