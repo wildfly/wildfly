@@ -25,6 +25,7 @@ import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.security.auth.Subject;
 
@@ -39,11 +40,11 @@ import org.jboss.security.SecurityContextFactory;
  * @author alessio.soldano@jboss.com
  * @since 13-May-2011
  */
-public final class SecurityDomainContextAdaptor implements org.jboss.wsf.spi.security.SecurityDomainContext {
+public final class SecurityDomainContextImpl implements org.jboss.wsf.spi.security.SecurityDomainContext {
 
     private final SecurityDomainContext context;
 
-    public SecurityDomainContextAdaptor(SecurityDomainContext context) {
+    public SecurityDomainContextImpl(SecurityDomainContext context) {
         this.context = context;
     }
 
@@ -110,12 +111,16 @@ public final class SecurityDomainContextAdaptor implements org.jboss.wsf.spi.sec
      */
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
             @Override
             public Void run() {
                 SecurityContextAssociation.setSecurityContext(sc);
                 return null;
             }
         });
+    }
+
+    //subject will be pushed in thread local context, so directly run this action
+    public void runAs(Callable<Void> action) throws Exception {
+        action.call();
     }
 }

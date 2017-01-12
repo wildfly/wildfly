@@ -22,6 +22,7 @@
 
 package org.jboss.as.webservices.logging;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.FATAL;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -294,4 +295,19 @@ public interface WSLogger extends BasicLogger {
 
     @Message(id = 68, value = "Service %s not available")
     OperationFailedException serviceNotAvailable(String serviceName);
+
+    @Message(id = 69, value = "String format password is required")
+    IllegalArgumentException invalidPasswordType();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 70, value = "Authorization failed for user: %s")
+    void failedAuthorization(String username);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 71, value = "Failed to authenticate username %s:, incorrect username/password")
+    void failedAuthentication(final String username);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 72, value = "Error occured when authenticate username %s. Exception message: %s")
+    void failedAuthenticationWithException(@Cause final Throwable cause, final String username, final String message);
 }
