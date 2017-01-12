@@ -25,7 +25,6 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.wildfly.security.auth.SupportLevel;
-import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityRealm;
@@ -93,7 +92,7 @@ public class SecurityDomainContextRealm implements SecurityRealm {
 
     @Override
     public RealmIdentity getRealmIdentity(Principal principal) throws RealmUnavailableException {
-        return new PicketBoxBasedIdentity(principal.getName());
+        return new PicketBoxBasedIdentity(principal);
     }
 
     @Override
@@ -111,12 +110,17 @@ public class SecurityDomainContextRealm implements SecurityRealm {
 
     private class PicketBoxBasedIdentity implements RealmIdentity {
 
-        private final String identityName;
+        private final Principal principal;
 
         private Subject jaasSubject;
 
-        private PicketBoxBasedIdentity(final String identityName) {
-            this.identityName = identityName;
+        private PicketBoxBasedIdentity(final Principal principal) {
+            this.principal = principal;
+        }
+
+        @Override
+        public Principal getRealmIdentityPrincipal() {
+            return principal;
         }
 
         @Override
@@ -145,7 +149,7 @@ public class SecurityDomainContextRealm implements SecurityRealm {
                 if (evidence instanceof PasswordGuessEvidence) {
                     jaasCredential = ((PasswordGuessEvidence) evidence).getGuess();
                 }
-                return domainContext.getAuthenticationManager().isValid(new NamePrincipal(identityName), jaasCredential, jaasSubject);
+                return domainContext.getAuthenticationManager().isValid(principal, jaasCredential, jaasSubject);
             }
         }
 
