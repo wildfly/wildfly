@@ -49,9 +49,6 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
             new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-filter", false, false, false)
     ).wrapAsList();
 
-
-    protected final String name;
-
     protected AbstractHandlerDefinition(final String name, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
         this(name, Constants.HANDLER, addHandler, removeHandler);
     }
@@ -60,17 +57,17 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
         this(name, Constants.HANDLER);
     }
 
-
     protected AbstractHandlerDefinition(final String name, String prefix, AbstractAddStepHandler addHandler, AbstractRemoveStepHandler removeHandler) {
         super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name), addHandler, removeHandler);
-        this.name = name;
     }
 
     protected AbstractHandlerDefinition(final String name, String prefix) {
         super(PathElement.pathElement(name), UndertowExtension.getResolver(prefix, name));
-        this.name = name;
     }
 
+    protected AbstractHandlerDefinition(final Parameters parameters) {
+        super(parameters);
+    }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
@@ -96,11 +93,6 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptyList();
-    }
-
-    @Override
-    public String getXmlElementName() {
-        return this.name;
     }
 
     protected static class DefaultHandlerRemove extends AbstractRemoveStepHandler {

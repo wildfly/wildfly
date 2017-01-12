@@ -35,8 +35,6 @@ import org.jboss.dmr.ModelNode;
 public interface Handler {
     Collection<AttributeDefinition> getAttributes();
 
-    String getXmlElementName();
-
     Class<? extends HttpHandler> getHandlerClass();
 
     HttpHandler createHttpHandler(final Predicate predicate, final ModelNode model, final HttpHandler next);
