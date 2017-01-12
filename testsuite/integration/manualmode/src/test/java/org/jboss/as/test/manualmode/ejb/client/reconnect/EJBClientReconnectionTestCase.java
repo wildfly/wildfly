@@ -131,8 +131,9 @@ public class EJBClientReconnectionTestCase {
 
     @Test
     public void testReconnectionWithClientAPI() throws Throwable {
-        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
-        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
+        //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        //EJBClientTransactionContext.setGlobalContext(localUserTxContext);
 
         final StatelessEJBLocator<SimpleCrashBeanRemote> locator = new StatelessEJBLocator(SimpleCrashBeanRemote.class, "", DEPLOYMENT, SimpleCrashBean.class.getSimpleName(), "");
         final SimpleCrashBeanRemote proxy = EJBClient.createProxy(locator);

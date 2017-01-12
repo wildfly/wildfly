@@ -32,7 +32,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -99,10 +98,11 @@ public class EJBClientXidTransactionTestCase {
      */
     @Before
     public void beforeTest() throws Exception {
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
         // create a client side tx context
-        final EJBClientTransactionContext txContext = EJBClientTransactionContext.create(txManager, txSyncRegistry);
+        //final EJBClientTransactionContext txContext = EJBClientTransactionContext.create(txManager, txSyncRegistry);
         // associate the tx context
-        EJBClientTransactionContext.setGlobalContext(txContext);
+        //EJBClientTransactionContext.setGlobalContext(txContext);
     }
 
     private static void instantiateTxManagement() {
