@@ -21,19 +21,27 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
-import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
+import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.EJBClientContextService;
+import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -41,11 +49,15 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.context.ContextManager;
+import org.wildfly.discovery.Discovery;
+import org.wildfly.discovery.ServiceURL;
+import org.wildfly.discovery.impl.StaticDiscoveryProvider;
+import org.wildfly.discovery.spi.DiscoveryProvider;
 
 /**
  * A deployment processor which associates the {@link EJBClientContext}, belonging to a deployment unit,
- * with the deployment unit's classloader, so that the {@link org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService} can then
- * be used to return an appropriate {@link EJBClientContext} based on the classloader.
+ * with the deployment unit's classloader.
  *
  * @author Stuart Douglas
  * @author Jaikiran Pai
@@ -61,12 +73,16 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        RegistractionService registractionService = new RegistractionService(module);
+        RegistrationService registrationService = new RegistrationService(module);
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
-        phaseContext.getServiceTarget().addService(registrationServiceName, registractionService)
-                .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContext.class, registractionService.ejbClientContextInjectedValue)
-                .addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME, TCCLEJBClientContextSelectorService.class, registractionService.tcclEJBClientContextSelectorServiceController)
-                .install();
+        final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(registrationServiceName, registrationService)
+            .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContext.class, registrationService.ejbClientContextInjectedValue)
+            .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, registrationService.associationServiceInjectedValue);
+        final ServiceName profileServiceName = getRemotingProfileServiceName(phaseContext);
+        if (profileServiceName != null) {
+            builder.addDependency(profileServiceName, RemotingProfileService.class, registrationService.profileServiceInjector);
+        }
+        builder.install();
 
 
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
@@ -83,6 +99,15 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
     public void undeploy(final DeploymentUnit deploymentUnit) {
     }
 
+    private ServiceName getRemotingProfileServiceName(final DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit parentDeploymentUnit = phaseContext.getDeploymentUnit().getParent();
+        if (parentDeploymentUnit != null) {
+            return parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
+        } else {
+            return phaseContext.getDeploymentUnit().getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
+        }
+    }
+
     private ServiceName getEJBClientContextServiceName(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
@@ -97,36 +122,62 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         if (serviceName != null) {
             return serviceName;
         }
-        return DefaultEjbClientContextService.DEFAULT_SERVICE_NAME;
+        return EJBClientContextService.DEFAULT_SERVICE_NAME;
     }
 
-    private static final class RegistractionService implements Service<Void> {
+    private static final class RegistrationService implements Service<Void> {
+
+        private static final DiscoveryProvider[] NO_PROVIDERS = new DiscoveryProvider[0];
 
         private final Module module;
 
-        final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelectorServiceController = new InjectedValue<>();
         final InjectedValue<EJBClientContext> ejbClientContextInjectedValue = new InjectedValue<>();
+        final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
+        final InjectedValue<RemotingProfileService> profileServiceInjector = new InjectedValue<>();
 
-        private RegistractionService(Module module) {
+        private RegistrationService(Module module) {
             this.module = module;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
 
-            final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue();
-            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
-            // associate the EJB client context with the deployment classloader
-            EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, module.getClassLoader());
-            tcclBasedEJBClientContextSelector.registerEJBClientContext(ejbClientContext, module.getClassLoader());
+            doPrivileged((PrivilegedAction<Void>) () -> {
+                // associate the EJB client context and discovery setup with the deployment classloader
+                final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue();
+                final ModuleClassLoader classLoader = module.getClassLoader();
+                EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
+                EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);
+                final AssociationService associationService = associationServiceInjectedValue.getOptionalValue();
+                final List<DiscoveryProvider> discoveryProviders = new ArrayList<>();
+                // TODO: merge the discovery provider with the global default
+                // discoveryProviders.add(...global default...)
+                if (associationService != null) {
+                    discoveryProviders.add(associationService.getLocalDiscoveryProvider());
+                }
+                final RemotingProfileService profileService = profileServiceInjector.getOptionalValue();
+                if (profileService != null) {
+                    final List<ServiceURL> urls = profileService.getServiceUrls();
+                    if (urls != null && ! urls.isEmpty()) {
+                        discoveryProviders.add(new StaticDiscoveryProvider(urls));
+                    }
+                }
+                final ContextManager<Discovery> contextManager = Discovery.getContextManager();
+                contextManager.setClassLoaderDefault(classLoader, Discovery.create(discoveryProviders.toArray(NO_PROVIDERS)));
+                return null;
+            });
         }
 
         @Override
         public void stop(StopContext context) {
-            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
             // de-associate the EJB client context with the deployment classloader
-            EjbLogger.DEPLOYMENT_LOGGER.debugf("unRegistering EJB client context for classloader %s", module.getClassLoader());
-            tcclBasedEJBClientContextSelector.unRegisterEJBClientContext(module.getClassLoader());
+            doPrivileged((PrivilegedAction<Void>) () -> {
+                final ModuleClassLoader classLoader = module.getClassLoader();
+                EjbLogger.DEPLOYMENT_LOGGER.debugf("unRegistering EJB client context for classloader %s", classLoader);
+                EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, null);
+                Discovery.getContextManager().setClassLoaderDefault(classLoader, null);
+                return null;
+            });
         }
 
         @Override

@@ -126,8 +126,8 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
 
                     profileService.addServiceUrl(urlBuilder.create());
                 }
-                profileService.addTransportProvider(new ImmediateValue<EJBTransportProvider>(new RemoteTransportProvider()));
             }
+            profileService.addTransportProvider(new ImmediateValue<EJBTransportProvider>(new RemoteTransportProvider()));
             builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (IllegalArgumentException | URISyntaxException e) {
             throw new OperationFailedException(e.getLocalizedMessage());

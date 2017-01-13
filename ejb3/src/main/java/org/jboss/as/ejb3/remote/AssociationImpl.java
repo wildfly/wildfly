@@ -33,6 +33,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -57,7 +58,10 @@ import org.wildfly.common.annotation.NotNull;
 
 import javax.ejb.EJBException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -250,8 +254,32 @@ final class AssociationImpl implements Association {
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
-        // todo
-        return () -> {};
+        final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
+            public void listenerAdded(final DeploymentRepository repository) {
+                List<ModuleAvailabilityListener.ModuleIdentifier> identifierList = new ArrayList<>();
+                for (DeploymentModuleIdentifier identifier : repository.getModules().keySet()) {
+                    final ModuleAvailabilityListener.ModuleIdentifier moduleIdentifier = toModuleIdentifier(identifier);
+                    identifierList.add(moduleIdentifier);
+                }
+                moduleAvailabilityListener.moduleAvailable(identifierList);
+            }
+
+            private ModuleAvailabilityListener.ModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
+                return new ModuleAvailabilityListener.ModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
+            }
+
+            public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            }
+
+            public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+            }
+
+            public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
+            }
+        };
+        deploymentRepository.addListener(listener);
+        return () -> deploymentRepository.removeListener(listener);
     }
 
     protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {

@@ -26,29 +26,40 @@ import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
+import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.EJBClientContextService;
+import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
-import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBTransportProvider;
+import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.modules.Module;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+import org.wildfly.discovery.spi.RegistryProvider;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * A deployment unit processor which processing only top level deployment units and checks for the presence of a
  * {@link Attachments#EJB_CLIENT_METADATA} key corresponding to {@link EJBClientDescriptorMetaData}, in the deployment unit.
  * <p/>
  * If a {@link EJBClientDescriptorMetaData} is available then this deployment unit processor creates and installs a
- * {@link DescriptorBasedEJBClientContextService}. It then attaches the {@link org.jboss.ejb.client.EJBClientContext} as an
+ * {@link EJBClientContextService}. It then attaches the {@link org.jboss.ejb.client.EJBClientContext} as an
  * attachment to the deployment unit, under the key {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT}
  *
  * TODO Elytron emulate old configuration using discovery, clustering
@@ -80,26 +91,47 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             return;
         }
         // install the descriptor based EJB client context service
-        final ServiceName ejbClientContextServiceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME
-                .append(deploymentUnit.getName());
+        final ServiceName ejbClientContextServiceName = EJBClientContextService.DEPLOYMENT_BASE_SERVICE_NAME.append(deploymentUnit.getName());
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         // create the service
-        final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService();
+        final EJBClientContextService service = new EJBClientContextService();
         // add the service
         final ServiceBuilder<EJBClientContext> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
 
+        serviceBuilder.addDependency(AssociationService.SERVICE_NAME, AssociationService.class, new Injector<AssociationService>() {
+            final Injector<RegistryProvider> injector = service.createRegistryProviderInjector();
+
+            public void inject(final AssociationService value) throws InjectionException {
+                injector.inject(value.getLocalRegistryProvider());
+            }
+
+            public void uninject() {
+                injector.uninject();
+            }
+        });
+        final Injector<RemotingProfileService> profileServiceInjector = new Injector<RemotingProfileService>() {
+            final Injector<List<EJBTransportProvider>> injector = service.createEJBTransportProviderListInjector();
+
+            public void inject(final RemotingProfileService value) throws InjectionException {
+                injector.inject(value.getTransportProviders().stream().map(Value::getValue).collect(Collectors.toList()));
+            }
+
+            public void uninject() {
+                injector.uninject();
+            }
+        };
         final String profile = ejbClientDescriptorMetaData.getProfile();
+        final ServiceName profileServiceName;
         if (profile != null) {
-            final ServiceName profileServiceDependency = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
-            serviceBuilder.addDependency(profileServiceDependency, RemotingProfileService.class, service.getProfileServiceInjector());
+            profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
         } else {
             // if descriptor defines list of ejb-receivers instead of profile then we create internal ProfileService for this
             // application which contains defined receivers
-            final ServiceName profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
+            profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
             createInternalRemotingProfileService(profileServiceName, serviceTarget, ejbClientDescriptorMetaData);
-            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
         }
-        serviceBuilder.addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         // install the service
         serviceBuilder.install();
         EjbLogger.DEPLOYMENT_LOGGER.debugf("Deployment unit %s will use %s as the EJB client context service", deploymentUnit,
@@ -108,6 +140,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // attach the service name of this EJB client context to the deployment unit
         phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
+        deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME, profileServiceName);
     }
 
     @Override
@@ -130,6 +163,13 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         final RemotingProfileService profileService = new RemotingProfileService();
         final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
                 profileService);
+        if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
+            final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
+            final InjectedValue<EJBTransportProvider> injector = new InjectedValue<>();
+            profileServiceBuilder.addDependency(passByValue == Boolean.TRUE ? LocalTransportProvider.BY_VALUE_SERVICE_NAME : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME, EJBTransportProvider.class, injector);
+            profileService.addTransportProvider(injector);
+        }
+        profileService.addTransportProvider(new ImmediateValue<EJBTransportProvider>(new RemoteTransportProvider()));
         profileServiceBuilder.install();
         //TODO Elytron old configuration emulation
         return profileService;

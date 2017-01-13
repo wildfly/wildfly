@@ -43,10 +43,13 @@ import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.ejb.server.Association;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.spi.CacheBuilderProvider;
@@ -116,7 +119,16 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
                 // add rest of the dependencies
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
-                .addDependency(AssociationService.SERVICE_NAME, Association.class, ejbRemoteConnectorService.getAssociationInjector())
+                .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, new Injector<AssociationService>() {
+                    final InjectedValue<Association> injector = ejbRemoteConnectorService.getAssociationInjector();
+                    public void inject(final AssociationService value) throws InjectionException {
+                        injector.inject(value.getAssociation());
+                    }
+
+                    public void uninject() {
+                        injector.uninject();
+                    }
+                })
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         builder.install();
