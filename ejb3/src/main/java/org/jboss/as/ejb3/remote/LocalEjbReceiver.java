@@ -417,12 +417,16 @@ public class LocalEjbReceiver extends EJBReceiver implements DiscoveryProvider {
 
     @Override
     public DiscoveryRequest discover(final ServiceType serviceType, final FilterSpec filterSpec, final DiscoveryResult result) {
-        for (final ServiceURL url : accessibleModules.values()) {
-            if (url.satisfies(filterSpec)) {
-                final URI uri = url.getLocationURI();
-                result.addMatch(uri);
+        try {
+            for (final ServiceURL url : accessibleModules.values()) {
+                if (url.satisfies(filterSpec)) {
+                    final URI uri = url.getLocationURI();
+                    result.addMatch(uri);
+                }
             }
+            return DiscoveryRequest.NULL;
+        } finally {
+            result.complete();
         }
-        return DiscoveryRequest.NULL;
     }
 }
