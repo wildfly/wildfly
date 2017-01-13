@@ -257,12 +257,12 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         AuditInfo auditInfo = new AuditInfo(securityDomain);
         for (Property moduleProperty : node.asPropertyList()) {
             ModelNode module = moduleProperty.getValue();
-            String codeName = LoginModuleResourceDefinition.CODE.resolveModelAttribute(context, module).asString();
+            String codeName = MappingProviderModuleDefinition.CODE.resolveModelAttribute(context, module).asString();
             Map<String, Object> options = extractOptions(context, module);
             AuditProviderEntry entry = new AuditProviderEntry(codeName, options);
             auditInfo.add(entry);
 
-            ModelNode moduleName = LoginModuleResourceDefinition.MODULE.resolveModelAttribute(context, module);
+            ModelNode moduleName = MappingProviderModuleDefinition.MODULE.resolveModelAttribute(context, module);
             if (moduleName.isDefined() && !moduleName.asString().isEmpty()) {
                 auditInfo.addJBossModuleName(moduleName.asString());
             } else {
