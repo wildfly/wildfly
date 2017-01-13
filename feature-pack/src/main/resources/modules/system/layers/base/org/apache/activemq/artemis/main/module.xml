@@ -55,7 +55,7 @@
         <module name="org.picketbox"/>
         <!-- this optional dependency is required to be able to use this module from a jms-bridge to connect to a remote
              WildFly server [AS7-6549] -->
-        <module name="org.wildfly.naming-client" optional="true"/>
+        <module name="org.wildfly.naming-client" optional="true"  services="import"/>
         <!-- https://issues.jboss.org/browse/AS7-4936  this is to avoid an issue on IBM JDK -->
         <module name="sun.jdk"/>
         <!-- supported protocols (in addition to the CORE protocol) -->
