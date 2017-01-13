@@ -25,34 +25,30 @@ package org.wildfly.clustering.web.infinispan.sso.coarse;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.IdentifierExternalizerProvider;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionFilterExternalizer<D> implements Externalizer<SessionFilter<D>> {
-
-    private static final Externalizer<String> EXTERNALIZER = StreamSupport.stream(ServiceLoader.load(IdentifierExternalizerProvider.class, IdentifierExternalizerProvider.class.getClassLoader()).spliterator(), false).findFirst().get().getExternalizer();
+public class SessionFilterExternalizer<D, S> implements Externalizer<SessionFilter<D, S>> {
 
     @Override
-    public void writeObject(ObjectOutput output, SessionFilter<D> filter) throws IOException {
-        EXTERNALIZER.writeObject(output, filter.getSessionId());
+    public void writeObject(ObjectOutput output, SessionFilter<D, S> filter) throws IOException {
+        output.writeObject(filter.getSession());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public SessionFilter<D> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new SessionFilter<>(EXTERNALIZER.readObject(input));
+    public SessionFilter<D, S> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new SessionFilter<>((S) input.readObject());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Class<? extends SessionFilter<D>> getTargetClass() {
+    public Class<? extends SessionFilter<D, S>> getTargetClass() {
         Class targetClass = SessionFilter.class;
         return targetClass;
     }

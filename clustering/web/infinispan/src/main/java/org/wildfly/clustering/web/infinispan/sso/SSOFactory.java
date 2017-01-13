@@ -33,8 +33,8 @@ import org.wildfly.clustering.web.sso.SSO;
  * @author Paul Ferraro
  * @param <V> the cache value type
  */
-public interface SSOFactory<AV, SV, A, D, L> extends Creator<String, Map.Entry<AV, SV>, A>, Locator<String, Map.Entry<AV, SV>>, Remover<String> {
-    SSO<A, D, L> createSSO(String id, Map.Entry<AV, SV> value);
+public interface SSOFactory<AV, SV, A, D, S, L> extends Creator<String, Map.Entry<AV, SV>, A>, Locator<String, Map.Entry<AV, SV>>, Remover<String> {
+    SSO<A, D, S, L> createSSO(String id, Map.Entry<AV, SV> value);
 
-    SessionsFactory<SV, D> getSessionsFactory();
+    SessionsFactory<SV, D, S> getSessionsFactory();
 }

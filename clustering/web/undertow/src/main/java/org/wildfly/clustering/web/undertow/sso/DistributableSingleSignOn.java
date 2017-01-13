@@ -50,13 +50,13 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
 
     static final Logger LOGGER = Logger.getLogger(DistributableSingleSignOn.class);
 
-    private final SSO<AuthenticatedSession, String, Void> sso;
+    private final SSO<AuthenticatedSession, String, String, Void> sso;
     private final SessionManagerRegistry registry;
     private final Batcher<Batch> batcher;
     private final Batch batch;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batcher<Batch> batcher, Batch batch) {
+    public DistributableSingleSignOn(SSO<AuthenticatedSession, String, String, Void> sso, SessionManagerRegistry registry, Batcher<Batch> batcher, Batch batch) {
         this.sso = sso;
         this.registry = registry;
         this.batcher = batcher;
@@ -85,7 +85,7 @@ public class DistributableSingleSignOn implements InvalidatableSingleSignOn {
     @Override
     public Iterator<Session> iterator() {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
-            Sessions<String> sessions = this.sso.getSessions();
+            Sessions<String, String> sessions = this.sso.getSessions();
             Set<String> deployments = sessions.getDeployments();
             List<Session> result = new ArrayList<>(deployments.size());
             for (String deployment : sessions.getDeployments()) {

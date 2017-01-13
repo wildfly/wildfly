@@ -42,10 +42,10 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     private static final Logger log = Logger.getLogger(DistributableSingleSignOnManager.class);
 
-    private final SSOManager<AuthenticatedSession, String, Void, Batch> manager;
+    private final SSOManager<AuthenticatedSession, String, String, Void, Batch> manager;
     private final SessionManagerRegistry registry;
 
-    public DistributableSingleSignOnManager(SSOManager<AuthenticatedSession, String, Void, Batch> manager, SessionManagerRegistry registry) {
+    public DistributableSingleSignOnManager(SSOManager<AuthenticatedSession, String, String, Void, Batch> manager, SessionManagerRegistry registry) {
         this.manager = manager;
         this.registry = registry;
     }
@@ -59,7 +59,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         Batch batch = batcher.createBatch();
         try {
             AuthenticatedSession session = new AuthenticatedSession(account, mechanism);
-            SSO<AuthenticatedSession, String, Void> sso = this.manager.createSSO(id, session);
+            SSO<AuthenticatedSession, String, String, Void> sso = this.manager.createSSO(id, session);
             if (log.isTraceEnabled()) {
                 log.tracef("Creating SSO ID %s for Principal %s and Roles %s", id, account.getPrincipal().getName(), account.getRoles().toString());
             }
@@ -85,7 +85,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
         try {
-            SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
+            SSO<AuthenticatedSession, String, String, Void> sso = this.manager.findSSO(id);
             if (sso == null) {
                 if (log.isTraceEnabled()) {
                     log.tracef("SSO ID %s not found on the session manager.", id);

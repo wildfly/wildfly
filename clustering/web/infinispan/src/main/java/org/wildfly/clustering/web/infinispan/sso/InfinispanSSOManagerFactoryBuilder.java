@@ -41,7 +41,7 @@ import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
-public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
+public class InfinispanSSOManagerFactoryBuilder<A, D, S> implements CapabilityServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>>, Value<SSOManagerFactory<A, D, S, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
@@ -67,7 +67,7 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
     }
 
     @Override
-    public Builder<SSOManagerFactory<A, D, TransactionBatch>> configure(CapabilityServiceSupport support) {
+    public Builder<SSOManagerFactory<A, D, S, TransactionBatch>> configure(CapabilityServiceSupport support) {
         this.configurationBuilder.configure(support);
         this.cacheBuilder.configure(support);
 
@@ -76,18 +76,18 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
     }
 
     @Override
-    public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
+    public ServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> build(ServiceTarget target) {
         this.configurationBuilder.build(target).install();
         this.cacheBuilder.build(target).install();
 
-        ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(this))
+        ServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
         ;
         return this.affinityFactory.register(builder);
     }
 
     @Override
-    public SSOManagerFactory<A, D, TransactionBatch> getValue() {
+    public SSOManagerFactory<A, D, S, TransactionBatch> getValue() {
         return new InfinispanSSOManagerFactory<>(this);
     }
 

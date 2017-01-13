@@ -60,7 +60,7 @@ import org.wildfly.clustering.web.sso.Sessions;
  */
 public class DistributableSingleSignOnTestCase {
 
-    private final SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
+    private final SSO<AuthenticatedSession, String, String, Void> sso = mock(SSO.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
     private final Batcher<Batch> batcher = mock(Batcher.class);
     private final Batch batch = mock(Batch.class);
@@ -118,7 +118,7 @@ public class DistributableSingleSignOnTestCase {
     @Test
     public void iterator() {
         BatchContext context = mock(BatchContext.class);
-        Sessions<String> sessions = mock(Sessions.class);
+        Sessions<String, String> sessions = mock(Sessions.class);
         SessionManager manager = mock(SessionManager.class);
         Session session = mock(Session.class);
         String deployment = "deployment";
@@ -162,7 +162,7 @@ public class DistributableSingleSignOnTestCase {
         BatchContext context = mock(BatchContext.class);
         Session session = mock(Session.class);
         SessionManager manager = mock(SessionManager.class);
-        Sessions<String> sessions = mock(Sessions.class);
+        Sessions<String, String> sessions = mock(Sessions.class);
 
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
         when(session.getSessionManager()).thenReturn(manager);
@@ -195,7 +195,7 @@ public class DistributableSingleSignOnTestCase {
         BatchContext context = mock(BatchContext.class);
         Session session = mock(Session.class);
         SessionManager manager = mock(SessionManager.class);
-        Sessions<String> sessions = mock(Sessions.class);
+        Sessions<String, String> sessions = mock(Sessions.class);
 
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
         when(session.getId()).thenReturn(sessionId);
@@ -216,7 +216,7 @@ public class DistributableSingleSignOnTestCase {
         BatchContext context = mock(BatchContext.class);
         Session session = mock(Session.class);
         SessionManager manager = mock(SessionManager.class);
-        Sessions<String> sessions = mock(Sessions.class);
+        Sessions<String, String> sessions = mock(Sessions.class);
 
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
         when(session.getSessionManager()).thenReturn(manager);
@@ -236,7 +236,7 @@ public class DistributableSingleSignOnTestCase {
         String sessionId = "session";
         BatchContext context = mock(BatchContext.class);
         SessionManager manager = mock(SessionManager.class);
-        Sessions<String> sessions = mock(Sessions.class);
+        Sessions<String, String> sessions = mock(Sessions.class);
 
         when(this.batcher.resumeBatch(this.batch)).thenReturn(context);
         when(manager.getDeploymentName()).thenReturn(deployment);

@@ -30,12 +30,12 @@ import java.util.function.Predicate;
  * Filter/mapper that handles filtering and casting for cache entries containing SSO sessions.
  * @author Paul Ferraro
  */
-public class SessionsFilter<D> implements Predicate<Map.Entry<?, ?>>, Function<Map.Entry<?, ?>, Map.Entry<CoarseSessionsKey, Map<D, String>>> {
+public class SessionsFilter<D, S> implements Predicate<Map.Entry<?, ?>>, Function<Map.Entry<?, ?>, Map.Entry<CoarseSessionsKey, Map<D, S>>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map.Entry<CoarseSessionsKey, Map<D, String>> apply(Map.Entry<?, ?> entry) {
-        return (Map.Entry<CoarseSessionsKey, Map<D, String>>) entry;
+    public Map.Entry<CoarseSessionsKey, Map<D, S>> apply(Map.Entry<?, ?> entry) {
+        return (Map.Entry<CoarseSessionsKey, Map<D, S>>) entry;
     }
 
     @Override

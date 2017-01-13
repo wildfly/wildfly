@@ -61,7 +61,7 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSession, String, Void, Batch>>, Service<SSOManager<AuthenticatedSession, String, Void, Batch>>, SSOManagerConfiguration<Void, MarshallingContext> {
+public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSession, String, String, Void, Batch>>, Service<SSOManager<AuthenticatedSession, String, String, Void, Batch>>, SSOManagerConfiguration<Void, MarshallingContext> {
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
@@ -95,7 +95,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     private final ServiceName factoryServiceName;
     private final ServiceName generatorServiceName;
 
-    private volatile SSOManager<AuthenticatedSession, String, Void, Batch> manager;
+    private volatile SSOManager<AuthenticatedSession, String, String, Void, Batch> manager;
     private volatile MarshallingContext context;
 
     public SSOManagerBuilder(ServiceName factoryServiceName, ServiceName generatorServiceName) {
@@ -109,7 +109,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     }
 
     @Override
-    public ServiceBuilder<SSOManager<AuthenticatedSession, String, Void, Batch>> build(ServiceTarget target) {
+    public ServiceBuilder<SSOManager<AuthenticatedSession, String, String, Void, Batch>> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), this)
                 .addDependency(this.factoryServiceName, SSOManagerFactory.class, this.factory)
                 .addDependency(this.generatorServiceName, SessionIdGenerator.class, this.generator)
@@ -118,7 +118,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
 
     @Override
     public void start(StartContext context) throws StartException {
-        SSOManagerFactory<AuthenticatedSession, String, Batch> factory = this.factory.getValue();
+        SSOManagerFactory<AuthenticatedSession, String, String, Batch> factory = this.factory.getValue();
         Module module = Module.forClass(this.getClass());
         this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
         this.manager = factory.createSSOManager(this);
@@ -133,7 +133,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     }
 
     @Override
-    public SSOManager<AuthenticatedSession, String, Void, Batch> getValue() {
+    public SSOManager<AuthenticatedSession, String, String, Void, Batch> getValue() {
         return this.manager;
     }
 

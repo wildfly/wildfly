@@ -28,15 +28,15 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
-public class InfinispanSSO<A, D, L> implements SSO<A, D, L> {
+public class InfinispanSSO<A, D, S, L> implements SSO<A, D, S, L> {
     private final String id;
     private final A authentication;
-    private final Sessions<D> sessions;
+    private final Sessions<D, S> sessions;
     private final AtomicReference<L> localContext;
     private final LocalContextFactory<L> localContextFactory;
     private final Remover<String> remover;
 
-    public InfinispanSSO(String id, A authentication, Sessions<D> sessions, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
+    public InfinispanSSO(String id, A authentication, Sessions<D, S> sessions, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
         this.id = id;
         this.authentication = authentication;
         this.sessions = sessions;
@@ -56,7 +56,7 @@ public class InfinispanSSO<A, D, L> implements SSO<A, D, L> {
     }
 
     @Override
-    public Sessions<D> getSessions() {
+    public Sessions<D, S> getSessions() {
         return this.sessions;
     }
 

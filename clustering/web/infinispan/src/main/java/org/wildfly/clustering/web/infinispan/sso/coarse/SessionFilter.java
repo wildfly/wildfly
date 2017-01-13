@@ -30,20 +30,20 @@ import java.util.function.Predicate;
  * @author Paul Ferraro
  * @param <D> the deployment type
  */
-public class SessionFilter<D> implements Predicate<Map.Entry<CoarseSessionsKey, Map<D, String>>> {
+public class SessionFilter<D, S> implements Predicate<Map.Entry<CoarseSessionsKey, Map<D, S>>> {
 
-    private final String sessionId;
+    private final S session;
 
-    public SessionFilter(String sessionId) {
-        this.sessionId = sessionId;
+    public SessionFilter(S session) {
+        this.session = session;
     }
 
-    public String getSessionId() {
-        return this.sessionId;
+    public S getSession() {
+        return this.session;
     }
 
     @Override
-    public boolean test(Map.Entry<CoarseSessionsKey, Map<D, String>> entry) {
-        return entry.getValue().values().contains(this.sessionId);
+    public boolean test(Map.Entry<CoarseSessionsKey, Map<D, S>> entry) {
+        return entry.getValue().values().contains(this.session);
     }
 }
