@@ -11,7 +11,6 @@
             <property name="hibernate.hbm2ddl.auto" value="create"/>
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
             <property name="hibernate.cache.use_query_cache" value="true"/>
-            <property name="hibernate.cache.region.factory_class" value="org.jboss.as.jpa.hibernate5.infinispan.SharedInfinispanRegionFactory"/>
             <property name="hibernate.cache.infinispan.entity.cfg" value="entity-replicated"/>
         </properties>
     </persistence-unit>
