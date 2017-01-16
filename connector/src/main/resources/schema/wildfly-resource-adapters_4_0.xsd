@@ -706,6 +706,56 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
+        <xs:sequence minOccurs="0" maxOccurs="1">
+          <xs:element name="elytron-enabled" type="boolean-presenceType" minOccurs="1">
+            <xs:annotation>
+              <xs:documentation>
+                <![CDATA[[
+                Indicates that Elytron is responsible for authenticating connections. If authentication-context
+                is configured (via either authentication-context or authentication-context-and-application),
+                Elytron will use that specified context for authenticating. Else, Elytron will use the
+                current authentication context of the caller that is retrieving the connection.
+                Ex:
+                <elytron-enabled/>
+              ]]>
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="authentication-context" type="xs:token">
+              <xs:annotation>
+                <xs:documentation>
+                  <![CDATA[[
+                  Indicates the Elytron context that will be used for authenticating connections during
+                  container-managed sign-on.
+                  The resulting Subject will be used to distinguish connections in the pool.
+                  The authentication-context name correlates to the authentication context defined in
+                  the Elytron subsystem.
+                  Ex:
+                    <elytron-enabled/>
+                    <authentication-context>HsqlDbContext</authentication-context>
+                  ]]>
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="authentication-context-and-application" type="xs:token">
+              <xs:annotation>
+                <xs:documentation>
+                  <![CDATA[[
+                  Indicates that either app supplied parameters (such as from
+                  getConnection(user, pw)) or an authenticated Subject (resulting of container-managed sign-on
+                  authentication) are used to distinguish connections in the pool.
+                  The authentication-context name correlates to the authentication context defined in
+                  the Elytron subsystem.
+                  Ex:
+                    </elytron-enabled/>
+                    <authentication-context-and-application>HsqlDbContext</authentication-context-and-application>
+                  ]]>
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:choice>
+        </xs:sequence>
       </xs:choice>
     </xs:sequence>
   </xs:complexType>
@@ -800,20 +850,53 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="security-domain" type="xs:token" minOccurs="0" maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
+      <xs:choice minOccurs="0">
+        <xs:element name="security-domain" type="xs:token">
+          <xs:annotation>
+            <xs:documentation>
+              <![CDATA[[
               Indicates Subject (from security domain) are used to distinguish connections in the pool.
               The content of the security-domain is the name of the JAAS security manager that will handle
               authentication. This name correlates to the JAAS login-config.xml descriptor
               application-policy/name attribute.
               Ex:
-              <security-domain>HsqlDbRealm</security-domain>
+                <security-domain>HsqlDbRealm</security-domain>
+              ]]>
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:sequence>
+          <xs:element name="elytron-enabled" type="boolean-presenceType">
+            <xs:annotation>
+              <xs:documentation>
+                <![CDATA[[
+                Indicates that Elytron is responsible for authenticating connections. If authentication-context
+                is configured (via authentication-context), Elytron will use that specified context for authenticating.
+                Else, Elytron will use the current authentication context of the caller that is retrieving the connection.
+                Ex:
+                  <elytron-enabled/>
+                ]]>
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="authentication-context" type="xs:token" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>
+                <![CDATA[[
+                Indicates the Elytron context that will be used for authenticating connections during
+                container-managed sign-on.
+                The resulting Subject will be used to distinguish connections in the pool.
+                The authentication-context name correlates to the authentication context defined in
+                the Elytron subsystem.
+                Ex:
+                <elytron-enabled/>
+                <authentication-context>HsqlDbContext</authentication-context>
             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:choice>
     </xs:sequence>
    </xs:complexType>
 

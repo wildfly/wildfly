@@ -45,12 +45,15 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
@@ -63,6 +66,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
@@ -354,7 +359,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         }
 
         if (conDef.hasDefined(APPLICATION.getName()) || conDef.hasDefined(SECURITY_DOMAIN.getName())
-                || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())) {
+                || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())
+                || conDef.hasDefined(ELYTRON_ENABLED.getName())) {
             streamWriter.writeStartElement(ConnectionDefinition.Tag.SECURITY.getLocalName());
             if (conDef.hasDefined(APPLICATION.getName()) && conDef.get(APPLICATION.getName()).asBoolean()) {
                 streamWriter.writeEmptyElement(APPLICATION.getXmlName());
@@ -363,6 +369,9 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             }
             SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
             SECURITY_DOMAIN_AND_APPLICATION.marshallAsElement(conDef, streamWriter);
+            ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);
+            AUTHENTICATION_CONTEXT.marshallAsElement(conDef, streamWriter);
+            AUTHENTICATION_CONTEXT_AND_APPLICATION.marshallAsElement(conDef, streamWriter);
 
             streamWriter.writeEndElement();
         }
@@ -390,17 +399,21 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
         if (conDef.hasDefined(RECOVERY_USERNAME.getName()) || conDef.hasDefined(RECOVERY_PASSWORD.getName())
                 || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) || conDef.hasDefined(RECOVERLUGIN_CLASSNAME.getName())
-                || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName()) || conDef.hasDefined(NO_RECOVERY.getName())) {
+                || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName()) || conDef.hasDefined(NO_RECOVERY.getName())
+                || conDef.hasDefined(ELYTRON_ENABLED.getName())) {
 
             streamWriter.writeStartElement(ConnectionDefinition.Tag.RECOVERY.getLocalName());
             NO_RECOVERY.marshallAsAttribute(conDef, streamWriter);
 
             if (conDef.hasDefined(RECOVERY_USERNAME.getName()) || conDef.hasDefined(RECOVERY_PASSWORD.getName())
-                    || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName())) {
+                    || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName())
+                    || conDef.hasDefined(RECOVERY_ELYTRON_ENABLED.getName())) {
                 streamWriter.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
                 RECOVERY_USERNAME.marshallAsElement(conDef, streamWriter);
                 RECOVERY_PASSWORD.marshallAsElement(conDef, streamWriter);
                 RECOVERY_SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
+                RECOVERY_ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);
+                RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(conDef, streamWriter);
                 streamWriter.writeEndElement();
             }
             if (conDef.hasDefined(RECOVERLUGIN_CLASSNAME.getName()) || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName())) {

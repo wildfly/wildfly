@@ -859,4 +859,24 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 101, value = "Thread pool: %s(type: %s) can not be added for workmanager: %s, only one thread pool is allowed for each type.")
     OperationFailedException oneThreadPoolWorkManager(String threadPoolName, String threadPoolType, String workManagerName);
+
+    /**
+     * A message indicating that an attribute can only be set if another attribute is set as {@code true}.
+     *
+     * @param attribute          attribute that is invalid: it is defined but requires another attribute to be set as {@code true}
+     * @param requiredAttribute  attribute that is required to be defined as {@code true}
+     * @return the message.
+     */
+    @Message(id = 102, value = "Attribute %s can only be defined if %s is true")
+    OperationFailedException attributeRequiresTrueAttribute(String attribute, String requiredAttribute);
+
+    /**
+     * A message indicating that an attribute can only be set if another attribute is undefined or set as {@code false}.
+     *
+     * @param attribute               attribute that is invalid: it is defined but requires another attribute to be set as {@code false} or to be undefined
+     * @param requiredFalseAttribute  attribute that is required to be undefined or defined as {@code false}
+     * @return the message.
+     */
+    @Message(id = 103, value = "Attribute %s can only be defined if %s is undefined or false")
+    OperationFailedException attributeRequiresFalseOrUndefinedAttribute(String attribute, String requiredFalseAttribute);
 }

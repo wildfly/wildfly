@@ -42,8 +42,11 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_O
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -53,6 +56,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
@@ -70,16 +75,16 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 
 import java.util.Map;
 
+import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.Security;
 import org.jboss.jca.common.api.metadata.common.TimeOut;
 import org.jboss.jca.common.api.metadata.common.Validation;
 import org.jboss.jca.common.api.metadata.common.XaPool;
@@ -207,13 +212,18 @@ public class IronJacamarResourceCreator {
                 setAttribute(model, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
             }
         }
-        final Security security = connDef.getSecurity();
+        final Security security = (Security) connDef.getSecurity();
         if (security != null) {
-            setAttribute(model, SECURITY_DOMAIN_AND_APPLICATION, security.getSecurityDomainAndApplication());
-
             setAttribute(model, APPLICATION, security.isApplication());
 
-            setAttribute(model, SECURITY_DOMAIN, security.getSecurityDomain());
+            if (security.isElytronEnabled()) {
+                setAttribute(model, ELYTRON_ENABLED, true);
+                setAttribute(model, AUTHENTICATION_CONTEXT, security.getSecurityDomain());
+                setAttribute(model, AUTHENTICATION_CONTEXT_AND_APPLICATION, security.getSecurityDomainAndApplication());
+            } else {
+                setAttribute(model, SECURITY_DOMAIN, security.getSecurityDomain());
+                setAttribute(model, SECURITY_DOMAIN_AND_APPLICATION, security.getSecurityDomainAndApplication());
+            }
         }
         final TimeOut timeOut = connDef.getTimeOut();
         if (timeOut != null) {
@@ -249,10 +259,15 @@ public class IronJacamarResourceCreator {
                     }
                 }
             }
-            final Credential recoveryCredential = recovery.getCredential();
+            final Credential recoveryCredential =  (Credential) recovery.getCredential();
             if (recoveryCredential != null) {
                 setAttribute(model, RECOVERY_PASSWORD, recoveryCredential.getPassword());
-                setAttribute(model, RECOVERY_SECURITY_DOMAIN, recoveryCredential.getSecurityDomain());
+                if (recoveryCredential.isElytronEnabled()) {
+                    setAttribute(model, RECOVERY_ELYTRON_ENABLED, true);
+                    setAttribute(model, RECOVERY_AUTHENTICATION_CONTEXT, recoveryCredential.getSecurityDomain());
+                } else {
+                    setAttribute(model, RECOVERY_SECURITY_DOMAIN, recoveryCredential.getSecurityDomain());
+                }
                 setAttribute(model, RECOVERY_USERNAME, recoveryCredential.getUserName());
             }
         }
