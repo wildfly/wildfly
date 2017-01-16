@@ -754,13 +754,5 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 71, value = "Deployment '%s' specified more than one Hibernate Search module name ('%s','%s')")
     DeploymentUnitProcessingException differentSearchModuleDependencies(String deployment, String searchModuleName1, String searchModuleName2);
 
-    /**
-     * Likely means that the transaction manager does not implement the org.jboss.tm.listener.TransactionListenerRegistry class.
-     *
-     * @param cause the cause of the error.
-     * @return
-     */
-    @Message(id = 72, value = "Could not obtain TransactionListenerRegistry from transaction manager")
-    IllegalStateException errorGettingTransactionListenerRegistry(@Cause Throwable cause);
-
+    // id = 72, value = "Could not obtain TransactionListenerRegistry from transaction manager")
 }

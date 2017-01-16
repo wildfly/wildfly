@@ -82,9 +82,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.as.ejb3.remote.CompressionHintViewConfigurator;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
@@ -305,7 +303,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
         // setup a dependency on EJB remote tx repository service, if this EJB exposes at least one remote view
-        this.addRemoteTransactionsRepositoryDependency();
+        this.addRemoteTransactionsDependency();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
         this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
         this.descriptorMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
@@ -465,7 +463,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
             }
         });
-        view.getConfigurators().add(CompressionHintViewConfigurator.INSTANCE);
         this.addCurrentInvocationContextFactory(view);
         this.setupSecurityInterceptors(view);
         this.setupRemoteViewInterceptors(view);
@@ -520,21 +517,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
 
     /**
-     * Adds a dependency for the ComponentConfiguration, on the {@link EJBRemoteTransactionsRepository} service,
-     * if the EJB exposes at least one remote view
+     * Adds a dependency for the ComponentConfiguration on the remote transaction service if the EJB exposes at least one remote view
      */
-    protected void addRemoteTransactionsRepositoryDependency() {
+    protected void addRemoteTransactionsDependency() {
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
                 if (this.hasRemoteView((EJBComponentDescription) description)) {
-                    // add a dependency on EJBRemoteTransactionsRepository service
-                    componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
-                        @Override
-                        public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
-                            serviceBuilder.addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, ejbComponentCreateService.getEJBRemoteTransactionsRepositoryInjector());
-                        }
-                    });
+                    // add a dependency on local transaction service
+                    componentConfiguration.getCreateDependencies().add((sb, cs) -> sb.addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE));
                 }
             }
 

@@ -54,6 +54,7 @@ public class EjbDeploymentAttachmentKeys {
 
     public static final AttachmentKey<EJBClientContext> EJB_CLIENT_CONTEXT = AttachmentKey.create(EJBClientContext.class);
     public static final AttachmentKey<ServiceName> EJB_CLIENT_CONTEXT_SERVICE_NAME = AttachmentKey.create(ServiceName.class);
+    public static final AttachmentKey<ServiceName> EJB_REMOTING_PROFILE_SERVICE_NAME = AttachmentKey.create(ServiceName.class);
 
     /**
      * components that have been registered with the management API
