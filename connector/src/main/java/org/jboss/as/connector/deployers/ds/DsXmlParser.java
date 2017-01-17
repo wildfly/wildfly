@@ -28,21 +28,21 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.metadata.api.ds.DsSecurity;
+import org.jboss.as.connector.metadata.common.CredentialImpl;
+import org.jboss.as.connector.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ParserException;
-import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DsParser;
-import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.metadata.property.PropertyResolver;
 
 /**
- * TODO class javadoc.
+ * Parser for -ds.xml
  *
  */
 public class DsXmlParser extends DsParser {
@@ -76,6 +76,8 @@ public class DsXmlParser extends DsParser {
         String userName = null;
         String password = null;
         String securityDomain = null;
+        boolean elytronEnabled = false;
+        String authenticationContext = null;
         Extension reauthPlugin = null;
 
         while (reader.hasNext()) {
@@ -84,7 +86,8 @@ public class DsXmlParser extends DsParser {
                     if (DataSource.Tag.forName(reader.getLocalName()) ==
                             DataSource.Tag.SECURITY) {
 
-                        return new DsSecurityImpl(userName, password, securityDomain, reauthPlugin);
+                        return new DsSecurityImpl(userName, password,elytronEnabled? authenticationContext: securityDomain,
+                                elytronEnabled, reauthPlugin);
                     } else {
                         if (DsSecurity.Tag.forName(reader.getLocalName()) == DsSecurity.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -125,6 +128,14 @@ public class DsXmlParser extends DsParser {
                             securityDomain = elementAsString(reader);
                             break;
                         }
+                        case ELYTRON_ENABLED: {
+                            elytronEnabled = true;
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            authenticationContext = elementAsString(reader);
+                            break;
+                        }
                         case REAUTH_PLUGIN: {
                             reauthPlugin = parseExtension(reader, tag.getLocalName());
                             break;
@@ -155,6 +166,8 @@ public class DsXmlParser extends DsParser {
         String userName = null;
         String password = null;
         String securityDomain = null;
+        boolean elytronEnabled = false;
+        String authenticationContext = null;
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -162,7 +175,8 @@ public class DsXmlParser extends DsParser {
                     if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY ||
                             Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
 
-                        return new CredentialImpl(userName, password, securityDomain);
+                        return new CredentialImpl(userName, password, elytronEnabled? authenticationContext: securityDomain,
+                                elytronEnabled);
                     } else {
                         if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -187,6 +201,14 @@ public class DsXmlParser extends DsParser {
                         }
                         case SECURITY_DOMAIN: {
                             securityDomain = elementAsString(reader);
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            elytronEnabled = true;
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            authenticationContext = elementAsString(reader);
                             break;
                         }
                         default:

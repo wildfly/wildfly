@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
@@ -236,10 +237,11 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
 
     private ModifiableDataSource buildDataSource(DataSource ds) throws org.jboss.jca.common.api.validator.ValidateException {
+        assert ds.getSecurity() == null || ds.getSecurity() instanceof DsSecurity;
         return new ModifiableDataSource(ds.getConnectionUrl(),
                 ds.getDriverClass(), ds.getDataSourceClass(), ds.getDriver(),
                 ds.getTransactionIsolation(), ds.getConnectionProperties(), ds.getTimeOut(),
-                ds.getSecurity(), ds.getStatement(), ds.getValidation(),
+                (DsSecurity) ds.getSecurity(), ds.getStatement(), ds.getValidation(),
                 ds.getUrlDelimiter(), ds.getUrlSelectorStrategyClassName(), ds.getNewConnectionSql(),
                 ds.isUseJavaContext(), ds.getPoolName(), ds.isEnabled(), ds.getJndiName(),
                 ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.isConnectable(), ds.isTracking(), ds.getMcp(), ds.isEnlistmentTrace(), ds.getPool());
@@ -305,7 +307,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
         if(securityEnabled) {
-
+            // FIXME
             dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                     dataSourceService.getSubjectFactoryInjector());
         }
