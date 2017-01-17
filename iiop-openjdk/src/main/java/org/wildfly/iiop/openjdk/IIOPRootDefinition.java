@@ -82,7 +82,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     protected static final AttributeDefinition SSL_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_SSL_SOCKET_BINDING, ModelType.STRING, true).setAttributeGroup(Constants.ORB)
-            .setDefaultValue(new ModelNode().set("iiop-ssl")).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF).build();
 
     //TCP attributes
@@ -144,6 +144,15 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
             .setAttributeGroup(Constants.SECURITY)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .build();
+
+    public static final AttributeDefinition SECURITY_ENABLED_PROTOCOLS = new SimpleAttributeDefinitionBuilder(
+            Constants.SECURITY_SSL_ENABLED_PROTOCOLS, ModelType.STRING, true)
+            .setAttributeGroup(Constants.SECURITY)
+            .setDefaultValue(new ModelNode("TLSv1,TLSv1.1,TLSv1.2"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .addAccessConstraint(IIOP_SECURITY_DEF)
@@ -311,7 +320,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC);
 
     // list that contains security attributes definitions
-    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN,
+    static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN, SECURITY_ENABLED_PROTOCOLS,
             ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
 
     //list that contains tcp attributes definitions

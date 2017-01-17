@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -60,7 +60,8 @@ import org.wildfly.iiop.openjdk.deployment.IIOPMarkerProcessor;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 import org.wildfly.iiop.openjdk.naming.jndi.JBossCNCtxFactory;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
-import org.wildfly.iiop.openjdk.security.SocketFactory;
+import org.wildfly.iiop.openjdk.security.NoSSLSocketFactory;
+import org.wildfly.iiop.openjdk.security.SSLSocketFactory;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.iiop.openjdk.service.CorbaORBService;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
@@ -157,8 +158,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean sslConfigured = this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
-
-
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
         org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector(), false);
@@ -172,9 +171,15 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
                 orbService.getIIOPSocketBindingInjector());
+
         String sslSocketBinding = props.getProperty(Constants.ORB_SSL_SOCKET_BINDING);
-        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
-                orbService.getIIOPSSLSocketBindingInjector());
+        if(sslSocketBinding != null) {
+            if (!sslConfigured) {
+                throw IIOPLogger.ROOT_LOGGER.sslPortWithoutSslConfiguration();
+            }
+            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
+                    orbService.getIIOPSSLSocketBindingInjector());
+        }
 
         // create the IOR security config metadata service.
         final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
@@ -222,7 +227,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         namingService.getNamingPOAInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-        configureClientSecurity(props);
+        configureClientSecurity(props, sslConfigured);
     }
 
     /**
@@ -327,6 +332,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private boolean setupSSLFactories(final Properties props) throws OperationFailedException {
         boolean supportSSL = "true".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
 
+        final boolean sslConfigured;
         if (supportSSL) {
             // if SSL is to be used, check if a security domain has been specified.
             String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
@@ -334,13 +340,20 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 throw IIOPLogger.ROOT_LOGGER.noSecurityDomainSpecified();
 
             // add the domain socket factories.
-            SocketFactory.setSecurityDomain(securityDomain);
-            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SocketFactory.class.getName());
+            SSLSocketFactory.setSecurityDomain(securityDomain);
 
-            return true;
+            String enabledProtocols = props.getProperty(Constants.SECURITY_SSL_ENABLED_PROTOCOLS);
+            SSLSocketFactory.setEnabledProtocols(enabledProtocols.split(","));
+
+            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SSLSocketFactory.class.getName());
+
+            sslConfigured = true;
+        } else {
+            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, NoSSLSocketFactory.class.getName());
+            sslConfigured = false;
         }
 
-        return false;
+        return sslConfigured;
     }
 
     private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured)
@@ -379,9 +392,16 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         return securityConfigMetaData;
     }
 
-    private void configureClientSecurity(final Properties props) {
-        final SSLConfigValue clientRequiresSSL = SSLConfigValue
+    private void configureClientSecurity(final Properties props, final boolean sslConfigured) throws OperationFailedException {
+        final SSLConfigValue clientRequiresSsl = SSLConfigValue
                 .fromValue(props.getProperty(Constants.SECURITY_CLIENT_REQUIRES));
-        CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientRequiresSSL);
+        if (clientRequiresSsl == SSLConfigValue.CLIENTAUTH || clientRequiresSsl == SSLConfigValue.MUTUALAUTH) {
+            if(!sslConfigured){
+                throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
+            }
+            CSIV2IORToSocketInfo.setClientTransportConfigMetaData(true);
+        } else {
+            CSIV2IORToSocketInfo.setClientTransportConfigMetaData(false);
+        }
     }
 }

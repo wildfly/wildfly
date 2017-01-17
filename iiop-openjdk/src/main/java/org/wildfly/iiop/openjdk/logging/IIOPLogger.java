@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -43,6 +43,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.COMM_FAILURE;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.MARSHAL;
@@ -382,4 +383,16 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
     OperationFailedException sslNotConfigured();
+
+    @Message(id = 104, value = "SSL socket is required by server but secure connections have not been configured")
+    COMM_FAILURE cannotCreateSSLSocket();
+
+    @Message(id = 105, value = "Client requires SSL but server does not support it")
+    IllegalStateException serverDoesNotSupportSsl();
+
+    @Message(id = 106, value = "SSL has not been configured but ssl-port property has been specified")
+    OperationFailedException sslPortWithoutSslConfiguration();
+
+    @Message(id = 107, value = "Security attribute ssl-enabled-protocols is not supported in previous iiop-openjdk versions and can't be converted")
+    String enabledProtocolsNotSupportedInPreviousVersions();
 }

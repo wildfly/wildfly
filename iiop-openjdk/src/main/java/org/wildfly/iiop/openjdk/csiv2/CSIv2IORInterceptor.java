@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -72,9 +72,8 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
         String sslPortString = CorbaORBService.getORBProperty(Constants.ORB_SSL_PORT);
         int sslPort = sslPortString == null ? 0 : Integer.parseInt(sslPortString);
         try {
-            // build default SSL component with minimum SSL options.
-            SSL ssl = new SSL((short) MIN_SSL_OPTIONS, /* supported options */
-                    (short) 0, /* required options  */
+            SSL ssl = new SSL((short) 0,
+                    (short) MIN_SSL_OPTIONS, /* required options  */
                     (short) sslPort);
             ORB orb = ORB.init();
             Any any = orb.create_any();
