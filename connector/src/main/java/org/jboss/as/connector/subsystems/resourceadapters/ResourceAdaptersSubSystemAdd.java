@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Handler for adding the datasource subsystem.
+ * Handler for adding the resource adapters subsystem.
  *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
