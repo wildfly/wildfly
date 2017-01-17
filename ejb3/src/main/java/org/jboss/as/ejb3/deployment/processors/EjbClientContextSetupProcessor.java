@@ -24,17 +24,13 @@ package org.jboss.as.ejb3.deployment.processors;
 import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
-import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -49,11 +45,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.common.context.ContextManager;
 import org.wildfly.discovery.Discovery;
-import org.wildfly.discovery.ServiceURL;
-import org.wildfly.discovery.impl.StaticDiscoveryProvider;
-import org.wildfly.discovery.spi.DiscoveryProvider;
 
 /**
  * A deployment processor which associates the {@link EJBClientContext}, belonging to a deployment unit,
@@ -77,11 +69,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
         final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(registrationServiceName, registrationService)
             .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContext.class, registrationService.ejbClientContextInjectedValue)
-            .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, registrationService.associationServiceInjectedValue);
-        final ServiceName profileServiceName = getRemotingProfileServiceName(phaseContext);
-        if (profileServiceName != null) {
-            builder.addDependency(profileServiceName, RemotingProfileService.class, registrationService.profileServiceInjector);
-        }
+            .addDependency(getDiscoveryServiceName(phaseContext), Discovery.class, registrationService.discoveryInjector);
         builder.install();
 
 
@@ -97,15 +85,6 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
-    }
-
-    private ServiceName getRemotingProfileServiceName(final DeploymentPhaseContext phaseContext) {
-        final DeploymentUnit parentDeploymentUnit = phaseContext.getDeploymentUnit().getParent();
-        if (parentDeploymentUnit != null) {
-            return parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
-        } else {
-            return phaseContext.getDeploymentUnit().getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
-        }
     }
 
     private ServiceName getEJBClientContextServiceName(final DeploymentPhaseContext phaseContext) {
@@ -125,15 +104,22 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         return EJBClientContextService.DEFAULT_SERVICE_NAME;
     }
 
-    private static final class RegistrationService implements Service<Void> {
+    private ServiceName getDiscoveryServiceName(final DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
+        if (parentDeploymentUnit != null) {
+            return DiscoveryService.BASE_NAME.append(parentDeploymentUnit.getName());
+        } else {
+            return DiscoveryService.BASE_NAME.append(deploymentUnit.getName());
+        }
+    }
 
-        private static final DiscoveryProvider[] NO_PROVIDERS = new DiscoveryProvider[0];
+    private static final class RegistrationService implements Service<Void> {
 
         private final Module module;
 
         final InjectedValue<EJBClientContext> ejbClientContextInjectedValue = new InjectedValue<>();
-        final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
-        final InjectedValue<RemotingProfileService> profileServiceInjector = new InjectedValue<>();
+        final InjectedValue<Discovery> discoveryInjector = new InjectedValue<>();
 
         private RegistrationService(Module module) {
             this.module = module;
@@ -148,22 +134,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                 final ModuleClassLoader classLoader = module.getClassLoader();
                 EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
                 EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);
-                final AssociationService associationService = associationServiceInjectedValue.getOptionalValue();
-                final List<DiscoveryProvider> discoveryProviders = new ArrayList<>();
-                // TODO: merge the discovery provider with the global default
-                // discoveryProviders.add(...global default...)
-                if (associationService != null) {
-                    discoveryProviders.add(associationService.getLocalDiscoveryProvider());
-                }
-                final RemotingProfileService profileService = profileServiceInjector.getOptionalValue();
-                if (profileService != null) {
-                    final List<ServiceURL> urls = profileService.getServiceUrls();
-                    if (urls != null && ! urls.isEmpty()) {
-                        discoveryProviders.add(new StaticDiscoveryProvider(urls));
-                    }
-                }
-                final ContextManager<Discovery> contextManager = Discovery.getContextManager();
-                contextManager.setClassLoaderDefault(classLoader, Discovery.create(discoveryProviders.toArray(NO_PROVIDERS)));
+                Discovery.getContextManager().setClassLoaderDefault(classLoader, discoveryInjector.getValue());
                 return null;
             });
         }

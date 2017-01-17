@@ -62,7 +62,6 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
 
     @Override
     public void stop(StopContext stopContext) {
-        receiver.destroy();
     }
 
     public boolean supportsProtocol(final String uriScheme) {
