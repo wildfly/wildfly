@@ -46,7 +46,7 @@ public class TransformUtilsTestCase {
     public void testRejectedOnOffAttributeTurnedOff() throws Exception {
         ModelNode model = new ModelNode();
         model.get("iona").set("off");
-        List<String> result =TransformUtils.checkLegacyModel(model);
+        List<String> result =TransformUtils.validateDeprecatedProperites(model);
         Assert.assertTrue(result.isEmpty());
     }
 
@@ -54,7 +54,7 @@ public class TransformUtilsTestCase {
     public void testRejectedOnOffAttribute() throws Exception {
         ModelNode model = new ModelNode();
         model.get("iona").set("on");
-        List<String> result = TransformUtils.checkLegacyModel(model);
+        List<String> result = TransformUtils.validateDeprecatedProperites(model);
         Assert.assertFalse(result.isEmpty());
     }
 
@@ -62,7 +62,7 @@ public class TransformUtilsTestCase {
     public void testRejectedAttribute() throws Exception {
         ModelNode model = new ModelNode();
         model.get("queue-min").set(5);
-        List<String> result = TransformUtils.checkLegacyModel(model);
+        List<String> result = TransformUtils.validateDeprecatedProperites(model);
         Assert.assertFalse(result.isEmpty());
     }
 

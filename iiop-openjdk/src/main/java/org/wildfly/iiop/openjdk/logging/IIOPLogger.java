@@ -382,4 +382,10 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
     OperationFailedException sslNotConfigured();
+
+    @Message(id = 104, value = "Inconsistent transport-config configuration: %s")
+    OperationFailedException inconsistentTransportConfig(String cause);
+
+    @Message(id = 105, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
+    String serverRequiresSslNotSupportedInPreviousVersions();
 }

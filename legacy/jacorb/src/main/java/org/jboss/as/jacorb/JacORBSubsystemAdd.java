@@ -34,6 +34,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.iiop.openjdk.ConfigValidator;
 import org.wildfly.iiop.openjdk.IIOPSubsystemAdd;
 import org.wildfly.iiop.openjdk.PropertiesMap;
 
@@ -64,8 +65,11 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource)
             throws OperationFailedException {
-        super.populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
+        for (AttributeDefinition attr : attributes) {
+            attr.validateAndSet(operation, model);
+        }
+        ConfigValidator.validateConfig(context, TransformUtils.transformModel(model));
         final boolean adminOnly = context.getRunningMode() == RunningMode.ADMIN_ONLY;
         final boolean hostController = context.getProcessType().equals(ProcessType.HOST_CONTROLLER);
         // in case of unsupported configuration parameters:
@@ -74,7 +78,7 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
         // domain controller in normal mode works normally - it may send old parameters to legacy hosts - such configuration is
         // valid
         if (adminOnly || !hostController) {
-            final List<String> unsupportedProperites = TransformUtils.checkLegacyModel(model);
+            final List<String> unsupportedProperites = TransformUtils.validateDeprecatedProperites(model);
             if(!unsupportedProperites.isEmpty()) {
                 if (adminOnly) {
                     final String warning = JacORBLogger.ROOT_LOGGER.cannotEmulatePropertiesWarning(unsupportedProperites);

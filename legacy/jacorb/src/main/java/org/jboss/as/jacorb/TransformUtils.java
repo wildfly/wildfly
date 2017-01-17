@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -21,7 +20,7 @@ public class TransformUtils {
     private TransformUtils() {
     }
 
-    static List<String> checkLegacyModel(final ModelNode model) throws OperationFailedException {
+    static List<String> validateDeprecatedProperites(final ModelNode model) {
         final List<String> propertiesToReject = new LinkedList<>();
         for (final AttributeDefinition attribute : JacORBSubsystemDefinitions.ON_OFF_ATTRIBUTES_TO_REJECT) {
             if (model.hasDefined(attribute.getName())
