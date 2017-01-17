@@ -35,12 +35,9 @@ import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.ejb.client.EJBTransportProvider;
-import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.discovery.AttributeValue;
 import org.wildfly.discovery.ServiceURL;
@@ -50,6 +47,8 @@ import org.xnio.Options;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -82,32 +81,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             final String profileName = address.getLastElement().getValue();
             final ServiceName profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profileName);
 
-            final RemotingProfileService profileService = new RemotingProfileService();
-            final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName,
-                    profileService);
-
-            final Boolean isLocalReceiverExcluded = RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER
-                    .resolveModelAttribute(context, profileNode).asBoolean();
-            // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceiver
-            // service
-            if (!isLocalReceiverExcluded) {
-                final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE
-                        .resolveModelAttribute(context, profileNode);
-                if (passByValueNode.isDefined()) {
-                    final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() == true ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
-                            : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
-                    final InjectedValue<EJBTransportProvider> localProviderValue = new InjectedValue<>();
-                    builder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, localProviderValue);
-                    profileService.addTransportProvider(localProviderValue);
-
-                } else {
-                    // setup a dependency on the default local ejb receiver service configured at the subsystem level
-                    final InjectedValue<EJBTransportProvider> localProviderValue = new InjectedValue<>();
-                    builder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, localProviderValue);
-                    profileService.addTransportProvider(localProviderValue);
-
-                }
-            }
+            final List<ServiceURL> urls = new ArrayList<>();
 
             if(profileNode.hasDefined(EJB3SubsystemModel.DISCOVERY)){
                 final ModelNode discoveryNode = profileNode.get(EJB3SubsystemModel.DISCOVERY).get("static");
@@ -124,10 +98,31 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                     urlBuilder.setAbstractType(urlNode.get("abstract-type").asString());
                     urlBuilder.setAbstractTypeAuthority(urlNode.get("abstract-type-authority").asString());
 
-                    profileService.addServiceUrl(urlBuilder.create());
+                    urls.add(urlBuilder.create());
                 }
             }
-            profileService.addTransportProvider(new ImmediateValue<EJBTransportProvider>(new RemoteTransportProvider()));
+
+            final RemotingProfileService profileService = new RemotingProfileService(urls);
+            final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName,
+                    profileService);
+
+            final boolean isLocalReceiverExcluded = RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER
+                    .resolveModelAttribute(context, profileNode).asBoolean();
+            // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceiver
+            // service
+            if (!isLocalReceiverExcluded) {
+                final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE
+                        .resolveModelAttribute(context, profileNode);
+                if (passByValueNode.isDefined()) {
+                    final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() == true ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
+                            : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
+                    builder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                } else {
+                    // setup a dependency on the default local ejb receiver service configured at the subsystem level
+                    builder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                }
+            }
+
             builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (IllegalArgumentException | URISyntaxException e) {
             throw new OperationFailedException(e.getLocalizedMessage());

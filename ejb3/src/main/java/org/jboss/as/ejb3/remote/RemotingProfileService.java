@@ -28,26 +28,28 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.discovery.ServiceURL;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Service which contains the static configuration data found in an EJB Remoting profile, either in the subsystem or in a
+ * deployment descriptor.
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- */
-/**
- * @author Tomasz Adamski
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class RemotingProfileService implements Service<RemotingProfileService> {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "profile");
 
-    private final List<Value<EJBTransportProvider>>  transportProviders = new ArrayList<>();
+    private final List<ServiceURL> serviceUrls;
+    private final InjectedValue<EJBTransportProvider> localTransportProviderInjector = new InjectedValue<>();
 
-    private final List<ServiceURL> serviceUrls = new ArrayList<>();
+    public RemotingProfileService(final List<ServiceURL> serviceUrls) {
+        this.serviceUrls = serviceUrls;
+    }
 
     @Override
     public RemotingProfileService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -62,19 +64,11 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
     public void stop(StopContext context) {
     }
 
-    public void addServiceUrl(final ServiceURL serviceUrl) {
-        serviceUrls.add(serviceUrl);
-    }
-
-    public List<Value<EJBTransportProvider>> getTransportProviders() {
-        return transportProviders;
-    }
-
-    public void addTransportProvider(final Value<EJBTransportProvider> transportProvider){
-        transportProviders.add(transportProvider);
-    }
-
     public List<ServiceURL> getServiceUrls() {
         return serviceUrls;
+    }
+
+    public InjectedValue<EJBTransportProvider> getLocalTransportProviderInjector() {
+        return localTransportProviderInjector;
     }
 }

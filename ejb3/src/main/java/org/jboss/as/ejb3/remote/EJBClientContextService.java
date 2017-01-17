@@ -25,22 +25,19 @@ package org.jboss.as.ejb3.remote;
 import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
+import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedSetValue;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.discovery.ServiceRegistry;
-import org.wildfly.discovery.impl.AggregateRegistryProvider;
+import org.wildfly.discovery.impl.LocalRegistryAndDiscoveryProvider;
+import org.wildfly.discovery.spi.DiscoveryProvider;
 import org.wildfly.discovery.spi.RegistryProvider;
 
 /**
@@ -60,10 +57,11 @@ public final class EJBClientContextService implements Service<EJBClientContext> 
 
     public static final ServiceName DEFAULT_SERVICE_NAME = BASE_SERVICE_NAME.append("default");
 
-    private volatile EJBClientContext clientContext;
+    private EJBClientContext clientContext;
+    private LocalRegistryAndDiscoveryProvider discovery;
 
-    private final InjectedSetValue<RegistryProvider> registryProviderInjector = new InjectedSetValue<>();
-    private final InjectedSetValue<List<EJBTransportProvider>> transportProvidersInjector = new InjectedSetValue<>();
+    private final InjectedValue<EJBClientConfiguratorService> configuratorServiceInjector = new InjectedValue<>();
+    private final InjectedValue<EJBTransportProvider> localProviderInjector = new InjectedValue<>();
 
     /**
      * TODO: possibly move to using a per-thread solution for embedded support
@@ -79,23 +77,21 @@ public final class EJBClientContextService implements Service<EJBClientContext> 
     }
 
     public void start(final StartContext context) throws StartException {
+        discovery = new LocalRegistryAndDiscoveryProvider();
+
         final EJBClientContext.Builder builder = new EJBClientContext.Builder();
-        final Set<RegistryProvider> registryProviders = this.registryProviderInjector.getValue();
-        final int size = registryProviders.size();
-        if (size > 0) {
-            final RegistryProvider registryProvider;
-            if (size == 1) {
-                registryProvider = registryProviders.iterator().next();
-            } else {
-                registryProvider = new AggregateRegistryProvider(registryProviders.toArray(NO_PROVIDERS));
-            }
-            builder.setServiceRegistry(ServiceRegistry.create(registryProvider));
+
+        // apply subsystem-level configuration that applies to all EJB client contexts
+        configuratorServiceInjector.getValue().accept(builder);
+
+        // add *only* our registry
+        builder.setServiceRegistry(ServiceRegistry.create(discovery));
+
+        final EJBTransportProvider localTransport = localProviderInjector.getOptionalValue();
+        if (localTransport != null) {
+            builder.addTransportProvider(localTransport);
         }
-        for (List<EJBTransportProvider> transportProviderList : transportProvidersInjector.getValue()) {
-            for (EJBTransportProvider transportProvider : transportProviderList) {
-                builder.addTransportProvider(transportProvider);
-            }
-        }
+
         clientContext = builder.build();
         if (makeGlobal) {
             doPrivileged((PrivilegedAction<Void>) () -> {
@@ -106,6 +102,7 @@ public final class EJBClientContextService implements Service<EJBClientContext> 
     }
 
     public void stop(final StopContext context) {
+        discovery = null;
         clientContext = null;
         if (makeGlobal) {
             doPrivileged((PrivilegedAction<Void>) () -> {
@@ -119,24 +116,20 @@ public final class EJBClientContextService implements Service<EJBClientContext> 
         return clientContext;
     }
 
-    public Injector<List<EJBTransportProvider>> createEJBTransportProviderListInjector() {
-        return transportProvidersInjector.injector();
+    public InjectedValue<EJBClientConfiguratorService> getConfiguratorServiceInjector() {
+        return configuratorServiceInjector;
     }
 
-    public Injector<EJBTransportProvider> createEJBTransportProviderInjector() {
-        final Injector<List<EJBTransportProvider>> injector = transportProvidersInjector.injector();
-        return new Injector<EJBTransportProvider>() {
-            public void inject(final EJBTransportProvider value) throws InjectionException {
-                injector.inject(Collections.singletonList(value));
-            }
-
-            public void uninject() {
-                injector.uninject();
-            }
-        };
+    public InjectedValue<EJBTransportProvider> getLocalProviderInjector() {
+        return localProviderInjector;
     }
 
-    public Injector<RegistryProvider> createRegistryProviderInjector() {
-        return registryProviderInjector.injector();
+    /**
+     * Get the discovery provider for found remote EJBs.
+     *
+     * @return the discovery provider for found remote EJBs
+     */
+    public DiscoveryProvider getDiscoveryProvider() {
+        return discovery;
     }
 }
