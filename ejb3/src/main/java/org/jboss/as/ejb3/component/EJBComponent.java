@@ -62,6 +62,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
@@ -295,7 +296,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     private static <T extends EJBHome> EJBHomeLocator<T> createHomeLocator(Class<T> viewClass, String appName, String moduleName, String beanName, String distinctName) {
-        return new EJBHomeLocator<T>(viewClass, appName, moduleName, beanName, distinctName);
+        return new EJBHomeLocator<T>(viewClass, appName, moduleName, beanName, distinctName, Affinity.LOCAL);
     }
 
     public Class<?> getEjbObjectType() {
