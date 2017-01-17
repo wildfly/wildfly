@@ -143,7 +143,6 @@ public class RemoteNamingEjbTestCase {
                 // expected
             }
 
-
             // test binding
             binder = (BinderRemote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             assertNotNull(binder);

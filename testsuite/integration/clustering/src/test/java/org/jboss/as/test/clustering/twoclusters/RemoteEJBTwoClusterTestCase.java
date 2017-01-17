@@ -5,6 +5,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
@@ -52,7 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client 4 integration
 public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase {
 
     private static final Logger logger = Logger.getLogger(RemoteEJBTwoClusterTestCase.class);
@@ -198,6 +198,11 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
      * as long as one node in each cluster is available.
      */
     public void testConcurrentFailoverOverWithTwoClusters(boolean useTransactions) throws Exception {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using FORWARDER_CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(FORWARDER_CLIENT_PROPERTIES);
+
         try {
             // get the correct forwarder deployment on cluster A
             RemoteStatefulSB bean = null;
@@ -285,7 +290,7 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 double invocations = client.getInvocationCount();
                 double exceptions = client.getExceptionCount();
                 logger.trace("Total invocations = " + invocations + ", total exceptions = " + exceptions);
-                Assert.assertTrue("Too many exceptions! percentage = " + 100 * (exceptions / invocations), (exceptions / invocations) < EXCEPTION_PERCENTAGE);
+                Assert.assertTrue("Too many exceptions! percentage = " + 100 * (exceptions/invocations), (exceptions/invocations) < EXCEPTION_PERCENTAGE);
 
             } catch (Exception e) {
                 Assert.fail("Exception occurred on client: " + e.getMessage() + ", test did not complete successfully (inner)");
@@ -297,6 +302,7 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
 
         } catch (Exception e) {
             Assert.fail("Exception occurred on client: " + e.getMessage() + ", test did not complete successfully (outer)");
+
         }
     }
 

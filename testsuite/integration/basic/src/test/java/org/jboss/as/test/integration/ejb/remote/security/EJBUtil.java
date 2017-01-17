@@ -55,6 +55,7 @@ class EJBUtil {
     public static <T> T lookupEJB(Class<? extends T> beanImplClass, Class<T> remoteInterface) throws NamingException {
         final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        //        jndiProperties.put("jboss.naming.client.ejb.context", "true");
         final Context context = new InitialContext(jndiProperties);
 
         return (T) context.lookup("ejb:/" + APPLICATION_NAME + "/" + beanImplClass.getSimpleName() + "!"
@@ -63,7 +64,7 @@ class EJBUtil {
 
     /**
      * Creates {@link Properties} for the EJB client configuration.
-     * <p>
+     *
      * <pre>
      * remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
      *

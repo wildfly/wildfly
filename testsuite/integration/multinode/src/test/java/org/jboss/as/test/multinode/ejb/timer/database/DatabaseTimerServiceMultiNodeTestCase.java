@@ -69,7 +69,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(DatabaseTimerServiceMultiNodeTestCase.DatabaseTimerServiceTestCaseServerSetup.class)
-//TODO Elytron - ejb-client4 integration
 public class DatabaseTimerServiceMultiNodeTestCase {
 
     public static final String ARCHIVE_NAME = "testTimerServiceSimple";
@@ -259,5 +258,8 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         config.put("remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
         config.put("remote.connection.default.host", managementClient.getWebUri().getHost());
         config.put("remote.connection.default.port", String.valueOf(managementClient.getWebUri().getPort()));
+
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using config
     }
 }

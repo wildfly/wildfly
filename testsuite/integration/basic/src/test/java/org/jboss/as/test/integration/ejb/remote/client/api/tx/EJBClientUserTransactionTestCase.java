@@ -36,6 +36,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +46,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client4
 public class EJBClientUserTransactionTestCase {
     private static final Logger logger = Logger.getLogger(EJBClientUserTransactionTestCase.class);
 
@@ -109,6 +109,20 @@ public class EJBClientUserTransactionTestCase {
         final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
         userTransaction.begin();
         userTransaction.rollback();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
+        //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        // set the tx context
+        //EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+
     }
 
     /**

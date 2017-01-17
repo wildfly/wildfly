@@ -36,19 +36,16 @@ import java.util.Map;
  */
 @Stateful(passivationCapable = false)
 @Remote(RemoteViewInvoker.class)
-//TODO Elytron - ejb-client4 integration
 public class RemoteViewInvokingBean implements RemoteViewInvoker {
 
     @EJB
     private RemoteSFSB remoteViewSFSB;
 
     private Map<String, Object> interceptorData;
+    private EJBClientContext ejbClientContext;
 
     @PostConstruct
     void setupClientInterceptor() {
-        // get hold of the EJBClientContext
-        final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
-
         // create some data that the client side interceptor will pass along during the EJB invocation
         this.interceptorData = new HashMap<String, Object>();
         final String keyOne = "abc";
@@ -58,11 +55,19 @@ public class RemoteViewInvokingBean implements RemoteViewInvoker {
 
         interceptorData.put(keyOne, valueOne);
         interceptorData.put(keyTwo, valueTwo);
+
+        final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
+        // get hold of the EJBClientContext and register the client side interceptor
+        ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(clientInterceptor);
     }
 
     @Override
     public Map<String, Object> invokeRemoteViewAndGetInvocationData(final String... key) {
-        return remoteViewSFSB.getInvocationData(key);
+        try {
+            return ejbClientContext.runCallable(() -> remoteViewSFSB.getInvocationData(key));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override

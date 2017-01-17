@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.extended.ejb2.stateful.passivation;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.WAIT_FOR_PASSIVATION_MS;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.clustering.DMRUtil;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.EJBClientContext;
@@ -82,6 +84,18 @@ public abstract class ClusterPassivationTestBase {
     }
 
     /**
+     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers based on this testcase
+     * specific jboss-ejb-client.properties file
+     */
+    protected void setupEJBClientContextSelector() throws IOException {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using sfsb-failover-jboss-ejb-client.properties and ensure the EJB client
+        // context is reset to its original state at the end of the test
+        EJBClientContextSelector
+                .setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
+    }
+
+    /**
      * Start servers whether their are not started.
      *
      * @param client1 client for server1
@@ -95,15 +109,15 @@ public abstract class ClusterPassivationTestBase {
     protected void waitForClusterContext() throws InterruptedException {
         int counter = 0;
         EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
-        //TODO Elytron - remoting 4 integration
-//        ClusterContext clusterContext;
-//        do {
-//            clusterContext = ejbClientContext.getClusterContext(CLUSTER_NAME);
-//            counter-;
-//            Thread.sleep(CLUSTER_ESTABLISHMENT_WAIT_MS);
-//        } while (clusterContext == null && counter < CLUSTER_ESTABLISHMENT_LOOP_COUNT);
-//        Assert.assertNotNull("Cluster context for " + CLUSTER_NAME + " was not taken in "
-//                + (CLUSTER_ESTABLISHMENT_LOOP_COUNT * CLUSTER_ESTABLISHMENT_WAIT_MS) + " ms", clusterContext);
+        // TODO Elytron: Determine how this should be adapted once the clustering and EJB client changes are in
+        // ClusterContext clusterContext;
+        //do {
+        //    clusterContext = ejbClientContext.getClusterContext(CLUSTER_NAME);
+        //    counter--;
+        //    Thread.sleep(CLUSTER_ESTABLISHMENT_WAIT_MS);
+        //} while (clusterContext == null && counter < CLUSTER_ESTABLISHMENT_LOOP_COUNT);
+        //Assert.assertNotNull("Cluster context for " + CLUSTER_NAME + " was not taken in "
+        //        + (CLUSTER_ESTABLISHMENT_LOOP_COUNT * CLUSTER_ESTABLISHMENT_WAIT_MS) + " ms", clusterContext);
     }
 
     /**
@@ -124,6 +138,8 @@ public abstract class ClusterPassivationTestBase {
 
         // A small hack - deleting node (by name) from cluster which this client knows
         // It means that the next request (ejb call) will be passed to the server #2
+        // TODO Elytron: Determine how this should be adapted once the clustering and EJB client changes are in
+        //EJBClientContext.requireCurrent().getClusterContext(CLUSTER_NAME).removeClusterNode(calledNodeFirst);
 
         Assert.assertEquals("Supposing to get passivation node which was set", calledNodeFirst, statefulBean.getPassivatedBy());
 
@@ -133,6 +149,7 @@ public abstract class ClusterPassivationTestBase {
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
 
         // Resetting cluster context to know both cluster nodes
+        setupEJBClientContextSelector();
         // Waiting for getting cluster context - it could take some time for client to get info from cluster nodes
         waitForClusterContext();
 

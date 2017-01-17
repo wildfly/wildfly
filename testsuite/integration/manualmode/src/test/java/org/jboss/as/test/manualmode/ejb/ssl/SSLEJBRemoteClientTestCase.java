@@ -36,6 +36,7 @@ import org.jboss.as.test.manualmode.ejb.ssl.beans.StatefulBeanRemote;
 import org.jboss.as.test.manualmode.ejb.ssl.beans.StatelessBean;
 import org.jboss.as.test.manualmode.ejb.ssl.beans.StatelessBeanRemote;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,6 +51,8 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
@@ -62,7 +65,6 @@ import java.util.concurrent.Future;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Ignore("WFLY-1836")
-//TODO Elytron - ejb-client4 integration
 public class SSLEJBRemoteClientTestCase {
     private static final Logger log = Logger.getLogger(SSLEJBRemoteClientTestCase.class);
     private static final String MODULE_NAME_STATELESS = "ssl-remote-ejb-client-test";
@@ -110,6 +112,22 @@ public class SSLEJBRemoteClientTestCase {
         System.setProperty("jboss.ejb.client.properties.skip.classloader.scan", "true");
     }
 
+    private static EJBClientContext setupEJBClientContextSelector() throws IOException {
+        log.trace("*** reading EJBClientContextSelector properties");
+        // setup the selector
+        final String clientPropertiesFile = "org/jboss/as/test/manualmode/ejb/ssl/jboss-ejb-client.properties";
+        final InputStream inputStream = SSLEJBRemoteClientTestCase.class.getClassLoader().getResourceAsStream(clientPropertiesFile);
+        if (inputStream == null) {
+            throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
+        }
+        final Properties properties = new Properties();
+        properties.load(inputStream);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using properties
+        return null;
+    }
+
+
     @Before
     public void prepareServerOnce() throws Exception {
         if(!serverConfigDone) {
@@ -128,6 +146,7 @@ public class SSLEJBRemoteClientTestCase {
             managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
             // write SSL realm config to output - debugging purposes
             SSLRealmSetupTool.readSSLRealmConfig(managementClient);
+            setupEJBClientContextSelector();
             serverConfigDone = true;
         } else {
             log.trace("*** Server already prepared, skipping config procedure");

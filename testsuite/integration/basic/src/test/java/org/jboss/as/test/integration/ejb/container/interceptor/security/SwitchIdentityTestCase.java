@@ -71,6 +71,7 @@ import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
@@ -93,7 +94,6 @@ import org.junit.runner.RunWith;
         SwitchIdentityTestCase.SecurityRealmsSetup.class, //
         SwitchIdentityTestCase.RemotingSetup.class })
 @RunAsClient
-//TODO Elytron ejb-client 4 integration
 public class SwitchIdentityTestCase {
 
     private static final String EJB_OUTBOUND_SOCKET_BINDING = "ejb-outbound";
@@ -195,18 +195,23 @@ public class SwitchIdentityTestCase {
                     CLIENT_LOGIN_CONFIG);
             loginContext.login();
 
-            final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
-            final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
+            // register the client side interceptor
+            final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
+            ejbClientContext.runCallable(() -> {
+                final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
+                final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
 
-            //test direct access
-            testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
+                //test direct access
+                testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
 
-            //test security context propagation
-            testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
+                //test security context propagation
+                testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
+                return null;
+            });
         } finally {
             if (loginContext != null) {
                 loginContext.logout();
@@ -219,21 +224,29 @@ public class SwitchIdentityTestCase {
      */
     private void callUsingSecurityContextAssociation(String userName, boolean hasRole1, boolean hasRole2) throws Exception {
         try {
+            final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
+            // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+            // that should be used for this test using ejbClientConfiguration
+
+            // register the client side interceptor
+            final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
             SecurityContextAssociation.setPrincipal(new SimplePrincipal(userName));
 
-            final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
-            final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
+            ejbClientContext.runCallable(() -> {
+                final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
+                final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
 
-            //test direct access
-            testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
+                //test direct access
+                testMethodAccess(targetBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(targetBean, ManageMethodEnum.ROLE2, hasRole2);
 
-            //test security context propagation
-            testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
-            testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
-
+                //test security context propagation
+                testMethodAccess(bridgeBean, ManageMethodEnum.ALLROLES, true);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE1, hasRole1);
+                testMethodAccess(bridgeBean, ManageMethodEnum.ROLE2, hasRole2);
+                return null;
+            });
         } finally {
             SecurityContextAssociation.clearSecurityContext();
         }

@@ -37,6 +37,7 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.manualmode.ejb.Util;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -52,8 +53,11 @@ import org.wildfly.test.api.Authentication;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
@@ -68,7 +72,6 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 @RunWith(Arquillian.class)
 @RunAsClient
 @Ignore("WFLY-4421")
-//TODO Elytron - ejb-client4 integration
 public class EJBClientClusterConfigurationTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientClusterConfigurationTestCase.class);
@@ -96,6 +99,9 @@ public class EJBClientClusterConfigurationTestCase {
     @Before
     public void before() throws Exception {
         this.context = Util.createNamingContext();
+        // setup the client context selector
+        setupEJBClientContextSelector();
+
     }
 
     @After
@@ -196,6 +202,28 @@ public class EJBClientClusterConfigurationTestCase {
             }
             serverBClient.close();
         }
+
+    }
+
+    /**
+     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
+     * based on this testcase specific jboss-ejb-client.properties file
+     *
+     * @return
+     * @throws java.io.IOException
+     */
+    private static EJBClientContext setupEJBClientContextSelector() throws IOException {
+        // setup the selector
+        final String clientPropertiesFile = "jboss-ejb-client.properties";
+        final InputStream inputStream = EJBClientClusterConfigurationTestCase.class.getResourceAsStream(clientPropertiesFile);
+        if (inputStream == null) {
+            throw new IllegalStateException("Could not find " + clientPropertiesFile + " in classpath");
+        }
+        final Properties properties = new Properties();
+        properties.load(inputStream);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using properties
+        return null;
     }
 
     private static ModelControllerClient createModelControllerClient(final String container) throws UnknownHostException {

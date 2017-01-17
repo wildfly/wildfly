@@ -54,7 +54,6 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client 4 integration
 public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestCase.class);
 
@@ -135,6 +134,9 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         setPassivationAttributes(client1.getControllerClient());
         setPassivationAttributes(client2.getControllerClient());
+
+        // Setting context from .properties file to get ejb:/ remote context
+        setupEJBClientContextSelector();
 
         StatefulRemoteHome home = directory.lookupHome(StatefulBean.class, StatefulRemoteHome.class);
         StatefulRemote statefulBean = home.create();

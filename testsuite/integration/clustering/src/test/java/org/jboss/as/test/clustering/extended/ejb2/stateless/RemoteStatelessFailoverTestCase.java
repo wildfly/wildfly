@@ -44,6 +44,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
@@ -67,7 +68,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client 4 integration
 public class RemoteStatelessFailoverTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
@@ -185,6 +185,11 @@ public class RemoteStatelessFailoverTestCase {
         this.start(CONTAINER_1);
         this.deploy(CONTAINER_1, deployment1);
 
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+
         try {
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
@@ -229,6 +234,11 @@ public class RemoteStatelessFailoverTestCase {
         this.start(CONTAINER_2);
         this.deploy(CONTAINER_2, deployment2);
 
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+
         int numberOfServers = 2;
         int numberOfCalls = 40;
         // there will be at least 20% of calls processed by all servers
@@ -246,6 +256,7 @@ public class RemoteStatelessFailoverTestCase {
             Properties contextChangeProperties = new Properties();
             contextChangeProperties.put(REMOTE_PORT_PROPERTY_NAME, PORT_2.toString());
             contextChangeProperties.put(REMOTE_HOST_PROPERTY_NAME, HOST_2.toString());
+            EJBClientContextSelector.setup(CLIENT_PROPERTIES, contextChangeProperties);
 
             bean = home.create();
             node = bean.getNodeName();

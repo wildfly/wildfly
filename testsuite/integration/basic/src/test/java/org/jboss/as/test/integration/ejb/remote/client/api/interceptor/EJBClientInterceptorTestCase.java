@@ -45,10 +45,7 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-//TODO Elytron - ejb-client4 integration
 public class EJBClientInterceptorTestCase {
-
-    private static final int CLIENT_INTERCEPTOR_ORDER = 0x99999;
 
     private static final String APP_NAME = "";
     private static final String DISTINCT_NAME = "";
@@ -68,9 +65,6 @@ public class EJBClientInterceptorTestCase {
     @Test
     @RunAsClient // run as a truly remote client
     public void testEJBClientInterceptionFromRemoteClient() throws Exception {
-        // get hold of the EJBClientContext
-        final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
-
         // create some data that the client side interceptor will pass along during the EJB invocation
         final Map<String, Object> interceptorData = new HashMap<String, Object>();
         final String keyOne = "foo";
@@ -81,23 +75,30 @@ public class EJBClientInterceptorTestCase {
         interceptorData.put(keyOne, valueOne);
         interceptorData.put(keyTwo, valueTwo);
 
+        final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
+        // get hold of the EJBClientContext and register the client side interceptor
+        final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(clientInterceptor);
+
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context jndiContext = new InitialContext(props);
-        final RemoteSFSB remoteSFSB = (RemoteSFSB) jndiContext.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME
-                + "/" + SimpleSFSB.class.getSimpleName() + "!" + RemoteSFSB.class.getName() + "?stateful");
+        ejbClientContext.runCallable(() -> {
+            final RemoteSFSB remoteSFSB = (RemoteSFSB) jndiContext.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME
+                    + "/" + SimpleSFSB.class.getSimpleName() + "!" + RemoteSFSB.class.getName() + "?stateful");
 
-        // invoke the bean and ask it for the invocation data that it saw on the server side
-        final Map<String, Object> valuesSeenOnServerSide = remoteSFSB.getInvocationData(keyOne, keyTwo);
-        // make sure the server side bean was able to get the data which was passed on by the client side
-        // interceptor
-        Assert.assertNotNull("Server side context data was expected to be non-null", valuesSeenOnServerSide);
-        Assert.assertFalse("Server side context data was expected to be non-empty", valuesSeenOnServerSide.isEmpty());
-        for (final Map.Entry<String, Object> clientInterceptorDataEntry : interceptorData.entrySet()) {
-            final String key = clientInterceptorDataEntry.getKey();
-            final Object expectedValue = clientInterceptorDataEntry.getValue();
-            Assert.assertEquals("Unexpected value in bean, on server side, via InvocationContext.getContextData() for key " + key, expectedValue, valuesSeenOnServerSide.get(key));
-        }
+            // invoke the bean and ask it for the invocation data that it saw on the server side
+            final Map<String, Object> valuesSeenOnServerSide = remoteSFSB.getInvocationData(keyOne, keyTwo);
+            // make sure the server side bean was able to get the data which was passed on by the client side
+            // interceptor
+            Assert.assertNotNull("Server side context data was expected to be non-null", valuesSeenOnServerSide);
+            Assert.assertFalse("Server side context data was expected to be non-empty", valuesSeenOnServerSide.isEmpty());
+            for (final Map.Entry<String, Object> clientInterceptorDataEntry : interceptorData.entrySet()) {
+                final String key = clientInterceptorDataEntry.getKey();
+                final Object expectedValue = clientInterceptorDataEntry.getValue();
+                Assert.assertEquals("Unexpected value in bean, on server side, via InvocationContext.getContextData() for key " + key, expectedValue, valuesSeenOnServerSide.get(key));
+            }
+            return null;
+        });
 
     }
 

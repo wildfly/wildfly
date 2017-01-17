@@ -24,12 +24,14 @@ package org.jboss.as.test.integration.ejb.remote.security;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -43,7 +45,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - ejb-client4 integration: this test requires introduction of many chains of authentication based on used protocol
 public class RemoteIdentityTestCase {
 
     @ArquillianResource
@@ -64,6 +65,10 @@ public class RemoteIdentityTestCase {
 
     @Test
     public void testDirect() throws Exception {
+        final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using ejbClientConfiguration
+
         final SecurityInformation targetBean = EJBUtil.lookupEJB(SecuredBean.class, SecurityInformation.class);
 
         assertEquals("guest", targetBean.getPrincipalName());
@@ -71,12 +76,21 @@ public class RemoteIdentityTestCase {
 
     @Test
     public void testUnsecured() throws Exception {
+        final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using ejbClientConfiguration
+
         final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
+
         assertEquals("anonymous", targetBean.getPrincipalName());
     }
 
     @Test
     public void testSwitched() throws Exception {
+        final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using ejbClientConfiguration
+
         final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
 
         assertEquals("user1", targetBean.getPrincipalName("user1", "password1"));
@@ -84,6 +98,10 @@ public class RemoteIdentityTestCase {
 
     @Test
     public void testNotSwitched() throws Exception {
+        final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using ejbClientConfiguration
+
         final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
 
         assertEquals("guest", targetBean.getPrincipalName(null, null));

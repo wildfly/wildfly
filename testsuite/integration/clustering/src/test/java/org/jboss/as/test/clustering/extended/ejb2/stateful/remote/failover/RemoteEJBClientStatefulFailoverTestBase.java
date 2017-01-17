@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
 import javax.naming.NamingException;
 
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
@@ -100,6 +101,12 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
      * Implementation of defined abstract tests above.
      */
     protected void failoverFromRemoteClient(boolean undeployOnly) throws Exception {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using PROPERTIES_FILE and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(PROPERTIES_FILE);
+
+
         CounterRemoteHome home = directory.lookupHome(CounterBean.class, CounterRemoteHome.class);
         CounterRemote remoteCounter = home.create();
         Assert.assertNotNull(remoteCounter);

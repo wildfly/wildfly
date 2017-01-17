@@ -87,7 +87,7 @@ public class XaDataSourcePoolStatisticsTestCase {
 
     @Before
     public void beforeTest() throws Exception {
-        //TODO Elytron
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
         //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
         //EJBClientTransactionContext.setGlobalContext(localUserTxContext);
     }

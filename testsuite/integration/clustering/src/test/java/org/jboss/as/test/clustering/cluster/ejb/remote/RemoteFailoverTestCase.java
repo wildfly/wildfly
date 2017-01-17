@@ -45,6 +45,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.InfinispanExceptionThrowingIncrementorBean;
@@ -71,7 +72,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron - remoting 4 integration
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-failover-test";
     private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
@@ -117,6 +117,10 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     private void testStatelessFailover(String properties, Class<? extends Incrementor> beanClass) throws Exception {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using properties and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(properties);
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = context.lookupStateless(beanClass, Incrementor.class);
 
@@ -194,6 +198,10 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     @InSequence(2)
     @Test
     public void testStatefulFailover() throws Exception {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = context.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
@@ -288,6 +296,10 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     public void testConcurrentFailover(Lifecycle lifecycle) throws Exception {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
             AtomicInteger count = new AtomicInteger();
@@ -340,6 +352,10 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     @InSequence(5)
     @Test
     public void testClientException() throws Exception {
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = context.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
 
