@@ -33,7 +33,6 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -55,26 +54,15 @@ import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
-import org.wildfly.discovery.AttributeValue;
-import org.wildfly.discovery.FilterSpec;
-import org.wildfly.discovery.ServiceType;
-import org.wildfly.discovery.ServiceURL;
-import org.wildfly.discovery.spi.DiscoveryProvider;
-import org.wildfly.discovery.spi.DiscoveryRequest;
-import org.wildfly.discovery.spi.DiscoveryResult;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.ejb.AsyncResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -87,26 +75,17 @@ import java.util.concurrent.Future;
  * @author Stuart Douglas
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
-public class LocalEjbReceiver extends EJBReceiver implements DiscoveryProvider {
+public class LocalEjbReceiver extends EJBReceiver {
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
-
-    private final Listener deploymentListener = new Listener();
 
     private final DeploymentRepository deploymentRepository;
 
     private final boolean allowPassByReference;
 
-    private final Map<DeploymentModuleIdentifier, ServiceURL> accessibleModules = Collections.synchronizedMap(new LinkedHashMap<>());
-
     public LocalEjbReceiver(final boolean allowPassByReference, final DeploymentRepository deploymentRepository) {
         this.allowPassByReference = allowPassByReference;
         this.deploymentRepository = deploymentRepository;
-        deploymentRepository.addListener(deploymentListener);
-    }
-
-    public void destroy(){
-        deploymentRepository.removeListener(deploymentListener);
     }
 
     @Override
@@ -349,49 +328,6 @@ public class LocalEjbReceiver extends EJBReceiver implements DiscoveryProvider {
         }
     }
 
-    /**
-     * Listener that updates the accessible set of modules
-     */
-    class Listener implements DeploymentRepositoryListener {
-
-        @Override
-        public void listenerAdded(final DeploymentRepository repository) {
-            for (Map.Entry<DeploymentModuleIdentifier, ModuleDeployment> entry : repository.getModules().entrySet()) {
-                final DeploymentModuleIdentifier module = entry.getKey();
-                accessibleModules.put(module, createServiceURL(module));
-            }
-        }
-
-        @Override
-        public void deploymentAvailable(final DeploymentModuleIdentifier module, final ModuleDeployment moduleDeployment) {
-            accessibleModules.put(module, createServiceURL(module));
-        }
-
-        private ServiceURL createServiceURL(final DeploymentModuleIdentifier moduleIdentifier) {
-            final ServiceURL.Builder builder = new ServiceURL.Builder();
-            builder.addAttribute("ejb-module", AttributeValue.fromString(moduleIdentifier.getApplicationName() + '/' + moduleIdentifier.getModuleName()));
-            try {
-                builder.setUri(new URI("local:localhost"));
-            } catch (URISyntaxException ignored) {
-                assert false : "Syntax error in programmatically created URI";
-            }
-            builder.setAbstractType("ejb");
-            builder.setAbstractTypeAuthority("jboss");
-            return builder.create();
-        }
-
-        @Override
-        public void deploymentStarted(DeploymentModuleIdentifier module, ModuleDeployment moduleDeployment) {
-        }
-
-        @Override
-        public void deploymentRemoved(final DeploymentModuleIdentifier module) {
-            accessibleModules.remove(module);
-        }
-
-
-    }
-
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
@@ -412,21 +348,5 @@ public class LocalEjbReceiver extends EJBReceiver implements DiscoveryProvider {
                 return null;
             }
         });
-    }
-
-
-    @Override
-    public DiscoveryRequest discover(final ServiceType serviceType, final FilterSpec filterSpec, final DiscoveryResult result) {
-        try {
-            for (final ServiceURL url : accessibleModules.values()) {
-                if (url.satisfies(filterSpec)) {
-                    final URI uri = url.getLocationURI();
-                    result.addMatch(uri);
-                }
-            }
-            return DiscoveryRequest.NULL;
-        } finally {
-            result.complete();
-        }
     }
 }
