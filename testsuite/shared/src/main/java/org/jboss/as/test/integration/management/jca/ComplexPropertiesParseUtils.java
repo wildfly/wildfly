@@ -37,9 +37,10 @@ public class ComplexPropertiesParseUtils {
     /**
      * Returns common properties for both XA and Non-XA datasource
      *
-     * @param jndiName
+     * @param jndiName jndi name
+     * @param connectionSecurityType the connection security that will be configured in the properties
      */
-    public static Properties commonDsProperties(String jndiName, boolean userName) {
+    public static Properties commonDsProperties(String jndiName, ConnectionSecurityType connectionSecurityType) {
         Properties params = new Properties();
         //attributes
         params.put("use-java-context", "true");
@@ -59,11 +60,23 @@ public class ComplexPropertiesParseUtils {
         params.put("pool-use-strict-min", "true");
         params.put("flush-strategy", "EntirePool");
         //security
-        if (userName) {
-            params.put("user-name", "sa");
-            params.put("password", "sa");
-        } else {
-            params.put("security-domain", "HsqlDbRealm");
+        switch(connectionSecurityType) {
+            case ELYTRON_AUTHENTICATION_CONTEXT:
+                params.put("authentication-context", "HsqlAuthCtxt");
+                // fall thru!
+            case ELYTRON:
+                params.put("elytron-enabled", "true");
+                break;
+            case SECURITY_DOMAIN:
+                params.put("security-domain", "HsqlDbRealm");
+                break;
+            case USER_PASSWORD:
+                params.put("user-name", "sa");
+                params.put("password", "sa");
+                break;
+            default:
+                throw new InvalidParameterException("Unsupported security connection type for data sources: " +
+                        connectionSecurityType);
         }
         params.put("reauth-plugin-class-name", "someClass1");
         //validation
@@ -94,10 +107,11 @@ public class ComplexPropertiesParseUtils {
     /**
      * Returns properties for complex XA datasource
      *
-     * @param jndiName
+     * @param jndiName               jndi name
+     * @param connectionSecurityType the connection security that will be configured in the properties
      */
-    public static Properties xaDsProperties(String jndiName, boolean userName) {
-        Properties params = commonDsProperties(jndiName, userName);
+    public static Properties xaDsProperties(String jndiName, ConnectionSecurityType connectionSecurityType) {
+        Properties params = commonDsProperties(jndiName, connectionSecurityType);
         //attributes
 
         //common
@@ -113,11 +127,23 @@ public class ComplexPropertiesParseUtils {
         //recovery
         params.put("no-recovery", "false");
         params.put("recovery-plugin-class-name", "someClass5");
-        if (userName) {
-            params.put("recovery-username", "sa");
-            params.put("recovery-password", "sa");
-        } else {
-            params.put("recovery-security-domain", "HsqlDbRealm");
+        switch (connectionSecurityType) {
+            case ELYTRON_AUTHENTICATION_CONTEXT:
+                params.put("recovery-authentication-context", "HsqlAuthCtxt");
+                // fall thru!
+            case ELYTRON:
+                params.put("recovery-elytron-enabled", "true");
+                break;
+            case SECURITY_DOMAIN:
+                params.put("recovery-security-domain", "HsqlDbRealm");
+                break;
+            case USER_PASSWORD:
+                params.put("recovery-username", "sa");
+                params.put("recovery-password", "sa");
+                break;
+            default:
+                throw new InvalidParameterException("Unsupported connection security for data sources: " +
+                        connectionSecurityType);
         }
 
         return params;
@@ -126,10 +152,11 @@ public class ComplexPropertiesParseUtils {
     /**
      * Returns properties for non XA datasource
      *
-     * @param jndiName
+     * @param jndiName               jndi name
+     * @param connectionSecurityType the connection security that will be configured in the properties
      */
-    public static Properties nonXaDsProperties(String jndiName, boolean userName) {
-        Properties params = commonDsProperties(jndiName, userName);        //attributes
+    public static Properties nonXaDsProperties(String jndiName, ConnectionSecurityType connectionSecurityType) {
+        Properties params = commonDsProperties(jndiName, connectionSecurityType);        //attributes
         params.put("jta", "false");
         //common
         params.put("driver-class", "org.hsqldb.jdbcDriver");

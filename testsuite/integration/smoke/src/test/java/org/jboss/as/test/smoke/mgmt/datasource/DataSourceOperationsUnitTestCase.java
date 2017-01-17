@@ -31,12 +31,14 @@ import static org.jboss.as.test.integration.management.jca.ComplexPropertiesPars
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.xaDsProperties;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -53,6 +55,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
+ * @author Flavia Rainone
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -364,20 +367,42 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
      */
     @Test
     public void testAddComplexDsUsername() throws Exception {
-        testAddComplexDs(true);
+        testAddComplexDs(ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void testAddComplexDsElytron() throws Exception {
+        testAddComplexDs(ConnectionSecurityType.ELYTRON);
+    }
+
+    @Test
+    public void testAddComplexDsElytronAuthenticationContext() throws Exception {
+        testAddComplexDs(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
     }
 
     @Test
     public void testAddComplexDsSecurityDomain() throws Exception {
-        testAddComplexDs(false);
+        testAddComplexDs(ConnectionSecurityType.SECURITY_DOMAIN);
     }
 
-    private void testAddComplexDs(boolean userName) throws Exception {
+    private void testAddComplexDs(ConnectionSecurityType connectionSecurityType) throws Exception {
         final String complexDs;
-        if (userName) {
-            complexDs = "complexDsWithUserName";
-        } else {
-            complexDs = "complexDs";
+        switch(connectionSecurityType) {
+            case ELYTRON:
+                complexDs = "complexDsElytronWithOutAuthCtx";
+                break;
+            case ELYTRON_AUTHENTICATION_CONTEXT:
+                complexDs = "complexDsElytronWithAuthCtx";
+                break;
+            case SECURITY_DOMAIN:
+                complexDs = "complexDs";
+                break;
+            case USER_PASSWORD:
+                complexDs = "complexDsWithUserName";
+                break;
+            default:
+                throw new InvalidParameterException("Unsupported connection security type for Data Sources: " +
+                        connectionSecurityType);
         }
         final String complexDsJndi = "java:jboss/datasources/" + complexDs;
         final ModelNode address = new ModelNode();
@@ -385,7 +410,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         address.add("data-source", complexDs);
         address.protect();
 
-        Properties params = nonXaDsProperties(complexDsJndi, userName);
+        Properties params = nonXaDsProperties(complexDsJndi, connectionSecurityType);
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
@@ -433,21 +458,44 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
      */
     @Test
     public void testAddComplexXaDsUsername() throws Exception {
-        testAddComplexXaDs(true);
+        testAddComplexXaDs(ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void testAddComplexXaDsElytron() throws Exception {
+        testAddComplexXaDs(ConnectionSecurityType.ELYTRON);
+    }
+
+    @Test
+    public void testAddComplexXaDsElytronAuthenticationContext() throws Exception {
+        testAddComplexXaDs(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
     }
 
     @Test
     public void testAddComplexXaDsComplexDs() throws Exception {
-        testAddComplexXaDs(false);
+        testAddComplexXaDs(ConnectionSecurityType.SECURITY_DOMAIN);
     }
 
-    private void testAddComplexXaDs(boolean userName) throws Exception {
+    private void testAddComplexXaDs(ConnectionSecurityType connectionSecurityType) throws Exception {
         final String complexXaDs;
-        if (userName) {
-           complexXaDs = "complexXaDsWithUserName";
-        } else {
-            complexXaDs = "complexXaDs";
+        switch (connectionSecurityType) {
+            case ELYTRON:
+                complexXaDs = "complexXaDsWithElytron";
+                break;
+            case ELYTRON_AUTHENTICATION_CONTEXT:
+                complexXaDs = "complexXaDsWithElytronCtxt";
+                break;
+            case SECURITY_DOMAIN:
+                complexXaDs = "complexXaDs";
+                break;
+            case USER_PASSWORD:
+                complexXaDs = "complexXaDsWithUserName";
+                break;
+            default:
+                throw new InvalidParameterException("Unsupported connection security type in data sources: " +
+                connectionSecurityType);
         }
+
         final String complexXaDsJndi = "java:jboss/xa-datasources/" + complexXaDs;
 
         final ModelNode address = new ModelNode();
@@ -460,7 +508,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get(OP_ADDR).set(address);
         operation.get("enabled").set(false);
 
-        Properties params = xaDsProperties(complexXaDsJndi, userName);
+        Properties params = xaDsProperties(complexXaDsJndi, connectionSecurityType);
         setOperationParams(operation, params);
         addExtensionProperties(operation);
         operation.get("recovery-plugin-properties", "name").set("Property5");
