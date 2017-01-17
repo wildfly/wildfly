@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
@@ -55,7 +56,7 @@ public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
         final StatefulEJBLocator statefulEJBLocator;
         final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
         if (sessionID == null) {
-            statefulEJBLocator = EJBClient.createSession(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName);
+            statefulEJBLocator = EJBClient.createSession(Affinity.LOCAL, componentView.getViewClass(), applicationName, moduleName, beanName, distinctName);
         } else {
             statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity());
         }

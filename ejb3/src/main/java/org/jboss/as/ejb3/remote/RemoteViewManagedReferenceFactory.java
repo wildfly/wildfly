@@ -29,6 +29,7 @@ import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.JndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
@@ -89,9 +90,9 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
                 throw EjbLogger.ROOT_LOGGER.failToLoadViewClassEjb(beanName, ce);
             }
         }
-        EJBLocator<?> ejbLocator = null;
+        EJBLocator<?> ejbLocator;
         if (EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
-            ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
+            ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName, Affinity.LOCAL);
         } else if (stateful) {
             try {
                 ejbLocator = EJBClient.createSession(viewClass, appName, moduleName, beanName, distinctName);
@@ -99,7 +100,7 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
                 throw EjbLogger.ROOT_LOGGER.failedToCreateSessionForStatefulBean(e, beanName);
             }
         } else {
-            ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
+            ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName, Affinity.LOCAL);
         }
         final Object proxy = EJBClient.createProxy(ejbLocator);
 
