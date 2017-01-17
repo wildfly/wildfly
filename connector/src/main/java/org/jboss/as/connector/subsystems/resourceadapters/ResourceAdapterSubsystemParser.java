@@ -32,9 +32,9 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_I
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
@@ -82,6 +82,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACK
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
@@ -103,6 +104,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -116,7 +118,6 @@ import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
-import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -183,6 +184,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
             WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
+            WM_ELYTRON_ENABLED.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DEFAULT_PRINCIPAL.marshallAsElement(ra, streamWriter);
             if (ra.hasDefined(WM_SECURITY_DEFAULT_GROUPS.getName())) {
                 streamWriter.writeStartElement(WM_SECURITY_DEFAULT_GROUPS.getXmlName());

@@ -77,6 +77,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_PRINCIPAL;
@@ -104,6 +105,7 @@ public class CommonAttributes {
             WM_SECURITY,
             WM_SECURITY_MAPPING_REQUIRED,
             WM_SECURITY_DOMAIN,
+            WM_ELYTRON_ENABLED,
             WM_SECURITY_DEFAULT_PRINCIPAL,
             WM_SECURITY_DEFAULT_GROUPS,
             WM_SECURITY_MAPPING_GROUPS,

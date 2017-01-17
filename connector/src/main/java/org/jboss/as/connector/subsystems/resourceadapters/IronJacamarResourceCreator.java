@@ -77,6 +77,7 @@ import java.util.Map;
 
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -91,7 +92,6 @@ import org.jboss.jca.common.api.metadata.common.XaPool;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
 /**
@@ -305,7 +305,8 @@ public class IronJacamarResourceCreator {
         if (ironJacamarMetadata.getTransactionSupport() != null)
             model.get(Constants.TRANSACTION_SUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
         if (ironJacamarMetadata.getWorkManager() != null && ironJacamarMetadata.getWorkManager().getSecurity() != null) {
-            WorkManagerSecurity security = ironJacamarMetadata.getWorkManager().getSecurity();
+            assert ironJacamarMetadata.getWorkManager().getSecurity() instanceof WorkManagerSecurity;
+            WorkManagerSecurity security = (WorkManagerSecurity) ironJacamarMetadata.getWorkManager().getSecurity();
             model.get(Constants.WM_SECURITY.getName()).set(true);
             if (security.getDefaultGroups() != null) {
                 for (String group : security.getDefaultGroups()) {
@@ -316,6 +317,9 @@ public class IronJacamarResourceCreator {
                 model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
             model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
             model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
+            if (security.isElytronEnabled()) {
+                model.get(Constants.WM_ELYTRON_ENABLED.getName()).set(true);
+            }
             if (security.getGroupMappings() != null) {
                 for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {
                     final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();

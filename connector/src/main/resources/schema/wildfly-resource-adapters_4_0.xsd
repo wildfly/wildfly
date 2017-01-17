@@ -957,6 +957,17 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="elytron-enabled" type="boolean-presenceType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                  Indicates that Elytron is responsible for WorkManager security.
+                  Ex:
+                    <elytron-enabled/>
+                 ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="default-principal" type="xs:token" minOccurs="0" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>

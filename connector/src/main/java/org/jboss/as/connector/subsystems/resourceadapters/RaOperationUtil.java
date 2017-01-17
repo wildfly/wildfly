@@ -72,6 +72,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACK
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_PRINCIPAL;
@@ -101,6 +102,7 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
+import org.jboss.as.connector.metadata.resourceadapter.WorkManagerSecurityImpl;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
@@ -138,7 +140,6 @@ import org.jboss.jca.common.metadata.common.TimeOutImpl;
 import org.jboss.jca.common.metadata.common.ValidationImpl;
 import org.jboss.jca.common.metadata.common.XaPoolImpl;
 import org.jboss.jca.common.metadata.resourceadapter.WorkManagerImpl;
-import org.jboss.jca.common.metadata.resourceadapter.WorkManagerSecurityImpl;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -170,11 +171,12 @@ public class RaOperationUtil {
         if (wmSecurity) {
             final boolean mappingRequired = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_SECURITY_MAPPING_REQUIRED);
             final String domain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, WM_SECURITY_DOMAIN);
+            final boolean elytronEnabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_ELYTRON_ENABLED);
             final String defaultPrincipal = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, WM_SECURITY_DEFAULT_PRINCIPAL);
             final List<String> defaultGroups = WM_SECURITY_DEFAULT_GROUPS.unwrap(context, operation);
             final Map<String, String> groups = ModelNodeUtil.extractMap(operation, WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO);
             final Map<String, String> users = ModelNodeUtil.extractMap(operation, WM_SECURITY_MAPPING_USERS, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO);
-            workManager = new WorkManagerImpl(new WorkManagerSecurityImpl(mappingRequired, domain, defaultPrincipal, defaultGroups, users, groups));
+            workManager = new WorkManagerImpl(new WorkManagerSecurityImpl(mappingRequired, domain, elytronEnabled, defaultPrincipal, defaultGroups, users, groups));
         }
 
         ModifiableResourceAdapter ra;

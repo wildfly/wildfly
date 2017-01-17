@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.subsystems.common.Marshallers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -51,7 +52,6 @@ import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 
 
 /**
@@ -140,6 +140,8 @@ public class Constants {
     private static final String WM_SECURITY_MAPPING_REQUIRED_NAME = "wm-security-mapping-required";
 
     private static final String WM_SECURITY_DOMAIN_NAME = "wm-security-domain";
+
+    private static final String WM_ELYTRON_ENABLED_NAME = "wm-elytron-enabled";
 
     private static final String WM_SECURITY_DEFAULT_PRINCIPAL_NAME = "wm-security-default-principal";
 
@@ -302,11 +304,17 @@ public class Constants {
             .setXmlName(WorkManagerSecurity.Tag.MAPPING_REQUIRED.getLocalName())
             .build();
 
-    static final SimpleAttributeDefinition WM_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DOMAIN_NAME, ModelType.STRING)
+    static final SimpleAttributeDefinition WM_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAllowNull(true)
             .setDefaultValue(new ModelNode("other"))
             .setXmlName(WorkManagerSecurity.Tag.DOMAIN.getLocalName())
+            .build();
+
+    static final SimpleAttributeDefinition WM_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
+            .setXmlName(WorkManagerSecurity.Tag.ELYTRON_ENABLED.getLocalName())
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_PRINCIPAL = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_PRINCIPAL_NAME, ModelType.STRING)
