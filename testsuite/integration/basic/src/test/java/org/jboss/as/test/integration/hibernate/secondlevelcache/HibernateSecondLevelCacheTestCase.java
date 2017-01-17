@@ -62,7 +62,6 @@ public class HibernateSecondLevelCacheTestCase {
             + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
             + "<property name=\"hibernate.show_sql\">false</property>"
             + FACTORY_CLASS
-            + "<property name=\"hibernate.cache.infinispan.cachemanager\">java:jboss/infinispan/container/hibernate</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "
