@@ -15,43 +15,52 @@
  */
 package org.jboss.as.connector.security;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.security.auth.Subject;
 
 import org.jboss.jca.core.spi.security.SecurityContext;
+import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * SecurityContext implementation for Elytron.
+ * An Elytron based {@link SecurityContext} implementation.
  *
  * @author Flavia Rainone
+ * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class ElytronSecurityContext implements SecurityContext {
 
-    /**
-     * Constructor
-     */
-    public ElytronSecurityContext() {
-    }
+    private Subject authenticatedSubject;
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Subject getAuthenticatedSubject() {
-        // TODO
-        return null;
+        return this.authenticatedSubject;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setAuthenticatedSubject(Subject subject) {
-        // TODO
+    @Override
+    public void setAuthenticatedSubject(final Subject subject) {
+        this.authenticatedSubject = subject;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public String[] getRoles() {
-        return null; // TODO
+        if (this.authenticatedSubject != null) {
+            // check if the authenticated subject contains a SecurityIdentity in its private credentials.
+            Set<SecurityIdentity> authenticatedIdentities = this.getPrivateCredentials(SecurityIdentity.class);
+            // iterate through the identities adding all the roles found.
+            final Set<String> rolesSet = new HashSet<>();
+            for (SecurityIdentity identity : authenticatedIdentities) {
+                for (String role : identity.getRoles()) {
+                    rolesSet.add(role);
+                }
+            }
+            return rolesSet.toArray(new String[rolesSet.size()]);
+        }
+        return new String[0];
     }
 
     /**
@@ -60,6 +69,25 @@ public class ElytronSecurityContext implements SecurityContext {
      * @param work executes the work
      */
     public void runWork(Runnable work) {
-        // TODO
+        // if we have an authenticated subject we check if it contains a security identity and use the identity to run the work.
+        if (this.authenticatedSubject != null) {
+            Set<SecurityIdentity> authenticatedIdentities = this.getPrivateCredentials(SecurityIdentity.class);
+            if (!authenticatedIdentities.isEmpty()) {
+                SecurityIdentity identity = authenticatedIdentities.iterator().next();
+                identity.runAs(work);
+                return;
+            }
+        }
+        // no authenticated subject found or the subject didn't have a security identity - just run the work.
+        work.run();
     }
+
+    protected<T> Set<T> getPrivateCredentials(Class<T> credentialClass) {
+        if (!WildFlySecurityManager.isChecking()) {
+            return this.authenticatedSubject.getPrivateCredentials(credentialClass);
+        } else {
+            return AccessController.doPrivileged((PrivilegedAction<Set<T>>) () -> this.authenticatedSubject.getPrivateCredentials(credentialClass));
+        }
+    }
+
 }
