@@ -126,9 +126,6 @@ public class Host implements Service<Host>, FilterLocation {
     private HttpHandler configureRootHandler() {
         AccessLogService logService = accessLogService;
         HttpHandler rootHandler = pathHandler;
-        if (logService != null) {
-            rootHandler = logService.configureAccessLogHandler(pathHandler);
-        }
 
         ArrayList<UndertowFilter> filters = new ArrayList<>(this.filters);
 
@@ -139,6 +136,9 @@ public class Host implements Service<Host>, FilterLocation {
         rootHandler = Handlers.httpContinueRead(rootHandler);
 
         rootHandler = LocationService.configureHandlerChain(rootHandler, filters);
+        if (logService != null) {
+            rootHandler = logService.configureAccessLogHandler(rootHandler);
+        }
         GateHandlerWrapper gateHandlerWrapper = this.gateHandlerWrapper;
         if(gateHandlerWrapper != null) {
             rootHandler = gateHandlerWrapper.wrap(rootHandler);
