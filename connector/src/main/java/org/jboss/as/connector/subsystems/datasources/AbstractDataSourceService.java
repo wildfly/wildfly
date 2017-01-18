@@ -26,11 +26,6 @@ import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 
-import javax.naming.Reference;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.security.auth.Subject;
-import javax.sql.DataSource;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Driver;
@@ -42,7 +37,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import javax.naming.Reference;
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.security.auth.Subject;
+import javax.sql.DataSource;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
@@ -429,8 +431,15 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
 
         @Override
-        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
+        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
+                org.jboss.jca.common.api.metadata.common.Credential credential) throws DeployException {
+            if (credential == null)
+                return null;
+            assert credential instanceof Credential;
+            final String securityDomain = credential.getSecurityDomain();
+            if (((Credential) credential).isElytronEnabled()) {
+                return new ElytronSubjectFactory();
+            } else if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
                 return null;
             } else {
                 return new PicketBoxSubjectFactory(subjectFactory.getValue()){
