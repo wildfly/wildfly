@@ -22,11 +22,19 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import java.util.concurrent.CountDownLatch;
+
+import javax.resource.spi.work.ExecutionContext;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkListener;
+
+import org.jboss.jca.core.spi.security.SecurityIntegration;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
 
 /**
  * A named WorkManager.
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author Flavia Rainone
  */
 public class NamedWorkManager extends WorkManagerImpl {
 
@@ -40,5 +48,12 @@ public class NamedWorkManager extends WorkManagerImpl {
     public NamedWorkManager(String name) {
         super();
         setName(name);
+    }
+
+    protected WildflyWorkWrapper createWorKWrapper(SecurityIntegration securityIntegration, Work work,
+            ExecutionContext executionContext, WorkListener workListener, CountDownLatch startedLatch,
+            CountDownLatch completedLatch) {
+        return new WildflyWorkWrapper(this, securityIntegration, work, executionContext, workListener,
+                startedLatch, completedLatch, System.currentTimeMillis());
     }
 }
