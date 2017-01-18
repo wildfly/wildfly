@@ -53,10 +53,11 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
-import org.wildfly.common.Assert;
 import org.wildfly.common.annotation.NotNull;
 
 import javax.ejb.EJBException;
+
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,21 +81,14 @@ final class AssociationImpl implements Association {
     }
 
     @Override
-    public ClassLoader mapClassLoader(String appName, String moduleName) {
-        return Assert.assertNotNull(findEJB(appName,moduleName)).getDeploymentClassLoader();
-    }
+    public CancelHandle receiveInvocationRequest(@NotNull final InvocationRequest invocationRequest) {
 
-    @Override
-    public <T> CancelHandle receiveInvocationRequest(@NotNull final InvocationRequest<T> invocationRequest) {
+        final EJBIdentifier ejbIdentifier = invocationRequest.getEJBIdentifier();
 
-        final EJBLocator<T> ejbLocator = invocationRequest.getEJBLocator();
-
-        final String appName = ejbLocator.getAppName();
-        final String moduleName = ejbLocator.getModuleName();
-        final String distinctName = ejbLocator.getDistinctName();
-        final String beanName = ejbLocator.getBeanName();
-
-        final Map<String, Object> attachments = invocationRequest.getAttachments();
+        final String appName = ejbIdentifier.getAppName();
+        final String moduleName = ejbIdentifier.getModuleName();
+        final String distinctName = ejbIdentifier.getDistinctName();
+        final String beanName = ejbIdentifier.getBeanName();
 
         final EjbDeploymentInformation ejbDeploymentInformation = findEJB(appName, moduleName, distinctName, beanName);
 
@@ -102,6 +96,20 @@ final class AssociationImpl implements Association {
             invocationRequest.writeNoSuchEJB();
             return CancelHandle.NULL;
         }
+
+        final ClassLoader classLoader = ejbDeploymentInformation.getDeploymentClassLoader();
+
+        final InvocationRequest.Resolved requestContent;
+        try {
+            requestContent = invocationRequest.getRequestContent(classLoader);
+        } catch (IOException | ClassNotFoundException e) {
+            invocationRequest.writeException(new EJBException(e));
+            return CancelHandle.NULL;
+        }
+
+        final Map<String, Object> attachments = requestContent.getAttachments();
+
+        final EJBLocator<?> ejbLocator = requestContent.getEJBLocator();
 
         final String viewClassName = ejbLocator.getViewType().getName();
 
@@ -124,7 +132,7 @@ final class AssociationImpl implements Association {
 
         if (oneWay) {
             // send immediate response
-            invocationRequest.writeInvocationResult(null);
+            requestContent.writeInvocationResult(null);
         }
 
         final CancellationFlag cancellationFlag = new CancellationFlag();
@@ -138,7 +146,7 @@ final class AssociationImpl implements Association {
             final Object result;
             //SecurityActions.remotingContextSetConnection(channelAssociation.getChannel().getConnection());
             try {
-                result = invokeMethod(componentView, invokedMethod, invocationRequest, cancellationFlag);
+                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag);
             } catch (EJBComponentUnavailableException ex) {
                 // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
                 // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
@@ -185,7 +193,7 @@ final class AssociationImpl implements Association {
                 if (weakAffinity != null && !weakAffinity.equals(Affinity.NONE)) {
                     attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
                 }
-                invocationRequest.writeInvocationResult(result);
+                requestContent.writeInvocationResult(result);
             } catch (Throwable ioe) {
                 EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
             }
@@ -295,25 +303,9 @@ final class AssociationImpl implements Association {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    //TODO Elytron - find proper way match appName/moduleName to classloader
-    protected EjbDeploymentInformation findEJB(final String appName, final String moduleName) {
-        final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, "");
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
-        if (modules == null || modules.isEmpty()) {
-            return null;
-        }
-        final ModuleDeployment moduleDeployment = modules.get(ejbModule);
-        if (moduleDeployment == null) {
-            return null;
-        }
-        return moduleDeployment.getEjbs().entrySet().iterator().next().getValue();
-    }
-
-
-
-    private <T> Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest<T> incomingInvocation, final CancellationFlag cancellationFlag) throws Exception {
+    private Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
-        interceptorContext.setParameters(incomingInvocation.getParameters());
+        interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
@@ -322,9 +314,9 @@ final class AssociationImpl implements Association {
         // setup the contextData on the (spec specified) InvocationContext
         final Map<String, Object> invocationContextData = new HashMap<String, Object>();
         interceptorContext.setContextData(invocationContextData);
-        if (incomingInvocation.getAttachments() != null) {
+        if (content.getAttachments() != null) {
             // attach the attachments which were passed from the remote client
-            for (final Map.Entry<String, Object> attachment : incomingInvocation.getAttachments().entrySet()){
+            for (final Map.Entry<String, Object> attachment : content.getAttachments().entrySet()){
                 if (attachment == null) {
                     continue;
                 }
@@ -345,13 +337,13 @@ final class AssociationImpl implements Association {
             }
         }
         // add the session id to the interceptor context, if it's a stateful ejb locator
-        final EJBLocator<T> ejbLocator = incomingInvocation.getEJBLocator();
+        final EJBLocator<?> ejbLocator = content.getEJBLocator();
         if (ejbLocator.isStateful()) {
             interceptorContext.putPrivateData(SessionID.class, ejbLocator.asStateful().getSessionId());
         }
         // add transaction
-        if (incomingInvocation.hasTransaction()) {
-            interceptorContext.setTransactionSupplier(incomingInvocation::getTransaction);
+        if (content.hasTransaction()) {
+            interceptorContext.setTransactionSupplier(content::getTransaction);
         }
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
