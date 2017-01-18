@@ -42,7 +42,9 @@ import javax.security.auth.Subject;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
+import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectService;
@@ -610,8 +612,15 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
 
         @Override
-        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            if (securityDomain == null || securityDomain.trim().equals("")) {
+        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
+                org.jboss.jca.common.api.metadata.common.SecurityMetadata securityMetadata) throws DeployException {
+            if (securityMetadata == null)
+                return null;
+            assert securityMetadata instanceof SecurityMetadata;
+            final String securityDomain = securityMetadata.resolveSecurityDomain();
+            if (((SecurityMetadata)securityMetadata).isElytronEnabled()) {
+                return new ElytronSubjectFactory();
+            } else if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
             } else {
                 return new PicketBoxSubjectFactory(subjectFactory.getValue()){
