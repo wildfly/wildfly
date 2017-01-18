@@ -108,4 +108,7 @@ public interface XtsAsLogger extends BasicLogger {
     @Message(id = 8, value = "Coordination context deserialization failed")
     void coordinationContextDeserializationFailed(@Cause Throwable cause);
 
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "Rejecting call because it is not part of any XTS transaction")
+    void rejectingCallBecauseNotPartOfXtsTx();
 }
