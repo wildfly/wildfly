@@ -47,6 +47,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
+import javax.security.auth.Subject;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -879,4 +881,11 @@ public interface ConnectorLogger extends BasicLogger {
      */
     @Message(id = 103, value = "Attribute %s can only be defined if %s is undefined or false")
     OperationFailedException attributeRequiresFalseOrUndefinedAttribute(String attribute, String requiredFalseAttribute);
+
+    @Message(id = 104, value = "Subject=%s\nSubject identity=%s")
+    String subject(Subject subject, String identity);
+
+    @LogMessage(level = INFO)
+    @Message(id = 106, value = "Elytron handler handle: %s")
+    void elytronHandlerHandle(String callbacks);
 }
