@@ -20,6 +20,7 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <iiop.endorsed.argline>-Djava.endorsed.dirs=${project.build.directory}/endorsed</iiop.endorsed.argline>
     </properties>
 
     <profiles>
@@ -124,7 +125,7 @@
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
                                     <argLine>
-                                        -Djava.endorsed.dirs=${project.build.directory}/endorsed
+                                        ${modular.jdk.args} ${iiop.endorsed.argline}
                                         -Dcom.sun.CORBA.ORBUseDynamicStub=true
                                         -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml</argLine>
                                 </configuration>
@@ -148,7 +149,7 @@
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
                                     <argLine>
-                                        -Djava.endorsed.dirs=${project.build.directory}/endorsed
+                                        ${modular.jdk.args} ${iiop.endorsed.argline}
                                         -Dcom.sun.CORBA.ORBUseDynamicStub=true
                                         -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml</argLine>
                                 </configuration>
@@ -200,7 +201,16 @@
                 </plugins>
             </build>
         </profile>
-
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <!-- JDK9 does not support endorsing mechanism -->
+                <iiop.endorsed.argline/>
+            </properties>
+        </profile>
 
     </profiles>
 </project>
