@@ -203,52 +203,56 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             servlet.setAsyncSupported(true);
             addServlet(webdata, servlet);
             setServletMappingPrefix(webdata, JAX_RS_SERVLET_NAME, servlet);
-            return;
+        } else {
+
+            for (Class<? extends Application> applicationClass : applicationClassSet) {
+                String servletName = null;
+
+                servletName = applicationClass.getName();
+                JBossServletMetaData servlet = new JBossServletMetaData();
+                // must load on startup for services like JSAPI to work
+                servlet.setLoadOnStartup("" + 0);
+                servlet.setName(servletName);
+                servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
+                servlet.setAsyncSupported(true);
+                setServletInitParam(servlet, SERVLET_INIT_PARAM, applicationClass.getName());
+                addServlet(webdata, servlet);
+                if (!servletMappingsExist(webdata, servletName)) {
+                    try {
+                        //no mappings, add our own
+                        List<String> patterns = new ArrayList<String>();
+                        //for some reason the spec requires this to be decoded
+                        String pathValue = URLDecoder.decode(applicationClass.getAnnotation(ApplicationPath.class).value().trim(), "UTF-8");
+                        if (!pathValue.startsWith("/")) {
+                            pathValue = "/" + pathValue;
+                        }
+                        String prefix = pathValue;
+                        if (pathValue.endsWith("/")) {
+                            pathValue += "*";
+                        } else {
+                            pathValue += "/*";
+                        }
+                        patterns.add(pathValue);
+                        setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", prefix);
+                        ServletMappingMetaData mapping = new ServletMappingMetaData();
+                        mapping.setServletName(servletName);
+                        mapping.setUrlPatterns(patterns);
+                        if (webdata.getServletMappings() == null) {
+                            webdata.setServletMappings(new ArrayList<ServletMappingMetaData>());
+                        }
+                        webdata.getServletMappings().add(mapping);
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    setServletMappingPrefix(webdata, servletName, servlet);
+                }
+
+            }
         }
 
-        for (Class<? extends Application> applicationClass : applicationClassSet) {
-            String servletName = null;
-
-            servletName = applicationClass.getName();
-            JBossServletMetaData servlet = new JBossServletMetaData();
-            // must load on startup for services like JSAPI to work
-            servlet.setLoadOnStartup("" + 0);
-            servlet.setName(servletName);
-            servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
-            servlet.setAsyncSupported(true);
-            setServletInitParam(servlet, SERVLET_INIT_PARAM, applicationClass.getName());
-            addServlet(webdata, servlet);
-            if (!servletMappingsExist(webdata, servletName)) {
-                try {
-                    //no mappings, add our own
-                    List<String> patterns = new ArrayList<String>();
-                    //for some reason the spec requires this to be decoded
-                    String pathValue = URLDecoder.decode(applicationClass.getAnnotation(ApplicationPath.class).value().trim(), "UTF-8");
-                    if (!pathValue.startsWith("/")) {
-                        pathValue = "/" + pathValue;
-                    }
-                    String prefix = pathValue;
-                    if (pathValue.endsWith("/")) {
-                        pathValue += "*";
-                    } else {
-                        pathValue += "/*";
-                    }
-                    patterns.add(pathValue);
-                    setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", prefix);
-                    ServletMappingMetaData mapping = new ServletMappingMetaData();
-                    mapping.setServletName(servletName);
-                    mapping.setUrlPatterns(patterns);
-                    if (webdata.getServletMappings() == null) {
-                        webdata.setServletMappings(new ArrayList<ServletMappingMetaData>());
-                    }
-                    webdata.getServletMappings().add(mapping);
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                setServletMappingPrefix(webdata, servletName, servlet);
-            }
-
+        if (webdata.getServletMappings() == null || webdata.getServletMappings().isEmpty()) {
+            JAXRS_LOGGER.noServletDeclaration(deploymentUnit.getName());
         }
     }
 
