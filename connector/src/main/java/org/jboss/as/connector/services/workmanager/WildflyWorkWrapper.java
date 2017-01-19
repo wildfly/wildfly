@@ -51,19 +51,20 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
         super(workManager, si, work, executionContext, workListener, startedLatch, completedLatch, startTime);
     }
 
-    protected void runWork(ExecutionContext ctx) throws WorkCompletedException {
+    @Override
+    protected void runWork() throws WorkCompletedException {
         // if there is security and elytron is enabled, we need to let the context run the remainder of the work
         // so the context can run the work as the specified Elytron identity
         if (securityIntegration.getSecurityContext() != null &&
                 ((CallbackImpl) workManager.getCallbackSecurity()).isElytronEnabled())
             ((ElytronSecurityContext) securityIntegration.getSecurityContext()).runWork(() -> {
                 try {
-                    WildflyWorkWrapper.super.runWork(ctx);
+                    WildflyWorkWrapper.super.runWork();
                 } catch (WorkCompletedException e) {
                     e.printStackTrace();
                 }
             });
         // delegate to super class if there is no elytron enabled
-        else super.runWork(ctx);
+        else super.runWork();
     }
 }
