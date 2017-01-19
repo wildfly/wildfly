@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerBuilder;
+import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
@@ -74,8 +74,8 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        if (DistributableSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
-            DistributableSingleSignOnManagerBuilder builder = DistributableSingleSignOnManagerBuilder.INSTANCE.get();
+        if (DistributableHostSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
+            DistributableHostSingleSignOnManagerBuilder builder = DistributableHostSingleSignOnManagerBuilder.INSTANCE.get();
             builder.build(target, managerServiceName, context.getCapabilityServiceSupport(), serverName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         } else {
             target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
