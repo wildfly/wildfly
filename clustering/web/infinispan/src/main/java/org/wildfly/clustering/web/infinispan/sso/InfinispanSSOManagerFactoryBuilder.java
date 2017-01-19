@@ -45,7 +45,7 @@ public class InfinispanSSOManagerFactoryBuilder<A, D, S> implements CapabilitySe
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
-    private final String host;
+    private final String name;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
 
@@ -54,16 +54,16 @@ public class InfinispanSSOManagerFactoryBuilder<A, D, S> implements CapabilitySe
 
     private volatile ValueDependency<KeyAffinityServiceFactory> affinityFactory;
 
-    public InfinispanSSOManagerFactoryBuilder(String host) {
-        this.host = host;
+    public InfinispanSSOManagerFactoryBuilder(String name) {
+        this.name = name;
 
-        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, host)), DEFAULT_CACHE_CONTAINER, host, null);
-        this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, host)), DEFAULT_CACHE_CONTAINER, host);
+        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name, null);
+        this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name);
     }
 
     @Override
     public ServiceName getServiceName() {
-        return ServiceName.JBOSS.append("clustering", "sso", this.host);
+        return ServiceName.JBOSS.append("clustering", "sso", this.name);
     }
 
     @Override

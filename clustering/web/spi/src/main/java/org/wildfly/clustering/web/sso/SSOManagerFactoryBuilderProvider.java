@@ -25,5 +25,5 @@ import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.wildfly.clustering.ee.Batch;
 
 public interface SSOManagerFactoryBuilderProvider<B extends Batch> {
-    <A, D, S> CapabilityServiceBuilder<SSOManagerFactory<A, D, S, B>> getBuilder(String host);
+    <A, D, S> CapabilityServiceBuilder<SSOManagerFactory<A, D, S, B>> getBuilder(String name);
 }

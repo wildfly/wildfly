@@ -29,7 +29,7 @@ import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 public class InfinispanSSOManagerFactoryBuilderProvider implements SSOManagerFactoryBuilderProvider<TransactionBatch> {
 
     @Override
-    public <A, D, S> CapabilityServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> getBuilder(String host) {
-        return new InfinispanSSOManagerFactoryBuilder<>(host);
+    public <A, D, S> CapabilityServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> getBuilder(String name) {
+        return new InfinispanSSOManagerFactoryBuilder<>(name);
     }
 }
