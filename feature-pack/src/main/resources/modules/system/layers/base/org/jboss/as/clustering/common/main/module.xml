@@ -43,5 +43,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>
