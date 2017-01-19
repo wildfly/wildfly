@@ -108,7 +108,7 @@ public abstract class ClusterPassivationTestBase {
      */
     protected void waitForClusterContext() throws InterruptedException {
         int counter = 0;
-        EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
+        EJBClientContext ejbClientContext = EJBClientContext.getCurrent();
         // TODO Elytron: Determine how this should be adapted once the clustering and EJB client changes are in
         // ClusterContext clusterContext;
         //do {
