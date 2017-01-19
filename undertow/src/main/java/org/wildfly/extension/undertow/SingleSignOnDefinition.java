@@ -24,14 +24,11 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -42,48 +39,37 @@ import org.jboss.dmr.ModelType;
  */
 class SingleSignOnDefinition extends PersistentResourceDefinition {
 
-    static final SimpleAttributeDefinition DOMAIN = new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
-    static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING, true)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode("/"))
-            .setRestartAllServices()
-            .build();
-    static final SimpleAttributeDefinition HTTP_ONLY = new SimpleAttributeDefinitionBuilder("http-only", ModelType.BOOLEAN, true)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
-            .setRestartAllServices()
-            .build();
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        DOMAIN(Constants.DOMAIN, ModelType.STRING, null),
+        PATH("path", ModelType.STRING, new ModelNode("/")),
+        HTTP_ONLY("http-only", ModelType.BOOLEAN, new ModelNode(false)),
+        SECURE("secure", ModelType.BOOLEAN, new ModelNode(false)),
+        COOKIE_NAME("cookie-name", ModelType.STRING, new ModelNode("JSESSIONIDSSO")),
+        ;
+        private final AttributeDefinition definition;
 
-    static final SimpleAttributeDefinition SECURE = new SimpleAttributeDefinitionBuilder("secure", ModelType.BOOLEAN, true)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
-            .setRestartAllServices()
-            .build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(false)
+                    .setAllowExpression(true)
+                    .setDefaultValue(defaultValue)
+                    .setRestartAllServices()
+                    .build();
+        }
 
-    static final SimpleAttributeDefinition COOKIE_NAME = new SimpleAttributeDefinitionBuilder("cookie-name", ModelType.STRING, true)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode("JSESSIONIDSSO"))
-            .setRestartAllServices()
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH, HTTP_ONLY, SECURE, COOKIE_NAME);
-
-    static final SingleSignOnDefinition INSTANCE = new SingleSignOnDefinition();
-
-    private SingleSignOnDefinition() {
-        super(UndertowExtension.PATH_SSO, UndertowExtension.getResolver(Constants.SINGLE_SIGN_ON), new SingleSignOnAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    SingleSignOnDefinition() {
+        super(new Parameters(UndertowExtension.PATH_SSO, UndertowExtension.getResolver(Constants.SINGLE_SIGN_ON)));
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
+        // Attributes will be registered by the parent implementation
+        return Collections.emptyList();
     }
 }

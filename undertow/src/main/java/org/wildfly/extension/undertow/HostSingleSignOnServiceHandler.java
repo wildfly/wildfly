@@ -24,13 +24,14 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.*;
+
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.dmr.ModelNodes;
 
 import io.undertow.security.impl.InMemorySingleSignOnManager;
 import io.undertow.security.impl.SingleSignOnManager;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -44,34 +45,28 @@ import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOn
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
+ * @author Paul Ferraro
  */
-class SingleSignOnAdd extends AbstractAddStepHandler {
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : SingleSignOnDefinition.ATTRIBUTES) {
-            def.validateAndSet(operation, model);
-        }
-    }
+class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
 
     @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-                final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+    public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        PathAddress hostAddress = address.getParent();
+        PathAddress serverAddress = hostAddress.getParent();
+        String hostName = hostAddress.getLastElement().getValue();
+        String serverName = serverAddress.getLastElement().getValue();
 
-        final ModelNode domainModelNode = SingleSignOnDefinition.DOMAIN.resolveModelAttribute(context, model);
-        final ModelNode pathNode = SingleSignOnDefinition.PATH.resolveModelAttribute(context, model);
-        final String domain = domainModelNode.isDefined() ? domainModelNode.asString() : null;
-        final String path = pathNode.isDefined() ? pathNode.asString() : null;
-        final boolean secure = SingleSignOnDefinition.SECURE.resolveModelAttribute(context, model).asBoolean();
-        final boolean httpOnly = SingleSignOnDefinition.HTTP_ONLY.resolveModelAttribute(context, model).asBoolean();
-        final String cookieName = SingleSignOnDefinition.COOKIE_NAME.resolveModelAttribute(context, model).asString();
-        final String serverName = serverAddress.getLastElement().getValue();
-        final String hostName = hostAddress.getLastElement().getValue();
-        final ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
-        final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, hostName);
+        String domain = ModelNodes.optionalString(DOMAIN.resolveModelAttribute(context, model)).orElse(null);
+        String path = PATH.resolveModelAttribute(context, model).asString();
+        boolean secure = SECURE.resolveModelAttribute(context, model).asBoolean();
+        boolean httpOnly = HTTP_ONLY.resolveModelAttribute(context, model).asBoolean();
+        String cookieName = COOKIE_NAME.resolveModelAttribute(context, model).asString();
 
-        final ServiceTarget target = context.getServiceTarget();
+        ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
+        ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, hostName);
+
+        ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
         if (DistributableHostSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
@@ -81,11 +76,25 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
             target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }
 
-        final SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
+        SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
         target.addService(serviceName, service)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost())
                 .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
+    }
+
+    @Override
+    public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        PathAddress hostAddress = address.getParent();
+        PathAddress serverAddress = hostAddress.getParent();
+        String hostName = hostAddress.getLastElement().getValue();
+        String serverName = serverAddress.getLastElement().getValue();
+
+        ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
+
+        context.removeService(serviceName);
+        context.removeService(serviceName.append("manager"));
     }
 }
