@@ -27,6 +27,7 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Driver;
 import java.util.ArrayList;
@@ -438,7 +439,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             assert credential instanceof Credential;
             final String securityDomain = credential.getSecurityDomain();
             if (((Credential) credential).isElytronEnabled()) {
-                return new ElytronSubjectFactory();
+                try {
+                    return new ElytronSubjectFactory(new java.net.URI(this.dataSourceConfig.getConnectionUrl()));
+                } catch (URISyntaxException e) {
+                    throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
+                }
             } else if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
                 return null;
             } else {
