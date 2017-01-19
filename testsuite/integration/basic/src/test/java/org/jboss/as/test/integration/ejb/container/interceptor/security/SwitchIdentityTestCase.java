@@ -196,7 +196,7 @@ public class SwitchIdentityTestCase {
             loginContext.login();
 
             // register the client side interceptor
-            final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
+            final EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
             ejbClientContext.runCallable(() -> {
                 final Manage targetBean = EJBUtil.lookupEJB(TargetBean.class, Manage.class);
                 final Manage bridgeBean = EJBUtil.lookupEJB(BridgeBean.class, Manage.class);
@@ -229,7 +229,7 @@ public class SwitchIdentityTestCase {
             // that should be used for this test using ejbClientConfiguration
 
             // register the client side interceptor
-            final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
+            final EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(new ClientSecurityInterceptor());
             SecurityContextAssociation.setPrincipal(new SimplePrincipal(userName));
 
             ejbClientContext.runCallable(() -> {

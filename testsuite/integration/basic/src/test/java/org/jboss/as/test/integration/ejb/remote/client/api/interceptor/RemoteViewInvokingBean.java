@@ -58,7 +58,7 @@ public class RemoteViewInvokingBean implements RemoteViewInvoker {
 
         final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
         // get hold of the EJBClientContext and register the client side interceptor
-        ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(clientInterceptor);
+        ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(clientInterceptor);
     }
 
     @Override
