@@ -172,7 +172,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         interceptorData.put(FlowTrackingBean.CONTEXT_DATA_KEY, ContainerInterceptorOne.class.getName());
         final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
         // get hold of the EJBClientContext and register the client side interceptor
-        EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(clientInterceptor);
+        EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(clientInterceptor);
 
         final Hashtable<String, Object> jndiProps = new Hashtable<String, Object>();
         jndiProps.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");

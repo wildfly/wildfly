@@ -77,7 +77,7 @@ public class EJBClientInterceptorTestCase {
 
         final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
         // get hold of the EJBClientContext and register the client side interceptor
-        final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent().withAddedInterceptors(clientInterceptor);
+        final EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(clientInterceptor);
 
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
