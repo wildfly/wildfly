@@ -120,7 +120,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
         if (!deployed)
-            resourceRegistration.registerCapability(Capabilities.DATA_SOURCE_CAPABILITY);
+            resourceRegistration.registerCapability(org.jboss.as.connector._private.Capabilities.DATA_SOURCE_CAPABILITY);
     }
 
     @Override

@@ -625,7 +625,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final String securityDomain = securityMetadata.resolveSecurityDomain();
             if (((SecurityMetadata)securityMetadata).isElytronEnabled()) {
                 try {
-                    return new ElytronSubjectFactory(this.url.toURI());
+                    return new ElytronSubjectFactory(null, this.url.toURI());
                 } catch (URISyntaxException e) {
                     throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
                 }

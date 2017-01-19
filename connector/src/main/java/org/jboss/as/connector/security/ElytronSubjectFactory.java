@@ -15,6 +15,7 @@
  */
 package org.jboss.as.connector.security;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.jca.core.spi.security.SubjectFactory;
@@ -50,9 +51,7 @@ import java.security.PrivilegedAction;
  * @author Flavia Rainone
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class ElytronSubjectFactory implements SubjectFactory {
-
-    private static final String AUTHENTICATION_CONTEXT_CAPABILITY =  "org.wildfly.security.authentication-context";
+public class ElytronSubjectFactory implements SubjectFactory, Capabilities {
 
     private static final RuntimeCapability<Void> AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY = RuntimeCapability
             .Builder.of(AUTHENTICATION_CONTEXT_CAPABILITY, true, AuthenticationContext.class)
@@ -61,13 +60,14 @@ public class ElytronSubjectFactory implements SubjectFactory {
     private static final AuthenticationContextConfigurationClient AUTH_CONFIG_CLIENT =
             AccessController.doPrivileged(AuthenticationContextConfigurationClient.ACTION);
 
+    private final AuthenticationContext authenticationContext;
     private URI targetURI;
 
     /**
      * Constructor
      */
     public ElytronSubjectFactory() {
-        this(null);
+        this(null, null);
     }
 
     /**
@@ -75,13 +75,14 @@ public class ElytronSubjectFactory implements SubjectFactory {
      *
      * @param targetURI the {@link URI} of the target.
      */
-    public ElytronSubjectFactory(final URI targetURI) {
+    public ElytronSubjectFactory(final AuthenticationContext authenticationContext, final URI targetURI) {
         if (targetURI == null) {
             try {
                 // TODO remove this - used for testing only
                 this.targetURI = new URI("jdbc://localhost");
             } catch(URISyntaxException e) {}
         }
+        this.authenticationContext = authenticationContext;
         this.targetURI = targetURI;
     }
 
@@ -89,8 +90,9 @@ public class ElytronSubjectFactory implements SubjectFactory {
      * {@inheritDoc}
      */
     public Subject createSubject() {
-        // no authentication configuration name has been supplied - capture the current configuration.
-        final Subject subject = this.createSubject(AuthenticationContext.captureCurrent());
+        // If a authenticationContext was defined on the subsystem use that context, otherwise use capture the current
+        // configuration.
+        final Subject subject = this.createSubject(getAuthenticationContext());
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.subject(subject, Integer.toHexString(System.identityHashCode(subject)));
         }
@@ -108,7 +110,7 @@ public class ElytronSubjectFactory implements SubjectFactory {
             context = (AuthenticationContext) container.getRequiredService(authContextServiceName).getValue();
         }
         else {
-            context = AuthenticationContext.captureCurrent();
+            context = getAuthenticationContext();
         }
         final Subject subject = this.createSubject(context);
         if (ROOT_LOGGER.isTraceEnabled()) {
@@ -183,5 +185,9 @@ public class ElytronSubjectFactory implements SubjectFactory {
         sb.append("]");
 
         return sb.toString();
+    }
+
+    private AuthenticationContext getAuthenticationContext() {
+        return authenticationContext == null ? AuthenticationContext.captureCurrent() : authenticationContext;
     }
 }

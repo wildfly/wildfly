@@ -49,6 +49,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;

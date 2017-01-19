@@ -29,6 +29,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_EN
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
@@ -43,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
@@ -83,6 +86,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.
@@ -195,6 +199,32 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                 dataSourceService.getDriverInjector());
 
+         // If the authentication context is defined, add the capability
+         if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+             if (model.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
+                 dataSourceServiceBuilder.addDependency(
+                         context.getCapabilityServiceName(
+                                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                                 AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
+                                 AuthenticationContext.class),
+                         AuthenticationContext.class,
+                         dataSourceService.getAuthenticationContext()
+                 );
+             }
+         }
+         if (isXa() && RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+             if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                 dataSourceServiceBuilder.addDependency(
+                         context.getCapabilityServiceName(
+                                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                                 RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
+                                 AuthenticationContext.class),
+                         AuthenticationContext.class,
+                         dataSourceService.getRecoveryAuthenticationContext()
+                 );
+             }
+         }
+
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
         dataSourceServiceBuilder.install();
@@ -240,7 +270,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 final Credential credential = dataSourceConfig.getRecovery().getCredential();
                 if (credential != null) {
                     final String securityDomainName = credential.getSecurityDomain();
-                    if (!RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asBoolean() && securityDomainName != null) {
+                    if (!RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean() && securityDomainName != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                     }
                 }

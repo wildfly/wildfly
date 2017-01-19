@@ -93,6 +93,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
 import org.wildfly.security.manager.action.GetClassLoaderAction;
@@ -126,6 +127,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
     private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
     private final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
+    private final InjectedValue<AuthenticationContext> authenticationContext = new InjectedValue<>();
+    private final InjectedValue<AuthenticationContext> recoveryAuthenticationContext = new InjectedValue<>();
 
 
     private final String dsName;
@@ -280,6 +283,14 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public Injector<ServerSecurityManager> getServerSecurityManager() {
         return secManager;
+    }
+
+    Injector<AuthenticationContext> getAuthenticationContext() {
+        return authenticationContext;
+    }
+
+    Injector<AuthenticationContext> getRecoveryAuthenticationContext() {
+        return recoveryAuthenticationContext;
     }
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
@@ -440,7 +451,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             final String securityDomain = credential.getSecurityDomain();
             if (((Credential) credential).isElytronEnabled()) {
                 try {
-                    return new ElytronSubjectFactory(new java.net.URI(this.dataSourceConfig.getConnectionUrl()));
+                    return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(this.dataSourceConfig.getConnectionUrl()));
                 } catch (URISyntaxException e) {
                     throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
                 }
