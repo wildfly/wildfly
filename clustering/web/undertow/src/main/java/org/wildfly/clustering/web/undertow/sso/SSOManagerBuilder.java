@@ -55,13 +55,12 @@ import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
 
-import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.server.session.SessionIdGenerator;
 
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSession, String, String, Void, Batch>>, Service<SSOManager<AuthenticatedSession, String, String, Void, Batch>>, SSOManagerConfiguration<Void, MarshallingContext> {
+public class SSOManagerBuilder<A, D, S, L> implements Builder<SSOManager<A, D, S, L, Batch>>, Service<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<L, MarshallingContext> {
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
@@ -94,13 +93,15 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     private final InjectedValue<SSOManagerFactory> factory = new InjectedValue<>();
     private final ServiceName factoryServiceName;
     private final ServiceName generatorServiceName;
+    private final LocalContextFactory<L> localContextFactory;
 
-    private volatile SSOManager<AuthenticatedSession, String, String, Void, Batch> manager;
+    private volatile SSOManager<A, D, S, L, Batch> manager;
     private volatile MarshallingContext context;
 
-    public SSOManagerBuilder(ServiceName factoryServiceName, ServiceName generatorServiceName) {
+    public SSOManagerBuilder(ServiceName factoryServiceName, ServiceName generatorServiceName, LocalContextFactory<L> localContextFactory) {
         this.factoryServiceName = factoryServiceName;
         this.generatorServiceName = generatorServiceName;
+        this.localContextFactory = localContextFactory;
     }
 
     @Override
@@ -109,7 +110,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     }
 
     @Override
-    public ServiceBuilder<SSOManager<AuthenticatedSession, String, String, Void, Batch>> build(ServiceTarget target) {
+    public ServiceBuilder<SSOManager<A, D, S, L, Batch>> build(ServiceTarget target) {
         return target.addService(this.getServiceName(), this)
                 .addDependency(this.factoryServiceName, SSOManagerFactory.class, this.factory)
                 .addDependency(this.generatorServiceName, SessionIdGenerator.class, this.generator)
@@ -118,7 +119,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
 
     @Override
     public void start(StartContext context) throws StartException {
-        SSOManagerFactory<AuthenticatedSession, String, String, Batch> factory = this.factory.getValue();
+        SSOManagerFactory<A, D, S, Batch> factory = this.factory.getValue();
         Module module = Module.forClass(this.getClass());
         this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
         this.manager = factory.createSSOManager(this);
@@ -133,7 +134,7 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     }
 
     @Override
-    public SSOManager<AuthenticatedSession, String, String, Void, Batch> getValue() {
+    public SSOManager<A, D, S, L, Batch> getValue() {
         return this.manager;
     }
 
@@ -143,8 +144,8 @@ public class SSOManagerBuilder implements Builder<SSOManager<AuthenticatedSessio
     }
 
     @Override
-    public LocalContextFactory<Void> getLocalContextFactory() {
-        return () -> null;
+    public LocalContextFactory<L> getLocalContextFactory() {
+        return this.localContextFactory;
     }
 
     @Override
