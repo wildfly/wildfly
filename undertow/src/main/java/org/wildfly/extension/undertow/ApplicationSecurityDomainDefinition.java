@@ -92,6 +92,7 @@ import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
+import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecurityDomainSingleSignOnManagerBuilder;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
@@ -250,8 +251,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 ServiceName managerServiceName = new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName();
                 SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 
-                SingleSignOnManager manager = new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), () -> generator.createSessionId());
-                new SimpleBuilder<>(managerServiceName, manager).build(target).install();
+                if (DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
+                    DistributableApplicationSecurityDomainSingleSignOnManagerBuilder builder = DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.INSTANCE.get();
+                    builder.build(target, managerServiceName, context.getCapabilityServiceSupport(), securityDomainName, generator).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                } else {
+                    SingleSignOnManager manager = new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), () -> generator.createSessionId());
+                    new SimpleBuilder<>(managerServiceName, manager).build(target).install();
+                }
 
                 Builder<SingleSignOnSessionFactory> factoryBuilder = new SingleSignOnSessionFactoryBuilder(securityDomainName).configure(context, ssoModel);
                 factoryBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
