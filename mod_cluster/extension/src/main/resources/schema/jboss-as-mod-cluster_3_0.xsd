@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2017, Red Hat Middleware LLC, and individual contributors
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -38,15 +38,17 @@
 
     <xs:complexType name="mod-cluster-configType">
         <xs:sequence>
-            <!-- Simple load-provider or a dynamic one -->
             <xs:choice minOccurs="0">
                 <xs:element name="simple-load-provider" type="simple-load-providerType"/>
                 <xs:element name="dynamic-load-provider" type="dynamic-load-providerType"/>
             </xs:choice>
-            <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Deprecated. Use ssl-context attribute instead.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
 
-        <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
         <xs:attribute name="advertise-socket" type="xs:string" use="optional"/>
         <xs:attribute name="proxies" use="optional">
             <xs:annotation>
@@ -83,6 +85,13 @@
         <xs:attribute name="socket-timeout" type="xs:int" use="optional" default="20">
             <xs:annotation>
                 <xs:documentation>Number of seconds to wait for a response from an httpd proxy to MCMP commands before timing out, and flagging the proxy as in error.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ssl-context" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Reference to the SSLContext to be used by mod_cluster.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="node-timeout" type="xs:int" use="optional" default="-1">
@@ -155,11 +164,10 @@
         </xs:attribute>
     </xs:complexType>
 
-    <!-- general SSL definitions -->
     <xs:complexType name="sslType">
         <xs:annotation>
             <xs:documentation>
-                Configuration information for one SSL configuration.
+                Deprecated. Configuration information for one SSL configuration.
                 sslCertificateEncodingAlgorithm (default value only)
                 sslKeyStoreType/sslTrustStoreType (JKS: default value only)
                 sslKeyStoreProvider/sslTrustStoreProvider (only default value).
@@ -169,27 +177,29 @@
         </xs:annotation>
         <xs:attribute name="key-alias" type="xs:string" use="optional" default="jboss">
             <xs:annotation>
-                <xs:documentation>sslKeyAlias The alias of the key holding the client certificates in the key store.</xs:documentation>
+                <xs:documentation>
+                    Deprecated. sslKeyAlias The alias of the key holding the client certificates in the key store.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="password" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    sslKeyStorePassword/sslTrustStorePassword Password granting access to the key store and trust store.
+                    Deprecated. sslKeyStorePassword/sslTrustStorePassword Password granting access to the key store and trust store.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="certificate-key-file" type="xs:string" use="optional" default="${user.home}/.keystore">
             <xs:annotation>
                 <xs:documentation>
-                    sslKeyStore: That is the keystore name here.
+                    Deprecated. sslKeyStore: That is the keystore name here.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="cipher-suite" type="xs:string" use="optional" default="ALL">
             <xs:annotation>
                 <xs:documentation>
-                    sslCiphers: comma separated list of encryption ciphers the configuration is allowed to use, that MUST NOT be
+                    Deprecated. sslCiphers: comma separated list of encryption ciphers the configuration is allowed to use, that MUST NOT be
                     the JVM default in of JSSE as contains weak ciphers.
                     that is SSLCipherSuite when using OpenSSL (APR).
                 </xs:documentation>
@@ -198,42 +208,30 @@
         <xs:attribute name="protocol" default="TLS" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
-                    sslProtocol: Overrides the default SSL socket protocol.
+                    Deprecated. sslProtocol: Overrides the default SSL socket protocol.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="ca-certificate-file" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    sslTrustStore location of the file containing the trust store.
+                    Deprecated. sslTrustStore location of the file containing the trust store.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="ca-revocation-url" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    sslCrlFile A file or URL to get the revocation list.
+                    Deprecated. sslCrlFile A file or URL to get the revocation list.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
-    <!-- <simple-load-provider load="1"/> -->
     <xs:complexType name="simple-load-providerType">
         <xs:attribute name="factor" type="xs:int" use="optional" default="1"/>
     </xs:complexType>
 
-    <!-- Something like.
-         <dynamic-load-provider history="10" decay="2">
-             <load-metric type="cpu" weight="2" capacity="1"/>
-             <load-metric type="sessions" weight="1" capacity="512"/>
-             <load-metric type="busyness">
-                 <property name="name1" value="value1"/>
-                 <property name="name2" value="value2"/>
-             </load-metric>
-             ...
-         </dynamic-load-provider>
-      -->
     <xs:complexType name="dynamic-load-providerType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="load-metric" type="load-metricType"/>

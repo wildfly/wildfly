@@ -49,6 +49,7 @@ enum Attribute {
     AUTO_ENABLE_CONTEXTS(CommonAttributes.AUTO_ENABLE_CONTEXTS),
     STOP_CONTEXT_TIMEOUT(CommonAttributes.STOP_CONTEXT_TIMEOUT),
     SOCKET_TIMEOUT(CommonAttributes.SOCKET_TIMEOUT),
+    SSL_CONTEXT(CommonAttributes.SSL_CONTEXT),
     CONNECTOR(CommonAttributes.CONNECTOR),
     STATUS_INTERVAL(CommonAttributes.STATUS_INTERVAL),
 

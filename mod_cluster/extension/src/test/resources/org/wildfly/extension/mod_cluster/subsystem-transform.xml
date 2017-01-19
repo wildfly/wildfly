@@ -44,7 +44,6 @@
                         stop-context-timeout="${modcluster.stop-context-timeout:10}"
                         ttl="${modcluster.ttl:1}"
                         worker-timeout="${modcluster.worker-timeout:2}"
-
                         session-draining-strategy="DEFAULT"
                         status-interval="10"
             >

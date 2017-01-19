@@ -121,7 +121,8 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL(dependencies)
-                .setExtensionClassName(extensionClassName);
+                .setExtensionClassName(extensionClassName)
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

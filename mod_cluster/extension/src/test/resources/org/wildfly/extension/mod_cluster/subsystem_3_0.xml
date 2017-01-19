@@ -38,6 +38,7 @@
                         proxy-url="${modcluster.proxy-url:/}"
                         smax="${modcluster.smax:2}"
                         socket-timeout="${modcluster.socket-timeout:20}"
+                        ssl-context="mod_cluster-context"
                         sticky-session="${modcluster.sticky-session:true}"
                         sticky-session-force="${modcluster.sticky-session-force:false}"
                         sticky-session-remove="${modcluster.sticky-session-remove:false}"

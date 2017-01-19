@@ -35,7 +35,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * @author Radoslav Husar
- * @version Jul 2014
  */
 public class ModClusterSubsystemXMLReader_3_0 extends ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<ModelNode>> {
 
@@ -54,6 +53,7 @@ public class ModClusterSubsystemXMLReader_3_0 extends ModClusterSubsystemXMLRead
                 case AUTO_ENABLE_CONTEXTS:
                 case STOP_CONTEXT_TIMEOUT:
                 case SOCKET_TIMEOUT:
+                case SSL_CONTEXT:
                 case STICKY_SESSION:
                 case STICKY_SESSION_REMOVE:
                 case STICKY_SESSION_FORCE:
