@@ -16,9 +16,9 @@
 
 <subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
     <default-job-repository name="in-memory"/>
-    <security-domain name="ApplicationDomain"/>
     <default-thread-pool name="batch"/>
     <restart-jobs-on-resume value="false"/>
+    <security-domain name="ApplicationDomain"/>
     <job-repository name="in-memory">
         <in-memory/>
     </job-repository>

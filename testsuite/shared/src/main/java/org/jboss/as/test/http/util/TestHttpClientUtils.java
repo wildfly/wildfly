@@ -24,21 +24,20 @@ package org.jboss.as.test.http.util;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
@@ -47,9 +46,9 @@ import org.apache.http.cookie.MalformedCookieException;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.CookieSpecRegistries;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.cookie.BasicDomainHandler;
 import org.apache.http.impl.cookie.BasicExpiresHandler;
@@ -71,9 +70,10 @@ import org.apache.http.protocol.HttpContext;
 public class TestHttpClientUtils {
 
     /**
-     * Returns https ready client.
+     *@param credentialsProvider optional cred provider
+     * @return client that doesn't verify https connections
      */
-    public static HttpClient wrapHttpsClient(HttpClient base) {
+    public static CloseableHttpClient getHttpsClient(CredentialsProvider credentialsProvider) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
             X509TrustManager tm = new X509TrustManager() {
@@ -88,12 +88,25 @@ public class TestHttpClientUtils {
                     return null;
                 }
             };
-            ctx.init(null, new TrustManager[] { tm }, null);
-            SSLSocketFactory ssf = new SSLSocketFactory(ctx, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-            ClientConnectionManager ccm = base.getConnectionManager();
-            SchemeRegistry sr = ccm.getSchemeRegistry();
-            sr.register(new Scheme("https", 443, ssf));
-            return new DefaultHttpClient(ccm, base.getParams());
+            ctx.init(null, new TrustManager[]{tm}, null);
+
+            ctx.init(null, new TrustManager[]{tm}, null);
+
+            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(ctx, new NoopHostnameVerifier());
+
+            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("https", sslConnectionFactory)
+                    .build();
+            HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+            HttpClientBuilder builder = HttpClientBuilder.create()
+                    .setSSLSocketFactory(sslConnectionFactory)
+                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                    .setConnectionManager(ccm);
+
+            if (credentialsProvider != null) {
+                builder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+            return builder.build();
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;

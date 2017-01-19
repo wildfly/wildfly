@@ -30,6 +30,7 @@
     <resources>
         <artifact name="${org.wildfly:wildfly-messaging-activemq}"/>
         <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
+        <resource-root path="database" />
     </resources>
 
     <dependencies>

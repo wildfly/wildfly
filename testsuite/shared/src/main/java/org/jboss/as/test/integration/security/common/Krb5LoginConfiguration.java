@@ -104,7 +104,7 @@ public class Krb5LoginConfiguration extends Configuration {
         }
 
         res.put("refreshKrb5Config", "true");
-        res.put("debug", "true");
+        //res.put("debug", "true");
 
         if (principal != null) {
             res.put("principal", principal);

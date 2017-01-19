@@ -24,27 +24,24 @@ package org.jboss.as.test.integration.web.security.cert;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.net.URL;
-import java.security.cert.X509Certificate;
-
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -90,7 +87,7 @@ public class WebSecurityCERTTestCase {
         return war;
     }
 
-    public static HttpClient wrapClient(HttpClient base, String alias) {
+    private static CloseableHttpClient getHttpsClient(String alias) {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
             JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain("client-cert");
@@ -103,30 +100,26 @@ public class WebSecurityCERTTestCase {
             KeyManager[] keyManagers = jsseSecurityDomain.getKeyManagers();
             TrustManager[] trustManagers = jsseSecurityDomain.getTrustManagers();
             ctx.init(keyManagers, trustManagers, null);
-            X509HostnameVerifier verifier = new X509HostnameVerifier() {
+            HostnameVerifier verifier = (string, ssls) -> true;
+            SSLConnectionSocketFactory ssf = new SSLConnectionSocketFactory(ctx, verifier);//SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("https", ssf)
+                    .build();
 
-                @Override
-                public void verify(String s, SSLSocket sslSocket) throws IOException {
-                }
+            HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
 
-                @Override
-                public void verify(String s, X509Certificate x509Certificate) throws SSLException {
-                }
-
-                @Override
-                public void verify(String s, String[] strings, String[] strings1) throws SSLException {
-                }
-
-                @Override
-                public boolean verify(String string, SSLSession ssls) {
-                    return true;
-                }
-            };
-            SSLSocketFactory ssf = new SSLSocketFactory(ctx, verifier);//SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-            ClientConnectionManager ccm = base.getConnectionManager();
-            SchemeRegistry sr = ccm.getSchemeRegistry();
+            /*SchemeRegistry sr = ccm.getSchemeRegistry();
             sr.register(new Scheme("https", 8380, ssf));
-            return new DefaultHttpClient(ccm, base.getParams());
+            return new DefaultHttpClient(ccm, base.getParams());*/
+
+
+            return HttpClientBuilder.create()
+                    .setSSLSocketFactory(ssf)
+                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                    .setConnectionManager(ccm)
+                    .build();
+
+
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;
@@ -144,19 +137,12 @@ public class WebSecurityCERTTestCase {
     }
 
     protected void makeCall(String alias, int expectedStatusCode) throws Exception {
-        HttpClient httpclient = new DefaultHttpClient();
-        httpclient = wrapClient(httpclient, alias);
-        try {
+        try (CloseableHttpClient httpclient = getHttpsClient(alias)) {
             HttpGet httpget = new HttpGet("https://" + mgmtClient.getMgmtAddress() + ":8380/web-secure-client-cert/secured/");
             HttpResponse response = httpclient.execute(httpget);
 
             StatusLine statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 }

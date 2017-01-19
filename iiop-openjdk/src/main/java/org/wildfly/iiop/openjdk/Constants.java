@@ -55,6 +55,7 @@ public final class Constants {
     public static final String ORB_PERSISTENT_SERVER_ID = "persistent-server-id";
     public static final String ORB_INIT = "initializers";
     public static final String ORB_INIT_SECURITY = "security";
+    public static final String ORB_INIT_AUTH_CONTEXT = "authentication-context";
     public static final String ORB_INIT_TRANSACTIONS = "transactions";
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
@@ -62,15 +63,20 @@ public final class Constants {
     public static final String NONE = "none";
     public static final String IDENTITY = "identity";
     public static final String SECURITY = "security";
+    public static final String ELYTRON = "elytron";
     public static final String SPEC = "spec";
     public static final String FULL = "full";
     public static final String SECURITY_SUPPORT_SSL = "support-ssl";
     public static final String SECURITY_SECURITY_DOMAIN = "security-domain";
+    public static final String SERVER_SSL_CONTEXT = "server-ssl-context";
+    public static final String CLIENT_SSL_CONTEXT = "client-ssl-context";
     public static final String SECURITY_ADD_COMP_VIA_INTERCEPTOR = "add-component-via-interceptor";
     public static final String SECURITY_CLIENT_SUPPORTS = "client-supports";
     public static final String SECURITY_CLIENT_REQUIRES = "client-requires";
     public static final String SECURITY_SERVER_SUPPORTS = "server-supports";
     public static final String SECURITY_SERVER_REQUIRES = "server-requires";
+    public static final String SECURITY_CLIENT_REQUIRES_SSL = "client-requires-ssl";
+    public static final String SECURITY_SERVER_REQUIRES_SSL = "server-requires-ssl";
 
     public static final String IOR_SETTINGS = "ior-settings";
     public static final String IOR_TRANSPORT_CONFIG = "transport-config";
@@ -86,6 +92,10 @@ public final class Constants {
     public static final String IOR_AS_CONTEXT_REQUIRED = "required";
     public static final String IOR_SAS_CONTEXT = "sas-context";
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
+
+    public static final String IOR_SUPPORTED = "supported";
+    public static final String IOR_REQUIRED = "required";
+    public static final String IOR_NONE = "none";
 
     public static final String PROPERTIES = "properties";
     public static final String PROPERTY = "property";

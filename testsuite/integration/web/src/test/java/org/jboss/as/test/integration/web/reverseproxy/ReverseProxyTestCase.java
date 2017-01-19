@@ -23,7 +23,8 @@ package org.jboss.as.test.integration.web.reverseproxy;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -60,8 +61,6 @@ public class ReverseProxyTestCase {
     @ContainerResource
     private ManagementClient managementClient;
     private static ManagementClient mc;
-
-    DefaultHttpClient httpclient = new DefaultHttpClient();
 
     @Before
     public void setup() throws Exception {
@@ -175,7 +174,6 @@ public class ReverseProxyTestCase {
 
         op = createOpNode("socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy-host", "remove");
         ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
     }
 
     @ArquillianResource
@@ -199,7 +197,7 @@ public class ReverseProxyTestCase {
     }
 
 
-    private String performCall(String urlPattern) throws Exception {
+    private String performCall(CloseableHttpClient httpclient, String urlPattern) throws Exception {
         HttpResponse res =  httpclient.execute(new HttpGet("http://" + url.getHost() + ":" + url.getPort() + "/proxy/" + urlPattern));
         Assert.assertEquals(200, res.getStatusLine().getStatusCode());
         return EntityUtils.toString(res.getEntity());
@@ -207,18 +205,21 @@ public class ReverseProxyTestCase {
 
     @Test
     public void testReverseProxy() throws Exception {
-        final Set<String> results = new HashSet<>();
-        for (int i = 0; i < 10; ++i) {
-            results.add(performCall("name"));
+
+        try (CloseableHttpClient httpclient =  HttpClients.createDefault()){
+            final Set<String> results = new HashSet<>();
+            for (int i = 0; i < 10; ++i) {
+                results.add(performCall(httpclient,"name"));
+            }
+            Assert.assertEquals(2, results.size());
+            Assert.assertTrue(results.contains("server1"));
+            Assert.assertTrue(results.contains("server2"));
+            //TODO: re-add JVM route based sticky session testing
+            //String session = performCall("name?session=true");
+            //sticky sessions should stick it to this node
+            //for (int i = 0; i < 10; ++i) {
+            //    Assert.assertEquals(session, performCall("name"));
+            //}
         }
-        Assert.assertEquals(2, results.size());
-        Assert.assertTrue(results.contains("server1"));
-        Assert.assertTrue(results.contains("server2"));
-        //TODO: re-add JVM route based sticky session testing
-        //String session = performCall("name?session=true");
-        //sticky sessions should stick it to this node
-        //for (int i = 0; i < 10; ++i) {
-        //    Assert.assertEquals(session, performCall("name"));
-        //}
     }
 }

@@ -33,6 +33,7 @@ enum SecurityAllowedValues {
 
     IDENTITY("identity"),
     CLIENT("client"),
+    ELYTRON("elytron"),
     NONE("none");
 
     private String name;

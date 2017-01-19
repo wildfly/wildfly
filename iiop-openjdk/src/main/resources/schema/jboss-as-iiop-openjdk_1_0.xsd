@@ -80,7 +80,7 @@
                 <![CDATA[
                 The orbTCPConfigType specifies the attributes used to configure the TCP connections.
 
-                * high-water-mark: each time the number of connections exceeds this value ORB tries to reclaim connections. 
+                * high-water-mark: each time the number of connections exceeds this value ORB tries to reclaim connections.
                 * number-to-reclaim: number of reclaimed connections is specified by this property.
                         ]]>
             </xs:documentation>

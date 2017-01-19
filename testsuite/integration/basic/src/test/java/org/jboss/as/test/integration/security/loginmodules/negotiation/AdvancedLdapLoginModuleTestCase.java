@@ -99,7 +99,7 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -153,9 +153,9 @@ public class AdvancedLdapLoginModuleTestCase {
 
     // Public methods --------------------------------------------------------
 
-    @BeforeClass
-    public static void beforeClass() {
-        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    @Before
+    public void before() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
     }
 
     /**

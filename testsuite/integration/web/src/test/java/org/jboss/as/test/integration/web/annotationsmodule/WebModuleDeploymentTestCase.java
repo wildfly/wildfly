@@ -26,7 +26,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -182,8 +183,7 @@ public class WebModuleDeploymentTestCase {
 
     @Test
     public void testSimpleBeanInjected() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet httpget = new HttpGet(url.toExternalForm() + "/servlet");
 
             HttpResponse response = httpclient.execute(httpget);
@@ -194,11 +194,6 @@ public class WebModuleDeploymentTestCase {
 
             String result = EntityUtils.toString(entity);
             Assert.assertEquals(ModuleServlet.MODULE_SERVLET, result);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 }

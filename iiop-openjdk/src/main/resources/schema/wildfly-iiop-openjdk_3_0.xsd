@@ -26,7 +26,7 @@
            xmlns="urn:jboss:domain:iiop-openjdk:3.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="3.0">
 
     <!-- The iiop subsystem root element -->
     <xs:element name="subsystem" type="iiopSubsystemType"/>
@@ -95,23 +95,31 @@
                 <![CDATA[
                 The initializersConfigType specifies the attributes used to configure the ORB initializers.
 
-                * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are three possibilities:
-                    identity - The server will just send the current username. The recieving server must trust this
+                * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are four possibilities:
+                    identity - The server will just send the current username. The receiving server must trust this
                                server.
                     client   - The client interceptor will be installed. Remote calls from this server will propagate
                                by sending the current username and password
+                    elytron  - The client-side interceptor uses Elytron authentication configurations that match the target
+                               URI to obtain the security identity (and associated password) that will be relayed to the
+                               server. It combines the previous two modes by checking the target security requirements in
+                               order to determine the type of security token that must be constructed.
                     none      - Security interceptors are not installed
+                * authentication-context: when the security attribute is set to 'elytron', the authentication-context
+                    attribute must be defined to indicate the name of the Elytron authentication context that will be
+                    used to match the target URI in order to obtain an authentication configuration.
                 * transactions: indicates which transaction initializers should be installed. There are three possibilities:
                     full   - This requires JTS to be enabled in the transactions subsystem config, and will enable full transaction
-                           interaoprability with other JBoss AS instances.
+                           interoperability with other JBoss AS instances.
                     spec - This does not require JTS to be enabled, but will install the minimum set of transaction interceptors
                            required for EJB spec compliance. These interceptors detect an incoming transaction and throw an
                            exception if the invocation should be run in the incoming transaction context.
-                    none  - No transaction initalizers will be installed.
+                    none  - No transaction initializers will be installed.
                         ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="security" type="securityEnabledType" use="optional" default="none"/>
+        <xs:attribute name="authentication-context" type="xs:string" use="optional" default="none"/>
         <xs:attribute name="transactions" type="transactionEnabledType" use="optional" default="none"/>
     </xs:complexType>
 
@@ -137,29 +145,34 @@
                 <![CDATA[
                 The securityConfigType specifies the attributes used to configure the ORB security features.
 
-                * support-ssl: indicates whether SSL is to be supported (true) or not (false).
-                * security-domain: the name of the security domain that holds the key and trust stores that will be used
-                                   to establish SSL connections.
+                * support-ssl: indicates whether SSL is to be supported (true) or not (false). If set to true, then either
+                        the security-domain attribute must be set or the server-ssl-context and client-ssl-context pair
+                        must be set. The former tells the subsystem to use a legacy JSSE domain to build SSL contexts
+                        while the other two tell the subsystem to use the org.wildfly.security.ssl-context capability
+                        to obtain the server and client side SSL contexts.
+                * security-domain: the name of the legacy JSSE domain that holds the key and trust stores that will
+                        be used to create the SSL context when establishing SSL connections. if defined , then the
+                        server-ssl-context and client-ssl-contexts attributes must not be set.
+                * server-ssl-context: the dynamic name of the capability that provides the SSL context that will be used
+                        to create server side SSL sockets. If the defined, the client-ssl-context attribute must also be
+                        defined and the security-domain attribute must not be set.
+                * client-ssl-context: the dynamic name of the capability that provides the SSL context that will be used
+                        to create client side SSL sockets. If the defined, the server-ssl-context attribute must also be
+                        defined and the security-domain attribute must not be set.
                 * add-component-via-interceptor: indicates whether SSL components should be added by an IOR interceptor
-                                                 (true) or not (false).
-                * client-supports: value that indicates the client SSL supported parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
-                * client-requires: value that indicates the client SSL required parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
-                * server-supports: value that indicates the server SSL supported parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
-                * server-requires: value that indicates the server SSL required parameters (None, ServerAuth, ClientAuth.
-                                   MutualAuth)
+                        (true) or not (false).
+                * server-requires-ssl: indicates wheter IIOP connections to the server require SSL
+                * client-requires-ssl: indicates wheter IIOP connections from the server require SSL
                         ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="support-ssl" type="trueFalseType" use="optional" default="false"/>
         <xs:attribute name="security-domain" type="xs:string" use="optional"/>
+        <xs:attribute name="server-ssl-context" type="xs:string" use="optional"/>
+        <xs:attribute name="client-ssl-context" type="xs:string" use="optional"/>
         <xs:attribute name="add-component-via-interceptor" type="trueFalseType" use="optional" default="true"/>
-        <xs:attribute name="client-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
-        <xs:attribute name="client-requires" type="sslConfigType" use="optional" default="None"/>
-        <xs:attribute name="server-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
-        <xs:attribute name="server-requires" type="sslConfigType" use="optional" default="None"/>
+        <xs:attribute name="server-requires-ssl" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="client-requires-ssl" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="genericPropertiesType">
@@ -321,6 +334,7 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="identity"/>
             <xs:enumeration value="client"/>
+            <xs:enumeration value="elytron"/>
             <xs:enumeration value="none"/>
         </xs:restriction>
     </xs:simpleType>

@@ -38,7 +38,8 @@ import java.util.Arrays;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -72,7 +73,7 @@ public class WebSecurityProgrammaticLoginTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Deployment(testable = true)
+    @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-programmatic-login.war");
         war.addAsResource(WebSecurityProgrammaticLoginTestCase.class.getPackage(), "users.properties", "users.properties");
@@ -115,17 +116,10 @@ public class WebSecurityProgrammaticLoginTestCase {
     }
 
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpResponse res = httpclient.execute(new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass));
             Assert.assertEquals(expectedStatusCode, res.getStatusLine().getStatusCode());
             //System.out.println("Response content length: " + EntityUtils.toString(res.getEntity()));
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 
