@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
 
 import java.io.IOException;
+import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -59,6 +60,7 @@ import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.extension.undertow.filters.FilterService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.credential.store.CredentialStore;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Pool;
@@ -170,6 +172,9 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
             }
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.http-authentication-factory", "elytron-factory"), HttpAuthenticationFactory.class);
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "TestContext"), SSLContext.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "my-ssl-context"), SSLContext.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.key-store", "my-key-store"), KeyStore.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.credential-store", "my-credential-store"), CredentialStore.class);
             registerServiceCapabilities(capabilityRegistry, capabilities);
 
         }

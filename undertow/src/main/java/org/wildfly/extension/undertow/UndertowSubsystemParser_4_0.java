@@ -24,6 +24,8 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
@@ -320,6 +322,17 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         builder(ApplicationSecurityDomainDefinition.INSTANCE.getPathElement())
                             .setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS)
                             .addAttributes(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY, ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG)
+                            .addChild(builder(UndertowExtension.PATH_SSO)
+                                    .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
+                                    .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())
+                                    .addAttribute(SingleSignOnDefinition.Attribute.HTTP_ONLY.getDefinition())
+                                    .addAttribute(SingleSignOnDefinition.Attribute.SECURE.getDefinition())
+                                    .addAttribute(SingleSignOnDefinition.Attribute.COOKIE_NAME.getDefinition())
+                                    .addAttribute(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.KEY_STORE.getDefinition())
+                                    .addAttribute(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.KEY_ALIAS.getDefinition())
+                                    .addAttribute(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.SSL_CONTEXT.getDefinition())
+                                    .addAttribute(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.CREDENTIAL.getDefinition(), AttributeParser.OBJECT_PARSER, AttributeMarshaller.ATTRIBUTE_OBJECT)
+                            )
                 )
                  //here to make sure we always add filters & handlers path to mgmt model
                 .setAdditionalOperationsGenerator((address, addOperation, operations) -> {

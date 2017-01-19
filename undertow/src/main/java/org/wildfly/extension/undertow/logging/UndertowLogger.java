@@ -371,4 +371,16 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 89, value = "Predicate %s was not valid, message was: %s")
     String predicateNotValid(String predicate, String error);
+
+    @Message(id = 90, value = "Key alias %s does not exist in the configured key store")
+    IllegalArgumentException missingKeyStoreEntry(String alias);
+
+    @Message(id = 91, value = "Key store entry %s is not a private key entry")
+    IllegalArgumentException keyStoreEntryNotPrivate(String alias);
+
+    @Message(id = 92, value = "Credential alias %s does not exist in the configured credential store")
+    IllegalArgumentException missingCredential(String alias);
+
+    @Message(id = 93, value = "Credential %s is not a clear text password")
+    IllegalArgumentException credentialNotClearPassword(String alias);
 }
