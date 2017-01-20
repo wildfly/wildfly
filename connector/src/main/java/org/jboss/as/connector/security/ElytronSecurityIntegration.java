@@ -19,6 +19,7 @@ import java.security.AccessController;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.jca.core.spi.security.Callback;
@@ -63,24 +64,23 @@ public class ElytronSecurityIntegration implements SecurityIntegration {
     @Override
     public CallbackHandler createCallbackHandler() {
         // we need a Callback to retrieve the Elytron security domain that will be used by the CallbackHandler.
-        throw new UnsupportedOperationException();
+        throw ConnectorLogger.ROOT_LOGGER.unsupportedCreateCallbackHandlerMethod();
     }
 
     @Override
-    public CallbackHandler createCallbackHandler(Callback callback) {
-        if (callback != null) {
-            // TODO switch to use the elytron security domain once the callback has that info available.
-            final String securityDomainName = callback.getDomain();
-            // get domain reference from the service container and create the callback handler using the domain.
-            if (securityDomainName != null) {
-                final ServiceContainer container = this.currentServiceContainer();
-                final ServiceName securityDomainServiceName = SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(securityDomainName);
-                final SecurityDomain securityDomain = (SecurityDomain) container.getRequiredService(securityDomainServiceName).getValue();
-                return new ElytronCallbackHandler(securityDomain, callback);
-            }
+    public CallbackHandler createCallbackHandler(final Callback callback) {
+        assert callback != null;
+        // TODO switch to use the elytron security domain once the callback has that info available.
+        final String securityDomainName = callback.getDomain();
+        // get domain reference from the service container and create the callback handler using the domain.
+        if (securityDomainName != null) {
+            final ServiceContainer container = this.currentServiceContainer();
+            final ServiceName securityDomainServiceName = SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(securityDomainName);
+            final SecurityDomain securityDomain = (SecurityDomain) container.getRequiredService(securityDomainServiceName).getValue();
+            return new ElytronCallbackHandler(securityDomain, callback);
         }
         // TODO use subsystem logger for the exception.
-        throw new IllegalArgumentException("Supplied Callback must be non null and must contain an Elytron security domain reference");
+        throw ConnectorLogger.ROOT_LOGGER.invalidCallbackSecurityDomain();
     }
 
     /**

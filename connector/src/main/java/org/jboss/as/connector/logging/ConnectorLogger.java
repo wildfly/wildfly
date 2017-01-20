@@ -888,4 +888,13 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 106, value = "Elytron handler handle: %s")
     void elytronHandlerHandle(String callbacks);
+
+    @Message(id = 107, value = "Execution subject was not provided to the callback handler")
+    SecurityException executionSubjectNotSetInHandler();
+
+    @Message(id = 108, value = "Supplied callback doesn't contain a security domain reference")
+    IllegalArgumentException invalidCallbackSecurityDomain();
+
+    @Message(id = 109, value = "Callback with security domain is required - use createCallbackHandler(Callback callback) instead")
+    UnsupportedOperationException unsupportedCreateCallbackHandlerMethod();
 }

@@ -39,7 +39,6 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -76,12 +75,6 @@ public class ElytronSubjectFactory implements SubjectFactory, Capabilities {
      * @param targetURI the {@link URI} of the target.
      */
     public ElytronSubjectFactory(final AuthenticationContext authenticationContext, final URI targetURI) {
-        if (targetURI == null) {
-            try {
-                // TODO remove this - used for testing only
-                this.targetURI = new URI("jdbc://localhost");
-            } catch(URISyntaxException e) {}
-        }
         this.authenticationContext = authenticationContext;
         this.targetURI = targetURI;
     }

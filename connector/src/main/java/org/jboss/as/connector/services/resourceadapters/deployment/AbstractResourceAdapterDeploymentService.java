@@ -28,6 +28,7 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTO
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedAction;
@@ -618,14 +619,14 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
-                org.jboss.jca.common.api.metadata.common.SecurityMetadata securityMetadata) throws DeployException {
+                org.jboss.jca.common.api.metadata.common.SecurityMetadata securityMetadata, final String jndiName) throws DeployException {
             if (securityMetadata == null)
                 return null;
             assert securityMetadata instanceof SecurityMetadata;
             final String securityDomain = securityMetadata.resolveSecurityDomain();
             if (((SecurityMetadata)securityMetadata).isElytronEnabled()) {
                 try {
-                    return new ElytronSubjectFactory(null, this.url.toURI());
+                    return new ElytronSubjectFactory(null, new URI(jndiName));
                 } catch (URISyntaxException e) {
                     throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
                 }

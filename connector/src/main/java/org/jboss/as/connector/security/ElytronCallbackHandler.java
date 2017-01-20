@@ -58,14 +58,14 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
 
     private final SecurityDomain securityDomain;
 
-    /** Callback mappings */
     private final Callback mappings;
 
-    // TODO initialize the execution subject at the constructor.
     private Subject executionSubject;
+
     /**
      * Constructor
-     * @param mappings The mappings
+     * @param securityDomain the Elytron security domain used to establish the caller principal.
+     * @param mappings The mappings.
      */
     public ElytronCallbackHandler(final SecurityDomain securityDomain, final Callback mappings) {
         this.securityDomain = securityDomain;
@@ -79,11 +79,22 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
         if (SUBSYSTEM_RA_LOGGER.isTraceEnabled())
             SUBSYSTEM_RA_LOGGER.elytronHandlerHandle(Arrays.toString(callbacks));
 
+        // work wrapper calls the callback handler a second time with default callback values after the handler was invoked
+        // by the RA. We must check if the execution subject already contains an identity and allow for replacement of the
+        // identity with values found in the default callbacks only if the subject has no identity yet or if the identity
+        // is the anonymous one.
+        if (this.executionSubject != null) {
+            final SecurityIdentity subjectIdentity = this.getPrivateCredential(this.executionSubject, SecurityIdentity.class);
+            if (subjectIdentity != null && !subjectIdentity.isAnonymous()) {
+                return;
+            }
+        }
+
         if (callbacks != null && callbacks.length > 0)
         {
-            if (mappings != null)
+            if (this.mappings != null && this.mappings.isMappingRequired())
             {
-                callbacks = mappings.mapCallbacks(callbacks);
+                callbacks = this.mappings.mapCallbacks(callbacks);
             }
 
             GroupPrincipalCallback groupPrincipalCallback = null;
@@ -93,86 +104,87 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
             for (javax.security.auth.callback.Callback callback : callbacks) {
                 if (callback instanceof GroupPrincipalCallback) {
                     groupPrincipalCallback = (GroupPrincipalCallback) callback;
-                    if (executionSubject == null) {
-                        executionSubject = groupPrincipalCallback.getSubject();
-                    } else if (!executionSubject.equals(groupPrincipalCallback.getSubject())) {
+                    if (this.executionSubject == null) {
+                        this.executionSubject = groupPrincipalCallback.getSubject();
+                    } else if (!this.executionSubject.equals(groupPrincipalCallback.getSubject())) {
                         // TODO merge the contents of the subjects?
                     }
                 } else if (callback instanceof CallerPrincipalCallback) {
                     callerPrincipalCallback = (CallerPrincipalCallback) callback;
-                    if (executionSubject == null) {
-                        executionSubject = callerPrincipalCallback.getSubject();
-                    } else if (!executionSubject.equals(callerPrincipalCallback.getSubject())) {
+                    if (this.executionSubject == null) {
+                        this.executionSubject = callerPrincipalCallback.getSubject();
+                    } else if (!this.executionSubject.equals(callerPrincipalCallback.getSubject())) {
                         // TODO merge the contents of the subjects?
                     }
                 } else if (callback instanceof PasswordValidationCallback) {
                     passwordValidationCallback = (PasswordValidationCallback) callback;
-                    if (executionSubject == null) {
-                        executionSubject = passwordValidationCallback.getSubject();
-                    } else if (!executionSubject.equals(passwordValidationCallback.getSubject())) {
+                    if (this.executionSubject == null) {
+                        this.executionSubject = passwordValidationCallback.getSubject();
+                    } else if (!this.executionSubject.equals(passwordValidationCallback.getSubject())) {
                         // TODO merge the contents of the subjects?
                     }
                 } else {
                     throw new UnsupportedCallbackException(callback);
                 }
             }
-            this.processResults(callerPrincipalCallback, groupPrincipalCallback, passwordValidationCallback);
+            this.handleInternal(callerPrincipalCallback, groupPrincipalCallback, passwordValidationCallback);
         }
     }
 
-    protected void processResults(final CallerPrincipalCallback callerPrincipalCallback, final GroupPrincipalCallback groupPrincipalCallback,
-                                  final PasswordValidationCallback passwordValidationCallback) throws IOException {//, UnsupportedCallbackException {
+    protected void handleInternal(final CallerPrincipalCallback callerPrincipalCallback, final GroupPrincipalCallback groupPrincipalCallback,
+                                  final PasswordValidationCallback passwordValidationCallback) throws IOException {
 
-        // spec section 16.4.5 - no CallerPrincipalCallback was handled, check the execution subject's principal set.
-        SecurityIdentity authenticatedIdentity = this.securityDomain.getAnonymousSecurityIdentity();
+        if(this.executionSubject == null) {
+            throw SUBSYSTEM_RA_LOGGER.executionSubjectNotSetInHandler();
+        }
+        SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
+
+        // establish the caller principal using the info from the callback.
         Principal callerPrincipal = null;
         if (callerPrincipalCallback == null) {
-            if (executionSubject.getPrincipals().size() == 1) {
-                Principal subjectPrincipal = executionSubject.getPrincipals().iterator().next();
-                callerPrincipal = new NamePrincipal(subjectPrincipal.getName());
-                // TODO apply mapping to the principal if needed
-            } else if (!executionSubject.getPrincipals().isEmpty()) {
-                // TODO throw exception here (spec violation)?
-            }
-        } else {
             Principal callbackPrincipal = callerPrincipalCallback.getPrincipal();
             callerPrincipal = callbackPrincipal != null ? new NamePrincipal(callbackPrincipal.getName()) :
                     callerPrincipalCallback.getName() != null ? new NamePrincipal(callerPrincipalCallback.getName()) : null;
         }
 
-        // a null principal is the ra contract for requiring the use of the unauthenticated identity - there's no point trying to authenticate any identity.
+        // a null principal is the ra contract for requiring the use of the unauthenticated identity - no point in attempting to authenticate.
         if (callerPrincipal != null) {
             // check if we have a username/password pair to authenticate - first try the password validation callback.
             if (passwordValidationCallback != null) {
-                authenticatedIdentity = this.authenticate(passwordValidationCallback.getUsername(), passwordValidationCallback.getPassword());
+                final String username = passwordValidationCallback.getUsername();
+                final char[] password = passwordValidationCallback.getPassword();
+                identity = this.authenticate(username, password);
+                // add a password credential to the execution subject and set the successful result in the callback.
+                this.addPrivateCredential(this.executionSubject, new PasswordCredential(username, password));
+                passwordValidationCallback.setResult(true);
             } else {
                 // identity not established using the callback - check if the execution subject contains a password credential.
-                PasswordCredential passwordCredential = this.getPasswordCredential(this.executionSubject);
+                PasswordCredential passwordCredential = this.getPrivateCredential(this.executionSubject, PasswordCredential.class);
                 if (passwordCredential != null) {
-                    authenticatedIdentity = this.authenticate(passwordCredential.getUserName(), passwordCredential.getPassword());
+                    identity = this.authenticate(passwordCredential.getUserName(), passwordCredential.getPassword());
+                }
+            }
+
+            // at this point we either have an authenticated identity or an anonymous one. We must now check if the caller principal
+            // is different from the identity principal and switch to the caller principal identity if needed.
+            if (!callerPrincipal.equals(identity.getPrincipal())) {
+                identity = identity.createRunAsIdentity(callerPrincipal.getName());
+            }
+
+            // if we have new roles coming from the group callback, set a new mapper in the identity.
+            if (groupPrincipalCallback != null) {
+                String[] groups = groupPrincipalCallback.getGroups();
+                if (groups != null) {
+                    Set<String> roles = new HashSet<>(Arrays.asList(groups));
+                    // TODO what category should we use here?
+                    identity = identity.withRoleMapper("ejb", RoleMapper.constant(Roles.fromSet(roles)));
                 }
             }
         }
 
-        // if the caller principal is different from the authenticated identity principal, switch to the caller principal identity.
-        if (callerPrincipal != null && !callerPrincipal.equals(authenticatedIdentity.getPrincipal())) {
-            authenticatedIdentity = authenticatedIdentity.createRunAsIdentity(callerPrincipal.getName());
-        }
-
-         // if we have new roles coming from the group callback, set a new mapper in the identity.
-        if (groupPrincipalCallback != null) {
-            String[] groups = groupPrincipalCallback.getGroups();
-            if (groups != null) {
-                Set<String> roles = new HashSet<>(Arrays.asList(groups));
-                // TODO what category should we use here? Is it right to assume every entry in the groups array represents a role?
-                authenticatedIdentity = authenticatedIdentity.withRoleMapper("jca", RoleMapper.constant(Roles.fromSet(roles)));
-            }
-        }
-
         // set the authenticated identity as a private credential in the subject.
-        if (executionSubject != null) {
-            this.addPrivateCredential(executionSubject, authenticatedIdentity);
-        }
+        this.executionSubject.getPrincipals().add(identity.getPrincipal());
+        this.addPrivateCredential(executionSubject, identity);
     }
 
     /**
@@ -211,15 +223,15 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
         }
     }
 
-    protected PasswordCredential getPasswordCredential(final Subject subject) {
-        PasswordCredential credential = null;
+    protected<T> T getPrivateCredential(final Subject subject, final Class<T> credentialClass) {
+        T credential = null;
         if (subject != null) {
-            Set<PasswordCredential> credentialSet;
+            Set<T> credentialSet;
             if (!WildFlySecurityManager.isChecking()) {
-                credentialSet = subject.getPrivateCredentials(PasswordCredential.class);
+                credentialSet = subject.getPrivateCredentials(credentialClass);
             } else {
-                credentialSet = AccessController.doPrivileged((PrivilegedAction<Set<PasswordCredential>>) () ->
-                        subject.getPrivateCredentials(PasswordCredential.class));
+                credentialSet = AccessController.doPrivileged((PrivilegedAction<Set<T>>) () ->
+                        subject.getPrivateCredentials(credentialClass));
             }
             if (!credentialSet.isEmpty()) {
                 credential = credentialSet.iterator().next();

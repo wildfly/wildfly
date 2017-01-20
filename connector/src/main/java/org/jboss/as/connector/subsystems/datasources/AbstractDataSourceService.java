@@ -444,14 +444,14 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
-                org.jboss.jca.common.api.metadata.common.Credential credential) throws DeployException {
+                org.jboss.jca.common.api.metadata.common.Credential credential, final String jndiName) throws DeployException {
             if (credential == null)
                 return null;
             assert credential instanceof Credential;
             final String securityDomain = credential.getSecurityDomain();
             if (((Credential) credential).isElytronEnabled()) {
                 try {
-                    return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(this.dataSourceConfig.getConnectionUrl()));
+                    return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(jndiName));
                 } catch (URISyntaxException e) {
                     throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
                 }
