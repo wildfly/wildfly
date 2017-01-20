@@ -50,7 +50,6 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -105,7 +104,7 @@ class JSR77ManagementSubsystemAdd extends AbstractBoottimeAddStepHandler {
                             .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, managementEjbService.deploymentRepositoryValue)
                             .addDependency(mbeanServerServiceName, MBeanServer.class, managementEjbService.mbeanServerValue)
                                     //TODO I think this is needed here since we don't go through EjbClientContextSetupProcessor
-                            .addDependency(EJBClientContextService.DEFAULT_SERVICE_NAME, EJBClientContext.class, managementEjbService.ejbClientContextValue)
+                            .addDependency(EJBClientContextService.DEFAULT_SERVICE_NAME, EJBClientContextService.class, managementEjbService.ejbClientContextValue)
                             .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, managementEjbService.associationServiceInjector)
                             .setInitialMode(Mode.ACTIVE)
                             .install();

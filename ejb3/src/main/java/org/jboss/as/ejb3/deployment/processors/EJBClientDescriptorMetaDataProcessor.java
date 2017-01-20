@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.InjectionException;
@@ -53,8 +52,7 @@ import org.xnio.OptionMap;
  * {@link Attachments#EJB_CLIENT_METADATA} key corresponding to {@link EJBClientDescriptorMetaData}, in the deployment unit.
  * <p/>
  * If a {@link EJBClientDescriptorMetaData} is available then this deployment unit processor creates and installs a
- * {@link EJBClientContextService}. It then attaches the {@link org.jboss.ejb.client.EJBClientContext} as an
- * attachment to the deployment unit, under the key {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT}
+ * {@link EJBClientContextService}.
  *
  * TODO Elytron emulate old configuration using discovery, clustering
  *
@@ -90,18 +88,27 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // create the service
         final EJBClientContextService service = new EJBClientContextService();
         // add the service
-        final ServiceBuilder<EJBClientContext> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
+        final ServiceBuilder<EJBClientContextService> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
 
         serviceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, service.getConfiguratorServiceInjector());
+
         final Injector<RemotingProfileService> profileServiceInjector = new Injector<RemotingProfileService>() {
             final Injector<EJBTransportProvider> injector = service.getLocalProviderInjector();
+            boolean injected = false;
 
             public void inject(final RemotingProfileService value) throws InjectionException {
-                injector.inject(value.getLocalTransportProviderInjector().getValue());
+                final EJBTransportProvider provider = value.getLocalTransportProviderInjector().getOptionalValue();
+                if (provider != null) {
+                    injected = true;
+                    injector.inject(provider);
+                }
             }
 
             public void uninject() {
-                injector.uninject();
+                if (injected) {
+                    injected = false;
+                    injector.uninject();
+                }
             }
         };
         final String profile = ejbClientDescriptorMetaData.getProfile();
@@ -122,7 +129,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 ejbClientContextServiceName);
 
         // attach the service name of this EJB client context to the deployment unit
-        phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
+        phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE);
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME, profileServiceName);
     }

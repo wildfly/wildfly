@@ -68,7 +68,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         RegistrationService registrationService = new RegistrationService(module);
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
         final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(registrationServiceName, registrationService)
-            .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContext.class, registrationService.ejbClientContextInjectedValue)
+            .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContextService.class, registrationService.ejbClientContextInjectedValue)
             .addDependency(getDiscoveryServiceName(phaseContext), Discovery.class, registrationService.discoveryInjector);
         builder.install();
 
@@ -118,7 +118,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
         private final Module module;
 
-        final InjectedValue<EJBClientContext> ejbClientContextInjectedValue = new InjectedValue<>();
+        final InjectedValue<EJBClientContextService> ejbClientContextInjectedValue = new InjectedValue<>();
         final InjectedValue<Discovery> discoveryInjector = new InjectedValue<>();
 
         private RegistrationService(Module module) {
@@ -130,7 +130,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
             doPrivileged((PrivilegedAction<Void>) () -> {
                 // associate the EJB client context and discovery setup with the deployment classloader
-                final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue();
+                final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue().getClientContext();
                 final ModuleClassLoader classLoader = module.getClassLoader();
                 EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
                 EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);

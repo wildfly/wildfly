@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.jsr77.ejb.ManagementEjbDeploymentInformation;
 import org.jboss.as.jsr77.ejb.ManagementHomeEjbComponentView;
 import org.jboss.as.jsr77.ejb.ManagementRemoteEjbComponentView;
@@ -64,7 +65,7 @@ public class RegisterManagementEJBService implements Service<Void>{
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.of(JSR77ManagementExtension.SUBSYSTEM_NAME, "ejb"));
 
     final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
-    final InjectedValue<EJBClientContext> ejbClientContextValue = new InjectedValue<EJBClientContext>();
+    final InjectedValue<EJBClientContextService> ejbClientContextValue = new InjectedValue<>();
     final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<MBeanServer>();
     final InjectedValue<AssociationService> associationServiceInjector = new InjectedValue<>();
     private volatile DeploymentModuleIdentifier moduleIdentifier;
@@ -97,7 +98,7 @@ public class RegisterManagementEJBService implements Service<Void>{
 
         doPrivileged((PrivilegedAction<Void>) () -> {
             final ClassLoader classLoader = getClass().getClassLoader();
-            EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContextValue.getValue());
+            EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContextValue.getValue().getClientContext());
             Discovery.getContextManager().setClassLoaderDefault(classLoader, Discovery.create(associationServiceInjector.getValue().getLocalDiscoveryProvider()));
             return null;
         });

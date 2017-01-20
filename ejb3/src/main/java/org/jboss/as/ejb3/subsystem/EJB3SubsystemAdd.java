@@ -116,7 +116,6 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionAccessControlService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -425,7 +424,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //TODO: This should be managed
         final EJBClientContextService clientContextService = new EJBClientContextService(true);
-        final ServiceBuilder<EJBClientContext> clientContextServiceBuilder = context.getServiceTarget().addService(EJBClientContextService.DEFAULT_SERVICE_NAME, clientContextService);
+        final ServiceBuilder<EJBClientContextService> clientContextServiceBuilder = context.getServiceTarget().addService(EJBClientContextService.DEFAULT_SERVICE_NAME, clientContextService);
 
         clientContextServiceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, clientContextService.getConfiguratorServiceInjector());
 

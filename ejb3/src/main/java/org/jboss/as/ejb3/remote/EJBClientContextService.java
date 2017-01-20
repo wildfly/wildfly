@@ -43,7 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class EJBClientContextService implements Service<EJBClientContext> {
+public final class EJBClientContextService implements Service<EJBClientContextService> {
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext");
 
@@ -99,7 +99,11 @@ public final class EJBClientContextService implements Service<EJBClientContext> 
         }
     }
 
-    public EJBClientContext getValue() throws IllegalStateException, IllegalArgumentException {
+    public EJBClientContextService getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    public EJBClientContext getClientContext() {
         return clientContext;
     }
 
