@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
 import org.jboss.ejb.server.Association;
@@ -51,6 +56,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
     private final InjectedValue<Association> associationInjectedValue = new InjectedValue<>();
     private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
     private final OptionMap channelCreationOptions;
 
@@ -68,6 +74,28 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             associationInjectedValue.getValue(),
             remotingTransactionServiceInjectedValue.getValue()
         );
+        final ControlledProcessStateService processStateService = controlledProcessStateServiceInjectedValue.getValue();
+        if (processStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
+            final PropertyChangeListener listener = new PropertyChangeListener() {
+                public void propertyChange(final PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals("currentState") && evt.getOldValue() == ControlledProcessState.State.STARTING) {
+                        remoteEJBService.serverUp();
+                        // can't use a lambda because of this line...
+                        processStateService.removePropertyChangeListener(this);
+                    }
+                }
+            };
+            processStateService.addPropertyChangeListener(listener);
+            // this is actually racy, so we have to double-check the state afterwards just to be sure it didn't transition before we got here.
+            if (processStateService.getCurrentState() != ControlledProcessState.State.STARTING) {
+                // this method is idempotent so it's OK if the listener got fired
+                remoteEJBService.serverUp();
+                // this one too
+                processStateService.removePropertyChangeListener(listener);
+            }
+        } else {
+            remoteEJBService.serverUp();
+        }
 
         // Register an EJB channel open listener
         OpenListener channelOpenListener = remoteEJBService.getOpenListener();
@@ -106,5 +134,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<RemotingTransactionService> getRemotingTransactionServiceInjector() {
         return remotingTransactionServiceInjectedValue;
+    }
+
+    public InjectedValue<ControlledProcessStateService> getControlledProcessStateServiceInjector() {
+        return controlledProcessStateServiceInjectedValue;
     }
 }
