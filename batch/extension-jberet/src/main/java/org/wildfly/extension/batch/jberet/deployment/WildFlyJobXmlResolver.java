@@ -287,14 +287,7 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
 
     private void addJob(final String jobXmlName, final String jobName) {
         jobXmlNames.put(jobXmlName, jobName);
-        final Set<String> xmlDescriptors = jobNames.computeIfAbsent(jobName, s -> {
-            Set<String> result = new LinkedHashSet<>();
-            final Set<String> appearing = jobNames.putIfAbsent(jobName, result);
-            if (appearing != null) {
-                result = appearing;
-            }
-            return result;
-        });
+        final Set<String> xmlDescriptors = jobNames.computeIfAbsent(jobName, s -> new LinkedHashSet<>());
         xmlDescriptors.add(jobXmlName);
     }
 
