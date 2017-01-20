@@ -30,6 +30,9 @@ import static org.jboss.as.test.integration.management.jca.ComplexPropertiesPars
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raConnectionProperties;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
 
+import java.io.IOException;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,10 +41,15 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,6 +62,25 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
+    private static final Deque<ModelNode> REMOVE_ADDRESSES = new LinkedList<>();
+
+    @BeforeClass
+    public static void configureElytron() throws Exception {
+        try (final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+            addAuth(client, "AuthCtxt");
+            addAuth(client, "AuthCtxtAndApp");
+        }
+    }
+
+    @AfterClass
+    public static void removeElytronConfig() throws Exception {
+        try (final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+            ModelNode address;
+            while ((address = REMOVE_ADDRESSES.pollFirst()) != null) {
+                execute(client, Operations.createRemoveOperation(address));
+            }
+        }
+    }
 
     @Test
     public void addComplexResourceAdapterWithAppSecurity() throws Exception {
@@ -310,4 +337,30 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
                 parser);
     }
 
+    private static void addAuth(final ModelControllerClient client, final String name) throws IOException {
+        ModelNode address = Operations.createAddress("subsystem", "elytron", "authentication-configuration", name);
+        REMOVE_ADDRESSES.addLast(address.clone());
+        ModelNode op = Operations.createAddOperation(address);
+        op.get("security-domain").set("ApplicationDomain");
+        final ModelNode cr = op.get("credential-reference").setEmptyObject();
+        cr.get("clear-text").set("value");
+        execute(client, op);
+
+        address = Operations.createAddress("subsystem", "elytron", "authentication-context", name);
+        REMOVE_ADDRESSES.addFirst(address.clone());
+        op = Operations.createAddOperation(address);
+        final ModelNode mr = op.get("match-rules").setEmptyList();
+        final ModelNode ac = new ModelNode().setEmptyObject();
+        ac.get("authentication-configuration").set(name);
+        mr.add(ac);
+        execute(client, op);
+    }
+
+    private static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+        final ModelNode result = client.execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            throw new RuntimeException(Operations.getFailureDescription(result).asString());
+        }
+        return result;
+    }
 }
