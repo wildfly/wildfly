@@ -221,6 +221,15 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition JOURNAL_PAGE_STORE_TABLE  = create("journal-page-store-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("page-store-table")
+            .setRequired(false)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultPageStoreTableName()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final AttributeDefinition JOURNAL_DATABASE = create("journal-database", STRING)
             .setAttributeGroup("journal")
             .setXmlName("database")
@@ -509,7 +518,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE,
             JOURNAL_DATASOURCE, JOURNAL_DATABASE,
-            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE,
+            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,

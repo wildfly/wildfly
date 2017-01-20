@@ -58,7 +58,8 @@
                 database="mysql"
                 messages-table="${journal.message.table:MESSAGES}"
                 bindings-table="${journal.bindings.table:BINDINGS}"
-                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}" />
+                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}"
+                page-store-table="${journal.page-store.table:PAGE_STORE}" />
 
         <statistics
                 enabled="${statistics.enabled:true}"

@@ -9,7 +9,8 @@
                  database="mysql"
                  messages-table="MY_MESSAGES"
                  bindings-table="MY_BINDINGS"
-                 large-messages-table="MY_LARGE_MESSAGES" />
+                 large-messages-table="MY_LARGE_MESSAGES"
+                 page-store-table="MY_PAGE_STORE" />
 
         <cluster-connection name="cc1"
                             address="${address:cc1-address}"
