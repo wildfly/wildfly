@@ -100,6 +100,7 @@ import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcess
 import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
 import org.jboss.as.connector.metadata.resourceadapter.WorkManagerSecurityImpl;
@@ -401,13 +402,14 @@ public class RaOperationUtil {
             for (ConnectionDefinition cd : resourceAdapter.getConnectionDefinitions()) {
                 Security security = cd.getSecurity();
                 if (security != null) {
-                    if (security.getSecurityDomain() != null) {
+                    final boolean elytronEnabled = (security instanceof SecurityMetadata && ((SecurityMetadata) security).isElytronEnabled());
+                    if (!elytronEnabled && security.getSecurityDomain() != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomain()));
                     }
-                    if (security.getSecurityDomainAndApplication() != null) {
+                    if (!elytronEnabled && security.getSecurityDomainAndApplication() != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomainAndApplication()));
                     }
-                    if (cd.getRecovery() != null && cd.getRecovery().getCredential() != null && cd.getRecovery().getCredential().getSecurityDomain() != null) {
+                    if (!elytronEnabled && cd.getRecovery() != null && cd.getRecovery().getCredential() != null && cd.getRecovery().getCredential().getSecurityDomain() != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(cd.getRecovery().getCredential().getSecurityDomain()));
                     }
                 }
@@ -415,8 +417,10 @@ public class RaOperationUtil {
             if (resourceAdapter.getWorkManager() != null) {
                 final WorkManagerSecurity workManagerSecurity = resourceAdapter.getWorkManager().getSecurity();
                 if (workManagerSecurity != null) {
+                    final boolean elytronEnabled = (workManagerSecurity instanceof org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity)
+                            && ((org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity) workManagerSecurity).isElytronEnabled();
                     final String securityDomainName = workManagerSecurity.getDomain();
-                    if (securityDomainName != null) {
+                    if (!elytronEnabled && securityDomainName != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                     }
                 }

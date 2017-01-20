@@ -211,6 +211,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final List<ServiceName> serviceNames = registry.getServiceNames();
 
+        final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean();
+
 
         final boolean jta;
         if (isXa) {
@@ -229,7 +231,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
             if (dsSecurityConfig != null) {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
-                if (securityDomainName != null) {
+                if (!elytronEnabled && securityDomainName != null) {
                     builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                 }
             }
@@ -238,7 +240,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 final Credential credential = dataSourceConfig.getRecovery().getCredential();
                 if (credential != null) {
                     final String securityDomainName = credential.getSecurityDomain();
-                    if (securityDomainName != null) {
+                    if (!RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asBoolean() && securityDomainName != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                     }
                 }
@@ -281,7 +283,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
             if (dsSecurityConfig != null) {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
-                if (securityDomainName != null) {
+                if (!elytronEnabled && securityDomainName != null) {
                     builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                 }
             }

@@ -15,6 +15,7 @@
  */
 package org.jboss.as.connector.metadata.ds;
 
+import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.validator.ValidateException;
@@ -25,7 +26,7 @@ import org.jboss.jca.common.api.validator.ValidateException;
  * @author Flavia Rainone
  */
 public class DsSecurityImpl
-        extends org.jboss.jca.common.metadata.ds.DsSecurityImpl implements DsSecurity {
+        extends org.jboss.jca.common.metadata.ds.DsSecurityImpl implements DsSecurity, Credential {
 
     private static final long serialVersionUID = 312322268048179001L;
 
