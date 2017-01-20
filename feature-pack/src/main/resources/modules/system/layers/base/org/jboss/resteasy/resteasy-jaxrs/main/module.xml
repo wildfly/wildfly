@@ -30,7 +30,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.resteasy.resteasy-jaxrs-services" services="import"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.activation.api"/>

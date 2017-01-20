@@ -28,8 +28,8 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
         <module name="javax.xml.bind.api" />
         <module name="javax.api" />
-        <module name="org.jboss.modules"/>
     </dependencies>
 </module>
