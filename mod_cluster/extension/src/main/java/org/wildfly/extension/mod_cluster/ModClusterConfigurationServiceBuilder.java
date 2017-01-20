@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import static org.jboss.as.clustering.dmr.ModelNodes.optionalList;
+import static org.jboss.as.clustering.dmr.ModelNodes.optionalString;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE_SECURITY_KEY;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE_SOCKET;
@@ -66,8 +68,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 
@@ -98,13 +102,13 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class ModClusterConfigurationServiceBuilder implements ResourceServiceBuilder<ModClusterConfiguration>, Value<ModClusterConfiguration> {
 
-    public static final String SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.socket-binding";
-    public static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
+    private static final String SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.socket-binding";
+    private static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
 
     private final ModClusterConfigurationBuilder builder = new ModClusterConfigurationBuilder();
 
     private ValueDependency<SocketBinding> advertiseSocketDependency = null;
-    private Map<String, ValueDependency<OutboundSocketBinding>> outboundSocketBindings = null;
+    private final List<ValueDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
     private ValueDependency<SSLContext> sslContextDependency = null;
 
     @Override
@@ -116,14 +120,10 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
     public Builder<ModClusterConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
         // Advertise
-        ModelNode advertiseSocketRef = ADVERTISE_SOCKET.resolveModelAttribute(context, model);
-        if (advertiseSocketRef.isDefined()) {
-            this.advertiseSocketDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, advertiseSocketRef.asString(), SocketBinding.class), SocketBinding.class);
-        }
-
-        if (model.hasDefined(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
-            builder.advertise().setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asString());
-        }
+        optionalString(ADVERTISE_SOCKET.resolveModelAttribute(context, model))
+                .ifPresent(advertiseSocketRef -> this.advertiseSocketDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, advertiseSocketRef, SocketBinding.class), SocketBinding.class));
+        optionalString(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model))
+                .ifPresent(securityKey -> builder.advertise().setAdvertiseSecurityKey(securityKey));
 
         // MCMP
 
@@ -154,7 +154,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
                         String[] parts = c.trim().split(":");
 
                         if (parts.length > 2) {
-                            throw new IllegalArgumentException(trimmedContexts + " is not a valid value for excludedContexts");
+                            throw ROOT_LOGGER.excludedContextsWrongFormat(trimmedContexts);
                         }
 
                         String host = null;
@@ -196,22 +196,14 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
                 .setTtl(TTL.resolveModelAttribute(context, model).asInt())
                 .setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt())
         ;
-        if (model.hasDefined(CommonAttributes.BALANCER)) {
-            builder.node().setBalancer(BALANCER.resolveModelAttribute(context, model).asString());
-        }
-        if (model.hasDefined(CommonAttributes.LOAD_BALANCING_GROUP)) {
-            builder.node().setLoadBalancingGroup(LOAD_BALANCING_GROUP.resolveModelAttribute(context, model).asString());
-        }
+        optionalString(BALANCER.resolveModelAttribute(context, model)).ifPresent(balancer -> builder.node().setBalancer(balancer));
+        optionalString(LOAD_BALANCING_GROUP.resolveModelAttribute(context, model)).ifPresent(group -> builder.node().setLoadBalancingGroup(group));
 
-
-        ModelNode proxiesRef = PROXIES.resolveModelAttribute(context, model);
-        if (proxiesRef.isDefined()) {
-            outboundSocketBindings = new HashMap<>();
-            proxiesRef.asList().stream()
-                    .map(ModelNode::asString)
-                    .forEach(ref -> outboundSocketBindings.put(ref, new InjectedValueDependency<>(context.getCapabilityServiceName(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, ref, OutboundSocketBinding.class), OutboundSocketBinding.class)));
-            this.advertiseSocketDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, advertiseSocketRef.asString(), SocketBinding.class), SocketBinding.class);
-        }
+        optionalList(PROXIES.resolveModelAttribute(context, model)).ifPresent(
+                refs -> refs.stream()
+                        .map(ModelNode::asString)
+                        .forEach(ref -> outboundSocketBindings.add(new InjectedValueDependency<>(context.getCapabilityServiceName(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, ref, OutboundSocketBinding.class), OutboundSocketBinding.class)))
+        );
 
         if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
             throw new OperationFailedException(ROOT_LOGGER.proxyListNotAllowedInCurrentModel());
@@ -220,42 +212,25 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         // Elytron-based security support
 
-        ModelNode sslContext = SSL_CONTEXT.resolveModelAttribute(context, model);
-        if (sslContext.isDefined()) {
-            this.sslContextDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext.asString(), SSLContext.class), SSLContext.class);
-        }
+        optionalString(SSL_CONTEXT.resolveModelAttribute(context, model)).ifPresent(
+                sslContext -> this.sslContextDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext, SSLContext.class), SSLContext.class)
+        );
 
         // Legacy security support
 
         if (model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-            final ModelNode ssl = model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair());
-            ModelNode keyAlias = KEY_ALIAS.resolveModelAttribute(context, ssl);
-            ModelNode password = PASSWORD.resolveModelAttribute(context, ssl);
+            ModelNode sslModel = model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair());
 
-            final ModClusterConfig sslConfiguration = new ModClusterConfig();
+            ModClusterConfig sslConfiguration = new ModClusterConfig();
 
-            if (keyAlias.isDefined()) {
-                sslConfiguration.setSslKeyAlias(keyAlias.asString());
-            }
-            if (password.isDefined()) {
-                sslConfiguration.setSslTrustStorePassword(password.asString());
-                sslConfiguration.setSslKeyStorePassword(password.asString());
-            }
-            if (ssl.hasDefined(CommonAttributes.CERTIFICATE_KEY_FILE)) {
-                sslConfiguration.setSslKeyStore(CERTIFICATE_KEY_FILE.resolveModelAttribute(context, ssl).asString());
-            }
-            if (ssl.hasDefined(CommonAttributes.CIPHER_SUITE)) {
-                sslConfiguration.setSslCiphers(CIPHER_SUITE.resolveModelAttribute(context, ssl).asString());
-            }
-            if (ssl.hasDefined(CommonAttributes.PROTOCOL)) {
-                sslConfiguration.setSslProtocol(PROTOCOL.resolveModelAttribute(context, ssl).asString());
-            }
-            if (ssl.hasDefined(CommonAttributes.CA_CERTIFICATE_FILE)) {
-                sslConfiguration.setSslTrustStore(CA_CERTIFICATE_FILE.resolveModelAttribute(context, ssl).asString());
-            }
-            if (ssl.hasDefined(CommonAttributes.CA_REVOCATION_URL)) {
-                sslConfiguration.setSslCrlFile(CA_REVOCATION_URL.resolveModelAttribute(context, ssl).asString());
-            }
+            optionalString(KEY_ALIAS.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslKeyAlias);
+            optionalString(PASSWORD.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslTrustStorePassword);
+            optionalString(PASSWORD.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslKeyStorePassword);
+            optionalString(CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslKeyStore);
+            optionalString(CIPHER_SUITE.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslCiphers);
+            optionalString(PROTOCOL.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslProtocol);
+            optionalString(CA_CERTIFICATE_FILE.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslTrustStore);
+            optionalString(CA_REVOCATION_URL.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslCrlFile);
 
             builder.mcmp().setSocketFactory(new JSSESocketFactory(sslConfiguration));
         }
@@ -266,19 +241,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
     @Override
     public ServiceBuilder<ModClusterConfiguration> build(ServiceTarget target) {
         ServiceBuilder<ModClusterConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this));
-
-        if (advertiseSocketDependency != null) {
-            this.advertiseSocketDependency.register(builder);
-        }
-
-        if (outboundSocketBindings != null) {
-            outboundSocketBindings.values().forEach(binding -> binding.register(builder));
-        }
-
-        if (sslContextDependency != null) {
-            this.sslContextDependency.register(builder);
-        }
-
+        Stream.concat(Stream.of(advertiseSocketDependency, sslContextDependency), outboundSocketBindings.stream()).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
         builder.setInitialMode(ServiceController.Mode.PASSIVE);
 
         return builder;
@@ -300,35 +263,33 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
         }
 
         // Proxies
-        if (outboundSocketBindings != null) {
-            List<ProxyConfiguration> proxies = new LinkedList<>();
-            for (final ValueDependency<OutboundSocketBinding> outboundSocketBindingValueDependency : outboundSocketBindings.values()) {
-                OutboundSocketBinding binding = outboundSocketBindingValueDependency.getValue();
-                proxies.add(new ProxyConfiguration() {
+        List<ProxyConfiguration> proxies = new LinkedList<>();
+        for (final ValueDependency<OutboundSocketBinding> outboundSocketBindingValueDependency : outboundSocketBindings) {
+            OutboundSocketBinding binding = outboundSocketBindingValueDependency.getValue();
+            proxies.add(new ProxyConfiguration() {
 
-                    @Override
-                    public InetSocketAddress getRemoteAddress() {
-                        // Both host and port may not be null in the model, no need to validate here
-                        // Don't do resolving here, let mod_cluster deal with it
-                        return new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
+                @Override
+                public InetSocketAddress getRemoteAddress() {
+                    // Both host and port may not be null in the model, no need to validate here
+                    // Don't do resolving here, let mod_cluster deal with it
+                    return new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
+                }
+
+                @Override
+                public InetSocketAddress getLocalAddress() {
+                    if (binding.getOptionalSourceAddress() != null) {
+                        return new InetSocketAddress(binding.getOptionalSourceAddress(), binding.getAbsoluteSourcePort() == null ? 0 : binding.getAbsoluteSourcePort());
+                    } else if (binding.getAbsoluteSourcePort() != null) {
+                        // Bind to port only if source address is not configured
+                        return new InetSocketAddress(binding.getAbsoluteSourcePort());
                     }
+                    // No binding configured so don't bind
+                    return null;
+                }
 
-                    @Override
-                    public InetSocketAddress getLocalAddress() {
-                        if (binding.getOptionalSourceAddress() != null) {
-                            return new InetSocketAddress(binding.getOptionalSourceAddress(), binding.getAbsoluteSourcePort() == null ? 0 : binding.getAbsoluteSourcePort());
-                        } else if (binding.getAbsoluteSourcePort() != null) {
-                            // Bind to port only if source address is not configured
-                            return new InetSocketAddress(binding.getAbsoluteSourcePort());
-                        }
-                        // No binding configured so don't bind
-                        return null;
-                    }
-
-                });
-            }
-            builder.mcmp().setProxyConfigurations(proxies);
+            });
         }
+        builder.mcmp().setProxyConfigurations(proxies);
 
         // SSL
         if (sslContextDependency != null) {

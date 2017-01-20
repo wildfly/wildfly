@@ -76,7 +76,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterConfigResourceDefinition.PATH.getKeyValuePair());
 
-        final ModClusterConfigurationServiceBuilder configurationBuilder = new ModClusterConfigurationServiceBuilder();
+        ModClusterConfigurationServiceBuilder configurationBuilder = new ModClusterConfigurationServiceBuilder();
         configurationBuilder.configure(context, modelConfig).build(target).install();
 
         // Construct LoadBalanceFactorProvider and call pluggable boot time handlers.

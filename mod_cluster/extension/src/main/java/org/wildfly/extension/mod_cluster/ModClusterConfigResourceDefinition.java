@@ -65,10 +65,10 @@ import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
  */
 class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String MOD_CLUSTER_CAPABILITY_NAME = "org.wildfly.mod_cluster";
-    public static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_CAPABILITY_NAME, false).build();
+    private static final String MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.mod_cluster.ssl-context";
+    private static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME, false).build();
 
-    public static final String SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.security.ssl-context";
+    static final String SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.security.ssl-context";
 
     static final PathElement PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
@@ -166,7 +166,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(CommonAttributes.SSL_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_CAPABILITY_NAME, false)
+            .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .build();
