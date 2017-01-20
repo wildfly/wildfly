@@ -158,6 +158,7 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                                 ServerDefinition.JOURNAL_MESSAGES_TABLE,
                                 ServerDefinition.JOURNAL_BINDINGS_TABLE,
                                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
+                                ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
                                 ServerDefinition.JOURNAL_DATABASE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
