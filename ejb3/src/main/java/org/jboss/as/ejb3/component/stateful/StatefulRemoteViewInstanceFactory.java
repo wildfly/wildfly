@@ -29,8 +29,10 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
+import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
 
 /**
@@ -38,30 +40,28 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
 
-    private final String applicationName;
-    private final String moduleName;
-    private final String distinctName;
-    private final String beanName;
+    private final EJBIdentifier identifier;
 
     public StatefulRemoteViewInstanceFactory(final String applicationName, final String moduleName, final String distinctName, final String beanName) {
-        this.applicationName = applicationName == null ? "" : applicationName;
-        this.moduleName = moduleName;
-        this.distinctName = distinctName;
-        this.beanName = beanName;
+        this(new EJBIdentifier(applicationName == null ? "" : applicationName, moduleName, beanName, distinctName));
+    }
+
+    public StatefulRemoteViewInstanceFactory(final EJBIdentifier identifier) {
+        this.identifier = identifier;
     }
 
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) throws Exception {
         SessionID sessionID = (SessionID) contextData.get(SessionID.class);
-        final StatefulEJBLocator statefulEJBLocator;
+        final StatefulEJBLocator<?> statefulEJBLocator;
         final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
         if (sessionID == null) {
-            statefulEJBLocator = EJBClient.createSession(Affinity.LOCAL, componentView.getViewClass(), applicationName, moduleName, beanName, distinctName);
+            statefulEJBLocator = EJBClient.createSession(StatelessEJBLocator.create(componentView.getViewClass(), identifier, Affinity.LOCAL));
         } else {
-            statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity());
+            statefulEJBLocator = StatefulEJBLocator.create(componentView.getViewClass(), identifier, sessionID, statefulSessionComponent.getCache().getStrictAffinity());
         }
         final Object ejbProxy = EJBClient.createProxy(statefulEJBLocator);
-        return new ValueManagedReference(new ImmediateValue(ejbProxy));
+        return new ValueManagedReference(new ImmediateValue<Object>(ejbProxy));
     }
 
 

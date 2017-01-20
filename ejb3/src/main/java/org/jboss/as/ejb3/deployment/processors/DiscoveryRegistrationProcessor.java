@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.ejb.protocol.remote.RemoteEJBDiscoveryConfigurator;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -68,7 +69,7 @@ public final class DiscoveryRegistrationProcessor implements DeploymentUnitProce
             Injector<DiscoveryProvider> providerInjector = discoveryService.getDiscoveryProviderInjector();
 
             public void inject(final EJBClientContextService value) throws InjectionException {
-                providerInjector.inject(value.getDiscoveryProvider());
+                new RemoteEJBDiscoveryConfigurator().configure(providerInjector::inject, registryProvider -> {});
             }
 
             public void uninject() {
