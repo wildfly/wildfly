@@ -75,9 +75,9 @@ public class BasicGZIPTestCase {
     }
 
     private static StringAsset getProviders() {
-        return new StringAsset("org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter\n"
-                + "org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor\n"
-                + "org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor");
+        return new StringAsset("org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPFilter\n"
+                + "org.jboss.resteasy.plugins.interceptors.encoding.GZIPDecodingInterceptor\n"
+                + "org.jboss.resteasy.plugins.interceptors.encoding.GZIPEncodingInterceptor");
     }
 
     private String read(final InputStream in) throws IOException {
