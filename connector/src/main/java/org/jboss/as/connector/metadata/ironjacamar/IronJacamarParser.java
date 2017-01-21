@@ -127,7 +127,7 @@ public class IronJacamarParser extends org.jboss.jca.common.metadata.ironjacamar
         String userName = null;
         String password = null;
         String securityDomain = null;
-        boolean elytronEnabled = true;
+        boolean elytronEnabled = false;
         String authenticationContext = null;
 
         while (reader.hasNext()) {
