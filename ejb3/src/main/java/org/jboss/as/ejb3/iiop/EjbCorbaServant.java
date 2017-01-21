@@ -55,7 +55,6 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
-import org.jboss.security.SimplePrincipal;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.ORB;
@@ -70,6 +69,12 @@ import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
 import org.wildfly.iiop.openjdk.rmi.RmiIdlUtil;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
+import org.wildfly.security.auth.principal.NamePrincipal;
+import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.auth.server.ServerAuthenticationContext;
+import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -118,7 +123,12 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
     /**
      * The security domain for CORBA invocations
      */
-    private final String securityDomain;
+    private final String legacySecurityDomain;
+
+    /**
+     * The Elytron security domain for CORBA invocations
+     */
+    private final SecurityDomain securityDomain;
 
     /**
      * If true this is the servant for an EJBHome object
@@ -168,7 +178,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      * Constructs an <code>EjbObjectCorbaServant></code>.
      */
     public EjbCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
-                           final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader, final boolean home, final String securityDomain) {
+                           final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory,
+                           final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader,
+                           final boolean home, final String legacySecurityDomain, final SecurityDomain securityDomain) {
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -180,6 +192,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         this.transactionManager = transactionManager;
         this.classLoader = classLoader;
         this.home = home;
+        this.legacySecurityDomain = legacySecurityDomain;
         this.securityDomain = securityDomain;
 
         SASCurrent sasCurrent;
@@ -235,7 +248,6 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            SecurityContext sc = null;
             org.omg.CORBA_2_3.portable.OutputStream out;
             try {
                 Object retVal;
@@ -254,88 +266,112 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         transactionManager.resume(tx);
                     }
                     try {
-                        SimplePrincipal principal = null;
+                        Principal identityPrincipal = null;
+                        Principal principal = null;
                         Object credential = null;
 
-                        if (sasCurrent != null) {
-                            final byte[] incomingName = sasCurrent.get_incoming_principal_name();
+                        if (this.sasCurrent != null) {
+                            final byte[] incomingIdentity = this.sasCurrent.get_incoming_principal_name();
 
-                            if ( incomingName != null && incomingName.length > 0) {
+                            if (incomingIdentity != null && incomingIdentity.length > 0) {
                                 //we have an identity token, which is a trust based mechanism
-                                if (incomingName.length > 0) {
-                                    String name = new String(incomingName, StandardCharsets.UTF_8);
+                                if (incomingIdentity.length > 0) {
+                                    String name = new String(incomingIdentity, StandardCharsets.UTF_8);
                                     int domainIndex = name.indexOf('@');
                                     if (domainIndex > 0)
                                         name = name.substring(0, domainIndex);
-                                    principal = new SimplePrincipal(name);
-                                    //we don't have any real way to establish trust here
-                                    //we just use the SASCurrent as a credential, and a custom login
-                                    //module can make a decision for us.
-                                    credential = sasCurrent;
-                                }
-                            } else {
-                                //the client has just sent a username and password
-                                final byte[] username = sasCurrent.get_incoming_username();
-                                final byte[] incomingPassword = sasCurrent.get_incoming_password();
-                                if(username.length > 0) {
-                                    String name = new String(username, StandardCharsets.UTF_8);
-                                    int domainIndex = name.indexOf('@');
-                                    if (domainIndex > 0) {
-                                        name = name.substring(0, domainIndex);
-                                    }
-                                    principal = new SimplePrincipal(name);
-                                    credential = new String(incomingPassword, StandardCharsets.UTF_8).toCharArray();
+                                    identityPrincipal = new NamePrincipal(name);
                                 }
                             }
-
-                            if (securityDomain != null) {
-                                if(WildFlySecurityManager.isChecking()) {
-                                    final SimplePrincipal finalPrincipal = principal;
-                                    final Object finalCredential = credential;
-                                    sc = AccessController.doPrivileged((PrivilegedExceptionAction<SecurityContext>) () -> {
-                                        SecurityContext sc1 = SecurityContextFactory.createSecurityContext(securityDomain);
-                                        sc1.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
-                                        return sc1;
-                                    });
-                                } else {
-                                    sc = SecurityContextFactory.createSecurityContext(securityDomain);
-                                    sc.getUtil().createSubjectInfo(principal, credential, null);
+                            final byte[] incomingUsername = this.sasCurrent.get_incoming_username();
+                            if (incomingUsername != null && incomingUsername.length > 0) {
+                                final byte[] incomingPassword = this.sasCurrent.get_incoming_password();
+                                String name = new String(incomingUsername, StandardCharsets.UTF_8);
+                                int domainIndex = name.indexOf('@');
+                                if (domainIndex > 0) {
+                                    name = name.substring(0, domainIndex);
                                 }
+                                principal = new NamePrincipal(name);
+                                credential = new String(incomingPassword, StandardCharsets.UTF_8).toCharArray();
                             }
                         }
                         final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
 
-                        if (!home && opName.equals("isIdentical") && params.length == 1) {
+                        if (!this.home && opName.equals("isIdentical") && params.length == 1) {
                             //handle isIdentical specially
                             Object val = params[0];
-                            if (val instanceof org.omg.CORBA.Object) {
-                                retVal = handleIsIdentical((org.omg.CORBA.Object) val);
-                            } else {
-                                retVal = false;
-                            }
+                            retVal = val instanceof org.omg.CORBA.Object && handleIsIdentical((org.omg.CORBA.Object) val);
                         } else {
+                            if (this.securityDomain != null) {
+                                // an elytron security domain is available: authenticate and authorize the client before invoking the component.
+                                SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
 
-                            if (sc != null) {
-                                setSecurityContextOnAssociation(sc);
-                            }
-                            try {
-                                final InterceptorContext interceptorContext = new InterceptorContext();
+                                if (identityPrincipal != null) {
+                                    // we have an identity token principal - check if the TLS identity, if available,
+                                    // has permission to run as the identity token principal.
+                                    // TODO use the TLS identity when that becomes available to us.
 
-                                if (sc != null) {
-                                    interceptorContext.putPrivateData(SecurityContext.class, sc);
+                                    // no TLS identity found, check if an initial context token was also sent. If it was,
+                                    // authenticate the incoming username/password and check if the resulting identity has
+                                    // permission to run as the identity token principal.
+                                    if (principal != null) {
+                                        SecurityIdentity authenticatedIdentity = this.authenticate(principal, (char[]) credential);
+                                        identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
+                                    } else {
+                                        // no TLS nor initial context token found - check if the anonymous identity has
+                                        // permission to run as the identity principal.
+                                        identity = this.securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(identityPrincipal.getName(), true);
+                                    }
+                                } else if (principal != null) {
+                                    // we have an initial context token containing a username/password pair.
+                                    identity = this.authenticate(principal, (char[]) credential);
                                 }
-                                prepareInterceptorContext(op, params, interceptorContext);
-                                retVal = componentView.invoke(interceptorContext);
-                            } finally {
-                                if (sc != null) {
-                                    clearSecurityContextOnAssociation();
+                                final InterceptorContext interceptorContext = new InterceptorContext();
+                                this.prepareInterceptorContext(op, params, interceptorContext);
+                                retVal = identity.runAs((PrivilegedExceptionAction<Object>) () -> this.componentView.invoke(interceptorContext));
+                            } else {
+                                // legacy security behavior: setup the security context if a SASCurrent is available and invoke the component.
+                                // One of the EJB security interceptors will authenticate and authorize the client.
+
+                                SecurityContext legacyContext = null;
+                                if (this.legacySecurityDomain != null && (identityPrincipal != null || principal != null)) {
+                                    // we don't have any real way to establish trust in identity based auth so we just use
+                                    // the SASCurrent as a credential, and a custom legacy login module can make a decision for us.
+                                    final Object finalCredential = identityPrincipal != null ? this.sasCurrent : credential;
+                                    final Principal finalPrincipal = identityPrincipal != null ? identityPrincipal : principal;
+                                    if (WildFlySecurityManager.isChecking()) {
+                                        legacyContext = AccessController.doPrivileged((PrivilegedExceptionAction<SecurityContext>) () -> {
+                                            SecurityContext sc = SecurityContextFactory.createSecurityContext(this.legacySecurityDomain);
+                                            sc.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
+                                            return sc;
+                                        });
+                                    } else {
+                                        legacyContext = SecurityContextFactory.createSecurityContext(this.legacySecurityDomain);
+                                        legacyContext.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
+                                    }
+                                }
+
+                                if (legacyContext != null) {
+                                    setSecurityContextOnAssociation(legacyContext);
+                                }
+                                try {
+                                    final InterceptorContext interceptorContext = new InterceptorContext();
+                                    if (legacyContext != null) {
+                                        interceptorContext.putPrivateData(SecurityContext.class, legacyContext);
+                                    }
+                                    prepareInterceptorContext(op, params, interceptorContext);
+                                    retVal = this.componentView.invoke(interceptorContext);
+                                } finally {
+                                    if (legacyContext != null) {
+                                        clearSecurityContextOnAssociation();
+                                    }
                                 }
                             }
                         }
                     } finally {
                         if (tx != null) {
-                            if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                                transactionManager.suspend();
+                            if (this.transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                                this.transactionManager.suspend();
                             }
                         }
                     }
@@ -370,7 +406,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                 interceptorContext.putPrivateData(SessionID.class, sessionID);
             }
         }
-        interceptorContext.setContextData(new HashMap<String, Object>());
+        interceptorContext.setContextData(new HashMap<>());
         interceptorContext.setParameters(params);
         interceptorContext.setMethod(op.getMethod());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
@@ -443,24 +479,49 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
 
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            SecurityContextAssociation.setSecurityContext(sc);
+            return null;
         });
     }
 
     private static void clearSecurityContextOnAssociation() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            SecurityContextAssociation.clearSecurityContext();
+            return null;
         });
+    }
+
+    /**
+     * Authenticate the user with the given credential against the configured Elytron security domain.
+     *
+     * @param principal the principal representing the user being authenticated.
+     * @param credential the credential used as evidence to verify the user's identity.
+     * @return the authenticated and authorized {@link SecurityIdentity}.
+     * @throws Exception if an error occurs while authenticating the user.
+     */
+    private SecurityIdentity authenticate(final Principal principal, final char[] credential) throws Exception {
+        final ServerAuthenticationContext context = this.securityDomain.createNewAuthenticationContext();
+        final PasswordGuessEvidence evidence = new PasswordGuessEvidence(credential != null ? credential : null);
+        try {
+            context.setAuthenticationPrincipal(principal);
+            if (context.verifyEvidence(evidence)) {
+                if (context.authorize()) {
+                    context.succeed();
+                    return context.getAuthorizedIdentity();
+                } else {
+                    context.fail();
+                    throw new SecurityException("Authorization failed");
+                }
+            } else {
+                context.fail();
+                throw new SecurityException("Authentication failed");
+            }
+        } catch (IllegalArgumentException | IllegalStateException | RealmUnavailableException e) {
+            context.fail();
+            throw e;
+        } finally {
+            evidence.destroy();
+        }
     }
 }

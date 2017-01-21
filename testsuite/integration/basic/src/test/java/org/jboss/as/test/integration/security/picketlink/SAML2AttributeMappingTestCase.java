@@ -26,10 +26,17 @@ import static org.junit.Assert.assertEquals;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.naming.Context;
 
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.auth.AuthSchemeProvider;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -42,16 +49,18 @@ import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
+import org.jboss.as.test.integration.security.common.NullHCCredentials;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
 import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.PrintAttributeServlet;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,9 +100,9 @@ public class SAML2AttributeMappingTestCase {
     /**
      * Skip unsupported/unstable/buggy Kerberos configurations.
      */
-    @BeforeClass
-    public static void beforeClass() {
-        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    @Before
+    public void before() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported();
     }
 
     @Deployment(name = IDP)
@@ -135,17 +144,23 @@ public class SAML2AttributeMappingTestCase {
      */
     @Test
     public void testPassUserPrincipalToAttributeManager() throws Exception {
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        httpClient.setRedirectStrategy(Utils.REDIRECT_STRATEGY);
+        Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider> create()
+                       .register(AuthSchemes.SPNEGO, new JBossNegotiateSchemeFactory(true))
+                       .build();
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
 
-        try {
+        try (final CloseableHttpClient httpClient = HttpClientBuilder.create()
+                .setDefaultAuthSchemeRegistry(authSchemeRegistry)
+                .setDefaultCredentialsProvider(credentialsProvider)
+                .setRedirectStrategy(Utils.REDIRECT_STRATEGY)
+                .build()) {
+
             String response = PicketLinkTestBase.makeCallWithKerberosAuthn(spUrl.toURI(), httpClient, "jduke", "theduke", 200);
             assertEquals("SP index page was not reached", SP_RESPONSE_BODY, response);
             response = PicketLinkTestBase.makeCall(new URL(spUrl.toString() + PrintAttributeServlet.SERVLET_PATH.substring(1)),
                     httpClient, 200);
             assertEquals("cn attribute not stored", "Java Duke", response);
-        } finally {
-            httpClient.getConnectionManager().shutdown();
         }
     }
 

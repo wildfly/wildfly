@@ -315,7 +315,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
     static {
         boolean skipTask = false;
         try {
-            KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+            KerberosTestUtils.assumeKerberosAuthenticationSupported();
         } catch (Exception e) {
             skipTask = true;
         }

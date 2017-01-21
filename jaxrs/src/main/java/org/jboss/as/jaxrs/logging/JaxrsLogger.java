@@ -164,4 +164,9 @@ public interface JaxrsLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14, value = "Failed to register management view for REST resource class: %s")
     void failedToRegisterManagementViewForRESTResources(String resClass, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "No Servlet declaration found for JAX-RS application.  In %s either provide a class that extends javax.ws.rs.core.Application or declare a servlet class in web.xml.")
+    void noServletDeclaration(String archiveName);
+
 }

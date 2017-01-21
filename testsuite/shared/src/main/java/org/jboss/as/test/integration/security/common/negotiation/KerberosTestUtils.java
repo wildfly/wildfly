@@ -23,13 +23,11 @@
 package org.jboss.as.test.integration.security.common.negotiation;
 
 import static org.jboss.as.test.integration.security.common.Utils.IBM_JDK;
-import static org.jboss.as.test.integration.security.common.Utils.ORACLE_JDK;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -41,8 +39,6 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.util.ASN1Dump;
-import org.jboss.as.network.NetworkUtils;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.logging.Logger;
 import org.junit.AssumptionViolatedException;
 
@@ -55,10 +51,6 @@ import org.junit.AssumptionViolatedException;
 public final class KerberosTestUtils {
 
     private static final Logger LOGGER = Logger.getLogger(KerberosTestUtils.class);
-
-    public static final boolean PREFER_IPV4_STACK = Boolean
-            .parseBoolean(System.getProperty("java.net.preferIPv4Stack", "true"));
-    public static final boolean PREFER_IPV6_ADDR = Boolean.getBoolean("java.net.preferIPv6Addresses");
 
     public static final String OID_KERBEROS_V5 = "1.2.840.113554.1.2.2";
     public static final String OID_KERBEROS_V5_LEGACY = "1.2.840.48018.1.2.2";
@@ -78,89 +70,26 @@ public final class KerberosTestUtils {
      * unsupported for HTTP authentication with Kerberos. Configuration in this case means combination of [ hostname used | JDK
      * vendor | Java version ].
      *
-     * @param hostName
      * @throws AssumptionViolatedException
      */
-    public static void assumeKerberosAuthenticationSupported(String hostName) throws AssumptionViolatedException {
-        if (IBM_JDK && isRunningOnIPv6()) {
+    public static void assumeKerberosAuthenticationSupported() throws AssumptionViolatedException {
+        if (IBM_JDK && isIPV6()) {
             throw new AssumptionViolatedException(
                     "Kerberos tests are not supported on IBM Java with IPv6. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1188632");
         }
-        if (isIPv6Hostname(hostName)) {
+        if (isIPV6()) {
             throw new AssumptionViolatedException(
                     "Kerberos tests are not supported when hostname is not available for tested IPv6 address. Find more info in https://issues.jboss.org/browse/WFLY-5409");
         }
     }
 
     /**
-     * This method throws an {@link AssumptionViolatedException} (i.e. it skips the test-case) if the configuration is
-     * unsupported for EJB client authentication with Kerberos. Configuration in this case means combination of [ hostname used
-     * | JDK vendor | Java version ].
-     *
-     * @param hostName
-     */
-    public static void assumeEjbKerberosAuthenticationSupported(String hostName) {
-        // additionally there is an issue in Oracle Java 6 in EJB client
-        if (isIPv6Hostname(hostName) && ORACLE_JDK && SystemUtils.IS_JAVA_1_6) {
-            throw new AssumptionViolatedException(
-                    "Kerberos tests are not supported on Oracle Java 6 with IPv6-based hostnames. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1179710");
-        }
-        // lets check other known issues in basic Kerberos authentication support
-        assumeKerberosAuthenticationSupported(hostName);
-    }
-
-    /**
-     * This method throws an {@link AssumptionViolatedException} (i.e. it skips the test-case) if the configuration is
-     * unsupported for JBoss CLI authentication with Kerberos. Configuration in this case means combination of [ hostname used |
-     * JDK vendor | Java version ].
-     *
-     * @param hostName
-     * @throws AssumptionViolatedException
-     */
-    public static void assumeCLIKerberosAuthenticationSupported(String hostName) throws AssumptionViolatedException {
-        // there is an issue with kerberos ticket cache location on IBM Java
-        if (IBM_JDK) {
-            throw new AssumptionViolatedException(
-                    "Kerberos CLI tests are not supported on IBM Java. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1174156");
-        }
-        // additionally there is an issue in Oracle Java 6 which doesn't support KRB5CCNAME env. variable to hold cache file
-        // location this variable is used in CLI tests
-        if (ORACLE_JDK && SystemUtils.IS_JAVA_1_6) {
-            throw new AssumptionViolatedException(
-                    "Kerberos CLI tests are not supported on Oracle Java 6, because wrong support of KRB5CCNAME environment property. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1173530#c3");
-        }
-        // lets check other known issues in basic Kerberos authentication support
-        assumeKerberosAuthenticationSupported(hostName);
-    }
-
-    /**
      * Returns true if provided hostname is an IPv6 address.
      *
-     * @param hostName
      * @return
      */
-    private static boolean isIPv6Hostname(String hostName) {
-        if (hostName == null) {
-            hostName = Utils.getDefaultHost(true);
-            LOGGER.warn("Fallback to a default host is used hostname = " + hostName);
-        }
-        final String formattedHost = NetworkUtils.formatPossibleIpv6Address(hostName);
-        boolean isIPv6 = formattedHost.startsWith("[");
-        return isIPv6;
-    }
-
-    /**
-     * Returns true if the environment is configured to IPv6. I.e. values of the relevant system properties are following:
-     *
-     * <pre>
-     * java.net.preferIPv4Stack     = false
-     * java.net.preferIPv6Addresses = true
-     * </pre>
-     *
-     * @return true if running in IPv6 stack. False otherwise.
-     */
-    private static boolean isRunningOnIPv6() {
-        return !PREFER_IPV4_STACK && PREFER_IPV6_ADDR;
+    private static boolean isIPV6() {
+        return System.getProperty("ipv6") != null;
     }
 
     /**

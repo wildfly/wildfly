@@ -26,7 +26,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -75,30 +76,18 @@ public class WebSecurityExternalAuthTestCase  {
     private URL url;
 
     protected void makeCall(String user, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
             HttpGet httpget = new HttpGet(url.toExternalForm() + "secured/");
             httpget.addHeader("User", user);
 
-            //System.out.println("executing request" + httpget.getRequestLine());
-            HttpResponse response = httpclient.execute(httpget);
+            HttpResponse response = httpClient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
-            //System.out.println("----------------------------------------");
             StatusLine statusLine = response.getStatusLine();
-            //System.out.println(statusLine);
-            if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
-            }
+
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
             EntityUtils.consume(entity);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
     @Test

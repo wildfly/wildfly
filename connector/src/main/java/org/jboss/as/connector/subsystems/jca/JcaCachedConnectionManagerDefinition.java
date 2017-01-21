@@ -24,7 +24,6 @@ package org.jboss.as.connector.subsystems.jca;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -32,6 +31,7 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -46,12 +46,17 @@ import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_
 public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_CACHED_CONNECTION_MANAGER = PathElement.pathElement(CACHED_CONNECTION_MANAGER, CACHED_CONNECTION_MANAGER);
     static final JcaCachedConnectionManagerDefinition INSTANCE = new JcaCachedConnectionManagerDefinition();
+    private static final SimpleOperationDefinition ADD_DEFINITION =
+            new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, JcaExtension.getResourceDescriptionResolver())
+            .setPrivateEntry()
+            .build();
+    private static final SimpleOperationDefinition REMOVE_DEFINITION =
+            new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
+            .build();
 
     private JcaCachedConnectionManagerDefinition() {
         super(PATH_CACHED_CONNECTION_MANAGER,
-                JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()),
-                CachedConnectionManagerAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()));
     }
 
     @Override
@@ -72,6 +77,8 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+        resourceRegistration.registerOperationHandler(ADD_DEFINITION, CachedConnectionManagerAdd.INSTANCE);
+        resourceRegistration.registerOperationHandler(REMOVE_DEFINITION, CachedConnectionManagerRemove.INSTANCE);
         resourceRegistration.registerOperationHandler(CcmOperations.GET_NUMBER_OF_CONNECTIONS.getOperation(), GetNumberOfConnectionsHandler.INSTANCE);
         resourceRegistration.registerOperationHandler(CcmOperations.LIST_CONNECTIONS.getOperation(), ListOfConnectionsHandler.INSTANCE);
 

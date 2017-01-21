@@ -32,7 +32,6 @@
     </resources>
 
     <dependencies>
-        <module name="asm.asm"/>
         <module name="com.fasterxml.classmate"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>

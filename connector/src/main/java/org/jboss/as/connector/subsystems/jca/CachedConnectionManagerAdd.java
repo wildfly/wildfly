@@ -35,6 +35,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceTarget;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -62,11 +64,14 @@ public class CachedConnectionManagerAdd extends AbstractBoottimeAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         if (install) {
+            ROOT_LOGGER.debug("Enabling the Cache Connection Manager valve and interceptor...");
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(JcaExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CACHED_CONNECTION_MANAGER, new CachedConnectionManagerSetupProcessor());
                 }
             }, OperationContext.Stage.RUNTIME);
+        } else {
+            ROOT_LOGGER.debug("Disabling the Cache Connection Manager valve and interceptor...");
         }
 
         CachedConnectionManagerService ccmService = new CachedConnectionManagerService(debug, error, ignoreUnknownConnections);

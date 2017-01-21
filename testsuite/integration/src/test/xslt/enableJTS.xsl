@@ -21,7 +21,7 @@
     					  /*[local-name()='orb']">
         <xsl:copy>
             <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>
-            <xsl:attribute name="ssl-socket-binding"><xsl:value-of select="@ssl-socket-binding"/></xsl:attribute>
+            <!--<xsl:attribute name="ssl-socket-binding"><xsl:value-of select="@ssl-socket-binding"/></xsl:attribute>-->
         </xsl:copy>
     </xsl:template>
 

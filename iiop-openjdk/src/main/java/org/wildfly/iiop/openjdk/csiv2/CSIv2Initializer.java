@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -56,7 +56,7 @@ public class CSIv2Initializer extends LocalObject implements ORBInitializer {
             Codec codec = info.codec_factory().create_codec(encoding);
 
             // add IOR interceptor for CSIv2.
-            info.add_ior_interceptor(new CSIv2IORInterceptor(codec));
+                info.add_ior_interceptor(new CSIv2IORInterceptor(codec));
 
             // register CSIv2-related policy factories.
             info.register_policy_factory(CSIv2Policy.TYPE, new CSIv2PolicyFactory(codec));

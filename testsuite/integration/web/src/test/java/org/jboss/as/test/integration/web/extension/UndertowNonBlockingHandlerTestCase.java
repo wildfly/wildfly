@@ -7,7 +7,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -42,11 +43,10 @@ public class UndertowNonBlockingHandlerTestCase {
 
     @Test
     public void testNonBlockingHandler() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpget = new HttpGet(url.toExternalForm());
 
-            HttpResponse response = httpclient.execute(httpget);
+            HttpResponse response = httpClient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
             StatusLine statusLine = response.getStatusLine();
@@ -54,12 +54,6 @@ public class UndertowNonBlockingHandlerTestCase {
 
             String result = EntityUtils.toString(entity);
             Assert.assertEquals(SimpleUndertowExtension.THIS_IS_NOT_A_SERVLET, result);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
-
     }
 }

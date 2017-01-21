@@ -27,6 +27,7 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -64,6 +65,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public static final String QUERY = "query";
     public static final String TIMESTAMPS = "timestamps";
     public static final String PENDING_PUTS = "pending-puts";
+    public static final String CUSTOM = "custom";
 
     public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
 
@@ -117,6 +119,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String query = properties.getProperty(QUERY);
         String timestamps  = properties.getProperty(TIMESTAMPS);
         String pendingPuts = properties.getProperty(PENDING_PUTS);
+        String custom = properties.getProperty(CUSTOM);
         addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, entity));
         addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, immutableEntity));
         addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, collection));
@@ -127,6 +130,9 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         if (query != null) {
             addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, timestamps));
             addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, query));
+        }
+        if (custom != null) {
+            Stream.of(custom.split("\\s+")).forEach(config -> addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, config)));
         }
     }
 

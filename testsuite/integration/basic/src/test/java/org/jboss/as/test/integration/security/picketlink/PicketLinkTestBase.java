@@ -29,14 +29,12 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
@@ -45,11 +43,9 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
-import org.jboss.as.test.integration.security.common.NullHCCredentials;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
-import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
 import org.jboss.logging.Logger;
 
 /**
@@ -57,7 +53,7 @@ import org.jboss.logging.Logger;
  *
  * @author Filip Bogyai
  */
-public class PicketLinkTestBase {
+class PicketLinkTestBase {
 
     public static final String ANIL = "anil";
     public static final String MARCUS = "marcus";
@@ -70,15 +66,15 @@ public class PicketLinkTestBase {
     /**
      * Requests given URL and checks if the returned HTTP status code is the expected one. Returns HTTP response body
      *
-     * @param URL                url to which the request should be made
-     * @param DefaultHttpClient  httpClient to test multiple access
+     * @param url                url to which the request should be made
+     * @param httpClient httpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
      * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static String makeCall(URL url, DefaultHttpClient httpClient, int expectedStatusCode)
+    public static String makeCall(URL url, HttpClient httpClient, int expectedStatusCode)
             throws IOException, URISyntaxException {
 
         String httpResponseBody = null;
@@ -102,14 +98,14 @@ public class PicketLinkTestBase {
      * Requests given URL and returns redirect location URL from response header. If response is not redirected then returns the
      * same URL which was requested
      *
-     * @param URL               url to which the request should be made
-     * @param DefaultHttpClient httpClient to test multiple access
+     * @param url               url to which the request should be made
+     * @param httpClient httpClient to test multiple access
      * @return URL redirect location
      * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static URL makeCallWithoutRedirect(URL url, DefaultHttpClient httpClient) throws
+    public static URL makeCallWithoutRedirect(URL url, HttpClient httpClient) throws
             IOException, URISyntaxException {
 
         HttpParams params = new BasicHttpParams();
@@ -138,15 +134,15 @@ public class PicketLinkTestBase {
     /**
      * Requests given SP and post SAMLRequest to IdP, then post back SAMLResponse. Returns HTTP response body
      *
-     * @param URL               spURL of requested Service Provider
-     * @param URL               idpURL of Identity Provider
-     * @param DefaultHttpClient httpClient to test multiple access
+     * @param spURL               spURL of requested Service Provider
+     * @param idpURL               idpURL of Identity Provider
+     * @param httpClient httpClient to test multiple access
      * @return HTTP response body
      * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static String postSAML2Assertions(URL spURL, URL idpURL, DefaultHttpClient httpClient)
+    public static String postSAML2Assertions(URL spURL, URL idpURL, HttpClient httpClient)
             throws IOException, URISyntaxException {
         final String canonicalHost = Utils.getDefaultHost(true);
 
@@ -191,9 +187,9 @@ public class PicketLinkTestBase {
      * Replace variables in PicketLink configurations files with given values and set ${hostname} variable from system property:
      * node0
      *
-     * @param String resourceFile
-     * @param String deploymentName
-     * @param String bindingType
+     * @param resourceFile
+     * @param deploymentName
+     * @param bindingType
      * @return String content
      */
     public static String propertiesReplacer(String resourceFile, String deploymentName, String bindingType,
@@ -233,13 +229,11 @@ public class PicketLinkTestBase {
      * @throws PrivilegedActionException
      * @throws LoginException
      */
-    public static String makeCallWithKerberosAuthn(URI uri, final DefaultHttpClient httpClient, final String user,
+    public static String makeCallWithKerberosAuthn(URI uri, final HttpClient httpClient, final String user,
                                                    final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
             LoginException {
         uri = Utils.replaceHost(uri, Utils.getDefaultHost(true));
         LOGGER.trace("Requesting URI: " + uri);
-        httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
-        httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
 
         final HttpGet httpGet = new HttpGet(uri);
         final HttpResponse response = httpClient.execute(httpGet);

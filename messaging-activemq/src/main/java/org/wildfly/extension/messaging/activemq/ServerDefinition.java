@@ -41,7 +41,6 @@ import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -222,17 +221,11 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final AttributeDefinition JOURNAL_SQL_PROVIDER_FACTORY = ObjectTypeAttributeDefinition.Builder.of("journal-sql-provider-factory-class",
-            create(CommonAttributes.NAME, ModelType.STRING, false)
-                    .setAllowExpression(false)
-                    .build(),
-            create(CommonAttributes.MODULE, ModelType.STRING, false)
-                    .setAllowExpression(false)
-                    .build())
+    public static final AttributeDefinition JOURNAL_DATABASE = create("journal-database", STRING)
             .setAttributeGroup("journal")
-            .setXmlName("sql-provider-factory-class")
-            .setAllowExpression(false)
-            .setAllowNull(true)
+            .setXmlName("database")
+            .setRequired(false)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
@@ -515,7 +508,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE,
-            JOURNAL_DATASOURCE, JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_SQL_PROVIDER_FACTORY,
+            JOURNAL_DATASOURCE, JOURNAL_DATABASE,
+            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,

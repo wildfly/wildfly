@@ -323,7 +323,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
             // Instantiate home servant, bind it to the servant registry, and create CORBA reference to the EJBHome.
             final EjbCorbaServant homeServant = new EjbCorbaServant(poaCurrent, homeMethodMap, homeRepositoryIds, homeInterfaceDef,
-                    orb, homeView.getValue(), factory, configuration, component.getTransactionManager(), module.getClassLoader(), true, securityDomain);
+                    orb, homeView.getValue(), factory, configuration, component.getTransactionManager(), module.getClassLoader(), true, securityDomain,
+                    component.getSecurityDomain());
 
             homeServantRegistry = poaRegistry.getValue().getRegistryWithPersistentPOAPerServant();
             ReferenceFactory homeReferenceFactory = homeServantRegistry.bind(homeServantName(name), homeServant, policies);
@@ -359,7 +360,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             // Instantiate the ejb object servant and bind it to the servant registry.
             final EjbCorbaServant beanServant = new EjbCorbaServant(poaCurrent, beanMethodMap, beanRepositoryIds,
                     beanInterfaceDef, orb, remoteView.getValue(), factory, configuration, component.getTransactionManager(),
-                    module.getClassLoader(), false, securityDomain);
+                    module.getClassLoader(), false, securityDomain, component.getSecurityDomain());
             beanReferenceFactory = beanServantRegistry.bind(beanServantName(name), beanServant, policies);
 
             // Register bean home in local CORBA naming context

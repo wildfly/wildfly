@@ -21,13 +21,19 @@
  */
 package org.jboss.as.test.integration.web.security.jaspi;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -42,10 +48,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests that JASPI authentication reports error if the authentication process fails.
@@ -84,27 +86,21 @@ public class WebSecurityJaspiWithFailingAuthModuleTestCase {
     }
 
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-            httpclient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()),
-                    new UsernamePasswordCredentials(user, pass));
+        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(url.getHost(), url.getPort()),
+                new UsernamePasswordCredentials(user, pass));
 
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+                .setDefaultCredentialsProvider(credentialsProvider)
+                .build()) {
             HttpGet httpget = new HttpGet(url.toExternalForm() + "secured/");
 
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
             StatusLine statusLine = response.getStatusLine();
-            if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
-            }
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
             EntityUtils.consume(entity);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 }

@@ -39,9 +39,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -118,9 +117,8 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         addListener(Listener.HTTPS);
 
         // check that the connector is live
-        try {
+        try (CloseableHttpClient httpClient = TestHttpClientUtils.getHttpsClient(null)){
             String cURL = "https://" + url.getHost() + ":8181";
-            HttpClient httpClient = TestHttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
             HttpGet get = new HttpGet(cURL);
 
             HttpResponse hr = httpClient.execute(get);

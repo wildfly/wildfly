@@ -24,7 +24,7 @@ package org.jboss.as.xts;
 
 import com.arjuna.webservices.wsarj.ArjunaConstants;
 import com.arjuna.webservices11.wscoor.CoordinationConstants;
-import org.jboss.jbossts.xts.logging.XTSLogger;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.wsf.spi.invocation.RejectionRule;
 
 import javax.xml.namespace.QName;
@@ -41,8 +41,7 @@ public class GracefulShutdownRejectionRule implements RejectionRule {
                 || headers.containsKey(CoordinationConstants.WSCOOR_ELEMENT_COORDINATION_CONTEXT_QNAME)) {
             return false;
         }
-
-        XTSLogger.logger.warnf("rejecting call because it is not part of any XTS transaction");
+        XtsAsLogger.ROOT_LOGGER.rejectingCallBecauseNotPartOfXtsTx();
         return true;
     }
 }

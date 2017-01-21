@@ -112,7 +112,6 @@
                             </includes>
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>xts-servers</arquillian.launch>
-                                <jboss.args>${jboss.args} -Dorg.apache.cxf.logging.enabled=true</jboss.args> <!-- TODO remove this -->
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

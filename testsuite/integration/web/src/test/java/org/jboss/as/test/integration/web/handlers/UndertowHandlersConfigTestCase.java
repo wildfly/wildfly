@@ -5,7 +5,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -49,11 +50,10 @@ public class UndertowHandlersConfigTestCase {
 
     @Test
     public void testRewrite() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpget = new HttpGet(url.toExternalForm() + "rewritea");
 
-            HttpResponse response = httpclient.execute(httpget);
+            HttpResponse response = httpClient.execute(httpget);
             HttpEntity entity = response.getEntity();
 
             StatusLine statusLine = response.getStatusLine();
@@ -65,12 +65,6 @@ public class UndertowHandlersConfigTestCase {
             Header[] headers = response.getHeaders("MyHeader");
             Assert.assertEquals(1, headers.length);
             Assert.assertEquals("MyValue", headers[0].getValue());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
-
     }
 }
