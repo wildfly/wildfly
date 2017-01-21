@@ -307,7 +307,6 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .end();
     }
 
-
     static void registerTransformers400(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()

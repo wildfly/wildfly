@@ -223,7 +223,7 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_3_0:
                                     parseDataSource_3_0(reader, list, parentAddress);
                                     break;
-                                case DATASOURCES_4_0:
+                                default:
                                     parseDataSource_4_0(reader, list, parentAddress);
                                     break;
                             }
@@ -241,7 +241,7 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_3_0:
                                     parseXADataSource_3_0(reader, list, parentAddress);
                                     break;
-                                case DATASOURCES_4_0:
+                                default:
                                     parseXADataSource_4_0(reader, list, parentAddress);
                                     break;
                             }
@@ -1285,7 +1285,15 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case SECURITY: {
-                            parseDsSecurity_4_0(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                // This method is only called for version 4 and later.
+                                case DATASOURCES_4_0:
+                                    parseDsSecurity(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_5_0(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case STATEMENT: {
@@ -1301,7 +1309,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case RECOVERY: {
-                            parseRecovery_4_0(reader, operation);
+                            parseRecovery(reader, operation);
                             break;
                         }
                         default:
@@ -1368,7 +1376,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseDsSecurity_4_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseDsSecurity_5_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         boolean securityDomainMatched = false;
@@ -1986,7 +1994,15 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case SECURITY: {
-                            parseDsSecurity_4_0(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                // This method is only called for version 4 and later.
+                                case DATASOURCES_4_0:
+                                    parseDsSecurity(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_5_0(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case STATEMENT: {
@@ -2267,55 +2283,18 @@ public class DsParser extends AbstractParser {
                     Recovery.Tag tag = Recovery.Tag.forName(reader.getLocalName());
                     switch (tag) {
                         case RECOVER_CREDENTIAL: {
-                            parseCredential(reader, operation);
-                            break;
-                        }
-                        case RECOVER_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), operation, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
-                            break;
-                        }
-                        default:
-                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
-                    }
-                    break;
-                }
-            }
-        }
-        throw new ParserException(bundle.unexpectedEndOfDocument());
-    }
-
-    private void parseRecovery_4_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
-            ValidateException {
-
-        for (Recovery.Attribute attribute : Recovery.Attribute.values()) {
-            switch (attribute) {
-                case NO_RECOVERY: {
-                    String value = rawAttributeText(reader, NO_RECOVERY.getXmlName());
-                    NO_RECOVERY.parseAndSetParameter(value, operation, reader);
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-
-        while (reader.hasNext()) {
-            switch (reader.nextTag()) {
-                case END_ELEMENT: {
-                    if (XaDataSource.Tag.forName(reader.getLocalName()) == XaDataSource.Tag.RECOVERY) {
-                        return;
-                    } else {
-                        if (Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.UNKNOWN) {
-                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
-                        }
-                    }
-                    break;
-                }
-                case START_ELEMENT: {
-                    Recovery.Tag tag = Recovery.Tag.forName(reader.getLocalName());
-                    switch (tag) {
-                        case RECOVER_CREDENTIAL: {
-                            parseCredential_4_0(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                case DATASOURCES_1_1:
+                                case DATASOURCES_1_2:
+                                case DATASOURCES_2_0:
+                                case DATASOURCES_3_0:
+                                case DATASOURCES_4_0:
+                                    parseCredential(reader, operation);
+                                    break;
+                                default:
+                                    parseCredential_5_0(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case RECOVER_PLUGIN: {
@@ -2376,7 +2355,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseCredential_4_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseCredential_5_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {

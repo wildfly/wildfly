@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+<subsystem xmlns="urn:jboss:domain:datasources:5.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS"
                     use-java-context="true">
