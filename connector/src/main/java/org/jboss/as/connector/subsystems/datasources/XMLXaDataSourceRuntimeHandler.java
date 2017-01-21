@@ -25,6 +25,8 @@ package org.jboss.as.connector.subsystems.datasources;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -243,6 +245,33 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             if(dataSource.getRecovery().getCredential() == null) {
                 return;
             }
+            if (((Credential) dataSource.getRecovery().getCredential()).isElytronEnabled()) {
+                return;
+            }
+            setStringIfNotNull(context, dataSource.getRecovery().getCredential().getSecurityDomain());
+
+        } else if (attributeName.equals(Constants.RECOVERY_ELYTRON_ENABLED.getName())) {
+            if(dataSource.getRecovery() == null) {
+                return;
+            }
+            if(dataSource.getRecovery().getCredential() == null) {
+                return;
+            }
+            if (!((Credential) dataSource.getRecovery().getCredential()).isElytronEnabled()) {
+                return;
+            }
+            setBooleanIfNotNull(context, ((Credential) dataSource.getRecovery().getCredential()).isElytronEnabled());
+
+        } else if (attributeName.equals(Constants.RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+            if(dataSource.getRecovery() == null) {
+                return;
+            }
+            if(dataSource.getRecovery().getCredential() == null) {
+                return;
+            }
+            if (!((Credential) dataSource.getRecovery().getCredential()).isElytronEnabled()) {
+                return;
+            }
             setStringIfNotNull(context, dataSource.getRecovery().getCredential().getSecurityDomain());
 
         } else if (attributeName.equals(Constants.RECOVER_PLUGIN_CLASSNAME.getName())) {
@@ -373,6 +402,25 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             //don't give out the password
         } else if (attributeName.equals(Constants.SECURITY_DOMAIN.getName())) {
             if (dataSource.getSecurity() == null) {
+                return;
+            }
+            if (((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
+                return;
+            }
+            setStringIfNotNull(context, dataSource.getSecurity().getSecurityDomain());
+        } else if (attributeName.equals(Constants.ELYTRON_ENABLED.getName())) {
+            if (dataSource.getSecurity() == null) {
+                return;
+            }
+            if (!((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
+                return;
+            }
+            setBooleanIfNotNull(context, ((DsSecurity) dataSource.getSecurity()).isElytronEnabled());
+        } else if (attributeName.equals(Constants.AUTHENTICATION_CONTEXT.getName())) {
+            if (dataSource.getSecurity() == null) {
+                return;
+            }
+            if (!((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
                 return;
             }
             setStringIfNotNull(context, dataSource.getSecurity().getSecurityDomain());

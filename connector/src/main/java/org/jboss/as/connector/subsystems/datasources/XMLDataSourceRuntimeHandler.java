@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -169,6 +170,25 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             //don't give out the password
         } else if (attributeName.equals(Constants.SECURITY_DOMAIN.getName())) {
             if (dataSource.getSecurity() == null) {
+                return;
+            }
+            if (((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
+                return;
+            }
+            setStringIfNotNull(context, dataSource.getSecurity().getSecurityDomain());
+        } else if (attributeName.equals(Constants.ELYTRON_ENABLED.getName())) {
+            if (dataSource.getSecurity() == null) {
+                return;
+            }
+            if (!((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
+                return;
+            }
+            setBooleanIfNotNull(context, ((DsSecurity) dataSource.getSecurity()).isElytronEnabled());
+        } else if (attributeName.equals(Constants.AUTHENTICATION_CONTEXT.getName())) {
+            if (dataSource.getSecurity() == null) {
+                return;
+            }
+            if (!((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
                 return;
             }
             setStringIfNotNull(context, dataSource.getSecurity().getSecurityDomain());
