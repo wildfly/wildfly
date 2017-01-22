@@ -24,6 +24,10 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
+import org.jboss.as.connector.subsystems.common.Marshallers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
@@ -41,23 +45,25 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.Security;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.common.XaPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 
 
 /**
+ * Defines contants and attributes for resourceadapters subsystem.
+ *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
+ * @author Flavia Rainone
  */
 public class Constants {
+
+    private static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
 
     public static final String RESOURCEADAPTER_NAME = "resource-adapter";
 
@@ -99,6 +105,12 @@ public class Constants {
 
     private static final String SECURITY_DOMAIN_NAME = "security-domain";
 
+    private static final String ELYTRON_ENABLED_NAME = "elytron-enabled";
+
+    private static final String AUTHENTICATION_CONTEXT_NAME = "authentication-context";
+
+    private static final String AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME = "authentication-context-and-application";
+
     private static final String APPLICATION_NAME = "security-application";
 
     private static final String USE_CCM_NAME = "use-ccm";
@@ -128,6 +140,8 @@ public class Constants {
     private static final String WM_SECURITY_MAPPING_REQUIRED_NAME = "wm-security-mapping-required";
 
     private static final String WM_SECURITY_DOMAIN_NAME = "wm-security-domain";
+
+    private static final String WM_ELYTRON_ENABLED_NAME = "wm-elytron-enabled";
 
     private static final String WM_SECURITY_DEFAULT_PRINCIPAL_NAME = "wm-security-default-principal";
 
@@ -167,6 +181,10 @@ public class Constants {
     private static final String RECOVERY_PASSWORD_NAME = "recovery-password";
 
     private static final String RECOVERY_SECURITY_DOMAIN_NAME = "recovery-security-domain";
+
+    private static final String RECOVERY_ELYTRON_ENABLED_NAME = "recovery-elytron-enabled";
+
+    private static final String RECOVERY_AUTHENTICATION_CONTEXT_NAME = "recovery-authentication-context";
 
     private static final String RECOVERLUGIN_CLASSNAME_NAME = "recovery-plugin-class-name";
 
@@ -286,11 +304,17 @@ public class Constants {
             .setXmlName(WorkManagerSecurity.Tag.MAPPING_REQUIRED.getLocalName())
             .build();
 
-    static final SimpleAttributeDefinition WM_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DOMAIN_NAME, ModelType.STRING)
+    static final SimpleAttributeDefinition WM_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAllowNull(true)
             .setDefaultValue(new ModelNode("other"))
             .setXmlName(WorkManagerSecurity.Tag.DOMAIN.getLocalName())
+            .build();
+
+    static final SimpleAttributeDefinition WM_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
+            .setXmlName(WorkManagerSecurity.Tag.ELYTRON_ENABLED.getLocalName())
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_PRINCIPAL = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_PRINCIPAL_NAME, ModelType.STRING)
@@ -368,22 +392,41 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
-    static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
+    static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
-            .setAlternatives(SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME)
+            .setAlternatives(SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME, ELYTRON_ENABLED_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
+    static final SimpleAttributeDefinition SECURITY_DOMAIN_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_AND_APPLICATION_NAME, ModelType.STRING, true)
+            .setXmlName(Security.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName())
+            .setAllowExpression(true)
+            .setAlternatives(SECURITY_DOMAIN_NAME, APPLICATION_NAME, ELYTRON_ENABLED_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
-
-    static final SimpleAttributeDefinition SECURITY_DOMAIN_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_AND_APPLICATION_NAME, ModelType.STRING)
-            .setXmlName(Security.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName())
+    static SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+            .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
-            .setAlternatives(SECURITY_DOMAIN_NAME, APPLICATION_NAME)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME)
+            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
+    static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
+            .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
+            .setAllowExpression(true)
+            .setRequires(ELYTRON_ENABLED_NAME)
+            .setAlternatives(AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
+    static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME, ModelType.STRING, true)
+            .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT_AND_APPLICATION.getLocalName())
+            .setAllowExpression(true)
+            .setRequires(ELYTRON_ENABLED_NAME)
+            .setAlternatives(AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
@@ -393,7 +436,7 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
-            .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME)
+            .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, ELYTRON_ENABLED_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
@@ -508,7 +551,25 @@ public class Constants {
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setDefaultValue(new ModelNode())
+            .setAlternatives(RECOVERY_ELYTRON_ENABLED_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
+
+    static SimpleAttributeDefinition RECOVERY_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(RECOVERY_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+            .setXmlName(Credential.Tag.ELYTRON_ENABLED.getLocalName())
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
+            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
+
+    static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
+            .setXmlName(Credential.Tag.AUTHENTICATION_CONTEXT.getLocalName())
+            .setAllowExpression(true)
+            .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 

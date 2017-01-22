@@ -60,7 +60,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_4_0.xsd";
+        return "schema/wildfly-datasources_5_0.xsd";
     }
 
     @Override
@@ -121,6 +121,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testTransformerElytronEnabledEAP64() throws Exception {
+        testTransformerElytronEnabled("datasources-elytron-enabled_5_0.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
+    }
+    @Test
     public void testTransformerEAP7() throws Exception {
         testTransformerEAP7FullConfiguration("datasources-full.xml");
     }
@@ -176,6 +180,47 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
                         .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING))
                         .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING))
+        );
+    }
+
+    /**
+     * Tests transformation of model from latest version into one passed into modelVersion parameter.
+     *
+     * @throws Exception
+     */
+    private void testTransformerElytronEnabled(String subsystemXml, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServices mainServices = initialKernelServices(builder, controllerVersion, modelVersion);
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING, Constants.ELYTRON_ENABLED, Constants.AUTHENTICATION_CONTEXT))
+                .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING, Constants.ELYTRON_ENABLED, Constants.AUTHENTICATION_CONTEXT,
+                                Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_AUTHENTICATION_CONTEXT) {
+
+                    @Override
+                    protected boolean isAttributeWritable(String attributeName) {
+                        return false;
+                    }
+
+                    @Override
+                    protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+                        if (attribute.isDefined()) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+                        return new ModelNode();
+                    }
+                })
         );
     }
 

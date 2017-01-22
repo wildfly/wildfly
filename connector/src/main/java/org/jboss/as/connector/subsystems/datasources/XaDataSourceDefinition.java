@@ -25,6 +25,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
@@ -36,6 +37,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRAC
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
@@ -118,7 +120,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
         if (!deployed)
-            resourceRegistration.registerCapability(Capabilities.DATA_SOURCE_CAPABILITY);
+            resourceRegistration.registerCapability(org.jboss.as.connector._private.Capabilities.DATA_SOURCE_CAPABILITY);
     }
 
     @Override
@@ -178,6 +180,9 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -196,7 +201,10 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 }, STATISTICS_ENABLED)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
+                .end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
                 .end()
@@ -213,8 +221,14 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         return attributeValue.equals(new ModelNode(false));
                     }
                 }, TRACKING)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end();
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
+                .end();
 
     }
 
@@ -226,6 +240,9 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -244,7 +261,10 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 }, STATISTICS_ENABLED)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
+                .end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
                 .end()
@@ -257,17 +277,26 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALLOW_MULTIPLE_USERS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .end();
     }
 
     static void registerTransformers400(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
         builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .end();
     }
-
 }

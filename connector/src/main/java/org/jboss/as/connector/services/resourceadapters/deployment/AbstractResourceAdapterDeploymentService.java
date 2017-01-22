@@ -28,6 +28,8 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTO
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.List;
@@ -42,7 +44,12 @@ import javax.security.auth.Subject;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
+import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
+import org.jboss.as.connector.security.CallbackImpl;
+import org.jboss.as.connector.security.ElytronSecurityIntegration;
+import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectService;
@@ -70,6 +77,7 @@ import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.jca.core.spi.security.Callback;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
@@ -610,8 +618,19 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
 
         @Override
-        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
-            if (securityDomain == null || securityDomain.trim().equals("")) {
+        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
+                org.jboss.jca.common.api.metadata.common.SecurityMetadata securityMetadata, final String jndiName) throws DeployException {
+            if (securityMetadata == null)
+                return null;
+            assert securityMetadata instanceof SecurityMetadata;
+            final String securityDomain = securityMetadata.resolveSecurityDomain();
+            if (((SecurityMetadata)securityMetadata).isElytronEnabled()) {
+                try {
+                    return new ElytronSubjectFactory(null, new URI(jndiName));
+                } catch (URISyntaxException e) {
+                    throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
+                }
+            } else if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
             } else {
                 return new PicketBoxSubjectFactory(subjectFactory.getValue()){
@@ -632,6 +651,27 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     }
                 };
             }
+        }
+
+        @Override
+        protected Callback createCallback(org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity workManagerSecurity) {
+            if (workManagerSecurity != null) {
+                assert workManagerSecurity instanceof WorkManagerSecurity;
+                WorkManagerSecurity wms = (WorkManagerSecurity) workManagerSecurity;
+                String[] defaultGroups = wms.getDefaultGroups() != null ?
+                        wms.getDefaultGroups().toArray(new String[workManagerSecurity.getDefaultGroups().size()]) : null;
+
+                return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(), wms.isElytronEnabled(),
+                        wms.getDefaultPrincipal(), defaultGroups, wms.getUserMappings(), wms.getGroupMappings());
+            }
+            return null;
+        }
+
+        @Override
+        protected void setCallbackSecurity(org.jboss.jca.core.api.workmanager.WorkManager workManager, Callback cb) {
+            if (((CallbackImpl) cb).isElytronEnabled())
+                workManager.setSecurityIntegration(new ElytronSecurityIntegration());
+            workManager.setCallbackSecurity(cb);
         }
 
         @Override

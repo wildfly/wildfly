@@ -47,6 +47,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
+import javax.security.auth.Subject;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -859,4 +861,40 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 101, value = "Thread pool: %s(type: %s) can not be added for workmanager: %s, only one thread pool is allowed for each type.")
     OperationFailedException oneThreadPoolWorkManager(String threadPoolName, String threadPoolType, String workManagerName);
+
+    /**
+     * A message indicating that an attribute can only be set if another attribute is set as {@code true}.
+     *
+     * @param attribute          attribute that is invalid: it is defined but requires another attribute to be set as {@code true}
+     * @param requiredAttribute  attribute that is required to be defined as {@code true}
+     * @return the message.
+     */
+    @Message(id = 102, value = "Attribute %s can only be defined if %s is true")
+    OperationFailedException attributeRequiresTrueAttribute(String attribute, String requiredAttribute);
+
+    /**
+     * A message indicating that an attribute can only be set if another attribute is undefined or set as {@code false}.
+     *
+     * @param attribute               attribute that is invalid: it is defined but requires another attribute to be set as {@code false} or to be undefined
+     * @param requiredFalseAttribute  attribute that is required to be undefined or defined as {@code false}
+     * @return the message.
+     */
+    @Message(id = 103, value = "Attribute %s can only be defined if %s is undefined or false")
+    OperationFailedException attributeRequiresFalseOrUndefinedAttribute(String attribute, String requiredFalseAttribute);
+
+    @Message(id = 104, value = "Subject=%s\nSubject identity=%s")
+    String subject(Subject subject, String identity);
+
+    @LogMessage(level = INFO)
+    @Message(id = 106, value = "Elytron handler handle: %s")
+    void elytronHandlerHandle(String callbacks);
+
+    @Message(id = 107, value = "Execution subject was not provided to the callback handler")
+    SecurityException executionSubjectNotSetInHandler();
+
+    @Message(id = 108, value = "Supplied callback doesn't contain a security domain reference")
+    IllegalArgumentException invalidCallbackSecurityDomain();
+
+    @Message(id = 109, value = "Callback with security domain is required - use createCallbackHandler(Callback callback) instead")
+    UnsupportedOperationException unsupportedCreateCallbackHandlerMethod();
 }

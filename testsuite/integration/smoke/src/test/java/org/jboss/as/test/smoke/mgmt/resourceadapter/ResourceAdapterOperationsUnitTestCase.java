@@ -30,6 +30,9 @@ import static org.jboss.as.test.integration.management.jca.ComplexPropertiesPars
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.raConnectionProperties;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.setOperationParams;
 
+import java.io.IOException;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,9 +41,15 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,14 +57,163 @@ import org.junit.runner.RunWith;
  * Resource adapter operation unit test.
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
+ * @author Flavia Rainone
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
+    private static final Deque<ModelNode> REMOVE_ADDRESSES = new LinkedList<>();
 
+    @BeforeClass
+    public static void configureElytron() throws Exception {
+        try (final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+            addAuth(client, "AuthCtxt");
+            addAuth(client, "AuthCtxtAndApp");
+        }
+    }
+
+    @AfterClass
+    public static void removeElytronConfig() throws Exception {
+        try (final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+            ModelNode address;
+            while ((address = REMOVE_ADDRESSES.pollFirst()) != null) {
+                execute(client, Operations.createRemoveOperation(address));
+            }
+        }
+    }
 
     @Test
-    public void complexResourceAdapterAddTest() throws Exception {
+    public void addComplexResourceAdapterWithAppSecurity() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, null);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithAppSecurity_UserPassRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithAppSecurity_SecurityDomainRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.SECURITY_DOMAIN);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithAppSecurity_ElytronRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.ELYTRON);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithAppSecurity_ElytronAuthCtxtRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomain() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.SECURITY_DOMAIN);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomain_NoRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, null);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomain_UserPassRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomain_ElytronRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.ELYTRON);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomain_ElytronAuthCtxtRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomainAndApp() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION, null);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomainAndApp_UserPassRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
+                ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomainAndApp_SecurityDomainRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
+                ConnectionSecurityType.SECURITY_DOMAIN);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomainAndApp_ElytronRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
+                ConnectionSecurityType.ELYTRON);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithSecurityDomainAndApp_ElytronAuthCtxtRecovery() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
+                ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytron() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, ConnectionSecurityType.ELYTRON);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytron_NoRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, null);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytron_UserPassRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytron_SecurityDomainRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, ConnectionSecurityType.SECURITY_DOMAIN);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytron_ElytronAuthCtxtRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytronAuthCtxt() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT,
+                ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytronAuthCtxtN_oRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT, null);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytronAuthCtxt_UserPassRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT, ConnectionSecurityType.USER_PASSWORD);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytronAuthCtxt_SecurityDomainRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT, ConnectionSecurityType.SECURITY_DOMAIN);
+    }
+
+    @Test
+    public void addComplexResourceAdapterWithElytronAuthCtxt_ElytronRecoverySec() throws Exception {
+        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT, ConnectionSecurityType.ELYTRON);
+    }
+
+    private void complexResourceAdapterAddTest(ConnectionSecurityType connectionSecurityType,
+            ConnectionSecurityType connectionRecoverySecurityType) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "resource-adapters");
         address.add("resource-adapter", "some.rar");
@@ -86,7 +244,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         conAddress.add("connection-definitions", "Pool1");
         conAddress.protect();
 
-        Properties conParams = raConnectionProperties();
+        Properties conParams = raConnectionProperties(connectionSecurityType, connectionRecoverySecurityType);
 
         final ModelNode operation2 = new ModelNode();
         operation2.get(OP).set("add");
@@ -179,4 +337,30 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
                 parser);
     }
 
+    private static void addAuth(final ModelControllerClient client, final String name) throws IOException {
+        ModelNode address = Operations.createAddress("subsystem", "elytron", "authentication-configuration", name);
+        REMOVE_ADDRESSES.addLast(address.clone());
+        ModelNode op = Operations.createAddOperation(address);
+        op.get("security-domain").set("ApplicationDomain");
+        final ModelNode cr = op.get("credential-reference").setEmptyObject();
+        cr.get("clear-text").set("value");
+        execute(client, op);
+
+        address = Operations.createAddress("subsystem", "elytron", "authentication-context", name);
+        REMOVE_ADDRESSES.addFirst(address.clone());
+        op = Operations.createAddOperation(address);
+        final ModelNode mr = op.get("match-rules").setEmptyList();
+        final ModelNode ac = new ModelNode().setEmptyObject();
+        ac.get("authentication-configuration").set(name);
+        mr.add(ac);
+        execute(client, op);
+    }
+
+    private static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+        final ModelNode result = client.execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            throw new RuntimeException(Operations.getFailureDescription(result).asString());
+        }
+        return result;
+    }
 }

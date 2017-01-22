@@ -21,7 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
@@ -35,6 +34,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODUL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
@@ -56,6 +56,8 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
+import org.jboss.as.connector.metadata.resourceadapter.WorkManagerSecurityImpl;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
@@ -63,15 +65,13 @@ import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
-import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.resourceadapter.WorkManagerImpl;
-import org.jboss.jca.common.metadata.resourceadapter.WorkManagerSecurityImpl;
 import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * A ResourceAdapterParserr.
+ * A ResourceAdapterParser.
  *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
@@ -294,6 +294,9 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                                 case RESOURCEADAPTERS_4_0:
                                     parseConnectionDefinitions_4_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
                                     break;
+                                default:
+                                    parseConnectionDefinitions_5_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
+                                    break;
                             }
                             break;
                         }
@@ -379,13 +382,22 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                     switch (WorkManager.Tag.forName(reader.getLocalName())) {
                         case SECURITY: {
                             WM_SECURITY.parseAndSetParameter("true", operation, reader);
-                            security = parseWorkManagerSecurity(operation, reader);
+                            switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
+                                case RESOURCEADAPTERS_1_0:
+                                case RESOURCEADAPTERS_1_1:
+                                case RESOURCEADAPTERS_2_0:
+                                case RESOURCEADAPTERS_3_0:
+                                case RESOURCEADAPTERS_4_0:
+                                    security = parseWorkManagerSecurity(operation, reader);
+                                    break;
+                                default: // If the switch statement contains a default it does not need to be revisited each time a new schema is added unless it actually affects it.
+                                    security = parseWorkManagerSecurity_5_0(operation, reader);
+                            }
                             break;
                         }
                         default:
                             throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
-                    break;
                 }
             }
         }
@@ -407,8 +419,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
                     if (WorkManager.Tag.forName(reader.getLocalName()) == WorkManager.Tag.SECURITY) {
-                        return new WorkManagerSecurityImpl(mappingRequired, domain,
-                                defaultPrincipal, defaultGroups,
+                        return new WorkManagerSecurityImpl(mappingRequired, domain,false, defaultPrincipal, defaultGroups,
                                 userMappings, groupMappings);
                     } else {
                         if (WorkManagerSecurity.Tag.forName(reader.getLocalName()) == WorkManagerSecurity.Tag.UNKNOWN) {
@@ -430,7 +441,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case DOMAIN: {
-                            String value = rawElementText(reader);
+                            String value = domain = rawElementText(reader);
                             WM_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
                             break;
                         }
@@ -488,6 +499,106 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
+    protected WorkManagerSecurity parseWorkManagerSecurity_5_0(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
+            ParserException, ValidateException {
+        boolean mappingRequired = false;
+        String domain = null;
+        boolean elytronEnabled = false;
+        String defaultPrincipal = null;
+        List<String> defaultGroups = null;
+        Map<String, String> userMappings = null;
+        Map<String, String> groupMappings = null;
+
+        boolean userMappingEnabled = false;
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (WorkManager.Tag.forName(reader.getLocalName()) == WorkManager.Tag.SECURITY) {
+                        return new WorkManagerSecurityImpl(mappingRequired, domain, elytronEnabled, defaultPrincipal,
+                                defaultGroups, userMappings, groupMappings);
+                    } else {
+                        if (WorkManagerSecurity.Tag.forName(reader.getLocalName()) == WorkManagerSecurity.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (WorkManagerSecurity.Tag.forName(reader.getLocalName())) {
+                        case DEFAULT_GROUPS:
+                        case MAPPINGS: {
+                            // Skip
+                            break;
+                        }
+                        case MAPPING_REQUIRED: {
+                            String value = rawElementText(reader);
+                            WM_SECURITY_MAPPING_REQUIRED.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case DOMAIN: {
+                            String value = domain = rawElementText(reader);
+                            WM_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            elytronEnabled = true;
+                            WM_ELYTRON_ENABLED.parseAndSetParameter("true", operation, reader);
+                            break;
+                        }
+                        case DEFAULT_PRINCIPAL: {
+                            String value = rawElementText(reader);
+                            WM_SECURITY_DEFAULT_PRINCIPAL.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case GROUP: {
+                            String value = rawElementText(reader);
+                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.parse(value, reader));
+                            break;
+                        }
+                        case USERS: {
+                            userMappingEnabled = true;
+                            break;
+                        }
+                        case GROUPS: {
+                            userMappingEnabled = false;
+                            break;
+                        }
+                        case MAP: {
+                            if (userMappingEnabled) {
+                                String from = rawAttributeText(reader, WorkManagerSecurity.Attribute.FROM.getLocalName());
+                                if (from == null || from.trim().equals(""))
+                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.FROM.getLocalName(), reader.getLocalName()));
+                                String to = rawAttributeText(reader, WorkManagerSecurity.Attribute.TO.getLocalName());
+                                if (to == null || to.trim().equals(""))
+                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.TO.getLocalName(), reader.getLocalName()));
+                                ModelNode object = new ModelNode();
+                                WM_SECURITY_MAPPING_FROM.parseAndSetParameter(from, object, reader);
+                                WM_SECURITY_MAPPING_TO.parseAndSetParameter(to, object, reader);
+                                operation.get(WM_SECURITY_MAPPING_USERS.getName()).add(object);
+                            } else {
+                                String from = rawAttributeText(reader, WorkManagerSecurity.Attribute.FROM.getLocalName());
+                                if (from == null || from.trim().equals(""))
+                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.FROM.getLocalName(), reader.getLocalName()));
+                                String to = rawAttributeText(reader, WorkManagerSecurity.Attribute.TO.getLocalName());
+                                if (to == null || to.trim().equals(""))
+                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.TO.getLocalName(), reader.getLocalName()));
+                                ModelNode object = new ModelNode();
+                                WM_SECURITY_MAPPING_FROM.parseAndSetParameter(from, object, reader);
+                                WM_SECURITY_MAPPING_TO.parseAndSetParameter(to, object, reader);
+                                operation.get(WM_SECURITY_MAPPING_GROUPS.getName()).add(object);
+                            }
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
 
     /**
      * A Tag.

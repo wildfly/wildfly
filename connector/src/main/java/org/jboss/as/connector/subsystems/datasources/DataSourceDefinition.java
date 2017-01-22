@@ -25,6 +25,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE;
@@ -40,6 +41,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRAC
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
@@ -47,6 +49,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
@@ -182,6 +185,9 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
@@ -206,6 +212,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     }
                 }, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
@@ -224,8 +232,13 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         return attributeValue.equals(new ModelNode(false));
                     }
                 }, TRACKING)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL).end();
     }
 
@@ -237,6 +250,9 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
@@ -261,6 +277,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     }
                 }, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
@@ -276,18 +294,27 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALLOW_MULTIPLE_USERS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .end();
     }
 
-
     static void registerTransformers400(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
         builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(createConnURLRejectChecker(), CONNECTION_URL)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
                 .end();

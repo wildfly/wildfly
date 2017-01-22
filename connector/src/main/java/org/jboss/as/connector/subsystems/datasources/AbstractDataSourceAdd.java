@@ -23,10 +23,15 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
@@ -34,13 +39,13 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.sql.DataSource;
-
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
@@ -81,6 +86,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.
@@ -103,6 +109,14 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
+        // domains should only be defined when Elytron enabled is undefined or false (default value)
+        if (model.hasDefined(AUTHENTICATION_CONTEXT.getName()) && !ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            throw SUBSYSTEM_DATASOURCES_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
+        }
+        else if (model.hasDefined(SECURITY_DOMAIN.getName()) && ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            throw SUBSYSTEM_DATASOURCES_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
+        }
 
         final boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
         if (enabled) {
@@ -185,6 +199,32 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                 dataSourceService.getDriverInjector());
 
+         // If the authentication context is defined, add the capability
+         if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+             if (model.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
+                 dataSourceServiceBuilder.addDependency(
+                         context.getCapabilityServiceName(
+                                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                                 AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
+                                 AuthenticationContext.class),
+                         AuthenticationContext.class,
+                         dataSourceService.getAuthenticationContext()
+                 );
+             }
+         }
+         if (isXa() && RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+             if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                 dataSourceServiceBuilder.addDependency(
+                         context.getCapabilityServiceName(
+                                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                                 RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
+                                 AuthenticationContext.class),
+                         AuthenticationContext.class,
+                         dataSourceService.getRecoveryAuthenticationContext()
+                 );
+             }
+         }
+
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
         dataSourceServiceBuilder.install();
@@ -200,6 +240,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final String jndiName = JNDI_NAME.resolveModelAttribute(context, model).asString();
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final List<ServiceName> serviceNames = registry.getServiceNames();
+
+        final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
 
         final boolean jta;
@@ -219,7 +261,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
             if (dsSecurityConfig != null) {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
-                if (securityDomainName != null) {
+                if (!elytronEnabled && securityDomainName != null) {
                     builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                 }
             }
@@ -228,7 +270,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 final Credential credential = dataSourceConfig.getRecovery().getCredential();
                 if (credential != null) {
                     final String securityDomainName = credential.getSecurityDomain();
-                    if (securityDomainName != null) {
+                    if (!RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean() && securityDomainName != null) {
                         builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                     }
                 }
@@ -271,7 +313,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
             if (dsSecurityConfig != null) {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
-                if (securityDomainName != null) {
+                if (!elytronEnabled && securityDomainName != null) {
                     builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                 }
             }

@@ -22,14 +22,24 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.resourceadapters.statistics.ConnectionDefinitionStatisticsService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -49,6 +59,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * Adds a recovery-environment to the Transactions subsystem
@@ -79,6 +90,32 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
         if (!raModel.hasDefined(ARCHIVE.getName()) && !raModel.hasDefined(MODULE.getName())) {
             throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
+        ModelNode resourceModel = resource.getModel();
+        final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
+        final boolean elytronRecoveryEnabled = RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
+        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
+        // domains should only be defined when Elytron enabled is undefined or false (default value)
+        if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName()) && !elytronEnabled) {
+            throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
+        }
+        else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()) &&
+                !elytronEnabled) {
+            throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        }
+        else if (resourceModel.hasDefined(SECURITY_DOMAIN.getName()) && elytronEnabled) {
+            throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
+        }
+        else if (resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()) && elytronEnabled) {
+            throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        }
+        if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()) &&
+                !elytronRecoveryEnabled) {
+            throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        }
+        else if (resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) &&
+                elytronRecoveryEnabled) {
+            throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        }
         if (raModel.get(ARCHIVE.getName()).isDefined()) {
             archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, raModel).asString();
         } else {
@@ -93,15 +130,42 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             final ModifiableResourceAdapter ravalue = ((ModifiableResourceAdapter) context.getServiceRegistry(false).getService(raServiceName).getValue());
             boolean isXa = ravalue.getTransactionSupport() == TransactionSupportEnum.XATransaction;
 
-            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, resource.getModel(), poolName, isXa);
+            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, resourceModel, poolName, isXa);
 
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
 
             final ConnectionDefinitionService service = new ConnectionDefinitionService(connectionDefinitionValue);
-            serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
-                    .install();
+            final ServiceBuilder<ModifiableConnDef> cdServiceBuilder = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector());
+
+            // Add a dependency to the required authentication-contexts. These will be looked in the ElytronSecurityFactory
+            // and this should be changed to use a proper capability in the future.
+            if (elytronEnabled) {
+                if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
+                    cdServiceBuilder.addDependency(context.getCapabilityServiceName(
+                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                            AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+                            AuthenticationContext.class));
+                } else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName())) {
+                    cdServiceBuilder.addDependency(context.getCapabilityServiceName(
+                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                            AUTHENTICATION_CONTEXT_AND_APPLICATION.resolveModelAttribute(context, resourceModel).asString(),
+                            AuthenticationContext.class));
+                }
+            }
+
+            if (elytronRecoveryEnabled) {
+                if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                    cdServiceBuilder.addDependency(context.getCapabilityServiceName(
+                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                            RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+                            AuthenticationContext.class));
+                }
+            }
+
+            // Install the ConnectionDefinitionService
+            cdServiceBuilder.install();
 
 
             ServiceRegistry registry = context.getServiceRegistry(true);

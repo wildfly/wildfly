@@ -22,9 +22,14 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -42,6 +47,19 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
 
     private XaDataSourceAdd() {
         super(join(XA_DATASOURCE_ATTRIBUTE, XA_DATASOURCE_PROPERTIES_ATTRIBUTES));
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
+        // domains should only be defined when Elytron enabled is undefined or false (default value)
+        if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()) && !RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            throw SUBSYSTEM_DATASOURCES_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        } else if (model.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) && RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            throw SUBSYSTEM_DATASOURCES_LOGGER
+                    .attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        }
+        super.performRuntime(context, operation, model);
     }
 
     protected AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException {

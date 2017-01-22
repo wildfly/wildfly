@@ -23,6 +23,7 @@
 package org.jboss.as.connector.deployers.datasource;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.ds.DsSecurityImpl;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
@@ -53,7 +54,6 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.metadata.ds.DsPoolImpl;
-import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.DsXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
@@ -145,7 +145,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
 
             clearUnknownProperties(reflectionIndex, clazz, properties);
             populateProperties(reflectionIndex, clazz, properties);
-            DsSecurityImpl dsSecurity = new DsSecurityImpl(user, password, null, null);
+            DsSecurityImpl dsSecurity = new DsSecurityImpl(user, password, null, false, null);
 
             if (XADataSource.class.isAssignableFrom(clazz) && transactional) {
                 final DsXaPoolImpl xaPool = new DsXaPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : Integer.valueOf(minPoolSize),

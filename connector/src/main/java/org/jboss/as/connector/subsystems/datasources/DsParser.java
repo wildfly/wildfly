@@ -34,14 +34,15 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOU
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECK_VALID_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
@@ -60,6 +61,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MIN
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
@@ -80,6 +82,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PREPARED_S
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
@@ -119,12 +123,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PER
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -132,13 +139,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Capacity;
-import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.Driver;
 import org.jboss.jca.common.api.metadata.ds.DsPool;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.DsXaPool;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
@@ -218,7 +223,7 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_3_0:
                                     parseDataSource_3_0(reader, list, parentAddress);
                                     break;
-                                case DATASOURCES_4_0:
+                                default:
                                     parseDataSource_4_0(reader, list, parentAddress);
                                     break;
                             }
@@ -236,7 +241,7 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_3_0:
                                     parseXADataSource_3_0(reader, list, parentAddress);
                                     break;
-                                case DATASOURCES_4_0:
+                                default:
                                     parseXADataSource_4_0(reader, list, parentAddress);
                                     break;
                             }
@@ -1280,7 +1285,15 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case SECURITY: {
-                            parseDsSecurity(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                // This method is only called for version 4 and later.
+                                case DATASOURCES_4_0:
+                                    parseDsSecurity(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_5_0(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case STATEMENT: {
@@ -1308,7 +1321,6 @@ public class DsParser extends AbstractParser {
         }
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
-
 
     private void parseDsSecurity(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
@@ -1348,6 +1360,68 @@ public class DsParser extends AbstractParser {
                             String value = rawElementText(reader);
                             SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
                             securityDomainMatched = true;
+                            break;
+                        }
+                        case REAUTH_PLUGIN: {
+                            parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseDsSecurity_5_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        boolean securityDomainMatched = false;
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY) {
+                        //it's fine, do nothing
+                        return;
+                    } else {
+                        if (DsSecurity.Tag.forName(reader.getLocalName()) == DsSecurity.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    DsSecurity.Tag tag = DsSecurity.Tag.forName(reader.getLocalName());
+                    switch (tag) {
+                        case PASSWORD: {
+                            String value = rawElementText(reader);
+                            PASSWORD.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case USER_NAME: {
+                            String value = rawElementText(reader);
+                            USERNAME.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case SECURITY_DOMAIN: {
+                            if (securityDomainMatched) {
+                                throw new ParserException(bundle.unexpectedElement(SECURITY_DOMAIN.getXmlName()));
+                            }
+                            String value = rawElementText(reader);
+                            SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            securityDomainMatched = true;
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            ELYTRON_ENABLED.parseAndSetParameter("true", operation, reader);
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            String value = rawElementText(reader);
+                            AUTHENTICATION_CONTEXT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case REAUTH_PLUGIN: {
@@ -1920,7 +1994,15 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case SECURITY: {
-                            parseDsSecurity(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                // This method is only called for version 4 and later.
+                                case DATASOURCES_4_0:
+                                    parseDsSecurity(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_5_0(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case STATEMENT: {
@@ -2201,7 +2283,18 @@ public class DsParser extends AbstractParser {
                     Recovery.Tag tag = Recovery.Tag.forName(reader.getLocalName());
                     switch (tag) {
                         case RECOVER_CREDENTIAL: {
-                            parseCredential(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                case DATASOURCES_1_1:
+                                case DATASOURCES_1_2:
+                                case DATASOURCES_2_0:
+                                case DATASOURCES_3_0:
+                                case DATASOURCES_4_0:
+                                    parseCredential(reader, operation);
+                                    break;
+                                default:
+                                    parseCredential_5_0(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case RECOVER_PLUGIN: {
@@ -2250,6 +2343,59 @@ public class DsParser extends AbstractParser {
                         case SECURITY_DOMAIN: {
                             String value = rawElementText(reader);
                             RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseCredential_5_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY ||
+                            Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
+
+                        return;
+                    } else {
+                        if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (Credential.Tag.forName(reader.getLocalName())) {
+                        case PASSWORD: {
+                            String value = rawElementText(reader);
+                            RECOVERY_PASSWORD.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case USER_NAME: {
+                            String value = rawElementText(reader);
+                            RECOVERY_USERNAME.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case SECURITY_DOMAIN: {
+                            String value = rawElementText(reader);
+                            RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            RECOVERY_ELYTRON_ENABLED.parseAndSetParameter("true", operation, reader);
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            String value = rawElementText(reader);
+                            RECOVERY_AUTHENTICATION_CONTEXT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         default:

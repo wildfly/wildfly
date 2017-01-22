@@ -2,5 +2,5 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.connector</extension-module>
-   <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
+   <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0"/>
 </config>

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+<subsystem xmlns="urn:jboss:domain:datasources:5.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
                     use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}"
