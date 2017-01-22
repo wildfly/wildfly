@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+<subsystem xmlns="urn:jboss:domain:datasources:5.0">
     <datasources>
         <xa-datasource jndi-name="java:jboss/datasources/DS" pool-name="DS">
             <!-- there is no xa-datasource-property -->
