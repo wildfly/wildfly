@@ -294,6 +294,9 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                                 case RESOURCEADAPTERS_4_0:
                                     parseConnectionDefinitions_4_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
                                     break;
+                                default:
+                                    parseConnectionDefinitions_5_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
+                                    break;
                             }
                             break;
                         }
@@ -384,10 +387,11 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                                 case RESOURCEADAPTERS_1_1:
                                 case RESOURCEADAPTERS_2_0:
                                 case RESOURCEADAPTERS_3_0:
+                                case RESOURCEADAPTERS_4_0:
                                     security = parseWorkManagerSecurity(operation, reader);
                                     break;
-                                case RESOURCEADAPTERS_4_0:
-                                    security = parseWorkManagerSecurity_4_0(operation, reader);
+                                default: // If the switch statement contains a default it does not need to be revisited each time a new schema is added unless it actually affects it.
+                                    security = parseWorkManagerSecurity_5_0(operation, reader);
                             }
                             break;
                         }
@@ -495,7 +499,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    protected WorkManagerSecurity parseWorkManagerSecurity_4_0(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
+    protected WorkManagerSecurity parseWorkManagerSecurity_5_0(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
             ParserException, ValidateException {
         boolean mappingRequired = false;
         String domain = null;

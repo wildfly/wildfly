@@ -298,13 +298,185 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
     }
 
     /**
-     * Parses connection attributes for version 4.0
+     * parse a single connection-definition tag
+     *
+     * @param reader the reader
+     * @throws javax.xml.stream.XMLStreamException
+     *                         XMLStreamException
+     * @throws ParserException ParserException
+     * @throws org.jboss.jca.common.api.validator.ValidateException
+     *                         ValidateException
+     */
+    protected void parseConnectionDefinitions_4_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
+                                                  final Map<String, HashMap<String, ModelNode>> configMap, final boolean isXa)
+            throws XMLStreamException, ParserException, ValidateException {
+
+
+        final ModelNode connectionDefinitionNode = new ModelNode();
+        connectionDefinitionNode.get(OP).set(ADD);
+
+        String poolName = null;
+        String jndiName = null;
+        int attributeSize = reader.getAttributeCount();
+        boolean poolDefined = Boolean.FALSE;
+
+        for (int i = 0; i < attributeSize; i++) {
+            ConnectionDefinition.Attribute attribute = ConnectionDefinition.Attribute.forName(reader.getAttributeLocalName(i));
+            String value = reader.getAttributeValue(i);
+            switch (attribute) {
+                case ENABLED: {
+                    ENABLED.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case CONNECTABLE: {
+                    CONNECTABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case TRACKING: {
+                    TRACKING.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case JNDI_NAME: {
+                    jndiName = value;
+                    JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                    break;
+                }
+                case POOL_NAME: {
+                    poolName = value;
+                    break;
+                }
+                case USE_JAVA_CONTEXT: {
+                    USE_JAVA_CONTEXT.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+
+                case USE_CCM: {
+                    USE_CCM.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case SHARABLE: {
+                    SHARABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case ENLISTMENT: {
+                    ENLISTMENT.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+
+                case CLASS_NAME: {
+                    CLASS_NAME.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+                case MCP: {
+                    MCP.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                }
+                case ENLISTMENT_TRACE:
+                    ENLISTMENT_TRACE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+        if (poolName == null || poolName.trim().equals("")) {
+            if (jndiName != null && jndiName.trim().length() != 0) {
+                if (jndiName.contains("/")) {
+                    poolName = jndiName.substring(jndiName.lastIndexOf("/") + 1);
+                } else {
+                    poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
+                }
+            } else {
+                throw ParseUtils.missingRequired(reader, EnumSet.of(ConnectionDefinition.Attribute.JNDI_NAME));
+            }
+        }
+
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.CONNECTION_DEFINITION) {
+
+                        map.put(poolName, connectionDefinitionNode);
+                        return;
+                    } else {
+                        if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.UNKNOWN) {
+                            throw ParseUtils.unexpectedEndElement(reader);
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (ConnectionDefinition.Tag.forName(reader.getLocalName())) {
+                        case CONFIG_PROPERTY: {
+                            if (!configMap.containsKey(poolName)) {
+                                configMap.put(poolName, new HashMap<String, ModelNode>(0));
+                            }
+                            parseConfigProperties(reader, configMap.get(poolName));
+                            break;
+                        }
+                        case SECURITY: {
+                            parseSecuritySettings(reader, connectionDefinitionNode);
+                            break;
+                        }
+                        case TIMEOUT: {
+                            parseTimeOut(reader, isXa, connectionDefinitionNode);
+                            break;
+                        }
+                        case VALIDATION: {
+                            parseValidation(reader, connectionDefinitionNode);
+                            break;
+                        }
+                        case XA_POOL: {
+                            if (!isXa) {
+                                throw ParseUtils.unexpectedElement(reader);
+                            }
+                            if (poolDefined) {
+                                throw new ParserException(bundle.multiplePools());
+                            }
+                            parseXaPool(reader, connectionDefinitionNode);
+                            poolDefined = true;
+                            break;
+                        }
+                        case POOL: {
+                            if (isXa) {
+                                throw ParseUtils.unexpectedElement(reader);
+                            }
+                            if (poolDefined) {
+                                throw new ParserException(bundle.multiplePools());
+                            }
+                            parsePool(reader, connectionDefinitionNode);
+                            poolDefined = true;
+                            break;
+                        }
+                        case RECOVERY: {
+                            parseRecovery(reader, connectionDefinitionNode);
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+            }
+        }
+        throw ParseUtils.unexpectedEndElement(reader);
+
+    }
+
+    /**
+     * Parses connection attributes for version 5.0
      * @param reader the xml reader
      * @param connectionDefinitionNode the connection definition add node
      * @return the pool name
      * @throws XMLStreamException
      */
-    private String parseConnectionAttributes_4_0(final XMLExtendedStreamReader reader,  final ModelNode connectionDefinitionNode)
+    private String parseConnectionAttributes_5_0(final XMLExtendedStreamReader reader,  final ModelNode connectionDefinitionNode)
             throws XMLStreamException {
         String poolName = null;
         String jndiName = null;
@@ -398,7 +570,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * @throws org.jboss.jca.common.api.validator.ValidateException
      *                         ValidateException
      */
-    protected void parseConnectionDefinitions_4_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
+    protected void parseConnectionDefinitions_5_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
                                                   final Map<String, HashMap<String, ModelNode>> configMap, final boolean isXa)
             throws XMLStreamException, ParserException, ValidateException {
 
@@ -406,7 +578,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         final ModelNode connectionDefinitionNode = new ModelNode();
         connectionDefinitionNode.get(OP).set(ADD);
 
-        final String poolName = parseConnectionAttributes_4_0(reader, connectionDefinitionNode);
+        final String poolName = parseConnectionAttributes_5_0(reader, connectionDefinitionNode);
         boolean poolDefined = Boolean.FALSE;
 
         while (reader.hasNext()) {
@@ -480,6 +652,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw ParseUtils.unexpectedEndElement(reader);
 
     }
+
     /**
          * parse a single connection-definition tag
          *
@@ -1094,9 +1267,8 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw ParseUtils.unexpectedEndElement(reader);
     }
 
-    protected void parseElytronSupportedRecovery(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
-            ValidateException {
-
+    protected void parseElytronSupportedRecovery(XMLExtendedStreamReader reader, ModelNode node)
+            throws XMLStreamException, ParserException, ValidateException {
 
         for (Recovery.Attribute attribute : Recovery.Attribute.values()) {
             switch (attribute) {
@@ -1144,6 +1316,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         }
         throw ParseUtils.unexpectedEndElement(reader);
     }
+
 
     private void parseSecuritySettings(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
             ValidateException {
@@ -1196,8 +1369,8 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw ParseUtils.unexpectedEndElement(reader);
     }
 
-    private void parseElytronSupportedSecuritySettings(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
-            ValidateException {
+    private void parseElytronSupportedSecuritySettings(XMLExtendedStreamReader reader, ModelNode node)
+            throws XMLStreamException, ParserException, ValidateException {
 
         boolean securityDomainMatched = false;
         while (reader.hasNext()) {
@@ -1246,7 +1419,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         }
                         case APPLICATION: {
                             String value = rawElementText(reader);
-                            //just presence means true
+                            // just presence means true
                             value = value == null ? "true" : value;
                             APPLICATION.parseAndSetParameter(value, node, reader);
                             break;
@@ -1263,6 +1436,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
     private void parseRecoveryCredential(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
             ValidateException {
+
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -1305,14 +1479,14 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw ParseUtils.unexpectedEndElement(reader);
     }
 
-    private void parseElytronSupportedRecoveryCredential(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
-            ValidateException {
+    private void parseElytronSupportedRecoveryCredential(XMLExtendedStreamReader reader, ModelNode node)
+            throws XMLStreamException, ParserException, ValidateException {
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY ||
-                            Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY
+                            || Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
 
                         return;
                     } else {
@@ -1357,4 +1531,5 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         }
         throw ParseUtils.unexpectedEndElement(reader);
     }
+
 }

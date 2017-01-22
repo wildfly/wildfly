@@ -75,7 +75,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-resource-adapters_4_0.xsd";
+        return "schema/wildfly-resource-adapters_5_0.xsd";
     }
 
     @Override
