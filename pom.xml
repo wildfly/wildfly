@@ -165,7 +165,7 @@
         <version.org.jboss.jboss-transaction-spi>7.5.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.metadata>10.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.narayana>5.5.1.Final</version.org.jboss.narayana>
-        <version.org.jboss.mod_cluster>1.3.3.Final</version.org.jboss.mod_cluster>
+        <version.org.jboss.mod_cluster>1.3.6.CR1</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.0.7.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.resteasy>3.0.20.Final</version.org.jboss.resteasy>

@@ -40,8 +40,9 @@ public enum ModClusterSchema implements Schema<ModClusterSchema> {
     MODCLUSTER_1_1(1, 1, ModClusterSubsystemXMLReader_1_1::new),
     MODCLUSTER_1_2(1, 2, ModClusterSubsystemXMLReader_1_2::new),
     MODCLUSTER_2_0(2, 0, ModClusterSubsystemXMLReader_2_0::new),
+    MODCLUSTER_3_0(3, 0, ModClusterSubsystemXMLReader_3_0::new),
     ;
-    public static final ModClusterSchema CURRENT = MODCLUSTER_2_0;
+    public static final ModClusterSchema CURRENT = MODCLUSTER_3_0;
 
     private final int major;
     private final int minor;

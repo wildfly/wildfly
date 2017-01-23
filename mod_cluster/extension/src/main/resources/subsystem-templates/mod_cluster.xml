@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.jboss.as.modcluster</extension-module>
-    <subsystem xmlns="urn:jboss:domain:modcluster:2.0">
+    <subsystem xmlns="urn:jboss:domain:modcluster:3.0">
         <?SUBSYSTEM?>
     </subsystem>
     <socket-binding name="modcluster" port="0" multicast-address="${jboss.modcluster.multicast.address:224.0.1.105}" multicast-port="23364"/>
