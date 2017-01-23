@@ -61,6 +61,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 public class Host implements Service<Host>, FilterLocation {
     private final PathHandler pathHandler = new PathHandler();
     private volatile HttpHandler rootHandler = null;
+    private volatile boolean ssoEnabled;
     private final Set<String> allAliases;
     private final String name;
     private final String defaultWebModule;
@@ -193,6 +194,14 @@ public class Host implements Service<Host>, FilterLocation {
 
     List<UndertowFilter> getFilters() {
         return Collections.unmodifiableList(filters);
+    }
+
+    void setSSOEnabled(final boolean ssoEnabled) {
+        this.ssoEnabled = ssoEnabled;
+    }
+
+    public boolean isSSOEnabled() {
+        return this.ssoEnabled;
     }
 
     protected HttpHandler getOrCreateRootHandler() {
