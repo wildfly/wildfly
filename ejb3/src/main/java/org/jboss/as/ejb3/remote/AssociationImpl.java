@@ -53,6 +53,7 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.remoting3.Connection;
 import org.wildfly.common.annotation.NotNull;
 
 import javax.ejb.EJBException;
@@ -144,7 +145,10 @@ final class AssociationImpl implements Association {
             }
             // invoke the method
             final Object result;
-            //SecurityActions.remotingContextSetConnection(channelAssociation.getChannel().getConnection());
+
+            // the Remoting connection that is set here is only used for legacy purposes
+            SecurityActions.remotingContextSetConnection(invocationRequest.getProviderInterface(Connection.class));
+
             try {
                 result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag);
             } catch (EJBComponentUnavailableException ex) {
