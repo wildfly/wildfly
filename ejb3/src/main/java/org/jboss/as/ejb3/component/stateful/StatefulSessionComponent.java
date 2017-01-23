@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -56,6 +55,7 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
+import org.jboss.ejb.client.UUIDSessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -272,11 +272,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public SessionID createIdentifier() {
-        final UUID uuid = UUID.randomUUID();
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        return SessionID.createSessionID(bb.array());
+        return new UUIDSessionID(UUID.randomUUID());
     }
 
     @Override
