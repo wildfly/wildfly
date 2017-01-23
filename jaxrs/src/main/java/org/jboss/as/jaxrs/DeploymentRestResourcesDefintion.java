@@ -31,6 +31,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -362,6 +363,52 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                 subResNode.add(subLocator.toModelNode());
             }
             return node;
+
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime
+                    * result
+                    + ((methodsDescriptions == null) ? 0 : methodsDescriptions
+                            .hashCode());
+            result = prime * result
+                    + ((resourceClass == null) ? 0 : resourceClass.hashCode());
+            result = prime
+                    * result
+                    + ((subLocatorDescriptions == null) ? 0
+                            : subLocatorDescriptions.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            JaxrsResourceLocatorDescription other = (JaxrsResourceLocatorDescription) obj;
+            if (methodsDescriptions == null) {
+                if (other.methodsDescriptions != null)
+                    return false;
+            } else if (!methodsDescriptions.equals(other.methodsDescriptions))
+                return false;
+            if (resourceClass == null) {
+                if (other.resourceClass != null)
+                    return false;
+            } else if (!resourceClass.equals(other.resourceClass))
+                return false;
+            if (subLocatorDescriptions == null) {
+                if (other.subLocatorDescriptions != null)
+                    return false;
+            } else if (!subLocatorDescriptions
+                    .equals(other.subLocatorDescriptions))
+                return false;
+            return true;
         }
 
         private boolean containsMethodResources() {
@@ -452,6 +499,82 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             }
             sb.append(")");
             return sb.toString();
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Arrays.hashCode(consumeTypes);
+            result = prime * result
+                    + ((contextPath == null) ? 0 : contextPath.hashCode());
+            result = prime * result
+                    + ((httpMethods == null) ? 0 : httpMethods.hashCode());
+            result = prime * result
+                    + ((method == null) ? 0 : method.hashCode());
+            result = prime * result
+                    + ((parameters == null) ? 0 : parameters.hashCode());
+            result = prime * result + Arrays.hashCode(produceTypes);
+            result = prime * result
+                    + ((resourceClass == null) ? 0 : resourceClass.hashCode());
+            result = prime * result
+                    + ((resourcePath == null) ? 0 : resourcePath.hashCode());
+            result = prime
+                    * result
+                    + ((servletMappings == null) ? 0 : servletMappings
+                            .hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            JaxrsResourceMethodDescription other = (JaxrsResourceMethodDescription) obj;
+            if (!Arrays.equals(consumeTypes, other.consumeTypes))
+                return false;
+            if (contextPath == null) {
+                if (other.contextPath != null)
+                    return false;
+            } else if (!contextPath.equals(other.contextPath))
+                return false;
+            if (httpMethods == null) {
+                if (other.httpMethods != null)
+                    return false;
+            } else if (!httpMethods.equals(other.httpMethods))
+                return false;
+            if (method == null) {
+                if (other.method != null)
+                    return false;
+            } else if (!method.equals(other.method))
+                return false;
+            if (parameters == null) {
+                if (other.parameters != null)
+                    return false;
+            } else if (!parameters.equals(other.parameters))
+                return false;
+            if (!Arrays.equals(produceTypes, other.produceTypes))
+                return false;
+            if (resourceClass == null) {
+                if (other.resourceClass != null)
+                    return false;
+            } else if (!resourceClass.equals(other.resourceClass))
+                return false;
+            if (resourcePath == null) {
+                if (other.resourcePath != null)
+                    return false;
+            } else if (!resourcePath.equals(other.resourcePath))
+                return false;
+            if (servletMappings == null) {
+                if (other.servletMappings != null)
+                    return false;
+            } else if (!servletMappings.equals(other.servletMappings))
+                return false;
+            return true;
         }
     }
 
