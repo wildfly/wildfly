@@ -656,22 +656,30 @@ public abstract class AbstractResourceAdapterDeploymentService {
         @Override
         protected Callback createCallback(org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity workManagerSecurity) {
             if (workManagerSecurity != null) {
-                assert workManagerSecurity instanceof WorkManagerSecurity;
-                WorkManagerSecurity wms = (WorkManagerSecurity) workManagerSecurity;
-                String[] defaultGroups = wms.getDefaultGroups() != null ?
-                        wms.getDefaultGroups().toArray(new String[workManagerSecurity.getDefaultGroups().size()]) : null;
+                if (workManagerSecurity instanceof WorkManagerSecurity){
+                    WorkManagerSecurity wms = (WorkManagerSecurity) workManagerSecurity;
+                    String[] defaultGroups = wms.getDefaultGroups() != null ?
+                            wms.getDefaultGroups().toArray(new String[workManagerSecurity.getDefaultGroups().size()]) : null;
 
-                return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(), wms.isElytronEnabled(),
-                        wms.getDefaultPrincipal(), defaultGroups, wms.getUserMappings(), wms.getGroupMappings());
+                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(), wms.isElytronEnabled(),
+                            wms.getDefaultPrincipal(), defaultGroups, wms.getUserMappings(), wms.getGroupMappings());
+                } else {
+                    return super.createCallback(workManagerSecurity);
+
+                }
             }
             return null;
         }
 
         @Override
         protected void setCallbackSecurity(org.jboss.jca.core.api.workmanager.WorkManager workManager, Callback cb) {
-            if (((CallbackImpl) cb).isElytronEnabled())
-                workManager.setSecurityIntegration(new ElytronSecurityIntegration());
-            workManager.setCallbackSecurity(cb);
+            if (cb instanceof  CallbackImpl) {
+                if (((CallbackImpl) cb).isElytronEnabled())
+                    workManager.setSecurityIntegration(new ElytronSecurityIntegration());
+                workManager.setCallbackSecurity(cb);
+            } else {
+                super.setCallbackSecurity(workManager, cb);
+            }
         }
 
         @Override
