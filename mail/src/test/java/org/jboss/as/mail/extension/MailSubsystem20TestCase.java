@@ -57,12 +57,12 @@ public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
+        return readResource("subsystem_2_1.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-mail_2_0.xsd";
+        return "schema/wildfly-mail_2_1.xsd";
     }
 
     @Override

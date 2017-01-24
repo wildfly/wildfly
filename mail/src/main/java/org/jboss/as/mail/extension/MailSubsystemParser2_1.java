@@ -27,6 +27,7 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -42,8 +43,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public class MailSubsystemParser2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    protected static final MailSubsystemParser2_0 INSTANCE = new MailSubsystemParser2_0();
+public class MailSubsystemParser2_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    protected static final MailSubsystemParser2_1 INSTANCE = new MailSubsystemParser2_1();
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
@@ -53,23 +54,23 @@ public class MailSubsystemParser2_0 implements XMLStreamConstants, XMLElementRea
                                 .addAttributes(MailSessionDefinition.DEBUG, MailSessionDefinition.JNDI_NAME, MailSessionDefinition.FROM)
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_SMTP)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.SMTP_SERVER)
 
                                 )
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_POP3)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.POP3_SERVER)
                                 )
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_IMAP)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.IMAP_SERVER)
                                 )
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_CUSTOM)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.PROPERTIES)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE, MailServerDefinition.PROPERTIES)
                                                 .setXmlElementName(MailSubsystemModel.CUSTOM_SERVER)
                                 )
                 )
