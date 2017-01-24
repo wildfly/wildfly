@@ -52,7 +52,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
  */
 public class DistributableSingleSignOnManagerTestCase {
 
-    private final SSOManager<AuthenticatedSession, String, Void, Batch> manager = mock(SSOManager.class);
+    private final SSOManager<AuthenticatedSession, String, String, Void, Batch> manager = mock(SSOManager.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
 
     private final SingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
@@ -64,7 +64,7 @@ public class DistributableSingleSignOnManagerTestCase {
         Batch batch = mock(Batch.class);
         Account account = mock(Account.class);
         String mechanism = HttpServletRequest.BASIC_AUTH;
-        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
+        SSO<AuthenticatedSession, String, String, Void> sso = mock(SSO.class);
         ArgumentCaptor<AuthenticatedSession> authenticationCaptor = ArgumentCaptor.forClass(AuthenticatedSession.class);
 
         when(this.manager.createIdentifier()).thenReturn(id);
@@ -118,7 +118,7 @@ public class DistributableSingleSignOnManagerTestCase {
         String id = "sso";
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
-        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
+        SSO<AuthenticatedSession, String, String, Void> sso = mock(SSO.class);
 
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);

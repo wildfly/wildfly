@@ -30,34 +30,34 @@ import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.Sessions;
 
-public class InfinispanSSOManager<AV, SV, A, D, L> implements SSOManager<A, D, L, TransactionBatch> {
+public class InfinispanSSOManager<AV, SV, A, D, S, L> implements SSOManager<A, D, S, L, TransactionBatch> {
 
-    private final SSOFactory<AV, SV, A, D, L> factory;
+    private final SSOFactory<AV, SV, A, D, S, L> factory;
     private final Batcher<TransactionBatch> batcher;
     private final IdentifierFactory<String> identifierFactory;
 
-    public InfinispanSSOManager(SSOFactory<AV, SV, A, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher<TransactionBatch> batcher) {
+    public InfinispanSSOManager(SSOFactory<AV, SV, A, D, S, L> factory, IdentifierFactory<String> identifierFactory, Batcher<TransactionBatch> batcher) {
         this.factory = factory;
         this.batcher = batcher;
         this.identifierFactory = identifierFactory;
     }
 
     @Override
-    public SSO<A, D, L> createSSO(String ssoId, A authentication) {
+    public SSO<A, D, S, L> createSSO(String ssoId, A authentication) {
         Map.Entry<AV, SV> value = this.factory.createValue(ssoId, authentication);
         return this.factory.createSSO(ssoId, value);
     }
 
     @Override
-    public SSO<A, D, L> findSSO(String ssoId) {
+    public SSO<A, D, S, L> findSSO(String ssoId) {
         Map.Entry<AV, SV> value = this.factory.findValue(ssoId);
         return (value != null) ? this.factory.createSSO(ssoId, value) : null;
     }
 
     @Override
-    public Sessions<D> findSessionsContaining(String sessionId) {
-        SessionsFactory<SV, D> factory = this.factory.getSessionsFactory();
-        Map.Entry<String, SV> entry = factory.findEntryContaining(sessionId);
+    public Sessions<D, S> findSessionsContaining(S session) {
+        SessionsFactory<SV, D, S> factory = this.factory.getSessionsFactory();
+        Map.Entry<String, SV> entry = factory.findEntryContaining(session);
         return (entry != null) ? factory.createSessions(entry.getKey(), entry.getValue()) : null;
     }
 

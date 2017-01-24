@@ -41,11 +41,11 @@ import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
-public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>>, Value<SSOManagerFactory<A, D, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
+public class InfinispanSSOManagerFactoryBuilder<A, D, S> implements CapabilityServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>>, Value<SSOManagerFactory<A, D, S, TransactionBatch>>, InfinispanSSOManagerFactoryConfiguration {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
-    private final String host;
+    private final String name;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
 
@@ -54,20 +54,20 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
 
     private volatile ValueDependency<KeyAffinityServiceFactory> affinityFactory;
 
-    public InfinispanSSOManagerFactoryBuilder(String host) {
-        this.host = host;
+    public InfinispanSSOManagerFactoryBuilder(String name) {
+        this.name = name;
 
-        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, host)), DEFAULT_CACHE_CONTAINER, host, null);
-        this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, host)), DEFAULT_CACHE_CONTAINER, host);
+        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name, null);
+        this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name);
     }
 
     @Override
     public ServiceName getServiceName() {
-        return ServiceName.JBOSS.append("clustering", "sso", this.host);
+        return ServiceName.JBOSS.append("clustering", "sso", this.name);
     }
 
     @Override
-    public Builder<SSOManagerFactory<A, D, TransactionBatch>> configure(CapabilityServiceSupport support) {
+    public Builder<SSOManagerFactory<A, D, S, TransactionBatch>> configure(CapabilityServiceSupport support) {
         this.configurationBuilder.configure(support);
         this.cacheBuilder.configure(support);
 
@@ -76,18 +76,18 @@ public class InfinispanSSOManagerFactoryBuilder<A, D> implements CapabilityServi
     }
 
     @Override
-    public ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target) {
+    public ServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> build(ServiceTarget target) {
         this.configurationBuilder.build(target).install();
         this.cacheBuilder.build(target).install();
 
-        ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(this))
+        ServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
         ;
         return this.affinityFactory.register(builder);
     }
 
     @Override
-    public SSOManagerFactory<A, D, TransactionBatch> getValue() {
+    public SSOManagerFactory<A, D, S, TransactionBatch> getValue() {
         return new InfinispanSSOManagerFactory<>(this);
     }
 

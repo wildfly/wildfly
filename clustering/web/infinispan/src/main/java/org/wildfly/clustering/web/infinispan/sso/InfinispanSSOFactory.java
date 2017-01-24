@@ -39,15 +39,15 @@ import org.wildfly.clustering.web.sso.Sessions;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSSOFactory<AV, SV, A, D, L> implements SSOFactory<Map.Entry<A, AtomicReference<L>>, SV, A, D, L> {
+public class InfinispanSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entry<A, AtomicReference<L>>, SV, A, D, S, L> {
 
-    private final SessionsFactory<SV, D> sessionsFactory;
+    private final SessionsFactory<SV, D, S> sessionsFactory;
     private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache;
     private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> findCache;
     private final Marshaller<A, AV> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, CacheProperties properties, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D> sessionsFactory) {
+    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, CacheProperties properties, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
         this.cache = cache;
         this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
         this.marshaller = marshaller;
@@ -56,9 +56,9 @@ public class InfinispanSSOFactory<AV, SV, A, D, L> implements SSOFactory<Map.Ent
     }
 
     @Override
-    public SSO<A, D, L> createSSO(String id, Map.Entry<Map.Entry<A, AtomicReference<L>>, SV> value) {
+    public SSO<A, D, S, L> createSSO(String id, Map.Entry<Map.Entry<A, AtomicReference<L>>, SV> value) {
         Map.Entry<A, AtomicReference<L>> authenticationEntry = value.getKey();
-        Sessions<D> sessions = this.sessionsFactory.createSessions(id, value.getValue());
+        Sessions<D, S> sessions = this.sessionsFactory.createSessions(id, value.getValue());
         return new InfinispanSSO<>(id, authenticationEntry.getKey(), sessions, authenticationEntry.getValue(), this.localContextFactory, this);
     }
 
@@ -96,7 +96,7 @@ public class InfinispanSSOFactory<AV, SV, A, D, L> implements SSOFactory<Map.Ent
     }
 
     @Override
-    public SessionsFactory<SV, D> getSessionsFactory() {
+    public SessionsFactory<SV, D, S> getSessionsFactory() {
         return this.sessionsFactory;
     }
 }

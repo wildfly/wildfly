@@ -27,7 +27,7 @@ import java.util.Set;
  * Represents the sessions per deployment for which a given user is authenticated.
  * @author Paul Ferraro
  */
-public interface Sessions<D> {
+public interface Sessions<D, S> {
     /**
      * Returns the set of web applications for which the current user is authenticated.
      * @return a set of web applications.
@@ -39,18 +39,19 @@ public interface Sessions<D> {
      * @param application
      * @return
      */
-    String getSession(D deployment);
+    S getSession(D deployment);
 
     /**
      * Removes the specified web application from the set of authenticated web applications.
      * @param application
      */
-    void removeSession(D deployment);
+    S removeSession(D deployment);
 
     /**
      * Adds the specified web application and session identifier to the registry of authenticated web applications.
-     * @param application a web application
-     * @param id a session identifier
+     * @param deployment a web application
+     * @param session a session
+     * @return true, if the session was added, false it already exists
      */
-    void addSession(D deployment, String id);
+    boolean addSession(D deployment, S session);
 }

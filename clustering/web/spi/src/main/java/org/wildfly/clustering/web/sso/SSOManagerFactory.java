@@ -28,6 +28,6 @@ import org.wildfly.clustering.marshalling.spi.Marshallability;
  * Factory for creating SSO manager instances.
  * @author Paul Ferraro
  */
-public interface SSOManagerFactory<A, D, B extends Batch> {
-    <L, C extends Marshallability> SSOManager<A, D, L, B> createSSOManager(SSOManagerConfiguration<L, C> config);
+public interface SSOManagerFactory<A, D, S, B extends Batch> {
+    <L, C extends Marshallability> SSOManager<A, D, S, L, B> createSSOManager(SSOManagerConfiguration<L, C> config);
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,32 +17,23 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-import java.util.Collection;
-
 /**
  * @author Paul Ferraro
  */
-public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
+public class ReloadRequiredAddStepHandler extends AddStepHandler {
 
-    public ReloadRequiredAddStepHandler(AttributeDefinition... attributes) {
-        super(attributes);
+    public ReloadRequiredAddStepHandler(AddStepHandlerDescriptor descriptor) {
+        super(descriptor);
     }
-
-    public ReloadRequiredAddStepHandler(Collection<AttributeDefinition> attributes) {
-        super(attributes);
-    }
-
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
@@ -50,7 +41,7 @@ public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         context.reloadRequired();
     }
 

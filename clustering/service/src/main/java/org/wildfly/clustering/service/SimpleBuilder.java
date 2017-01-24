@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.security.sso;
+package org.wildfly.clustering.service;
 
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import io.undertow.security.impl.SingleSignOnManager;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 
 /**
- * Builds a distrubutable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public interface DistributableSingleSignOnManagerBuilder {
+public class SimpleBuilder<T> implements Builder<T> {
 
-    Optional<DistributableSingleSignOnManagerBuilder> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSingleSignOnManagerBuilder.class, DistributableSingleSignOnManagerBuilder.class.getClassLoader()).spliterator(), false).findFirst();
+    private final ServiceName name;
+    private final Service<T> service;
 
-    /**
-     * Builds a SingleSignOnManagerFactory service for a host.
-     * @param target the service target
-     * @param name the service name
-     * @param hostServiceName the service name of the host
-     * @return a service builder
-     */
-    ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String serverName, String hostName);
+    public SimpleBuilder(ServiceName name, T value) {
+        this(name, new ImmediateValue<>(value));
+    }
+
+    public SimpleBuilder(ServiceName name, Value<T> value) {
+        this(name, new ValueService<>(value));
+    }
+
+    public SimpleBuilder(ServiceName name, Service<T> service) {
+        this.name = name;
+        this.service = service;
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public ServiceBuilder<T> build(ServiceTarget target) {
+        return target.addService(this.name, this.service);
+    }
 }

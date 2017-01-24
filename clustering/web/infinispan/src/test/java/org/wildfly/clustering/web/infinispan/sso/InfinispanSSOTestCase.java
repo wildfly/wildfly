@@ -35,12 +35,12 @@ import org.wildfly.clustering.web.sso.Sessions;
 public class InfinispanSSOTestCase {
     private final String id = "id";
     private final String authentication = "auth";
-    private final Sessions<String> sessions = mock(Sessions.class);
+    private final Sessions<String, String> sessions = mock(Sessions.class);
     private final AtomicReference<Object> localContext = new AtomicReference<>();
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     private final Remover<String> remover = mock(Remover.class);
 
-    private final SSO<String, String, Object> sso = new InfinispanSSO<>(this.id, this.authentication, this.sessions, this.localContext, this.localContextFactory, this.remover);
+    private final SSO<String, String, String, Object> sso = new InfinispanSSO<>(this.id, this.authentication, this.sessions, this.localContext, this.localContextFactory, this.remover);
 
     @Test
     public void getId() {

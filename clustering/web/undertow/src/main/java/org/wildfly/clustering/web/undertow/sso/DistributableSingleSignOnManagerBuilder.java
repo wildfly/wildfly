@@ -39,19 +39,22 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilder;
 
 
 /**
  * Builds a distributable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public class DistributableSingleSignOnManagerBuilder implements org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerBuilder, Value<SingleSignOnManager> {
+@MetaInfServices(DistributableHostSingleSignOnManagerBuilder.class)
+public class DistributableSingleSignOnManagerBuilder implements DistributableHostSingleSignOnManagerBuilder, Value<SingleSignOnManager> {
 
     private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst().get();
 
@@ -63,9 +66,9 @@ public class DistributableSingleSignOnManagerBuilder implements org.wildfly.exte
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String serverName, String hostName) {
         ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
 
-        Builder<SSOManagerFactory<AuthenticatedSession, String, Batch>> factoryBuilder = PROVIDER.<AuthenticatedSession, String>getBuilder(hostName).configure(support);
+        Builder<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryBuilder = PROVIDER.<AuthenticatedSession, String, String>getBuilder(hostName).configure(support);
         Builder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(hostServiceName);
-        Builder<SSOManager<AuthenticatedSession, String, Void, Batch>> managerBuilder = new SSOManagerBuilder(factoryBuilder.getServiceName(), generatorBuilder.getServiceName());
+        Builder<SSOManager<AuthenticatedSession, String, String, Void, Batch>> managerBuilder = new SSOManagerBuilder<>(factoryBuilder.getServiceName(), generatorBuilder.getServiceName(), () -> null);
         Builder<SessionListener> listenerBuilder = new SessionListenerBuilder(managerBuilder.getServiceName());
         Builder<SessionManagerRegistry> registryBuilder = new SessionManagerRegistryBuilder(hostServiceName, listenerBuilder.getServiceName());
 

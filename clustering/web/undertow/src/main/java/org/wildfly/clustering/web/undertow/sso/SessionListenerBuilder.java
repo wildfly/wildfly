@@ -70,9 +70,9 @@ public class SessionListenerBuilder implements Builder<SessionListener>, Value<S
 
     @Override
     public void sessionIdChanged(Session session, String oldSessionId) {
-        SSOManager<AuthenticatedSession, String, Void, Batch> manager = this.manager.getValue();
+        SSOManager<AuthenticatedSession, String, String, Void, Batch> manager = this.manager.getValue();
         try (Batch batch = manager.getBatcher().createBatch()) {
-            Sessions<String> sessions = manager.findSessionsContaining(oldSessionId);
+            Sessions<String, String> sessions = manager.findSessionsContaining(oldSessionId);
             if (sessions != null) {
                 String deployment = sessions.getDeployments().stream().filter(key -> sessions.getSession(key) != null).findFirst().get();
                 sessions.removeSession(deployment);

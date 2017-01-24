@@ -105,8 +105,11 @@ public class UndertowSubsystemParser_1_0 extends PersistentResourceXMLParser{
                                         builder(FilterRefDefinition.INSTANCE)
                                                 .addAttributes(FilterRefDefinition.PREDICATE)
                                 ).addChild(
-                                        builder(SingleSignOnDefinition.INSTANCE)
-                                                .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE)
+                                        builder(UndertowExtension.PATH_SSO)
+                                                .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
+                                                .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())
+                                                .addAttribute(SingleSignOnDefinition.Attribute.HTTP_ONLY.getDefinition())
+                                                .addAttribute(SingleSignOnDefinition.Attribute.SECURE.getDefinition())
                                 )
                         )
                 )

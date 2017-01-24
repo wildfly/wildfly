@@ -2202,17 +2202,6 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-ee-infinispan</artifactId>
             <exclusions>
                 <exclusion>
@@ -2349,17 +2338,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

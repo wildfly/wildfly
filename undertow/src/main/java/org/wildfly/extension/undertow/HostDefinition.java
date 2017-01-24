@@ -77,8 +77,7 @@ class HostDefinition extends PersistentResourceDefinition {
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,
             FilterRefDefinition.INSTANCE,
-            SingleSignOnDefinition.INSTANCE
-
+            new HostSingleSignOnDefinition()
     ));
 
     private HostDefinition() {

@@ -32,23 +32,23 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionsFilterExternalizer<D> implements Externalizer<SessionsFilter<D>> {
+public class SessionsFilterExternalizer<D, S> implements Externalizer<SessionsFilter<D, S>> {
 
-    private final SessionsFilter<D> filter = new SessionsFilter<>();
+    private final SessionsFilter<D, S> filter = new SessionsFilter<>();
 
     @Override
-    public void writeObject(ObjectOutput output, SessionsFilter<D> filter) {
+    public void writeObject(ObjectOutput output, SessionsFilter<D, S> filter) {
         // Do nothing
     }
 
     @Override
-    public SessionsFilter<D> readObject(ObjectInput input) {
+    public SessionsFilter<D, S> readObject(ObjectInput input) {
         return this.filter;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Class<? extends SessionsFilter<D>> getTargetClass() {
+    public Class<? extends SessionsFilter<D, S>> getTargetClass() {
         Class targetClass = SessionsFilter.class;
         return targetClass;
     }
