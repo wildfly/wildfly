@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.ACTIVEMQ_SERVER_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -44,12 +44,10 @@ class ServerRemove extends AbstractRemoveStepHandler {
 
     static final ServerRemove INSTANCE = new ServerRemove();
 
-    @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
-
-        context.deregisterCapability(ACTIVEMQ_SERVER_CAPABILITY.getDynamicName(context.getCurrentAddressValue()));
+    private ServerRemove() {
+        super(ACTIVEMQ_SERVER_CAPABILITY);
     }
+
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
