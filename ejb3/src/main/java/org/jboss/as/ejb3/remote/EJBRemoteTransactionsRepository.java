@@ -31,6 +31,8 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.TransactionImporte
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
+import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.msc.inject.Injector;
@@ -57,9 +59,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * @author Jaikiran Pai
+ * @author Flavia Rainone
  */
 public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransactionsRepository> {
 
@@ -73,10 +77,21 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
 
     private final InjectedValue<ExtendedJBossXATerminator> xaTerminatorInjectedValue = new InjectedValue<>();
 
+    private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandlerServiceInjectedValue = new InjectedValue<>();
+
     private final Map<UserTransactionID, Uid> userTransactions = Collections.synchronizedMap(new HashMap<UserTransactionID, Uid>());
 
     private static final Xid[] NO_XIDS = new Xid[0];
     private static final boolean RECOVER_IN_FLIGHT;
+
+    // count keeping track of active transactions
+    @SuppressWarnings("unused")
+    private volatile int activeTransactionCount = 0;
+
+
+    private static final AtomicIntegerFieldUpdater<EJBRemoteTransactionsRepository> activeTransactionCountUpdater = AtomicIntegerFieldUpdater
+            .newUpdater(EJBRemoteTransactionsRepository.class, "activeTransactionCount");
+
 
     static {
         RECOVER_IN_FLIGHT = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("org.wildfly.ejb.txn.recovery.in-flight", "false"));
@@ -86,10 +101,12 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
     public void start(StartContext context) throws StartException {
         recoveryManagerService.getValue().addSerializableXAResourceDeserializer(EJBXAResourceDeserializer.INSTANCE);
         EjbLogger.REMOTE_LOGGER.debugf("Registered EJB XA resource deserializer %s", EJBXAResourceDeserializer.INSTANCE);
+        getEJBSuspendHandlerService().setEJBRemoteTransactionsRepository(this);
     }
 
     @Override
     public void stop(StopContext context) {
+        getEJBSuspendHandlerService().setEJBRemoteTransactionsRepository(null);
     }
 
     @Override
@@ -116,6 +133,7 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
         if (uid == null) {
             return null;
         }
+        decrementActiveTransactionCount();
         return TransactionImple.getTransaction(uid);
     }
 
@@ -132,6 +150,10 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
         return TransactionImple.getTransaction(uid);
     }
 
+    private EJBSuspendHandlerService getEJBSuspendHandlerService() {
+        return ejbSuspendHandlerServiceInjectedValue.getValue();
+    }
+
     /**
      * {@link javax.transaction.UserTransaction#begin() Begins} a new {@link UserTransaction} and
      * associates it with the passed {@link UserTransactionID}.
@@ -141,7 +163,11 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
      * @throws NotSupportedException
      */
     Transaction beginUserTransaction(final UserTransactionID userTransactionID) throws SystemException, NotSupportedException {
+        if (getEJBSuspendHandlerService().isSuspended()) {
+            throw EjbLogger.ROOT_LOGGER.cannotBeginUserTransaction();
+        }
         this.getUserTransaction().begin();
+        activeTransactionCountUpdater.incrementAndGet(this);
         // get the tx that just got created and associated with the transaction manager
         final TransactionImple newlyAssociatedTx = TransactionImple.getTransaction();
         final Uid uid = newlyAssociatedTx.get_uid();
@@ -164,6 +190,29 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
     }
 
     /**
+     * Removes a {@link SubordinateTransaction} associated with the passed {@link XidTransactionID}.
+     * If there's no such transaction, then this method is ignored.
+     *
+     * @param xidTransactionID The {@link XidTransactionID}
+     * @return
+     * @throws XAException
+     */
+    public void removeImportedTransaction(final XidTransactionID xidTransactionID) throws XAException {
+        final Xid xid = xidTransactionID.getXid();
+        final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
+        // can we have a boolean indicating if the transaction was removed
+        transactionImporter.removeImportedTransaction(xid);
+        decrementActiveTransactionCount();
+
+    }
+
+    private void decrementActiveTransactionCount() {
+        if (activeTransactionCountUpdater.decrementAndGet(this) == 0) {
+            getEJBSuspendHandlerService().noActiveTransactions();
+        }
+    }
+
+    /**
      * Imports a {@link Transaction} into the {@link SubordinationManager} and associates it with the
      * passed {@link org.jboss.ejb.client.XidTransactionID#getXid()}  Xid}. Returns the imported transaction
      *
@@ -174,6 +223,7 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
      */
     Transaction importTransaction(final XidTransactionID xidTransactionID, final int txTimeout) throws XAException {
         final TransactionImporter transactionImporter = SubordinationManager.getTransactionImporter();
+        activeTransactionCountUpdater.incrementAndGet(this);
         return transactionImporter.importTransaction(xidTransactionID.getXid(), txTimeout);
     }
 
@@ -223,4 +273,35 @@ public class EJBRemoteTransactionsRepository implements Service<EJBRemoteTransac
         return this.xaTerminatorInjectedValue;
     }
 
+    public Injector<EJBSuspendHandlerService> getEJBSuspendHandlerServiceInjector() {
+        return this.ejbSuspendHandlerServiceInjectedValue;
+    }
+
+
+    public int getActiveTransactionCount() {
+        return activeTransactionCountUpdater.get(this);
+    }
+
+    /**
+     * Check if this remote transaction is active in this server.
+     *
+     * @param transactionID the transaction id
+     * @return {@code true} if the transaction is active in this server
+     */
+    public boolean isRemoteTransactionActive(TransactionID transactionID) {
+        if (transactionID != null) {
+            // if it's UserTransaction then create or resume the UserTransaction corresponding to the ID
+            if (transactionID instanceof UserTransactionID) {
+                return getUserTransaction((UserTransactionID) transactionID) != null;
+            } else if (transactionID instanceof XidTransactionID) {
+                try {
+                    return getXATerminator().getTransaction(((XidTransactionID) transactionID).getXid()) != null;
+                } catch (XAException e) {
+                    EjbLogger.ROOT_LOGGER.unexpectedXAException(e);
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
 }

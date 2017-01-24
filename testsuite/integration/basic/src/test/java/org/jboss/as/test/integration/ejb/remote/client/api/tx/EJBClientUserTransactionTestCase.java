@@ -22,12 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+
 import javax.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -43,11 +50,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Test for EJB using user transactions.
+ *
  * @author Jaikiran Pai
+ * @author Flavia Rainone
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(GracefulTxnShutdownSetup.class)
 public class EJBClientUserTransactionTestCase {
+
+
+
     private static final Logger logger = Logger.getLogger(EJBClientUserTransactionTestCase.class);
 
     private static final String APP_NAME = "ejb-remote-client-api-usertx-test";
@@ -55,6 +69,9 @@ public class EJBClientUserTransactionTestCase {
     private static final String MODULE_NAME = "ejb";
 
     private static String nodeName;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     /**
      * Creates an EJB deployment
@@ -264,6 +281,120 @@ public class EJBClientUserTransactionTestCase {
         final Batch batchAfterSysException = batchRetriever.fetchBatch(batchName);
         Assert.assertNotNull("Batch after system exception was null", batchAfterSysException);
         Assert.assertEquals("Unexpected steps in batch, after system exception", successFullyCompletedSteps, batchAfterSysException.getStepNames());
+    }
+
+    /**
+     * Calls for a preexistent transaction are allowed and calls for a non-preexistent transaction are not allowed
+     * on server suspension.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testServerSuspension() throws Exception {
+        final StatelessEJBLocator<CMTRemote> cmtRemoteBeanLocator = new StatelessEJBLocator<CMTRemote>(CMTRemote.class, APP_NAME, MODULE_NAME, CMTBean.class.getSimpleName(), "");
+        final CMTRemote cmtRemoteBean = EJBClient.createProxy(cmtRemoteBeanLocator);
+
+        // begin the transaction
+        UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
+        userTransaction.begin();
+        try {
+            // invoke the bean
+            cmtRemoteBean.mandatoryTxOp();
+
+            ModelNode op = new ModelNode();
+            op.get(OP).set("suspend");
+            managementClient.getControllerClient().execute(op);
+
+            userTransaction.commit();
+        } catch (Exception e) {
+            try {
+                userTransaction.rollback();
+            } catch (Exception exc) {}
+            throw e;
+        } finally {
+            // resume server
+            ModelNode op = new ModelNode();
+            op.get(OP).set("resume");
+            managementClient.getControllerClient().execute(op);
+
+            Thread.sleep(2000);
+        }
+
+        try {
+            // begin a transaction
+            userTransaction.begin();
+
+            long fin = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
+            while (true) {
+                try {
+                    // can invoke bean
+                    cmtRemoteBean.mandatoryTxOp();
+                    break;
+                } catch (Exception e) {
+                    if (System.currentTimeMillis() > fin) {
+                        throw e;
+                    }
+                }
+                Thread.sleep(300);
+            }
+
+            // suspend server
+            ModelNode op = new ModelNode();
+            op.get(OP).set("suspend");
+            managementClient.getControllerClient().execute(op);
+
+            // can continue invoking bean with current transaction
+            cmtRemoteBean.mandatoryTxOp();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // resume server
+            ModelNode op = new ModelNode();
+            op.get(OP).set("resume");
+            managementClient.getControllerClient().execute(op);
+            throw e;
+        } finally {
+            // rollback current transaction
+            userTransaction.commit();
+        }
+
+        // still cannot begin a new transaction
+        userTransaction.begin();
+        try {
+            cmtRemoteBean.mandatoryTxOp();
+            Assert.fail("Exception expected, server is shutdown");
+        } catch (Exception expected) {
+            // expected
+        } finally {
+            userTransaction.rollback();
+        }
+
+        // resume server
+        ModelNode op = new ModelNode();
+        op.get(OP).set("resume");
+        managementClient.getControllerClient().execute(op);
+
+        try {
+            // begin a transaction, and make sure that the server now works normally
+            userTransaction.begin();
+            long fin = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
+            while (true) {
+                try {
+                    // can invoke bean
+                    cmtRemoteBean.mandatoryTxOp();
+                    break;
+                } catch (Exception e) {
+                    if (System.currentTimeMillis() > fin) {
+                        throw e;
+                    }
+                }
+                Thread.sleep(300);
+            }
+            // end the tx
+            userTransaction.commit();
+        } catch (Exception e) {
+            userTransaction.rollback();
+            throw e;
+        }
     }
 
 }

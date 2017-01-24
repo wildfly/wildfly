@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
@@ -35,7 +34,6 @@ import javax.transaction.HeuristicRollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
-import javax.transaction.xa.Xid;
 
 /**
  * @author Jaikiran Pai
@@ -50,7 +48,7 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
 
     @Override
     protected void manageTransaction() throws Throwable {
-        final Transaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
+        final SubordinateTransaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if(transaction == null) {
             // check the recovery store - it's possible that the "rollback" is coming in as part of recovery operation and the subordinate
             // tx may not yet be in memory, but might be in the recovery store
@@ -65,19 +63,12 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
         }
         this.resumeTransaction(transaction);
         // now rollback
-        final Xid xid = this.xidTransactionID.getXid();
         // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
         try {
-            SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
-
-            if (subordinateTransaction == null) {
-                throw new XAException(XAException.XAER_INVAL);
-            }
-
-            if (subordinateTransaction.activated()) {
-                subordinateTransaction.doRollback();
+            if (transaction.activated()) {
+                transaction.doRollback();
                 // remove the imported tx
-                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+                transactionsRepository.removeImportedTransaction(xidTransactionID);
             } else {
                 throw new XAException(XAException.XA_RETRY);
             }
@@ -85,7 +76,7 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
             // resource hasn't had a chance to recover yet
             if (ex.errorCode != XAException.XA_RETRY) {
                 // remove the imported tx
-                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+                transactionsRepository.removeImportedTransaction(xidTransactionID);
             }
             throw ex;
 
@@ -106,7 +97,7 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
 
         } catch (final IllegalStateException ex) {
             // remove the imported tx
-            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+            transactionsRepository.removeImportedTransaction(xidTransactionID);
 
             XAException xaException = new XAException(XAException.XAER_NOTA);
             xaException.initCause(ex);
@@ -114,7 +105,7 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
 
         } catch (SystemException ex) {
             // remove the imported tx
-            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+            transactionsRepository.removeImportedTransaction(xidTransactionID);
 
             throw new XAException(XAException.XAER_RMERR);
         } finally {

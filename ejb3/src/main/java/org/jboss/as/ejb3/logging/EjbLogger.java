@@ -60,6 +60,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -3127,4 +3128,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 488, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
     SecurityException ejbAuthenticationRequired();
 
+    @Message(id = 489, value = "The transaction begin request was rejected as the container is suspended")
+    EJBException cannotBeginUserTransaction();
+
+    @LogMessage(level = WARN)
+    @Message(id = 490, value = "Unexpected XAException")
+    void unexpectedXAException(@Cause XAException exception);
 }

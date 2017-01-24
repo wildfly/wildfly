@@ -96,6 +96,7 @@ import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.security.deployment.SecurityAttachments;
@@ -382,6 +383,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         // setup dependencies on the transaction manager services
         addTransactionManagerDependencies();
 
+        // setup ejb suspend handler dependency
+        addEJBSuspendHandlerDependency();
+
         // setup dependency on ServerSecurityManager
         addServerSecurityManagerDependency();
     }
@@ -584,6 +588,25 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         });
     }
+
+    /**
+     * Sets up a {@link ComponentConfigurator} which then sets up the dependency on the EJBSuspendHandlerService service for the {@link EJBComponentCreateService}
+     */
+    protected void addEJBSuspendHandlerDependency() {
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                    @Override public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService)
+                            throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(EJBSuspendHandlerService.SERVICE_NAME, EJBSuspendHandlerService.class,
+                                ejbComponentCreateService.getEJBSuspendHandlerInjector());
+                    }
+                });
+            }
+        });
+    }
+
 
     /**
      * Sets up a {@link ComponentConfigurator} which then sets up the dependency on the ServerSecurityManager service for the {@link EJBComponentCreateService}

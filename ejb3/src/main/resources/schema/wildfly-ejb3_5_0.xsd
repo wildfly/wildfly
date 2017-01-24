@@ -61,6 +61,7 @@
             <xs:element name="identity" type="identityType" minOccurs="0" />
             <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
             <xs:element name="disable-default-ejb-permissions" type="disable-default-ejb-permissionsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="enable-graceful-txn-shutdown" type="enable-graceful-txn-shutdownType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="log-system-exceptions" type="log-system-exceptionsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="allow-ejb-name-regex" type="allow-ejb-name-regexType" minOccurs="0" maxOccurs="1" />
@@ -517,6 +518,19 @@
                 <![CDATA[
                        If this is enabled then the default security manager permissions required by spec will not
                        be added to EJB deployments.
+                   ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="enable-graceful-txn-shutdownType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                       If this is enabled then the server is going to wait for open transactions involving EJB3 to complete
+                       before notifying the client that the server is no longer available. As a collateral effect, this behavior
+                       may cause ejb clients to send messages to suspending cluster nodes.
                    ]]>
             </xs:documentation>
         </xs:annotation>
