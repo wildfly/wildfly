@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 
+import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -43,6 +44,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -59,7 +61,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     private static final OperationDefinition FLUSH_ALL_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_ALL_CONNECTION_IN_POOL, RESOLVER)
             .withFlag(Flag.RUNTIME_ONLY)
             .build();
-    static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", RESOLVER)
+    private static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", RESOLVER)
             .setRuntimeOnly().build();
 
     private static final OperationDefinition FLUSH_INVALID_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_INVALID_CONNECTION_IN_POOL, RESOLVER)
@@ -88,9 +90,10 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {
-                if (attribute.equals(ENLISTMENT_TRACE)) {
+                if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler.INSTANCE);
+                } else if (attribute.equals(ENLISTMENT_TRACE)) {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, new EnlistmentTraceAttributeWriteHandler());
-
                 } else {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler(attribute));
                 }
