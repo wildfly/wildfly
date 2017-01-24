@@ -159,7 +159,7 @@
         <version.org.jboss.hal.release-stream>2.9.1.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.ejb-client>3.0.0.Beta4</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>2.0.0.Alpha1</version.org.jboss.genericjms>
+        <version.org.jboss.genericjms>2.0.0.Alpha2</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.1.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.5.0.Final</version.org.jboss.jboss-transaction-spi>
