@@ -21,6 +21,13 @@
 */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CREDENTIAL_REFERENCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -80,6 +87,13 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testFullConfig() throws Exception {
         standardSubsystemTest("datasources-full.xml");
     }
+
+    /* FIXME: https://issues.jboss.org/browse/JBEAP-8462
+    @Test
+    public void testElytronConfig() throws Exception {
+        standardSubsystemTest("datasources-elytron-enabled_5_0.xml");
+    }
+    */
 
     @Test
     public void testExpressionConfig() throws Exception {
@@ -178,8 +192,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
-                        .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING))
-                        .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING))
+                        .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(TRACKING))
+                        .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), new FailedOperationTransformationConfig.NewAttributesConfig(TRACKING))
         );
     }
 
@@ -197,10 +211,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING, Constants.ELYTRON_ENABLED, Constants.AUTHENTICATION_CONTEXT))
+                        new FailedOperationTransformationConfig.NewAttributesConfig(TRACKING, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE))
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(Constants.TRACKING, Constants.ELYTRON_ENABLED, Constants.AUTHENTICATION_CONTEXT,
-                                Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_AUTHENTICATION_CONTEXT) {
+                        new FailedOperationTransformationConfig.NewAttributesConfig(TRACKING, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT,
+                                RECOVERY_ELYTRON_ENABLED, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE) {
 
                     @Override
                     protected boolean isAttributeWritable(String attributeName) {

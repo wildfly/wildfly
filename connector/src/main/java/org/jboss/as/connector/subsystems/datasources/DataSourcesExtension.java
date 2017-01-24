@@ -48,6 +48,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
@@ -395,6 +396,7 @@ public class DataSourcesExtension implements Extension {
                 }
                 boolean securityRequired = USERNAME.isMarshallable(dataSourceNode) ||
                         PASSWORD.isMarshallable(dataSourceNode) ||
+                        CREDENTIAL_REFERENCE.isMarshallable(dataSourceNode) ||
                         SECURITY_DOMAIN.isMarshallable(dataSourceNode) ||
                         ELYTRON_ENABLED.isMarshallable(dataSourceNode) ||
                         REAUTH_PLUGIN_CLASSNAME.isMarshallable(dataSourceNode) ||
@@ -404,6 +406,7 @@ public class DataSourcesExtension implements Extension {
                     USERNAME.marshallAsElement(dataSourceNode, writer);
                     PASSWORD.marshallAsElement(dataSourceNode, writer);
                     SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
+                    CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
                     ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
                     AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
 

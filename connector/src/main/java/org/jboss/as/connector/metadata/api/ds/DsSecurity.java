@@ -39,6 +39,11 @@ public interface DsSecurity extends org.jboss.jca.common.api.metadata.ds.DsSecur
        */
       AUTHENTICATION_CONTEXT("authentication-context"),
 
+      /**
+       * credential-reference tag
+       */
+      CREDENTIAL_REFERENCE("credential-reference"),
+
       // other tags, copied from original tag enum
       /** always first
        *

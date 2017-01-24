@@ -52,12 +52,15 @@ import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -79,6 +82,7 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -86,6 +90,12 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
 import org.jboss.security.SubjectFactory;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.security.credential.source.CredentialStoreCredentialSource;
+import org.wildfly.security.credential.store.CredentialStore;
+import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
@@ -225,6 +235,13 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
              }
          }
 
+         ModelNode value = Constants.CREDENTIAL_REFERENCE.resolveValue(context, model);
+         if (value.isDefined()) {
+             dataSourceService.getCredentialSourceSupplierInjector()
+                     .inject(
+                             CredentialReference.getCredentialSourceSupplier(context, Constants.CREDENTIAL_REFERENCE, model, dataSourceServiceBuilder));
+         }
+
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
         dataSourceServiceBuilder.install();
@@ -243,13 +260,21 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
+        final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
+        final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
+
+        final ExceptionSupplier<CredentialSource, Exception> credentialSourceExceptionExceptionSupplier =
+                dataSourceController.getService() instanceof AbstractDataSourceService ?
+                        ((AbstractDataSourceService)dataSourceController.getService()).getCredentialSourceSupplierInjector().getOptionalValue()
+                        :
+                        null;
 
         final boolean jta;
         if (isXa) {
             jta = true;
             final ModifiableXaDataSource dataSourceConfig;
             try {
-                dataSourceConfig = xaFrom(context, model, dsName);
+                dataSourceConfig = xaFrom(context, model, dsName, credentialSourceExceptionExceptionSupplier);
             } catch (ValidateException e) {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToCreate("XaDataSource", operation, e.getLocalizedMessage()));
             }
@@ -300,7 +325,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
             final ModifiableDataSource dataSourceConfig;
             try {
-                dataSourceConfig = from(context, model, dsName);
+                dataSourceConfig = from(context, model, dsName, credentialSourceExceptionExceptionSupplier);
             } catch (ValidateException e) {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToCreate("DataSource", operation, e.getLocalizedMessage()));
             }
@@ -319,11 +344,11 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             }
             for (ServiceName name : serviceNames) {
                 if (dataSourceCongServiceName.append("connection-properties").isParentOf(name)) {
-                    final ServiceController<?> dataSourceController = registry.getService(name);
-                    ConnectionPropertiesService connPropService = (ConnectionPropertiesService) dataSourceController.getService();
+                    final ServiceController<?> connPropServiceController = registry.getService(name);
+                    ConnectionPropertiesService connPropService = (ConnectionPropertiesService) connPropServiceController.getService();
 
-                    if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
-                        dataSourceController.setMode(ServiceController.Mode.ACTIVE);
+                    if (!ServiceController.State.UP.equals(connPropServiceController.getState())) {
+                        connPropServiceController.setMode(ServiceController.Mode.ACTIVE);
                         builder.addDependency(name, String.class, configService.getConnectionPropertyInjector(connPropService.getName()));
 
                     } else {
@@ -334,11 +359,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             builder.install();
         }
 
-        final ServiceName dataSourceServiceName = context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class);
         final ServiceName dataSourceServiceNameAlias = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName).append(Constants.STATISTICS);
-
-
-        final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
 
         if (dataSourceController != null) {
             if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
@@ -418,5 +439,37 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         return result;
     }
 
+    private static char[] getPasswordFromCredentialReference(ObjectTypeAttributeDefinition credentialReferenceDefinition, OperationContext context, ModelNode model) throws OperationFailedException {
+        ModelNode value = credentialReferenceDefinition.resolveModelAttribute(context, model);
+        if (value.isDefined()) {
+
+            final String credentialStoreName = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.STORE);
+            final String credentialAlias = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.ALIAS);
+            final String secret = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.CLEAR_TEXT);
+
+            if (secret != null) {
+                return secret.toCharArray();
+            }
+
+            //CredentialSource cs = CredentialReference.getCredentialSourceSupplier(context, credentialReferenceDefinition, model, serviceBuilder);
+            String credentialStoreCapabilityName = RuntimeCapability.buildDynamicCapabilityName(CredentialReference.CREDENTIAL_STORE_CAPABILITY, credentialStoreName);
+            ServiceName credentialStoreServiceName = context.getCapabilityServiceName(credentialStoreCapabilityName, CredentialStore.class);
+            Service<?> csService = context.getServiceRegistry(false).getService(credentialStoreServiceName).getService();
+            CredentialStore credentialStore = csService.getValue() instanceof CredentialStore ? (CredentialStore) csService.getValue() : null;
+
+            if (credentialAlias != null && credentialStore != null) {
+                CredentialSource cs = new CredentialStoreCredentialSource(credentialStore, credentialAlias);
+
+                try {
+                    return cs.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword();
+                } catch (Exception e) {
+                    throw new OperationFailedException(e);
+                }
+            }
+            return null;
+        } else {
+            return null;
+        }
+    }
 
 }

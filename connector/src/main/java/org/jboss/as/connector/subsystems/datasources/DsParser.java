@@ -50,6 +50,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
@@ -1341,35 +1342,34 @@ public class DsParser extends AbstractParser {
                     break;
                 }
                 case START_ELEMENT: {
-                    DsSecurity.Tag tag = DsSecurity.Tag.forName(reader.getLocalName());
-                    switch (tag) {
-                        case PASSWORD: {
-                            String value = rawElementText(reader);
-                            PASSWORD.parseAndSetParameter(value, operation, reader);
-                            break;
+                    final String localName = reader.getLocalName();
+                    DsSecurity.Tag tag = DsSecurity.Tag.forName(localName);
+                    if (localName == null) break;
+                    if (localName.equals(DsSecurity.Tag.PASSWORD.getLocalName())) {
+                        String value = rawElementText(reader);
+                        PASSWORD.parseAndSetParameter(value, operation, reader);
+                        break;
+                    } else if (localName.equals(DsSecurity.Tag.USER_NAME.getLocalName())) {
+                        String value = rawElementText(reader);
+                        USERNAME.parseAndSetParameter(value, operation, reader);
+                        break;
+                    } else if (localName.equals(DsSecurity.Tag.SECURITY_DOMAIN.getLocalName())) {
+                        if (securityDomainMatched) {
+                            throw new ParserException(bundle.unexpectedElement(SECURITY_DOMAIN.getXmlName()));
                         }
-                        case USER_NAME: {
-                            String value = rawElementText(reader);
-                            USERNAME.parseAndSetParameter(value, operation, reader);
-                            break;
-                        }
-                        case SECURITY_DOMAIN: {
-                            if (securityDomainMatched) {
-                                throw new ParserException(bundle.unexpectedElement(SECURITY_DOMAIN.getXmlName()));
-                            }
-                            String value = rawElementText(reader);
-                            SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
-                            securityDomainMatched = true;
-                            break;
-                        }
-                        case REAUTH_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
-                            break;
-                        }
-                        default:
-                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                        String value = rawElementText(reader);
+                        SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                        securityDomainMatched = true;
+                        break;
+                    } else if (localName.equals(DsSecurity.Tag.REAUTH_PLUGIN.getLocalName())) {
+                        parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                        break;
+                    } else if (localName.equals(CREDENTIAL_REFERENCE.getXmlName())) {
+                        CREDENTIAL_REFERENCE.getParser().parseElement(CREDENTIAL_REFERENCE, reader, operation);
+                        break;
+                    } else {
+                        throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
-                    break;
                 }
             }
         }
@@ -1426,6 +1426,10 @@ public class DsParser extends AbstractParser {
                         }
                         case REAUTH_PLUGIN: {
                             parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                            break;
+                        }
+                        case CREDENTIAL_REFERENCE: {
+                            CREDENTIAL_REFERENCE.getParser().parseElement(CREDENTIAL_REFERENCE, reader, operation);
                             break;
                         }
                         default:

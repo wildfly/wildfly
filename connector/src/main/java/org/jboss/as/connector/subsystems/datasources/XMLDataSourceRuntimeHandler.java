@@ -168,6 +168,8 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             setStringIfNotNull(context, dataSource.getSecurity().getUserName());
         } else if (attributeName.equals(Constants.PASSWORD.getName())) {
             //don't give out the password
+        } else if (attributeName.equals(Constants.CREDENTIAL_REFERENCE.getName())) {
+            //don't give out the credential-reference
         } else if (attributeName.equals(Constants.SECURITY_DOMAIN.getName())) {
             if (dataSource.getSecurity() == null) {
                 return;

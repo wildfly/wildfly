@@ -51,6 +51,7 @@ import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResol
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -409,6 +410,14 @@ public class Constants {
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
+    static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(DS_SECURITY_DEF)
+                    .build();
+
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
@@ -628,7 +637,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-            USERNAME, PASSWORD, SECURITY_DOMAIN, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT,
+            USERNAME, PASSWORD, CREDENTIAL_REFERENCE, SECURITY_DOMAIN, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT,
             REAUTH_PLUGIN_CLASSNAME,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY,
             ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS,
@@ -721,7 +730,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN, INTERLEAVING,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
             NO_TX_SEPARATE_POOL, PAD_XID, SAME_RM_OVERRIDE,
-            WRAP_XA_RESOURCE, USERNAME, PASSWORD,
+            WRAP_XA_RESOURCE, USERNAME, PASSWORD, CREDENTIAL_REFERENCE,
             SECURITY_DOMAIN, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT,
             REAUTH_PLUGIN_CLASSNAME,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS,
