@@ -85,6 +85,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                         // cluster
                                         ServerDefinition.CLUSTER_USER,
                                         ServerDefinition.CLUSTER_PASSWORD,
+                                        ServerDefinition.CREDENTIAL_REFERENCE,
                                         // management
                                         ServerDefinition.MANAGEMENT_ADDRESS,
                                         ServerDefinition.MANAGEMENT_NOTIFICATION_ADDRESS,
@@ -411,6 +412,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         BridgeDefinition.PRODUCER_WINDOW_SIZE,
                                                         BridgeDefinition.USER,
                                                         BridgeDefinition.PASSWORD,
+                                                        BridgeDefinition.CREDENTIAL_REFERENCE,
                                                         BridgeDefinition.CONNECTOR_REFS,
                                                         BridgeDefinition.DISCOVERY_GROUP_NAME))
                                 .addChild(
@@ -585,10 +587,12 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                         JMSBridgeDefinition.SOURCE_DESTINATION,
                                         JMSBridgeDefinition.SOURCE_USER,
                                         JMSBridgeDefinition.SOURCE_PASSWORD,
+                                        JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE,
                                         JMSBridgeDefinition.TARGET_CONNECTION_FACTORY,
                                         JMSBridgeDefinition.TARGET_DESTINATION,
                                         JMSBridgeDefinition.TARGET_USER,
                                         JMSBridgeDefinition.TARGET_PASSWORD,
+                                        JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE,
                                         JMSBridgeDefinition.SOURCE_CONTEXT,
                                         JMSBridgeDefinition.TARGET_CONTEXT))
                 .build();
