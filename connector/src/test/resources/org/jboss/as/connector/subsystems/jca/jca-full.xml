@@ -57,9 +57,11 @@
     <elytron-enabled>false</elytron-enabled>
     <selector name="PING_TIME">
       <option name="myOption">ignored</option>
+      <option name="myOtherOption">ignored</option>
     </selector>
     <policy name="WATERMARK">
       <option name="watermark">0</option>
+      <option name="unusedOption">ignored</option>
     </policy>
     <short-running-threads>
       <core-threads count="50"/>

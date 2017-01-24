@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2011, Red Hat, Inc., and individual contributors
@@ -21,27 +20,21 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<application xmlns="http://java.sun.com/xml/ns/javaee"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+      	http://java.sun.com/xml/ns/javaee/application_6.xsd"
+      version="6">
 
-<project>
-    <target name="copy-jars" description="Copy jars to be tested.">
-    	<copy file="${commons-collections:commons-collections:jar}" tofile="${project.build.directory}/test-libs/commons-collections.jar"/>
-    </target>
+    <application-name>dwm-ejb-application</application-name>
 
-    <target name="build-basic-integration-jts" depends="build-basic-integration" if="basic-jts-tests">
-        <add-jts name="jbossas"/>
-    </target>
+    <initialize-in-order>true</initialize-in-order>
 
-    <target name="build-distributed">
-        <echo message="  =========  Building config wildfly-distributed-0  =========  "/>
-        <copy todir="target/wildfly-distributed-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
+    <module>
+        <connector>dwm.rar</connector>
+    </module>
+    <module>
+        <ejb>ejb.jar</ejb>
+    </module>
 
-        <echo message="  =========  Building config wildfly-distributed-1  =========  "/>
-        <copy todir="target/wildfly-distributed-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.add-port-offset name="wildfly-distributed-1" offset="100" nativePort="9999" httpPort="9990"/>
-    </target>
-
-</project>
+</application>
