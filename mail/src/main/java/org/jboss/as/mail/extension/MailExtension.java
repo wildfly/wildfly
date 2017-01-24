@@ -83,7 +83,7 @@ public class MailExtension implements Extension {
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);
         }
-        subsystem.registerXMLElementWriter(MailSubsystemParser2_0.INSTANCE);
+        subsystem.registerXMLElementWriter(MailSubsystemParser2_1.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
