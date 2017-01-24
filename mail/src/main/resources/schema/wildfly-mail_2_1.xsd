@@ -25,8 +25,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:mail:2.0"
-           targetNamespace="urn:jboss:domain:mail:2.0"
+           xmlns="urn:jboss:domain:mail:2.1"
+           targetNamespace="urn:jboss:domain:mail:2.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
@@ -75,6 +75,15 @@
 
 
     <xs:complexType name="server-type" mixed="true">
+        <xs:sequence>
+            <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Credential to be used by the configuration.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
         <xs:attribute name="outbound-socket-binding-ref" use="required" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -114,6 +123,16 @@
 
 
     <xs:complexType name="custom-server-type" mixed="true">
+        <xs:sequence>
+            <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Credential to be used by the configuration.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="property" type="property-type" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="outbound-socket-binding-ref" use="optional" type="xs:string">
             <xs:annotation>
@@ -145,6 +164,49 @@
         </xs:attribute>
         <xs:attribute name="username" type="xs:string" use="optional"/>
         <xs:attribute name="password" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <!-- Credential Reference Types -->
+    <xs:attributeGroup name="credentialReferenceStoreBased">
+        <xs:annotation>
+            <xs:documentation>
+                Group of attributes used when referencing credential through credential store.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="store" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Credential store name used to fetch credential with given 'alias' from.
+                    Credential store name has to be defined elsewhere.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alias" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Alias of credential in the credential store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Type of credential to be fetched from credential store.
+                    It is usually fully qualified class name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:complexType name="credentialReferenceType">
+        <xs:attributeGroup ref="credentialReferenceStoreBased"/>
+        <xs:attribute name="clear-text" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Credential/password in clear text. Use just for testing purpose.
+                    Otherwise use credential store to mask the actual credential from your configuration.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>

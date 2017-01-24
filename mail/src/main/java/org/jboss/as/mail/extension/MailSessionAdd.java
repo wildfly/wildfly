@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -92,6 +93,25 @@ class MailSessionAdd extends AbstractAddStepHandler {
         installRuntimeServices(context, address, fullTree);
     }
 
+    static void addCredentialStoreReference(ServerConfig serverConfig, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder, String... modelFilter) throws OperationFailedException {
+        if (serverConfig != null) {
+            ModelNode filteredModelNode = model;
+            if (modelFilter != null && modelFilter.length > 0) {
+                for (String path : modelFilter) {
+                    if (filteredModelNode.get(path).isDefined())
+                        filteredModelNode = filteredModelNode.get(path);
+                    else
+                        break;
+                }
+            }
+            ModelNode value = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, filteredModelNode);
+            if (value.isDefined()) {
+                serverConfig.getCredentialSourceSupplierInjector()
+                        .inject(
+                                CredentialReference.getCredentialSourceSupplier(context, MailServerDefinition.CREDENTIAL_REFERENCE, filteredModelNode, serviceBuilder));
+            }
+        }
+    }
 
     static void installRuntimeServices(OperationContext context, PathAddress address, ModelNode fullModel) throws OperationFailedException {
         String name = address.getLastElement().getValue();
@@ -105,13 +125,18 @@ class MailSessionAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = MAIL_SESSION_SERVICE_NAME.append(name);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
+        addCredentialStoreReference(config.getImapServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.IMAP_SERVER_PATH.getKey(), MailSubsystemModel.IMAP_SERVER_PATH.getValue());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
+        addCredentialStoreReference(config.getPop3Server(), context, fullModel, mailSessionBuilder, MailSubsystemModel.POP3_SERVER_PATH.getKey(), MailSubsystemModel.POP3_SERVER_PATH.getValue());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
+        addCredentialStoreReference(config.getSmtpServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.SMTP_SERVER_PATH.getKey(), MailSubsystemModel.SMTP_SERVER_PATH.getValue());
         for (CustomServerConfig server : config.getCustomServers()) {
             if (server.getOutgoingSocketBinding() != null) {
                 addOutboundSocketDependency(service, mailSessionBuilder, server);
             }
+            addCredentialStoreReference(server, context, fullModel, mailSessionBuilder, MailSubsystemModel.CUSTOM_SERVER_PATH.getKey(), server.getProtocol());
         }
+
 
         final ManagedReferenceFactory valueManagedReferenceFactory = new MailSessionManagedReferenceFactory(service);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
@@ -227,7 +252,16 @@ class MailSessionAdd extends AbstractAddStepHandler {
         if (model.get(USER_NAME).isDefined()) {
             String un = MailServerDefinition.USERNAME.resolveModelAttribute(operationContext, model).asString();
             String pw = MailServerDefinition.PASSWORD.resolveModelAttribute(operationContext, model).asString();
-            return new Credentials(un, pw);
+            ModelNode value = MailServerDefinition.CREDENTIAL_REFERENCE.resolveValue(operationContext, model);
+            String secret = null;
+            if (value.isDefined()) {
+                secret = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.CLEAR_TEXT);
+            }
+            if (secret != null) {
+                return new Credentials(un, secret);
+            } else {
+                return new Credentials(un, pw);
+            }
         }
         return null;
     }
