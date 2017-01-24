@@ -71,6 +71,7 @@
         <module name="org.jgroups" optional="true"/>
         <module name="org.wildfly.clustering.jgroups.api" optional="true"/>
         <module name="org.wildfly.clustering.jgroups.spi" optional="true"/>
+        <module name="org.wildfly.common"/>
     </dependencies>
 
 </module>

@@ -94,6 +94,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
 import org.wildfly.security.manager.action.GetClassLoaderAction;
@@ -129,6 +131,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
     private final InjectedValue<AuthenticationContext> authenticationContext = new InjectedValue<>();
     private final InjectedValue<AuthenticationContext> recoveryAuthenticationContext = new InjectedValue<>();
+    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
 
     private final String dsName;
@@ -291,6 +294,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     Injector<AuthenticationContext> getRecoveryAuthenticationContext() {
         return recoveryAuthenticationContext;
+    }
+
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplierInjector() {
+        return credentialSourceSupplier;
     }
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
