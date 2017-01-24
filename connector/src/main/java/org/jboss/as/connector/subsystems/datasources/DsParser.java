@@ -1428,6 +1428,10 @@ public class DsParser extends AbstractParser {
                             parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
                             break;
                         }
+                        case CREDENTIAL_REFERENCE: {
+                            CREDENTIAL_REFERENCE.getParser().parseElement(CREDENTIAL_REFERENCE, reader, operation);
+                            break;
+                        }
                         default:
                             throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }

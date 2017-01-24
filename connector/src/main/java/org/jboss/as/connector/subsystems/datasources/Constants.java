@@ -730,7 +730,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN, INTERLEAVING,
             org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
             NO_TX_SEPARATE_POOL, PAD_XID, SAME_RM_OVERRIDE,
-            WRAP_XA_RESOURCE, USERNAME, PASSWORD,
+            WRAP_XA_RESOURCE, USERNAME, PASSWORD, CREDENTIAL_REFERENCE,
             SECURITY_DOMAIN, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT,
             REAUTH_PLUGIN_CLASSNAME,
             org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS, CONNECTION_LISTENER_CLASS,

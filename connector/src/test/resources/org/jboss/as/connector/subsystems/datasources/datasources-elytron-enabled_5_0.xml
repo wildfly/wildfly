@@ -59,6 +59,7 @@
         <!--You have a CHOICE of the next 2 items at this level-->
         <!--Optional:-->
         <!--Optional:-->
+        <urn:credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
         <urn:elytron-enabled/>
         <urn:authentication-context>DsAuthCtxt</urn:authentication-context>
         <!--Optional:-->
@@ -108,8 +109,6 @@
         <urn:allocation-retry>200</urn:allocation-retry>
         <!--Optional:-->
         <urn:allocation-retry-wait-millis>200</urn:allocation-retry-wait-millis>
-        <!--Optional:-->
-        <urn:xa-resource-timeout>200</urn:xa-resource-timeout>
       </urn:timeout>
       <!--Optional:-->
       <urn:statement>
@@ -183,6 +182,7 @@
       </urn:xa-pool>
       <!--Optional:-->
       <urn:security>
+        <urn:credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
         <urn:elytron-enabled/>
         <!--Optional:-->
         <urn:reauth-plugin class-name="token">
