@@ -263,12 +263,14 @@ public class Constants {
     static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinitionBuilder(CONNECTION_URL_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(DataSource.Tag.CONNECTION_URL.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition DRIVER_CLASS = new SimpleAttributeDefinitionBuilder(DATASOURCE_DRIVER_CLASS_NAME, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName(DataSource.Tag.DRIVER_CLASS.getLocalName())
+            .setRestartAllServices()
             .build();
 
 
@@ -276,6 +278,7 @@ public class Constants {
             .setXmlName(DataSource.Tag.DATASOURCE_CLASS.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(JNDINAME_NAME, ModelType.STRING, false)
@@ -303,23 +306,27 @@ public class Constants {
                     validateParameter(parameterName, value.resolve());
                 }
             })
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition DATASOURCE_DRIVER = new SimpleAttributeDefinitionBuilder(DATASOURCE_DRIVER_NAME, ModelType.STRING, false)
             .setXmlName(DataSource.Tag.DRIVER.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition NEW_CONNECTION_SQL = new SimpleAttributeDefinitionBuilder(NEW_CONNECTION_SQL_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(DataSource.Tag.NEW_CONNECTION_SQL.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition URL_DELIMITER = new SimpleAttributeDefinitionBuilder(URL_DELIMITER_NAME, ModelType.STRING, true)
             .setXmlName(DataSource.Tag.URL_DELIMITER.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
@@ -327,17 +334,20 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setXmlName(XaDataSource.Tag.URL_PROPERTY.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition URL_SELECTOR_STRATEGY_CLASS_NAME = new SimpleAttributeDefinitionBuilder(URL_SELECTOR_STRATEGY_CLASS_NAME_NAME, ModelType.STRING, true)
             .setXmlName(DataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinitionBuilder(USE_JAVA_CONTEXT_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.USE_JAVA_CONTEXT))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
@@ -346,6 +356,7 @@ public class Constants {
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
             .setDeprecated(ModelVersion.create(3), false)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
@@ -353,6 +364,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
@@ -367,6 +379,7 @@ public class Constants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreConcurrentLinkedDequeManagedConnectionPool.class.getName()))
             .setXmlName(DataSource.Attribute.MCP.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
@@ -374,17 +387,20 @@ public class Constants {
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition JTA = new SimpleAttributeDefinitionBuilder(JTA_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DataSource.Attribute.JTA.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.JTA))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static final PropertiesAttributeDefinition CONNECTION_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_PROPERTIES_NAME, true)
             .setXmlName(DataSource.Tag.CONNECTION_PROPERTY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition CONNECTION_PROPERTY_VALUE = new SimpleAttributeDefinitionBuilder(CONNECTION_PROPERTY_VALUE_NAME, ModelType.STRING, true)
@@ -398,6 +414,7 @@ public class Constants {
             .addAlternatives(SECURITY_DOMAIN_NAME, AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     public static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
@@ -408,6 +425,7 @@ public class Constants {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
             .addAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
+            .setRestartAllServices()
             .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
@@ -425,6 +443,7 @@ public class Constants {
             .addAlternatives(USERNAME_NAME, AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     public static SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
@@ -432,6 +451,7 @@ public class Constants {
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .setAllowExpression(true)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
     public static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
@@ -440,11 +460,13 @@ public class Constants {
             .addAlternatives(SECURITY_DOMAIN_NAME, USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition PREPARED_STATEMENTS_CACHE_SIZE = new SimpleAttributeDefinitionBuilder(PREPAREDSTATEMENTSCACHESIZE_NAME, ModelType.LONG, true)
             .setAllowExpression(true)
             .setXmlName(Statement.Tag.PREPARED_STATEMENT_CACHE_SIZE.getLocalName())
+            .setRestartAllServices()
             .build();
 
 
@@ -452,6 +474,7 @@ public class Constants {
             .setXmlName(Statement.Tag.SHARE_PREPARED_STATEMENTS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.SHARE_PREPARED_STATEMENTS))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
@@ -459,17 +482,20 @@ public class Constants {
             .setAllowExpression(true)
             .setXmlName(Statement.Tag.TRACK_STATEMENTS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.TRACK_STATEMENTS.name()))
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ALLOCATION_RETRY = new SimpleAttributeDefinitionBuilder(ALLOCATION_RETRY_NAME, ModelType.INT, true)
             .setXmlName(TimeOut.Tag.ALLOCATION_RETRY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinitionBuilder(ALLOCATION_RETRY_WAIT_MILLIS_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
@@ -477,61 +503,72 @@ public class Constants {
             .setXmlName(DsPool.Tag.ALLOW_MULTIPLE_USERS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.ALLOW_MULTIPLE_USERS))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition CONNECTION_LISTENER_CLASS = new SimpleAttributeDefinitionBuilder(CONNECTION_LISTENER_CLASS_NAME, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
+            .setRestartAllServices()
             .build();
     static PropertiesAttributeDefinition CONNECTION_LISTENER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_LISTENER_PROPERTY_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition QUERY_TIMEOUT = new SimpleAttributeDefinitionBuilder(QUERYTIMEOUT_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.QUERY_TIMEOUT.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition USE_TRY_LOCK = new SimpleAttributeDefinitionBuilder(USETRYLOCK_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.USE_TRY_LOCK.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition SET_TX_QUERY_TIMEOUT = new SimpleAttributeDefinitionBuilder(SETTXQUERYTIMEOUT_NAME, ModelType.BOOLEAN, true)
             .setXmlName(TimeOut.Tag.SET_TX_QUERY_TIMEOUT.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.SET_TX_QUERY_TIMEOUT))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition TRANSACTION_ISOLATION = new SimpleAttributeDefinitionBuilder(TRANSACTION_ISOLATION_NAME, ModelType.STRING, true)
             .setXmlName(DataSource.Tag.TRANSACTION_ISOLATION.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition CHECK_VALID_CONNECTION_SQL = new SimpleAttributeDefinitionBuilder(CHECKVALIDCONNECTIONSQL_NAME, ModelType.STRING, true)
             .setXmlName(Validation.Tag.CHECK_VALID_CONNECTION_SQL.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition EXCEPTION_SORTER_CLASSNAME = new SimpleAttributeDefinitionBuilder(EXCEPTIONSORTERCLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static PropertiesAttributeDefinition EXCEPTION_SORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowExpression(true)
             .setRequires(EXCEPTIONSORTERCLASSNAME_NAME)
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition STALE_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinitionBuilder(STALECONNECTIONCHECKERCLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static PropertiesAttributeDefinition STALE_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
@@ -539,11 +576,13 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRequires(STALECONNECTIONCHECKERCLASSNAME_NAME)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition VALID_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinitionBuilder(VALID_CONNECTION_CHECKER_CLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static PropertiesAttributeDefinition VALID_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, true)
@@ -551,67 +590,79 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRequires(VALID_CONNECTION_CHECKER_CLASSNAME_NAME)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinitionBuilder(VALIDATEONMATCH_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Validation.Tag.VALIDATE_ON_MATCH.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition SPY = new SimpleAttributeDefinitionBuilder(SPY_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DataSource.Attribute.SPY.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.SPY))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition USE_CCM = new SimpleAttributeDefinitionBuilder(USE_CCM_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DataSource.Attribute.USE_CCM.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.USE_CCM))
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition XA_DATASOURCE_CLASS = new SimpleAttributeDefinitionBuilder(XADATASOURCECLASS_NAME, ModelType.STRING, true)
             .setXmlName(XaDataSource.Tag.XA_DATASOURCE_CLASS.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition INTERLEAVING = new SimpleAttributeDefinitionBuilder(INTERLEAVING_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.INTERLEAVING.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.INTERLEAVING))
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition NO_TX_SEPARATE_POOL = new SimpleAttributeDefinitionBuilder(NOTXSEPARATEPOOL_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.NO_TX_SEPARATE_POOLS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.NO_TX_SEPARATE_POOL))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition PAD_XID = new SimpleAttributeDefinitionBuilder(PAD_XID_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.PAD_XID.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.PAD_XID))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition SAME_RM_OVERRIDE = new SimpleAttributeDefinitionBuilder(SAME_RM_OVERRIDE_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition WRAP_XA_RESOURCE = new SimpleAttributeDefinitionBuilder(WRAP_XA_RESOURCE_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.WRAP_XA_RESOURCE.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.WRAP_XA_RESOURCE))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition XA_RESOURCE_TIMEOUT = new SimpleAttributeDefinitionBuilder(XA_RESOURCE_TIMEOUT_NAME, ModelType.INT, true)
             .setXmlName(TimeOut.Tag.XA_RESOURCE_TIMEOUT.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition REAUTH_PLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(REAUTHPLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static PropertiesAttributeDefinition REAUTHPLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(REAUTHPLUGIN_PROPERTIES_NAME, true)
@@ -619,12 +670,14 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRequires(REAUTHPLUGIN_CLASSNAME_NAME)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
@@ -676,6 +729,7 @@ public class Constants {
             .setAllowExpression(true)
             .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING)
@@ -684,6 +738,7 @@ public class Constants {
             .setAllowNull(true)
             .setRequires(RECOVERY_USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING)
@@ -691,12 +746,14 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .addAlternatives(RECOVERY_USERNAME_NAME, RECOVERY_AUTHENTICATION_CONTEXT_NAME)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(RECOVERY_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
@@ -704,6 +761,7 @@ public class Constants {
             .setAllowExpression(true)
             .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_USERNAME_NAME)
+            .setRestartAllServices()
             .build();
 
     static final ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
@@ -713,22 +771,26 @@ public class Constants {
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(DS_SECURITY_DEF)
                     .addAlternatives(RECOVERY_PASSWORD_NAME)
+                    .setRestartAllServices()
                     .build();
 
     static SimpleAttributeDefinition RECOVER_PLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(RECOVER_PLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static PropertiesAttributeDefinition RECOVER_PLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVER_PLUGIN_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinitionBuilder(NO_RECOVERY_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Recovery.Attribute.NO_RECOVERY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{
             Constants.XA_DATASOURCE_CLASS, JNDI_NAME, DATASOURCE_DRIVER,
@@ -773,6 +835,7 @@ public class Constants {
     static final PropertiesAttributeDefinition XADATASOURCE_PROPERTIES = new PropertiesAttributeDefinition.Builder(XADATASOURCEPROPERTIES_NAME, false)
             .setXmlName(XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTY_VALUE = new SimpleAttributeDefinitionBuilder(XADATASOURCEPROPERTIES_VALUE_NAME, ModelType.STRING, true)
@@ -784,6 +847,7 @@ public class Constants {
             .setXmlName(Driver.Attribute.NAME.getLocalName())
             .setAllowNull(false)
                     //.setResourceOnly()
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MODULE_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_MODULE_NAME_NAME, ModelType.STRING)

@@ -212,21 +212,25 @@ public class Constants {
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder(CLASS_NAME_NAME, ModelType.STRING, false)
             .setXmlName(ConnectionDefinition.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinitionBuilder(JNDINAME_NAME, ModelType.STRING, true)
             .setXmlName(ConnectionDefinition.Attribute.JNDI_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition CONFIG_PROPERTIES = new SimpleAttributeDefinitionBuilder(CONFIG_PROPERTIES_NAME, ModelType.STRING, true)
             .setXmlName(ConnectionDefinition.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition CONFIG_PROPERTY_VALUE = new SimpleAttributeDefinitionBuilder(CONFIG_PROPERTY_VALUE_NAME, ModelType.STRING, true)
             .setXmlName(ConnectionDefinition.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition ARCHIVE = SimpleAttributeDefinitionBuilder.create(ARCHIVE_NAME, ModelType.STRING)
@@ -245,7 +249,9 @@ public class Constants {
                     }
                 }
             })
-            .setAlternatives(MODULE_NAME).build();
+            .setAlternatives(MODULE_NAME)
+            .setRestartAllServices()
+            .build();
 
     static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(MODULE_NAME, ModelType.STRING)
             .setXmlName(AS7ResourceAdapterTags.MODULE.getLocalName())
@@ -273,30 +279,36 @@ public class Constants {
                     }
                 }
             })
-            .setAlternatives(ARCHIVE_NAME).build();
+            .setAlternatives(ARCHIVE_NAME)
+            .setRestartAllServices()
+            .build();
 
     static final SimpleAttributeDefinition BOOTSTRAP_CONTEXT = new SimpleAttributeDefinitionBuilder(BOOTSTRAPCONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Activation.Tag.BOOTSTRAP_CONTEXT.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinitionBuilder(TRANSACTIONSUPPORT_NAME, ModelType.STRING, true)
             .setXmlName(Activation.Tag.TRANSACTION_SUPPORT.getLocalName())
             .setAllowExpression(true)
             .setValidator(new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true))
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
-                .setAllowNull(true)
-                .setAllowExpression(true)
-                .build();
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     static final SimpleAttributeDefinition WM_SECURITY = new SimpleAttributeDefinitionBuilder(WM_SECURITY_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_MAPPING_REQUIRED = new SimpleAttributeDefinitionBuilder(WM_SECURITY_MAPPING_REQUIRED_NAME, ModelType.BOOLEAN)
@@ -304,6 +316,7 @@ public class Constants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(false))
             .setXmlName(WorkManagerSecurity.Tag.MAPPING_REQUIRED.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -311,6 +324,7 @@ public class Constants {
             .setDefaultValue(new ModelNode("other"))
             .setXmlName(WorkManagerSecurity.Tag.DOMAIN.getLocalName())
             .setAlternatives(WM_ELYTRON_SECURITY_DOMAIN_NAME)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_ELYTRON_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -318,12 +332,14 @@ public class Constants {
             .setXmlName(WorkManagerSecurity.Tag.ELYTRON_SECURITY_DOMAIN.getLocalName())
             .setAlternatives(WM_SECURITY_DOMAIN_NAME)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_PRINCIPAL = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_PRINCIPAL_NAME, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(true)
             .setXmlName(WorkManagerSecurity.Tag.DEFAULT_PRINCIPAL.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static final StringListAttributeDefinition WM_SECURITY_DEFAULT_GROUPS = (new StringListAttributeDefinition.Builder(WM_SECURITY_DEFAULT_GROUPS_NAME))
@@ -331,6 +347,7 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setElementValidator(new StringLengthValidator(1, false, true))
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_GROUP = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_GROUP_NAME, ModelType.STRING, true)
             .setXmlName(WorkManagerSecurity.Tag.GROUP.getLocalName())
@@ -353,11 +370,13 @@ public class Constants {
     static final ObjectTypeAttributeDefinition WM_SECURITY_MAPPING_GROUP = ObjectTypeAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_GROUP_NAME, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO).build();
     static final ObjectListAttributeDefinition WM_SECURITY_MAPPING_GROUPS = ObjectListAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_GROUPS_NAME, WM_SECURITY_MAPPING_GROUP)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     static final ObjectTypeAttributeDefinition WM_SECURITY_MAPPING_USER = ObjectTypeAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_USER_NAME, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO).build();
     static final ObjectListAttributeDefinition WM_SECURITY_MAPPING_USERS = ObjectListAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_USERS_NAME, WM_SECURITY_MAPPING_USER)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
 
     static final StringListAttributeDefinition BEANVALIDATION_GROUPS = (new StringListAttributeDefinition.Builder(BEANVALIDATIONGROUPS_NAME))
@@ -365,6 +384,7 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setElementValidator(new StringLengthValidator(1, false, true))
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition BEANVALIDATIONGROUP = new SimpleAttributeDefinitionBuilder(BEANVALIDATIONGROUPS_NAME, ModelType.STRING, true)
@@ -376,12 +396,14 @@ public class Constants {
             .setXmlName(DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.USE_JAVA_CONTEXT))
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DataSource.Attribute.ENABLED.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
@@ -389,11 +411,13 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.TRACKING.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
+            .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
@@ -402,6 +426,7 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition SECURITY_DOMAIN_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_AND_APPLICATION_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName())
@@ -410,6 +435,7 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
@@ -417,6 +443,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
@@ -426,6 +453,7 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
     static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT_AND_APPLICATION.getLocalName())
@@ -435,6 +463,7 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinitionBuilder(APPLICATION_NAME, ModelType.BOOLEAN)
@@ -447,17 +476,20 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
 
     static SimpleAttributeDefinition ALLOCATION_RETRY = new SimpleAttributeDefinitionBuilder(ALLOCATION_RETRY_NAME, ModelType.INT, true)
             .setXmlName(TimeOut.Tag.ALLOCATION_RETRY.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinitionBuilder(ALLOCATION_RETRY_WAIT_MILLIS_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition USETRYLOCK = new SimpleAttributeDefinitionBuilder(USETRYLOCK_NAME, ModelType.LONG, true)
@@ -469,6 +501,7 @@ public class Constants {
             .setXmlName(DataSource.Attribute.USE_CCM.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.USE_CCM))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition SHARABLE = new SimpleAttributeDefinitionBuilder(SHARABLE_NAME, ModelType.BOOLEAN)
@@ -476,6 +509,7 @@ public class Constants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(Defaults.SHARABLE))
             .setXmlName(ConnectionDefinition.Attribute.SHARABLE.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition ENLISTMENT = new SimpleAttributeDefinitionBuilder(ENLISTMENT_NAME, ModelType.BOOLEAN)
@@ -483,6 +517,7 @@ public class Constants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode(Defaults.ENLISTMENT))
             .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT.getLocalName())
+            .setRestartAllServices()
             .build();
 
 
@@ -497,6 +532,7 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setXmlName(ConnectionDefinition.Attribute.MCP.getLocalName())
+            .setRestartAllServices()
             .build();
 
 
@@ -504,18 +540,21 @@ public class Constants {
             .setXmlName(XaPool.Tag.INTERLEAVING.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.INTERLEAVING))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition NOTXSEPARATEPOOL = new SimpleAttributeDefinitionBuilder(NOTXSEPARATEPOOL_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.NO_TX_SEPARATE_POOLS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.NO_TX_SEPARATE_POOL))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition PAD_XID = new SimpleAttributeDefinitionBuilder(PAD_XID_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.PAD_XID.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.PAD_XID))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
@@ -523,17 +562,20 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName(XaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition WRAP_XA_RESOURCE = new SimpleAttributeDefinitionBuilder(WRAP_XA_RESOURCE_NAME, ModelType.BOOLEAN, true)
             .setXmlName(XaPool.Tag.WRAP_XA_RESOURCE.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.WRAP_XA_RESOURCE))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition XA_RESOURCE_TIMEOUT = new SimpleAttributeDefinitionBuilder(XA_RESOURCE_TIMEOUT_NAME, ModelType.INT, true)
             .setXmlName(TimeOut.Tag.XA_RESOURCE_TIMEOUT.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING, true)
@@ -543,6 +585,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING, true)
@@ -553,6 +596,7 @@ public class Constants {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .addAlternatives(RECOVERY_CREDENTIAL_REFERENCE_NAME)
+            .setRestartAllServices()
             .build();
 
     static ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
@@ -572,6 +616,7 @@ public class Constants {
             .setAlternatives(RECOVERY_AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(RECOVERY_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
@@ -580,6 +625,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
@@ -589,23 +635,26 @@ public class Constants {
             .setAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinitionBuilder(NO_RECOVERY_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Recovery.Attribute.NO_RECOVERY.getLocalName())
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(RECOVERLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
-
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     static PropertiesAttributeDefinition RECOVERLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)
             .setAllowExpression(true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+            .setRestartAllServices()
             .build();
 
 
