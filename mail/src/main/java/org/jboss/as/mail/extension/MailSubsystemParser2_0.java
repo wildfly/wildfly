@@ -53,23 +53,23 @@ public class MailSubsystemParser2_0 implements XMLStreamConstants, XMLElementRea
                                 .addAttributes(MailSessionDefinition.DEBUG, MailSessionDefinition.JNDI_NAME, MailSessionDefinition.FROM)
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_SMTP)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.SMTP_SERVER)
 
                                 )
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_POP3)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.POP3_SERVER)
                                 )
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_IMAP)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.IMAP_SERVER)
                                 )
                                 .addChild(
                                         builder(MailServerDefinition.INSTANCE_CUSTOM)
-                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.PROPERTIES)
+                                                .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE, MailServerDefinition.PROPERTIES)
                                                 .setXmlElementName(MailSubsystemModel.CUSTOM_SERVER)
                                 )
                 )

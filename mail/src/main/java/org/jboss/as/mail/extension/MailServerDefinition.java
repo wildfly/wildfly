@@ -29,6 +29,7 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -43,6 +44,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -96,6 +98,14 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .build();
 
+    static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
+                    .build();
+
     protected static final SimpleAttributeDefinition PASSWORD =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -111,8 +121,8 @@ class MailServerDefinition extends PersistentResourceDefinition {
             .build();
 
 
-    static final AttributeDefinition[] ATTRIBUTES = {OUTBOUND_SOCKET_BINDING_REF, SSL, TLS, USERNAME, PASSWORD};
-    static final AttributeDefinition[] ATTRIBUTES_CUSTOM = {OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, SSL, TLS, USERNAME, PASSWORD, PROPERTIES};
+    static final AttributeDefinition[] ATTRIBUTES = {OUTBOUND_SOCKET_BINDING_REF, SSL, TLS, USERNAME, PASSWORD, CREDENTIAL_REFERENCE};
+    static final AttributeDefinition[] ATTRIBUTES_CUSTOM = {OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, SSL, TLS, USERNAME, PASSWORD, CREDENTIAL_REFERENCE, PROPERTIES};
 
 
     public static final MailServerDefinition INSTANCE_SMTP = new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, ATTRIBUTES);

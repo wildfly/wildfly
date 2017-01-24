@@ -24,6 +24,13 @@ package org.jboss.as.mail.extension;
 
 import java.util.Map;
 
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.security.password.interfaces.ClearPassword;
+
 /**
  * @author Tomaz Cerar
  * @created 10.8.11 22:50
@@ -31,6 +38,7 @@ import java.util.Map;
 class ServerConfig {
     private final String outgoingSocketBinding;
     private final Credentials credentials;
+    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplierInjector = new InjectedValue<>();
     private boolean sslEnabled = false;
     private boolean tlsEnabled = false;
     private final Map<String, String> properties;
@@ -48,7 +56,21 @@ class ServerConfig {
     }
 
     public Credentials getCredentials() {
-        return credentials;
+        ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier = credentialSourceSupplierInjector.getOptionalValue();
+        if (credentialSourceSupplier != null) {
+            try {
+                CredentialSource credentialSource = credentialSourceSupplier.get();
+                if (credentialSource == null) {
+                    return credentials;
+                }
+                char[] password = credentialSource.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword();
+                return new Credentials(credentials.getUsername(), new String(password));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return credentials;
+        }
     }
 
     public boolean isSslEnabled() {
@@ -61,5 +83,9 @@ class ServerConfig {
 
     public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public Injector<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplierInjector() {
+        return credentialSourceSupplierInjector;
     }
 }
