@@ -305,8 +305,7 @@ public class IronJacamarResourceCreator {
         if (ironJacamarMetadata.getTransactionSupport() != null)
             model.get(Constants.TRANSACTION_SUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
         if (ironJacamarMetadata.getWorkManager() != null && ironJacamarMetadata.getWorkManager().getSecurity() != null) {
-            assert ironJacamarMetadata.getWorkManager().getSecurity() instanceof WorkManagerSecurity;
-            WorkManagerSecurity security = (WorkManagerSecurity) ironJacamarMetadata.getWorkManager().getSecurity();
+            org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity security = ironJacamarMetadata.getWorkManager().getSecurity();
             model.get(Constants.WM_SECURITY.getName()).set(true);
             if (security.getDefaultGroups() != null) {
                 for (String group : security.getDefaultGroups()) {
@@ -317,7 +316,7 @@ public class IronJacamarResourceCreator {
                 model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
             model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
             model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
-            if (security.isElytronEnabled()) {
+            if (security instanceof  WorkManagerSecurity && ((WorkManagerSecurity) security).isElytronEnabled()) {
                 model.get(Constants.WM_ELYTRON_ENABLED.getName()).set(true);
             }
             if (security.getGroupMappings() != null) {
