@@ -42,6 +42,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
+import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -105,10 +106,22 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
                 ServerDefinition.JOURNAL_BINDINGS_TABLE,
                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
                 ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
-                ServerDefinition.JOURNAL_DATABASE);
+                ServerDefinition.JOURNAL_DATABASE
+                );
+        server.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)
+                    .addRejectCheck(DEFINED, ServerDefinition.CREDENTIAL_REFERENCE);
+
         ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
+        bridge.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.ALWAYS, BridgeDefinition.CREDENTIAL_REFERENCE)
+                .addRejectCheck(DEFINED, BridgeDefinition.CREDENTIAL_REFERENCE);
+
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.PRODUCER_WINDOW_SIZE);
+        ResourceTransformationDescriptionBuilder jmsBridge = server.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);
+        rejectDefinedAttributeWithDefaultValue(jmsBridge, JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE);
+        rejectDefinedAttributeWithDefaultValue(jmsBridge, JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE);
         ResourceTransformationDescriptionBuilder clusterConnection = server.addChildResource(MessagingExtension.CLUSTER_CONNECTION_PATH);
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE);

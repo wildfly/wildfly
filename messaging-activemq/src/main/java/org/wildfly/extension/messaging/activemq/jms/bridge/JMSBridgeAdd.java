@@ -36,11 +36,13 @@ import org.apache.activemq.artemis.jms.bridge.impl.JNDIConnectionFactoryFactory;
 import org.apache.activemq.artemis.jms.bridge.impl.JNDIDestinationFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -51,9 +53,12 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -96,6 +101,9 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_DESTINATION);
                 }
+                // adding credential source supplier which will later resolve password from CredentialStore using credential-reference
+                addCredentialStoreReference(bridgeService.getSourceCredentialSourceSupplierInjector(), JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
+                addCredentialStoreReference(bridgeService.getTargetCredentialSourceSupplierInjector(), JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
 
                 jmsBridgeServiceBuilder.install();
 
@@ -199,5 +207,24 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
     private String resolveAttribute(SimpleAttributeDefinition attr, OperationContext context, ModelNode model) throws OperationFailedException {
         final ModelNode node = attr.resolveModelAttribute(context, model);
         return node.isDefined() ? node.asString() : null;
+    }
+
+    private static void addCredentialStoreReference(InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplierInjector, ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder, String... modelFilter) throws OperationFailedException {
+        if (model.hasDefined(credentialReferenceAttributeDefinition.getName())) {
+            ModelNode filteredModelNode = model;
+            if (modelFilter != null && modelFilter.length > 0) {
+                for (String path : modelFilter) {
+                    if (filteredModelNode.get(path).isDefined())
+                        filteredModelNode = filteredModelNode.get(path);
+                    else
+                        break;
+                }
+            }
+            ModelNode value = credentialReferenceAttributeDefinition.resolveModelAttribute(context, filteredModelNode);
+            if (value.isDefined()) {
+                credentialSourceSupplierInjector.inject(
+                        CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, filteredModelNode, serviceBuilder));
+            }
+        }
     }
 }
