@@ -42,6 +42,7 @@ import org.apache.activemq.artemis.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParsers;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -52,6 +53,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
@@ -96,6 +98,14 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
 
+    public static final ObjectTypeAttributeDefinition SOURCE_CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder("source-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setAttributeGroup(SOURCE)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .build();
+
     public static final PropertiesAttributeDefinition SOURCE_CONTEXT = new PropertiesAttributeDefinition.Builder("source-context", true)
             .setAttributeGroup(SOURCE)
             .setAttributeParser(new AttributeParsers.PropertiesParser())
@@ -130,6 +140,14 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
+
+    public static final ObjectTypeAttributeDefinition TARGET_CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder("target-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setAttributeGroup(TARGET)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .build();
 
     public static final PropertiesAttributeDefinition TARGET_CONTEXT = new PropertiesAttributeDefinition.Builder("target-context", true)
             .setAttributeGroup(TARGET)
@@ -190,11 +208,13 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             SOURCE_DESTINATION,
             SOURCE_USER,
             SOURCE_PASSWORD,
+            SOURCE_CREDENTIAL_REFERENCE,
             SOURCE_CONTEXT,
             TARGET_CONNECTION_FACTORY,
             TARGET_DESTINATION,
             TARGET_USER,
             TARGET_PASSWORD,
+            TARGET_CREDENTIAL_REFERENCE,
             TARGET_CONTEXT
     };
 

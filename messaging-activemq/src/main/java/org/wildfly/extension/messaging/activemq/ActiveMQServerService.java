@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
@@ -40,6 +41,7 @@ import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.io.aio.AIOSequentialFileFactory;
@@ -67,8 +69,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
  * Service configuring and starting the {@code ActiveMQServerService}.
@@ -112,10 +118,18 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final List<Interceptor> incomingInterceptors = new ArrayList<>();
     private final List<Interceptor> outgoingInterceptors = new ArrayList<>();
 
+    // credential source injectors
+    private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
+    private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> clusterCredentialSource = new InjectedValue<>();
 
     public ActiveMQServerService(Configuration configuration, PathConfig pathConfig) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
+        if (configuration != null) {
+            for (BridgeConfiguration bridgeConfiguration : configuration.getBridgeConfigurations()) {
+                bridgeCredentialSource.put(bridgeConfiguration.getName(), new InjectedValue<>());
+            }
+        }
     }
 
     Injector<PathManager> getPathManagerInjector(){
@@ -308,6 +322,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 securityManager = new WildFlySecurityManager(securityDomainContextValue.getValue());
             }
 
+            // insert possible credential source hold passwords
+            setBridgePasswordsFromCredentialSource();
+            setClusterPasswordFromCredentialSource();
+
             DataSource ds = dataSource.getOptionalValue();
             if (ds != null) {
                 DatabaseStorageConfiguration dbConfiguration = (DatabaseStorageConfiguration) configuration.getStoreConfiguration();
@@ -468,4 +486,59 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             callbackHandles.clear();
         }
     }
+
+    /**
+     * Get {@link CredentialSource} injector based on name of the bridge.
+     * If name was not used create new injector.
+     * @param name the bridge name
+     * @return injector
+     */
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getBridgeCredentialSourceSupplierInjector(String name) {
+        if (bridgeCredentialSource.containsKey(name)) {
+            return bridgeCredentialSource.get(name);
+        } else {
+            InjectedValue<ExceptionSupplier<CredentialSource, Exception>> injector = new InjectedValue<>();
+            bridgeCredentialSource.put(name, injector);
+            return injector;
+        }
+    }
+
+    /**
+     * Get {@link CredentialSource} injector based on name of the cluster credential.
+     * @param name the cluster credential name
+     * @return injector
+     */
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getClusterCredentialSourceSupplierInjector() {
+        return clusterCredentialSource;
+    }
+
+    private void setBridgePasswordsFromCredentialSource() {
+        if (configuration != null) {
+            for (BridgeConfiguration bridgeConfiguration : configuration.getBridgeConfigurations()) {
+                setNewPassword(getBridgeCredentialSourceSupplierInjector(bridgeConfiguration.getName()).getOptionalValue(), bridgeConfiguration::setPassword);
+            }
+        }
+    }
+
+    private void setClusterPasswordFromCredentialSource() {
+        if (configuration != null)
+            setNewPassword(getClusterCredentialSourceSupplierInjector().getOptionalValue(), configuration::setClusterPassword);
+    }
+
+    private void setNewPassword(ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier, Consumer<String> passwordConsumer) {
+        if (credentialSourceSupplier != null) {
+            try {
+                CredentialSource credentialSource = credentialSourceSupplier.get();
+                if (credentialSource != null) {
+                    char[] password = credentialSource.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword();
+                    if (password != null) {
+                        passwordConsumer.accept(new String(password));
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 }

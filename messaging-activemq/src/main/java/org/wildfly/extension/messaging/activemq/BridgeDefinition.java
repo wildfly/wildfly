@@ -37,6 +37,7 @@ import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -45,6 +46,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -108,6 +110,14 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
 
+    public static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .setRestartAllServices()
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .build();
+
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.isDefaultBridgeDuplicateDetection()))
@@ -146,7 +156,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             USE_DUPLICATE_DETECTION,
             PRODUCER_WINDOW_SIZE,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-            USER, PASSWORD,
+            USER, PASSWORD, CREDENTIAL_REFERENCE,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
     };
 

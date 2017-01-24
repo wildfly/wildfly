@@ -41,6 +41,7 @@ import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
@@ -83,6 +85,16 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
+
+    public static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder("cluster-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setAttributeGroup("cluster")
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .setRestartAllServices()
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .build();
+
     public static final SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
             .setAttributeGroup("cluster")
             .setXmlName("user")
@@ -510,7 +522,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = {PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
             THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, ELYTRON_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL,
             OVERRIDE_IN_VM_SECURITY, WILD_CARD_ROUTING_ENABLED, MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS,
-            CLUSTER_USER, CLUSTER_PASSWORD, JMX_MANAGEMENT_ENABLED, JMX_DOMAIN, STATISTICS_ENABLED, MESSAGE_COUNTER_SAMPLE_PERIOD,
+            CLUSTER_USER, CLUSTER_PASSWORD, CREDENTIAL_REFERENCE, JMX_MANAGEMENT_ENABLED, JMX_DOMAIN, STATISTICS_ENABLED, MESSAGE_COUNTER_SAMPLE_PERIOD,
             MESSAGE_COUNTER_MAX_DAY_HISTORY, CONNECTION_TTL_OVERRIDE, ASYNC_CONNECTION_EXECUTION_ENABLED, TRANSACTION_TIMEOUT,
             TRANSACTION_TIMEOUT_SCAN_PERIOD, MESSAGE_EXPIRY_SCAN_PERIOD, MESSAGE_EXPIRY_THREAD_PRIORITY, ID_CACHE_SIZE, PERSIST_ID_CACHE,
             CommonAttributes.INCOMING_INTERCEPTORS, CommonAttributes.OUTGOING_INTERCEPTORS,

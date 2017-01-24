@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq.jms.bridge;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Consumer;
 
 import javax.transaction.TransactionManager;
 
@@ -37,8 +38,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
  * Service responsible for JMS Bridges.
@@ -50,6 +55,9 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final String bridgeName;
     private final String moduleName;
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
+    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> sourceCredentialSourceSupplierInjector = new InjectedValue<>();
+    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> targetCredentialSourceSupplierInjector = new InjectedValue<>();
+
 
     public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
         if(bridge == null) {
@@ -102,6 +110,7 @@ class JMSBridgeService implements Service<JMSBridge> {
         ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+            setJMSBridgePasswordsFromCredentialSource();
             bridge.start();
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
@@ -141,4 +150,34 @@ class JMSBridgeService implements Service<JMSBridge> {
     public InjectedValue<ExecutorService> getExecutorInjector() {
         return executorInjector;
     }
+
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getSourceCredentialSourceSupplierInjector() {
+        return sourceCredentialSourceSupplierInjector;
+    }
+
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getTargetCredentialSourceSupplierInjector() {
+        return targetCredentialSourceSupplierInjector;
+    }
+
+    private void setJMSBridgePasswordsFromCredentialSource() {
+        setNewJMSBridgePassword(sourceCredentialSourceSupplierInjector.getOptionalValue(), bridge::setSourcePassword);
+        setNewJMSBridgePassword(targetCredentialSourceSupplierInjector.getOptionalValue(), bridge::setTargetPassword);
+    }
+
+    private void setNewJMSBridgePassword(ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier, Consumer<String> passwordConsumer) {
+        if (credentialSourceSupplier != null) {
+            try {
+                CredentialSource credentialSource = credentialSourceSupplier.get();
+                if (credentialSource != null) {
+                    char[] password = credentialSource.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword();
+                    if (password != null) {
+                        passwordConsumer.accept(new String(password));
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 }

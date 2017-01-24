@@ -76,6 +76,15 @@
 
             <xs:element name="cluster" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Credential to be used by the configuration.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
                     <xs:attribute name="user" type="xs:string" />
                     <xs:attribute name="password" type="xs:string" />
                 </xs:complexType>
@@ -446,6 +455,15 @@
 
             <xs:element name="bridge" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Credential to be used by the configuration.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
                     <xs:attribute name="name" type="xs:string" use="required" />
                     <xs:attribute name="queue-name" type="xs:string" use="required" />
 
@@ -567,6 +585,13 @@
                                 <xs:attribute name="setup-attempts" type="xs:int" use="optional" />
                                 <xs:attribute name="setup-interval" type="xs:long" use="optional" />
                             </xs:complexType>
+                        </xs:element>
+                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Credential to be used by the configuration.
+                                </xs:documentation>
+                            </xs:annotation>
                         </xs:element>
                     </xs:sequence>
                     <xs:attribute name="name" type="xs:string" use="required" />
@@ -753,6 +778,13 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="source-context" type="contextType" minOccurs="0" maxOccurs="1" />
+                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Credential to be used by the configuration.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
                     </xs:sequence>
                     <xs:attribute name="connection-factory" type="xs:string" use="required" />
                     <xs:attribute name="destination" type="xs:string" use="required" />
@@ -764,6 +796,13 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="target-context" type="contextType" minOccurs="0" maxOccurs="1" />
+                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Credential to be used by the configuration.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
                     </xs:sequence>
                     <xs:attribute name="connection-factory" type="xs:string" use="required" />
                     <xs:attribute name="destination" type="xs:string" use="required" />
@@ -804,6 +843,50 @@
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <!-- Credential Reference Types -->
+    <xs:attributeGroup name="credentialReferenceStoreBased">
+        <xs:annotation>
+            <xs:documentation>
+                Group of attributes used when referencing credential through credential store.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="store" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Credential store name used to fetch credential with given 'alias' from.
+                    Credential store name has to be defined elsewhere.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alias" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Alias of credential in the credential store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Type of credential to be fetched from credential store.
+                    It is usually fully qualified class name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:complexType name="credentialReferenceType">
+        <xs:attributeGroup ref="credentialReferenceStoreBased"/>
+        <xs:attribute name="clear-text" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Credential/password in clear text. Use just for testing purpose.
+                    Otherwise use credential store to mask the actual credential from your configuration.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>
