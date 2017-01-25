@@ -1,17 +1,23 @@
 #!/bin/sh -e
 ### ====================================================================== ###
 ##                                                                          ##
-##  This is the main entry point for the build system.                      ##
+##  A build script                                                          ##
 ##                                                                          ##
-##  Users should execute this file rather than 'mvn' to ensure              ##
-##  the correct version is being used with the correct configuration.       ##
+##  Note that in the past, this script took the following responsibilities  ##
+##  that are now handled by ./mvnw (a.k.a. Maven Wrapper) or Maven itself:  ##
+##                                                                          ##
+##  * Download and install a specific version of Maven                      ##
+##  * Set Maven options via MAVEN_OPTS environment variable - these can     ##
+##    now be set in .mvn/jvm.config and .mvn/maven.config                   ##
+##                                                                          ##
+##  The only task left in this script is settting a sufficient limit for    ##
+##  the open files (a.k.a. ulimit -n). If this is not important to you,     ##
+##  feel free to use ./mvnw directly                                        ##
 ##                                                                          ##
 ### ====================================================================== ###
 
-# $Id: build.sh 105735 2010-06-04 19:45:13Z pgier $
-
 PROGNAME=`basename $0`
-DIRNAME=`dirname $0`
+DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 GREP="grep"
 ROOT="/"
 
@@ -19,19 +25,9 @@ ROOT="/"
 M2_HOME=""
 MAVEN_HOME=""
 
-MAVEN_OPTS="$MAVEN_OPTS -Xmx1024M"
-export MAVEN_OPTS
-
-./tools/download-maven.sh
-
-#  Default search path for maven.
-MAVEN_SEARCH_PATH="\
-    tools
-    tools/maven \
-    tools/apache/maven \
-    maven"
-
-
+# MAVEN_OPTS now live in .mvn/jvm.config and .mvn/maven.config
+# MAVEN_OPTS="$MAVEN_OPTS -Xmx1024M"
+# export MAVEN_OPTS
 
 #  Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
@@ -75,19 +71,6 @@ source_if_exists() {
     done
 }
 
-find_maven() {
-    search="$*"
-    for d in $search; do
-        MAVEN_HOME="${DIRNAME}/$d"
-        MVN="$MAVEN_HOME/bin/mvn"
-        if [ -x "$MVN" ]; then
-            #  Found.
-            echo $MAVEN_HOME
-            break
-        fi
-    done
-}
-
 #
 #  Main function.
 #
@@ -111,38 +94,7 @@ main() {
         fi
     fi
 
-    #  Try the search path.
-    MAVEN_HOME=`find_maven $MAVEN_SEARCH_PATH`
-
-    #  Try looking up to root.
-    if [ "x$MAVEN_HOME" = "x" ]; then
-        target="build"
-        _cwd=`pwd`
-
-        while [ "x$MAVEN_HOME" = "x" ] && [ "$cwd" != "$ROOT" ]; do
-            cd ..
-            cwd=`pwd`
-            MAVEN_HOME=`find_maven $MAVEN_SEARCH_PATH`
-        done
-
-        #  Make sure we get back.
-        cd $_cwd
-
-        if [ "$cwd" != "$ROOT" ]; then
-            found="true"
-        fi
-
-        #  Complain if we did not find anything.
-        if [ "$found" != "true" ]; then
-            die "Could not locate Maven; check \$MVN or \$MAVEN_HOME."
-        fi
-    fi
-
-    #  Make sure we have one.
-    MVN=$MAVEN_HOME/bin/mvn
-    if [ ! -x "$MVN" ]; then
-        die "Maven file is not executable: $MVN"
-    fi
+    MVN="$DIRNAME/mvnw"
 
     #  Need to specify planet57/buildmagic protocol handler package.
     MVN_OPTS="-Djava.protocol.handler.pkgs=org.jboss.net.protocol"
@@ -154,8 +106,6 @@ main() {
     #  to be in the same directory as build.xml.
     cd $DIRNAME
 
-    #  Add default settings before calling maven.
-    MVN_SETTINGS_XML_ARGS="-s tools/maven/conf/settings.xml"
     MVN_GOAL="";
     ADDIT_PARAMS="";
     #  For each parameter, check for testsuite directives.
