@@ -55,17 +55,14 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.ejb.AsyncResult;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -110,7 +107,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         //TODO: this is not very efficient
         final Method method = view.getMethod(invocation.getInvokedMethod().getName(), DescriptorUtils.methodDescriptor(invocation.getInvokedMethod()));
 
-        final boolean async = view.isAsynchronous(method);
+        final boolean async = view.isAsynchronous(method) || invocation.isClientAsync();
 
         final Object[] parameters;
         if (invocation.getParameters() == null) {
@@ -137,7 +134,7 @@ public class LocalEjbReceiver extends EJBReceiver {
             interceptorContext.setContextData(data);
 
             // write out public (application specific) context data
-            for (Map.Entry<String, Object> entry : invocationContextData.entrySet()) {
+            if (invocationContextData != null) for (Map.Entry<String, Object> entry : invocationContextData.entrySet()) {
                 data.put(entry.getKey(), entry.getValue());
             }
             if (!privateAttachments.isEmpty()) {
@@ -191,7 +188,7 @@ public class LocalEjbReceiver extends EJBReceiver {
                             result = view.invoke(interceptorContext);
                         } catch (Exception e) {
                             // WFLY-4331 - clone the exception of an async task
-                            receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Failed((Exception) clone(e.getClass(), resultCloner, e, allowPassByReference)));
+                            receiverContext.resultReady(new CloningExceptionProducer(invocation, resultCloner, e, allowPassByReference));
                             return;
                         }
                         // if the result is null, there is no cloning needed
@@ -212,7 +209,7 @@ public class LocalEjbReceiver extends EJBReceiver {
                                     intr = true;
                                 } catch (ExecutionException e) {
                                     // WFLY-4331 - clone the exception of an async task
-                                    receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Failed((Exception) clone(e.getClass(), resultCloner, e, allowPassByReference)));
+                                    receiverContext.resultReady(new CloningExceptionProducer(invocation, resultCloner, e, allowPassByReference));
                                     return;
                                 }
                             } finally {
@@ -223,18 +220,26 @@ public class LocalEjbReceiver extends EJBReceiver {
                                 receiverContext.resultReady(NULL_RESULT);
                                 return;
                             }
-                            receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Immediate(new AsyncResult<Object>(clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference))));
+                            receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, asyncValue, allowPassByReference));
                             return;
                         }
-                        receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Immediate(clone(result.getClass(), resultCloner, result, allowPassByReference)));
-                        return;
+                        receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
                     } finally {
                         StartupCountdown.restore(null);
                         clearSecurityContextOnAssociation();
                     }
                 };
                 interceptorContext.putPrivateData(CancellationFlag.class, flag);
-                component.getAsynchronousExecutor().submit(task);
+                final ExecutorService executor = component.getAsynchronousExecutor();
+                if (executor == null) {
+                    receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Failed(
+                        EjbLogger.ROOT_LOGGER.executorIsNull()
+                    ));
+                } else {
+                    executor.execute(task);
+                    // this normally isn't necessary unless the client didn't detect that it was an async method for some reason
+                    receiverContext.proceedAsynchronously();
+                }
             } else {
                 throw EjbLogger.ROOT_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();
             }
@@ -301,12 +306,7 @@ public class LocalEjbReceiver extends EJBReceiver {
     private ObjectCloner createCloner(final ClonerConfiguration paramConfig) {
         ObjectCloner parameterCloner;
         if(WildFlySecurityManager.isChecking()) {
-            parameterCloner = WildFlySecurityManager.doUnchecked(new PrivilegedAction<ObjectCloner>() {
-                @Override
-                public ObjectCloner run() {
-                    return ObjectCloners.getSerializingObjectClonerFactory().createCloner(paramConfig);
-                }
-            });
+            parameterCloner = WildFlySecurityManager.doUnchecked((PrivilegedAction<ObjectCloner>) () -> ObjectCloners.getSerializingObjectClonerFactory().createCloner(paramConfig));
         } else {
             parameterCloner = ObjectCloners.getSerializingObjectClonerFactory().createCloner(paramConfig);
         }
@@ -344,19 +344,20 @@ public class LocalEjbReceiver extends EJBReceiver {
             return null;
         }
 
-        try {
-            if(WildFlySecurityManager.isChecking()) {
-                return WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<Object>() {
-                    @Override
-                    public Object run() throws IOException, ClassNotFoundException {
-                        return cloner.clone(object);
-                    }
-                });
-            } else {
+        if(WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                try {
+                    return cloner.clone(object);
+                } catch (Exception e) {
+                    throw EjbLogger.ROOT_LOGGER.failedToMarshalEjbParameters(e);
+                }
+            });
+        } else {
+            try {
                 return cloner.clone(object);
+            } catch (Exception e) {
+                throw EjbLogger.ROOT_LOGGER.failedToMarshalEjbParameters(e);
             }
-        } catch (Exception e) {
-            throw EjbLogger.ROOT_LOGGER.failedToMarshalEjbParameters(e);
         }
     }
 
@@ -374,24 +375,16 @@ public class LocalEjbReceiver extends EJBReceiver {
     }
 
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            SecurityContextAssociation.setSecurityContext(sc);
+            return null;
         });
     }
 
     private static void clearSecurityContextOnAssociation() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            SecurityContextAssociation.clearSecurityContext();
+            return null;
         });
     }
 }
