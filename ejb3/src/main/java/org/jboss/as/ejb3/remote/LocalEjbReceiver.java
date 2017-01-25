@@ -27,7 +27,6 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
@@ -78,6 +77,7 @@ import java.util.concurrent.Future;
 public class LocalEjbReceiver extends EJBReceiver {
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
+    private static final EJBReceiverInvocationContext.ResultProducer.Immediate NULL_RESULT = new EJBReceiverInvocationContext.ResultProducer.Immediate(null);
 
     private final DeploymentRepository deploymentRepository;
 
@@ -89,7 +89,7 @@ public class LocalEjbReceiver extends EJBReceiver {
     }
 
     @Override
-    protected void processInvocation(final EJBReceiverInvocationContext receiverContext) throws Exception {
+    protected void processInvocation(final EJBReceiverInvocationContext receiverContext) {
         final EJBClientInvocationContext invocation = receiverContext.getClientInvocationContext();
         final EJBLocator<?> locator = invocation.getLocator();
         final EjbDeploymentInformation ejb = findBean(locator.getAppName(), locator.getModuleName(), locator.getDistinctName(), locator.getBeanName());
@@ -178,40 +178,63 @@ public class LocalEjbReceiver extends EJBReceiver {
                     securityContext = SecurityContextAssociation.getSecurityContext();
                 }
                 final StartupCountdown.Frame frame = StartupCountdown.current();
-                final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
-
-                    @Override
-                    protected Object runInvocation() throws Exception {
-                        setSecurityContextOnAssociation(securityContext);
-                        StartupCountdown.restore(frame);
+                final Runnable task = () -> {
+                    if (flag.get()) {
+                        receiverContext.requestCancelled();
+                        return;
+                    }
+                    setSecurityContextOnAssociation(securityContext);
+                    StartupCountdown.restore(frame);
+                    try {
+                        final Object result;
                         try {
-                            Object result = view.invoke(interceptorContext);
-                            // if the result is null, there is no cloning needed
-                            if(result == null) {
-                                return result;
-                            }
-                            // WFLY-4331 - clone the result of an async task
-                            if(result instanceof Future) {
-                                Object asyncValue = ((Future)result).get();
-                                // if the return value is null, there is no cloning needed
-                                if(asyncValue == null) {
-                                    return asyncValue;
-                                }
-                                return new AsyncResult(LocalEjbReceiver.clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference));
-                            }
-                            return LocalEjbReceiver.clone(result.getClass(), resultCloner, result, allowPassByReference);
-                        } catch(ExecutionException e) {
+                            result = view.invoke(interceptorContext);
+                        } catch (Exception e) {
                             // WFLY-4331 - clone the exception of an async task
-                            throw ((Exception) LocalEjbReceiver.clone(e.getClass(), resultCloner, e, allowPassByReference));
-                        } finally {
-                            StartupCountdown.restore(null);
-                            clearSecurityContextOnAssociation();
+                            receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Failed((Exception) clone(e.getClass(), resultCloner, e, allowPassByReference)));
+                            return;
                         }
+                        // if the result is null, there is no cloning needed
+                        if(result == null) {
+                            receiverContext.resultReady(NULL_RESULT);
+                            return;
+                        }
+                        // WFLY-4331 - clone the result of an async task
+                        if(result instanceof Future) {
+                            // blocking is very unlikely here, so just defer interrupts when they happen
+                            boolean intr = Thread.interrupted();
+                            Object asyncValue;
+                            try {
+                                for (;;) try {
+                                    asyncValue = ((Future)result).get();
+                                    break;
+                                } catch (InterruptedException e) {
+                                    intr = true;
+                                } catch (ExecutionException e) {
+                                    // WFLY-4331 - clone the exception of an async task
+                                    receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Failed((Exception) clone(e.getClass(), resultCloner, e, allowPassByReference)));
+                                    return;
+                                }
+                            } finally {
+                                if (intr) Thread.currentThread().interrupt();
+                            }
+                            // if the return value is null, there is no cloning needed
+                            if (asyncValue == null) {
+                                receiverContext.resultReady(NULL_RESULT);
+                                return;
+                            }
+                            receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Immediate(new AsyncResult<Object>(clone(asyncValue.getClass(), resultCloner, asyncValue, allowPassByReference))));
+                            return;
+                        }
+                        receiverContext.resultReady(new EJBReceiverInvocationContext.ResultProducer.Immediate(clone(result.getClass(), resultCloner, result, allowPassByReference)));
+                        return;
+                    } finally {
+                        StartupCountdown.restore(null);
+                        clearSecurityContextOnAssociation();
                     }
                 };
                 interceptorContext.putPrivateData(CancellationFlag.class, flag);
                 component.getAsynchronousExecutor().submit(task);
-                receiverContext.resultReady(new ImmediateResultProducer(task));
             } else {
                 throw EjbLogger.ROOT_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();
             }
@@ -222,13 +245,54 @@ public class LocalEjbReceiver extends EJBReceiver {
             } catch (Exception e) {
                 //we even have to clone the exception type
                 //to make sure it matches
-                throw (Exception) clone(Exception.class, resultCloner, e, allowPassByReference);
+                receiverContext.resultReady(new CloningExceptionProducer(invocation, resultCloner, e, allowPassByReference));
+                return;
             }
             //we do not marshal the return type unless we have to, the spec only says we have to
             //pass parameters by reference
-            //TODO: investigate the implications of this further
-            final Object clonedResult = clone(invocation.getInvokedMethod().getReturnType(), resultCloner, result, allowPassByReference);
-            receiverContext.resultReady(new ImmediateResultProducer(clonedResult));
+            receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
+        }
+    }
+
+    static final class CloningResultProducer implements EJBReceiverInvocationContext.ResultProducer {
+        private final EJBClientInvocationContext invocation;
+        private final ObjectCloner resultCloner;
+        private final Object result;
+        private final boolean allowPassByReference;
+
+        CloningResultProducer(final EJBClientInvocationContext invocation, final ObjectCloner resultCloner, final Object result, final boolean allowPassByReference) {
+            this.invocation = invocation;
+            this.resultCloner = resultCloner;
+            this.result = result;
+            this.allowPassByReference = allowPassByReference;
+        }
+
+        public Object getResult() throws Exception {
+            return LocalEjbReceiver.clone(invocation.getInvokedMethod().getReturnType(), resultCloner, result, allowPassByReference);
+        }
+
+        public void discardResult() {
+        }
+    }
+
+    static final class CloningExceptionProducer implements EJBReceiverInvocationContext.ResultProducer {
+        private final EJBClientInvocationContext invocation;
+        private final ObjectCloner resultCloner;
+        private final Exception exception;
+        private final boolean allowPassByReference;
+
+        CloningExceptionProducer(final EJBClientInvocationContext invocation, final ObjectCloner resultCloner, final Exception exception, final boolean allowPassByReference) {
+            this.invocation = invocation;
+            this.resultCloner = resultCloner;
+            this.exception = exception;
+            this.allowPassByReference = allowPassByReference;
+        }
+
+        public Object getResult() throws Exception {
+            throw (Exception) LocalEjbReceiver.clone(invocation.getInvokedMethod().getReturnType(), resultCloner, exception, allowPassByReference);
+        }
+
+        public void discardResult() {
         }
     }
 
@@ -261,7 +325,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         return new StatefulEJBLocator<T>(statelessLocator, sessionID, statefulComponent.getCache().getStrictAffinity());
     }
 
-    private static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
+    static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
         if (object == null) {
             return null;
         }
@@ -307,25 +371,6 @@ public class LocalEjbReceiver extends EJBReceiver {
             throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(beanName, appName, moduleName, distinctName);
         }
         return ejbInfo;
-    }
-
-    private static class ImmediateResultProducer implements EJBReceiverInvocationContext.ResultProducer {
-
-        private final Object clonedResult;
-
-        public ImmediateResultProducer(final Object clonedResult) {
-            this.clonedResult = clonedResult;
-        }
-
-        @Override
-        public Object getResult() {
-            return clonedResult;
-        }
-
-        @Override
-        public void discardResult() {
-
-        }
     }
 
     private static void setSecurityContextOnAssociation(final SecurityContext sc) {
