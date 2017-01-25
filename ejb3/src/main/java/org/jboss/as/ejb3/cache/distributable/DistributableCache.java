@@ -57,16 +57,12 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public Affinity getStrictAffinity() {
-        try (Batch batch = this.manager.getBatcher().createBatch()) {
-            return this.manager.getStrictAffinity();
-        }
+        return this.manager.getStrictAffinity();
     }
 
     @Override
     public Affinity getWeakAffinity(K id) {
-        try (Batch batch = this.manager.getBatcher().createBatch()) {
-            return this.manager.getWeakAffinity(id);
-        }
+        return this.manager.getWeakAffinity(id);
     }
 
     @SuppressWarnings("unchecked")
