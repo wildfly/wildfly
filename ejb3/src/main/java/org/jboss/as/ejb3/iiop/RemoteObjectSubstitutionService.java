@@ -27,6 +27,9 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.ejb.client.AbstractEJBMetaData;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.EntityEJBMetaData;
 import org.jboss.javax.rmi.RemoteObjectSubstitution;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHandle;
@@ -86,6 +89,12 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
             }
             final EJBLocator<?> locator = EJBClient.getLocatorFor(metadata.getEJBHome());
             final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
+            return new EJBMetaDataImplIIOP(metadata.getRemoteInterfaceClass(), metadata.getHomeInterfaceClass(), pk, metadata.isSession(), metadata.isStatelessSession(), (HomeHandle) factory.handleForLocator(locator));
+        } else if (object instanceof AbstractEJBMetaData) {
+            final AbstractEJBMetaData<?, ?> metadata = (AbstractEJBMetaData<?, ?>) object;
+            final EJBHomeLocator<?> locator = metadata.getHomeLocator();
+            final EjbIIOPService factory = serviceForLocator(locator, deploymentRepository);
+            Class<?> pk = metadata instanceof EntityEJBMetaData ? metadata.getPrimaryKeyClass() : null;
             return new EJBMetaDataImplIIOP(metadata.getRemoteInterfaceClass(), metadata.getHomeInterfaceClass(), pk, metadata.isSession(), metadata.isStatelessSession(), (HomeHandle) factory.handleForLocator(locator));
         }
         return object;
