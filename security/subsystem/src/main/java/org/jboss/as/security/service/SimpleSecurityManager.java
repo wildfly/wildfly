@@ -42,7 +42,6 @@ import javax.security.jacc.PolicyContext;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.remoting.RemotingConnectionCredential;
-import org.jboss.as.security.remoting.RemotingConnectionPrincipal;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.Connection;
 import org.jboss.security.AuthenticationManager;
@@ -309,13 +308,13 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                     PasswordCredential passwordCredential = privateCredentials.getCredential(PasswordCredential.class, ClearPassword.ALGORITHM_CLEAR);
                     if (passwordCredential != null) {
                         credential = new String(passwordCredential.getPassword(ClearPassword.class).getPassword());
+                    } else {
+                        credential = new RemotingConnectionCredential(connection);
                     }
+                } else {
+                    throw SecurityLogger.ROOT_LOGGER.noUserPrincipalFound();
                 }
 
-                if (p == null || credential == null) {
-                    p = new RemotingConnectionPrincipal(connection);
-                    credential = new RemotingConnectionCredential(connection);
-                }
                 SecurityActions.remotingContextClear();
 
                 util.createSubjectInfo(p, credential, null);
