@@ -25,6 +25,7 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -130,6 +131,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                     }
                 })
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
+                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, ejbRemoteConnectorService.getControlledProcessStateServiceInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         builder.install();
     }
