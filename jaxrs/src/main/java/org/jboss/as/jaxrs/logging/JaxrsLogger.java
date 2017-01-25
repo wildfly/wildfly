@@ -36,6 +36,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.List;
@@ -169,4 +170,7 @@ public interface JaxrsLogger extends BasicLogger {
     @Message(id = 15, value = "No Servlet declaration found for JAX-RS application.  In %s either provide a class that extends javax.ws.rs.core.Application or declare a servlet class in web.xml.")
     void noServletDeclaration(String archiveName);
 
+    @LogMessage(level = INFO)
+    @Message(id = 16, value = "RESTEasy version %s")
+    void resteasyVersion(String version);
 }
