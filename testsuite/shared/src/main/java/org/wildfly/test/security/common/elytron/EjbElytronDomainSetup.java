@@ -22,8 +22,8 @@
 
 package org.wildfly.test.security.common.elytron;
 
+//import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -40,6 +40,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.elytron.ElytronExtension;
 
@@ -158,7 +159,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
         final ModelNode compositeOp = new ModelNode();
         compositeOp.get(OP).set(ModelDescriptionConstants.COMPOSITE);
-        compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         compositeOp.get(OP_ADDR).setEmptyList();
 
         ModelNode steps = compositeOp.get(STEPS);
@@ -211,36 +211,50 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         steps.add(addUndertowDomain);
 
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
+        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 is fixed
+        //       and remove this reload
+        ServerReload.reloadIfRequired(managementClient.getControllerClient());
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) {
         System.out.println("tearing down...");
 
-        List<ModelNode> updates = new LinkedList<>();
-        updates.add(Util.createRemoveOperation(undertowDomainAddress));
-        updates.add(Util.createRemoveOperation(httpAuthenticationAddress));
-        updates.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", "http-remoting-connector"));
-        updates.add(Util.createRemoveOperation(ejbDomainAddress));
-        updates.add(Util.createRemoveOperation(remotingConnectorAddress));
-        updates.add(Util.createRemoveOperation(saslAuthenticationAddress));
-        updates.add(Util.createRemoveOperation(domainAddress));
-        updates.add(Util.createRemoveOperation(realmAddress));
+        try {
+            applyUpdate(managementClient.getControllerClient(), Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", "http-remoting-connector"), false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 is fixed
+        //       and remove this reload
+        try {
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-        applyUpdates(managementClient.getControllerClient(), updates, false);
+        List<ModelNode> updates = new LinkedList<>();
+
+        applyRemoveAllowReload(managementClient.getControllerClient(), undertowDomainAddress, false);
+        applyRemoveAllowReload(managementClient.getControllerClient(), httpAuthenticationAddress, false);
+        applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
+        applyRemoveAllowReload(managementClient.getControllerClient(), remotingConnectorAddress, false);
+        // TODO: remove this reload once WFLY-8821 is fixed
+        try {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        applyRemoveAllowReload(managementClient.getControllerClient(), saslAuthenticationAddress, false);
+        applyRemoveAllowReload(managementClient.getControllerClient(), domainAddress, false);
+        applyRemoveAllowReload(managementClient.getControllerClient(), realmAddress, false);
     }
 
-    protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates, boolean allowFailure) {
-        ModelNode compositeOp = new ModelNode();
-        compositeOp.get(OP).set(COMPOSITE);
-        compositeOp.get(OP_ADDR).setEmptyList();
-        compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ModelNode steps = compositeOp.get(STEPS);
-        for (ModelNode update : updates) {
-            steps.add(update);
-        }
+    private static void applyRemoveAllowReload(final ModelControllerClient client, PathAddress address, boolean allowFailure) {
+        ModelNode op = Util.createRemoveOperation(address);
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         try {
-            applyUpdate(client, compositeOp, allowFailure);
+            applyUpdate(client, op, allowFailure);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
