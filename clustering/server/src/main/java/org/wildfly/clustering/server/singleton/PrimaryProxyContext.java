@@ -22,17 +22,13 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.function.Supplier;
-
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.provider.ServiceProviderRegistration;
 
 /**
  * @author Paul Ferraro
  */
 public interface PrimaryProxyContext<T> {
-    Supplier<CommandDispatcher<SingletonContext<T>>> getCommandDispatcher();
-    Supplier<ServiceProviderRegistration<ServiceName>> getServiceProviderRegistration();
-    int getQuorum();
+    CommandDispatcher<SingletonContext<T>> getCommandDispatcher();
+    ServiceName getServiceName();
 }

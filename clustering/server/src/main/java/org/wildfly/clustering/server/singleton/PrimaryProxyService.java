@@ -23,23 +23,18 @@
 package org.wildfly.clustering.server.singleton;
 
 import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 
 /**
@@ -48,61 +43,37 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  */
 public class PrimaryProxyService<T> implements Service<T> {
 
-    private final Supplier<CommandDispatcher<SingletonContext<T>>> dispatcher;
-    private final Supplier<ServiceProviderRegistration<ServiceName>> registration;
-    private final int quorum;
+    private final PrimaryProxyContext<T> context;
 
     private volatile boolean started = false;
 
     public PrimaryProxyService(PrimaryProxyContext<T> context) {
-        this.dispatcher = context.getCommandDispatcher();
-        this.registration = context.getServiceProviderRegistration();
-        this.quorum = context.getQuorum();
+        this.context = context;
     }
 
     @Override
     public T getValue() {
-        CommandDispatcher<SingletonContext<T>> dispatcher = this.dispatcher.get();
-        ServiceProviderRegistration<ServiceName> registration = this.registration.get();
+        if (!this.started) {
+            throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.context.getServiceName().getCanonicalName());
+        }
         try {
-            List<Map.Entry<Node, Optional<T>>> result = Collections.emptyList();
-            while (result.isEmpty()) {
-                if (!this.started) {
-                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(registration.getService().getCanonicalName());
+            Map<Node, CommandResponse<Optional<T>>> responses = this.context.getCommandDispatcher().executeOnCluster(new SingletonValueCommand<T>());
+            // Prune non-primary (i.e. null) results
+            List<Map.Entry<Node, Optional<T>>> result = responses.entrySet().stream().map(entry -> {
+                try {
+                    return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().get());
+                } catch (ExecutionException e) {
+                    throw new IllegalArgumentException(e);
                 }
-                Map<Node, CommandResponse<Optional<T>>> responses = dispatcher.executeOnCluster(new SingletonValueCommand<T>());
-                // Prune non-primary (i.e. null) results
-                result = responses.entrySet().stream().map(entry -> {
-                    try {
-                        return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().get());
-                    } catch (ExecutionException e) {
-                        throw new IllegalArgumentException(e);
-                    }
-                }).filter(entry -> entry.getValue() != null).collect(Collectors.toList());
-                // We expect only 1 result
-                if (result.size() > 1) {
-                    // This would mean there are multiple primary nodes!
-                    throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(registration.getService().getCanonicalName(), result.stream().map(entry -> entry.getKey()).collect(Collectors.toList()));
-                }
-                if (result.isEmpty()) {
-                    ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(registration.getService().getCanonicalName());
-                    // Verify whether there is no primary node because a quorum was not reached during the last election
-                    if (registration.getProviders().size() < this.quorum) {
-                        throw ClusteringServerLogger.ROOT_LOGGER.notStarted(registration.getService().getCanonicalName());
-                    }
-                    if (Thread.currentThread().isInterrupted()) {
-                        throw new InterruptedException();
-                    }
-                    // Otherwise, we're in the midst of a new election, so just try again
-                    Thread.yield();
-                }
+            }).filter(entry -> entry.getValue() != null).collect(Collectors.toList());
+            // We expect only 1 result
+            if (result.size() > 1) {
+                // This would mean there are multiple primary nodes!
+                throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(this.context.getServiceName().getCanonicalName(), result.stream().map(Map.Entry::getKey).collect(Collectors.toList()));
             }
-            return result.get(0).getValue().orElse(null);
+            return result.stream().findFirst().orElseThrow(() -> ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(this.context.getServiceName().getCanonicalName())).getValue().orElse(null);
         } catch (CommandDispatcherException e) {
-            throw new IllegalStateException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
