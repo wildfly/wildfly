@@ -40,13 +40,13 @@ import org.infinispan.marshall.core.Ids;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.JBossMarshaller;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
@@ -114,7 +114,7 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
         ;
 
         Module module = this.module.getValue();
-        builder.serialization().marshaller(new JBossMarshaller(this.loader.getValue()));
+        builder.serialization().classResolver(ModularClassResolver.getInstance(this.loader.getValue()));
         builder.classLoader(module.getClassLoader());
         int id = Ids.MAX_ID;
         for (Externalizer<?> externalizer : module.loadService(Externalizer.class)) {
