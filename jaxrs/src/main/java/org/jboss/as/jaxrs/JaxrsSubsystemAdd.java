@@ -33,11 +33,13 @@ import org.jboss.as.jaxrs.deployment.JaxrsDependencyProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsIntegrationProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsScanningProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
+import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.resteasy.spi.ResteasyDeployment;
 
 /**
  * The jaxrs subsystem add update handler.
@@ -55,6 +57,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, ModelNode operation, Resource resource) {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
+        JaxrsLogger.JAXRS_LOGGER.resteasyVersion(ResteasyDeployment.class.getPackage().getImplementationVersion());
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JAXRS_ANNOTATIONS, new JaxrsAnnotationProcessor());
