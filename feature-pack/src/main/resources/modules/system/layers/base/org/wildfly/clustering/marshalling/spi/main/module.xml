@@ -33,6 +33,6 @@
 
     <dependencies>
         <module name="org.wildfly.clustering.marshalling.api"/>
-        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>
