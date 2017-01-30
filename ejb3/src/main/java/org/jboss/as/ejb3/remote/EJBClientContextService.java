@@ -27,6 +27,7 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
+import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.Service;
@@ -55,6 +56,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     private final InjectedValue<EJBClientConfiguratorService> configuratorServiceInjector = new InjectedValue<>();
     private final InjectedValue<EJBTransportProvider> localProviderInjector = new InjectedValue<>();
+    private final InjectedValue<RemotingProfileService> profileServiceInjector = new InjectedValue<>();
 
     /**
      * TODO: possibly move to using a per-thread solution for embedded support
@@ -78,6 +80,14 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         final EJBTransportProvider localTransport = localProviderInjector.getOptionalValue();
         if (localTransport != null) {
             builder.addTransportProvider(localTransport);
+        }
+
+        final RemotingProfileService profileService = profileServiceInjector.getOptionalValue();
+        if (profileService != null) for (RemotingProfileService.ConnectionSpec spec : profileService.getConnectionSpecs()) {
+            final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
+            connBuilder.setDestination(spec.getInjector().getValue().getDestinationUri());
+            // connBuilder.setConnectionTimeout(timeout);
+            builder.addClientConnection(connBuilder.build());
         }
 
         clientContext = builder.build();

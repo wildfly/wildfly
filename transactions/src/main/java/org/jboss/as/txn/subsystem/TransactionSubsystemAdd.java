@@ -246,12 +246,14 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
-        final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
-        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
+        if (context.hasOptionalCapability("org.wildfly.remoting.endpoint", TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(),null)) {
+            final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
+            context.getServiceTarget().addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteTransactionServiceService.getLocalTransactionContextInjector())
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
                 .setInitialMode(Mode.ACTIVE)
                 .install();
+        }
 
         //always propagate the transaction context
         //TODO: need a better way to do this, but this value gets cached in a static

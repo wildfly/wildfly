@@ -67,9 +67,8 @@ public final class AssociationService implements Service<AssociationService> {
     }
 
     public void start(final StartContext context) throws StartException {
-        // todo clusterRegistryCollector
         // todo suspendController
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue());
+        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), registryCollectorInjector.getValue());
 
         // track deployments at an association level for local dispatchers to utilize
         handle = value.registerModuleAvailabilityListener(new ModuleAvailabilityListener() {

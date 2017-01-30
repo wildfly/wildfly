@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -30,8 +31,11 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.discovery.ServiceURL;
+import org.xnio.OptionMap;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service which contains the static configuration data found in an EJB Remoting profile, either in the subsystem or in a
@@ -44,11 +48,16 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "profile");
 
+    /**
+     * There URLs are used to allow discovery to find these connections.
+     */
     private final List<ServiceURL> serviceUrls;
+    private final Map<String, ConnectionSpec> connectionSpecMap;
     private final InjectedValue<EJBTransportProvider> localTransportProviderInjector = new InjectedValue<>();
 
-    public RemotingProfileService(final List<ServiceURL> serviceUrls) {
+    public RemotingProfileService(final List<ServiceURL> serviceUrls, final Map<String, ConnectionSpec> connectionSpecMap) {
         this.serviceUrls = serviceUrls;
+        this.connectionSpecMap = connectionSpecMap;
     }
 
     @Override
@@ -64,11 +73,45 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
     public void stop(StopContext context) {
     }
 
+    public Collection<ConnectionSpec> getConnectionSpecs() {
+        return connectionSpecMap.values();
+    }
+
     public List<ServiceURL> getServiceUrls() {
         return serviceUrls;
     }
 
     public InjectedValue<EJBTransportProvider> getLocalTransportProviderInjector() {
         return localTransportProviderInjector;
+    }
+
+    public static final class ConnectionSpec {
+        private final String connectionName;
+        private final InjectedValue<AbstractOutboundConnectionService> injector;
+        private final OptionMap connectOptions;
+        private final long connectTimeout;
+
+        public ConnectionSpec(final String connectionName, final InjectedValue<AbstractOutboundConnectionService> injector, final OptionMap connectOptions, final long connectTimeout) {
+            this.connectionName = connectionName;
+            this.injector = injector;
+            this.connectOptions = connectOptions;
+            this.connectTimeout = connectTimeout;
+        }
+
+        public String getConnectionName() {
+            return connectionName;
+        }
+
+        public InjectedValue<AbstractOutboundConnectionService> getInjector() {
+            return injector;
+        }
+
+        public OptionMap getConnectOptions() {
+            return connectOptions;
+        }
+
+        public long getConnectTimeout() {
+            return connectTimeout;
+        }
     }
 }
