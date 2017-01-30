@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.logging;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -66,9 +65,8 @@ public interface ClusteringServerLogger extends BasicLogger {
     @Message(id = 3, value = "%s elected as the singleton provider of the %s service")
     void elected(String node, String service);
 
-    @LogMessage(level = DEBUG)
     @Message(id = 4, value = "No response received from master node of the %s service, retrying...")
-    void noResponseFromMaster(String service);
+    IllegalStateException noResponseFromMaster(String service);
 
     @LogMessage(level = ERROR)
     @Message(id = 5, value = "Failed to start %s service")
@@ -83,7 +81,7 @@ public interface ClusteringServerLogger extends BasicLogger {
     void quorumJustReached(String service, int quorum);
 
     @Message(id = 8, value = "Detected multiple primary providers for %s service: %s")
-    IllegalStateException multiplePrimaryProvidersDetected(String serviceName, Collection<Node> nodes);
+    IllegalArgumentException multiplePrimaryProvidersDetected(String serviceName, Collection<Node> nodes);
 
     @Message(id = 9, value = "Singleton service %s is not started.")
     IllegalStateException notStarted(String serviceName);

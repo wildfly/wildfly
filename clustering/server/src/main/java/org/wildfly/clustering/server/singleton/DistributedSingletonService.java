@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.Service;
@@ -69,6 +68,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     private volatile ServiceController<T> backupController;
     private volatile CommandDispatcher<SingletonContext<T>> dispatcher;
     private volatile ServiceProviderRegistration<ServiceName> registration;
+    private volatile boolean started = false;
 
     public DistributedSingletonService(DistributedSingletonServiceContext<T> context) {
         this.registry = context.getServiceProviderRegistry();
@@ -87,10 +87,12 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
         this.backupController = target.addService(this.serviceName.append("backup"), this.backupService.orElse(new PrimaryProxyService<>(this))).setInitialMode(ServiceController.Mode.PASSIVE).install();
         this.dispatcher = this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this);
         this.registration = this.registry.getValue().register(this.serviceName, this);
+        this.started = true;
     }
 
     @Override
     public void stop(StopContext context) {
+        this.started = false;
         this.registration.close();
         this.dispatcher.close();
     }
@@ -174,7 +176,22 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
 
     @Override
     public T getValue() {
-        return (this.primary.get() ? this.primaryController : this.backupController).getValue();
+        while (this.started) {
+            try {
+                return (this.primary.get() ? this.primaryController : this.backupController).getValue();
+            } catch (IllegalStateException e) {
+                // Verify whether ISE is due to unmet quorum in the previous election
+                if (this.registration.getProviders().size() < this.quorum) {
+                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    throw e;
+                }
+                // Otherwise, we're in the midst of a new election, so just try again
+                Thread.yield();
+            }
+        }
+        throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
     }
 
     @Override
@@ -188,17 +205,12 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     }
 
     @Override
-    public Supplier<CommandDispatcher<SingletonContext<T>>> getCommandDispatcher() {
-        return () -> this.dispatcher;
+    public CommandDispatcher<SingletonContext<T>> getCommandDispatcher() {
+        return this.dispatcher;
     }
 
     @Override
-    public Supplier<ServiceProviderRegistration<ServiceName>> getServiceProviderRegistration() {
-        return () -> this.registration;
-    }
-
-    @Override
-    public int getQuorum() {
-        return this.quorum;
+    public ServiceName getServiceName() {
+        return this.serviceName;
     }
 }
