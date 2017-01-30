@@ -23,6 +23,13 @@
   -->
 
 <module xmlns="urn:jboss:module:1.5" name="org.wildfly.extension.elytron">
+
+    <exports>
+        <exclude path="org/wildfly/extension/elytron/ElytronExtension"/>
+        <exclude path="org/wildfly/extension/elytron/_private"/>
+        <exclude path="org/wildfly/extension/elytron/capabilities"/>
+    </exports>
+
     <resources>
         <artifact name="${org.wildfly.security:elytron-subsystem}"/>
     </resources>
