@@ -124,4 +124,8 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     public InjectedValue<EJBTransportProvider> getLocalProviderInjector() {
         return localProviderInjector;
     }
+
+    public InjectedValue<RemotingProfileService> getProfileServiceInjector() {
+        return profileServiceInjector;
+    }
 }

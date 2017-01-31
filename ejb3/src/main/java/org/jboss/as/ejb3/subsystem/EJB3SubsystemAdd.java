@@ -110,6 +110,8 @@ import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.server.suspend.SuspendController;
@@ -214,6 +216,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         associationServiceBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
             .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, associationService.getRegistryCollectorInjector())
             .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, associationService.getSuspendControllerInjector())
+            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE);
         associationServiceBuilder.install();
 

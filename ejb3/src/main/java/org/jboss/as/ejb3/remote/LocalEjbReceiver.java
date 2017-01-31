@@ -89,7 +89,7 @@ public class LocalEjbReceiver extends EJBReceiver {
     protected void processInvocation(final EJBReceiverInvocationContext receiverContext) {
         final EJBClientInvocationContext invocation = receiverContext.getClientInvocationContext();
         final EJBLocator<?> locator = invocation.getLocator();
-        final EjbDeploymentInformation ejb = findBean(locator.getAppName(), locator.getModuleName(), locator.getDistinctName(), locator.getBeanName());
+        final EjbDeploymentInformation ejb = findBean(locator);
         final EJBComponent ejbComponent = ejb.getEjbComponent();
 
         final Class<?> viewClass = invocation.getViewClass();
@@ -158,7 +158,7 @@ public class LocalEjbReceiver extends EJBReceiver {
             final SessionID sessionID = ((StatefulEJBLocator<?>) locator).getSessionId();
             interceptorContext.putPrivateData(SessionID.class, sessionID);
         } else if (locator instanceof EntityEJBLocator) {
-            throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(locator.getBeanName(), locator.getAppName(), locator.getModuleName(), locator.getDistinctName());
+            throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(locator);
         }
 
         final ClonerConfiguration config = new ClonerConfiguration();
@@ -315,14 +315,14 @@ public class LocalEjbReceiver extends EJBReceiver {
 
     @Override
     protected <T> StatefulEJBLocator<T> createSession(StatelessEJBLocator<T> statelessLocator) throws Exception {
-        final EjbDeploymentInformation ejbInfo = findBean(statelessLocator.getAppName(), statelessLocator.getModuleName(), statelessLocator.getDistinctName(), statelessLocator.getBeanName());
+        final EjbDeploymentInformation ejbInfo = findBean(statelessLocator);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
             throw EjbLogger.ROOT_LOGGER.notStatefulSessionBean(statelessLocator.getAppName(), statelessLocator.getModuleName(), statelessLocator.getDistinctName(), statelessLocator.getBeanName());
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         final SessionID sessionID = statefulComponent.createSession();
-        return new StatefulEJBLocator<T>(statelessLocator, sessionID, statefulComponent.getCache().getStrictAffinity());
+        return new StatefulEJBLocator<T>(statelessLocator, sessionID);
     }
 
     static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
@@ -362,14 +362,19 @@ public class LocalEjbReceiver extends EJBReceiver {
     }
 
 
-    private EjbDeploymentInformation findBean(final String appName, final String moduleName, final String distinctName, final String beanName) {
-        final ModuleDeployment module = deploymentRepository.getValue().getModules().get(new DeploymentModuleIdentifier(appName, moduleName, distinctName));
+    private EjbDeploymentInformation findBean(final EJBLocator<?> locator) {
+        final String appName = locator.getAppName();
+        final String moduleName = locator.getModuleName();
+        final String distinctName = locator.getDistinctName();
+        final String beanName = locator.getBeanName();
+        final DeploymentModuleIdentifier moduleIdentifier = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
+        final ModuleDeployment module = deploymentRepository.getValue().getModules().get(moduleIdentifier);
         if (module == null) {
-            throw EjbLogger.ROOT_LOGGER.unknownDeployment(appName, moduleName, distinctName);
+            throw EjbLogger.ROOT_LOGGER.unknownDeployment(locator);
         }
         final EjbDeploymentInformation ejbInfo = module.getEjbs().get(beanName);
         if (ejbInfo == null) {
-            throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(beanName, appName, moduleName, distinctName);
+            throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(locator);
         }
         return ejbInfo;
     }

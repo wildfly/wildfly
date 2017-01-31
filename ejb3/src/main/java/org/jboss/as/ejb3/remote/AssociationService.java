@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientContext;
@@ -57,6 +58,7 @@ public final class AssociationService implements Service<AssociationService> {
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
     private final InjectedValue<RegistryCollector> registryCollectorInjector = new InjectedValue<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
 
     private final LocalRegistryAndDiscoveryProvider localRegistry = new LocalRegistryAndDiscoveryProvider();
 
@@ -69,6 +71,13 @@ public final class AssociationService implements Service<AssociationService> {
     public void start(final StartContext context) throws StartException {
         // todo suspendController
         value = new AssociationImpl(deploymentRepositoryInjector.getValue(), registryCollectorInjector.getValue());
+
+        // register the fact that the local receiver can handle invocations targeted at its node name
+        final ServiceURL.Builder builder = new ServiceURL.Builder();
+        builder.setAbstractType("ejb").setAbstractTypeAuthority("jboss");
+        builder.setUri(Affinity.LOCAL.getUri());
+        builder.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(serverEnvironmentServiceInjector.getValue().getNodeName()));
+        getLocalRegistryProvider().registerService(builder.create());
 
         // track deployments at an association level for local dispatchers to utilize
         handle = value.registerModuleAvailabilityListener(new ModuleAvailabilityListener() {
@@ -118,6 +127,10 @@ public final class AssociationService implements Service<AssociationService> {
 
     public AssociationService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public InjectedValue<ServerEnvironment> getServerEnvironmentServiceInjector() {
+        return serverEnvironmentServiceInjector;
     }
 
     public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjector() {

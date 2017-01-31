@@ -124,6 +124,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         if (profile != null) {
             profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
             serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
         } else {
             // if descriptor defines list of ejb-receivers instead of profile then we create internal ProfileService for this
             // application which contains defined receivers
@@ -150,6 +151,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             profileServiceBuilder.install();
 
             serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
         }
         // these items are the same no matter how we were configured
         // TODO

@@ -120,7 +120,7 @@ final class AssociationImpl implements Association {
         final String viewClassName = ejbLocator.getViewType().getName();
 
         if (!ejbDeploymentInformation.isRemoteView(viewClassName)) {
-            invocationRequest.writeNoSuchEJB();
+            invocationRequest.writeWrongViewType();
             return CancelHandle.NULL;
         }
 
@@ -339,6 +339,7 @@ final class AssociationImpl implements Association {
             }
 
             public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
+                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
         };
         deploymentRepository.addListener(listener);
