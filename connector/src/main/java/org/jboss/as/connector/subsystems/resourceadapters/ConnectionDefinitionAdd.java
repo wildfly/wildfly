@@ -32,6 +32,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
@@ -50,10 +51,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
-import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -93,6 +94,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
         ModelNode resourceModel = resource.getModel();
         final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
         final boolean elytronRecoveryEnabled = RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
+        final ModelNode credentialReference = RECOVERY_CREDENTIAL_REFERENCE.resolveModelAttribute(context, resourceModel);
         // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
         // domains should only be defined when Elytron enabled is undefined or false (default value)
         if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName()) && !elytronEnabled) {
@@ -130,12 +132,13 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             final ModifiableResourceAdapter ravalue = ((ModifiableResourceAdapter) context.getServiceRegistry(false).getService(raServiceName).getValue());
             boolean isXa = ravalue.getTransactionSupport() == TransactionSupportEnum.XATransaction;
 
-            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, resourceModel, poolName, isXa);
-
-
             final ServiceTarget serviceTarget = context.getServiceTarget();
 
-            final ConnectionDefinitionService service = new ConnectionDefinitionService(connectionDefinitionValue);
+            final ConnectionDefinitionService service = new ConnectionDefinitionService();
+            service.getConnectionDefinitionSupplierInjector().inject(
+                    () -> RaOperationUtil.buildConnectionDefinitionObject(context, resourceModel, poolName, isXa, service.getCredentialSourceSupplier().getOptionalValue())
+            );
+
             final ServiceBuilder<ModifiableConnDef> cdServiceBuilder = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector());
 
@@ -162,6 +165,11 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
                             RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
                             AuthenticationContext.class));
                 }
+            }
+
+            if (credentialReference.isDefined()) {
+                service.getCredentialSourceSupplier().inject(
+                        CredentialReference.getCredentialSourceSupplier(context, RECOVERY_CREDENTIAL_REFERENCE, resourceModel, cdServiceBuilder));
             }
 
             // Install the ConnectionDefinitionService
@@ -200,7 +208,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             resource.registerChild(peExtended, extendedResource);
 
 
-        } catch (ValidateException e) {
+        } catch (Exception e) {
             throw new OperationFailedException(e, new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToCreate("ConnectionDefinition", operation, e.getLocalizedMessage())));
         }
     }

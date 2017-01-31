@@ -119,9 +119,9 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     static void registerTransformer400(ResourceTransformationDescriptionBuilder parentBuilder) {
         parentBuilder.addChildResource(PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Constants.ENLISTMENT_TRACE), Constants.ENLISTMENT_TRACE)
                 .end();
@@ -132,12 +132,12 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Constants.ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
     }
     static void registerTransformer200(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -147,7 +147,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Constants.ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
@@ -167,13 +167,13 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Constants.ENLISTMENT_TRACE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
     }
 }
