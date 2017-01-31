@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -96,6 +98,7 @@ import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecur
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
+import org.wildfly.security.http.HttpScopeNotification;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.wildfly.security.http.Scope;
@@ -118,6 +121,7 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import io.undertow.servlet.spec.HttpSessionImpl;
 import io.undertow.servlet.util.SavedRequest;
 
 /**
@@ -433,6 +437,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             scopeResolvers.put(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope);
             scopeResolvers.put(Scope.EXCHANGE, ApplicationSecurityDomainService::requestScope);
+            scopeResolvers.put(Scope.SESSION, exchange -> sessionScope(exchange, scopeSessionListener));
 
             return ElytronContextAssociationHandler.builder()
                     .setNext(toWrap)
@@ -562,6 +567,77 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             }
 
             return null;
+        }
+
+        private static HttpScope sessionScope(HttpServerExchange exchange, ScopeSessionListener listener) {
+            ServletRequestContext context = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+
+            return new HttpScope() {
+                private final AtomicReference<HttpSessionImpl> session = new AtomicReference<>(context.getSession());
+
+                @Override
+                public String getID() {
+                    HttpSession session = this.session.get();
+                    return (session != null) ? session.getId() : null;
+                }
+
+                @Override
+                public boolean exists() {
+                    return this.session.get() != null;
+                }
+
+                @Override
+                public synchronized boolean create() {
+                    return this.session.compareAndSet(null, context.getCurrentServletContext().getSession(exchange, true));
+                }
+
+                @Override
+                public boolean supportsAttachments() {
+                    return this.exists();
+                }
+
+                @Override
+                public void setAttachment(String key, Object value) {
+                    HttpSession session = this.session.get();
+                    if (session != null) {
+                        session.setAttribute(key, value);
+                    }
+                }
+
+                @Override
+                public Object getAttachment(String key) {
+                    HttpSession session = this.session.get();
+                    return (session != null) ? session.getAttribute(key) : null;
+                }
+
+                @Override
+                public boolean supportsInvalidation() {
+                    return this.exists();
+                }
+
+                @Override
+                public boolean invalidate() {
+                    HttpSessionImpl session = this.session.get();
+                    boolean valid = (session != null) ? !session.isInvalid() : false;
+                    if (valid) {
+                        session.invalidate();
+                    }
+                    return valid;
+                }
+
+                @Override
+                public boolean supportsNotifications() {
+                    return this.exists();
+                }
+
+                @Override
+                public void registerForNotification(Consumer<HttpScopeNotification> consumer) {
+                    HttpSession session = this.session.get();
+                    if (session != null) {
+                        listener.registerListener(session.getId(), consumer);
+                    }
+                }
+            };
         }
 
         private HttpHandler finalSecurityHandlers(HttpHandler toWrap) {
