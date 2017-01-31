@@ -28,7 +28,6 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
-import org.jboss.ejb.server.Association;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -54,7 +53,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
-    private final InjectedValue<Association> associationInjectedValue = new InjectedValue<>();
+    private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
@@ -70,8 +69,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     @Override
     public void start(StartContext context) throws StartException {
+        final AssociationService associationService = associationServiceInjectedValue.getValue();
+        final Endpoint endpoint = endpointValue.getValue();
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
-            associationInjectedValue.getValue(),
+            associationService.getAssociation(),
             remotingTransactionServiceInjectedValue.getValue()
         );
         final ControlledProcessStateService processStateService = controlledProcessStateServiceInjectedValue.getValue();
@@ -100,7 +101,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         // Register an EJB channel open listener
         OpenListener channelOpenListener = remoteEJBService.getOpenListener();
         try {
-            registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
+            registration = endpoint.registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
@@ -124,10 +125,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return endpointValue;
     }
 
-    public InjectedValue<Association> getAssociationInjector() {
-        return associationInjectedValue;
-    }
-
     public InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> getRemotingConnectorInfoInjectedValue() {
         return remotingConnectorInfoInjectedValue;
     }
@@ -138,5 +135,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<ControlledProcessStateService> getControlledProcessStateServiceInjector() {
         return controlledProcessStateServiceInjectedValue;
+    }
+
+    public InjectedValue<AssociationService> getAssociationServiceInjector() {
+        return associationServiceInjectedValue;
     }
 }

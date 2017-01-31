@@ -32,12 +32,14 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
+import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.discovery.AttributeValue;
 import org.wildfly.discovery.ServiceURL;
@@ -48,7 +50,9 @@ import org.xnio.Options;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -64,15 +68,12 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(final OperationContext context,final ModelNode operation,final ModelNode model)
             throws OperationFailedException {
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                // Install another RUNTIME handler to actually install the services. This will run after the
-                // RUNTIME handler for any child resources. Doing this will ensure that child resource handlers don't
-                // see the installed services and can just ignore doing any RUNTIME stage work
-                context.addStep(ServiceInstallStepHandler.INSTANCE, OperationContext.Stage.RUNTIME);
-                context.stepCompleted();
-            }
+        context.addStep((context1, operation1) -> {
+            // Install another RUNTIME handler to actually install the services. This will run after the
+            // RUNTIME handler for any child resources. Doing this will ensure that child resource handlers don't
+            // see the installed services and can just ignore doing any RUNTIME stage work
+            context1.addStep(ServiceInstallStepHandler.INSTANCE, OperationContext.Stage.RUNTIME);
+            context1.stepCompleted();
         }, OperationContext.Stage.RUNTIME);
     }
 
@@ -101,10 +102,36 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                     urls.add(urlBuilder.create());
                 }
             }
+            final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
+            final RemotingProfileService profileService = new RemotingProfileService(urls, map);
+            // populating the map after the fact is cheating, but it works thanks to the MSC start service "fence"
+            final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName, profileService);
+            if (profileNode.hasDefined(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)) {
+                for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)
+                        .asPropertyList()) {
+                    final ModelNode receiverNode = receiverProperty.getValue();
 
-            final RemotingProfileService profileService = new RemotingProfileService(urls);
-            final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName,
-                    profileService);
+                    final String connectionRef = RemotingEjbReceiverDefinition.OUTBOUND_CONNECTION_REF.resolveModelAttribute(context,
+                            receiverNode).asString();
+                    final long timeout = RemotingEjbReceiverDefinition.CONNECT_TIMEOUT.resolveModelAttribute(context,
+                            receiverNode).asLong();
+
+                    final ServiceName connectionDependencyService = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME
+                            .append(connectionRef);
+                    final InjectedValue<AbstractOutboundConnectionService> connectionInjector = new InjectedValue<AbstractOutboundConnectionService>();
+                    builder.addDependency(connectionDependencyService, AbstractOutboundConnectionService.class, connectionInjector);
+
+                    final ModelNode channelCreationOptionsNode = receiverNode.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
+                    OptionMap channelCreationOptions = createChannelOptionMap(context, channelCreationOptionsNode);
+
+                    map.put(connectionRef, new RemotingProfileService.ConnectionSpec(
+                        connectionRef,
+                        connectionInjector,
+                        channelCreationOptions,
+                        timeout
+                    ));
+                }
+            }
 
             final boolean isLocalReceiverExcluded = RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER
                     .resolveModelAttribute(context, profileNode).asBoolean();

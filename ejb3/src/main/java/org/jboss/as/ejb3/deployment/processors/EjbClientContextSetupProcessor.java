@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import static java.security.AccessController.doPrivileged;
 
+import java.net.URI;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.ee.component.Attachments;
@@ -31,6 +32,8 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
+import org.jboss.as.ejb3.remote.RemotingProfileService;
+import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -45,7 +48,14 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.RemotingOptions;
+import org.wildfly.common.context.ContextManager;
 import org.wildfly.discovery.Discovery;
+import org.wildfly.security.auth.client.AuthenticationConfiguration;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.AuthenticationContextConfigurationClient;
+import org.wildfly.security.auth.client.MatchRule;
+import org.xnio.OptionMap;
 
 /**
  * A deployment processor which associates the {@link EJBClientContext}, belonging to a deployment unit,
@@ -56,6 +66,7 @@ import org.wildfly.discovery.Discovery;
  */
 public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
+    private static final AuthenticationContextConfigurationClient CLIENT = doPrivileged(AuthenticationContextConfigurationClient.ACTION);
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -120,6 +131,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
         final InjectedValue<EJBClientContextService> ejbClientContextInjectedValue = new InjectedValue<>();
         final InjectedValue<Discovery> discoveryInjector = new InjectedValue<>();
+        final InjectedValue<RemotingProfileService> profileServiceInjectedValue = new InjectedValue<>();
 
         private RegistrationService(Module module) {
             this.module = module;
@@ -133,6 +145,21 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                 final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue().getClientContext();
                 final ModuleClassLoader classLoader = module.getClassLoader();
                 EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
+                final ContextManager<AuthenticationContext> authenticationContextManager = AuthenticationContext.getContextManager();
+                final RemotingProfileService profileService = profileServiceInjectedValue.getOptionalValue();
+                if (profileService != null) {
+                    // this is cheating but it works for our purposes
+                    AuthenticationContext authenticationContext = authenticationContextManager.getClassLoaderDefault(classLoader);
+                    if (authenticationContext == null) {
+                        authenticationContext = authenticationContextManager.get();
+                    }
+                    // now transform it
+                    for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
+                        authenticationContext = transformOne(connectionSpec, authenticationContext);
+                    }
+                    // and set the result
+                    authenticationContextManager.setClassLoaderDefault(classLoader, authenticationContext);
+                }
                 EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);
                 Discovery.getContextManager().setClassLoaderDefault(classLoader, discoveryInjector.getValue());
                 return null;
@@ -147,6 +174,8 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                 EjbLogger.DEPLOYMENT_LOGGER.debugf("unRegistering EJB client context for classloader %s", classLoader);
                 EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, null);
                 Discovery.getContextManager().setClassLoaderDefault(classLoader, null);
+                // this is redundant but should be safe
+                AuthenticationContext.getContextManager().setClassLoaderDefault(classLoader, null);
                 return null;
             });
         }
@@ -154,6 +183,33 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         @Override
         public Void getValue() throws IllegalStateException, IllegalArgumentException {
             return null;
+        }
+
+        private static AuthenticationContext transformOne(RemotingProfileService.ConnectionSpec connectionSpec, AuthenticationContext context) {
+            final AbstractOutboundConnectionService connectionService = connectionSpec.getInjector().getValue();
+            AuthenticationConfiguration authenticationConfiguration = connectionService.getAuthenticationConfiguration();
+            final URI destinationUri = connectionService.getDestinationUri();
+            MatchRule rule = MatchRule.ALL;
+            final String scheme = destinationUri.getScheme();
+            if (scheme != null) {
+                rule = rule.matchProtocol(scheme);
+            }
+            final String host = destinationUri.getHost();
+            if (host != null) {
+                rule = rule.matchHost(host);
+            }
+            final int port = destinationUri.getPort();
+            if (port != -1) {
+                rule = rule.matchPort(port);
+            }
+            final String path = destinationUri.getPath();
+            if (path != null && ! path.isEmpty()) {
+                rule = rule.matchPath(path);
+            }
+            final OptionMap connectOptions = connectionSpec.getConnectOptions();
+            authenticationConfiguration = RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectOptions, authenticationConfiguration);
+            AuthenticationConfiguration configuration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss", null);
+            return context.with(0, rule, configuration.with(authenticationConfiguration));
         }
     }
 }

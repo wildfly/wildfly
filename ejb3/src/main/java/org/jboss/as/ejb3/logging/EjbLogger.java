@@ -522,7 +522,7 @@ public interface EjbLogger extends BasicLogger {
      * @param cause         Original cause
      * @return
      */
-    @Message(id = 47, value = "Could not deactive endpoint for message driven component %s")
+    @Message(id = 47, value = "Could not deactivate endpoint for message driven component %s")
     RuntimeException failureDuringEndpointDeactivation(final String componentName, @Cause ResourceException cause);
 
     @Message(id = 48, value = "")
@@ -547,11 +547,11 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 54, value = "Failed to marshal EJB parameters")
     RuntimeException failedToMarshalEjbParameters(@Cause Exception e);
 
-    @Message(id = 55, value = "Unknown deployment - app name: %s module name: %s distinct name: %s")
-    IllegalArgumentException unknownDeployment(String appName, String moduleName, String distinctName);
+    @Message(id = 55, value = "No matching deployment for EJB: %s")
+    NoSuchEJBException unknownDeployment(EJBLocator<?> locator);
 
-    @Message(id = 56, value = "Could not find EJB %s in deployment [app: %s module: %s distinct-name: %s]")
-    IllegalArgumentException ejbNotFoundInDeployment(String ejbName, String appName, String moduleName, String distinctName);
+    @Message(id = 56, value = "Could not find EJB in matching deployment: %s")
+    NoSuchEJBException ejbNotFoundInDeployment(EJBLocator<?> locator);
 
     @Message(id = 57, value = "%s annotation is only valid on method targets")
     IllegalArgumentException annotationApplicableOnlyForMethods(String annotationName);

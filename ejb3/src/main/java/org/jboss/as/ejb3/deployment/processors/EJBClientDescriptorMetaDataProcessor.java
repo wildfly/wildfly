@@ -22,7 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
@@ -33,6 +36,7 @@ import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
+import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,6 +48,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 
@@ -62,6 +67,9 @@ import org.xnio.OptionMap;
 public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProcessor {
 
     private static final String INTERNAL_REMOTING_PROFILE = "internal-remoting-profile";
+
+    public EJBClientDescriptorMetaDataProcessor() {
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -116,13 +124,60 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         if (profile != null) {
             profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
             serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
         } else {
             // if descriptor defines list of ejb-receivers instead of profile then we create internal ProfileService for this
             // application which contains defined receivers
             profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
-            createInternalRemotingProfileService(profileServiceName, serviceTarget, ejbClientDescriptorMetaData);
+            final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
+            final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList(), map);
+            final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
+                    profileService);
+            if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
+                final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
+                profileServiceBuilder.addDependency(passByValue == Boolean.TRUE ? LocalTransportProvider.BY_VALUE_SERVICE_NAME : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+            }
+            final Collection<EJBClientDescriptorMetaData.RemotingReceiverConfiguration> receiverConfigurations = ejbClientDescriptorMetaData.getRemotingReceiverConfigurations();
+            for (EJBClientDescriptorMetaData.RemotingReceiverConfiguration receiverConfiguration : receiverConfigurations) {
+                final String connectionRef = receiverConfiguration.getOutboundConnectionRef();
+                final long connectTimeout = receiverConfiguration.getConnectionTimeout();
+                final Properties channelCreationOptions = receiverConfiguration.getChannelCreationOptions();
+                final OptionMap optionMap = getOptionMapFromProperties(channelCreationOptions, module.getClassLoader());
+                final InjectedValue<AbstractOutboundConnectionService> injector = new InjectedValue<>();
+                profileServiceBuilder.addDependency(AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionRef), AbstractOutboundConnectionService.class, injector);
+                final RemotingProfileService.ConnectionSpec connectionSpec = new RemotingProfileService.ConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
+                map.put(connectionRef, connectionSpec);
+            }
+            profileServiceBuilder.install();
+
             serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
         }
+        // these items are the same no matter how we were configured
+        // TODO
+        final String deploymentNodeSelector = ejbClientDescriptorMetaData.getDeploymentNodeSelector();
+        final long invocationTimeout = ejbClientDescriptorMetaData.getInvocationTimeout();
+        final Collection<EJBClientDescriptorMetaData.ClusterConfig> clusterConfigs = ejbClientDescriptorMetaData.getClusterConfigs();
+        for (EJBClientDescriptorMetaData.ClusterConfig clusterConfig : clusterConfigs) {
+            final String clusterName = clusterConfig.getClusterName();
+            final long maxAllowedConnectedNodes = clusterConfig.getMaxAllowedConnectedNodes();
+            final String clusterNodeSelector = clusterConfig.getNodeSelector();
+            final Properties clusterChannelCreationOptions = clusterConfig.getChannelCreationOptions();
+            final Properties clusterConnectionOptions = clusterConfig.getConnectionOptions();
+            final long clusterConnectTimeout = clusterConfig.getConnectTimeout();
+            final String clusterSecurityRealm = clusterConfig.getSecurityRealm();
+            final String clusterUserName = clusterConfig.getUserName();
+            final Collection<EJBClientDescriptorMetaData.ClusterNodeConfig> clusterNodeConfigs = clusterConfig.getClusterNodeConfigs();
+            for (EJBClientDescriptorMetaData.ClusterNodeConfig clusterNodeConfig : clusterNodeConfigs) {
+                final String nodeName = clusterNodeConfig.getNodeName();
+                final Properties channelCreationOptions = clusterNodeConfig.getChannelCreationOptions();
+                final Properties connectionOptions = clusterNodeConfig.getConnectionOptions();
+                final long connectTimeout = clusterNodeConfig.getConnectTimeout();
+                final String securityRealm = clusterNodeConfig.getSecurityRealm();
+                final String userName = clusterNodeConfig.getUserName();
+            }
+        }
+
         // install the service
         serviceBuilder.install();
         EjbLogger.DEPLOYMENT_LOGGER.debugf("Deployment unit %s will use %s as the EJB client context service", deploymentUnit,
@@ -149,23 +204,9 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         }
     }
 
-    private RemotingProfileService createInternalRemotingProfileService(final ServiceName profileServiceName,
-            final ServiceTarget serviceTarget, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) {
-        final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList());
-        final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
-                profileService);
-        if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
-            final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
-            profileServiceBuilder.addDependency(passByValue == Boolean.TRUE ? LocalTransportProvider.BY_VALUE_SERVICE_NAME : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
-        }
-        profileServiceBuilder.install();
-        //TODO Elytron old configuration emulation
-        return profileService;
-    }
-
     private OptionMap getOptionMapFromProperties(final Properties properties, final ClassLoader classLoader) {
         final OptionMap.Builder optionMapBuilder = OptionMap.builder();
-        for (final String propertyName : properties.stringPropertyNames()) {
+        if (properties != null) for (final String propertyName : properties.stringPropertyNames()) {
             try {
                 final Option<?> option = Option.fromString(propertyName, classLoader);
                 optionMapBuilder.parse(option, properties.getProperty(propertyName), classLoader);
