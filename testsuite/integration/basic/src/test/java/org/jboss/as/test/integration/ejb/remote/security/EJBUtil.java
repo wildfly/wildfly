@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.remote.security;
 
 import java.net.UnknownHostException;
-import java.util.Hashtable;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -48,12 +47,14 @@ class EJBUtil {
      *
      * @param beanImplClass
      * @param remoteInterface
+     * @param ejbProperties
      * @return
      * @throws NamingException
      */
     @SuppressWarnings("unchecked")
-    public static <T> T lookupEJB(Class<? extends T> beanImplClass, Class<T> remoteInterface) throws NamingException {
-        final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
+    public static <T> T lookupEJB(Class<? extends T> beanImplClass, Class<T> remoteInterface, Properties ejbProperties) throws Exception {
+        final Properties jndiProperties = new Properties();
+        jndiProperties.putAll(ejbProperties);
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         //        jndiProperties.put("jboss.naming.client.ejb.context", "true");
         final Context context = new InitialContext(jndiProperties);
