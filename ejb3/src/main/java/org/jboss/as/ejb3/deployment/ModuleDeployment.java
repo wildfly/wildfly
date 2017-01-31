@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.deployment;
 
 import org.jboss.as.ee.component.deployers.StartupCountdown;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
