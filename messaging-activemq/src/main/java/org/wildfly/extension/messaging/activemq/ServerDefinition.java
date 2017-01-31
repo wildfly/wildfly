@@ -45,7 +45,6 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -131,6 +130,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setCapabilityReference(Capabilities.ELYTRON_DOMAIN_CAPABILITY, Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
             .build();
     public static final AttributeDefinition THREAD_POOL_MAX_SIZE = create("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
@@ -536,14 +536,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
     };
 
-    static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
-
-    static final String ELYTRON_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
-
-    static final RuntimeCapability<Void> ACTIVEMQ_SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.server", true)
-            .addOptionalRequirements(JMX_CAPABILITY)
-            .build();
-
     private final boolean registerRuntimeOnly;
 
     ServerDefinition(boolean registerRuntimeOnly) {
@@ -575,6 +567,11 @@ public class ServerDefinition extends PersistentResourceDefinition {
         if (registerRuntimeOnly) {
             ActiveMQServerControlHandler.INSTANCE.registerAttributes(resourceRegistration);
         }
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(Capabilities.ACTIVEMQ_SERVER_CAPABILITY);
     }
 
     @Override
