@@ -152,6 +152,9 @@ public class PoolConfigurationRWHandler {
                 if (VALIDATE_ON_MATCH.getName().equals(parameterName)) {
                     pc.setValidateOnMatch(newValue.asBoolean());
                 }
+                if (POOL_FAIR.getName().equals(parameterName)) {
+                    pc.setFair(newValue.asBoolean());
+                }
             }
         }
 
