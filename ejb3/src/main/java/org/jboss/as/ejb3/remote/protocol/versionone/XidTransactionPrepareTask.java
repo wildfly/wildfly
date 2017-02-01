@@ -90,11 +90,10 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
             // check the recovery store - it's possible that the "prepare" is coming in as part of recovery operation and the subordinate
             // tx may not yet be in memory, but might be in the recovery store
             final Transaction recoveredTransaction = tryRecoveryForImportedTransaction();
-            // still not found, so just return
+            // still not found
             if (recoveredTransaction == null) {
-                if (EjbLogger.EJB3_INVOCATION_LOGGER.isDebugEnabled()) {
-                    EjbLogger.EJB3_INVOCATION_LOGGER.debug("Not preparing " + this.xidTransactionID + " as is was not found on the server");
-                }
+                EjbLogger.EJB3_INVOCATION_LOGGER.error("Not preparing " + this.xidTransactionID + " as is was not found on the server");
+                throw new XAException(XAException.XAER_NOTA);
             }
             return XAResource.XA_OK;
         }
