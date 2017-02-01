@@ -175,6 +175,8 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(JGroupsRequirement.CHANNEL_FACTORY.resolve("udp"));
+        return AdditionalInitialization.withCapabilities(JGroupsRequirement.CHANNEL_FACTORY.resolve("udp"),
+                Capabilities.ELYTRON_DOMAIN_CAPABILITY,
+                Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain");
     }
 }

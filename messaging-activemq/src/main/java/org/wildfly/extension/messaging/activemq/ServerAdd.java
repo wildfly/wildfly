@@ -23,6 +23,9 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
@@ -39,7 +42,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_D
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.PATHS;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.RELATIVE_TO;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_PASSWORD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_USER;
@@ -47,9 +49,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTI
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ID_CACHE_SIZE;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_MANAGEMENT_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_BINDINGS_TABLE;
