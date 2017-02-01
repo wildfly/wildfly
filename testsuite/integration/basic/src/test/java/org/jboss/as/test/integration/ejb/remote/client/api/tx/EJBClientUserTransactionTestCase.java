@@ -36,7 +36,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,20 +108,6 @@ public class EJBClientUserTransactionTestCase {
         final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
         userTransaction.begin();
         userTransaction.rollback();
-    }
-
-    /**
-     * Create and setup the EJB client context backed by the remoting receiver
-     *
-     * @throws Exception
-     */
-    @Before
-    public void beforeTest() throws Exception {
-        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
-        //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
-        // set the tx context
-        //EJBClientTransactionContext.setGlobalContext(localUserTxContext);
-
     }
 
     /**

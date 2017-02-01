@@ -64,6 +64,7 @@ public final class AssociationService implements Service<AssociationService> {
 
     private Association value;
     private ListenerHandle handle;
+    private ServiceRegistration serviceRegistration;
 
     public AssociationService() {
     }
@@ -77,7 +78,7 @@ public final class AssociationService implements Service<AssociationService> {
         builder.setAbstractType("ejb").setAbstractTypeAuthority("jboss");
         builder.setUri(Affinity.LOCAL.getUri());
         builder.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(serverEnvironmentServiceInjector.getValue().getNodeName()));
-        getLocalRegistryProvider().registerService(builder.create());
+        serviceRegistration = getLocalRegistryProvider().registerService(builder.create());
 
         // track deployments at an association level for local dispatchers to utilize
         handle = value.registerModuleAvailabilityListener(new ModuleAvailabilityListener() {
@@ -123,6 +124,9 @@ public final class AssociationService implements Service<AssociationService> {
     public void stop(final StopContext context) {
         value = null;
         handle.close();
+        serviceRegistration.close();
+        handle = null;
+        serviceRegistration = null;
     }
 
     public AssociationService getValue() throws IllegalStateException, IllegalArgumentException {
