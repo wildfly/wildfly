@@ -62,6 +62,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
      * TODO: possibly move to using a per-thread solution for embedded support
      */
     private final boolean makeGlobal;
+    private long invocationTimeout = -1;
 
     public EJBClientContextService(final boolean makeGlobal) {
         this.makeGlobal = makeGlobal;
@@ -76,6 +77,10 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
         // apply subsystem-level configuration that applies to all EJB client contexts
         configuratorServiceInjector.getValue().accept(builder);
+
+        if (invocationTimeout != -1) {
+            builder.setInvocationTimeout(invocationTimeout);
+        }
 
         final EJBTransportProvider localTransport = localProviderInjector.getOptionalValue();
         if (localTransport != null) {
@@ -127,5 +132,9 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public InjectedValue<RemotingProfileService> getProfileServiceInjector() {
         return profileServiceInjector;
+    }
+
+    public void setInvocationTimeout(final long invocationTimeout) {
+        this.invocationTimeout = invocationTimeout;
     }
 }

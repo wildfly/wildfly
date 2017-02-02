@@ -157,6 +157,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // TODO
         final String deploymentNodeSelector = ejbClientDescriptorMetaData.getDeploymentNodeSelector();
         final long invocationTimeout = ejbClientDescriptorMetaData.getInvocationTimeout();
+        service.setInvocationTimeout(invocationTimeout);
         final Collection<EJBClientDescriptorMetaData.ClusterConfig> clusterConfigs = ejbClientDescriptorMetaData.getClusterConfigs();
         for (EJBClientDescriptorMetaData.ClusterConfig clusterConfig : clusterConfigs) {
             final String clusterName = clusterConfig.getClusterName();
