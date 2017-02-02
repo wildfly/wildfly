@@ -706,7 +706,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         for (Map.Entry<String, List<ClientMapping>> entry : removedNodes.entrySet()) {
             final String removedNodeName = entry.getKey();
             // if the current node is being removed, then let the local receiver handle it
-            if (LocalEjbReceiver.this.getNodeName().equals(removedNodeName)) {
+            if (LocalEjbReceiver.this.getNodeName().equals(removedNodeName) && clusterContext != null) {
                 clusterContext.removeClusterNode(removedNodeName);
                 continue;
             }
@@ -717,7 +717,9 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
                 EjbLogger.REMOTE_LOGGER.debugf("Skipping cluster node removal to EJB client context %s since it can only handle local node", ejbClientContext);
                 continue;
             }
-            clusterContext.removeClusterNode(removedNodeName);
+            if (clusterContext != null) {
+                clusterContext.removeClusterNode(removedNodeName);
+            }
         }
     }
 }
