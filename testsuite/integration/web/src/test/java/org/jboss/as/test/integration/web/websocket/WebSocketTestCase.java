@@ -58,7 +58,7 @@ public class WebSocketTestCase {
                                         TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(),
                                         "connect,resolve"),
                                 // Needed for xnio's WorkerThread which binds to Xnio.ANY_INET_ADDRESS, see WFLY-7538
-                                new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":0", "listen,resolve")),
+                                new SocketPermission("*:0", "listen,resolve")),
                         "permissions.xml");
     }
 
