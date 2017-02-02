@@ -142,7 +142,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 final String connectionRef = receiverConfiguration.getOutboundConnectionRef();
                 final long connectTimeout = receiverConfiguration.getConnectionTimeout();
                 final Properties channelCreationOptions = receiverConfiguration.getChannelCreationOptions();
-                final OptionMap optionMap = getOptionMapFromProperties(channelCreationOptions, module.getClassLoader());
+                final OptionMap optionMap = getOptionMapFromProperties(channelCreationOptions, EJBClientDescriptorMetaDataProcessor.class.getClassLoader());
                 final InjectedValue<AbstractOutboundConnectionService> injector = new InjectedValue<>();
                 profileServiceBuilder.addDependency(AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionRef), AbstractOutboundConnectionService.class, injector);
                 final RemotingProfileService.ConnectionSpec connectionSpec = new RemotingProfileService.ConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
