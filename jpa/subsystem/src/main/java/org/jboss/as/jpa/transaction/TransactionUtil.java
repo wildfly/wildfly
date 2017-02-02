@@ -22,8 +22,10 @@
 
 package org.jboss.as.jpa.transaction;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
+import java.security.PrivilegedAction;
 import java.util.EnumSet;
 
 import javax.persistence.EntityManager;
@@ -37,11 +39,9 @@ import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.tm.TxUtils;
 import org.jboss.tm.listener.EventType;
-import org.jboss.tm.listener.TransactionEvent;
-import org.jboss.tm.listener.TransactionListener;
-import org.jboss.tm.listener.TransactionListenerRegistry;
-import org.jboss.tm.listener.TransactionListenerRegistryUnavailableException;
-import org.jboss.tm.listener.TransactionTypeNotSupported;
+import org.wildfly.transaction.client.AbstractTransaction;
+import org.wildfly.transaction.client.AssociationListener;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Transaction utilities for JPA
@@ -72,20 +72,11 @@ public class TransactionUtil {
     public static void registerSynchronization(EntityManager entityManager, String puScopedName, TransactionSynchronizationRegistry tsr, TransactionManager transactionManager) {
         SessionSynchronization sessionSynchronization = new SessionSynchronization(entityManager, puScopedName);
         tsr.registerInterposedSynchronization(sessionSynchronization);
-        try {
-            getTransactionListenerRegistry(transactionManager).addListener(getTransaction(transactionManager), sessionSynchronization, eventTypes);
-        } catch (TransactionTypeNotSupported transactionTypeNotSupported) {
-            throw JpaLogger.ROOT_LOGGER.errorGettingTransaction(transactionTypeNotSupported);
-        }
-    }
-
-    private static TransactionListenerRegistry getTransactionListenerRegistry(TransactionManager transactionManager) {
-        if (transactionManager instanceof TransactionListenerRegistry) {
-            return (TransactionListenerRegistry)transactionManager;
-        }
-        else {
-            throw JpaLogger.ROOT_LOGGER.errorGettingTransactionListenerRegistry(new TransactionListenerRegistryUnavailableException());
-        }
+        final AbstractTransaction transaction = ((ContextTransactionManager) transactionManager).getTransaction();
+        doPrivileged((PrivilegedAction<Void>) () -> {
+            transaction.registerAssociationListener(sessionSynchronization);
+            return null;
+        });
     }
 
     public static Transaction getTransaction(TransactionManager transactionManager) {
@@ -143,7 +134,7 @@ public class TransactionUtil {
      *     https://developer.jboss.org/message/919807
      *     https://developer.jboss.org/thread/252572
      */
-    private static class SessionSynchronization implements Synchronization, TransactionListener {
+    private static class SessionSynchronization implements Synchronization, AssociationListener {
         private EntityManager manager;  // the underlying entity manager
         private String scopedPuName;
         private transient boolean transactionDisassociatedFromApplication = false;
@@ -188,14 +179,15 @@ public class TransactionUtil {
             }
         }
 
-        @Override
-        public synchronized void onEvent(TransactionEvent transactionEvent) {
-            // set to true if application thread is no longer associated with JTA transaction
-            // (EventType.DISASSOCIATING in progress).  We are tracking when the application thread
-            // is no longer associated with the transaction, as that indicates that it is safe to
-            // close the entity manager (since the application is no longer using the entity manager).
-            transactionDisassociatedFromApplication = transactionEvent.getTypes().contains(EventType.DISASSOCIATING);
-            safeCloseEntityManager();
+        public void associationChanged(final AbstractTransaction transaction, final boolean associated) {
+            synchronized (this) {
+                // set to true if application thread is no longer associated with JTA transaction
+                // (EventType.DISASSOCIATING in progress).  We are tracking when the application thread
+                // is no longer associated with the transaction, as that indicates that it is safe to
+                // close the entity manager (since the application is no longer using the entity manager).
+                transactionDisassociatedFromApplication = ! associated;
+                safeCloseEntityManager();
+            }
         }
     }
 

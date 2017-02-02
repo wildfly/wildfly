@@ -35,11 +35,11 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
-import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.logging.NamingLogger;
+import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -52,6 +52,8 @@ public class InitialContext extends InitialLdapContext {
      * Map of any additional naming schemes
      */
     private static volatile Map<String, ObjectFactory> urlContextFactories = Collections.emptyMap();
+
+    private final WildFlyInitialContextFactory delegate = new WildFlyInitialContextFactory();
 
     /**
      * Add an ObjectFactory to handle requests for a specific URL scheme.
@@ -139,7 +141,7 @@ public class InitialContext extends InitialLdapContext {
                     throw n;
                 }
             } else {
-                Context ctx = NamingManager.getURLContext(scheme, myProps);
+                Context ctx = delegate.getInitialContext(myProps);
                 if(ctx!=null) {
                     return ctx;
                 }

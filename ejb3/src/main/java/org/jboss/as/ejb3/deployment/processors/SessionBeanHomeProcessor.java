@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.ejb.EJBHome;
 import javax.ejb.Handle;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -39,6 +40,7 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.utils.ClassLoadingUtils;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -115,7 +117,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
-                    } else if (method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0) {
+                    } else if (method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0 && ((EJBViewDescription)description).getMethodIntf() == MethodIntf.HOME) {
 
                         final Class<?> ejbObjectClass;
                         try {
@@ -123,7 +125,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         } catch (ClassNotFoundException e) {
                             throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                         }
-                        final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
+                        final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass().asSubclass(EJBHome.class), null, true, componentDescription instanceof StatelessComponentDescription);
 
                         //add a dependency on the view to create
                         componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {

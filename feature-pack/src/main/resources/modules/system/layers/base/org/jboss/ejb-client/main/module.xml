@@ -30,6 +30,11 @@
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
         <module name="javax.interceptor.api"/>
+        <module name="org.wildfly.client.config"/>
+        <module name="org.wildfly.discovery"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.naming-client"/>
+        <module name="org.wildfly.transaction.client"/>
         <module name="org.jboss.remoting"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.logging"/>
@@ -43,5 +48,6 @@
         <module name="javax.xml.rpc.api"/>
         <module name="javax.rmi.api"/>
         <module name="org.omg.api"/>
+        <module name="org.jboss.modules"/>
     </dependencies>
 </module>

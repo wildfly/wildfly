@@ -22,39 +22,43 @@
 
 package org.jboss.as.ejb3.remote;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
+import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.discovery.ServiceURL;
 import org.xnio.OptionMap;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
+ * Service which contains the static configuration data found in an EJB Remoting profile, either in the subsystem or in a
+ * deployment descriptor.
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- */
-/**
- * @author Tomasz Adamski
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class RemotingProfileService implements Service<RemotingProfileService> {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "profile");
 
-    private final Map<ServiceName, InjectedValue<AbstractOutboundConnectionService>> connectionInjectors = new HashMap<ServiceName, InjectedValue<AbstractOutboundConnectionService>>();
-
-    private final Map<String, Long> connectionTimeouts = Collections.synchronizedMap(new HashMap<String, Long>());
-    private final Map<String, OptionMap> channelCreationOpts = Collections.synchronizedMap(new HashMap<String, OptionMap>());
-
     /**
-     * (optional) local EJB receiver for the EJB client context
+     * There URLs are used to allow discovery to find these connections.
      */
-    private final InjectedValue<LocalEjbReceiver> localEjbReceiverInjector = new InjectedValue<LocalEjbReceiver>();
+    private final List<ServiceURL> serviceUrls;
+    private final Map<String, ConnectionSpec> connectionSpecMap;
+    private final InjectedValue<EJBTransportProvider> localTransportProviderInjector = new InjectedValue<>();
+
+    public RemotingProfileService(final List<ServiceURL> serviceUrls, final Map<String, ConnectionSpec> connectionSpecMap) {
+        this.serviceUrls = serviceUrls;
+        this.connectionSpecMap = connectionSpecMap;
+    }
 
     @Override
     public RemotingProfileService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -69,33 +73,45 @@ public class RemotingProfileService implements Service<RemotingProfileService> {
     public void stop(StopContext context) {
     }
 
-    public void addRemotingConnectionInjector(final ServiceName connectionName,final InjectedValue<AbstractOutboundConnectionService> connectionInjector) {
-        connectionInjectors.put(connectionName, connectionInjector);
+    public Collection<ConnectionSpec> getConnectionSpecs() {
+        return connectionSpecMap.values();
     }
 
-    public void addChannelCreationOption(final String connectionRef,final OptionMap optionMap) {
-        channelCreationOpts.put(connectionRef, optionMap);
+    public List<ServiceURL> getServiceUrls() {
+        return serviceUrls;
     }
 
-    public void addConnectionTimeout(final String connectionRef, final long timeout){
-        connectionTimeouts.put(connectionRef, timeout);
+    public InjectedValue<EJBTransportProvider> getLocalTransportProviderInjector() {
+        return localTransportProviderInjector;
     }
 
-    public Map<ServiceName, InjectedValue<AbstractOutboundConnectionService>> getRemotingConnections() {
-        return connectionInjectors;
+    public static final class ConnectionSpec {
+        private final String connectionName;
+        private final InjectedValue<AbstractOutboundConnectionService> injector;
+        private final OptionMap connectOptions;
+        private final long connectTimeout;
+
+        public ConnectionSpec(final String connectionName, final InjectedValue<AbstractOutboundConnectionService> injector, final OptionMap connectOptions, final long connectTimeout) {
+            this.connectionName = connectionName;
+            this.injector = injector;
+            this.connectOptions = connectOptions;
+            this.connectTimeout = connectTimeout;
+        }
+
+        public String getConnectionName() {
+            return connectionName;
+        }
+
+        public InjectedValue<AbstractOutboundConnectionService> getInjector() {
+            return injector;
+        }
+
+        public OptionMap getConnectOptions() {
+            return connectOptions;
+        }
+
+        public long getConnectTimeout() {
+            return connectTimeout;
+        }
     }
-
-    public Map<String,Long> getConnectionTimeouts(){
-        return connectionTimeouts;
-    }
-
-    public Map<String, OptionMap> getChannelCreationOpts() {
-        return channelCreationOpts;
-    }
-
-    public InjectedValue<LocalEjbReceiver> getLocalEjbReceiverInjector() {
-        return localEjbReceiverInjector;
-    }
-
-
 }

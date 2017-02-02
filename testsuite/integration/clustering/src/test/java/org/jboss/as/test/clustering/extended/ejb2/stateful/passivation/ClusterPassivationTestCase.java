@@ -38,7 +38,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -152,11 +151,6 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
             @OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
             @OperateOnDeployment(DEPLOYMENT_2) @ArquillianResource ManagementClient client2) throws Exception {
         log.trace("Stop&Clean...");
-
-        // returning to the previous context selector, @see {RemoteEJBClientDDBasedSFSBFailoverTestCase}
-        if (previousSelector != null) {
-            EJBClientContext.setSelector(previousSelector);
-        }
 
         // unset & undeploy & stop
         if (client1.isServerInRunningState()) {
