@@ -55,7 +55,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -76,7 +75,6 @@ public class EarModulesPPTestCase extends AbstractPPTestsWithJSP {
 
     private static final String APP_NO_PERM = "read-props-noperm";
     private static final String APP_EMPTY_PERM = "read-props-emptyperm";
-    private static final String APP_EAR_PERM_MODULE_JBPERM = "read-props-perm-vs-jbperm";
 
     private static Logger LOGGER = Logger.getLogger(EarModulesPPTestCase.class);
 
@@ -131,25 +129,6 @@ public class EarModulesPPTestCase extends AbstractPPTestsWithJSP {
     @Deployment(name = APP_EMPTY_PERM, testable = false)
     public static EnterpriseArchive createEmptyPermDeployment() {
         return earDeployment(APP_EMPTY_PERM, AbstractPropertyPermissionTests.EMPTY_PERMISSIONS_XML, ALL_PERMISSIONS_XML);
-    }
-
-    /**
-     * Creates archive with a tested application.
-     *
-     * @return {@link EnterpriseArchive} instance
-     */
-    @Deployment(name = APP_EAR_PERM_MODULE_JBPERM, testable = false)
-    public static EnterpriseArchive createEarPermModuleJbPermDeployment() {
-        final String suffix = APP_EAR_PERM_MODULE_JBPERM;
-        JavaArchive jar = ejbDeployment(suffix);
-        WebArchive war = warDeployment(suffix);
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, suffix + ".ear");
-        addPermissionsXml(jar, null, ALL_PERMISSIONS_XML);
-        addPermissionsXml(war, null, ALL_PERMISSIONS_XML);
-        ear.addAsModule(jar);
-        ear.addAsModule(war);
-        addPermissionsXml(ear, EMPTY_PERMISSIONS_XML, null);
-        return ear;
     }
 
     /**
@@ -246,16 +225,6 @@ public class EarModulesPPTestCase extends AbstractPPTestsWithJSP {
      * Check permission.xml overrides in ear deployments.
      */
     @Test
-    @OperateOnDeployment(APP_EAR_PERM_MODULE_JBPERM)
-    @Ignore("WFLY-4886")
-    public void testASLevelPropertyEjbInJarEmptyPerm2() throws Exception {
-        checkTestPropertyEjb(APP_EAR_PERM_MODULE_JBPERM, true);
-    }
-
-    /**
-     * Check permission.xml overrides in ear deployments.
-     */
-    @Test
     @OperateOnDeployment(APP_NO_PERM)
     public void testJavaHomePropertyInJSPNoPerm(@ArquillianResource URL webAppURL) throws Exception {
         checkJavaHomePropertyInJSP(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -267,16 +236,6 @@ public class EarModulesPPTestCase extends AbstractPPTestsWithJSP {
     @Test
     @OperateOnDeployment(APP_EMPTY_PERM)
     public void testJavaHomePropertyInJSPEmptyPerm(@ArquillianResource URL webAppURL) throws Exception {
-        checkJavaHomePropertyInJSP(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Check permission.xml overrides in ear deployments.
-     */
-    @Test
-    @OperateOnDeployment(APP_EAR_PERM_MODULE_JBPERM)
-    @Ignore("WFLY-4886")
-    public void testJavaHomePropertyInJSPEmptyPerm2(@ArquillianResource URL webAppURL) throws Exception {
         checkJavaHomePropertyInJSP(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
@@ -302,16 +261,6 @@ public class EarModulesPPTestCase extends AbstractPPTestsWithJSP {
      * Check permission.xml overrides in ear deployments.
      */
     @Test
-    @OperateOnDeployment(APP_EAR_PERM_MODULE_JBPERM)
-    @Ignore("WFLY-4886")
-    public void testASLevelPropertyInJSPEmptyPerm2(@ArquillianResource URL webAppURL) throws Exception {
-        checkTestPropertyInJSP(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Check permission.xml overrides in ear deployments.
-     */
-    @Test
     @OperateOnDeployment(APP_NO_PERM)
     public void testASLevelPropertyNoPerm(@ArquillianResource URL webAppURL) throws Exception {
         checkTestProperty(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -323,16 +272,6 @@ public class EarModulesPPTestCase extends AbstractPPTestsWithJSP {
     @Test
     @OperateOnDeployment(APP_EMPTY_PERM)
     public void testASLevelPropertyEmptyPerm(@ArquillianResource URL webAppURL) throws Exception {
-        checkTestProperty(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Check permission.xml overrides in ear deployments.
-     */
-    @Test
-    @OperateOnDeployment(APP_EAR_PERM_MODULE_JBPERM)
-    @Ignore("WFLY-4886")
-    public void testASLevelPropertyEmptyPerm2(@ArquillianResource URL webAppURL) throws Exception {
         checkTestProperty(webAppURL, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
