@@ -31,6 +31,7 @@ import com.arjuna.ats.jta.common.jtaPropertyManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
@@ -60,6 +61,11 @@ public class EJBClientXidTransactionTestCase {
     private static TransactionManager txManager;
 
     private static TransactionSynchronizationRegistry txSyncRegistry;
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     /**
      * Creates an EJB deployment
