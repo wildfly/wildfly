@@ -34,7 +34,6 @@ import org.wildfly.extension.requestcontroller.RunResult;
  * An interceptor that allows the component to shutdown gracefully.
  *
  * @author Stuart Douglas
- * @author Flavia Rainone
  */
 public class EjbSuspendInterceptor extends AbstractEJBInterceptor {
 
@@ -44,22 +43,16 @@ public class EjbSuspendInterceptor extends AbstractEJBInterceptor {
         if (invocation != InvocationType.REMOTE && invocation != InvocationType.MESSAGE_DELIVERY) {
             return context.proceed();
         }
-        // see if control point accepts or rejects this invocation
         EJBComponent component = getComponent(context, EJBComponent.class);
         ControlPoint entryPoint = component.getControlPoint();
         RunResult result = entryPoint.beginRequest();
         if (result == RunResult.REJECTED) {
-            // if control point rejected, check with suspend handler
-            if (!component.getEjbSuspendHandlerService().acceptInvocation(context))
-                throw EjbLogger.ROOT_LOGGER.containerSuspended();
+            throw EjbLogger.ROOT_LOGGER.containerSuspended();
         }
         try {
             return context.proceed();
         } finally {
-            if (result == RunResult.REJECTED)
-                component.getEjbSuspendHandlerService().invocationComplete();
-            else
-                entryPoint.requestComplete();
+            entryPoint.requestComplete();
         }
     }
 }

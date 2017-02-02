@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
@@ -35,6 +36,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 
 /**
  * @author Jaikiran Pai
@@ -53,7 +55,7 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
     @Override
     protected void manageTransaction() throws Throwable {
         // first associate the tx on this thread, by resuming the tx
-        final SubordinateTransaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
+        final Transaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if (transaction == null) {
             // check the recovery store - it's possible that the commit is coming in as part of recovery operation and the subordinate
             // tx may not yet be in memory, but might be in the recovery store
@@ -68,23 +70,31 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
         }
         this.resumeTransaction(transaction);
         // now commit
+        final Xid xid = this.xidTransactionID.getXid();
         // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
         try {
-            if (transaction.activated()) {
+            // get the subordinate tx
+            final SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
+
+            if (subordinateTransaction == null) {
+                throw new XAException(XAException.XAER_INVAL);
+            }
+
+            if (subordinateTransaction.activated()) {
                 if (this.onePhaseCommit) {
-                    transaction.doOnePhaseCommit();
+                    subordinateTransaction.doOnePhaseCommit();
                 } else {
-                    transaction.doCommit();
+                    subordinateTransaction.doCommit();
                 }
                 // remove the tx
-                transactionsRepository.removeImportedTransaction(xidTransactionID);
+                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
             } else {
                 throw new XAException(XAException.XA_RETRY);
             }
 
         } catch (RollbackException e) {
             // remove the tx
-            transactionsRepository.removeImportedTransaction(xidTransactionID);
+            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
             final XAException xaException = new XAException(XAException.XA_RBROLLBACK);
             xaException.initCause(e);
             throw xaException;
@@ -93,7 +103,7 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
             // resource hasn't had a chance to recover yet
             if (ex.errorCode != XAException.XA_RETRY) {
                 // remove tx
-                transactionsRepository.removeImportedTransaction(xidTransactionID);
+                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
             }
             throw ex;
 
@@ -114,7 +124,7 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
 
         } catch (final IllegalStateException ex) {
             // remove tx
-            transactionsRepository.removeImportedTransaction(xidTransactionID);
+            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
 
             final XAException xaException = new XAException(XAException.XAER_NOTA);
             xaException.initCause(ex);
@@ -122,7 +132,7 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
 
         } catch (SystemException ex) {
             // remove tx
-            transactionsRepository.removeImportedTransaction(xidTransactionID);
+            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
 
             final XAException xaException = new XAException(XAException.XAER_RMERR);
             xaException.initCause(ex);
@@ -130,7 +140,6 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
 
 
         } finally {
-            transactionsRepository.removeImportedTransaction(xidTransactionID);
             // disassociate the tx that was associated (resumed) on this thread.
             // This needs to be done explicitly because the SubOrdinationManager isn't responsible
             // for clearing the tx context from the thread

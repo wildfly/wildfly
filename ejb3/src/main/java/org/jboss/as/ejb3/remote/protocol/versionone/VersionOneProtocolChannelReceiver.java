@@ -42,8 +42,10 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.RegistryCollector;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.MessageHandler;
-import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -56,7 +58,7 @@ import org.xnio.IoUtils;
  * @author Jaikiran Pai
  */
 public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener,
-        RegistryCollector.Listener<String, List<ClientMapping>> {
+        RegistryCollector.Listener<String, List<ClientMapping>>, ServerActivity {
 
     private static final byte HEADER_SESSION_OPEN_REQUEST = 0x01;
     private static final byte HEADER_INVOCATION_REQUEST = 0x03;
@@ -76,13 +78,12 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     protected final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
     protected final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = Collections.synchronizedSet(new HashSet<ClusterTopologyUpdateListener>());
     protected final RemoteAsyncInvocationCancelStatusService remoteAsyncInvocationCancelStatus;
-    protected final EJBSuspendHandlerService suspendHandler;
+    protected final SuspendController suspendController;
 
     public VersionOneProtocolChannelReceiver(final ChannelAssociation channelAssociation, final DeploymentRepository deploymentRepository,
                                              final EJBRemoteTransactionsRepository transactionsRepository, final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector,
                                              final MarshallerFactory marshallerFactory, final ExecutorService executorService,
-                                             final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService,
-                                             final EJBSuspendHandlerService suspendHandler) {
+                                             final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService, final SuspendController suspendController) {
         this.marshallerFactory = marshallerFactory;
         this.channelAssociation = channelAssociation;
         this.executorService = executorService;
@@ -90,7 +91,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.transactionsRepository = transactionsRepository;
         this.clientMappingRegistryCollector = clientMappingRegistryCollector;
         this.remoteAsyncInvocationCancelStatus = asyncInvocationCancelStatusService;
-        this.suspendHandler = suspendHandler;
+        this.suspendController = suspendController;
     }
 
     public void startReceiving() {
@@ -102,8 +103,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.deploymentRepository.addListener(this);
         // listen to new clusters (a.k.a groups) being started/stopped
         this.clientMappingRegistryCollector.addListener(this);
-        // register as a channel receiver in suspend handler to be able to notify module unavailability on server suspension
-        this.suspendHandler.registerChannelReceiver(this);
+        // register as a ServerActivity to be informed of suspend/resume
+        this.suspendController.registerActivity(this);
         // Send the cluster topology for existing clusters in the registry
         // and for each of these clusters added ourselves as a listener for cluster
         // topology changes (members added/removed events in the cluster)
@@ -372,32 +373,6 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
     }
 
-    public void notifyModulesUnavailable() {
-        // get the initial available modules and send a message to the client
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getStartedModules();
-        if (availableModules != null && !availableModules.isEmpty()) {
-            try {
-                EjbLogger.ROOT_LOGGER.debugf("Sending module unavailability message on suspend of server, containing %s module(s) to channel %s", availableModules.size(), this.channelAssociation.getChannel());
-                this.sendModuleUnAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
-            } catch (IOException e) {
-                EjbLogger.ROOT_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, this.channelAssociation.getChannel());
-            }
-        }
-    }
-
-    public void notifyModulesAvailable() {
-        // get the initial available modules and send a message to the client
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getStartedModules();
-        if (availableModules != null && !availableModules.isEmpty()) {
-            try {
-                EjbLogger.ROOT_LOGGER.debugf("Sending module availability message on resume of server, containing %s module(s) to channel %s", availableModules.size(), this.channelAssociation.getChannel());
-                this.sendModuleAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
-            } catch (IOException e) {
-                EjbLogger.ROOT_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, this.channelAssociation.getChannel());
-            }
-        }
-    }
-
     /**
      * Does all the necessary cleanup when a channel is no longer usable
      */
@@ -410,7 +385,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
         this.deploymentRepository.removeListener(this);
         this.clientMappingRegistryCollector.removeListener(this);
-        this.suspendHandler.unregisterChannelReceiver(this);
+        this.suspendController.unRegisterActivity(this);
     }
 
     class ChannelCloseHandler implements CloseHandler<Channel> {
@@ -419,6 +394,41 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         public void handleClose(Channel closedChannel, IOException exception) {
             EjbLogger.REMOTE_LOGGER.debugf("Channel %s closed", closedChannel);
             VersionOneProtocolChannelReceiver.this.cleanupOnChannelDown();
+        }
+    }
+
+    @Override
+    public void preSuspend(ServerActivityCallback listener) {
+        // get the initial available modules and send a message to the client
+        final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getStartedModules();
+        if (availableModules != null && !availableModules.isEmpty()) {
+            try {
+                EjbLogger.ROOT_LOGGER.debugf("Sending module unavailability message on suspend of server, containing %s module(s) to channel %s", availableModules.size(), this.channelAssociation.getChannel());
+                this.sendModuleUnAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
+            } catch (IOException e) {
+                EjbLogger.ROOT_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, this.channelAssociation.getChannel());
+            } finally {
+                listener.done();
+            }
+        }
+    }
+
+    @Override
+    public void suspended(ServerActivityCallback listener) {
+        listener.done();
+    }
+
+    @Override
+    public void resume() {
+        // get the initial available modules and send a message to the client
+        final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getStartedModules();
+        if (availableModules != null && !availableModules.isEmpty()) {
+            try {
+                EjbLogger.ROOT_LOGGER.debugf("Sending module availability message on resume of server, containing %s module(s) to channel %s", availableModules.size(), this.channelAssociation.getChannel());
+                this.sendModuleAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
+            } catch (IOException e) {
+                EjbLogger.ROOT_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, this.channelAssociation.getChannel());
+            }
         }
     }
 

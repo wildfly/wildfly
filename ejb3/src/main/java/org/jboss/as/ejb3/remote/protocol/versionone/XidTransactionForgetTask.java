@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
@@ -30,6 +31,7 @@ import org.jboss.marshalling.MarshallerFactory;
 
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 
 /**
  * @author Jaikiran Pai
@@ -45,7 +47,7 @@ class XidTransactionForgetTask extends XidTransactionManagementTask {
     @Override
     protected void manageTransaction() throws Throwable {
         // first associate the tx on this thread, by resuming the tx
-        final SubordinateTransaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
+        final Transaction transaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if(transaction == null) {
             // check the recovery store - it's possible that the "forget" is coming in as part of recovery operation and the subordinate
             // tx may not yet be in memory, but might be in the recovery store
@@ -61,9 +63,16 @@ class XidTransactionForgetTask extends XidTransactionManagementTask {
         this.resumeTransaction(transaction);
 
         // "forget"
+        final Xid xid = this.xidTransactionID.getXid();
         try {
+            // get the subordinate tx
+            final SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
+
+            if (subordinateTransaction == null) {
+                throw new XAException(XAException.XAER_INVAL);
+            }
             // invoke forget
-            transaction.doForget();
+            subordinateTransaction.doForget();
 
         } catch (Exception ex) {
             final XAException xaException = new XAException(XAException.XAER_RMERR);
@@ -71,7 +80,7 @@ class XidTransactionForgetTask extends XidTransactionManagementTask {
             throw xaException;
 
         } finally {
-            transactionsRepository.removeImportedTransaction(xidTransactionID);
+            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
             // disassociate the tx that was associated (resumed) on this thread.
             // This needs to be done explicitly because the SubOrdinationManager isn't responsible
             // for clearing the tx context from the thread

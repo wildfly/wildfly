@@ -53,7 +53,6 @@ import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.Registration;
-import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -112,7 +111,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
     private final InjectedValue<ApplicationSecurityDomain> applicationSecurityDomain = new InjectedValue<>();
     private final InjectedValue<Function> identityOutflowFunction = new InjectedValue<>();
-    private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandler = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -363,14 +361,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     EJBRemoteTransactionsRepository getEJBRemoteTransactionsRepository() {
         // remote tx repo is applicable only for remote views, hence the optionalValue
         return this.ejbRemoteTransactionsRepository.getOptionalValue();
-    }
-
-    public Injector<EJBSuspendHandlerService> getEJBSuspendHandlerInjector() {
-        return this.ejbSuspendHandler;
-    }
-
-    EJBSuspendHandlerService getEJBSuspendHandler() {
-        return this.ejbSuspendHandler.getValue();
     }
 
     Injector<TransactionManager> getTransactionManagerInjector() {
