@@ -45,7 +45,7 @@ public class OperationHandler<C> extends ExecutionHandler<C, Operation<C>> imple
     }
 
     public OperationHandler(OperationExecutor<C> executor, Collection<? extends Operation<C>> operations) {
-        super(executor, operations, operation -> operation.getDefinition().getName());
+        super(executor, operations, Operation::getName, Operations::getName);
         this.operations = operations;
     }
 

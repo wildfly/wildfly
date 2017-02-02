@@ -26,4 +26,8 @@ import org.jboss.as.controller.AttributeDefinition;
  * @param <C> metric context
  */
 public interface Metric<C> extends Definable<AttributeDefinition>, Executable<C> {
+
+    default String getName() {
+        return this.getDefinition().getName();
+    }
 }
