@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.manualmode.ejb.Util;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -98,9 +97,8 @@ public class EJBClientClusterConfigurationTestCase {
 
     @Before
     public void before() throws Exception {
-        this.context = Util.createNamingContext();
-        // setup the client context selector
-        setupEJBClientContextSelector();
+        final Properties ejbClientProperties = setupEJBClientProperties();
+        this.context = Util.createNamingContext(ejbClientProperties);
 
     }
 
@@ -206,14 +204,13 @@ public class EJBClientClusterConfigurationTestCase {
     }
 
     /**
-     * Sets up the EJB client context to use a selector which processes and sets up EJB receivers
-     * based on this testcase specific jboss-ejb-client.properties file
+     * Sets up the EJB client properties based on this testcase specific jboss-ejb-client.properties file
      *
      * @return
      * @throws java.io.IOException
      */
-    private static EJBClientContext setupEJBClientContextSelector() throws IOException {
-        // setup the selector
+    private static Properties setupEJBClientProperties() throws IOException {
+        // setup the properties
         final String clientPropertiesFile = "jboss-ejb-client.properties";
         final InputStream inputStream = EJBClientClusterConfigurationTestCase.class.getResourceAsStream(clientPropertiesFile);
         if (inputStream == null) {
@@ -221,9 +218,7 @@ public class EJBClientClusterConfigurationTestCase {
         }
         final Properties properties = new Properties();
         properties.load(inputStream);
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using properties
-        return null;
+        return properties;
     }
 
     private static ModelControllerClient createModelControllerClient(final String container) throws UnknownHostException {
