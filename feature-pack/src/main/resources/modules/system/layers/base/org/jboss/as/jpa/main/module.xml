@@ -56,7 +56,7 @@
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.naming"/>
-        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
@@ -77,6 +77,7 @@
         <module name="org.jboss.as.weld.common"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
         <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.transaction.client"/>
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->

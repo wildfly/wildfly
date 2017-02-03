@@ -88,6 +88,7 @@ public enum EJB3SubsystemXMLAttribute {
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
 
     @Deprecated SESSIONS_PATH("sessions-path"),
+    STATIC_URLS("static-urls"),
     @Deprecated SUBDIRECTORY_COUNT("subdirectory-count"),
 
     THREAD_POOL_NAME("thread-pool-name"),

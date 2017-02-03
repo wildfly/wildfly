@@ -59,6 +59,10 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_CMR = JBOSS_TXN.append("CMR");
 
+    public static final ServiceName JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT = JBOSS_TXN.append("context", "local");
+
+    public static final ServiceName JBOSS_TXN_REMOTE_TRANSACTION_SERVICE = JBOSS_TXN.append("service", "remote");
+
     public static <T> T notNull(T value) {
         if (value == null) throw TransactionLogger.ROOT_LOGGER.serviceNotStarted();
         return value;

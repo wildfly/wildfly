@@ -22,31 +22,31 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
-import org.jboss.as.ejb3.remote.EJBClientClusterConfig;
-import org.jboss.as.ejb3.remote.EJBClientClusterNodeConfig;
-import org.jboss.as.ejb3.remote.JBossEJBClientXmlConfiguration;
-import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.EJBClientContextService;
+import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
-import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
+import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.ejb.client.DeploymentNodeSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.modules.Module;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.xnio.Option;
@@ -57,8 +57,9 @@ import org.xnio.OptionMap;
  * {@link Attachments#EJB_CLIENT_METADATA} key corresponding to {@link EJBClientDescriptorMetaData}, in the deployment unit.
  * <p/>
  * If a {@link EJBClientDescriptorMetaData} is available then this deployment unit processor creates and installs a
- * {@link DescriptorBasedEJBClientContextService}. It then attaches the {@link org.jboss.ejb.client.EJBClientContext} as an
- * attachment to the deployment unit, under the key {@link EjbDeploymentAttachmentKeys#EJB_CLIENT_CONTEXT}
+ * {@link EJBClientContextService}.
+ *
+ * TODO Elytron emulate old configuration using discovery, clustering
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -66,6 +67,9 @@ import org.xnio.OptionMap;
 public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProcessor {
 
     private static final String INTERNAL_REMOTING_PROFILE = "internal-remoting-profile";
+
+    public EJBClientDescriptorMetaDataProcessor() {
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -87,38 +91,102 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             return;
         }
         // install the descriptor based EJB client context service
-        final ServiceName ejbClientContextServiceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME
-                .append(deploymentUnit.getName());
+        final ServiceName ejbClientContextServiceName = EJBClientContextService.DEPLOYMENT_BASE_SERVICE_NAME.append(deploymentUnit.getName());
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        // create the client configuration from the metadata
-        final EJBClientConfiguration ejbClientConfiguration = this.createClientConfiguration(phaseContext.getServiceRegistry(),
-                module.getClassLoader(), ejbClientDescriptorMetaData);
         // create the service
-        final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService(
-                ejbClientConfiguration, module.getClassLoader());
+        final EJBClientContextService service = new EJBClientContextService();
         // add the service
-        final ServiceBuilder<EJBClientContext> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
+        final ServiceBuilder<EJBClientContextService> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
 
+        serviceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, service.getConfiguratorServiceInjector());
+
+        final Injector<RemotingProfileService> profileServiceInjector = new Injector<RemotingProfileService>() {
+            final Injector<EJBTransportProvider> injector = service.getLocalProviderInjector();
+            boolean injected = false;
+
+            public void inject(final RemotingProfileService value) throws InjectionException {
+                final EJBTransportProvider provider = value.getLocalTransportProviderInjector().getOptionalValue();
+                if (provider != null) {
+                    injected = true;
+                    injector.inject(provider);
+                }
+            }
+
+            public void uninject() {
+                if (injected) {
+                    injected = false;
+                    injector.uninject();
+                }
+            }
+        };
         final String profile = ejbClientDescriptorMetaData.getProfile();
+        final ServiceName profileServiceName;
         if (profile != null) {
-            final ServiceName profileServiceDependency = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
-            serviceBuilder.addDependency(profileServiceDependency, RemotingProfileService.class, service.getProfileServiceInjector());
+            profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profile);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
         } else {
             // if descriptor defines list of ejb-receivers instead of profile then we create internal ProfileService for this
             // application which contains defined receivers
-            final ServiceName profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
-            createInternalRemotingProfileService(profileServiceName, serviceTarget, ejbClientDescriptorMetaData);
+            profileServiceName = ejbClientContextServiceName.append(INTERNAL_REMOTING_PROFILE);
+            final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
+            final RemotingProfileService profileService = new RemotingProfileService(Collections.emptyList(), map);
+            final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
+                    profileService);
+            if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
+                final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
+                profileServiceBuilder.addDependency(passByValue == Boolean.TRUE ? LocalTransportProvider.BY_VALUE_SERVICE_NAME : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+            }
+            final Collection<EJBClientDescriptorMetaData.RemotingReceiverConfiguration> receiverConfigurations = ejbClientDescriptorMetaData.getRemotingReceiverConfigurations();
+            for (EJBClientDescriptorMetaData.RemotingReceiverConfiguration receiverConfiguration : receiverConfigurations) {
+                final String connectionRef = receiverConfiguration.getOutboundConnectionRef();
+                final long connectTimeout = receiverConfiguration.getConnectionTimeout();
+                final Properties channelCreationOptions = receiverConfiguration.getChannelCreationOptions();
+                final OptionMap optionMap = getOptionMapFromProperties(channelCreationOptions, module.getClassLoader());
+                final InjectedValue<AbstractOutboundConnectionService> injector = new InjectedValue<>();
+                profileServiceBuilder.addDependency(AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(connectionRef), AbstractOutboundConnectionService.class, injector);
+                final RemotingProfileService.ConnectionSpec connectionSpec = new RemotingProfileService.ConnectionSpec(connectionRef, injector, optionMap, connectTimeout);
+                map.put(connectionRef, connectionSpec);
+            }
+            profileServiceBuilder.install();
+
+            serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, profileServiceInjector);
             serviceBuilder.addDependency(profileServiceName, RemotingProfileService.class, service.getProfileServiceInjector());
         }
-        serviceBuilder.addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+        // these items are the same no matter how we were configured
+        // TODO
+        final String deploymentNodeSelector = ejbClientDescriptorMetaData.getDeploymentNodeSelector();
+        final long invocationTimeout = ejbClientDescriptorMetaData.getInvocationTimeout();
+        final Collection<EJBClientDescriptorMetaData.ClusterConfig> clusterConfigs = ejbClientDescriptorMetaData.getClusterConfigs();
+        for (EJBClientDescriptorMetaData.ClusterConfig clusterConfig : clusterConfigs) {
+            final String clusterName = clusterConfig.getClusterName();
+            final long maxAllowedConnectedNodes = clusterConfig.getMaxAllowedConnectedNodes();
+            final String clusterNodeSelector = clusterConfig.getNodeSelector();
+            final Properties clusterChannelCreationOptions = clusterConfig.getChannelCreationOptions();
+            final Properties clusterConnectionOptions = clusterConfig.getConnectionOptions();
+            final long clusterConnectTimeout = clusterConfig.getConnectTimeout();
+            final String clusterSecurityRealm = clusterConfig.getSecurityRealm();
+            final String clusterUserName = clusterConfig.getUserName();
+            final Collection<EJBClientDescriptorMetaData.ClusterNodeConfig> clusterNodeConfigs = clusterConfig.getClusterNodeConfigs();
+            for (EJBClientDescriptorMetaData.ClusterNodeConfig clusterNodeConfig : clusterNodeConfigs) {
+                final String nodeName = clusterNodeConfig.getNodeName();
+                final Properties channelCreationOptions = clusterNodeConfig.getChannelCreationOptions();
+                final Properties connectionOptions = clusterNodeConfig.getConnectionOptions();
+                final long connectTimeout = clusterNodeConfig.getConnectTimeout();
+                final String securityRealm = clusterNodeConfig.getSecurityRealm();
+                final String userName = clusterNodeConfig.getUserName();
+            }
+        }
+
         // install the service
         serviceBuilder.install();
         EjbLogger.DEPLOYMENT_LOGGER.debugf("Deployment unit %s will use %s as the EJB client context service", deploymentUnit,
                 ejbClientContextServiceName);
 
         // attach the service name of this EJB client context to the deployment unit
-        phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
+        phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE);
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
+        deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME, profileServiceName);
     }
 
     @Override
@@ -127,73 +195,18 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
     private void checkDescriptorConfiguration(final EJBClientDescriptorMetaData ejbClientDescriptorMetaData)
             throws DeploymentUnitProcessingException {
-        final boolean profileDefinied = ejbClientDescriptorMetaData.getProfile() != null;
+        final boolean profileDefined = ejbClientDescriptorMetaData.getProfile() != null;
         final boolean receiversDefined = (!ejbClientDescriptorMetaData.getRemotingReceiverConfigurations().isEmpty())
                 || (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != null)
                 || (ejbClientDescriptorMetaData.isLocalReceiverPassByValue() != null);
-        if (profileDefinied && receiversDefined) {
+        if (profileDefined && receiversDefined) {
             throw EjbLogger.ROOT_LOGGER.profileAndRemotingEjbReceiversUsedTogether();
         }
     }
 
-    private RemotingProfileService createInternalRemotingProfileService(final ServiceName profileServiceName,
-            final ServiceTarget serviceTarget, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) {
-        final RemotingProfileService profileService = new RemotingProfileService();
-        final ServiceBuilder<RemotingProfileService> profileServiceBuilder = serviceTarget.addService(profileServiceName,
-                profileService);
-
-        for (final EJBClientDescriptorMetaData.RemotingReceiverConfiguration remotingReceiverConfiguration : ejbClientDescriptorMetaData
-                .getRemotingReceiverConfigurations()) {
-            final String connectionRef = remotingReceiverConfiguration.getOutboundConnectionRef();
-            final ServiceName connectionDependencyService = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME
-                    .append(connectionRef);
-
-            final InjectedValue<AbstractOutboundConnectionService> connectionInjector = new InjectedValue<AbstractOutboundConnectionService>();
-            profileServiceBuilder.addDependency(connectionDependencyService, AbstractOutboundConnectionService.class,
-                    connectionInjector);
-            profileService.addRemotingConnectionInjector(connectionDependencyService, connectionInjector);
-
-            // setup connection timeout for each outbound connection ref
-            profileService.addConnectionTimeout(connectionRef, remotingReceiverConfiguration.getConnectionTimeout());
-
-            // setup the channel creation options for each outbound connection reference
-            final Properties channelCreationProps = remotingReceiverConfiguration.getChannelCreationOptions();
-            final OptionMap channelCreationOpts;
-            if (channelCreationProps == null) {
-                channelCreationOpts = OptionMap.EMPTY;
-            } else {
-                // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the
-                // deployment's
-                // module CL
-                channelCreationOpts = getOptionMapFromProperties(channelCreationProps, this.getClass().getClassLoader());
-            }
-            profileService.addChannelCreationOption(connectionRef, channelCreationOpts);
-            EjbLogger.DEPLOYMENT_LOGGER.debugf("Channel creation options for connection %s are %s", channelCreationOpts, connectionRef,
-                    channelCreationOpts);
-        }
-        final boolean localReceiverExcluded = ejbClientDescriptorMetaData.isLocalReceiverExcluded() != null ? ejbClientDescriptorMetaData
-                .isLocalReceiverExcluded() : false;
-        if (!localReceiverExcluded) {
-            final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
-            if (passByValue != null) {
-                final ServiceName localEjbReceiverServiceName = passByValue == true ? LocalEjbReceiver.BY_VALUE_SERVICE_NAME
-                        : LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME;
-                profileServiceBuilder.addDependency(localEjbReceiverServiceName, LocalEjbReceiver.class,
-                        profileService.getLocalEjbReceiverInjector());
-            } else {
-                // setup a dependency on the default local ejb receiver service configured at the subsystem level
-                profileServiceBuilder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME,
-                        LocalEjbReceiver.class, profileService.getLocalEjbReceiverInjector());
-            }
-        }
-        profileServiceBuilder.install();
-
-        return profileService;
-    }
-
     private OptionMap getOptionMapFromProperties(final Properties properties, final ClassLoader classLoader) {
         final OptionMap.Builder optionMapBuilder = OptionMap.builder();
-        for (final String propertyName : properties.stringPropertyNames()) {
+        if (properties != null) for (final String propertyName : properties.stringPropertyNames()) {
             try {
                 final Option<?> option = Option.fromString(propertyName, classLoader);
                 optionMapBuilder.parse(option, properties.getProperty(propertyName), classLoader);
@@ -202,39 +215,6 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             }
         }
         return optionMapBuilder.getMap();
-    }
-
-    private EJBClientConfiguration createClientConfiguration(final ServiceRegistry serviceRegistry,
-            final ClassLoader classLoader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData)
-            throws DeploymentUnitProcessingException {
-
-        final JBossEJBClientXmlConfiguration ejbClientConfig = new JBossEJBClientXmlConfiguration();
-        ejbClientConfig.setInvocationTimeout(ejbClientDescriptorMetaData.getInvocationTimeout());
-        // deployment node selector
-        final String deploymentNodeSelectorClassName = ejbClientDescriptorMetaData.getDeploymentNodeSelector();
-        if (deploymentNodeSelectorClassName != null && !deploymentNodeSelectorClassName.trim().isEmpty()) {
-            try {
-                final Class<?> deploymentNodeSelectorClass = classLoader.loadClass(deploymentNodeSelectorClassName);
-                ejbClientConfig.setDeploymentNodeSelector((DeploymentNodeSelector) deploymentNodeSelectorClass.newInstance());
-            } catch (Exception e) {
-                throw EjbLogger.ROOT_LOGGER.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
-            }
-        }
-
-        for (final EJBClientDescriptorMetaData.ClusterConfig clusterMetadata : ejbClientDescriptorMetaData.getClusterConfigs()) {
-            final EJBClientClusterConfig clusterConfig = new EJBClientClusterConfig(clusterMetadata, classLoader,
-                    serviceRegistry);
-            // add it to the client configuration
-            ejbClientConfig.addClusterConfiguration(clusterConfig);
-
-            for (final EJBClientDescriptorMetaData.ClusterNodeConfig nodeMetadata : clusterMetadata.getClusterNodeConfigs()) {
-                final EJBClientClusterNodeConfig clusterNodeConfig = new EJBClientClusterNodeConfig(nodeMetadata, classLoader,
-                        serviceRegistry);
-                clusterConfig.addClusterNode(clusterNodeConfig);
-            }
-
-        }
-        return ejbClientConfig;
     }
 
 }

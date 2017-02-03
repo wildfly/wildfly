@@ -56,8 +56,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ContainerInterceptorsTestCase {
 
-    private static final int CLIENT_INTERCEPTOR_ORDER = 0x99999;
-
     private static final String EJB_JAR_NAME = "ejb-container-interceptors";
 
     @ArquillianResource
@@ -169,42 +167,41 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
     // force real remote invocation so that the RemotingConnectionEJBReceiver is used instead of a LocalEJBReceiver
     @RunAsClient
     public void testDataPassingForContainerInterceptorsOnRemoteView() throws Exception {
-        // get hold of the EJBClientContext
-        final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
-
         // create some data that the client side interceptor will pass along during the EJB invocation
         final Map<String, Object> interceptorData = new HashMap<String, Object>();
         interceptorData.put(FlowTrackingBean.CONTEXT_DATA_KEY, ContainerInterceptorOne.class.getName());
         final SimpleEJBClientInterceptor clientInterceptor = new SimpleEJBClientInterceptor(interceptorData);
-        // register the client side interceptor
-        ejbClientContext.registerInterceptor(CLIENT_INTERCEPTOR_ORDER, clientInterceptor);
+        // get hold of the EJBClientContext and register the client side interceptor
+        EJBClientContext ejbClientContext = EJBClientContext.getCurrent().withAddedInterceptors(clientInterceptor);
 
         final Hashtable<String, Object> jndiProps = new Hashtable<String, Object>();
         jndiProps.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         final Context jndiCtx = new InitialContext(jndiProps);
-        final FlowTracker bean = (FlowTracker) jndiCtx.lookup("ejb:/" + EJB_JAR_NAME + "/"
-                + FlowTrackingBean.class.getSimpleName() + "!" + FlowTracker.class.getName());
-        final String message = "foo";
-        // we passed ContainerInterceptorOne as the value of the context data for the invocation, which means that we want the ContainerInterceptorOne
-        // to be skipped, so except that interceptor, the rest should be invoked.
-        final String expectedResultForFirstInvocation = NonContainerInterceptor.class.getName() + " "
-                + FlowTrackingBean.class.getName() + " " + message;
-        final String firstResult = bean.echo(message);
-        Assert.assertEquals("Unexpected result invoking on bean when passing context data via EJB client interceptor",
-                expectedResultForFirstInvocation, firstResult);
+        ejbClientContext.runCallable(() -> {
+            final FlowTracker bean = (FlowTracker) jndiCtx.lookup("ejb:/" + EJB_JAR_NAME + "/"
+                    + FlowTrackingBean.class.getSimpleName() + "!" + FlowTracker.class.getName());
+            final String message = "foo";
+            // we passed ContainerInterceptorOne as the value of the context data for the invocation, which means that we want the ContainerInterceptorOne
+            // to be skipped, so except that interceptor, the rest should be invoked.
+            final String expectedResultForFirstInvocation = NonContainerInterceptor.class.getName() + " "
+                    + FlowTrackingBean.class.getName() + " " + message;
+            final String firstResult = bean.echo(message);
+            Assert.assertEquals("Unexpected result invoking on bean when passing context data via EJB client interceptor",
+                    expectedResultForFirstInvocation, firstResult);
 
-        // Now try another invocation, this time skip a different interceptor
-        interceptorData.clear();
-        interceptorData.put(FlowTrackingBean.CONTEXT_DATA_KEY, NonContainerInterceptor.class.getName());
-        final String secondMessage = "bar";
-        // we passed NonContainerInterceptor as the value of the context data for the invocation, which means that we want the NonContainerInterceptor
-        // to be skipped, so except that interceptor, the rest should be invoked.
-        final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
-                + FlowTrackingBean.class.getName() + " " + secondMessage;
-        final String secondResult = bean.echo(secondMessage);
-        Assert.assertEquals("Unexpected result invoking on bean when passing context data via EJB client interceptor",
-                expectedResultForSecondInvocation, secondResult);
-
+            // Now try another invocation, this time skip a different interceptor
+            interceptorData.clear();
+            interceptorData.put(FlowTrackingBean.CONTEXT_DATA_KEY, NonContainerInterceptor.class.getName());
+            final String secondMessage = "bar";
+            // we passed NonContainerInterceptor as the value of the context data for the invocation, which means that we want the NonContainerInterceptor
+            // to be skipped, so except that interceptor, the rest should be invoked.
+            final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
+                    + FlowTrackingBean.class.getName() + " " + secondMessage;
+            final String secondResult = bean.echo(secondMessage);
+            Assert.assertEquals("Unexpected result invoking on bean when passing context data via EJB client interceptor",
+                    expectedResultForSecondInvocation, secondResult);
+            return null;
+        });
     }
 
     /**

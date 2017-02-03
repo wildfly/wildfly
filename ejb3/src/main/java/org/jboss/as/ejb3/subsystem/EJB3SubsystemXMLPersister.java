@@ -260,13 +260,6 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
-        // graceful txn shutdown
-        if (model.hasDefined(ENABLE_GRACEFUL_TXN_SHUTDOWN)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.ENABLE_GRACEFUL_TXN_SHUTDOWN.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN).asString());
-            writer.writeEndElement();
-        }
-
         // statistics element
         if (model.hasDefined(ENABLE_STATISTICS)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
@@ -589,6 +582,16 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE.marshallAsAttribute(profileNode, writer);
             if(profileNode.hasDefined(REMOTING_EJB_RECEIVER)){
                 writeRemotingEjbReceivers(writer, profileNode);
+            }
+            if(profileNode.hasDefined(DISCOVERY)){
+                final ModelNode discoveryNode = profileNode.get(DISCOVERY);
+                for(Property discoveryProperty: discoveryNode.asPropertyList()){
+                    switch(discoveryProperty.getName()){
+                        case EJB3SubsystemModel.STATIC:
+                            DiscoveryResourceDefinition.STATIC_URLS.marshallAsElement(discoveryProperty.getValue(),writer);
+                        break;
+                    }
+                }
             }
             writer.writeEndElement();
         }

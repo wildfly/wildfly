@@ -29,14 +29,10 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.ejb.Util;
-import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBClientTransactionContext;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
+
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -78,7 +74,6 @@ public class EJBClientReconnectionTestCase {
     private Deployer deployer;
 
     private Context context;
-    private ContextSelector<EJBClientContext> previousClientContextSelector;
 
 
     @Deployment(name = DEPLOYMENT, managed = false, testable = false)
@@ -92,7 +87,7 @@ public class EJBClientReconnectionTestCase {
     public void before() throws Exception {
         this.context = Util.createNamingContext();
         // setup the client context selector
-        this.previousClientContextSelector = setupEJBClientContextSelector();
+        setupEJBClientContextSelector();
 
         controller.start(CONTAINER);
         log.trace("===appserver started===");
@@ -102,9 +97,6 @@ public class EJBClientReconnectionTestCase {
 
     @After
     public void after() throws Exception {
-        if (this.previousClientContextSelector != null) {
-            EJBClientContext.setSelector(this.previousClientContextSelector);
-        }
         this.context.close();
 
         try {
@@ -139,8 +131,9 @@ public class EJBClientReconnectionTestCase {
 
     @Test
     public void testReconnectionWithClientAPI() throws Throwable {
-        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
-        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
+        //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        //EJBClientTransactionContext.setGlobalContext(localUserTxContext);
 
         final StatelessEJBLocator<SimpleCrashBeanRemote> locator = new StatelessEJBLocator(SimpleCrashBeanRemote.class, "", DEPLOYMENT, SimpleCrashBean.class.getSimpleName(), "");
         final SimpleCrashBeanRemote proxy = EJBClient.createProxy(locator);
@@ -182,7 +175,7 @@ public class EJBClientReconnectionTestCase {
      * @return
      * @throws java.io.IOException
      */
-    private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
+    private static EJBClientContext setupEJBClientContextSelector() throws IOException {
         // setup the selector
         final String clientPropertiesFile = "jboss-ejb-client.properties";
         final InputStream inputStream = EJBClientReconnectionTestCase.class.getResourceAsStream(clientPropertiesFile);
@@ -191,10 +184,9 @@ public class EJBClientReconnectionTestCase {
         }
         final Properties properties = new Properties();
         properties.load(inputStream);
-        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
-        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
-
-        return EJBClientContext.setSelector(selector);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using properties
+        return null;
     }
 
 

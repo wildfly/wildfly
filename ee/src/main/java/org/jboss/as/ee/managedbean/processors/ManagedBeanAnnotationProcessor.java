@@ -49,7 +49,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.invocation.AccessCheckingInterceptor;
 import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.PrivilegedWithCombinerInterceptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
@@ -115,7 +114,6 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     // Add MB association interceptors
                     configuration.addClientPostConstructInterceptor(ManagedBeanCreateInterceptor.FACTORY, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
                     final ClassLoader classLoader = componentConfiguration.getModuleClassLoader();
-                    configuration.addViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
                     configuration.addViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                 }

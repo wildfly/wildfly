@@ -28,9 +28,6 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -46,6 +43,10 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
@@ -54,15 +55,14 @@ import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
-import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
@@ -72,7 +72,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.ControlPoint;
-import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -105,8 +104,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final String moduleName;
     private final String distinctName;
     private final String policyContextID;
-    private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
-    private final EJBSuspendHandlerService ejbSuspendHandlerService;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
@@ -169,7 +166,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.ejbObjectViewServiceName = ejbComponentCreateService.getEjbObject();
         this.ejbLocalObjectViewServiceName = ejbComponentCreateService.getEjbLocalObject();
 
-        this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
         this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
         this.transactionManager = ejbComponentCreateService.getTransactionManager();
@@ -182,7 +178,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
         this.incomingRunAsIdentity = null;
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
-        this.ejbSuspendHandlerService = ejbComponentCreateService.getEJBSuspendHandler();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -301,7 +296,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     private static <T extends EJBHome> EJBHomeLocator<T> createHomeLocator(Class<T> viewClass, String appName, String moduleName, String beanName, String distinctName) {
-        return new EJBHomeLocator<T>(viewClass, appName, moduleName, beanName, distinctName);
+        return new EJBHomeLocator<T>(viewClass, appName, moduleName, beanName, distinctName, Affinity.LOCAL);
     }
 
     public Class<?> getEjbObjectType() {
@@ -421,7 +416,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
         if (isSecurityDomainKnown()) {
             final SecurityIdentity identity = (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
-            return "**".equals(roleName) ? ! (identity.getPrincipal() instanceof AnonymousPrincipal) : identity.getRoles("ejb", true).contains(roleName);
+            return "**".equals(roleName) ? ! identity.isAnonymous() : identity.getRoles("ejb", true).contains(roleName);
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
                 public Boolean run() {
@@ -543,20 +538,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public Map<Method, InterceptorFactory> getTimeoutInterceptors() {
         return timeoutInterceptors;
-    }
-
-    /**
-     * Returns the {@link EJBRemoteTransactionsRepository} if there is at least one remote view (either
-     * ejb3.x business remote, ejb2.x remote component or home view) is exposed. Else returns null.
-     *
-     * @return
-     */
-    public EJBRemoteTransactionsRepository getEjbRemoteTransactionsRepository() {
-        return this.ejbRemoteTransactionsRepository;
-    }
-
-    public EJBSuspendHandlerService getEjbSuspendHandlerService() {
-        return this.ejbSuspendHandlerService;
     }
 
     public AllowedMethodsInformation getAllowedMethodsInformation() {

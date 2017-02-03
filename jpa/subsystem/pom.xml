@@ -75,6 +75,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ejb3</artifactId>
         </dependency>

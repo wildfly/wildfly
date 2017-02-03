@@ -21,6 +21,8 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
+import org.jboss.ejb.client.EJBIdentifier;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -30,6 +32,8 @@ public class Constants {
     public static final String EJB_NAME ="EJB";
     public static final String MODULE_NAME ="jsr-77";
     public static final String DISTINCT_NAME = "";
+    public static final EJBIdentifier EJB_IDENTIFIER = new EJBIdentifier(APP_NAME, MODULE_NAME, EJB_NAME, DISTINCT_NAME);
+
     public static final String JNDI_NAME = "ejb/mgmt/MEJB";
     public static final String JMX_DOMAIN = "jboss.jsr77";
 }

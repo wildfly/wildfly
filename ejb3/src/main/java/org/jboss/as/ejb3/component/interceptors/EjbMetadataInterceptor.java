@@ -22,9 +22,13 @@
 package org.jboss.as.ejb3.component.interceptors;
 
 import javax.ejb.EJBHome;
+import javax.ejb.EJBObject;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.ejb.client.EJBMetaDataImpl;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EntityEJBMetaData;
+import org.jboss.ejb.client.StatefulEJBMetaData;
+import org.jboss.ejb.client.StatelessEJBMetaData;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.value.InjectedValue;
@@ -38,12 +42,12 @@ public class EjbMetadataInterceptor implements Interceptor {
 
     private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
     private final Class<?> remoteClass;
-    private final Class<?> homeClass;
+    private final Class<? extends EJBHome> homeClass;
     private final Class<?> pkClass;
     private final boolean session;
     private final boolean stateless;
 
-    public EjbMetadataInterceptor(Class<?> remoteClass, Class<?> homeClass, Class<?> pkClass, boolean session, boolean stateless) {
+    public EjbMetadataInterceptor(Class<?> remoteClass, Class<? extends EJBHome> homeClass, Class<?> pkClass, boolean session, boolean stateless) {
         this.remoteClass = remoteClass;
         this.homeClass = homeClass;
         this.pkClass = pkClass;
@@ -53,7 +57,28 @@ public class EjbMetadataInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        return new EJBMetaDataImpl(EjbMetadataInterceptor.this.remoteClass, EjbMetadataInterceptor.this.homeClass, EjbMetadataInterceptor.this.pkClass, EjbMetadataInterceptor.this.session, EjbMetadataInterceptor.this.stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
+        final EJBHome home = (EJBHome) homeView.getValue().createInstance().getInstance();
+        if (session) {
+            if (stateless) {
+                return createStatelessMetaData(remoteClass.asSubclass(EJBObject.class), homeClass, home);
+            } else {
+                return createStatefulMetaData(remoteClass.asSubclass(EJBObject.class), homeClass, home);
+            }
+        } else {
+            return createEntityMetaData(remoteClass.asSubclass(EJBObject.class), homeClass, home, pkClass);
+        }
+    }
+
+    private static <T extends EJBObject, H extends EJBHome> StatelessEJBMetaData<T, ? extends H> createStatelessMetaData(Class<T> remoteClass, Class<H> homeClass, EJBHome home) {
+        return new StatelessEJBMetaData<>(remoteClass, EJBClient.getLocatorFor(home).<H>narrowAsHome(homeClass));
+    }
+
+    private static <T extends EJBObject, H extends EJBHome> StatefulEJBMetaData<T, ? extends H> createStatefulMetaData(Class<T> remoteClass, Class<H> homeClass, EJBHome home) {
+        return new StatefulEJBMetaData<>(remoteClass, EJBClient.getLocatorFor(home).<H>narrowAsHome(homeClass));
+    }
+
+    private static <T extends EJBObject, H extends EJBHome> EntityEJBMetaData<T, ? extends H> createEntityMetaData(Class<T> remoteClass, Class<H> homeClass, EJBHome home, Class<?> pkClass) {
+        return new EntityEJBMetaData<>(remoteClass, EJBClient.getLocatorFor(home).<H>narrowAsHome(homeClass), pkClass);
     }
 
     public InjectedValue<ComponentView> getHomeView() {

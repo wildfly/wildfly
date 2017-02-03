@@ -36,11 +36,7 @@ import org.jboss.as.test.manualmode.ejb.ssl.beans.StatefulBeanRemote;
 import org.jboss.as.test.manualmode.ejb.ssl.beans.StatelessBean;
 import org.jboss.as.test.manualmode.ejb.ssl.beans.StatelessBeanRemote;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -76,7 +72,6 @@ public class SSLEJBRemoteClientTestCase {
     public static final String DEPLOYMENT_STATELESS = "dep_stateless";
     public static final String DEPLOYMENT_STATEFUL = "dep_stateful";
     private static boolean serverConfigDone = false;
-    private static ContextSelector<EJBClientContext> previousClientContextSelector;
 
     @ArquillianResource
     private static ContainerController container;
@@ -117,7 +112,7 @@ public class SSLEJBRemoteClientTestCase {
         System.setProperty("jboss.ejb.client.properties.skip.classloader.scan", "true");
     }
 
-    private static ContextSelector<EJBClientContext> setupEJBClientContextSelector() throws IOException {
+    private static EJBClientContext setupEJBClientContextSelector() throws IOException {
         log.trace("*** reading EJBClientContextSelector properties");
         // setup the selector
         final String clientPropertiesFile = "org/jboss/as/test/manualmode/ejb/ssl/jboss-ejb-client.properties";
@@ -127,11 +122,9 @@ public class SSLEJBRemoteClientTestCase {
         }
         final Properties properties = new Properties();
         properties.load(inputStream);
-        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
-        log.trace("*** creating EJBClientContextSelector");
-        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
-        log.trace("*** applying EJBClientContextSelector");
-        return EJBClientContext.setSelector(selector);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using properties
+        return null;
     }
 
 
@@ -153,7 +146,7 @@ public class SSLEJBRemoteClientTestCase {
             managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
             // write SSL realm config to output - debugging purposes
             SSLRealmSetupTool.readSSLRealmConfig(managementClient);
-            previousClientContextSelector = setupEJBClientContextSelector();
+            setupEJBClientContextSelector();
             serverConfigDone = true;
         } else {
             log.trace("*** Server already prepared, skipping config procedure");
@@ -162,9 +155,6 @@ public class SSLEJBRemoteClientTestCase {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        if (previousClientContextSelector != null) {
-            EJBClientContext.setSelector(previousClientContextSelector);
-        }
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         final ManagementClient mClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
         SSLRealmSetupTool.tearDown(mClient, container);

@@ -34,7 +34,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,7 +57,6 @@ public class EjbRemoteSuspendTestCase {
 
     private static Context context;
 
-
     @ArquillianResource
     private ManagementClient managementClient;
 
@@ -70,6 +69,7 @@ public class EjbRemoteSuspendTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        DisableInvocationTestUtil.disable();
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         context = new InitialContext(props);
@@ -89,13 +89,8 @@ public class EjbRemoteSuspendTestCase {
         managementClient.getControllerClient().execute(op);
 
         try {
-            long fin = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
-            while (true) {
-                echo = localEcho.echo(message);
-                if (System.currentTimeMillis() > fin)
-                    Assert.fail("call should have been rejected");
-                Thread.sleep(300);
-            }
+            echo = localEcho.echo(message);
+            Assert.fail("call should have been rejected");
         } catch (IllegalStateException expected) {
 
         } finally {
@@ -119,7 +114,6 @@ public class EjbRemoteSuspendTestCase {
                         throw e;
                     }
                 }
-                Thread.sleep(300);
             }
 
         }

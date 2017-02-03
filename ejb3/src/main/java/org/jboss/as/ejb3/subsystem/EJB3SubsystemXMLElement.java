@@ -48,7 +48,6 @@ public enum EJB3SubsystemXMLElement {
     DEFAULT_SECURITY_DOMAIN("default-security-domain"),
     DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS(EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS),
     DISABLE_DEFAULT_EJB_PERMISSIONS(EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS),
-    ENABLE_GRACEFUL_TXN_SHUTDOWN(EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN),
 
     FILE_DATA_STORE("file-data-store"),
 
@@ -89,6 +88,9 @@ public enum EJB3SubsystemXMLElement {
     STATISTICS("statistics"),
     STRICT_MAX_POOL("strict-max-pool"),
 
+    GLOBAL_INTERCEPTORS("global-interceptors"),
+    CONNECTIONS("connections"),
+
     THREAD_POOL("thread-pool"),
     THREAD_POOLS("thread-pools"),
     TIMER_SERVICE("timer-service"),
@@ -99,7 +101,12 @@ public enum EJB3SubsystemXMLElement {
     // Elytron integration
     APPLICATION_SECURITY_DOMAIN("application-security-domain"),
     APPLICATION_SECURITY_DOMAINS("application-security-domains"),
-    IDENTITY("identity")
+    IDENTITY("identity"),
+
+    DISCOVERY("discovery"),
+    STATIC_EJB_DISCOVERY("static-ejb-discovery"),
+    STATIC_CLUSTER_DISCOVERY("static-cluster-discovery"),
+    CONNECT_TO("connect-to"),
     ;
 
     private final String name;

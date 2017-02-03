@@ -38,9 +38,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
+import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
-import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -50,7 +50,6 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -104,9 +103,9 @@ class JSR77ManagementSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     target.addService(RegisterManagementEJBService.SERVICE_NAME, managementEjbService)
                             .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, managementEjbService.deploymentRepositoryValue)
                             .addDependency(mbeanServerServiceName, MBeanServer.class, managementEjbService.mbeanServerValue)
-                                    //TODO I think these are needed here since we don't go through EjbClientContextSetupProcessor
-                            .addDependency(DefaultEjbClientContextService.DEFAULT_SERVICE_NAME, EJBClientContext.class, managementEjbService.ejbClientContextValue)
-                            .addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME, TCCLEJBClientContextSelectorService.class, managementEjbService.ejbClientContextSelectorValue)
+                                    //TODO I think this is needed here since we don't go through EjbClientContextSetupProcessor
+                            .addDependency(EJBClientContextService.DEFAULT_SERVICE_NAME, EJBClientContextService.class, managementEjbService.ejbClientContextValue)
+                            .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, managementEjbService.associationServiceInjector)
                             .setInitialMode(Mode.ACTIVE)
                             .install();
 
