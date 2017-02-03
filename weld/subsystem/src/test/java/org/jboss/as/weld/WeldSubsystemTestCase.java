@@ -27,6 +27,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -53,7 +55,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-weld_3_0.xsd";
+        return "schema/jboss-as-weld_4_0.xsd";
     }
 
     @Override
@@ -88,7 +90,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testTransformersASEAP640() throws Exception {
         testTransformers10(ModelTestControllerVersion.EAP_6_4_0);
     }
-
 
     private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
@@ -142,10 +143,14 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
                                 PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
-                                new FalseOrUndefinedToTrueConfig (
+                                ChainedConfig.createBuilder(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE).addConfig(new FalseOrUndefinedToTrueConfig (
                                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE,
                                         WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE
-                                )
+                                ))
+                                .addConfig(new NewAttributesConfig(WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE))
+                                .addConfig(new NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE))
+                                .build()
+
                         )
         );
     }

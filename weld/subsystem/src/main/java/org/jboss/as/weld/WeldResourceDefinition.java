@@ -29,6 +29,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -45,6 +46,7 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
     static final String REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME = "require-bean-descriptor";
     static final String NON_PORTABLE_MODE_ATTRIBUTE_NAME = "non-portable-mode";
     static final String DEVELOPMENT_MODE_ATTRIBUTE_NAME = "development-mode";
+    static final String THREAD_POOL_SIZE = "thread-pool-size";
 
     static final SimpleAttributeDefinition REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
@@ -67,6 +69,13 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    static final SimpleAttributeDefinition THREAD_POOL_SIZE_ATTRIBUTE =
+            new SimpleAttributeDefinitionBuilder(THREAD_POOL_SIZE, ModelType.INT, true)
+            .setAllowExpression(true)
+            .setValidator(new IntRangeValidator(1))
+            .setRestartAllServices()
+            .build();
+
     private WeldResourceDefinition() {
         super(
                 WeldExtension.PATH_SUBSYSTEM,
@@ -77,6 +86,6 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(new AttributeDefinition[] {REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE});
+        return Arrays.asList(new AttributeDefinition[] {REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE});
     }
 }

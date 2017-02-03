@@ -61,7 +61,7 @@ public class WeldExtension implements Extension {
 
     private static final String RESOURCE_NAME = WeldExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -78,7 +78,7 @@ public class WeldExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(WeldSubsystem30Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(WeldSubsystem40Parser.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);
@@ -88,9 +88,10 @@ public class WeldExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem10Parser.NAMESPACE, WeldSubsystem10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, WeldSubsystem20Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem30Parser.NAMESPACE, WeldSubsystem30Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem10Parser.NAMESPACE, () -> WeldSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, () -> WeldSubsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem30Parser.NAMESPACE, () -> WeldSubsystem30Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem40Parser.NAMESPACE, () -> WeldSubsystem40Parser.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
@@ -119,6 +120,10 @@ public class WeldExtension implements Extension {
                         WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                  // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
+                // Discard thread-pool-size attribute - not supported in older versions
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)
+                // Reject thread-pool-size attribute if defined
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)
                 .end();
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }

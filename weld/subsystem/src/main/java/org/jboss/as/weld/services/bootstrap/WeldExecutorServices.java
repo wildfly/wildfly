@@ -41,6 +41,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class WeldExecutorServices extends AbstractExecutorServices implements Service<ExecutorServices> {
 
+    public static final int DEFAULT_BOUND = Runtime.getRuntime().availableProcessors() + 1;
     public static final ServiceName SERVICE_NAME = Services.JBOSS_AS.append("weld", "executor");
     private static final String THREAD_NAME_PATTERN = "Weld Thread Pool -- %t";
 
@@ -48,7 +49,11 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
     private ExecutorService executor;
 
     public WeldExecutorServices() {
-        this.bound = Runtime.getRuntime().availableProcessors() + 1;
+        this(DEFAULT_BOUND);
+    }
+
+    public WeldExecutorServices(int bound) {
+        this.bound = bound;
     }
 
     @Override
