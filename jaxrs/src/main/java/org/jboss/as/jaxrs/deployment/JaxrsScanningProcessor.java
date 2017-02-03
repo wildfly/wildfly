@@ -172,6 +172,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         // Assume that checkDeclaredApplicationClassAsServlet created the dispatcher
         if (declaredApplicationClass != null) {
             resteasyDeploymentData.setDispatcherCreated(true);
+
+            // Instigate creation of resteasy configuration switches for
+            // found provider and resource classes
+            resteasyDeploymentData.setScanProviders(true);
+            resteasyDeploymentData.setScanResources(true);
         }
 
         // set scanning on only if there are no boot classes
