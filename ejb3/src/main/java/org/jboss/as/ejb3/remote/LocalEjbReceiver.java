@@ -122,6 +122,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(parameters);
         interceptorContext.setMethod(method);
+        interceptorContext.setTransaction(invocation.getTransaction());
         interceptorContext.setTarget(invocation.getInvokedProxy());
         // setup the context data in the InterceptorContext
         final Map<AttachmentKey<?>, ?> privateAttachments = invocation.getAttachments();
