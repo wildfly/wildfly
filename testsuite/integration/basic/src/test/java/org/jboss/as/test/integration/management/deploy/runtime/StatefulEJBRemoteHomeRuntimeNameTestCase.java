@@ -19,6 +19,7 @@ import org.jboss.as.test.integration.ejb.home.remotehome.SimpleInterface;
 import org.jboss.as.test.integration.ejb.home.remotehome.annotation.SimpleStatefulBean;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,6 +51,11 @@ public class StatefulEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTes
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
 
     private static InitialContext context;
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -101,7 +107,7 @@ public class StatefulEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTes
         final Hashtable env = new Hashtable();
         env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, "remote://" + TestSuiteEnvironment.getServerAddress() + ":" + 4447);
+        env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + 8080);
         return new InitialContext(env);
     }
 

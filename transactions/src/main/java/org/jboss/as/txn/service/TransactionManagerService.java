@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Service responsible for getting the {@link TransactionManager}.
@@ -41,17 +41,20 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_TRANSACTION_MANAGER;
 
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private static final TransactionManagerService INSTANCE = new TransactionManagerService();
+
+    private TransactionManagerService() {
+    }
 
     public static ServiceController<TransactionManager> addService(final ServiceTarget target) {
-        TransactionManagerService service = new TransactionManagerService();
-        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
-        serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
+        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, INSTANCE);
+        // This is really a dependency on the global context.  TODO: Break this later; no service is needed for TM really
+        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         return serviceBuilder.install();
     }
 
     @Override
     public TransactionManager getValue() throws IllegalStateException {
-        return injectedArjunaTM.getValue().getTransactionManager();
+        return ContextTransactionManager.getInstance();
     }
 }

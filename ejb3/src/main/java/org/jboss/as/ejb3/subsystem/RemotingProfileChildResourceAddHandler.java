@@ -45,6 +45,11 @@ public class RemotingProfileChildResourceAddHandler extends RemotingProfileChild
     }
 
     @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
     protected void updateModel(final OperationContext context,final ModelNode operation) throws OperationFailedException {
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         populateModel(operation, resource.getModel());

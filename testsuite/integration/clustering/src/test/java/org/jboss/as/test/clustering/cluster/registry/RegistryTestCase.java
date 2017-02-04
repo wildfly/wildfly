@@ -17,11 +17,11 @@ import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,6 +30,11 @@ import org.junit.runner.RunWith;
 public class RegistryTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "registry";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -55,7 +60,10 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
     @Test
     public void test() throws Exception {
 
-        ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
@@ -89,11 +97,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
             assertEquals(2, names.size());
             assertTrue(names.contains(NODE_1));
             assertTrue(names.contains(NODE_2));
-        } finally {
-            // reset the selector
-            if (selector != null) {
-                EJBClientContext.setSelector(selector);
-            }
         }
     }
 }

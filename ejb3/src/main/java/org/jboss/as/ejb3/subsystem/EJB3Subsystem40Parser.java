@@ -149,7 +149,6 @@ public class EJB3Subsystem40Parser extends EJB3Subsystem30Parser {
                 }
             }
         }
-
     }
 
     private void parseDeliveryGroups(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {

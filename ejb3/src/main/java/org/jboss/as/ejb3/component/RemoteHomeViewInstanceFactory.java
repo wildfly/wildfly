@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.msc.value.ImmediateValue;
@@ -50,7 +51,7 @@ public class RemoteHomeViewInstanceFactory implements ViewInstanceFactory {
 
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) {
-        Object value = EJBClient.createProxy(new EJBHomeLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName));
+        Object value = EJBClient.createProxy(new EJBHomeLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, Affinity.LOCAL));
         return new ValueManagedReference(new ImmediateValue(value));
     }
 

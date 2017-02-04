@@ -89,7 +89,6 @@ public class InterceptorOrder {
     public static final class ComponentPostConstruct {
 
         public static final int STARTUP_COUNTDOWN_INTERCEPTOR = 0x050;
-        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int CONCURRENT_CONTEXT = 0x180;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
@@ -121,7 +120,6 @@ public class InterceptorOrder {
 
     public static final class ComponentPreDestroy {
 
-        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int CONCURRENT_CONTEXT = 0x180;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
@@ -144,7 +142,6 @@ public class InterceptorOrder {
 
     public static final class ComponentPassivation {
 
-        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int CONCURRENT_CONTEXT = 0x180;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
@@ -161,7 +158,6 @@ public class InterceptorOrder {
     }
 
     public static final class View {
-        public static final int PRIVILEGED_INTERCEPTOR = 0;
         public static final int CHECKING_INTERCEPTOR = 1;
         public static final int TCCL_INTERCEPTOR = 0x003;
         public static final int INVOCATION_TYPE = 0x005;
@@ -189,6 +185,10 @@ public class InterceptorOrder {
         public static final int EJB_WAIT_TIME_INTERCEPTOR = 0x350;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
+        /**
+         * @deprecated Remove this field once WFLY-7680 is resolved.
+         */
+        @Deprecated
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;
         public static final int CDI_REQUEST_SCOPE = 0x480;
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;

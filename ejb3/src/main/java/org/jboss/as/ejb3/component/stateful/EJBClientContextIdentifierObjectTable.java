@@ -56,7 +56,7 @@ public class EJBClientContextIdentifierObjectTable implements ObjectTable {
     }
 
     /**
-     * A {@link Writer} which writes out a {@link SerializableEJBProxyWithEJBClientContextIdentifier} for a
+     * A {@link Writer} which writes out a {@link SerializableEJBProxy} for a
      * EJB proxy
      */
     private static class EJBClientContextIdentifierWriter implements Writer {
@@ -65,7 +65,7 @@ public class EJBClientContextIdentifierObjectTable implements ObjectTable {
 
         @Override
         public void writeObject(Marshaller marshaller, Object o) throws IOException {
-            marshaller.writeObject(new SerializableEJBProxyWithEJBClientContextIdentifier(o));
+            marshaller.writeObject(new SerializableEJBProxy(o));
         }
     }
 }

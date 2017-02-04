@@ -49,8 +49,6 @@ import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -187,7 +185,10 @@ public class RemoteStatelessFailoverTestCase {
         this.start(CONTAINER_1);
         this.deploy(CONTAINER_1, deployment1);
 
-        final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
@@ -206,10 +207,6 @@ public class RemoteStatelessFailoverTestCase {
 
             assertEquals("Only " + NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", NODES[1], bean.getNodeName());
         } finally {
-            // reset the selector
-            if (selector != null) {
-                EJBClientContext.setSelector(selector);
-            }
             // need to have the container started to undeploy deployment afterwards
             this.start(CONTAINER_1);
             // shutdown the containers
@@ -237,7 +234,10 @@ public class RemoteStatelessFailoverTestCase {
         this.start(CONTAINER_2);
         this.deploy(CONTAINER_2, deployment2);
 
-        final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
+        // to its original state at the end of the test
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         int numberOfServers = 2;
         int numberOfCalls = 40;
@@ -264,10 +264,6 @@ public class RemoteStatelessFailoverTestCase {
 
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProccessedAtLeast);
         } finally {
-            // reset the selector
-            if (previousSelector != null) {
-                EJBClientContext.setSelector(previousSelector);
-            }
             // undeploy&shutdown the containers
             undeployAll();
             shutdownAll();

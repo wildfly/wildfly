@@ -32,7 +32,10 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface EJB3SubsystemModel {
     String LITE = "lite";
+    String ABSTACT_TYPE = "abstract-type";
+    String ABSTACT_TYPE_AUTHORITY = "abstract-type-authority";
     String ALIASES = "aliases";
+    String ATTRIBUTES = "attributes";
 
     String ASYNC = "async";
     String ALLOW_EJB_NAME_REGEX = "allow-ejb-name-regex";
@@ -57,7 +60,8 @@ public interface EJB3SubsystemModel {
     String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
     String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
     String DISABLE_DEFAULT_EJB_PERMISSIONS = "disable-default-ejb-permissions";
-    String ENABLE_GRACEFUL_TXN_SHUTDOWN = "enable-graceful-txn-shutdown";
+    String DISCOVERY = "discovery";
+    String STATIC = "static";
     String LOG_SYSTEM_EXCEPTIONS = "log-system-exceptions";
 
     String ENABLE_STATISTICS = "enable-statistics";
@@ -128,6 +132,8 @@ public interface EJB3SubsystemModel {
     String PARTITION  = "partition";
     String REFRESH_INTERVAL = "refresh-interval";
     String ALLOW_EXECUTION = "allow-execution";
+
+    String STATIC_URLS = "static-urls";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);

@@ -50,6 +50,6 @@
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.extension.request-controller"/>
         <module name="org.wildfly.extension.batch.jberet"/>
-        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

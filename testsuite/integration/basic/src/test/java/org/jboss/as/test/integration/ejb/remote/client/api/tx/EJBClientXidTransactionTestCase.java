@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -33,13 +31,8 @@ import com.arjuna.ats.jta.common.jtaPropertyManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -53,14 +46,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for EJB using Xid transaction manager on the client side.
- *
  * @author Jaikiran Pai
- * @author Flavia Rainone
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(GracefulTxnShutdownSetup.class)
 public class EJBClientXidTransactionTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientXidTransactionTestCase.class);
@@ -73,8 +62,10 @@ public class EJBClientXidTransactionTestCase {
 
     private static TransactionSynchronizationRegistry txSyncRegistry;
 
-    @ArquillianResource
-    private ManagementClient managementClient;
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     /**
      * Creates an EJB deployment
@@ -113,10 +104,11 @@ public class EJBClientXidTransactionTestCase {
      */
     @Before
     public void beforeTest() throws Exception {
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
         // create a client side tx context
-        final EJBClientTransactionContext txContext = EJBClientTransactionContext.create(txManager, txSyncRegistry);
+        //final EJBClientTransactionContext txContext = EJBClientTransactionContext.create(txManager, txSyncRegistry);
         // associate the tx context
-        EJBClientTransactionContext.setGlobalContext(txContext);
+        //EJBClientTransactionContext.setGlobalContext(txContext);
     }
 
     private static void instantiateTxManagement() {
@@ -270,128 +262,5 @@ public class EJBClientXidTransactionTestCase {
         Assert.assertNotNull("Batch after system exception was null", batchAfterSysException);
         Assert.assertEquals("Unexpected steps in batch, after system exception", successFullyCompletedSteps, batchAfterSysException.getStepNames());
 
-    }
-
-    /**
-     * Calls for a preexistent transaction are allowed and calls for a non-preexistent transaction are not allowed
-     * on server suspension.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testServerSuspension() throws Exception {
-        final StatelessEJBLocator<org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTRemote> cmtRemoteBeanLocator = new StatelessEJBLocator<org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTRemote>(
-                org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTRemote.class, APP_NAME, MODULE_NAME, org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTBean.class.getSimpleName(), "");
-        final org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTRemote cmtRemoteBean = EJBClient.createProxy(cmtRemoteBeanLocator);
-
-        // begin a transaction, and make sure that the server now works normally
-        txManager.begin();
-        try {
-            // invoke the bean
-            cmtRemoteBean.mandatoryTxOp();
-        } finally {
-            // end the tx
-            txManager.commit();
-        }
-
-        // begin the transaction
-        txManager.begin();
-        try {
-            // invoke the bean
-            cmtRemoteBean.mandatoryTxOp();
-
-            ModelNode op = new ModelNode();
-            op.get(OP).set("suspend");
-            managementClient.getControllerClient().execute(op);
-
-            txManager.commit();
-        } catch (Exception e) {
-            try {
-                txManager.rollback();
-            } catch (Exception exc) {}
-            throw e;
-        } finally {
-            // resume server
-            ModelNode op = new ModelNode();
-            op.get(OP).set("resume");
-            managementClient.getControllerClient().execute(op);
-        }
-
-        try {
-            // begin a transaction
-            txManager.begin();
-
-            long fin = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
-            while (true) {
-                try {
-                    // can invoke bean
-                    cmtRemoteBean.mandatoryTxOp();
-                    break;
-                } catch (Exception e) {
-                    if (System.currentTimeMillis() > fin) {
-                        throw e;
-                    }
-                }
-                Thread.sleep(300);
-            }
-
-            // suspend server
-            ModelNode op = new ModelNode();
-            op.get(OP).set("suspend");
-            managementClient.getControllerClient().execute(op);
-
-            // FIXME check with remoting team why this transaction is not recognized as active in EJBSuspendHandlerService
-            // can continue invoking bean with current transaction
-            //cmtRemoteBean.mandatoryTxOp();
-        } catch (Exception e) {
-            e.printStackTrace();
-            // resume server
-            ModelNode op = new ModelNode();
-            op.get(OP).set("resume");
-            managementClient.getControllerClient().execute(op);
-            throw e;
-        } finally {
-            // rollback current transaction
-            txManager.commit();
-        }
-
-        // still cannot begin a new transaction
-        txManager.begin();
-        try {
-            cmtRemoteBean.mandatoryTxOp();
-            Assert.fail("Exception expected, server is shutdown");
-        } catch (Exception expected) {
-            // expected
-        } finally {
-            txManager.rollback();
-        }
-
-        // resume server
-        ModelNode op = new ModelNode();
-        op.get(OP).set("resume");
-        managementClient.getControllerClient().execute(op);
-
-        try {
-            // begin a transaction, and make sure that the server now works normally
-            txManager.begin();
-            long fin = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
-            while (true) {
-                try {
-                    // can invoke bean
-                    cmtRemoteBean.mandatoryTxOp();
-                    break;
-                } catch (Exception e) {
-                    if (System.currentTimeMillis() > fin) {
-                        throw e;
-                    }
-                }
-                Thread.sleep(300);
-            }
-            // end the tx
-            txManager.commit();
-        } catch (Exception e) {
-            txManager.rollback();
-            throw e;
-        }
     }
 }

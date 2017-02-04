@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -30,16 +37,20 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.RemotingOptions;
+import org.wildfly.discovery.AttributeValue;
+import org.wildfly.discovery.ServiceURL;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -58,15 +69,12 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(final OperationContext context,final ModelNode operation,final ModelNode model)
             throws OperationFailedException {
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                // Install another RUNTIME handler to actually install the services. This will run after the
-                // RUNTIME handler for any child resources. Doing this will ensure that child resource handlers don't
-                // see the installed services and can just ignore doing any RUNTIME stage work
-                context.addStep(ServiceInstallStepHandler.INSTANCE, OperationContext.Stage.RUNTIME);
-                context.stepCompleted();
-            }
+        context.addStep((context1, operation1) -> {
+            // Install another RUNTIME handler to actually install the services. This will run after the
+            // RUNTIME handler for any child resources. Doing this will ensure that child resource handlers don't
+            // see the installed services and can just ignore doing any RUNTIME stage work
+            context1.addStep(ServiceInstallStepHandler.INSTANCE, OperationContext.Stage.RUNTIME);
+            context1.stepCompleted();
         }, OperationContext.Stage.RUNTIME);
     }
 
@@ -74,30 +82,39 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
         try {
             final String profileName = address.getLastElement().getValue();
             final ServiceName profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profileName);
+            final ModelNode staticEjbDiscoery = StaticEJBDiscoveryDefinition.INSTANCE.resolveModelAttribute(context, profileNode);
+            List<StaticEJBDiscoveryDefinition.StaticEjbDiscovery> discoveryList = StaticEJBDiscoveryDefinition.createStaticEjbList(context, staticEjbDiscoery);
 
-            final RemotingProfileService profileService = new RemotingProfileService();
-            final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName,
-                    profileService);
+            final List<ServiceURL> urls = new ArrayList<>();
 
-            final Boolean isLocalReceiverExcluded = RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER
-                    .resolveModelAttribute(context, profileNode).asBoolean();
-            // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceiver
-            // service
-            if (!isLocalReceiverExcluded) {
-                final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE
-                        .resolveModelAttribute(context, profileNode);
-                if (passByValueNode.isDefined()) {
-                    final ServiceName localEjbReceiverServiceName = passByValueNode.asBoolean() == true ? LocalEjbReceiver.BY_VALUE_SERVICE_NAME
-                            : LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME;
-                    builder.addDependency(localEjbReceiverServiceName, LocalEjbReceiver.class,
-                            profileService.getLocalEjbReceiverInjector());
+            for (StaticEJBDiscoveryDefinition.StaticEjbDiscovery resource : discoveryList) {
+                ServiceURL.Builder builder = new ServiceURL.Builder();
+                builder.setAbstractType("ejb")
+                        .setAbstractTypeAuthority("jboss")
+                        .setUri(new URI(resource.getUrl()));
+                String distinctName = resource.getDistinct() == null ? "" : resource.getDistinct();
+                String appName = resource.getApp() == null ? "" : resource.getApp();
+                String moduleName = resource.getModule();
+
+                if (distinctName.isEmpty()) {
+                    if (appName.isEmpty()) {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString('"' + moduleName + '"'));
+                    } else {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString('"' + appName + "/" + moduleName + '"'));
+                    }
                 } else {
-                    // setup a dependency on the default local ejb receiver service configured at the subsystem level
-                    builder.addDependency(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, LocalEjbReceiver.class,
-                            profileService.getLocalEjbReceiverInjector());
+                    if (appName.isEmpty()) {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString('"' + moduleName + "/" + distinctName + '"'));
+                    } else {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString('"' + appName + "/" + moduleName + "/" + distinctName + '"'));
+                    }
                 }
+                urls.add(builder.create());
             }
-
+            final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
+            final RemotingProfileService profileService = new RemotingProfileService(urls, map);
+            // populating the map after the fact is cheating, but it works thanks to the MSC start service "fence"
+            final ServiceBuilder<RemotingProfileService> builder = context.getServiceTarget().addService(profileServiceName, profileService);
             if (profileNode.hasDefined(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)) {
                 for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)
                         .asPropertyList()) {
@@ -107,22 +124,43 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                             receiverNode).asString();
                     final long timeout = RemotingEjbReceiverDefinition.CONNECT_TIMEOUT.resolveModelAttribute(context,
                             receiverNode).asLong();
-                    profileService.addConnectionTimeout(connectionRef, timeout);
 
                     final ServiceName connectionDependencyService = AbstractOutboundConnectionService.OUTBOUND_CONNECTION_BASE_SERVICE_NAME
                             .append(connectionRef);
                     final InjectedValue<AbstractOutboundConnectionService> connectionInjector = new InjectedValue<AbstractOutboundConnectionService>();
-                    builder.addDependency(connectionDependencyService, AbstractOutboundConnectionService.class,
-                            connectionInjector);
-                    profileService.addRemotingConnectionInjector(connectionDependencyService, connectionInjector);
+                    builder.addDependency(connectionDependencyService, AbstractOutboundConnectionService.class, connectionInjector);
 
                     final ModelNode channelCreationOptionsNode = receiverNode.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
                     OptionMap channelCreationOptions = createChannelOptionMap(context, channelCreationOptionsNode);
-                    profileService.addChannelCreationOption(connectionRef, channelCreationOptions);
+
+                    map.put(connectionRef, new RemotingProfileService.ConnectionSpec(
+                        connectionRef,
+                        connectionInjector,
+                        channelCreationOptions,
+                        timeout
+                    ));
                 }
             }
+
+            final boolean isLocalReceiverExcluded = RemotingProfileResourceDefinition.EXCLUDE_LOCAL_RECEIVER
+                    .resolveModelAttribute(context, profileNode).asBoolean();
+            // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceiver
+            // service
+            if (!isLocalReceiverExcluded) {
+                final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE
+                        .resolveModelAttribute(context, profileNode);
+                if (passByValueNode.isDefined()) {
+                    final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() == true ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
+                            : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
+                    builder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                } else {
+                    // setup a dependency on the default local ejb receiver service configured at the subsystem level
+                    builder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                }
+            }
+
             builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | URISyntaxException e) {
             throw new OperationFailedException(e.getLocalizedMessage());
         }
     }

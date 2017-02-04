@@ -44,11 +44,13 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,6 +61,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(TransactionTimeoutQueueSetupTask.class)
 public class MessageDrivenTimeoutTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @ArquillianResource
     private InitialContext initCtx;

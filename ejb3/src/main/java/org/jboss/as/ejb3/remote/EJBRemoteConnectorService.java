@@ -21,47 +21,24 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
-import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
-import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelReceiver;
-import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.network.ClientMapping;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
-import org.jboss.ejb.client.ConstantContextSelector;
-import org.jboss.ejb.client.EJBClientTransactionContext;
-import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.msc.inject.Injector;
+import org.jboss.ejb.protocol.remote.RemoteEJBService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.MessageInputStream;
-import org.jboss.remoting3.MessageOutputStream;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
-import org.xnio.IoUtils;
+import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
 import org.xnio.OptionMap;
 
 /**
@@ -75,53 +52,64 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
-    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
-    private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
-    private final InjectedValue<RemoteAsyncInvocationCancelStatusService> remoteAsyncInvocationCancelStatus = new InjectedValue<RemoteAsyncInvocationCancelStatusService>();
-    private final InjectedValue<TransactionManager> txManager = new InjectedValue<TransactionManager>();
-    private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
-    private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandlerInjectedValue = new InjectedValue<>();
+    private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
+    private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
-    private final byte serverProtocolVersion;
-    private final String[] supportedMarshallingStrategies;
     private final OptionMap channelCreationOptions;
 
-    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
-        this(serverProtocolVersion, supportedMarshallingStrategies, OptionMap.EMPTY);
+    public EJBRemoteConnectorService() {
+        this(OptionMap.EMPTY);
     }
 
-    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies,
-                                     final OptionMap channelCreationOptions) {
-        this.serverProtocolVersion = serverProtocolVersion;
-        this.supportedMarshallingStrategies = supportedMarshallingStrategies;
+    public EJBRemoteConnectorService(final OptionMap channelCreationOptions) {
         this.channelCreationOptions = channelCreationOptions;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        final AssociationService associationService = associationServiceInjectedValue.getValue();
+        final Endpoint endpoint = endpointValue.getValue();
+        RemoteEJBService remoteEJBService = RemoteEJBService.create(
+            associationService.getAssociation(),
+            remotingTransactionServiceInjectedValue.getValue()
+        );
+        final ControlledProcessStateService processStateService = controlledProcessStateServiceInjectedValue.getValue();
+        if (processStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
+            final PropertyChangeListener listener = new PropertyChangeListener() {
+                public void propertyChange(final PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals("currentState") && evt.getOldValue() == ControlledProcessState.State.STARTING) {
+                        remoteEJBService.serverUp();
+                        // can't use a lambda because of this line...
+                        processStateService.removePropertyChangeListener(this);
+                    }
+                }
+            };
+            processStateService.addPropertyChangeListener(listener);
+            // this is actually racy, so we have to double-check the state afterwards just to be sure it didn't transition before we got here.
+            if (processStateService.getCurrentState() != ControlledProcessState.State.STARTING) {
+                // this method is idempotent so it's OK if the listener got fired
+                remoteEJBService.serverUp();
+                // this one too
+                processStateService.removePropertyChangeListener(listener);
+            }
+        } else {
+            remoteEJBService.serverUp();
+        }
 
         // Register an EJB channel open listener
-        final OpenListener channelOpenListener = new ChannelOpenListener();
+        OpenListener channelOpenListener = remoteEJBService.getOpenListener();
         try {
-            registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
+            registration = endpoint.registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
-
-        // setup an EJBClientTransactionContext backed the transaction manager on this server.
-        // This will be used to propagate the transactions from this server to remote servers during EJB invocations
-        final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.create(this.txManager.getValue(), this.txSyncRegistry.getValue());
-        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(ejbClientTransactionContext));
     }
 
     @Override
     public void stop(StopContext context) {
         registration.close();
-        // reset the EJBClientTransactionContext on this server
-        EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(null));
     }
 
     public String getProtocol() {
@@ -137,217 +125,19 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         return endpointValue;
     }
 
-    public Injector<TransactionManager> getTransactionManagerInjector() {
-        return this.txManager;
-    }
-
-    public Injector<TransactionSynchronizationRegistry> getTxSyncRegistryInjector() {
-        return this.txSyncRegistry;
-    }
-
-    public Injector<EJBSuspendHandlerService> getEjbSuspendHandlerInjector() {
-        return this.ejbSuspendHandlerInjectedValue;
-    }
-
-    public List<EjbListenerAddress> getListeningAddresses() {
-        final RemotingConnectorBindingInfoService.RemotingConnectorInfo info = remotingConnectorInfoInjectedValue.getValue();
-        return Collections.singletonList(new EjbListenerAddress(info.getSocketBinding().getSocketAddress(), info.getProtocol()));
-    }
-
-    private void sendVersionMessage(final ChannelAssociation channelAssociation) throws IOException {
-        final DataOutputStream outputStream;
-        final MessageOutputStream messageOutputStream;
-        try {
-            messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
-        } catch (Exception e) {
-            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
-        }
-        outputStream = new DataOutputStream(messageOutputStream);
-        try {
-            // write the version
-            outputStream.write(this.serverProtocolVersion);
-            // write the marshaller type count
-            PackedInteger.writePackedInteger(outputStream, this.supportedMarshallingStrategies.length);
-            // write the marshaller types
-            for (int i = 0; i < this.supportedMarshallingStrategies.length; i++) {
-                outputStream.writeUTF(this.supportedMarshallingStrategies[i]);
-            }
-        } finally {
-            channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
-            outputStream.close();
-        }
-    }
-
-    private class ChannelOpenListener implements OpenListener {
-
-        @Override
-        public void channelOpened(Channel channel) {
-            final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
-
-            EjbLogger.REMOTE_LOGGER.tracef("Welcome %s to the %s channel", channel, EJB_CHANNEL_NAME);
-            channel.addCloseHandler(new CloseHandler<Channel>() {
-                @Override
-                public void handleClose(Channel closed, IOException exception) {
-                    // do nothing
-                    EjbLogger.REMOTE_LOGGER.tracef("channel %s closed", closed);
-                }
-            });
-            // send the server version and supported marshalling types to the client
-            try {
-                EJBRemoteConnectorService.this.sendVersionMessage(channelAssociation);
-            } catch (IOException e) {
-                EjbLogger.REMOTE_LOGGER.closingChannel(channel, e);
-                IoUtils.safeClose(channel);
-            }
-
-            // receive messages from the client
-            channel.receiveMessage(new ClientVersionMessageReceiver(channelAssociation));
-        }
-
-        @Override
-        public void registrationTerminated() {
-        }
-    }
-
-    private class ClientVersionMessageReceiver implements Channel.Receiver {
-
-        private final ChannelAssociation channelAssociation;
-
-        ClientVersionMessageReceiver(final ChannelAssociation channelAssociation) {
-            this.channelAssociation = channelAssociation;
-        }
-
-        @Override
-        public void handleError(Channel channel, IOException error) {
-            EjbLogger.REMOTE_LOGGER.closingChannel(channel, error);
-            try {
-                channel.close();
-            } catch (IOException ioe) {
-                // ignore
-            }
-        }
-
-        @Override
-        public void handleEnd(Channel channel) {
-            EjbLogger.REMOTE_LOGGER.closingChannelOnChannelEnd(channel);
-            try {
-                channel.close();
-            } catch (IOException ioe) {
-                // ignore
-            }
-        }
-
-        @Override
-        public void handleMessage(Channel channel, MessageInputStream messageInputStream) {
-            final DataInputStream dataInputStream = new DataInputStream(messageInputStream);
-            try {
-                final byte version = dataInputStream.readByte();
-                final String clientMarshallingStrategy = dataInputStream.readUTF();
-                EjbLogger.REMOTE_LOGGER.debugf("Client with protocol version %s and marshalling strategy %s trying to communicate on %s",
-                        version, clientMarshallingStrategy, channel);
-                if (!EJBRemoteConnectorService.this.isSupportedMarshallingStrategy(clientMarshallingStrategy)) {
-                    EjbLogger.REMOTE_LOGGER.unsupportedClientMarshallingStrategy(clientMarshallingStrategy, channel);
-                    channel.close();
-                    return;
-                }
-                final MarshallerFactory marshallerFactory = EJBRemoteConnectorService.this.getMarshallerFactory(clientMarshallingStrategy);
-                // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
-                final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
-                final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = EJBRemoteConnectorService.this.clusterRegistryCollector.getValue();
-                final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatus = EJBRemoteConnectorService.this.remoteAsyncInvocationCancelStatus.getValue();
-                final EJBSuspendHandlerService suspendHandler = EJBRemoteConnectorService.this.ejbSuspendHandlerInjectedValue.getValue();
-
-                switch (version) {
-                    case 0x01:
-                        final VersionOneProtocolChannelReceiver versionOneProtocolHandler = new VersionOneProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getOptionalValue(), asyncInvocationCancelStatus, suspendHandler);
-                        // trigger the receiving
-                        versionOneProtocolHandler.startReceiving();
-                        break;
-                    case 0x02:
-                        final VersionTwoProtocolChannelReceiver versionTwoProtocolHandler = new VersionTwoProtocolChannelReceiver(this.channelAssociation, deploymentRepository,
-                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMappingRegistryCollector,
-                                marshallerFactory, executorService.getOptionalValue(), asyncInvocationCancelStatus, suspendHandler);
-                        // trigger the receiving
-                        versionTwoProtocolHandler.startReceiving();
-                        break;
-
-                    default:
-                        throw EjbLogger.ROOT_LOGGER.ejbRemoteServiceCannotHandleClientVersion(version);
-                }
-
-            } catch (IOException e) {
-                // log it
-                EjbLogger.REMOTE_LOGGER.exceptionOnChannel(e, channel, messageInputStream);
-                IoUtils.safeClose(channel);
-            } finally {
-                IoUtils.safeClose(messageInputStream);
-            }
-
-
-        }
-    }
-
-    public InjectedValue<ExecutorService> getExecutorService() {
-        return executorService;
-    }
-
-    public Injector<DeploymentRepository> getDeploymentRepositoryInjector() {
-        return this.deploymentRepositoryInjectedValue;
-    }
-
-    public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
-        return this.ejbRemoteTransactionsRepositoryInjectedValue;
-    }
-
-    public Injector<RegistryCollector> getClusterRegistryCollectorInjector() {
-        return this.clusterRegistryCollector;
-    }
-
-    public Injector<RemoteAsyncInvocationCancelStatusService> getAsyncInvocationCancelStatusInjector() {
-        return this.remoteAsyncInvocationCancelStatus;
-    }
-
     public InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> getRemotingConnectorInfoInjectedValue() {
         return remotingConnectorInfoInjectedValue;
     }
 
-    private boolean isSupportedMarshallingStrategy(final String strategy) {
-        return Arrays.asList(this.supportedMarshallingStrategies).contains(strategy);
+    public InjectedValue<RemotingTransactionService> getRemotingTransactionServiceInjector() {
+        return remotingTransactionServiceInjectedValue;
     }
 
-    private MarshallerFactory getMarshallerFactory(final String marshallerStrategy) {
-        final MarshallerFactory marshallerFactory = Marshalling.getProvidedMarshallerFactory(marshallerStrategy);
-        if (marshallerFactory == null) {
-            throw EjbLogger.ROOT_LOGGER.failedToFindMarshallerFactoryForStrategy(marshallerStrategy);
-        }
-        return marshallerFactory;
+    public InjectedValue<ControlledProcessStateService> getControlledProcessStateServiceInjector() {
+        return controlledProcessStateServiceInjectedValue;
     }
 
-    public static class EjbListenerAddress {
-        private final InetSocketAddress address;
-        private final String protocol;
-
-        public EjbListenerAddress(final InetSocketAddress address, final String protocol) {
-            this.address = address;
-            this.protocol = protocol;
-        }
-
-        public InetSocketAddress getAddress() {
-            return address;
-        }
-
-        public String getProtocol() {
-            return protocol;
-        }
-
-        @Override
-        public String toString() {
-            return "EjbListenerAddress{" +
-                    "address=" + address +
-                    ", protocol='" + protocol + '\'' +
-                    '}';
-        }
+    public InjectedValue<AssociationService> getAssociationServiceInjector() {
+        return associationServiceInjectedValue;
     }
 }
