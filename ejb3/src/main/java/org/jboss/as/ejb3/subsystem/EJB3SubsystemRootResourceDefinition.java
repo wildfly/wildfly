@@ -378,6 +378,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         ApplicationSecurityDomainDefinition.registerTransformers_4_0(builder);
         IdentityResourceDefinition.registerTransformers_4_0(builder);
+        RemotingProfileResourceDefinition.registerTransformers_4_0(builder);
 
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);

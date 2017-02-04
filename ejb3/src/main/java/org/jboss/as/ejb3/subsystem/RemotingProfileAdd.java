@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,6 +42,7 @@ import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.remoting.AbstractOutboundConnectionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -46,13 +54,6 @@ import org.wildfly.discovery.ServiceURL;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -81,26 +82,34 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
         try {
             final String profileName = address.getLastElement().getValue();
             final ServiceName profileServiceName = RemotingProfileService.BASE_SERVICE_NAME.append(profileName);
+            final ModelNode staticEjbDiscoery = StaticEJBDiscoveryDefinition.INSTANCE.resolveModelAttribute(context, profileNode);
+            List<StaticEJBDiscoveryDefinition.StaticEjbDiscovery> discoveryList = StaticEJBDiscoveryDefinition.createStaticEjbList(context, staticEjbDiscoery);
 
             final List<ServiceURL> urls = new ArrayList<>();
 
-            if(profileNode.hasDefined(EJB3SubsystemModel.DISCOVERY)){
-                final ModelNode discoveryNode = profileNode.get(EJB3SubsystemModel.DISCOVERY).get("static");
-                for(final ModelNode urlNode: discoveryNode.get("static-urls").asList()){
-                    ServiceURL.Builder urlBuilder = new ServiceURL.Builder();
-                    for(final Property attribute: urlNode.get("attributes").asPropertyList()){
-                        final String name = attribute.getName();
-                        if(name.equals("uri")){
-                            urlBuilder.setUri(new URI(attribute.getValue().asString()));
-                        } else {
-                            urlBuilder.addAttribute(attribute.getName(), AttributeValue.fromString(attribute.getValue().asString()));
-                        }
-                    }
-                    urlBuilder.setAbstractType(urlNode.get("abstract-type").asString());
-                    urlBuilder.setAbstractTypeAuthority(urlNode.get("abstract-type-authority").asString());
+            for (StaticEJBDiscoveryDefinition.StaticEjbDiscovery resource : discoveryList) {
+                ServiceURL.Builder builder = new ServiceURL.Builder();
+                builder.setAbstractType("ejb")
+                        .setAbstractTypeAuthority("jboss")
+                        .setUri(new URI(resource.getUrl()));
+                String distinctName = resource.getDistinct() == null ? "" : resource.getDistinct();
+                String appName = resource.getApp() == null ? "" : resource.getApp();
+                String moduleName = resource.getModule();
 
-                    urls.add(urlBuilder.create());
+                if (distinctName.isEmpty()) {
+                    if (appName.isEmpty()) {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString('"' + moduleName + '"'));
+                    } else {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString('"' + appName + "/" + moduleName + '"'));
+                    }
+                } else {
+                    if (appName.isEmpty()) {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString('"' + moduleName + "/" + distinctName + '"'));
+                    } else {
+                        builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString('"' + appName + "/" + moduleName + "/" + distinctName + '"'));
+                    }
                 }
+                urls.add(builder.create());
             }
             final Map<String, RemotingProfileService.ConnectionSpec> map = new HashMap<>();
             final RemotingProfileService profileService = new RemotingProfileService(urls, map);
