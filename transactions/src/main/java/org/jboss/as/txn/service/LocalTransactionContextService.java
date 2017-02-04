@@ -41,7 +41,7 @@ import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvid
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class LocalTransactionContextService implements Service<LocalTransactionContext> {
-    private LocalTransactionContext context;
+    private volatile LocalTransactionContext context;
     private final InjectedValue<ExtendedJBossXATerminator> extendedJBossXATerminatorInjector = new InjectedValue<>();
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerInjector = new InjectedValue<>();
 

@@ -46,7 +46,7 @@ public final class DiscoveryService implements Service<Discovery> {
 
     private final InjectedSetValue<DiscoveryProvider> providerInjectors = new InjectedSetValue<>();
 
-    private Discovery discovery;
+    private volatile Discovery discovery;
 
     public void start(final StartContext context) throws StartException {
         discovery = Discovery.create(providerInjectors.getValue().toArray(NO_PROVIDERS));

@@ -49,7 +49,7 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
 
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<>();
 
-    private LocalEjbReceiver receiver;
+    private volatile LocalEjbReceiver receiver;
 
     public LocalTransportProvider(final boolean allowPassByReference){
         this.allowPassByReference = allowPassByReference;
