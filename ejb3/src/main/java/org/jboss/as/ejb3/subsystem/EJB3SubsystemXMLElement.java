@@ -103,10 +103,8 @@ public enum EJB3SubsystemXMLElement {
     APPLICATION_SECURITY_DOMAINS("application-security-domains"),
     IDENTITY("identity"),
 
-    DISCOVERY("discovery"),
     STATIC_EJB_DISCOVERY("static-ejb-discovery"),
-    STATIC_CLUSTER_DISCOVERY("static-cluster-discovery"),
-    CONNECT_TO("connect-to"),
+    MODULE("module"),
     ;
 
     private final String name;

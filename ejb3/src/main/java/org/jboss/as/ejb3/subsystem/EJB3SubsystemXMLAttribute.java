@@ -104,7 +104,11 @@ public enum EJB3SubsystemXMLAttribute {
 
     // Elytron integration
     OUTFLOW_SECURITY_DOMAINS("outflow-security-domains"),
-    SECURITY_DOMAIN("security-domain")
+    SECURITY_DOMAIN("security-domain"),
+    URI("uri"),
+    APP_NAME("app-name"),
+    MODULE_NAME("module-name"),
+    DISTINCT_NAME("distinct-name")
     ;
 
     private final String name;

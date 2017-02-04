@@ -32,6 +32,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,6 +57,7 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
         map.put(EXCLUDE_LOCAL_RECEIVER.getName(), EXCLUDE_LOCAL_RECEIVER);
         map.put(LOCAL_RECEIVER_PASS_BY_VALUE.getName(), LOCAL_RECEIVER_PASS_BY_VALUE);
+        map.put(StaticEJBDiscoveryDefinition.STATIC_EJB_DISCOVERY, StaticEJBDiscoveryDefinition.INSTANCE);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
@@ -69,7 +72,6 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
     @Override
     public void registerChildren(ManagementResourceRegistration subsystemRegistration) {
         subsystemRegistration.registerSubModel(RemotingEjbReceiverDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(DiscoveryResourceDefinition.INSTANCE);
     }
 
     @Override
@@ -77,5 +79,9 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new RemotingProfileResourceChildWriteAttributeHandler(attr));
         }
+    }
+
+    public static void registerTransformers_4_0(ResourceTransformationDescriptionBuilder builder) {
+        builder.addChildResource(RemotingProfileResourceDefinition.INSTANCE).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, StaticEJBDiscoveryDefinition.INSTANCE).end();
     }
 }
