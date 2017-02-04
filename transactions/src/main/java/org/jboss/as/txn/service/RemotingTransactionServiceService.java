@@ -42,8 +42,8 @@ public final class RemotingTransactionServiceService implements Service<Remoting
     private final InjectedValue<LocalTransactionContext> localTransactionContextInjector = new InjectedValue<>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<>();
 
-    private RemotingTransactionService value;
-    private Registration registration;
+    private volatile RemotingTransactionService value;
+    private volatile Registration registration;
 
     public RemotingTransactionServiceService() {
     }
