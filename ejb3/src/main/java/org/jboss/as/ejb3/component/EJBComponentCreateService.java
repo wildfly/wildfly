@@ -49,11 +49,9 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.Registration;
-import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -103,7 +101,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String distinctName;
     private final String policyContextID;
 
-    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
@@ -112,7 +109,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
     private final InjectedValue<ApplicationSecurityDomain> applicationSecurityDomain = new InjectedValue<>();
     private final InjectedValue<Function> identityOutflowFunction = new InjectedValue<>();
-    private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandler = new InjectedValue<>();
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -354,23 +350,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public String getModuleName() {
         return moduleName;
-    }
-
-    public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
-        return this.ejbRemoteTransactionsRepository;
-    }
-
-    EJBRemoteTransactionsRepository getEJBRemoteTransactionsRepository() {
-        // remote tx repo is applicable only for remote views, hence the optionalValue
-        return this.ejbRemoteTransactionsRepository.getOptionalValue();
-    }
-
-    public Injector<EJBSuspendHandlerService> getEJBSuspendHandlerInjector() {
-        return this.ejbSuspendHandler;
-    }
-
-    EJBSuspendHandlerService getEJBSuspendHandler() {
-        return this.ejbSuspendHandler.getValue();
     }
 
     Injector<TransactionManager> getTransactionManagerInjector() {

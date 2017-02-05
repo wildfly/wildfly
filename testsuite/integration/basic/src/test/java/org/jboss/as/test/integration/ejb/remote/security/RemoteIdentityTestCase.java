@@ -33,13 +33,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,6 +51,11 @@ public class RemoteIdentityTestCase {
 
     @ArquillianResource
     private ManagementClient mgmtClient;
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     /**
      * Creates a deployment application for this test.
@@ -71,11 +73,7 @@ public class RemoteIdentityTestCase {
     @Test
     public void testDirect() throws Exception {
         final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
-        EJBClientConfiguration cc = new PropertiesBasedEJBClientConfiguration(ejbClientConfiguration);
-        final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
-        EJBClientContext.setSelector(selector);
-
-        final SecurityInformation targetBean = EJBUtil.lookupEJB(SecuredBean.class, SecurityInformation.class);
+        final SecurityInformation targetBean = EJBUtil.lookupEJB(SecuredBean.class, SecurityInformation.class, ejbClientConfiguration);
 
         assertEquals("guest", targetBean.getPrincipalName());
     }
@@ -83,11 +81,7 @@ public class RemoteIdentityTestCase {
     @Test
     public void testUnsecured() throws Exception {
         final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
-        EJBClientConfiguration cc = new PropertiesBasedEJBClientConfiguration(ejbClientConfiguration);
-        final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
-        EJBClientContext.setSelector(selector);
-
-        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
+        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class, ejbClientConfiguration);
 
         assertEquals("anonymous", targetBean.getPrincipalName());
     }
@@ -95,11 +89,7 @@ public class RemoteIdentityTestCase {
     @Test
     public void testSwitched() throws Exception {
         final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
-        EJBClientConfiguration cc = new PropertiesBasedEJBClientConfiguration(ejbClientConfiguration);
-        final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
-        EJBClientContext.setSelector(selector);
-
-        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
+        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class, ejbClientConfiguration);
 
         assertEquals("user1", targetBean.getPrincipalName("user1", "password1"));
     }
@@ -107,11 +97,7 @@ public class RemoteIdentityTestCase {
     @Test
     public void testNotSwitched() throws Exception {
         final Properties ejbClientConfiguration = EJBUtil.createEjbClientConfiguration(Utils.getHost(mgmtClient));
-        EJBClientConfiguration cc = new PropertiesBasedEJBClientConfiguration(ejbClientConfiguration);
-        final ContextSelector<EJBClientContext> selector = new ConfigBasedEJBClientContextSelector(cc);
-        EJBClientContext.setSelector(selector);
-
-        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class);
+        final IntermediateAccess targetBean = EJBUtil.lookupEJB(EntryBean.class, IntermediateAccess.class, ejbClientConfiguration);
 
         assertEquals("guest", targetBean.getPrincipalName(null, null));
     }

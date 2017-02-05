@@ -41,7 +41,6 @@ import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -88,8 +87,9 @@ public class XaDataSourcePoolStatisticsTestCase {
 
     @Before
     public void beforeTest() throws Exception {
-        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
-        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
+        //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        //EJBClientTransactionContext.setGlobalContext(localUserTxContext);
     }
 
     /**

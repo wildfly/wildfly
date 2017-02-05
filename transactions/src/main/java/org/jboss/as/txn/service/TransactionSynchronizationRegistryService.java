@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Service that exposes the TransactionSynchronizationRegistry
@@ -38,17 +38,19 @@ import org.jboss.msc.value.InjectedValue;
 public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
 
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+    private static final TransactionSynchronizationRegistryService INSTANCE = new TransactionSynchronizationRegistryService();
+
+    private TransactionSynchronizationRegistryService() {
+    }
 
     public static ServiceController<TransactionSynchronizationRegistry> addService(final ServiceTarget target) {
-        TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
-        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(SERVICE_NAME, service);
-        serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
+        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(SERVICE_NAME, INSTANCE);
+        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         return serviceBuilder.install();
     }
 
     @Override
     public TransactionSynchronizationRegistry getValue() throws IllegalStateException {
-        return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
+        return ContextTransactionSynchronizationRegistry.getInstance();
     }
 }

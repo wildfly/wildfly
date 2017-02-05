@@ -39,6 +39,8 @@ import org.junit.Test;
  */
 public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
+    private static final String LEGACY_EJB_CLIENT_ARTIFACT = "org.jboss:jboss-ejb-client:2.1.2.Final";
+
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
         return formatArtifact("org.wildfly:wildfly-ejb3:%s", version);
     }
@@ -136,7 +138,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;
         this.testRejections(ModelVersion.create(1, 2, 1), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
     }
 
     @Test
@@ -144,7 +146,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_3_0;
         this.testRejections(ModelVersion.create(1, 2, 1), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
     }
 
     @Test
@@ -152,7 +154,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
         this.testRejections(ModelVersion.create(1, 3, 0), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
     }
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
@@ -187,8 +189,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             FailedOperationTransformationConfig.ChainedConfig chainedSubsystemConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
-                            EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN))
+                            /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 
@@ -248,8 +249,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             FailedOperationTransformationConfig.ChainedConfig chainedConfig = FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                     /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                     .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(
-                            /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS,
-                            EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN))
+                            /*EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,*/ EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX))
                     .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS))
                     .build();
 

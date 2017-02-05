@@ -22,19 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.URI;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -44,14 +37,7 @@ import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSLSB
 import org.jboss.as.test.integration.ejb.security.authorization.ParentAnnOnlyCheck;
 import org.jboss.as.test.integration.ejb.security.authorization.SimpleAuthorizationRemote;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBReceiver;
-import org.jboss.ejb.client.remoting.IoFutureHelper;
-import org.jboss.ejb.client.remoting.RemotingConnectionEJBReceiver;
 import org.jboss.logging.Logger;
-import org.jboss.remoting3.Connection;
-import org.jboss.remoting3.Endpoint;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -59,9 +45,9 @@ import org.junit.Assert;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
-import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+import org.xnio.Property;
 import org.xnio.Sequence;
 
 /**
@@ -114,9 +100,8 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsNoUserTemplate(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("$local", null);
-        try {
-
+        final AuthenticationContext authenticationContext = setupAuthenticationContext("$local", null);
+        authenticationContext.runCallable(() -> {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
             Assert.assertEquals(echoValue, "alohomora");
 
@@ -149,10 +134,8 @@ public abstract class AnnSBTest {
                 // expected
                 Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
             }
-
-        } finally {
-            safeClose((Closeable) EJBClientContext.setSelector(old));
-        }
+            return null;
+        });
     }
 
     /**
@@ -169,9 +152,8 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsUser1Template(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("user1", "password1");
-        try {
-
+        final AuthenticationContext authenticationContext = setupAuthenticationContext("user1", "password1");
+        authenticationContext.runCallable(() -> {
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
@@ -217,10 +199,8 @@ public abstract class AnnSBTest {
                 Assert.fail(
                         "@RolesAllowed(\"**\") annotation must allow all authenticated users to the method.");
             }
-
-        } finally {
-            safeClose((Closeable) EJBClientContext.setSelector(old));
-        }
+            return null;
+        });
     }
 
     /**
@@ -237,9 +217,8 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsUser2Template(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        ContextSelector<EJBClientContext> old = setupEJBClientContextSelector("user2", "password2");
-        try {
-
+        final AuthenticationContext authenticationContext = setupAuthenticationContext("user2", "password2");
+        authenticationContext.runCallable(() -> {
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
                 Assert.assertEquals(echoValue, "alohomora");
@@ -277,18 +256,12 @@ public abstract class AnnSBTest {
                 // expected
                 Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
             }
-        } finally {
-            safeClose((Closeable) EJBClientContext.setSelector(old));
-        }
-
+            return null;
+        });
     }
 
 
-    protected ContextSelector<EJBClientContext> setupEJBClientContextSelector(String username, String password) throws IOException {
-        // create the endpoint
-        final Endpoint endpoint = Endpoint.getCurrent();
-        final URI connectionURI = managementClient.getRemoteEjbURL();
-
+    protected AuthenticationContext setupAuthenticationContext(String username, String password) {
         OptionMap.Builder builder = OptionMap.builder().set(Options.SASL_POLICY_NOANONYMOUS, true);
         builder.set(Options.SASL_POLICY_NOPLAINTEXT, false);
         if (password != null) {
@@ -301,82 +274,25 @@ public abstract class AnnSBTest {
                 .with(
                         MatchRule.ALL,
                         AuthenticationConfiguration.EMPTY
-                                .useCallbackHandler(new AuthenticationCallbackHandler(username, password))
-                                .allowSaslMechanisms("JBOSS-LOCAL-USER", "DIGEST-MD5")
+                                .useName(username == null ? "$local" : username)
+                                .usePassword(password)
+                                .useRealm(null)
+                                .allowSaslMechanisms(password != null ? "DIGEST-MD5" : "JBOSS-LOCAL-USER")
+                                .useMechanismProperties(getSaslProperties(builder.getMap()))
                                 .useProvidersFromClassLoader(AnnSBTest.class.getClassLoader()));
-        final IoFuture<Connection> futureConnection = endpoint.connect(connectionURI, builder.getMap(), authenticationContext);
-        // wait for the connection to be established
-        final Connection connection = IoFutureHelper.get(futureConnection, 5000, TimeUnit.MILLISECONDS);
-        // create a remoting EJB receiver for this connection
-        final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection);
-        // associate it with the client context
-        EJBClientContext context = EJBClientContext.create();
-        context.registerEJBReceiver(receiver);
-        return EJBClientContext.setSelector(new ClosableContextSelector(context, endpoint, connection, receiver));
+        return authenticationContext;
     }
 
-    private class ClosableContextSelector implements ContextSelector<EJBClientContext>, Closeable {
-        private EJBClientContext context;
-        private Endpoint endpoint;
-        private Connection connection;
-        private EJBReceiver receiver;
-
-        private ClosableContextSelector(EJBClientContext context, Endpoint endpoint, Connection connection, EJBReceiver receiver) {
-            this.context = context;
-            this.endpoint = endpoint;
-            this.connection = connection;
-            this.receiver = receiver;
-        }
-
-        public EJBClientContext getCurrent() {
-            return context;
-        }
-
-        public void close() throws IOException {
-            context.unregisterEJBReceiver(receiver);
-            safeClose(connection);
-            safeClose(endpoint);
-            this.context = null;
-        }
-    }
-
-    private void safeClose(Closeable c) {
-        try {
-            c.close();
-        } catch (Throwable t) {
-        }
-    }
-
-    private class AuthenticationCallbackHandler implements CallbackHandler {
-
-        private final String username;
-        private final String password;
-
-        private AuthenticationCallbackHandler(final String username, final String password) {
-            this.username = username == null ? "$local" : username;
-            this.password = password;
-        }
-
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-
-            for (Callback current : callbacks) {
-                if (current instanceof RealmCallback) {
-                    RealmCallback rcb = (RealmCallback) current;
-                    String defaultText = rcb.getDefaultText();
-                    rcb.setText(defaultText); // For now just use the realm suggested.
-                } else if (current instanceof NameCallback) {
-                    NameCallback ncb = (NameCallback) current;
-                    ncb.setName(username);
-                } else if (current instanceof PasswordCallback) {
-                    PasswordCallback pcb = (PasswordCallback) current;
-                    if (password != null) {
-                        pcb.setPassword(password.toCharArray());
-                    }
-                } else {
-                    throw new UnsupportedCallbackException(current);
-                }
+    private Map<String, String> getSaslProperties(final OptionMap connectionCreationOptions) {
+        Map<String, String> saslProperties = null;
+        Sequence<Property> value = connectionCreationOptions.get(Options.SASL_PROPERTIES);
+        if (value != null) {
+            saslProperties = new HashMap<>(value.size());
+            for (Property property : value) {
+                saslProperties.put(property.getKey(), (String) property.getValue());
             }
         }
+        return saslProperties;
     }
 
 

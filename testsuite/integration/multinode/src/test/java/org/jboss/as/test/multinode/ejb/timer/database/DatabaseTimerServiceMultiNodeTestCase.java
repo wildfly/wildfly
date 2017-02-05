@@ -33,17 +33,15 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
-import org.jboss.ejb.client.EJBClientConfiguration;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,6 +79,10 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
     private static final int TIMER_DELAY = 400;
 
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @AfterClass
     public static void afterClass() {
@@ -263,8 +265,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         config.put("remote.connection.default.host", managementClient.getWebUri().getHost());
         config.put("remote.connection.default.port", String.valueOf(managementClient.getWebUri().getPort()));
 
-        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(config);
-        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
-        EJBClientContext.setSelector(selector);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using config
     }
 }

@@ -27,7 +27,9 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
 
@@ -36,22 +38,20 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class StatelessRemoteViewInstanceFactory implements ViewInstanceFactory {
 
-    private final String applicationName;
-    private final String moduleName;
-    private final String distinctName;
-    private final String beanName;
+    private final EJBIdentifier identifier;
 
     public StatelessRemoteViewInstanceFactory(final String applicationName, final String moduleName, final String distinctName, final String beanName) {
-        this.applicationName = applicationName == null ? "" : applicationName;
-        this.moduleName = moduleName;
-        this.distinctName = distinctName;
-        this.beanName = beanName;
+        this(new EJBIdentifier(applicationName == null ? "" : applicationName, moduleName, beanName, distinctName));
+    }
+
+    public StatelessRemoteViewInstanceFactory(final EJBIdentifier identifier) {
+        this.identifier = identifier;
     }
 
     @Override
     public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) {
-        Object value = EJBClient.createProxy(new StatelessEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName));
-        return new ValueManagedReference(new ImmediateValue(value));
+        Object value = EJBClient.createProxy(StatelessEJBLocator.create(componentView.getViewClass(), identifier, Affinity.LOCAL));
+        return new ValueManagedReference(new ImmediateValue<>(value));
     }
 
 

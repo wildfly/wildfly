@@ -132,6 +132,7 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     @Test
+    //TODO Elytron - ejb-client4 integration
     public void testSFSB() throws Exception {
         validateBean(EJBComponentType.STATEFUL, ManagedStatefulBean.class);
     }

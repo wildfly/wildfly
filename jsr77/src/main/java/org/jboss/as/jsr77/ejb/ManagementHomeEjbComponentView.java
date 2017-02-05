@@ -21,10 +21,7 @@
 */
 package org.jboss.as.jsr77.ejb;
 
-import static org.jboss.as.jsr77.subsystem.Constants.APP_NAME;
-import static org.jboss.as.jsr77.subsystem.Constants.DISTINCT_NAME;
-import static org.jboss.as.jsr77.subsystem.Constants.EJB_NAME;
-import static org.jboss.as.jsr77.subsystem.Constants.MODULE_NAME;
+import static org.jboss.as.jsr77.subsystem.Constants.EJB_IDENTIFIER;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -35,6 +32,7 @@ import javax.management.j2ee.Management;
 import javax.management.j2ee.ManagementHome;
 
 import org.jboss.as.ee.utils.DescriptorUtils;
+import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.invocation.InterceptorContext;
@@ -45,12 +43,14 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class ManagementHomeEjbComponentView extends BaseManagementEjbComponentView {
 
+    private static final StatelessEJBLocator<Management> LOCATOR = StatelessEJBLocator.create(Management.class, EJB_IDENTIFIER, Affinity.LOCAL);
+
     private volatile Method create;
 
     @Override
     public Object invoke(InterceptorContext interceptorContext) throws Exception {
         if (interceptorContext.getMethod().equals(create)) {
-            return EJBClient.createProxy(new StatelessEJBLocator<Management>(Management.class, APP_NAME, MODULE_NAME, EJB_NAME, DISTINCT_NAME));
+            return EJBClient.createProxy(LOCATOR);
         }
         throw new UnsupportedOperationException(interceptorContext.getMethod().toString());
     }
