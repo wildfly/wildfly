@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -45,8 +46,9 @@ public class EJB3SubsystemRemove extends AbstractRemoveStepHandler {
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.recordCapabilitiesAndRequirements(context, operation, resource);
-        // TODO: delete this once optional requirements no longer require the existence of a capability
+        // TODO: delete these once optional requirements no longer require the existence of a capability
         context.deregisterCapability(CLUSTERED_SINGLETON_CAPABILITY.getName());
+        context.deregisterCapability(EJB_CLIENT_CONFIGURATOR.getName());
 
     }
 
