@@ -62,7 +62,7 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.security"/>
-        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>

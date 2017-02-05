@@ -88,6 +88,7 @@ public enum EJB3SubsystemXMLAttribute {
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
 
     @Deprecated SESSIONS_PATH("sessions-path"),
+    STATIC_URLS("static-urls"),
     @Deprecated SUBDIRECTORY_COUNT("subdirectory-count"),
 
     THREAD_POOL_NAME("thread-pool-name"),
@@ -103,7 +104,11 @@ public enum EJB3SubsystemXMLAttribute {
 
     // Elytron integration
     OUTFLOW_SECURITY_DOMAINS("outflow-security-domains"),
-    SECURITY_DOMAIN("security-domain")
+    SECURITY_DOMAIN("security-domain"),
+    URI("uri"),
+    APP_NAME("app-name"),
+    MODULE_NAME("module-name"),
+    DISTINCT_NAME("distinct-name")
     ;
 
     private final String name;

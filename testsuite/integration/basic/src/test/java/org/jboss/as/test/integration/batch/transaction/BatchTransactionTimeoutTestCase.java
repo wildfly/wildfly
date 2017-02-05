@@ -30,7 +30,9 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +52,11 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @ServerSetup(SingleThreadedBatchSetup.class)
 public class BatchTransactionTimeoutTestCase extends AbstractBatchTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @Deployment
     public static WebArchive createDeployment() {

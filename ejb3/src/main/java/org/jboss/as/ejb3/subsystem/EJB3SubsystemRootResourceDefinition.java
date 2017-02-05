@@ -155,12 +155,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
-    public static final SimpleAttributeDefinition ENABLE_GRACEFUL_TXN_SHUTDOWN =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN, ModelType.BOOLEAN, true)
-                    .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
-                    .build();
-
     public static final SimpleAttributeDefinition LOG_EJB_EXCEPTIONS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.LOG_SYSTEM_EXCEPTIONS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
@@ -216,7 +210,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS,
             DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,
             DISABLE_DEFAULT_EJB_PERMISSIONS,
-            ENABLE_GRACEFUL_TXN_SHUTDOWN,
             LOG_EJB_EXCEPTIONS,
             ALLOW_EJB_NAME_REGEX
     };
@@ -256,8 +249,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Void handback) throws OperationFailedException {
             }
         });
-
-        resourceRegistration.registerReadWriteAttribute(ENABLE_GRACEFUL_TXN_SHUTDOWN, null, EnableGracefulTxnShutdownWriteHandler.INSTANCE);
     }
 
     @Override
@@ -353,9 +344,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
 
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
-
         PassivationStoreResourceDefinition.registerTransformers_1_2_1_and_1_3_0(builder);
         EJB3RemoteResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
         MdbDeliveryGroupResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
@@ -377,8 +365,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         .end();
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         MdbDeliveryGroupResourceDefinition.registerTransformers_3_0(builder);
         EJB3RemoteResourceDefinition.registerTransformers_3_0(builder);
         StrictMaxPoolResourceDefinition.registerTransformers_3_0_0(builder);
@@ -392,12 +378,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         ApplicationSecurityDomainDefinition.registerTransformers_4_0(builder);
         IdentityResourceDefinition.registerTransformers_4_0(builder);
+        RemotingProfileResourceDefinition.registerTransformers_4_0(builder);
 
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
-        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_4_0_0);
     }

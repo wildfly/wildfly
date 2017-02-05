@@ -87,7 +87,9 @@ public class Util {
 
     public static void tearDownOrb() {
         ORBManager.reset();
-        recoveryManagerPool.shutdown();
+        if (recoveryManagerPool != null) {
+            recoveryManagerPool.shutdown();
+        }
     }
 
     public static void startCorbaTx() throws Throwable {

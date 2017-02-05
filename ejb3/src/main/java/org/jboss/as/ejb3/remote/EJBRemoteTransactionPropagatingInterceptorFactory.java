@@ -33,7 +33,9 @@ import org.jboss.invocation.InterceptorFactoryContext;
  * Creates and returns a {@link EJBRemoteTransactionPropagatingInterceptor}
  *
  * @author Jaikiran Pai
+ * @deprecated Remove this class once WFLY-7680 is resolved.
  */
+@Deprecated
 class EJBRemoteTransactionPropagatingInterceptorFactory extends ComponentInterceptorFactory {
 
     static final EJBRemoteTransactionPropagatingInterceptorFactory INSTANCE = new EJBRemoteTransactionPropagatingInterceptorFactory();
@@ -43,7 +45,6 @@ class EJBRemoteTransactionPropagatingInterceptorFactory extends ComponentInterce
         if (!(component instanceof EJBComponent)) {
             throw EjbLogger.ROOT_LOGGER.notAnEJBComponent(component);
         }
-        final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository = ((EJBComponent) component).getEjbRemoteTransactionsRepository();
-        return new EJBRemoteTransactionPropagatingInterceptor(ejbRemoteTransactionsRepository);
+        return new EJBRemoteTransactionPropagatingInterceptor(((EJBComponent) component).getTransactionManager());
     }
 }

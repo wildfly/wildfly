@@ -26,21 +26,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jboss.ejb.client.ContextSelector;
-import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
-import org.jboss.ejb.client.remoting.ConfigBasedEJBClientContextSelector;
 
 /**
  * @author Paul Ferraro
  */
 public class EJBClientContextSelector {
-    public static ContextSelector<EJBClientContext> setup(String file) throws IOException {
+    public static EJBClientContext setup(String file) throws IOException {
         return setup(file, null);
     }
 
-    public static ContextSelector<EJBClientContext> setup(String file, Properties propertiesToReplace) throws IOException {
+    public static EJBClientContext setup(String file, Properties propertiesToReplace) throws IOException {
         // setUp the selector
         final InputStream inputStream = EJBClientContextSelector.class.getClassLoader().getResourceAsStream(file);
         if (inputStream == null) {
@@ -56,9 +52,8 @@ public class EJBClientContextSelector {
             }
         }
 
-        final EJBClientConfiguration ejbClientConfiguration = new PropertiesBasedEJBClientConfiguration(properties);
-        final ConfigBasedEJBClientContextSelector selector = new ConfigBasedEJBClientContextSelector(ejbClientConfiguration);
-
-        return EJBClientContext.setSelector(selector);
+        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
+        // that should be used for this test using properties
+        return null;
     }
 }

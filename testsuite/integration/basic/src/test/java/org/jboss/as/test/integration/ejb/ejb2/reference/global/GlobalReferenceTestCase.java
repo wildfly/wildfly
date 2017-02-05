@@ -31,6 +31,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 
@@ -38,6 +39,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,6 +54,11 @@ public class GlobalReferenceTestCase {
 
     private static final String EJB2 = "global-reference-ejb2";
     private static final String EJB3 = "global-reference-ejb3";
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @Deployment(name = "ejb3")
     public static Archive<?> deploymentEjb3() {

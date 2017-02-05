@@ -21,11 +21,13 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.jsr77.subsystem.Constants.APP_NAME;
 import static org.jboss.as.jsr77.subsystem.Constants.DISTINCT_NAME;
 import static org.jboss.as.jsr77.subsystem.Constants.EJB_NAME;
 import static org.jboss.as.jsr77.subsystem.Constants.MODULE_NAME;
 
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +41,8 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
+import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.jsr77.ejb.ManagementEjbDeploymentInformation;
 import org.jboss.as.jsr77.ejb.ManagementHomeEjbComponentView;
 import org.jboss.as.jsr77.ejb.ManagementRemoteEjbComponentView;
@@ -51,6 +54,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.discovery.Discovery;
 
 /**
  *
@@ -61,9 +65,9 @@ public class RegisterManagementEJBService implements Service<Void>{
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.of(JSR77ManagementExtension.SUBSYSTEM_NAME, "ejb"));
 
     final InjectedValue<DeploymentRepository> deploymentRepositoryValue = new InjectedValue<DeploymentRepository>();
-    final InjectedValue<TCCLEJBClientContextSelectorService> ejbClientContextSelectorValue = new InjectedValue<TCCLEJBClientContextSelectorService>();
-    final InjectedValue<EJBClientContext> ejbClientContextValue = new InjectedValue<EJBClientContext>();
+    final InjectedValue<EJBClientContextService> ejbClientContextValue = new InjectedValue<>();
     final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<MBeanServer>();
+    final InjectedValue<AssociationService> associationServiceInjector = new InjectedValue<>();
     private volatile DeploymentModuleIdentifier moduleIdentifier;
 
     @Override
@@ -92,12 +96,23 @@ public class RegisterManagementEJBService implements Service<Void>{
         repository.add(moduleIdentifier, deployment);
         repository.startDeployment(moduleIdentifier);
 
-        ejbClientContextSelectorValue.getValue().registerEJBClientContext(ejbClientContextValue.getValue(), SecurityActions.getClassLoader(this.getClass()));
+        doPrivileged((PrivilegedAction<Void>) () -> {
+            final ClassLoader classLoader = getClass().getClassLoader();
+            EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContextValue.getValue().getClientContext());
+            Discovery.getContextManager().setClassLoaderDefault(classLoader, Discovery.create(associationServiceInjector.getValue().getLocalDiscoveryProvider()));
+            return null;
+        });
     }
 
     @Override
     public void stop(StopContext context) {
         deploymentRepositoryValue.getValue().remove(moduleIdentifier);
+        doPrivileged((PrivilegedAction<Void>) () -> {
+            final ClassLoader classLoader = getClass().getClassLoader();
+            EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, null);
+            Discovery.getContextManager().setClassLoaderDefault(classLoader, null);
+            return null;
+        });
     }
 
 }

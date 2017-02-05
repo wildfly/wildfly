@@ -39,7 +39,9 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.naming"/>
-        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.discovery"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.version"/>
         <module name="org.jboss.invocation"/>

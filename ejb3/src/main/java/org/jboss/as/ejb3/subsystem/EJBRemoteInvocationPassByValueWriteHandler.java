@@ -27,7 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -71,29 +71,29 @@ class EJBRemoteInvocationPassByValueWriteHandler extends AbstractWriteAttributeH
 
         final ModelNode passByValueModel = this.attributeDefinition.resolveModelAttribute(context, model);
         final ServiceRegistry registry = context.getServiceRegistry(true);
-        final ServiceName localEJBReceiverServiceName;
+        final ServiceName localTransportProviderServiceName;
         if (passByValueModel.isDefined()) {
             final boolean passByValue = passByValueModel.asBoolean(true);
             if (passByValue) {
-                localEJBReceiverServiceName = LocalEjbReceiver.BY_VALUE_SERVICE_NAME;
+                localTransportProviderServiceName = LocalTransportProvider.BY_VALUE_SERVICE_NAME;
             } else {
-                localEJBReceiverServiceName = LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME;
+                localTransportProviderServiceName = LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
             }
         } else {
-            localEJBReceiverServiceName = LocalEjbReceiver.BY_VALUE_SERVICE_NAME;
+            localTransportProviderServiceName = LocalTransportProvider.BY_VALUE_SERVICE_NAME;
         }
         // uninstall the existing default local EJB receiver service
-        final ServiceController<?> existingDefaultLocalEJBReceiverServiceController = registry.getService(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME);
+        final ServiceController<?> existingDefaultLocalEJBReceiverServiceController = registry.getService(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME);
         if (existingDefaultLocalEJBReceiverServiceController != null) {
             context.removeService(existingDefaultLocalEJBReceiverServiceController);
         }
         final ServiceTarget serviceTarget = context.getServiceTarget();
         // now install the new default local EJB receiver service which points to an existing Local EJB receiver service
-        final ValueInjectionService<LocalEjbReceiver> newDefaultLocalEJBReceiverService = new ValueInjectionService<LocalEjbReceiver>();
-        final ServiceBuilder<LocalEjbReceiver> defaultLocalEJBReceiverServiceBuilder = serviceTarget.addService(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, newDefaultLocalEJBReceiverService);
-        defaultLocalEJBReceiverServiceBuilder.addDependency(localEJBReceiverServiceName, LocalEjbReceiver.class, newDefaultLocalEJBReceiverService.getInjector());
+        final ValueInjectionService<LocalTransportProvider> newDefaultLocalTransportProviderService = new ValueInjectionService<LocalTransportProvider>();
+        final ServiceBuilder<LocalTransportProvider> defaultLocalEJBReceiverServiceBuilder = serviceTarget.addService(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, newDefaultLocalTransportProviderService);
+        defaultLocalEJBReceiverServiceBuilder.addDependency(localTransportProviderServiceName, LocalTransportProvider.class, newDefaultLocalTransportProviderService.getInjector());
         // install the service
-        final ServiceController<LocalEjbReceiver> defaultLocalEJBReceiverServiceController = defaultLocalEJBReceiverServiceBuilder.install();
+        defaultLocalEJBReceiverServiceBuilder.install();
     }
 
 }

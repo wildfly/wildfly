@@ -54,14 +54,16 @@
         <!-- this should be rejected -->
         <profiles>
             <profile name="profile">
-                <remoting-ejb-receiver  name="receiver" outbound-connection-ref="connection-ref" connect-timeout="5000">
+                <!-- TODO Elytron - emulate old configuration using discovery -->
+                <!--<remoting-ejb-receiver name="receiver" outbound-connection-ref="connection-ref" connect-timeout="5000">
                     <channel-creation-options>
                         <option name="READ_TIMEOUT" value="20" type="xnio"/>
                         <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
                     </channel-creation-options>
-                </remoting-ejb-receiver>
+                </remoting-ejb-receiver>-->
             </profile>
         </profiles>
+
     </remote>
 
     <!-- Session bean configurations -->
@@ -85,7 +87,6 @@
     <identity outflow-security-domains="ApplicationDomain"/>
     <default-missing-method-permissions-deny-access value="true" />
     <disable-default-ejb-permissions value="true"/>
-    <enable-graceful-txn-shutdown value="true" />
     <statistics enabled="${ejb.enable-statistics:true}" />
     <log-system-exceptions value="false"/>
 </subsystem>

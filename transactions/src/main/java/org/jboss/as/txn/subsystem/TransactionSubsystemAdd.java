@@ -52,6 +52,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -68,6 +69,8 @@ import org.jboss.as.txn.service.ArjunaTransactionManagerService;
 import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.ExtendedJBossXATerminatorService;
 import org.jboss.as.txn.service.JTAEnvironmentBeanService;
+import org.jboss.as.txn.service.LocalTransactionContextService;
+import org.jboss.as.txn.service.RemotingTransactionServiceService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
@@ -85,6 +88,8 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.tm.ExtendedJBossXATerminator;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
@@ -94,7 +99,7 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jts.common.jtsPropertyManager;
-
+import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
  * Adds the transaction management subsystem.
@@ -232,6 +237,23 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         //object store
         performObjectStoreBoottime(context, model);
 
+        // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
+        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();
+        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
+                .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER) // no injection
+                .setInitialMode(Mode.ACTIVE)
+                .install();
+
+        if (context.hasOptionalCapability("org.wildfly.remoting.endpoint", TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(),null)) {
+            final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
+            context.getServiceTarget().addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
+                .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteTransactionServiceService.getLocalTransactionContextInjector())
+                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
+                .setInitialMode(Mode.ACTIVE)
+                .install();
+        }
 
         //always propagate the transaction context
         //TODO: need a better way to do this, but this value gets cached in a static

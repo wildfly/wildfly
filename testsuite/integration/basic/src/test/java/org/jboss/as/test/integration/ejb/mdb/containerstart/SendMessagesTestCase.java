@@ -66,6 +66,7 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -73,6 +74,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -142,6 +144,11 @@ public class SendMessagesTestCase {
 
     @ContainerResource
     private InitialContext ctx;
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @AfterClass
     public static void afterClass() {
