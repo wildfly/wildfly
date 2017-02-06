@@ -46,6 +46,10 @@ public class Consumers {
         };
     }
 
+    public static <T> Consumer<T> empty() {
+        return value -> {};
+    }
+
     private Consumers() {
         // Hide
     }

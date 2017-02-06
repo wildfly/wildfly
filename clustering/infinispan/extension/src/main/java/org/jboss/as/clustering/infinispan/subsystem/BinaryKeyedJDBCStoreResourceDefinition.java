@@ -27,11 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -44,7 +39,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -122,7 +116,16 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     BinaryKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration);
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+                .addExtraParameters(DeprecatedAttribute.class)
+                .addRequiredChildren(BinaryTableResourceDefinition.PATH)
+                // Translate deprecated TABLE attribute into separate add table operation
+                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
+            , address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()), registration -> {
+                registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
+
+                new BinaryTableResourceDefinition().register(registration);
+            });
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {
@@ -148,31 +151,4 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
             }
         }
     };
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(JDBCStoreResourceDefinition.Attribute.class)
-                .addAttributes(StoreResourceDefinition.Attribute.class)
-                .addExtraParameters(DeprecatedAttribute.class)
-                .addCapabilities(Capability.class)
-                .addRequiredChildren(BinaryTableResourceDefinition.PATH)
-                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
-                // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
-                .addAttributeTranslation(JDBCStoreResourceDefinition.DeprecatedAttribute.DATASOURCE, JDBCStoreResourceDefinition.Attribute.DATA_SOURCE, JDBCStoreResourceDefinition.POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JDBCStoreResourceDefinition.JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
-                // Translate deprecated TABLE attribute into separate add table operation
-                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
-
-        new BinaryTableResourceDefinition().register(registration);
-
-        super.register(registration);
-    }
 }

@@ -23,11 +23,15 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
@@ -48,6 +52,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -243,7 +248,12 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     };
 
-    JDBCStoreResourceDefinition(PathElement path, InfinispanResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration) {
-        super(path, resolver, allowRuntimeOnlyRegistration);
+    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, InfinispanResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+        super(path, legacyPath, resolver, allowRuntimeOnlyRegistration, configurator.andThen(descriptor -> descriptor
+                .addAttributes(Attribute.class)
+                .addCapabilities(Capability.class)
+                // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
+                .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, Attribute.DATA_SOURCE, POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
+            ), builderFactory, registrationConfigurator);
     }
 }

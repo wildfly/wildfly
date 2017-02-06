@@ -27,6 +27,7 @@ import java.util.Set;
 import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
@@ -51,7 +52,9 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * Resource description for the addressable resource and its alias
@@ -65,13 +68,35 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement PATH = pathElement("jgroups");
 
+    enum Requirement implements UnaryRequirement {
+        CHANNEL_FACTORY("org.wildfly.clustering.infinispan.transport.channel-factory", ChannelFactory.class),
+        ;
+        private final String name;
+        private final Class<?> type;
+
+        Requirement(String name, Class<?> type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return this.type;
+        }
+    }
+
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        TRANSPORT_CHANNEL_FACTORY("org.wildfly.clustering.infinispan.transport.channel-factory"),
+        TRANSPORT_CHANNEL_FACTORY(Requirement.CHANNEL_FACTORY),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
+        Capability(UnaryRequirement requirement) {
+            this.definition = new UnaryRequirementCapability(requirement).getDefinition();
         }
 
         @Override

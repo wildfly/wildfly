@@ -26,6 +26,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.Index;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
@@ -34,6 +35,9 @@ import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
@@ -210,33 +214,49 @@ public class CacheResourceDefinition extends ChildResourceDefinition {
         CustomStoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final PathManager pathManager;
-    final boolean allowRuntimeOnlyRegistration;
+    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final ResourceServiceHandler handler;
+    private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
-    public CacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+    public CacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, CacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
         super(path, new InfinispanResourceDescriptionResolver(path, PathElement.pathElement("cache")));
-        this.pathManager = pathManager;
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
+        this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
+            .addAttributes(Attribute.class)
+            .addAttributes(DeprecatedAttribute.class)
+            .addCapabilities(Capability.class)
+            .addCapabilities(CLUSTERING_CAPABILITIES.values())
+            .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
+            .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
+        );
+        this.handler = handler;
+        this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
+            if (allowRuntimeOnlyRegistration) {
+                new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
+            }
+
+            new EvictionResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new ExpirationResourceDefinition().register(registration);
+            new LockingResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new TransactionResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+
+            new NoStoreResourceDefinition().register(registration);
+            new CustomStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new FileStoreResourceDefinition(pathManager, allowRuntimeOnlyRegistration).register(registration);
+            new BinaryKeyedJDBCStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new MixedKeyedJDBCStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new StringKeyedJDBCStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new RemoteStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+        });
     }
 
     @Override
-    public void register(ManagementResourceRegistration registration) {
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
-        if (this.allowRuntimeOnlyRegistration) {
-            new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
-        }
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        this.descriptorConfigurator.accept(descriptor);
+        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 
-        new EvictionResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new ExpirationResourceDefinition().register(registration);
-        new LockingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new TransactionResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-
-        new NoStoreResourceDefinition().register(registration);
-        new CustomStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new FileStoreResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
-        new BinaryKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new MixedKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new StringKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new RemoteStoreResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
+        this.registrationConfigurator.accept(registration);
     }
 }

@@ -22,21 +22,16 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
+import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -83,22 +78,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(StoreResourceDefinition.Attribute.class)
-                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new CustomStoreBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        super.register(registration);
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), address -> new CustomStoreBuilder(address.getParent()), Consumers.empty());
     }
 }

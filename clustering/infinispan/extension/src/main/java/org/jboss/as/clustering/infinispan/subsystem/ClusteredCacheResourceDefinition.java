@@ -22,13 +22,19 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Consumer;
+
+import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -44,6 +50,26 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
+
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        TRANSPORT("org.wildfly.clustering.infinispan.cache-container.cache.transport"),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).build();
+        }
+
+        @Override
+        public RuntimeCapability<?> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<?> resolve(PathAddress address) {
+            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue() + "." + address.getLastElement().getValue());
+        }
+    }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODE("mode", ModelType.STRING, new EnumValidatorBuilder<>(Mode.class)),
@@ -103,17 +129,16 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ClusteredCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(path, pathManager, allowRuntimeOnlyRegistration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-
-        if (this.allowRuntimeOnlyRegistration) {
-            new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
-        }
-
-        super.register(registration);
+    ClusteredCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+        super(path, pathManager, allowRuntimeOnlyRegistration, descriptorConfigurator.andThen(descriptor -> descriptor
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+                .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL_FACTORY), address -> address.getParent().getLastElement().getValue())
+            ), handler, registrationConfigurator.andThen(registration -> {
+                if (allowRuntimeOnlyRegistration) {
+                    new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
+                }
+            }));
     }
 }

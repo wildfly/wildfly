@@ -73,7 +73,7 @@ public class JGroupsTransportBuilder extends ComponentBuilder<TransportConfigura
     }
 
     @Override
-    public TransportConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
+    public TransportConfiguration getValue() {
         ChannelFactory factory = this.factory.getValue();
         ProtocolStackConfiguration stack = factory.getProtocolStackConfiguration();
         org.wildfly.clustering.jgroups.spi.TransportConfiguration.Topology topology = stack.getTransport().getTopology();

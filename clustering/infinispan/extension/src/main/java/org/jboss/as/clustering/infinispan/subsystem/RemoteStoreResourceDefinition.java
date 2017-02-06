@@ -28,14 +28,10 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
+import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -46,7 +42,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -154,23 +149,9 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addAttributes(StoreResourceDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
-                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RemoteStoreBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        super.register(registration);
+            , address -> new RemoteStoreBuilder(address.getParent()), Consumers.empty());
     }
 }

@@ -33,11 +33,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -69,6 +72,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final Map<AttributeDefinition, AttributeTranslation> attributeTranslations = new TreeMap<>(ATTRIBUTE_COMPARATOR);
     private final List<OperationStepHandler> translators = new LinkedList<>();
     private final List<OperationStepHandler> runtimeResourceRegistrations = new LinkedList<>();
+    private final Map<CapabilityReferenceRecorder, Function<PathAddress, String>> resourceCapabilityReferences = new HashMap<>();
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -227,6 +231,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor addRuntimeResourceRegistration(OperationStepHandler registration) {
         this.runtimeResourceRegistrations.add(registration);
+        return this;
+    }
+
+    @Override
+    public Map<CapabilityReferenceRecorder, Function<PathAddress, String>> getResourceCapabilityReferences() {
+        return this.resourceCapabilityReferences;
+    }
+
+    public ResourceDescriptor addResourceCapabilityReference(CapabilityReferenceRecorder reference, Function<PathAddress, String> resolver) {
+        this.resourceCapabilityReferences.put(reference, resolver);
         return this;
     }
 }

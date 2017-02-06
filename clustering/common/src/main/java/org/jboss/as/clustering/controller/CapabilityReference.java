@@ -114,4 +114,16 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
     public boolean isDynamicDependent() {
         return this.capability.getDefinition().isDynamicallyNamed();
     }
+
+    @Override
+    public int hashCode() {
+        return this.getBaseDependentName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof CapabilityReferenceRecorder)) return false;
+        CapabilityReference reference = (CapabilityReference) object;
+        return this.capability.getDefinition().getName().equals(reference.capability.getDefinition().getName());
+    }
 }
