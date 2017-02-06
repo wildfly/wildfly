@@ -583,16 +583,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             if(profileNode.hasDefined(REMOTING_EJB_RECEIVER)){
                 writeRemotingEjbReceivers(writer, profileNode);
             }
-            if(profileNode.hasDefined(DISCOVERY)){
-                final ModelNode discoveryNode = profileNode.get(DISCOVERY);
-                for(Property discoveryProperty: discoveryNode.asPropertyList()){
-                    switch(discoveryProperty.getName()){
-                        case EJB3SubsystemModel.STATIC:
-                            DiscoveryResourceDefinition.STATIC_URLS.marshallAsElement(discoveryProperty.getValue(),writer);
-                        break;
-                    }
-                }
-            }
+            StaticEJBDiscoveryDefinition.INSTANCE.marshallAsElement(profileNode, writer);
             writer.writeEndElement();
         }
     }

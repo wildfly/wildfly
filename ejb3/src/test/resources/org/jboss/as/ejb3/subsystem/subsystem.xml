@@ -49,12 +49,16 @@
         <profiles>
             <profile name="profile">
                 <!-- TODO Elytron - emulate old configuration using discovery-->
-                <!--<remoting-ejb-receiver name="receiver" outbound-connection-ref="connection-ref" connect-timeout="5000">
+                <remoting-ejb-receiver name="receiver" outbound-connection-ref="connection-ref" connect-timeout="5000">
                     <channel-creation-options>
                         <option name="READ_TIMEOUT" value="20" type="xnio"/>
                         <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
                     </channel-creation-options>
-                </remoting-ejb-receiver>-->
+                </remoting-ejb-receiver>
+                <static-ejb-discovery>
+                    <module uri="remote+http://localhost" module-name="somemodule" />
+                    <module uri="remote+http://somehost" app-name="myapp" module-name="mymodule" distinct-name="distict"/>
+                </static-ejb-discovery>
             </profile>
         </profiles>
     </remote>
