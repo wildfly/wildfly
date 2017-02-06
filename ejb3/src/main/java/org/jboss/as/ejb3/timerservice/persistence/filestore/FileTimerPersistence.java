@@ -369,6 +369,10 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                     List<TimerImpl> timerList = new ArrayList<>();
                     mapper.parseDocument(timerList, streamReader);
                     for (TimerImpl timer : timerList) {
+                        if (timer.getId().equals("deleted-timer")) {
+                            timerFile.delete();
+                            break;
+                        }
                         timers.put(timer.getId(), timer);
                     }
                 } finally {

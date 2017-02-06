@@ -282,6 +282,8 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                                 builder.setTimeoutMethod(timeoutMethod);
                                 timers.add(builder.build(timerService));
                             } else {
+                                builder.setId("deleted-timer");
+                                timers.add(builder.build(timerService));
                                 EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), null);
                             }
                         } else {
