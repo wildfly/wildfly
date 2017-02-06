@@ -170,6 +170,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(
             "org.wildfly.ejb3.clustered.singleton", Void.class).build();
 
+    //We don't want to actually expose the service, we just want to use optional deps
+    public static final RuntimeCapability<Void>  EJB_CLIENT_CONFIGURATOR = RuntimeCapability.Builder.of("org.wildfly.ejb3.remote.client-configurator", Void.class)
+            .build();
+
     private static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
     private static final IdentityResourceDefinition IDENTITY = IdentityResourceDefinition.INSTANCE;
     private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null,
