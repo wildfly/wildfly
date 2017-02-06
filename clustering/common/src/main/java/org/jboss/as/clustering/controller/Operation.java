@@ -26,4 +26,8 @@ import org.jboss.as.controller.OperationDefinition;
  * @param <C> operation context
  */
 public interface Operation<C> extends Definable<OperationDefinition>, Executable<C> {
+
+    default String getName() {
+        return this.getDefinition().getName();
+    }
 }
