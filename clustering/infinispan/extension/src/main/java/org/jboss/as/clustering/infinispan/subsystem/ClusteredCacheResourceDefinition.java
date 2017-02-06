@@ -22,7 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Consumer;
+
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -103,17 +106,14 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ClusteredCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(path, pathManager, allowRuntimeOnlyRegistration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-
-        if (this.allowRuntimeOnlyRegistration) {
-            new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
-        }
-
-        super.register(registration);
+    ClusteredCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+        super(path, pathManager, allowRuntimeOnlyRegistration, descriptorConfigurator.andThen(descriptor -> descriptor
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+            ), handler, registrationConfigurator.andThen(registration -> {
+                if (allowRuntimeOnlyRegistration) {
+                    new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
+                }
+            }));
     }
 }

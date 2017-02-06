@@ -21,11 +21,20 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Consumer;
+
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -91,8 +100,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         }
     }
 
-    private final boolean allowRuntimeOnlyRegistration;
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
@@ -112,22 +119,43 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         StoreWriteBehindResourceDefinition.buildTransformation(version, builder);
     }
 
-    StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration) {
-        super(path, resolver);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
-    }
+    private final PathElement legacyPath;
+    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final ResourceServiceHandler handler;
+    private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
     @SuppressWarnings("deprecation")
-    @Override
-    public void register(ManagementResourceRegistration registration) {
+    StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+        super(path, resolver);
+        this.legacyPath = legacyPath;
+        this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
+                .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
+        );
+        this.handler = new SimpleResourceServiceHandler<>(builderFactory);
+        this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
+            if (allowRuntimeOnlyRegistration) {
+                new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
+            }
 
-        if (this.allowRuntimeOnlyRegistration) {
-            new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
+            new StoreWriteBehindResourceDefinition().register(registration);
+            new StoreWriteThroughResourceDefinition().register(registration);
+
+            new StorePropertyResourceDefinition().register(registration);
+        });
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        if (this.legacyPath != null) {
+            parentRegistration.registerAlias(this.legacyPath, new SimpleAliasEntry(registration));
         }
 
-        new StoreWriteBehindResourceDefinition().register(registration);
-        new StoreWriteThroughResourceDefinition().register(registration);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
+        this.descriptorConfigurator.accept(descriptor);
+        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 
-        new StorePropertyResourceDefinition().register(registration);
+        this.registrationConfigurator.accept(registration);
     }
 }

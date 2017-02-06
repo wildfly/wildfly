@@ -22,10 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Consumer;
+
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -60,18 +62,14 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    SharedStateCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(path, pathManager, allowRuntimeOnlyRegistration);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration registration) {
-
-        new PartitionHandlingResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new StateTransferResourceDefinition().register(registration);
-        new BackupsResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new BackupForResourceDefinition().register(registration);
-
-        super.register(registration);
+    SharedStateCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler) {
+        super(path, pathManager, allowRuntimeOnlyRegistration, descriptorConfigurator.andThen(descriptor -> descriptor
+                .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)
+            ), handler, registration -> {
+                new PartitionHandlingResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+                new StateTransferResourceDefinition().register(registration);
+                new BackupsResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+                new BackupForResourceDefinition().register(registration);
+            });
     }
 }

@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
@@ -36,7 +33,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -111,29 +107,6 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     }
 
     DistributedCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(ClusteredCacheResourceDefinition.Attribute.class)
-                .addAttributes(ClusteredCacheResourceDefinition.DeprecatedAttribute.class)
-                .addAttributes(CacheResourceDefinition.Attribute.class)
-                .addAttributes(CacheResourceDefinition.DeprecatedAttribute.class)
-                .addCapabilities(CacheResourceDefinition.Capability.class)
-                .addCapabilities(CacheResourceDefinition.CLUSTERING_CAPABILITIES.values())
-                .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
-                .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)
-                .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
-                ;
-        ResourceServiceHandler handler = new DistributedCacheServiceHandler();
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        super.register(registration);
+        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), new DistributedCacheServiceHandler());
     }
 }

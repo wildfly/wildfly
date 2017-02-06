@@ -22,11 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -36,7 +31,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -88,34 +82,15 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final PathManager pathManager;
-
     FileStoreResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration);
-        this.pathManager = pathManager;
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(StoreResourceDefinition.Attribute.class)
-                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new FileStoreBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        if (this.pathManager != null) {
-            ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(this.pathManager)
-                    .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
-                    .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
-                    .build();
-            registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
-        }
-
-        super.register(registration);
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), address -> new FileStoreBuilder(address.getParent()), registration -> {
+                if (pathManager != null) {
+                    ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
+                            .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
+                            .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
+                            .build();
+                    registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
+                }
+            });
     }
 }
