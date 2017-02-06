@@ -41,6 +41,7 @@ import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.security.SecurityDomainContext;
 
@@ -105,6 +106,9 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
     */
     public void invoke(final Endpoint endpoint, final Invocation wsInvocation) throws Exception {
         try {
+            if (!EndpointState.STARTED.equals(endpoint.getState())) {
+                throw WSLogger.ROOT_LOGGER.endpointAlreadyStopped(endpoint.getShortName());
+            }
             SecurityDomainContext securityDomainContext = endpoint.getSecurityDomainContext();
             securityDomainContext.runAs((Callable<Void>) () -> {
                 invokeInternal(endpoint, wsInvocation);
