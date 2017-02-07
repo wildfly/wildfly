@@ -244,8 +244,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
              }
          }
 
-         ModelNode value = Constants.CREDENTIAL_REFERENCE.resolveValue(context, model);
-         if (value.isDefined()) {
+         ModelNode credentialReference = Constants.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
+         if (credentialReference.isDefined()) {
              dataSourceService.getCredentialSourceSupplierInjector()
                      .inject(
                              CredentialReference.getCredentialSourceSupplier(context, Constants.CREDENTIAL_REFERENCE, model, dataSourceServiceBuilder));
