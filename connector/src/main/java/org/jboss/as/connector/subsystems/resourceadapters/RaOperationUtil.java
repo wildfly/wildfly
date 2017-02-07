@@ -269,8 +269,9 @@ public class RaOperationUtil {
         final String recoveryPassword;
         try {
             CredentialSource cs = null;
-            if (recoveryCredentialSourceSupplier != null)
+            if (recoveryCredentialSourceSupplier != null) {
                 cs = recoveryCredentialSourceSupplier.get();
+            }
             if (cs != null) {
                 recoveryPassword = new String(
                         cs.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword());
@@ -291,8 +292,8 @@ public class RaOperationUtil {
             Credential credential = null;
 
             if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
-                    credential = new CredentialImpl(recoveryUsername, recoveryPassword,
-                            recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled);
+                credential = new CredentialImpl(recoveryUsername, recoveryPassword,
+                        recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled);
 
             Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
 
