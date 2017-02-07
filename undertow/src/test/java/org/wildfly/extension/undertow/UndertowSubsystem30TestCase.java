@@ -42,7 +42,6 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -149,10 +148,6 @@ public class UndertowSubsystem30TestCase extends AbstractUndertowSubsystemTestCa
                     XnioWorker.class);
             capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY,
                     ListenerResourceDefinition.BUFFER_POOL.getDefaultValue().asString()), Pool.class);
-            for (String entry : sockets.keySet()) {
-                capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry),
-                        SocketBinding.class);
-            }
             registerServiceCapabilities(capabilityRegistry, capabilities);
 
         }

@@ -120,7 +120,7 @@
         <urn:share-prepared-statements/>
       </urn:statement>
     </urn:datasource>
-    <urn:xa-datasource jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}"  statistics-enabled="true" tracking="true">
+    <urn:xa-datasource jndi-name="java:/token" pool-name="xa-token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}"  statistics-enabled="true" tracking="true">
       <!--1 or more repetitions:-->
       <urn:xa-datasource-property name="token">per turbine</urn:xa-datasource-property>
       <!--Optional:-->

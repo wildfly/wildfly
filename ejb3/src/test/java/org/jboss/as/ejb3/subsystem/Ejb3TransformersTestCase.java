@@ -8,7 +8,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -159,7 +158,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization().withCapabilities(buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"), IDENTITY_CAPABILITY));
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization().withCapabilities(buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain")));
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, model)

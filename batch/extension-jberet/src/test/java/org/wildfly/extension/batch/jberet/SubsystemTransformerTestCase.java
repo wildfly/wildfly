@@ -75,23 +75,13 @@ public class SubsystemTransformerTestCase extends AbstractBatchTestCase {
 
     @Test
     public void testFailedTransformersEAP700() throws Exception {
-        // Add the default capabilities so that a composite operation is not required
-        final AdditionalInitialization additionalInitialization = AdditionalInitialization.withCapabilities(
-                "org.wildfly.security.security-domain.ApplicationDomain",
-                "org.wildfly.batch.job.repository.in-memory",
-                "org.wildfly.batch.thread.pool.batch");
-        // An old version of the subsystem had a type on the job repository and therefore requires a different capability
-        // name.
-        final AdditionalInitialization legacyAdditionalInitialization = AdditionalInitialization.withCapabilities(
-                "org.wildfy.batch.job.repository.in-memory",
-                "org.wildfly.batch.thread.pool.batch");
-        final KernelServicesBuilder builder = createKernelServicesBuilder(additionalInitialization);
-        final ModelVersion legacyVersion = ModelVersion.create(1, 1, 0);
 
+        final KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        final ModelVersion legacyVersion = ModelVersion.create(1, 1, 0);
 
         final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.EAP_7_0_0;
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(legacyAdditionalInitialization, controllerVersion, legacyVersion)
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, legacyVersion)
                 .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-batch-jberet:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL(controllerVersion.getCoreMavenGroupId() + ":wildfly-threads:" + controllerVersion.getCoreVersion());
 
