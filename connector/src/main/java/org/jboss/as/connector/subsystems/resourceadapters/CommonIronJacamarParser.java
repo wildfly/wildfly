@@ -1466,8 +1466,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case CREDENTIAL_REFERENCE: {
-                            String value = rawElementText(reader);
-                            RECOVERY_CREDENTIAL_REFERENCE.parseAndSetParameter(value, node, reader);
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseAndSetParameter(RECOVERY_CREDENTIAL_REFERENCE, null, node, reader);
                         }
                         case SECURITY_DOMAIN: {
                             String value = rawElementText(reader);
@@ -1509,8 +1508,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case CREDENTIAL_REFERENCE: {
-                            String value = rawElementText(reader);
-                            RECOVERY_CREDENTIAL_REFERENCE.parseAndSetParameter(value, node, reader);
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseAndSetParameter(RECOVERY_CREDENTIAL_REFERENCE, null, node, reader);
                             break;
                         }
                         case USER_NAME: {

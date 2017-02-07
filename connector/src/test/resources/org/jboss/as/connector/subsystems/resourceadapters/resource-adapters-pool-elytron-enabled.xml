@@ -83,6 +83,8 @@
               <!--Optional:-->
               <password>pwd</password>
               <!--Optional:-->
+              <credential-reference store="teststore" alias="myalias"/>
+              <!--Optional:-->
               <elytron-enabled/>
               <authentication-context>AnotherAuthenticationContext</authentication-context>
             </recover-credential>

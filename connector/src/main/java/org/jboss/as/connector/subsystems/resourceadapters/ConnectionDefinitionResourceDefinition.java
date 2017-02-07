@@ -153,7 +153,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.ELYTRON_ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
     }
 
@@ -173,7 +173,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
     }
 }
