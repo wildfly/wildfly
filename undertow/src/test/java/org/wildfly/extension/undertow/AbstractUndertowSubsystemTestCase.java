@@ -49,7 +49,8 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
     public static void testRuntime(KernelServices mainServices, final String virtualHostName, int flag) throws Exception {
         if (!mainServices.isSuccessfulBoot()) {
-            Assert.fail(mainServices.getBootError().toString());
+            Throwable t = mainServices.getBootError();
+            Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
         ServiceController<FilterService> connectionLimiter = (ServiceController<FilterService>) mainServices.getContainer()
                 .getService(UndertowService.FILTER.append("limit-connections"));

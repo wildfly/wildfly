@@ -43,7 +43,6 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -213,15 +212,21 @@ public class UndertowSubsystem31TestCase extends AbstractSubsystemBaseTest {
         }
 
         @Override
+        protected void setupController(ControllerInitializer controllerInitializer) {
+            super.setupController(controllerInitializer);
+
+            for (Map.Entry<String, Integer> entry : sockets.entrySet()) {
+                controllerInitializer.addSocketBinding(entry.getKey(), entry.getValue());
+            }
+        }
+
+        @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
             super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
             Map<String, Class> capabilities = new HashMap<>();
             capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, ListenerResourceDefinition.WORKER.getDefaultValue().asString()), XnioWorker.class);
             capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, "non-default"), XnioWorker.class);
             capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, ListenerResourceDefinition.BUFFER_POOL.getDefaultValue().asString()), Pool.class);
-            for (String entry : sockets.keySet()) {
-                capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry), SocketBinding.class);
-            }
             registerServiceCapabilities(capabilityRegistry, capabilities);
 
         }
@@ -237,15 +242,6 @@ public class UndertowSubsystem31TestCase extends AbstractSubsystemBaseTest {
         @Override
         protected RunningMode getRunningMode() {
             return RunningMode.NORMAL;
-        }
-
-        @Override
-        protected void setupController(ControllerInitializer controllerInitializer) {
-            super.setupController(controllerInitializer);
-
-            for (Map.Entry<String, Integer> entry : sockets.entrySet()) {
-                controllerInitializer.addSocketBinding(entry.getKey(), entry.getValue());
-            }
         }
 
         @Override

@@ -32,6 +32,9 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
@@ -42,7 +45,6 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -65,10 +67,6 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
-
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -156,6 +154,15 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
         }
 
         @Override
+        protected void setupController(ControllerInitializer controllerInitializer) {
+            super.setupController(controllerInitializer);
+
+            for (Map.Entry<String, Integer> entry : sockets.entrySet()) {
+                controllerInitializer.addSocketBinding(entry.getKey(), entry.getValue());
+            }
+        }
+
+        @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
             super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
@@ -166,10 +173,6 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
                     XnioWorker.class);
             capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY,
                     ListenerResourceDefinition.BUFFER_POOL.getDefaultValue().asString()), Pool.class);
-            for (String entry : sockets.keySet()) {
-                capabilities.put(buildDynamicCapabilityName(ListenerResourceDefinition.SOCKET_CAPABILITY, entry),
-                        SocketBinding.class);
-            }
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.http-authentication-factory", "elytron-factory"), HttpAuthenticationFactory.class);
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "TestContext"), SSLContext.class);
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "my-ssl-context"), SSLContext.class);
@@ -189,15 +192,6 @@ public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase
         @Override
         protected RunningMode getRunningMode() {
             return RunningMode.NORMAL;
-        }
-
-        @Override
-        protected void setupController(ControllerInitializer controllerInitializer) {
-            super.setupController(controllerInitializer);
-
-            for (Map.Entry<String, Integer> entry : sockets.entrySet()) {
-                controllerInitializer.addSocketBinding(entry.getKey(), entry.getValue());
-            }
         }
 
         @Override
