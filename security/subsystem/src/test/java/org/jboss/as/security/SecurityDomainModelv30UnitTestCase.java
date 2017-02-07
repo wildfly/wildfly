@@ -108,12 +108,27 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
         testTransformers(ModelTestControllerVersion.EAP_6_4_0);
     }
 
+    @Test
+    public void testTransformersEAP70() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
 
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
         ModelVersion version = ModelVersion.create(1, 3, 0);
+
+        final String mavenGavVersion = controllerVersion.getMavenGavVersion();
+        final String artifactId;
+        if (controllerVersion.isEap() && mavenGavVersion.equals(controllerVersion.getCoreVersion())) {
+            /* EAP 6 */
+            artifactId = "jboss-as-security";
+        } else {
+            artifactId = "wildfly-security";
+        }
+
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, version)
-                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion());
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":"+ artifactId +":" + mavenGavVersion);
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -135,6 +150,13 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
                         .addFailedAttribute(PathAddress.pathAddress(subsystemAddress, PathElement.pathElement(Constants.ELYTRON_KEY_MANAGER)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(PathAddress.pathAddress(subsystemAddress, PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER)),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                PathAddress.pathAddress(subsystemAddress,
+                                        PathElement.pathElement(Constants.SECURITY_DOMAIN, "domain-with-custom-audit-provider"),
+                                        SecurityExtension.PATH_AUDIT_CLASSIC,
+                                        PathElement.pathElement(Constants.PROVIDER_MODULE,
+                                                "org.myorg.security.MyCustomLogAuditProvider")),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(Constants.MODULE)));
     }
 }

@@ -139,6 +139,9 @@ import org.jboss.msc.service.ServiceName;
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_STORE));
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_MANAGER));
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER));
+
+        SecurityDomainResourceDefinition.registerTransformers_1_3_0(builder);
+
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 3, 0));
     }
 }

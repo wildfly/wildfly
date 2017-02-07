@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,7 +39,6 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
     static final ListAttributeDefinition PROVIDER_MODULES = new LegacySupport.ProviderModulesAttributeDefinition(Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
     private static final OperationStepHandler LEGACY_ADD_HANDLER = new LegacySupport.LegacyModulesConverter(Constants.PROVIDER_MODULE, PROVIDER_MODULES);
-
 
     private AuditResourceDefinition() {
         super(SecurityExtension.PATH_AUDIT_CLASSIC,
@@ -74,5 +74,9 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
                }
     }
 
+    static void registerTransformers_1_3_0(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(SecurityExtension.PATH_AUDIT_CLASSIC);
+        MappingProviderModuleDefinition.registerTransformers_1_3_0(builder);
+    }
 
 }
