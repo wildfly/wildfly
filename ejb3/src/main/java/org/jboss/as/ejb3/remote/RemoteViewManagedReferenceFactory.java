@@ -50,16 +50,18 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
     private final String viewClass;
     private final boolean stateful;
     private final Value<ClassLoader> viewClassLoader;
+    private final boolean appclient;
 
-    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
-        this(new EJBIdentifier(appName == null ? "" : appName, moduleName, beanName, distinctName), viewClass, stateful, viewClassLoader);
+    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader, boolean appclient) {
+        this(new EJBIdentifier(appName == null ? "" : appName, moduleName, beanName, distinctName), viewClass, stateful, viewClassLoader, appclient);
     }
 
-    public RemoteViewManagedReferenceFactory(final EJBIdentifier identifier, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
+    public RemoteViewManagedReferenceFactory(final EJBIdentifier identifier, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader, boolean appclient) {
         this.identifier = identifier;
         this.viewClass = viewClass;
         this.stateful = stateful;
         this.viewClassLoader = viewClassLoader;
+        this.appclient = appclient;
     }
 
     @Override
@@ -90,18 +92,18 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
         }
         EJBLocator<?> ejbLocator;
         if (EJBHome.class.isAssignableFrom(viewClass)) {
-            ejbLocator = EJBHomeLocator.create(viewClass.asSubclass(EJBHome.class), identifier, Affinity.LOCAL);
+            ejbLocator = EJBHomeLocator.create(viewClass.asSubclass(EJBHome.class), identifier, appclient ? Affinity.NONE : Affinity.LOCAL);
         } else if (stateful) {
             try {
-                ejbLocator = EJBClient.createSession(StatelessEJBLocator.create(viewClass, identifier, Affinity.LOCAL));
+                ejbLocator = EJBClient.createSession(StatelessEJBLocator.create(viewClass, identifier, appclient ? Affinity.NONE : Affinity.LOCAL));
             } catch (Exception e) {
                 throw EjbLogger.ROOT_LOGGER.failedToCreateSessionForStatefulBean(e, identifier.toString());
             }
         } else {
-            ejbLocator = StatelessEJBLocator.create(viewClass, identifier, Affinity.LOCAL);
+            ejbLocator = StatelessEJBLocator.create(viewClass, identifier, appclient ? Affinity.NONE : Affinity.LOCAL);
         }
         final Object proxy = EJBClient.createProxy(ejbLocator);
 
-        return new ValueManagedReference(new ImmediateValue<Object>(proxy));
+        return new ValueManagedReference(new ImmediateValue<>(proxy));
     }
 }

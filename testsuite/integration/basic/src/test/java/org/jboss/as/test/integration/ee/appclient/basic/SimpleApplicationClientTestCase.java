@@ -30,7 +30,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.shrinkwrap.api.Archive;
@@ -38,7 +37,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,11 +62,6 @@ public class SimpleApplicationClientTestCase {
 
     @ArquillianResource
     private ManagementClient managementClient;
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {

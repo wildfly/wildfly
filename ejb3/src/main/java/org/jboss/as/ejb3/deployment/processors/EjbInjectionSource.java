@@ -152,7 +152,7 @@ public class EjbInjectionSource extends InjectionSource {
                                     return module != null ? module.getClassLoader() : null;
                                 }
                             };
-                            remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful(), viewClassLoader);
+                            remoteFactory = new RemoteViewManagedReferenceFactory(earApplicationName, moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient);
                         }
                         final ServiceName serviceName = description.getServiceName();
                         resolvedViewName = serviceName;

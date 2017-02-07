@@ -175,7 +175,7 @@ public class ViewDescription {
      * @param serviceName     The view service name
      * @param viewClassLoader
      */
-    protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader) {
+    protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader, boolean appclient) {
         return new ViewBindingInjectionSource(serviceName);
     }
 
@@ -252,11 +252,11 @@ public class ViewDescription {
 
         @Override
         public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-
+            boolean appclient = context.getDeploymentUnit().getAttachment(Attachments.EE_MODULE_DESCRIPTION).isAppClient();
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
             for (String bindingName : description.getBindingNames()) {
-                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName(), Values.immediateValue(componentConfiguration.getModuleClassLoader()))));
+                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName(), Values.immediateValue(componentConfiguration.getModuleClassLoader()), appclient)));
             }
         }
     }

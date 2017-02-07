@@ -201,7 +201,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     private void registerRemoteBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
         final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
-        moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader)));
+        moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient)));
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));
@@ -212,7 +212,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
         final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
         final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
-        final RemoteViewInjectionSource delegate = new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader);
+        final RemoteViewInjectionSource delegate = new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient);
         final ServiceName depName = ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), EJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName());
         componentDescription.getConfigurators().add((context, description, configuration) -> {
             viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));

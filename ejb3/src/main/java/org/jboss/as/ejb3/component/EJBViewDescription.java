@@ -98,14 +98,14 @@ public class EJBViewDescription extends ViewDescription {
     }
 
     @Override
-    protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader) {
+    protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader, boolean appclient) {
         if(methodIntf != MethodIntf.REMOTE && methodIntf != MethodIntf.HOME) {
-            return super.createInjectionSource(serviceName, viewClassLoader);
+            return super.createInjectionSource(serviceName, viewClassLoader, appclient);
         } else {
             final EJBComponentDescription componentDescription = getComponentDescription();
             final EEModuleDescription desc = componentDescription.getModuleDescription();
             final String earApplicationName = desc.getEarApplicationName();
-            return new RemoteViewInjectionSource(serviceName, earApplicationName, desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful(),viewClassLoader);
+            return new RemoteViewInjectionSource(serviceName, earApplicationName, desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful(),viewClassLoader, appclient);
         }
     }
 

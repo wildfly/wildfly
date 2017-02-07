@@ -26,7 +26,6 @@ import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.AssociationService;
-import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.RemotingProfileService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -65,17 +64,8 @@ public final class DiscoveryRegistrationProcessor implements DeploymentUnitProce
         final DiscoveryService discoveryService = new DiscoveryService();
         final ServiceName discoveryServiceName = DiscoveryService.BASE_NAME.append(deploymentUnit.getName());
         final ServiceBuilder<Discovery> builder = phaseContext.getServiceTarget().addService(discoveryServiceName, discoveryService);
-        if (clientContextName != null) builder.addDependency(clientContextName, EJBClientContextService.class, new Injector<EJBClientContextService>() {
-            Injector<DiscoveryProvider> providerInjector = discoveryService.getDiscoveryProviderInjector();
-
-            public void inject(final EJBClientContextService value) throws InjectionException {
-                new RemoteEJBDiscoveryConfigurator().configure(providerInjector::inject, registryProvider -> {});
-            }
-
-            public void uninject() {
-                providerInjector.uninject();
-            }
-        });
+        Injector<DiscoveryProvider> providerInjector = discoveryService.getDiscoveryProviderInjector();
+        new RemoteEJBDiscoveryConfigurator().configure(providerInjector::inject, registryProvider -> {});
         if (profileServiceName != null) builder.addDependency(profileServiceName, RemotingProfileService.class, new Injector<RemotingProfileService>() {
             Injector<DiscoveryProvider> providerInjector = discoveryService.getDiscoveryProviderInjector();
 

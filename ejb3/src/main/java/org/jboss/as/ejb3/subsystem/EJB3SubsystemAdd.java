@@ -149,6 +149,8 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DE
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR;
 
+import java.net.URI;
+
 /**
  * Add operation handler for the EJB3 subsystem.
  *
@@ -280,7 +282,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION, new BusinessViewAnnotationProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_ORB_BIND, new IIOPJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_JNDI_BINDINGS, new EjbJndiBindingsDeploymentUnitProcessor(appclient));
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLIENT_METADATA, new EJBClientDescriptorMetaDataProcessor());
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLIENT_METADATA, new EJBClientDescriptorMetaDataProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DISCOVERY, new DiscoveryRegistrationProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DEFAULT_SECURITY_DOMAIN, EJB3SubsystemAdd.this.defaultSecurityDomainDeploymentProcessor);
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND, new EJBComponentSuspendDeploymentUnitProcessor());
@@ -438,6 +440,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         clientContextServiceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, clientContextService.getConfiguratorServiceInjector());
 
+        if(appclient) {
+            clientContextServiceBuilder.addDependency(EJBClientContextService.APP_CLIENT_URI_SERVICE_NAME, URI.class, clientContextService.getAppClientUri());
+        }
         if (!appclient) {
             //the default spec compliant EJB receiver
             final LocalTransportProvider byValueLocalEjbReceiver = new LocalTransportProvider(false);
