@@ -103,7 +103,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         if (flag == null) {
             throw EjbLogger.ROOT_LOGGER.noAsynchronousInvocationInProgress();
         }
-        return flag.get();
+        return flag.isCancelFlagSet();
     }
 
     @Override
