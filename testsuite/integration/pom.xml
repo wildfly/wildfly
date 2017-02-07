@@ -207,6 +207,49 @@
                 <module>legacy</module>
             </modules>
         </profile>
+
+        <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${version.exec.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>enable-elytron-cli</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${java.home}/bin/java</executable>
+                                    <arguments>
+                                        <argument>-jar</argument>
+                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
+                                        <argument>-mp</argument>
+                                        <argument>${jboss.dist}/modules</argument>
+                                        <argument>org.jboss.as.cli</argument>
+                                        <argument>--file=${project.parent.parent.basedir}/shared/enable-elytron.cli</argument>
+                                    </arguments>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
 
