@@ -41,4 +41,8 @@ public class Predicates {
     public static <T> Predicate<T> when(boolean condition) {
         return test -> condition;
     }
+
+    private Predicates() {
+        // Hide
+    }
 }

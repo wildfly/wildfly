@@ -98,7 +98,7 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addCapabilities(LOCAL_CLUSTERING_CAPABILITIES.values())
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addCapabilities((context, model) -> context.getRootResourceRegistration().getSubModel(context.getCurrentAddress().getParent().append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jgroups"))) == null, CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
         new DeploymentChainContributingResourceRegistration(descriptor, handler, target -> target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor())).register(registration);

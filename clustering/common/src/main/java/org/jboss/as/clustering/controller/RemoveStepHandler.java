@@ -75,7 +75,7 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
         if (remove) {
             // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
             PathAddress address = context.getCurrentAddress();
-            this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
+            this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(context, model)).map(Map.Entry::getKey).forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
 
             ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
             registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
