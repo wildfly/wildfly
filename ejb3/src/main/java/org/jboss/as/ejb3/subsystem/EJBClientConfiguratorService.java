@@ -49,10 +49,7 @@ public final class EJBClientConfiguratorService implements Consumer<EJBClientCon
     private EJBTransportProvider remoteTransportProvider;
 
     public void start(final StartContext context) throws StartException {
-        final Endpoint endpoint = endpointInjector.getOptionalValue();
-        if (endpoint != null) {
-            remoteTransportProvider = new RemoteTransportProvider();
-        }
+        remoteTransportProvider = new RemoteTransportProvider();
     }
 
     public void stop(final StopContext context) {

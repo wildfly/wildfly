@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +69,10 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
     private static final String INTERNAL_REMOTING_PROFILE = "internal-remoting-profile";
 
-    public EJBClientDescriptorMetaDataProcessor() {
+    private final boolean appclient;
+
+    public EJBClientDescriptorMetaDataProcessor(boolean appclient) {
+        this.appclient = appclient;
     }
 
     @Override
@@ -97,6 +101,10 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         final EJBClientContextService service = new EJBClientContextService();
         // add the service
         final ServiceBuilder<EJBClientContextService> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
+
+        if(appclient) {
+            serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_URI_SERVICE_NAME, URI.class, service.getAppClientUri());
+        }
 
         serviceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, service.getConfiguratorServiceInjector());
 

@@ -23,6 +23,8 @@
 package org.jboss.as.appclient.subsystem;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
@@ -44,6 +46,9 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
 import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
 import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
@@ -54,6 +59,8 @@ import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
  * @author Stuart Douglas
  */
 class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
+
+    public static final ServiceName APP_CLIENT_URI_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext", "appClientUri");
 
     static final AppClientSubsystemAdd INSTANCE = new AppClientSubsystemAdd();
 
@@ -97,6 +104,19 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addService(ApplicationClientDeploymentService.SERVICE_NAME, service)
                         .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.getControllerValue())
                         .install();
+
+        try {
+            URI uri;
+            if(hostUrl == null) {
+                uri = new URI("remote+http://localhost:8080");
+            } else {
+                uri = new URI(hostUrl);
+            }
+            context.getServiceTarget().addService(APP_CLIENT_URI_SERVICE_NAME, new ValueService<>(new ImmediateValue<>(uri)))
+                    .install();
+        } catch (URISyntaxException e) {
+            throw new OperationFailedException(e);
+        }
 
     }
 

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote;
 
 import static java.security.AccessController.doPrivileged;
 
+import java.net.URI;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
@@ -46,6 +47,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public final class EJBClientContextService implements Service<EJBClientContextService> {
 
+    public static final ServiceName APP_CLIENT_URI_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext", "appClientUri");
+
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext");
 
     public static final ServiceName DEPLOYMENT_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("deployment");
@@ -57,7 +60,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     private final InjectedValue<EJBClientConfiguratorService> configuratorServiceInjector = new InjectedValue<>();
     private final InjectedValue<EJBTransportProvider> localProviderInjector = new InjectedValue<>();
     private final InjectedValue<RemotingProfileService> profileServiceInjector = new InjectedValue<>();
-
+    private InjectedValue<URI> appClientUri = new InjectedValue<>();
     /**
      * TODO: possibly move to using a per-thread solution for embedded support
      */
@@ -68,11 +71,12 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     }
 
     public EJBClientContextService() {
-        this(false);
+        this.makeGlobal = false;
     }
 
     public void start(final StartContext context) throws StartException {
         final EJBClientContext.Builder builder = new EJBClientContext.Builder();
+
 
         // apply subsystem-level configuration that applies to all EJB client contexts
         configuratorServiceInjector.getValue().accept(builder);
@@ -87,6 +91,11 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
             final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
             connBuilder.setDestination(spec.getInjector().getValue().getDestinationUri());
             // connBuilder.setConnectionTimeout(timeout);
+            builder.addClientConnection(connBuilder.build());
+        }
+        if(appClientUri.getOptionalValue() != null) {
+            final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
+            connBuilder.setDestination(appClientUri.getOptionalValue());
             builder.addClientConnection(connBuilder.build());
         }
 
@@ -127,5 +136,10 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public InjectedValue<RemotingProfileService> getProfileServiceInjector() {
         return profileServiceInjector;
+    }
+
+
+    public InjectedValue<URI> getAppClientUri() {
+        return appClientUri;
     }
 }
