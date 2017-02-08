@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlDateExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlTimeExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlTimestampExternalizer;
 
 /**
  * Unit test for {@link Date} externalizers.

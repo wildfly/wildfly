@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.time;
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.time.Instant;
+import java.sql.Timestamp;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Externalizer for an {@link Instant}.
- * @author Paul Ferraro
+ * Externalizer for a {@link Timestamp}.
+ *
+ * @author Radoslav Husar
  */
 @MetaInfServices(Externalizer.class)
-public class InstantExternalizer implements Externalizer<Instant> {
+public class SqlTimestampExternalizer implements Externalizer<Timestamp> {
 
     @Override
-    public void writeObject(ObjectOutput output, Instant instant) throws IOException {
-        output.writeLong(instant.getEpochSecond());
-        output.writeInt(instant.getNano());
+    public void writeObject(ObjectOutput output, Timestamp timestamp) throws IOException {
+        output.writeLong(timestamp.getTime());
+        output.writeInt(timestamp.getNanos());
     }
 
     @Override
-    public Instant readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        long seconds = input.readLong();
+    public Timestamp readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        long time = input.readLong();
         int nanos = input.readInt();
-        return Instant.ofEpochSecond(seconds, nanos);
+        Timestamp timestamp = new Timestamp(time);
+        timestamp.setNanos(nanos);
+        return timestamp;
     }
 
     @Override
-    public Class<? extends Instant> getTargetClass() {
-        return Instant.class;
+    public Class<? extends Timestamp> getTargetClass() {
+        return Timestamp.class;
     }
 }

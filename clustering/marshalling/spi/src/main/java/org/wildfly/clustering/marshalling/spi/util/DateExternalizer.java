@@ -57,11 +57,4 @@ public class DateExternalizer<D extends Date> extends LongExternalizer<Date> {
             super(java.sql.Time::new, java.sql.Time.class);
         }
     }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SqlTimestampExternalizer extends DateExternalizer<java.sql.Timestamp> {
-        public SqlTimestampExternalizer() {
-            super(java.sql.Timestamp::new, java.sql.Timestamp.class);
-        }
-    }
 }
