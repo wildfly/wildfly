@@ -141,7 +141,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(DEFAULT_JOB_REPOSITORY, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_THREAD_POOL, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SECURITY_DOMAIN, null, writeHandler);
-        resourceRegistration.registerReadWriteAttribute(RESTART_JOBS_ON_RESUME, null, new AbstractWriteAttributeHandler<Boolean>() {
+        resourceRegistration.registerReadWriteAttribute(RESTART_JOBS_ON_RESUME, null, new AbstractWriteAttributeHandler<Boolean>(RESTART_JOBS_ON_RESUME) {
             @Override
             protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
                 setValue(context, resolvedValue);
