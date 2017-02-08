@@ -285,18 +285,18 @@ class ServerAdd extends AbstractAddStepHandler {
 
                 serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, serverService.getPathManagerInjector());
 
-                // Add security
-                String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                serviceBuilder.addDependency(DependencyType.REQUIRED,
-                        SecurityDomainService.SERVICE_NAME.append(domain),
-                        SecurityDomainContext.class,
-                        serverService.getSecurityDomainContextInjector());
-
                 // Inject a reference to the Elytron security domain if one has been defined.
                 final ModelNode elytronSecurityDomain = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
                 if (elytronSecurityDomain.isDefined()) {
                     ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomain.asString(), SecurityDomain.class);
                     serviceBuilder.addDependency(elytronDomainCapability, SecurityDomain.class, serverService.getElytronDomainInjector());
+                } else {
+                    // Add legacy security
+                    String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
+                    serviceBuilder.addDependency(DependencyType.REQUIRED,
+                            SecurityDomainService.SERVICE_NAME.append(domain),
+                            SecurityDomainContext.class,
+                            serverService.getSecurityDomainContextInjector());
                 }
 
                 // inject credential-references for bridges
