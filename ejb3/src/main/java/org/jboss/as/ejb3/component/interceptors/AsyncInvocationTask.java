@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.interceptors;
 
+import static java.lang.Math.max;
+
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -28,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.wildfly.common.Assert;
 
 /**
  * runnable used to invoke local ejb async methods
@@ -37,23 +40,26 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 public abstract class AsyncInvocationTask implements Runnable, Future<Object> {
     private final CancellationFlag cancelledFlag;
 
-    private volatile boolean running = false;
+    private static final int ST_RUNNING = 0;
+    private static final int ST_DONE = 1;
+    private static final int ST_CANCELLED = 2;
+    private static final int ST_FAILED = 3;
 
-    private boolean done = false;
+    private volatile int status = ST_RUNNING;
     private Object result;
     private Exception failed;
 
-   public AsyncInvocationTask( final CancellationFlag cancelledFlag) {
+    public AsyncInvocationTask(final CancellationFlag cancelledFlag) {
         this.cancelledFlag = cancelledFlag;
     }
 
     @Override
     public synchronized boolean cancel(final boolean mayInterruptIfRunning) {
-        if (!mayInterruptIfRunning && running) {
-            return false;
+        if (status != ST_RUNNING) {
+            return status == ST_CANCELLED;
         }
-        cancelledFlag.set(true);
-        if (!running) {
+        if (cancelledFlag.cancel(mayInterruptIfRunning)) {
+            status = ST_CANCELLED;
             done();
             return true;
         }
@@ -64,8 +70,9 @@ public abstract class AsyncInvocationTask implements Runnable, Future<Object> {
 
     public void run() {
         synchronized (this) {
-            running = true;
-            if (cancelledFlag.get()) {
+            if (! cancelledFlag.runIfNotCancelled()) {
+                status = ST_CANCELLED;
+                done();
                 return;
             }
         }
@@ -101,55 +108,59 @@ public abstract class AsyncInvocationTask implements Runnable, Future<Object> {
 
     private synchronized void setResult(final Object result) {
         this.result = result;
+        status = ST_DONE;
         done();
     }
 
     private synchronized void setFailed(final Exception e) {
         this.failed = e;
+        status = ST_FAILED;
         done();
     }
 
     private void done() {
-        done = true;
         notifyAll();
     }
 
     @Override
     public boolean isCancelled() {
-        return done && cancelledFlag.get();
+        return status == ST_CANCELLED;
     }
 
     @Override
     public boolean isDone() {
-        return done;
+        return status == ST_DONE;
     }
 
     @Override
     public synchronized Object get() throws InterruptedException, ExecutionException {
-        while (!isDone()) {
-            wait();
+        for (;;) switch (status) {
+            case ST_RUNNING: wait(); break;
+            case ST_CANCELLED: throw EjbLogger.ROOT_LOGGER.taskWasCancelled();
+            case ST_FAILED: throw new ExecutionException(failed);
+            case ST_DONE: return result;
+            default: throw Assert.impossibleSwitchCase(status);
         }
-        if (failed != null) {
-            throw new ExecutionException(failed);
-        }
-        return result;
     }
 
     @Override
     public synchronized Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        if (!isDone()) {
-            if(timeout > 0) {
-                wait(unit.toMillis(timeout));
+        long remaining = unit.toNanos(timeout);
+        long start = System.nanoTime();
+        for (;;) switch (status) {
+            case ST_RUNNING: {
+                if (remaining <= 0L) {
+                    throw EjbLogger.ROOT_LOGGER.failToCompleteTaskBeforeTimeOut(timeout, unit);
+                }
+                // round up to the nearest millisecond
+                wait((remaining + 999_999L) / 1_000_000L);
+                remaining -= max(0L, System.nanoTime() - start);
+                break;
             }
-            if (!isDone()) {
-                throw EjbLogger.ROOT_LOGGER.failToCompleteTaskBeforeTimeOut(timeout, unit);
-            }
+            case ST_CANCELLED: throw EjbLogger.ROOT_LOGGER.taskWasCancelled();
+            case ST_FAILED: throw new ExecutionException(failed);
+            case ST_DONE: return result;
+            default: throw Assert.impossibleSwitchCase(status);
         }
-        if (cancelledFlag.get()) {
-            throw EjbLogger.ROOT_LOGGER.taskWasCancelled();
-        } else if (failed != null) {
-            throw new ExecutionException(failed);
-        }
-        return result;
     }
 }

@@ -75,6 +75,7 @@ public class LocalEjbReceiver extends EJBReceiver {
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
     private static final EJBReceiverInvocationContext.ResultProducer.Immediate NULL_RESULT = new EJBReceiverInvocationContext.ResultProducer.Immediate(null);
+    private static final AttachmentKey<CancellationFlag> CANCELLATION_FLAG_ATTACHMENT_KEY = new AttachmentKey<>();
 
     private final DeploymentRepository deploymentRepository;
 
@@ -122,6 +123,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(parameters);
         interceptorContext.setMethod(method);
+        interceptorContext.setTransaction(invocation.getTransaction());
         interceptorContext.setTarget(invocation.getInvokedProxy());
         // setup the context data in the InterceptorContext
         final Map<AttachmentKey<?>, ?> privateAttachments = invocation.getAttachments();
@@ -154,9 +156,8 @@ public class LocalEjbReceiver extends EJBReceiver {
         interceptorContext.putPrivateData(Component.class, ejbComponent);
         interceptorContext.putPrivateData(ComponentView.class, view);
 
-        if (locator instanceof StatefulEJBLocator) {
-            final SessionID sessionID = ((StatefulEJBLocator<?>) locator).getSessionId();
-            interceptorContext.putPrivateData(SessionID.class, sessionID);
+        if (locator.isStateful()) {
+            interceptorContext.putPrivateData(SessionID.class, locator.asStateful().getSessionId());
         } else if (locator instanceof EntityEJBLocator) {
             throw EjbLogger.ROOT_LOGGER.ejbNotFoundInDeployment(locator);
         }
@@ -166,8 +167,16 @@ public class LocalEjbReceiver extends EJBReceiver {
         final ObjectCloner resultCloner = createCloner(config);
         if (async) {
             if (ejbComponent instanceof SessionBeanComponent) {
-                final SessionBeanComponent component = (SessionBeanComponent) ejbComponent;
                 final CancellationFlag flag = new CancellationFlag();
+                final SessionBeanComponent component = (SessionBeanComponent) ejbComponent;
+                final boolean isAsync = view.isAsynchronous(method);
+                final boolean oneWay = isAsync && method.getReturnType() == void.class;
+                final boolean isSessionBean = view.getComponent() instanceof SessionBeanComponent;
+                if (isAsync && isSessionBean) {
+                    if (! oneWay) {
+                        interceptorContext.putPrivateData(CancellationFlag.class, flag);
+                    }
+                }
                 final SecurityContext securityContext;
                 if (WildFlySecurityManager.isChecking()) {
                     securityContext = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) SecurityContextAssociation::getSecurityContext);
@@ -176,7 +185,7 @@ public class LocalEjbReceiver extends EJBReceiver {
                 }
                 final StartupCountdown.Frame frame = StartupCountdown.current();
                 final Runnable task = () -> {
-                    if (flag.get()) {
+                    if (! flag.runIfNotCancelled()) {
                         receiverContext.requestCancelled();
                         return;
                     }
@@ -203,7 +212,7 @@ public class LocalEjbReceiver extends EJBReceiver {
                             Object asyncValue;
                             try {
                                 for (;;) try {
-                                    asyncValue = ((Future)result).get();
+                                    asyncValue = ((Future<?>)result).get();
                                     break;
                                 } catch (InterruptedException e) {
                                     intr = true;
@@ -229,6 +238,7 @@ public class LocalEjbReceiver extends EJBReceiver {
                         clearSecurityContextOnAssociation();
                     }
                 };
+                invocation.putAttachment(CANCELLATION_FLAG_ATTACHMENT_KEY, flag);
                 interceptorContext.putPrivateData(CancellationFlag.class, flag);
                 final ExecutorService executor = component.getAsynchronousExecutor();
                 if (executor == null) {
@@ -257,6 +267,11 @@ public class LocalEjbReceiver extends EJBReceiver {
             //pass parameters by reference
             receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
         }
+    }
+
+    protected boolean cancelInvocation(final EJBReceiverInvocationContext receiverContext, final boolean cancelIfRunning) {
+        CancellationFlag flag = receiverContext.getClientInvocationContext().getAttachment(CANCELLATION_FLAG_ATTACHMENT_KEY);
+        return flag != null && flag.cancel(cancelIfRunning);
     }
 
     static final class CloningResultProducer implements EJBReceiverInvocationContext.ResultProducer {
@@ -322,7 +337,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         final SessionID sessionID = statefulComponent.createSession();
-        return new StatefulEJBLocator<T>(statelessLocator, sessionID);
+        return statelessLocator.withSession(sessionID);
     }
 
     static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {

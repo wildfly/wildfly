@@ -96,15 +96,15 @@ public final class AssociationService implements Service<AssociationService> {
                     builder.setAbstractTypeAuthority("jboss");
                     if (distinctName.isEmpty()) {
                         if (appName.isEmpty()) {
-                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString('"' + moduleName + '"'));
+                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString(moduleName));
                         } else {
-                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString('"' + appName + "/" + moduleName + '"'));
+                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString(appName + "/" + moduleName));
                         }
                     } else {
                         if (appName.isEmpty()) {
-                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString('"' + moduleName + "/" + distinctName + '"'));
+                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString(moduleName + "/" + distinctName));
                         } else {
-                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString('"' + appName + "/" + moduleName + "/" + distinctName + '"'));
+                            builder.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString(appName + "/" + moduleName + "/" + distinctName));
                         }
                     }
                     final ServiceRegistration serviceRegistration = localRegistry.registerService(builder.create());

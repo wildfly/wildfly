@@ -73,6 +73,21 @@ public class Util {
 
     }
 
+    /**
+     * Helper to create the InitialContext with the given properties.
+     *
+     * @param properties the environment properties
+     * @return the constructed InitialContext
+     * @throws NamingException if an error occurs while creating the InitialContext
+     */
+    public static Context createNamingContext(final Properties properties) throws NamingException {
+        final Properties jndiProps = new Properties();
+        jndiProps.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        jndiProps.putAll(properties);
+        return new InitialContext(jndiProps);
+
+    }
+
     public static <T> T lookup(final String name, final Class<T> cls) throws NamingException {
         InitialContext ctx = new InitialContext();
         try {
