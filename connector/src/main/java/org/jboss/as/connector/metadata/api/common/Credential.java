@@ -15,6 +15,8 @@
  */
 package org.jboss.as.connector.metadata.api.common;
 
+import org.jboss.as.controller.security.CredentialReference;
+
 /**
  * Extension of {@link org.jboss.jca.common.api.metadata.common.Credential} with added Elytron support.
  *
@@ -38,6 +40,11 @@ public interface Credential extends org.jboss.jca.common.api.metadata.common.Cre
        * authentication-context tag
        */
       AUTHENTICATION_CONTEXT("authentication-context"),
+
+      /**
+       * credential-reference tag
+       */
+      CREDENTIAL_REFERENCE(CredentialReference.CREDENTIAL_REFERENCE),
 
       // tags copied from original tag class
       /** always first

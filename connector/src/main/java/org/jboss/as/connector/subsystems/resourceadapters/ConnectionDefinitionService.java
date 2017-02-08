@@ -30,6 +30,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.credential.source.CredentialSource;
 
 /**
  * A ResourceAdaptersService.
@@ -38,23 +40,24 @@ import org.jboss.msc.value.InjectedValue;
  */
 final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
 
-    private final ModifiableConnDef value;
+    private final InjectedValue<ModifiableConnDef> value = new InjectedValue<>();
+    private final InjectedValue<ExceptionSupplier<ModifiableConnDef, Exception>> connectionDefinitionSupplier = new InjectedValue<>();
     private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<ModifiableResourceAdapter>();
-
+    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
     /** create an instance **/
-    public ConnectionDefinitionService(ModifiableConnDef value) {
-        this.value = value;
+    public ConnectionDefinitionService() {
     }
 
     @Override
     public ModifiableConnDef getValue() throws IllegalStateException {
-        return value;
+        return value.getValue();
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        ra.getValue().addConnectionDefinition(value);
+        createConnectionDefinition();
+        ra.getValue().addConnectionDefinition(getValue());
         SUBSYSTEM_RA_LOGGER.debugf("Starting ResourceAdapters Service");
     }
 
@@ -67,6 +70,23 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
         return ra;
     }
 
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplier() {
+        return credentialSourceSupplier;
+    }
 
+    public InjectedValue<ExceptionSupplier<ModifiableConnDef, Exception>> getConnectionDefinitionSupplierInjector() {
+        return connectionDefinitionSupplier;
+    }
+
+    private void createConnectionDefinition() throws IllegalStateException {
+        ExceptionSupplier<ModifiableConnDef, Exception> connDefSupplier = connectionDefinitionSupplier.getValue();
+        try {
+            if (connDefSupplier != null)
+                value.inject(connDefSupplier.get());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+    }
 
 }

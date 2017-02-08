@@ -67,6 +67,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_X
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -408,11 +409,13 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             NO_RECOVERY.marshallAsAttribute(conDef, streamWriter);
 
             if (conDef.hasDefined(RECOVERY_USERNAME.getName()) || conDef.hasDefined(RECOVERY_PASSWORD.getName())
+                    || conDef.hasDefined(RECOVERY_CREDENTIAL_REFERENCE.getName())
                     || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName())
                     || conDef.hasDefined(RECOVERY_ELYTRON_ENABLED.getName())) {
                 streamWriter.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
                 RECOVERY_USERNAME.marshallAsElement(conDef, streamWriter);
                 RECOVERY_PASSWORD.marshallAsElement(conDef, streamWriter);
+                RECOVERY_CREDENTIAL_REFERENCE.marshallAsElement(conDef, streamWriter);
                 RECOVERY_SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
                 RECOVERY_ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);
                 RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(conDef, streamWriter);

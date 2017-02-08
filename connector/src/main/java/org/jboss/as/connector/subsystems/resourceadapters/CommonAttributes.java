@@ -64,6 +64,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_X
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -140,6 +141,7 @@ public class CommonAttributes {
             RECOVERLUGIN_CLASSNAME,
             RECOVERLUGIN_PROPERTIES,
             RECOVERY_PASSWORD,
+            RECOVERY_CREDENTIAL_REFERENCE,
             RECOVERY_SECURITY_DOMAIN,
             RECOVERY_ELYTRON_ENABLED,
             RECOVERY_AUTHENTICATION_CONTEXT,

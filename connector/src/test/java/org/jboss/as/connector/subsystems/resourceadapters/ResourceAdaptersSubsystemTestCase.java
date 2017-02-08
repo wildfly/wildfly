@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
@@ -363,7 +364,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                                 })
                                 .addConfig(new FailedOperationTransformationConfig.AttributesPathAddressConfig(TRACKING.getName(),
                                         ELYTRON_ENABLED.getName(), AUTHENTICATION_CONTEXT.getName(), MCP.getName(),
-                                        RECOVERY_ELYTRON_ENABLED.getName(), RECOVERY_AUTHENTICATION_CONTEXT.getName()) {
+                                        RECOVERY_ELYTRON_ENABLED.getName(), RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_CREDENTIAL_REFERENCE.getName()) {
 
                                     @Override
                                     protected boolean isAttributeWritable(String attributeName) {

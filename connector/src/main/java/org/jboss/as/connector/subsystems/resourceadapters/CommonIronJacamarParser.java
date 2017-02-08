@@ -62,6 +62,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -1464,6 +1465,9 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             RECOVERY_USERNAME.parseAndSetParameter(value, node, reader);
                             break;
                         }
+                        case CREDENTIAL_REFERENCE: {
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseAndSetParameter(RECOVERY_CREDENTIAL_REFERENCE, null, node, reader);
+                        }
                         case SECURITY_DOMAIN: {
                             String value = rawElementText(reader);
                             RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, node, reader);
@@ -1501,6 +1505,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         case PASSWORD: {
                             String value = rawElementText(reader);
                             RECOVERY_PASSWORD.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case CREDENTIAL_REFERENCE: {
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseAndSetParameter(RECOVERY_CREDENTIAL_REFERENCE, null, node, reader);
                             break;
                         }
                         case USER_NAME: {

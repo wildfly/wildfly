@@ -42,6 +42,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -179,6 +180,8 @@ public class Constants {
     private static final String RECOVERY_USERNAME_NAME = "recovery-username";
 
     private static final String RECOVERY_PASSWORD_NAME = "recovery-password";
+
+    private static final String RECOVERY_CREDENTIAL_REFERENCE_NAME = "recovery-" + CredentialReference.CREDENTIAL_REFERENCE;
 
     private static final String RECOVERY_SECURITY_DOMAIN_NAME = "recovery-security-domain";
 
@@ -545,6 +548,14 @@ public class Constants {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
+
+    static ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder(RECOVERY_CREDENTIAL_REFERENCE_NAME, CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .setMeasurementUnit(MeasurementUnit.NONE)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+                    .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.SECURITY_DOMAIN.getLocalName())
