@@ -58,6 +58,7 @@ import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
@@ -3127,4 +3128,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 488, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
     SecurityException ejbAuthenticationRequired();
 
+    @LogMessage(level = ERROR)
+    @Message(id = 489, value = "Timer %s not running as transaction could not be started")
+    void timerNotRunning(@Cause  NotSupportedException e, TimerImpl timer);
 }

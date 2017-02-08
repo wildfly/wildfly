@@ -410,25 +410,19 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             int affected = statement.executeUpdate();
             tm.commit();
             return affected == 1;
-        } catch (SQLException e) {
+        } catch (SQLException | SystemException | SecurityException | IllegalStateException | RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
             // failed to update the DB
-            // TODO need to analyze the Exception and suppress the Exception if 'only' the timer should not executed
             try {
                 tm.rollback();
             } catch (IllegalStateException | SecurityException | SystemException rbe) {
                 EjbLogger.EJB3_TIMER_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
             }
-            throw new RuntimeException(e);
-        }catch (SystemException | SecurityException | IllegalStateException | RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
-            try {
-                tm.rollback();
-            } catch (IllegalStateException | SecurityException | SystemException rbe) {
-                EjbLogger.EJB3_TIMER_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
-            }
-            throw new RuntimeException(e);
+            EjbLogger.EJB3_TIMER_LOGGER.debugf(e, "Timer %s not running due to exception ", timer);
+            return false;
         } catch (NotSupportedException e) {
             // happen from tm.begin, no rollback necessary
-            throw new RuntimeException(e);
+            EjbLogger.EJB3_TIMER_LOGGER.timerNotRunning(e, timer);
+            return false;
         } finally {
             safeClose(statement);
             safeClose(connection);
