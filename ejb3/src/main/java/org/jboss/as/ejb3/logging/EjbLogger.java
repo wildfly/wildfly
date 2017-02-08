@@ -3127,4 +3127,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 488, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
     SecurityException ejbAuthenticationRequired();
 
+    @Message(id = 489, value = "Multiple security domains not supported")
+    DeploymentUnitProcessingException multipleSecurityDomainsDetected();
+
 }
