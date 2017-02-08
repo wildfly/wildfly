@@ -1,0 +1,7 @@
+embed-server --jboss-home=${jboss.home.dir}
+/subsystem=logging/root-logger=ROOT:write-attribute(name=handlers, value=[FILE])
+/subsystem=security:remove
+/subsystem=webservices:remove
+/extension=org.jboss.as.security:remove
+/extension=org.jboss.as.webservices:remove
+stop-embedded-server

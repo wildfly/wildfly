@@ -65,6 +65,7 @@
 
     <modules>
         <module>integration</module>
+        <module>elytron</module>
     </modules>
 
 

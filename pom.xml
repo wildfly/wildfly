@@ -217,6 +217,7 @@
         <version.org.wildfly.build-tools>1.1.8.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>3.0.0.Alpha25</version.org.wildfly.core>
+        <version.org.wildfly.plugin>1.2.0.Alpha2</version.org.wildfly.plugin>
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.naming-client>1.0.0.Beta10</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta6</version.org.wildfly.security.elytron-subsystem>
