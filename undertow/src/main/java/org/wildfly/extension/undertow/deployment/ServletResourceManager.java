@@ -66,14 +66,6 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public Resource getResource(final String path) throws IOException {
-        for (int i = 0; i < externalOverlays.length; ++i) {
-            ResourceManager manager = externalOverlays[i];
-            Resource res = manager.getResource(path);
-            if(res != null) {
-                return res;
-            }
-        }
-
         Resource res = deploymentResourceManager.getResource(path);
         if (res != null) {
             return new ServletResource(this, res);
@@ -88,6 +80,13 @@ public class ServletResourceManager implements ResourceManager {
                 if (child.exists()) {
                     return new ServletResource(this, new VirtualFileResource(overlay.getPhysicalFile(), child, path));
                 }
+            }
+        }
+        for (int i = 0; i < externalOverlays.length; ++i) {
+            ResourceManager manager = externalOverlays[i];
+            res = manager.getResource(path);
+            if(res != null) {
+                return res;
             }
         }
         return null;
