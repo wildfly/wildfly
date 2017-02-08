@@ -47,7 +47,7 @@ import javax.transaction.UserTransaction;
         user = "sa",
         password = "sa",
         className = "org.h2.jdbcx.JdbcDataSource",
-        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
 
 )
 @Stateless

@@ -138,7 +138,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", result.get("connection-url").asString());
+        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
     }
 
     @Test
@@ -171,7 +171,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set(VALUE);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals("jdbc:h2:mem:test", result.get(RESULT).asString());
+        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get(RESULT).asString());
     }
 
     @Test

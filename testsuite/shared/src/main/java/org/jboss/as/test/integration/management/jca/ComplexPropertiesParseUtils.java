@@ -161,7 +161,7 @@ public class ComplexPropertiesParseUtils {
         //common
         params.put("driver-class", "org.hsqldb.jdbcDriver");
         params.put("datasource-class", "org.jboss.as.connector.subsystems.datasources.ModifiableDataSource");
-        params.put("connection-url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        params.put("connection-url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
 
         return params;
     }

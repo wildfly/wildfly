@@ -118,7 +118,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
             operation.get("driver-name").set("h2");
             operation.get("pool-name").set("MyNewDs_Pool");
 
-            operation.get("connection-url").set("jdbc:h2:" + server.getURL() + "/testdb;DB_CLOSE_DELAY=-1");
+            operation.get("connection-url").set("jdbc:h2:" + server.getURL() + "/mem:testdb;DB_CLOSE_DELAY=-1");
             operation.get("user-name").set("sa");
             operation.get("password").set("sa");
 

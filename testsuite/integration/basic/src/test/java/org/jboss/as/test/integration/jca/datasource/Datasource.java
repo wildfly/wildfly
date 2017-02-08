@@ -96,7 +96,7 @@ public class Datasource {
             this.datasourceName = datasourceName;
             this.jndiName = "java:jboss/datasources/" + datasourceName;
             if (this.driverName == null) { driverName = "h2"; }
-            if (this.connectionUrl == null) { connectionUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"; }
+            if (this.connectionUrl == null) { connectionUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"; }
             if (this.userName == null) { userName = "sa"; }
             if (this.password == null) { password = "sa"; }
         }

@@ -106,7 +106,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddDataSource(String driverName) throws Exception {
 
         // add data source
-        cli.sendLine("data-source add --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS_" + driverName +" --name=java:jboss/datasources/TestDS_" + driverName + " --driver-name=" + driverName + " --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("data-source add --profile=" + profileNames[0] + " --jndi-name=java:jboss/datasources/TestDS_" + driverName +" --name=java:jboss/datasources/TestDS_" + driverName + " --driver-name=" + driverName + " --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
 
         // check the data source is listed
         cli.sendLine("cd /profile=" + profileNames[0] + "/subsystem=datasources/data-source");

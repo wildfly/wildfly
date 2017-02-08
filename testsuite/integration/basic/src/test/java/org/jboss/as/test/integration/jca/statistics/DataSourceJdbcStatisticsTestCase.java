@@ -130,7 +130,7 @@ public class DataSourceJdbcStatisticsTestCase {
             operation.get("jndi-name").set(jndiName);
             operation.get("driver-name").set("h2");
             operation.get("enabled").set("false");
-            if (!xa) { operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"); }
+            if (!xa) { operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"); }
             operation.get("prepared-statements-cache-size").set(3);
             operation.get("user-name").set("sa");
             operation.get("password").set("sa");

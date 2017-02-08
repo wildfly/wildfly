@@ -93,7 +93,7 @@ public class VaultDatasourceTestCase {
             // setup DB
             server = Server.createTcpServer("-tcpAllowOthers").start();
             Class.forName("org.h2.Driver");
-            connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", RIGHT_PASSWORD);
+            connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", "sa", RIGHT_PASSWORD);
             executeUpdate(connection, "CREATE TABLE TestPeople(Name Varchar(50), Surname Varchar(50))");
             executeUpdate(connection, "INSERT INTO TestPeople VALUES ('John','Smith')");
 

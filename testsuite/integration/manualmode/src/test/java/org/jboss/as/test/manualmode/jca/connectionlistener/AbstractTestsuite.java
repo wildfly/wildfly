@@ -155,7 +155,7 @@ public abstract class AbstractTestsuite {
             operation.get("password").set("sa");
 
             if (!xa) {
-                operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+                operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
             }
 
             operation.get("connection-listener-class").set(CONNECTION_LISTENER_CLASS_IMPL);
@@ -175,7 +175,7 @@ public abstract class AbstractTestsuite {
                 final ModelNode xaDatasourcePropertyOperation = new ModelNode();
                 xaDatasourcePropertyOperation.get(OP).set("add");
                 xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-                xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
+                xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
                 executeOperation(xaDatasourcePropertyOperation);
             }
 

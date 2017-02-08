@@ -279,7 +279,7 @@ public class DatabaseLoginModuleTestCase {
 
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             server = Server.createTcpServer("-tcpAllowOthers").start();
-            final String dbUrl = "jdbc:h2:mem:" + DATASOURCE_NAME + ";DB_CLOSE_DELAY=-1";
+            final String dbUrl = "jdbc:h2:mem:" + DATASOURCE_NAME + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
             LOGGER.trace("Creating database " + dbUrl);
 
             final Connection conn = DriverManager.getConnection(dbUrl, "sa", "sa");

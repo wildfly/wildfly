@@ -89,7 +89,7 @@ public class PasswordMaskingInContainerTestCase {
             // setup DB
             server = Server.createTcpServer("-tcpAllowOthers").start();
             Class.forName("org.h2.Driver");
-            connection = DriverManager.getConnection("jdbc:h2:mem:masked;DB_CLOSE_DELAY=-1", "sa", DS_CLEAR_TEXT_PASSWORD);
+            connection = DriverManager.getConnection("jdbc:h2:mem:masked;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", "sa", DS_CLEAR_TEXT_PASSWORD);
             executeUpdate(connection, "CREATE TABLE FooBars(ID Varchar(50), Password Varchar(50))");
             executeUpdate(connection, "INSERT INTO FooBars VALUES ('foo','foo'),('bar','bar')");
 
