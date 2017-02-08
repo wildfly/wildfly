@@ -245,7 +245,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         // WildFly naming client doesn't currently handle this property, we need to manually set the EJBClientConfiguration
         // in this test for now. We need to revisit this modification when the new WildFly naming client and EJB client are
         // being integrated.
-        createEJBClientConfiguration(managementClient);
+        final Properties ejbClientProperties = createEJBClientConfiguration(managementClient);
 
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
@@ -255,17 +255,16 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
         env.put("jboss.naming.client.ejb.context", true);
+        env.putAll(ejbClientProperties);
         return new InitialContext(env);
     }
 
-    private void createEJBClientConfiguration(ManagementClient managementClient) {
+    private Properties createEJBClientConfiguration(ManagementClient managementClient) {
         final Properties config = new Properties();
         config.put("remote.connections", "default");
         config.put("remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
         config.put("remote.connection.default.host", managementClient.getWebUri().getHost());
         config.put("remote.connection.default.port", String.valueOf(managementClient.getWebUri().getPort()));
-
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using config
+        return config;
     }
 }

@@ -144,7 +144,7 @@ final class AssociationImpl implements Association {
         final CancellationFlag cancellationFlag = new CancellationFlag();
 
         Runnable runnable = () -> {
-            if (cancellationFlag.get()) {
+            if (! cancellationFlag.runIfNotCancelled()) {
                 if (! oneWay) invocationRequest.writeCancelResponse();
                 return;
             }
@@ -209,8 +209,7 @@ final class AssociationImpl implements Association {
         };
         // invoke the method and write out the response, possibly on a separate thread
         execute(invocationRequest, runnable, isAsync);
-        // TODO: two-stage cancellation
-        return aggressive -> cancellationFlag.set(true);
+        return cancellationFlag::cancel;
     }
 
     private void execute(Request request, Runnable task, final boolean isAsync) {

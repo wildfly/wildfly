@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.ejb.timerservice.tx.timeout;
 import javax.annotation.Resource;
 import javax.transaction.TransactionManager;
 
-import com.arjuna.ats.jta.transaction.Transaction;
 import org.wildfly.transaction.client.LocalTransaction;
 
 /**
@@ -40,7 +39,7 @@ public abstract class AbstractTxBean {
     protected int checkTimeoutValue() {
         try {
             transaction = (LocalTransaction) transactionManager.getTransaction();
-            return transaction.getProviderInterface(Transaction.class).getTimeout();
+            return transaction.getTransactionTimeout();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
