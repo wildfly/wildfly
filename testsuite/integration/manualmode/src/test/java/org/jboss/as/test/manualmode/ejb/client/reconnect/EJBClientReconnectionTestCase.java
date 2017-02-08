@@ -21,6 +21,16 @@
  */
 package org.jboss.as.test.manualmode.ejb.client.reconnect;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -29,9 +39,9 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.ejb.Util;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
-
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,16 +50,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -111,6 +111,7 @@ public class EJBClientReconnectionTestCase {
 
     @Test
     public void testReconnection() throws Throwable {
+        DisableInvocationTestUtil.disable();
         SimpleCrashBeanRemote bean = lookup(SimpleCrashBeanRemote.class, SimpleCrashBean.class, DEPLOYMENT);
         assertNotNull(bean);
         String echo = bean.echo("Hello!");
