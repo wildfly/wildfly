@@ -86,7 +86,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set("MyNewDs_Pool");
 
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
@@ -123,7 +123,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
 
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
@@ -163,7 +163,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
 
-        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
@@ -207,8 +207,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         final ModelNode xaDatasourcePropertyOperation = new ModelNode();
         xaDatasourcePropertyOperation.get(OP).set("add");
         xaDatasourcePropertyOperation.get(OP_ADDR).set(xaDatasourcePropertiesAddress);
-        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test");
-
+        xaDatasourcePropertyOperation.get("value").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
         executeOperation(xaDatasourcePropertyOperation);
 
         remove(address);

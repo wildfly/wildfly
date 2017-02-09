@@ -73,7 +73,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
         operation.get("jndi-name").set(jndiName);
         operation.get("driver-name").set("h2");
         operation.get("enabled").set("false");
-        if (!xa) { operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"); }
+        if (!xa) { operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"); }
         operation.get("min-pool-size").set(minPoolSize);
         operation.get("max-pool-size").set(maxPoolSize);
         operation.get("pool-prefill").set(prefill);

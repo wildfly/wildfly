@@ -201,7 +201,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
             addOperation.get("max-pool-size").set(5);
             addOperation.get("user-name").set("sa");
             addOperation.get("password").set("sa");
-            if (!xa) { addOperation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"); }
+            if (!xa) { addOperation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"); }
 
             if (capacityConfiguration != null) {
                 // add capacity-decrementer-class

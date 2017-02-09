@@ -1088,7 +1088,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="minor-verion" type="xs:int" use="optional">
+    <xs:attribute name="minor-version" type="xs:int" use="optional">
     <xs:annotation>
         <xs:documentation>
           <![CDATA[[
