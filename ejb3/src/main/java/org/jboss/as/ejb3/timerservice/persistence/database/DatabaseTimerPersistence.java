@@ -452,6 +452,13 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                     final Holder timerImpl = timerFromResult(resultSet, timerService);
                     if (timerImpl != null) {
                         timers.add(timerImpl);
+                    } else {
+                        final String deleteTimer = sql(DELETE_TIMER);
+                        statement = connection.prepareStatement(deleteTimer);
+                        statement.setString(1, resultSet.getString(2));
+                        statement.setString(2, resultSet.getString(1));
+                        statement.setString(3, partition);
+                        statement.execute();
                     }
                 } catch (Exception e) {
                     EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
