@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <defaultProtocol type="jmx-as7" />
+
+    <container qualifier="jboss" default="true">
+        <configuration>
+            <property name="javaVmArguments">${server.jvm.args}</property>
+            <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            <property name="jbossArguments">${jboss.args}</property>
+            <property name="allowConnectingToRunningServer">true</property>
+            <property name="managementAddress">${node0:127.0.0.1}</property>
+            <property name="managementPort">${as.managementPort:9990}</property>
+        </configuration>
+    </container>
+
+</arquillian>

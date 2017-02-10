@@ -51,10 +51,37 @@
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <!-- Build the target/wildfly server configuration. -->
             <plugin>
@@ -113,9 +140,14 @@
                 <configuration>
                     <offline>true</offline>
                     <scripts>
+                        <!--<script>${project.parent.basedir}/shared/change-ip.cli</script>-->
                         <script>modify-elytron-config.cli</script>
                     </scripts>
                     <jboss-home>${wildfly.dir}</jboss-home>
+                    <system-properties>
+                        <public.ip>${node0}</public.ip>
+                        <management.ip>${node0}</management.ip>
+                    </system-properties>
                 </configuration>
             </plugin>
 
@@ -127,12 +159,31 @@
                         <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                     </environmentVariables>
                     <!-- Parameters to test cases. -->
-                    <systemPropertyVariables combine.self="override">
+                    <systemPropertyVariables>
                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
+                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
+                        <node0>${node0}</node0>
+
+                        <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->
+                        <module.path>foo</module.path>
                     </systemPropertyVariables>
-                    <argLine></argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-style</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>checkstyle</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
