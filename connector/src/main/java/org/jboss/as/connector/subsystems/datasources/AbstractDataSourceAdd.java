@@ -186,11 +186,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         .addAliases(dataSourceServiceNameAlias)
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
-                .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                        dataSourceService.getSubjectFactoryInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector())
-                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager())
                 .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
@@ -216,18 +213,24 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 dataSourceService.getDriverInjector());
 
          // If the authentication context is defined, add the capability
-         if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
-             if (model.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
-                 dataSourceServiceBuilder.addDependency(
-                         context.getCapabilityServiceName(
-                                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                                 AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
-                                 AuthenticationContext.class),
-                         AuthenticationContext.class,
-                         dataSourceService.getAuthenticationContext()
-                 );
-             }
-         }
+        if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            if (model.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
+                dataSourceServiceBuilder.addDependency(
+                        context.getCapabilityServiceName(
+                                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                                AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
+                                AuthenticationContext.class),
+                        AuthenticationContext.class,
+                        dataSourceService.getAuthenticationContext()
+                );
+            }
+        } else {
+            dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                    dataSourceService.getSubjectFactoryInjector())
+                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
+
+
+        }
          if (isXa() && RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
              if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
                  dataSourceServiceBuilder.addDependency(

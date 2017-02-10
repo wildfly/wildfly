@@ -1417,7 +1417,7 @@ public class DsParser extends AbstractParser {
                         }
                         case ELYTRON_ENABLED: {
                             String value = rawElementText(reader);
-                            value = value == null? "true" : value;
+                            value = value == null ? "true" : value;
                             ELYTRON_ENABLED.parseAndSetParameter(value, operation, reader);
                             break;
                         }
@@ -2397,7 +2397,7 @@ public class DsParser extends AbstractParser {
                         }
                         case ELYTRON_ENABLED: {
                             String value = rawElementText(reader);
-                            value = value == null? "true" : value;
+                            value = value == null ? "true" : value;
                             RECOVERY_ELYTRON_ENABLED.parseAndSetParameter(value, operation, reader);
                             break;
                         }
