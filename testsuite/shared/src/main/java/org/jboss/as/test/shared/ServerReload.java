@@ -129,12 +129,32 @@ public class ServerReload {
     }
 
     public static String getContainerRunningState(ManagementClient managementClient) throws IOException {
+        return getContainerRunningState(managementClient.getControllerClient());
+    }
+
+    public static String getContainerRunningState(ModelControllerClient modelControllerClient) throws IOException {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(NAME).set("server-state");
-        ModelNode rsp = managementClient.getControllerClient().execute(operation);
+        ModelNode rsp = modelControllerClient.execute(operation);
         return SUCCESS.equals(rsp.get(OUTCOME).asString()) ? rsp.get(RESULT).asString() : FAILED;
+    }
+
+
+    /**
+     * Checks if the container status is "reload-required" and if it's the case executes reload and waits for completion.
+     * Otherwise
+     */
+    public static void reloadIfRequired(final ModelControllerClient controllerClient) throws Exception {
+        String runningState = getContainerRunningState(controllerClient);
+        if ("reload-required".equalsIgnoreCase(runningState)) {
+            log.trace("Server reload is required. The reload will be executed.");
+            executeReloadAndWaitForCompletion(controllerClient);
+        } else {
+            log.debugf("Server reload is not required; server-state is %s", runningState);
+            Assert.assertEquals("Server state 'running' is expected", "running", runningState);
+        }
     }
 
     /**
@@ -181,7 +201,7 @@ public class ServerReload {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             if (before) {
-                reloadIfRequired(managementClient);
+                reloadIfRequired(managementClient.getControllerClient());
             }
         }
 
@@ -193,20 +213,8 @@ public class ServerReload {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             if (after) {
-                reloadIfRequired(managementClient);
+                reloadIfRequired(managementClient.getControllerClient());
             }
-        }
-
-        private void reloadIfRequired(final ManagementClient managementClient) throws Exception {
-            String runningState = getContainerRunningState(managementClient);
-            if ("reload-required".equalsIgnoreCase(runningState)) {
-                log.trace("Reloading in tearDown");
-                executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-            } else {
-                log.debugf("Not reloading in tearDown; server-state is %s", runningState);
-                Assert.assertEquals("running", runningState);
-            }
-
         }
     }
 }
