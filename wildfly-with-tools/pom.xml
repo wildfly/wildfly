@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2016, Red Hat, Inc., and individual contributors as indicated
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors as indicated
   ~ by the @authors tag.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,7 @@
         <version>11.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-javaee7-with-tools</artifactId>
+    <artifactId>wildfly-with-tools</artifactId>
     <packaging>pom</packaging>
 
     <name>WildFly Java EE 7 Specification APIs with Tools BOM</name>
@@ -47,17 +47,6 @@
     <dependencyManagement>
 
         <dependencies>
-            <!--
-            Import WildFly Java EE bom
-            -->
-            <dependency>
-                <groupId>org.wildfly.bom</groupId>
-                <artifactId>wildfly-javaee7</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <!-- Recommended JUnit version -->
             <!-- Note that JUnit is preferred framework -->
             <dependency>
