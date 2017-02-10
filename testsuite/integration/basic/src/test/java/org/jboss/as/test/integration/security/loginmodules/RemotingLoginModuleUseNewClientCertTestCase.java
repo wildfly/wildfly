@@ -44,11 +44,12 @@ import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.integration.security.common.ejb3.Hello;
 import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketbox.util.KeyStoreUtil;
@@ -107,7 +108,6 @@ import static org.junit.Assert.fail;
         RemotingLoginModuleUseNewClientCertTestCase.SecurityDomainsSetup.class
 })
 @RunAsClient
-@Ignore("WFLY-7510")
 public class RemotingLoginModuleUseNewClientCertTestCase {
     private static Logger LOGGER = Logger.getLogger(RemotingLoginModuleUseNewClientCertTestCase.class);
 
@@ -141,6 +141,11 @@ public class RemotingLoginModuleUseNewClientCertTestCase {
     private ManagementClient mgmtClient;
 
     // Public methods --------------------------------------------------------
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     /**
      * Creates a deployment application for this test.
