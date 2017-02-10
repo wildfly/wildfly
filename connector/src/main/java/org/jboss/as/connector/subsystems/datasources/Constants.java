@@ -407,6 +407,7 @@ public class Constants {
             .setRequires(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .addAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
             .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
@@ -415,6 +416,7 @@ public class Constants {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(DS_SECURITY_DEF)
+                    .addAlternatives(PASSWORD_NAME)
                     .build();
 
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
