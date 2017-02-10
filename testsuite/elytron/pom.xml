@@ -51,6 +51,28 @@
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -96,6 +118,46 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-api-1.7</artifactId>
+                        <version>1.5</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>clean-jcetest-keystore</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>genkey-jcetest-keystore</id>
+                        <goals>
+                            <goal>generateSecretKey</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>${wildfly.dir}/standalone/configuration/credstore.jceks</keystore>
+                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                    <storetype>JCEKS</storetype>
+                    <keypass>password</keypass>
+                    <storepass>password</storepass>
+                    <alias>test</alias>
+                    <keyalg>AES</keyalg>
+                    <keysize>128</keysize>
+                    <validity>365</validity>
+                    <verbose>true</verbose>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>${version.org.wildfly.plugin}</version>
@@ -134,6 +196,22 @@
                     <argLine></argLine>
                 </configuration>
             </plugin>
+
+             <plugin>
+                 <artifactId>maven-checkstyle-plugin</artifactId>
+                 <configuration>
+                     <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <id>check-style</id>
+                         <phase>test-compile</phase>
+                         <goals>
+                             <goal>checkstyle</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>
         </plugins>
     </build>
   
