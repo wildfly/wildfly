@@ -22,9 +22,12 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.jboss.msc.inject.Injector;
@@ -34,6 +37,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link Service} that manages a security domain mapping.
@@ -76,13 +80,24 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
     private class RegistrationImpl implements Registration {
 
         private final String deploymentName;
+        private final ClassLoader classLoader;
 
-        private RegistrationImpl(String deploymentName) {
+        private RegistrationImpl(String deploymentName, ClassLoader classLoader) {
             this.deploymentName = deploymentName;
+            this.classLoader = classLoader;
         }
 
         @Override
         public void cancel() {
+            if (WildFlySecurityManager.isChecking()) {
+                doPrivileged((PrivilegedAction<Void>) () -> {
+                    SecurityDomain.unregisterClassLoader(classLoader);
+                    return null;
+                });
+            } else {
+                SecurityDomain.unregisterClassLoader(classLoader);
+            }
+
             synchronized(registrations) {
                 registrations.remove(this);
             }
@@ -109,12 +124,21 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
             return securityDomain;
         }
 
-        public Function<String, Registration> getSecurityFunction() {
+        public BiFunction<String, ClassLoader, Registration> getSecurityFunction() {
             return this::registerElytronDeployment;
         }
 
-        private Registration registerElytronDeployment(final String deploymentName) {
-            RegistrationImpl registration = new RegistrationImpl(deploymentName);
+        private Registration registerElytronDeployment(final String deploymentName, final ClassLoader classLoader) {
+            if (WildFlySecurityManager.isChecking()) {
+                doPrivileged((PrivilegedAction<Void>) () -> {
+                    securityDomain.registerWithClassLoader(classLoader);
+                    return null;
+                });
+            } else {
+                securityDomain.registerWithClassLoader(classLoader);
+            }
+
+            RegistrationImpl registration = new RegistrationImpl(deploymentName, classLoader);
             synchronized(registrations) {
                 registrations.add(registration);
             }

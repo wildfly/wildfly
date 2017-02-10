@@ -22,13 +22,19 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.deployment.EJBSecurityDomainService;
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
+import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.ServiceBuilder;
 
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
@@ -73,11 +79,42 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             defaultSecurityDomain = eeModuleDescription.getDefaultSecurityDomain();
         }
 
+        String knownSecurityDomainName = null;
+        boolean gotKnownSecurityDomain = false;
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof EJBComponentDescription) {
-                ((EJBComponentDescription) componentDescription).setDefaultSecurityDomain(defaultSecurityDomain);
-                ((EJBComponentDescription) componentDescription).setKnownSecurityDomainPredicate(knownSecurityDomain);
-                ((EJBComponentDescription) componentDescription).setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+                EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
+                ejbComponentDescription.setDefaultSecurityDomain(defaultSecurityDomain);
+                ejbComponentDescription.setKnownSecurityDomainPredicate(knownSecurityDomain);
+                ejbComponentDescription.setOutflowSecurityDomainsConfigured(outflowSecurityDomainsConfigured);
+
+                // Ensure the EJB components within a deployment are associated with at most one Elytron security domain
+                if (ejbComponentDescription.isSecurityDomainKnown()) {
+                    if (! gotKnownSecurityDomain) {
+                        knownSecurityDomainName = ejbComponentDescription.getSecurityDomain();
+                        gotKnownSecurityDomain = true;
+                    } else if (! knownSecurityDomainName.equals(ejbComponentDescription.getSecurityDomain())) {
+                        throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
+                    }
+                }
+            }
+        }
+
+        // If this EJB deployment is associated with an Elytron security domain, set up the security domain mapping
+        if (knownSecurityDomainName != null && ! knownSecurityDomainName.isEmpty()) {
+            final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+            final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(EJBSecurityDomainService.SERVICE_NAME, ejbSecurityDomainService)
+                    .addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, knownSecurityDomainName),
+                            ApplicationSecurityDomain.class, ejbSecurityDomainService.getApplicationSecurityDomainInjector());
+            builder.install();
+
+            for(final ComponentDescription componentDescription : componentDescriptions) {
+                if (componentDescription instanceof EJBComponentDescription) {
+                    componentDescription.getConfigurators().add((context, description, configuration) ->
+                                    configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(EJBSecurityDomainService.SERVICE_NAME))
+                    );
+                }
             }
         }
     }
