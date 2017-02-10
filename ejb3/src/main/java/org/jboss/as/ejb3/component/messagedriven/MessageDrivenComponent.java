@@ -118,7 +118,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
      * @param ejbComponentCreateService the component configuration
      * @param deliveryActive true if the component must start delivering messages as soon as it is started
      */
-    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec, final boolean deliveryActive, final ServiceName deliveryControllerName) {
+    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec, final boolean deliveryActive, final ServiceName deliveryControllerName, final String activeResourceAdapterName) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
@@ -145,6 +145,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         this.classLoader = ejbComponentCreateService.getModuleClassLoader();
         this.suspendController = ejbComponentCreateService.getSuspendControllerInjectedValue().getValue();
         this.activationSpec = activationSpec;
+        this.activationName = activeResourceAdapterName + messageListenerInterface.getName();
         final ClassLoader componentClassLoader = doPrivileged(new GetClassLoaderAction(ejbComponentCreateService.getComponentClass()));
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
