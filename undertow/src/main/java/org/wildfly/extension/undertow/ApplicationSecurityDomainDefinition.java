@@ -585,7 +585,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             ServletRequestContext context = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
 
             return new HttpScope() {
-                private HttpSession session = context.getOriginalRequest().getSession();
+                private HttpSession session = context.getOriginalRequest().getSession(false);
 
                 @Override
                 public String getID() {
