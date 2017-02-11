@@ -24,11 +24,11 @@ package org.wildfly.clustering.web.undertow.sso.elytron;
 
 import java.net.URI;
 import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
@@ -81,13 +81,10 @@ public class DistributableSingleSignOn implements SingleSignOn {
     }
 
     @Override
-    public Collection<Map.Entry<String, URI>> getParticipants() {
+    public Map<String, Map.Entry<String, URI>> getParticipants() {
         try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
             Sessions<String, Map.Entry<String, URI>> sessions = this.sso.getSessions();
-            Set<String> deployments = sessions.getDeployments();
-            Collection<Map.Entry<String, URI>> participants = new ArrayList<>(deployments.size());
-            deployments.forEach(deployment -> participants.add(sessions.getSession(deployment)));
-            return participants;
+            return Collections.unmodifiableMap(sessions.getDeployments().stream().collect(Collectors.toMap(Function.identity(), deployment -> sessions.getSession(deployment))));
         }
     }
 
