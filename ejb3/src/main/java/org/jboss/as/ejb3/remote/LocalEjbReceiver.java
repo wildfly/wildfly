@@ -309,7 +309,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         }
 
         public Object getResult() throws Exception {
-            throw (Exception) LocalEjbReceiver.clone(invocation.getInvokedMethod().getReturnType(), resultCloner, exception, allowPassByReference);
+            throw (Exception) LocalEjbReceiver.clone(resultCloner, exception);
         }
 
         public void discardResult() {

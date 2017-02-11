@@ -3131,4 +3131,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 489, value = "Timer %s not running as transaction could not be started")
     void timerNotRunning(@Cause  NotSupportedException e, TimerImpl timer);
+
+    @Message(id = 490, value = "Multiple security domains not supported")
+    DeploymentUnitProcessingException multipleSecurityDomainsDetected();
+
 }
