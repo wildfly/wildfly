@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -96,6 +95,7 @@ import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecurityDomainSingleSignOnManagerBuilder;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -125,7 +125,6 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
-import io.undertow.servlet.spec.HttpSessionImpl;
 import io.undertow.servlet.util.SavedRequest;
 
 /**
@@ -586,67 +585,71 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             ServletRequestContext context = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
 
             return new HttpScope() {
-                private final AtomicReference<HttpSessionImpl> session = new AtomicReference<>(context.getSession());
+                private HttpSession session = context.getOriginalRequest().getSession();
 
                 @Override
                 public String getID() {
-                    HttpSession session = this.session.get();
-                    return (session != null) ? session.getId() : null;
+                    return (exists()) ? session.getId() : null;
                 }
 
                 @Override
                 public boolean exists() {
-                    return this.session.get() != null;
+                    return session != null;
                 }
 
                 @Override
                 public synchronized boolean create() {
-                    return this.session.compareAndSet(null, context.getCurrentServletContext().getSession(exchange, true));
+                    if (exists()) {
+                        return false;
+                    }
+                    session = context.getOriginalRequest().getSession(true);
+                    return session != null;
                 }
 
                 @Override
                 public boolean supportsAttachments() {
-                    return this.exists();
+                    return exists();
                 }
 
                 @Override
                 public void setAttachment(String key, Object value) {
-                    HttpSession session = this.session.get();
-                    if (session != null) {
+                    if (exists()) {
                         session.setAttribute(key, value);
                     }
                 }
 
                 @Override
                 public Object getAttachment(String key) {
-                    HttpSession session = this.session.get();
-                    return (session != null) ? session.getAttribute(key) : null;
+                    return (exists()) ? session.getAttribute(key) : null;
                 }
 
                 @Override
                 public boolean supportsInvalidation() {
-                    return this.exists();
+                    return exists();
                 }
 
                 @Override
                 public boolean invalidate() {
-                    HttpSessionImpl session = this.session.get();
-                    boolean valid = (session != null) ? !session.isInvalid() : false;
-                    if (valid) {
-                        session.invalidate();
+                    if (exists()) {
+                        try {
+                            session.invalidate();
+                            return true;
+                        } catch (IllegalStateException cause) {
+                            // if session already invalidated we log a message and return false
+                            UndertowLogger.ROOT_LOGGER.debugf("Failed to invalidate session", cause);
+                        }
                     }
-                    return valid;
+                    return false;
                 }
 
                 @Override
                 public boolean supportsNotifications() {
-                    return this.exists();
+                    return exists();
                 }
 
                 @Override
                 public void registerForNotification(Consumer<HttpScopeNotification> consumer) {
-                    HttpSession session = this.session.get();
-                    if (session != null) {
+                    if (exists()) {
                         listener.registerListener(session.getId(), consumer);
                     }
                 }
