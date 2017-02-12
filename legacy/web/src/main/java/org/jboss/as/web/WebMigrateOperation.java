@@ -58,6 +58,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -622,6 +623,7 @@ public class WebMigrateOperation implements OperationStepHandler {
     }
 
     private void transformResources(final OperationContext context, final ModelNode legacyModelDescription, final Map<PathAddress, ModelNode> newAddOperations, List<String> warnings, boolean domainMode) throws OperationFailedException {
+        Set<String> hosts = new LinkedHashSet<>();
         for (ModelNode legacyAddOp : legacyModelDescription.get(RESULT).asList()) {
             final ModelNode newAddOp = legacyAddOp.clone();
             PathAddress address = pathAddress(newAddOp.get(ADDRESS));
@@ -640,7 +642,9 @@ public class WebMigrateOperation implements OperationStepHandler {
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.CONNECTOR_PATH, WebExtension.SSL_PATH))) {
                 // ignore, handled as part of connector migration
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH))) {
-                migrateVirtualHost(newAddOperations, newAddOp, address);
+                String host = address.getLastElement().getValue();
+                hosts.add(host);
+                migrateVirtualHost(newAddOperations, newAddOp, host);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.VALVE_PATH))) {
                 migrateValves(newAddOperations, newAddOp, address, warnings);
             } else if (wildcardEquals(address, pathAddress(WebExtension.SUBSYSTEM_PATH, WebExtension.HOST_PATH, WebExtension.ACCESS_LOG_PATH))) {
@@ -652,6 +656,9 @@ public class WebMigrateOperation implements OperationStepHandler {
             } else {
                 warnings.add(WebLogger.ROOT_LOGGER.couldNotMigrateResource(legacyAddOp));
             }
+        }
+        if (!hosts.isEmpty()) {
+            migrateVirtualHostChildren(newAddOperations, hosts);
         }
         newAddOperations.remove(VALVE_ACCESS_LOG_ADDRESS);
     }
@@ -772,8 +779,8 @@ public class WebMigrateOperation implements OperationStepHandler {
         return true;
     }
 
-    private void migrateVirtualHost(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, PathAddress address) {
-        PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getLastElement().getValue()));
+    private void migrateVirtualHost(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp, String host) {
+        PathAddress newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, host));
         ModelNode add = createAddOperation(newAddress);
 
         if (newAddOp.hasDefined(WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.getName()) && newAddOp.get(WebVirtualHostDefinition.ENABLE_WELCOME_ROOT.getName()).asBoolean()) {
@@ -786,6 +793,10 @@ public class WebMigrateOperation implements OperationStepHandler {
         add.get(Constants.DEFAULT_WEB_MODULE).set(newAddOp.get(WebVirtualHostDefinition.DEFAULT_WEB_MODULE.getName()));
 
         newAddOperations.put(newAddress, add);
+    }
+
+    private void migrateVirtualHostChildren(Map<PathAddress, ModelNode> newAddOperations, Set<String> hosts) {
+
         final PathAddress customFilterAddresses = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(CustomFilterDefinition.INSTANCE.getPathElement().getKey()));
         final PathAddress expressionFilterAddresses = pathAddress(UndertowExtension.SUBSYSTEM_PATH, PATH_FILTERS, pathElement(ExpressionFilterDefinition.INSTANCE.getPathElement().getKey()));
         List<PathAddress> filterAddresses = new ArrayList<>();
@@ -794,16 +805,26 @@ public class WebMigrateOperation implements OperationStepHandler {
                 filterAddresses.add(a);
             }
         }
-        for (PathAddress filterAddress : filterAddresses) {
-            PathAddress filterRefAddress = pathAddress(newAddress, pathElement(Constants.FILTER_REF, filterAddress.getLastElement().getValue()));
-            ModelNode filterRefAdd = createAddOperation(filterRefAddress);
-            newAddOperations.put(filterRefAddress, filterRefAdd);
-        }
-        PathAddress accessLogAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, address.getLastElement().getValue()), UndertowExtension.PATH_ACCESS_LOG);
-        if(newAddOperations.containsKey(VALVE_ACCESS_LOG_ADDRESS) && !newAddOperations.containsKey(accessLogAddress)) {
-            ModelNode operation = newAddOperations.get(VALVE_ACCESS_LOG_ADDRESS).clone();
-            operation.get(OP_ADDR).set(accessLogAddress.toModelNode());
-            newAddOperations.put(accessLogAddress, operation);
+
+        boolean hasAccessLogValve =  newAddOperations.containsKey(VALVE_ACCESS_LOG_ADDRESS);
+
+        if (hasAccessLogValve || !filterAddresses.isEmpty()) {
+            for (String host : hosts) {
+                PathAddress hostAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HOST, host));
+                for (PathAddress filterAddress : filterAddresses) {
+                    PathAddress filterRefAddress = pathAddress(hostAddress, pathElement(Constants.FILTER_REF, filterAddress.getLastElement().getValue()));
+                    ModelNode filterRefAdd = createAddOperation(filterRefAddress);
+                    newAddOperations.put(filterRefAddress, filterRefAdd);
+                }
+                if (hasAccessLogValve) {
+                    PathAddress accessLogAddress = pathAddress(hostAddress, UndertowExtension.PATH_ACCESS_LOG);
+                    if(!newAddOperations.containsKey(accessLogAddress)) {
+                        ModelNode operation = newAddOperations.get(VALVE_ACCESS_LOG_ADDRESS).clone();
+                        operation.get(OP_ADDR).set(accessLogAddress.toModelNode());
+                        newAddOperations.put(accessLogAddress, operation);
+                    }
+                }
+            }
         }
     }
 
