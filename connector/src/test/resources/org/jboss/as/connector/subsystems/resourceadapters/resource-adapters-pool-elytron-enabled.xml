@@ -16,7 +16,7 @@
         <workmanager>
             <security>
                 <mapping-required>true</mapping-required>
-                <elytron-enabled/>
+                <elytron-security-domain>ApplicationDomain</elytron-security-domain>
             </security>
         </workmanager>
         <!--Zero or more repetitions:-->

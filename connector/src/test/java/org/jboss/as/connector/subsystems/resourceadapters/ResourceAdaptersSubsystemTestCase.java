@@ -31,7 +31,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
@@ -322,7 +322,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME)),
                         new FailedOperationTransformationConfig.AttributesPathAddressConfig(WM_SECURITY.getName(), WM_SECURITY_MAPPING_REQUIRED.getName(),
-                                WM_ELYTRON_ENABLED.getName(), MODULE.getName(), STATISTICS_ENABLED.getName()) {
+                                WM_ELYTRON_SECURITY_DOMAIN.getName(), MODULE.getName(), STATISTICS_ENABLED.getName()) {
                             @Override
                             protected boolean isAttributeWritable(String attributeName) {
                                 return false;

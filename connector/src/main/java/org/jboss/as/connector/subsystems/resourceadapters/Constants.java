@@ -142,7 +142,7 @@ public class Constants {
 
     private static final String WM_SECURITY_DOMAIN_NAME = "wm-security-domain";
 
-    private static final String WM_ELYTRON_ENABLED_NAME = "wm-elytron-enabled";
+    private static final String WM_ELYTRON_SECURITY_DOMAIN_NAME = "wm-elytron-security-domain";
 
     private static final String WM_SECURITY_DEFAULT_PRINCIPAL_NAME = "wm-security-default-principal";
 
@@ -311,13 +311,13 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("other"))
             .setXmlName(WorkManagerSecurity.Tag.DOMAIN.getLocalName())
+            .setAlternatives(WM_ELYTRON_SECURITY_DOMAIN_NAME)
             .build();
 
-    static final SimpleAttributeDefinition WM_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+    static final SimpleAttributeDefinition WM_ELYTRON_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(WM_ELYTRON_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
-            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
-            .setXmlName(WorkManagerSecurity.Tag.ELYTRON_ENABLED.getLocalName())
+            .setXmlName(WorkManagerSecurity.Tag.ELYTRON_SECURITY_DOMAIN.getLocalName())
+            .setAlternatives(WM_SECURITY_DOMAIN_NAME)
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_PRINCIPAL = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_PRINCIPAL_NAME, ModelType.STRING)

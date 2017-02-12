@@ -39,6 +39,8 @@ public interface Capabilities {
      */
     String AUTHENTICATION_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
 
+    String ELYTRON_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
+
     /**
      * The data-source capability
      */
