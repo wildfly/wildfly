@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import static io.undertow.util.StatusCodes.OK;
+import static java.security.AccessController.doPrivileged;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
 import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
@@ -31,6 +32,7 @@ import static org.wildfly.security.http.HttpConstants.CONFIG_REALM;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -94,8 +95,10 @@ import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecurityDomainSingleSignOnManagerBuilder;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpScopeNotification;
@@ -108,6 +111,7 @@ import org.wildfly.security.http.util.sso.SingleSignOnManager;
 import org.wildfly.security.http.util.sso.SingleSignOnServerMechanismFactory;
 import org.wildfly.security.http.util.sso.SingleSignOnServerMechanismFactory.SingleSignOnConfiguration;
 import org.wildfly.security.http.util.sso.SingleSignOnSessionFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -121,7 +125,6 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
-import io.undertow.servlet.spec.HttpSessionImpl;
 import io.undertow.servlet.util.SavedRequest;
 
 /**
@@ -354,6 +357,15 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             final ScopeSessionListener scopeSessionListener = ScopeSessionListener.builder()
                     .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
                     .build();
+            if (WildFlySecurityManager.isChecking()) {
+                doPrivileged((PrivilegedAction<Void>) () -> {
+                    httpAuthenticationFactoryInjector.getValue().getSecurityDomain().registerWithClassLoader(deploymentInfo.getClassLoader());
+                    return null;
+                });
+            } else {
+                httpAuthenticationFactoryInjector.getValue().getSecurityDomain().registerWithClassLoader(deploymentInfo.getClassLoader());
+            }
+
             deploymentInfo.addSessionListener(scopeSessionListener);
 
             deploymentInfo.addInnerHandlerChainWrapper(this::finalSecurityHandlers);
@@ -573,67 +585,71 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             ServletRequestContext context = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
 
             return new HttpScope() {
-                private final AtomicReference<HttpSessionImpl> session = new AtomicReference<>(context.getSession());
+                private HttpSession session = context.getOriginalRequest().getSession(false);
 
                 @Override
                 public String getID() {
-                    HttpSession session = this.session.get();
-                    return (session != null) ? session.getId() : null;
+                    return (exists()) ? session.getId() : null;
                 }
 
                 @Override
                 public boolean exists() {
-                    return this.session.get() != null;
+                    return session != null;
                 }
 
                 @Override
                 public synchronized boolean create() {
-                    return this.session.compareAndSet(null, context.getCurrentServletContext().getSession(exchange, true));
+                    if (exists()) {
+                        return false;
+                    }
+                    session = context.getOriginalRequest().getSession(true);
+                    return session != null;
                 }
 
                 @Override
                 public boolean supportsAttachments() {
-                    return this.exists();
+                    return exists();
                 }
 
                 @Override
                 public void setAttachment(String key, Object value) {
-                    HttpSession session = this.session.get();
-                    if (session != null) {
+                    if (exists()) {
                         session.setAttribute(key, value);
                     }
                 }
 
                 @Override
                 public Object getAttachment(String key) {
-                    HttpSession session = this.session.get();
-                    return (session != null) ? session.getAttribute(key) : null;
+                    return (exists()) ? session.getAttribute(key) : null;
                 }
 
                 @Override
                 public boolean supportsInvalidation() {
-                    return this.exists();
+                    return exists();
                 }
 
                 @Override
                 public boolean invalidate() {
-                    HttpSessionImpl session = this.session.get();
-                    boolean valid = (session != null) ? !session.isInvalid() : false;
-                    if (valid) {
-                        session.invalidate();
+                    if (exists()) {
+                        try {
+                            session.invalidate();
+                            return true;
+                        } catch (IllegalStateException cause) {
+                            // if session already invalidated we log a message and return false
+                            UndertowLogger.ROOT_LOGGER.debugf("Failed to invalidate session", cause);
+                        }
                     }
-                    return valid;
+                    return false;
                 }
 
                 @Override
                 public boolean supportsNotifications() {
-                    return this.exists();
+                    return exists();
                 }
 
                 @Override
                 public void registerForNotification(Consumer<HttpScopeNotification> consumer) {
-                    HttpSession session = this.session.get();
-                    if (session != null) {
+                    if (exists()) {
                         listener.registerListener(session.getId(), consumer);
                     }
                 }
@@ -660,6 +676,14 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             @Override
             public void cancel() {
+                if (WildFlySecurityManager.isChecking()) {
+                    doPrivileged((PrivilegedAction<Void>) () -> {
+                        SecurityDomain.unregisterClassLoader(deploymentInfo.getClassLoader());
+                        return null;
+                    });
+                } else {
+                    SecurityDomain.unregisterClassLoader(deploymentInfo.getClassLoader());
+                }
                 synchronized(registrations) {
                     registrations.remove(this);
                 }
