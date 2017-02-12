@@ -45,6 +45,9 @@
         <wildfly.instance.name>wildfly</wildfly.instance.name>
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
         <jboss.dist>${wildfly.dir}</jboss.dist>
+
+        <ts.skipTests>${skipTests}</ts.skipTests>
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <dependencies>
@@ -185,15 +188,30 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <skipTests>${ts.skipTests}</skipTests>
+                    <!-- Prevent test and server output appearing in console. -->
+                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                    <enableAssertions>true</enableAssertions>
+
                     <environmentVariables>
                         <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                     </environmentVariables>
                     <!-- Parameters to test cases. -->
-                    <systemPropertyVariables combine.self="override">
+                    <systemPropertyVariables>
                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
+                        <node0>${node0}</node0>
+                        <node1>${node1}</node1>
+                        <mcast>${mcast}</mcast>
+                        <mcast.ttl>${mcast.ttl}</mcast.ttl>
+                        
+                        <!-- override module path from parent configuration -->
+						<module.path>foo</module.path>
+						
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl}</server.jvm.args>
+                        <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
                     </systemPropertyVariables>
-                    <argLine></argLine>
+                    <argLine>${surefire.system.args} ${surefire.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
                 </configuration>
             </plugin>
 
