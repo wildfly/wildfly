@@ -45,9 +45,6 @@
         <wildfly.instance.name>wildfly</wildfly.instance.name>
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
         <jboss.dist>${wildfly.dir}</jboss.dist>
-
-        <ts.skipTests>${skipTests}</ts.skipTests>
-        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <dependencies>
@@ -121,46 +118,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>keytool-maven-plugin</artifactId>
-                <version>1.5</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>keytool-api-1.7</artifactId>
-                        <version>1.5</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <phase>process-test-resources</phase>
-                        <id>clean-jcetest-keystore</id>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <phase>process-test-resources</phase>
-                        <id>genkey-jcetest-keystore</id>
-                        <goals>
-                            <goal>generateSecretKey</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <keystore>${wildfly.dir}/standalone/configuration/credstore.jceks</keystore>
-                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
-                    <storetype>JCEKS</storetype>
-                    <keypass>password</keypass>
-                    <storepass>password</storepass>
-                    <alias>test</alias>
-                    <keyalg>AES</keyalg>
-                    <keysize>128</keysize>
-                    <validity>365</validity>
-                    <verbose>true</verbose>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>${version.org.wildfly.plugin}</version>
@@ -178,9 +135,14 @@
                 <configuration>
                     <offline>true</offline>
                     <scripts>
+                        <!--<script>${project.parent.basedir}/shared/change-ip.cli</script>-->
                         <script>modify-elytron-config.cli</script>
                     </scripts>
                     <jboss-home>${wildfly.dir}</jboss-home>
+                    <system-properties>
+                        <public.ip>${node0}</public.ip>
+                        <management.ip>${node0}</management.ip>
+                    </system-properties>
                 </configuration>
             </plugin>
 
@@ -188,11 +150,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>${ts.skipTests}</skipTests>
-                    <!-- Prevent test and server output appearing in console. -->
-                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                    <enableAssertions>true</enableAssertions>
-
                     <environmentVariables>
                         <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                     </environmentVariables>
@@ -200,36 +157,12 @@
                     <systemPropertyVariables>
                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
-                        <node0>${node0}</node0>
-                        <node1>${node1}</node1>
-                        <mcast>${mcast}</mcast>
-                        <mcast.ttl>${mcast.ttl}</mcast.ttl>
-                        
-                        <!-- override module path from parent configuration -->
-						<module.path>foo</module.path>
-						
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl}</server.jvm.args>
-                        <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
+                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
+                        <module.path />
+                        <!--<module.path>${wildfly.dir}/modules</module.path>-->
                     </systemPropertyVariables>
-                    <argLine>${surefire.system.args} ${surefire.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
                 </configuration>
             </plugin>
-
-             <plugin>
-                 <artifactId>maven-checkstyle-plugin</artifactId>
-                 <configuration>
-                     <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <id>check-style</id>
-                         <phase>test-compile</phase>
-                         <goals>
-                             <goal>checkstyle</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-             </plugin>
         </plugins>
     </build>
   
