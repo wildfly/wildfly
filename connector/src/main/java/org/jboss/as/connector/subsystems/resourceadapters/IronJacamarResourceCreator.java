@@ -315,9 +315,11 @@ public class IronJacamarResourceCreator {
             if (security.getDefaultPrincipal() != null)
                 model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
             model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
-            model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
             if (security instanceof  WorkManagerSecurity && ((WorkManagerSecurity) security).isElytronEnabled()) {
-                model.get(Constants.WM_ELYTRON_ENABLED.getName()).set(true);
+                model.get(Constants.WM_ELYTRON_SECURITY_DOMAIN.getName()).set(security.getDomain());
+            }
+            else {
+                model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
             }
             if (security.getGroupMappings() != null) {
                 for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {

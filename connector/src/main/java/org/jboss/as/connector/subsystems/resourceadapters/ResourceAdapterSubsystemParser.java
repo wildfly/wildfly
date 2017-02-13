@@ -83,7 +83,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACK
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
@@ -185,7 +185,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
             WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
-            WM_ELYTRON_ENABLED.marshallAsElement(ra, streamWriter);
+            WM_ELYTRON_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DEFAULT_PRINCIPAL.marshallAsElement(ra, streamWriter);
             if (ra.hasDefined(WM_SECURITY_DEFAULT_GROUPS.getName())) {
                 streamWriter.writeStartElement(WM_SECURITY_DEFAULT_GROUPS.getXmlName());

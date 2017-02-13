@@ -1405,7 +1405,9 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case ELYTRON_ENABLED: {
-                            ELYTRON_ENABLED.parseAndSetParameter("true", node, reader);
+                            String value = rawElementText(reader);
+                            value = value == null? "true": value;
+                            ELYTRON_ENABLED.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case AUTHENTICATION_CONTEXT: {
@@ -1522,7 +1524,9 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case ELYTRON_ENABLED: {
-                            RECOVERY_ELYTRON_ENABLED.parseAndSetParameter("true", node, reader);
+                            String value = rawElementText(reader);
+                            value = value == null? "true": value;
+                            RECOVERY_ELYTRON_ENABLED.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         case AUTHENTICATION_CONTEXT: {

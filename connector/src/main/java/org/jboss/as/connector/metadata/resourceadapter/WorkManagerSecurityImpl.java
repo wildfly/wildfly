@@ -102,11 +102,17 @@ public class WorkManagerSecurityImpl extends org.jboss.jca.common.metadata.resou
         sb.append(isMappingRequired());
         sb.append("</").append(WorkManagerSecurity.Tag.MAPPING_REQUIRED).append(">");
 
-        sb.append("<").append(WorkManagerSecurity.Tag.ELYTRON_ENABLED).append("/>");
         if (getDomain() != null) {
-            sb.append("<").append(WorkManagerSecurity.Tag.DOMAIN).append(">");
-            sb.append(getDomain());
-            sb.append("</").append(WorkManagerSecurity.Tag.DOMAIN).append(">");
+            if (elytronEnabled) {
+                sb.append("<").append(WorkManagerSecurity.Tag.ELYTRON_SECURITY_DOMAIN).append(">");
+                sb.append(getDomain());
+                sb.append("</").append(WorkManagerSecurity.Tag.ELYTRON_SECURITY_DOMAIN).append(">");
+
+            } else {
+                sb.append("<").append(WorkManagerSecurity.Tag.DOMAIN).append(">");
+                sb.append(getDomain());
+                sb.append("</").append(WorkManagerSecurity.Tag.DOMAIN).append(">");
+            }
         }
 
         if (getDefaultPrincipal() != null)

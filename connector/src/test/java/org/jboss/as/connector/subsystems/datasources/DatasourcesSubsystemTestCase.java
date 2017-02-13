@@ -88,12 +88,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("datasources-full.xml");
     }
 
-    /* FIXME: https://issues.jboss.org/browse/JBEAP-8462
     @Test
     public void testElytronConfig() throws Exception {
         standardSubsystemTest("datasources-elytron-enabled_5_0.xml");
     }
-    */
 
     @Test
     public void testExpressionConfig() throws Exception {

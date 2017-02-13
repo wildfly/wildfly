@@ -128,9 +128,13 @@ public class ElytronSubjectFactory implements SubjectFactory, Capabilities {
         try {
             handler.handle(new Callback[]{nameCallback, passwordCallback});
             Subject subject = new Subject();
-            subject.getPrincipals().add(new NamePrincipal(nameCallback.getName()));
+            if (nameCallback.getName() != null) {
+                subject.getPrincipals().add(new NamePrincipal(nameCallback.getName()));
+            }
             // add the password as a private credential in the Subject.
-            this.addPrivateCredential(subject, new PasswordCredential(nameCallback.getName(), passwordCallback.getPassword()));
+            if (passwordCallback.getPassword() != null) {
+                this.addPrivateCredential(subject, new PasswordCredential(nameCallback.getName(), passwordCallback.getPassword()));
+            }
             return subject;
         } catch(IOException | UnsupportedCallbackException e) {
             throw new SecurityException(e);
