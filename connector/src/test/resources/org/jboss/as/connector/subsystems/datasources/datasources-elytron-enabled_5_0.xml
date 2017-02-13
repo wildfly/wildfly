@@ -1,276 +1,276 @@
-<urn:subsystem xmlns:urn="urn:jboss:domain:datasources:5.0">
-  <urn:datasources>
+<subsystem xmlns="urn:jboss:domain:datasources:5.0">
+  <datasources>
     <!--You have a CHOICE of the next 2 items at this level-->
-    <urn:datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}" statistics-enabled="true" tracking="true">
-      <urn:connection-url>token</urn:connection-url>
+    <datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}" statistics-enabled="true" tracking="true">
+      <connection-url>token</connection-url>
       <!--Optional:-->
-      <urn:driver-class>token</urn:driver-class>
+      <driver-class>token</driver-class>
       <!--Optional:-->
-      <urn:datasource-class>token</urn:datasource-class>
-      <!--Optional:-->
-      <urn:driver>token</urn:driver>
+      <datasource-class>token</datasource-class>
       <!--Zero or more repetitions:-->
-      <urn:connection-property name="token">e gero</urn:connection-property>
+      <connection-property name="token">e gero</connection-property>
       <!--Optional:-->
-      <urn:new-connection-sql>string</urn:new-connection-sql>
+      <driver>token</driver>
       <!--Optional:-->
-      <urn:transaction-isolation>TRANSACTION_REPEATABLE_READ</urn:transaction-isolation>
+      <new-connection-sql>string</new-connection-sql>
       <!--Optional:-->
-      <urn:url-delimiter>token</urn:url-delimiter>
+      <transaction-isolation>TRANSACTION_REPEATABLE_READ</transaction-isolation>
       <!--Optional:-->
-      <urn:url-selector-strategy-class-name>token</urn:url-selector-strategy-class-name>
+      <url-delimiter>token</url-delimiter>
       <!--Optional:-->
-      <urn:pool>
+      <url-selector-strategy-class-name>token</url-selector-strategy-class-name>
+      <!--Optional:-->
+      <pool>
         <!--Optional:-->
-        <urn:min-pool-size>200</urn:min-pool-size>
+        <min-pool-size>200</min-pool-size>
         <!--Optional:-->
-        <urn:initial-pool-size>200</urn:initial-pool-size>
+        <initial-pool-size>200</initial-pool-size>
         <!--Optional:-->
-        <urn:max-pool-size>200</urn:max-pool-size>
+        <max-pool-size>200</max-pool-size>
         <!--Optional:-->
-        <urn:prefill>true</urn:prefill>
+        <prefill>true</prefill>
         <!--Optional:-->
-        <urn:use-strict-min>true</urn:use-strict-min>
+        <use-strict-min>true</use-strict-min>
         <!--Optional:-->
-        <urn:flush-strategy>Gracefully</urn:flush-strategy>
+        <flush-strategy>Gracefully</flush-strategy>
         <!--Optional:-->
-        <urn:allow-multiple-users/>
+        <allow-multiple-users>true</allow-multiple-users>
         <!--Optional:-->
-        <urn:capacity>
-          <!--Optional:-->
-          <urn:incrementer class-name="token">
-            <!--Zero or more repetitions:-->
-            <urn:config-property name="token">token</urn:config-property>
-          </urn:incrementer>
-          <!--Optional:-->
-          <urn:decrementer class-name="token">
-            <!--Zero or more repetitions:-->
-            <urn:config-property name="token">token</urn:config-property>
-          </urn:decrementer>
-        </urn:capacity>
-        <!--Optional:-->
-        <urn:connection-listener class-name="token">
+        <connection-listener class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:connection-listener>
-      </urn:pool>
+          <config-property name="token">token</config-property>
+        </connection-listener>
+        <!--Optional:-->
+        <capacity>
+          <!--Optional:-->
+          <incrementer class-name="token">
+            <!--Zero or more repetitions:-->
+            <config-property name="token">token</config-property>
+          </incrementer>
+          <!--Optional:-->
+          <decrementer class-name="token">
+            <!--Zero or more repetitions:-->
+            <config-property name="token">token</config-property>
+          </decrementer>
+        </capacity>
+      </pool>
       <!--Optional:-->
-      <urn:security>
+      <security>
         <!--You have a CHOICE of the next 2 items at this level-->
         <!--Optional:-->
         <!--Optional:-->
-        <urn:credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
-        <urn:elytron-enabled/>
-        <urn:authentication-context>DsAuthCtxt</urn:authentication-context>
+        <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
+        <elytron-enabled/>
+        <authentication-context>DsAuthCtxt</authentication-context>
         <!--Optional:-->
 
-      </urn:security>
+      </security>
       <!--Optional:-->
-      <urn:validation>
+      <validation>
         <!--Optional:-->
-        <urn:valid-connection-checker class-name="token">
+        <valid-connection-checker class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:valid-connection-checker>
+          <config-property name="token">token</config-property>
+        </valid-connection-checker>
         <!--Optional:-->
-        <urn:check-valid-connection-sql>string</urn:check-valid-connection-sql>
+        <check-valid-connection-sql>string</check-valid-connection-sql>
         <!--Optional:-->
-        <urn:validate-on-match>true</urn:validate-on-match>
+        <validate-on-match>true</validate-on-match>
         <!--Optional:-->
-        <urn:background-validation>true</urn:background-validation>
+        <background-validation>true</background-validation>
         <!--Optional:-->
-        <urn:background-validation-millis>200</urn:background-validation-millis>
+        <background-validation-millis>200</background-validation-millis>
         <!--Optional:-->
-        <urn:use-fast-fail>false</urn:use-fast-fail>
+        <use-fast-fail>false</use-fast-fail>
         <!--Optional:-->
-        <urn:stale-connection-checker class-name="token">
+        <stale-connection-checker class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:stale-connection-checker>
+          <config-property name="token">token</config-property>
+        </stale-connection-checker>
         <!--Optional:-->
-        <urn:exception-sorter class-name="token">
+        <exception-sorter class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:exception-sorter>
-      </urn:validation>
+          <config-property name="token">token</config-property>
+        </exception-sorter>
+      </validation>
       <!--Optional:-->
-      <urn:timeout>
+      <timeout>
         <!--Optional:-->
-        <urn:blocking-timeout-millis>200</urn:blocking-timeout-millis>
+        <set-tx-query-timeout>true</set-tx-query-timeout>
         <!--Optional:-->
-        <urn:idle-timeout-minutes>200</urn:idle-timeout-minutes>
+        <blocking-timeout-millis>200</blocking-timeout-millis>
         <!--Optional:-->
-        <urn:set-tx-query-timeout/>
+        <idle-timeout-minutes>200</idle-timeout-minutes>
         <!--Optional:-->
-        <urn:query-timeout>200</urn:query-timeout>
+        <query-timeout>200</query-timeout>
         <!--Optional:-->
-        <urn:use-try-lock>200</urn:use-try-lock>
+        <use-try-lock>200</use-try-lock>
         <!--Optional:-->
-        <urn:allocation-retry>200</urn:allocation-retry>
+        <allocation-retry>200</allocation-retry>
         <!--Optional:-->
-        <urn:allocation-retry-wait-millis>200</urn:allocation-retry-wait-millis>
-      </urn:timeout>
+        <allocation-retry-wait-millis>200</allocation-retry-wait-millis>
+      </timeout>
       <!--Optional:-->
-      <urn:statement>
+      <statement>
         <!--Optional:-->
-        <urn:track-statements>false</urn:track-statements>
+        <track-statements>false</track-statements>
         <!--Optional:-->
-        <urn:prepared-statement-cache-size>200</urn:prepared-statement-cache-size>
+        <prepared-statement-cache-size>200</prepared-statement-cache-size>
         <!--Optional:-->
-        <urn:share-prepared-statements/>
-      </urn:statement>
-    </urn:datasource>
-    <urn:xa-datasource jndi-name="java:/token" pool-name="xa-token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}"  statistics-enabled="true" tracking="true">
+        <share-prepared-statements>true</share-prepared-statements>
+      </statement>
+    </datasource>
+    <xa-datasource jndi-name="java:/token" pool-name="xa-token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}"  statistics-enabled="true" tracking="true">
       <!--1 or more repetitions:-->
-      <urn:xa-datasource-property name="token">per turbine</urn:xa-datasource-property>
+      <xa-datasource-property name="token">per turbine</xa-datasource-property>
       <!--Optional:-->
-      <urn:xa-datasource-class>token</urn:xa-datasource-class>
+      <xa-datasource-class>token</xa-datasource-class>
       <!--Optional:-->
-      <urn:driver>token</urn:driver>
+      <driver>token</driver>
       <!--Optional:-->
-      <urn:url-delimiter>token</urn:url-delimiter>
+      <url-delimiter>token</url-delimiter>
       <!--Optional:-->
-      <urn:url-selector-strategy-class-name>token</urn:url-selector-strategy-class-name>
+      <url-selector-strategy-class-name>token</url-selector-strategy-class-name>
       <!--Optional:-->
-      <urn:new-connection-sql>string</urn:new-connection-sql>
+      <new-connection-sql>string</new-connection-sql>
       <!--Optional:-->
-      <urn:transaction-isolation>TRANSACTION_SERIALIZABLE</urn:transaction-isolation>
+      <transaction-isolation>TRANSACTION_SERIALIZABLE</transaction-isolation>
       <!--Optional:-->
-      <urn:xa-pool>
+      <xa-pool>
         <!--Optional:-->
-        <urn:min-pool-size>200</urn:min-pool-size>
+        <min-pool-size>200</min-pool-size>
         <!--Optional:-->
-        <urn:initial-pool-size>200</urn:initial-pool-size>
+        <initial-pool-size>200</initial-pool-size>
         <!--Optional:-->
-        <urn:max-pool-size>200</urn:max-pool-size>
+        <max-pool-size>200</max-pool-size>
         <!--Optional:-->
-        <urn:prefill>false</urn:prefill>
+        <prefill>false</prefill>
         <!--Optional:-->
-        <urn:use-strict-min>true</urn:use-strict-min>
+        <use-strict-min>true</use-strict-min>
         <!--Optional:-->
-        <urn:flush-strategy>Gracefully</urn:flush-strategy>
+        <flush-strategy>Gracefully</flush-strategy>
         <!--Optional:-->
-        <urn:allow-multiple-users/>
+        <allow-multiple-users>true</allow-multiple-users>
         <!--Optional:-->
-        <urn:capacity>
+        <connection-listener class-name="token">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">token</config-property>
+        </connection-listener>
+        <!--Optional:-->
+        <capacity>
           <!--Optional:-->
-          <urn:incrementer class-name="token">
+          <incrementer class-name="token">
             <!--Zero or more repetitions:-->
-            <urn:config-property name="token">token</urn:config-property>
-          </urn:incrementer>
+            <config-property name="token">token</config-property>
+          </incrementer>
           <!--Optional:-->
-          <urn:decrementer class-name="token">
+          <decrementer class-name="token">
             <!--Zero or more repetitions:-->
-            <urn:config-property name="token">token</urn:config-property>
-          </urn:decrementer>
-        </urn:capacity>
+            <config-property name="token">token</config-property>
+          </decrementer>
+        </capacity>
         <!--Optional:-->
-        <urn:connection-listener class-name="token">
-          <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:connection-listener>
+        <is-same-rm-override>false</is-same-rm-override>
         <!--Optional:-->
-        <urn:is-same-rm-override>false</urn:is-same-rm-override>
+        <interleaving>true</interleaving>
         <!--Optional:-->
-        <urn:interleaving/>
+        <no-tx-separate-pools>true</no-tx-separate-pools>
         <!--Optional:-->
-        <urn:no-tx-separate-pools/>
+        <pad-xid>false</pad-xid>
         <!--Optional:-->
-        <urn:pad-xid>false</urn:pad-xid>
-        <!--Optional:-->
-        <urn:wrap-xa-resource>false</urn:wrap-xa-resource>
-      </urn:xa-pool>
+        <wrap-xa-resource>false</wrap-xa-resource>
+      </xa-pool>
       <!--Optional:-->
-      <urn:security>
-        <urn:credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
-        <urn:elytron-enabled/>
+      <security>
+        <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
+        <elytron-enabled/>
         <!--Optional:-->
-        <urn:reauth-plugin class-name="token">
+        <reauth-plugin class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:reauth-plugin>
-      </urn:security>
+          <config-property name="token">token</config-property>
+        </reauth-plugin>
+      </security>
       <!--Optional:-->
-      <urn:validation>
+      <recovery no-recovery="false">
         <!--Optional:-->
-        <urn:valid-connection-checker class-name="token">
+        <recover-credential>
+          <elytron-enabled/>
+          <authentication-context>CredentialAuthCtxt</authentication-context>
+        </recover-credential>
+        <!--Optional:-->
+        <recover-plugin class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:valid-connection-checker>
-        <!--Optional:-->
-        <urn:check-valid-connection-sql>string</urn:check-valid-connection-sql>
-        <!--Optional:-->
-        <urn:validate-on-match>false</urn:validate-on-match>
-        <!--Optional:-->
-        <urn:background-validation>false</urn:background-validation>
-        <!--Optional:-->
-        <urn:background-validation-millis>200</urn:background-validation-millis>
-        <!--Optional:-->
-        <urn:use-fast-fail>true</urn:use-fast-fail>
-        <!--Optional:-->
-        <urn:stale-connection-checker class-name="token">
-          <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:stale-connection-checker>
-        <!--Optional:-->
-        <urn:exception-sorter class-name="token">
-          <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:exception-sorter>
-      </urn:validation>
+          <config-property name="token">token</config-property>
+        </recover-plugin>
+      </recovery>
       <!--Optional:-->
-      <urn:timeout>
+      <validation>
         <!--Optional:-->
-        <urn:blocking-timeout-millis>200</urn:blocking-timeout-millis>
-        <!--Optional:-->
-        <urn:idle-timeout-minutes>200</urn:idle-timeout-minutes>
-        <!--Optional:-->
-        <urn:set-tx-query-timeout/>
-        <!--Optional:-->
-        <urn:query-timeout>200</urn:query-timeout>
-        <!--Optional:-->
-        <urn:use-try-lock>200</urn:use-try-lock>
-        <!--Optional:-->
-        <urn:allocation-retry>200</urn:allocation-retry>
-        <!--Optional:-->
-        <urn:allocation-retry-wait-millis>200</urn:allocation-retry-wait-millis>
-        <!--Optional:-->
-        <urn:xa-resource-timeout>200</urn:xa-resource-timeout>
-      </urn:timeout>
-      <!--Optional:-->
-      <urn:statement>
-        <!--Optional:-->
-        <urn:track-statements>nowarn</urn:track-statements>
-        <!--Optional:-->
-        <urn:prepared-statement-cache-size>200</urn:prepared-statement-cache-size>
-        <!--Optional:-->
-        <urn:share-prepared-statements/>
-      </urn:statement>
-      <!--Optional:-->
-      <urn:recovery no-recovery="false">
-        <!--Optional:-->
-        <urn:recover-credential>
-          <urn:elytron-enabled/>
-          <urn:authentication-context>CredentialAuthCtxt</urn:authentication-context>
-        </urn:recover-credential>
-        <!--Optional:-->
-        <urn:recover-plugin class-name="token">
+        <valid-connection-checker class-name="token">
           <!--Zero or more repetitions:-->
-          <urn:config-property name="token">token</urn:config-property>
-        </urn:recover-plugin>
-      </urn:recovery>
-    </urn:xa-datasource>
+          <config-property name="token">token</config-property>
+        </valid-connection-checker>
+        <!--Optional:-->
+        <check-valid-connection-sql>string</check-valid-connection-sql>
+        <!--Optional:-->
+        <validate-on-match>false</validate-on-match>
+        <!--Optional:-->
+        <background-validation>false</background-validation>
+        <!--Optional:-->
+        <background-validation-millis>200</background-validation-millis>
+        <!--Optional:-->
+        <use-fast-fail>true</use-fast-fail>
+        <!--Optional:-->
+        <stale-connection-checker class-name="token">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">token</config-property>
+        </stale-connection-checker>
+        <!--Optional:-->
+        <exception-sorter class-name="token">
+          <!--Zero or more repetitions:-->
+          <config-property name="token">token</config-property>
+        </exception-sorter>
+      </validation>
+      <!--Optional:-->
+      <timeout>
+        <!--Optional:-->
+        <set-tx-query-timeout>true</set-tx-query-timeout>
+        <!--Optional:-->
+        <blocking-timeout-millis>200</blocking-timeout-millis>
+        <!--Optional:-->
+        <idle-timeout-minutes>200</idle-timeout-minutes>
+        <!--Optional:-->
+        <query-timeout>200</query-timeout>
+        <!--Optional:-->
+        <use-try-lock>200</use-try-lock>
+        <!--Optional:-->
+        <allocation-retry>200</allocation-retry>
+        <!--Optional:-->
+        <allocation-retry-wait-millis>200</allocation-retry-wait-millis>
+        <!--Optional:-->
+        <xa-resource-timeout>200</xa-resource-timeout>
+      </timeout>
+      <!--Optional:-->
+      <statement>
+        <!--Optional:-->
+        <track-statements>nowarn</track-statements>
+        <!--Optional:-->
+        <prepared-statement-cache-size>200</prepared-statement-cache-size>
+        <!--Optional:-->
+        <share-prepared-statements>true</share-prepared-statements>
+      </statement>
+    </xa-datasource>
     <!--Optional:-->
-    <urn:drivers>
+    <drivers>
       <!--1 or more repetitions:-->
-      <urn:driver name="token" module="token" major-version="3" minor-verion="3">
+      <driver name="token" module="token" major-version="3" minor-version="3">
         <!--Optional:-->
-        <urn:driver-class>token</urn:driver-class>
+        <driver-class>token</driver-class>
         <!--Optional:-->
-        <urn:datasource-class>token</urn:datasource-class>
+        <xa-datasource-class>token</xa-datasource-class>
         <!--Optional:-->
-        <urn:xa-datasource-class>token</urn:xa-datasource-class>
-      </urn:driver>
-    </urn:drivers>
-  </urn:datasources>
-</urn:subsystem>
+        <datasource-class>token</datasource-class>
+      </driver>
+    </drivers>
+  </datasources>
+</subsystem>
