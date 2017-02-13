@@ -40,6 +40,7 @@ public enum XMLElement {
     CHANNELS("channels"),
     CREDENTIAL_REFERENCE(CredentialReference.CREDENTIAL_REFERENCE),
     DEFAULT_THREAD_POOL("default-thread-pool"),
+    ENCRYPT_PROTOCOL("encrypt-protocol"),
     FORK(ForkResourceDefinition.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
     JDBC_PROTOCOL("jdbc-protocol"),
@@ -93,6 +94,7 @@ public enum XMLElement {
     public static XMLElement forProtocol(String protocol) {
         if (ProtocolType.MULTICAST_SOCKET.contains(protocol)) return XMLElement.SOCKET_PROTOCOL;
         if (ProtocolType.JDBC.contains(protocol)) return XMLElement.JDBC_PROTOCOL;
+        if (ProtocolType.ENCRYPT.contains(protocol)) return XMLElement.ENCRYPT_PROTOCOL;
         return XMLElement.PROTOCOL;
     }
 }
