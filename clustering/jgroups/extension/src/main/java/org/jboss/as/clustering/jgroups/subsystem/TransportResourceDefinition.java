@@ -28,20 +28,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.CapabilityRegistration;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.clustering.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceAddStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRemoveStepHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceWriteAttributeHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
@@ -71,7 +64,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -80,7 +72,9 @@ import org.jboss.as.controller.transform.description.AttributeConverter.DefaultV
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jgroups.protocols.TP;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * Resource description for /subsystem=jgroups/stack=X/transport=*
@@ -88,7 +82,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class TransportResourceDefinition extends ProtocolResourceDefinition {
+public class TransportResourceDefinition<T extends TP> extends AbstractProtocolResourceDefinition<T, TransportConfiguration<T>> {
 
     static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -179,7 +173,7 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        ProtocolResourceDefinition.addTransformations(version, builder);
+        AbstractProtocolResourceDefinition.addTransformations(version, builder);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.SHARED.getDefinition()), Attribute.SHARED.getDefinition());
@@ -232,101 +226,95 @@ public class TransportResourceDefinition extends ProtocolResourceDefinition {
         }
     };
 
-    TransportResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), parentBuilderFactory);
+    TransportResourceDefinition(ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
-            @Override
-            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
-                PathAddress target = this.getTargetAddress();
-                List<PathElement> result = new ArrayList<>(aliasAddress.size());
-                for (int i = 0; i < aliasAddress.size(); ++i) {
-                    PathElement element = aliasAddress.getElement(i);
-                    if (i == target.size() - 1) {
-                        final ModelNode operation = aliasContext.getOperation();
-                        final String stackName;
+    TransportResourceDefinition(PathElement path, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(new Parameters(path, new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
+    }
 
-                        if (ModelDescriptionConstants.ADD.equals(Operations.getName(operation)) && operation.hasDefined("type")) {
-                            stackName = operation.get("type").asString();
-                        } else {
-                            Resource root = null;
-                            try {
-                                root = aliasContext.readResourceFromRoot(PathAddress.pathAddress(result));
-                            } catch (Resource.NoSuchResourceException ignored) {
-                            }
-                            if (root == null) {
-                                stackName = "*";
-                            } else {
-                                Set<String> names = root.getChildrenNames("transport");
-                                if (names.size() > 1) {
-                                    throw new AssertionError("There should be at most one child");
-                                } else if (names.size() == 0) {
-                                    stackName = "*";
-                                } else {
-                                    stackName = names.iterator().next();
-                                }
-                            }
-                        }
-
-                        result.add(PathElement.pathElement("transport", stackName));
-                    } else if (i < target.size()) {
-                        PathElement targetElement = target.getElement(i);
-                        result.add(targetElement.isWildcard() ? PathElement.pathElement(targetElement.getKey(), element.getValue()) : targetElement);
-                    } else {
-                        result.add(element);
-                    }
-                }
-                return PathAddress.pathAddress(result);
-            }
-        });
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+    private TransportResourceDefinition(Parameters parameters, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(parameters, descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addAttributes(ProtocolResourceDefinition.Attribute.class)
-                .addAttributes(ThreadingAttribute.class)
-                .addExtraParameters(ProtocolResourceDefinition.DeprecatedAttribute.class)
+                .addAttributes(SocketBindingProtocolResourceDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
-                .addCapabilities(ProtocolResourceDefinition.Capability.class)
+                .addCapabilities(SocketBindingProtocolResourceDefinition.Capability.class)
+                .addExtraParameters(ThreadingAttribute.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
-                ;
-        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(address -> new TransportConfigurationBuilder(address));
-        new RestartParentResourceAddStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceRemoveStepHandler<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-        new RestartParentResourceWriteAttributeHandler<>(this.parentBuilderFactory, () -> Stream.concat(EnumSet.allOf(Attribute.class).stream(), EnumSet.allOf(ProtocolResourceDefinition.Attribute.class).stream()).map(attribute -> attribute.getDefinition()).collect(Collectors.toList())).register(registration);
-
-        new ModelOnlyWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(attribute -> attribute.getDefinition()).collect(Collectors.toList())) {
-            @Override
-            protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
-                // Add a new step to validate instead of doing it directly in this method.
-                // This allows a composite op to change both attributes and then the
-                // validation occurs after both have done their work.
-                context.addStep(new OperationStepHandler() {
+            , builderFactory, parentBuilderFactory, (parent, registration) -> {
+                new ModelOnlyWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(Definable::getDefinition).collect(Collectors.toList())) {
                     @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModelNode conf = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                        // TODO doesn't cover the admin-only modes
-                        if (context.getProcessType().isServer()) {
-                            for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
-                                if (conf.hasDefined(attribute.getName())) {
-                                    // That is not supported.
-                                    throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
+                    protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+                        // Add a new step to validate instead of doing it directly in this method.
+                        // This allows a composite op to change both attributes and then the
+                        // validation occurs after both have done their work.
+                        context.addStep(new OperationStepHandler() {
+                            @Override
+                            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                                ModelNode conf = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                                // TODO doesn't cover the admin-only modes
+                                if (context.getProcessType().isServer()) {
+                                    for (ThreadingAttribute attribute : EnumSet.allOf(ThreadingAttribute.class)) {
+                                        if (conf.hasDefined(attribute.getName())) {
+                                            // That is not supported.
+                                            throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.threadsAttributesUsedInRuntime());
+                                        }
+                                    }
                                 }
                             }
-                        }
+                        }, OperationContext.Stage.MODEL);
                     }
-                }, OperationContext.Stage.MODEL);
-            }
-        }.register(registration);
+                }.register(registration);
 
-        new CapabilityRegistration(Capability.class).register(registration);
+                if (registration.getPathAddress().getLastElement().isWildcard()) {
+                    EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
+                }
 
-        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
-
-        super.register(registration);
+                if (registration.getPathAddress().getLastElement().isWildcard()) {
+                    parent.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
+                        @Override
+                        public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
+                            PathAddress target = this.getTargetAddress();
+                            List<PathElement> result = new ArrayList<>(aliasAddress.size());
+                            for (int i = 0; i < aliasAddress.size(); ++i) {
+                                PathElement element = aliasAddress.getElement(i);
+                                if (i == target.size() - 1) {
+                                    final ModelNode operation = aliasContext.getOperation();
+                                    final String stackName;
+                                    if (ModelDescriptionConstants.ADD.equals(Operations.getName(operation)) && operation.hasDefined("type")) {
+                                        stackName = operation.get("type").asString();
+                                    } else {
+                                        Resource root = null;
+                                        try {
+                                            root = aliasContext.readResourceFromRoot(PathAddress.pathAddress(result));
+                                        } catch (Resource.NoSuchResourceException ignored) {
+                                        }
+                                        if (root == null) {
+                                            stackName = "*";
+                                        } else {
+                                            Set<String> names = root.getChildrenNames("transport");
+                                            if (names.size() > 1) {
+                                                throw new AssertionError("There should be at most one child");
+                                            } else if (names.size() == 0) {
+                                                stackName = "*";
+                                            } else {
+                                                stackName = names.iterator().next();
+                                            }
+                                        }
+                                    }
+                                    result.add(PathElement.pathElement("transport", stackName));
+                                } else if (i < target.size()) {
+                                    PathElement targetElement = target.getElement(i);
+                                    result.add(targetElement.isWildcard() ? PathElement.pathElement(targetElement.getKey(), element.getValue()) : targetElement);
+                                } else {
+                                    result.add(element);
+                                }
+                            }
+                            return PathAddress.pathAddress(result);
+                        }
+                    });
+                }
+            });
     }
 }

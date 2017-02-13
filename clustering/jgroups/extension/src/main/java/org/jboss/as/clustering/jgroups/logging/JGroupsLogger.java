@@ -132,4 +132,15 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 21, value = "Attributes referencing threads subsystem can only be used to support older slaves in the domain.")
     String threadsAttributesUsedInRuntime();
 
+    @Message(id = 22, value = "%s entry not found in configured key store")
+    IllegalArgumentException keyEntryNotFound(String alias);
+
+    @Message(id = 23, value = "%s key store entry does not contain a private key")
+    IllegalArgumentException privateKeyStoreEntryExpected(String alias);
+
+    @Message(id = 24, value = "%s key store entry does not contain a secret key")
+    IllegalArgumentException secretKeyStoreEntryExpected(String alias);
+
+    @Message(id = 25, value = "Configured credential source does not reference a clear-text password credential")
+    IllegalArgumentException unexpectedCredentialSource();
 }

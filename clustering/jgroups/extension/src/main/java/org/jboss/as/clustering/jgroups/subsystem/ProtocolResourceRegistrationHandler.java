@@ -23,14 +23,13 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.STACK;
-import static org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition.Attribute.MODULE;
+import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResourceDefinition.Attribute.MODULE;
 
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.descriptions.SimpleResourceDescriptionResolver;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
@@ -49,12 +48,12 @@ import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.Channel;
+import org.jgroups.protocols.TP;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -71,8 +70,8 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
     @Override
     public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
         PathAddress address = context.getCurrentAddress();
-        String channelName = address.getElement(address.size() - 2).getValue();
-        String protocolName = address.getElement(address.size() - 1).getValue();
+        String channelName = address.getParent().getLastElement().getValue();
+        String protocolName = address.getLastElement().getValue();
 
         ServiceRegistry registry = context.getServiceRegistry(false);
         ServiceController<?> controller = registry.getService(JGroupsRequirement.CHANNEL.getServiceName(context, channelName));
@@ -83,13 +82,14 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
                 ChannelFactory factory = (ChannelFactory) controller.getValue();
                 if (factory != null) {
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
-                    if (configuration.getTransport().getName().equals(protocolName)) {
-                        Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(configuration.getTransport().getModule()).getClassLoader().loadClass(configuration.getTransport().getProtocolClassName()).asSubclass(Protocol.class);
+                    ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
+                    if (transport.getName().equals(protocolName)) {
+                        Class<? extends Protocol> protocolClass = transport.createProtocol().getClass();
                         return channel.getProtocolStack().findProtocol(protocolClass);
                     }
-                    for (ProtocolConfiguration protocol : configuration.getProtocols()) {
+                    for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
                         if (protocol.getName().equals(protocolName)) {
-                            Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(protocol.getModule()).getClassLoader().loadClass(protocol.getProtocolClassName()).asSubclass(Protocol.class);
+                            Class<? extends Protocol> protocolClass = protocol.createProtocol().getClass();
                             return channel.getProtocolStack().findProtocol(protocolClass);
                         }
                     }
@@ -128,16 +128,16 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         for (String name: stackResource.getChildrenNames(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
             PathAddress transportAddress = stackAddress.append(TransportResourceDefinition.pathElement(name));
             ModelNode transport = context.readResourceFromRoot(transportAddress, false).getModel();
-            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, transport));
-            Class<? extends Protocol> transportClass = findProtocolClass(context, name, module);
+            String moduleName = MODULE.resolveModelAttribute(context, transport).asString();
+            Class<? extends Protocol> transportClass = findProtocolClass(context, name, moduleName);
             registration.registerSubModel(this.createProtocolResourceDefinition(name, transportClass));
             resource.registerChild(ProtocolResourceDefinition.pathElement(name), PlaceholderResource.INSTANCE);
         }
 
         for (String name: stackResource.getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
             Resource protocolResource = context.readResourceFromRoot(stackAddress.append(ProtocolResourceDefinition.pathElement(name)), false);
-            ModuleIdentifier module = ModelNodes.asModuleIdentifier(MODULE.resolveModelAttribute(context, protocolResource.getModel()));
-            Class<? extends Protocol> protocolClass = findProtocolClass(context, name, module);
+            String moduleName = MODULE.resolveModelAttribute(context, protocolResource.getModel()).asString();
+            Class<? extends Protocol> protocolClass = findProtocolClass(context, name, moduleName);
             registration.registerSubModel(this.createProtocolResourceDefinition(name, protocolClass));
             resource.registerChild(ProtocolResourceDefinition.pathElement(name), PlaceholderResource.INSTANCE);
         }
@@ -165,15 +165,15 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
         return builder.build();
     }
 
-    static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, ModuleIdentifier module) throws OperationFailedException {
+    static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, String moduleName) throws OperationFailedException {
         String className = protocolName;
-        if (module.equals(ProtocolConfiguration.DEFAULT_MODULE) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
+        if (moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
             className = org.jgroups.conf.ProtocolConfiguration.protocol_prefix + "." + protocolName;
         }
 
         try {
             ModuleLoader loader = (ModuleLoader) context.getServiceRegistry(false).getRequiredService(Services.JBOSS_SERVICE_MODULE_LOADER).getValue();
-            return loader.loadModule(module).getClassLoader().loadClass(className).asSubclass(Protocol.class);
+            return loader.loadModule(moduleName).getClassLoader().loadClass(className).asSubclass(Protocol.class);
         } catch (ClassNotFoundException | ModuleLoadException e) {
             throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(className);
         }

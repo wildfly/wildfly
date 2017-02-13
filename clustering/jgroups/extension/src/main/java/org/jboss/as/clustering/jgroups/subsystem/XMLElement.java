@@ -24,8 +24,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.jgroups.subsystem.ProtocolRegistration.ProtocolType;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.security.CredentialReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,14 +38,17 @@ public enum XMLElement {
 
     CHANNEL(ChannelResourceDefinition.WILDCARD_PATH),
     CHANNELS("channels"),
+    CREDENTIAL_REFERENCE(CredentialReference.CREDENTIAL_REFERENCE),
     DEFAULT_THREAD_POOL("default-thread-pool"),
     FORK(ForkResourceDefinition.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
+    JDBC_PROTOCOL("jdbc-protocol"),
     OOB_THREAD_POOL("oob-thread-pool"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
     PROTOCOL(ProtocolResourceDefinition.WILDCARD_PATH),
     RELAY(RelayResourceDefinition.WILDCARD_PATH),
     REMOTE_SITE(RemoteSiteResourceDefinition.WILDCARD_PATH),
+    SOCKET_PROTOCOL("socket-protocol"),
     STACK(StackResourceDefinition.WILDCARD_PATH),
     STACKS("stacks"),
     TIMER_THREAD_POOL("timer-thread-pool"),
@@ -83,5 +88,11 @@ public enum XMLElement {
     public static XMLElement forName(String localName) {
         XMLElement element = elements.get(localName);
         return (element != null) ? element : UNKNOWN;
+    }
+
+    public static XMLElement forProtocol(String protocol) {
+        if (ProtocolType.MULTICAST_SOCKET.contains(protocol)) return XMLElement.SOCKET_PROTOCOL;
+        if (ProtocolType.JDBC.contains(protocol)) return XMLElement.JDBC_PROTOCOL;
+        return XMLElement.PROTOCOL;
     }
 }

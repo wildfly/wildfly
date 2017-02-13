@@ -22,8 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,7 +35,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 /**
  * @author Paul Ferraro
  */
-public class StackServiceHandler extends ParentResourceServiceHandler<ChannelFactory> {
+public class StackServiceHandler extends SimpleResourceServiceHandler<ChannelFactory> {
 
     StackServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
         super(factory);

@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
 import org.jboss.as.controller.OperationContext;
@@ -39,12 +38,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.Channel;
 import org.jgroups.protocols.FORK;
+import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -76,13 +75,14 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
                         ChannelFactory factory = (ChannelFactory) controller.getValue();
                         if (factory != null) {
                             ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
-                            if (configuration.getTransport().getName().equals(protocolName)) {
-                                Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(configuration.getTransport().getModule()).getClassLoader().loadClass(configuration.getTransport().getProtocolClassName()).asSubclass(Protocol.class);
+                            ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
+                            if (transport.getName().equals(protocolName)) {
+                                Class<? extends Protocol> protocolClass = transport.createProtocol().getClass();
                                 return channel.getProtocolStack().findProtocol(protocolClass);
                             }
-                            for (ProtocolConfiguration protocol : configuration.getProtocols()) {
+                            for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
                                 if (protocol.getName().equals(protocolName)) {
-                                    Class<? extends Protocol> protocolClass = configuration.getModuleLoader().loadModule(protocol.getModule()).getClassLoader().loadClass(protocol.getProtocolClassName()).asSubclass(Protocol.class);
+                                    Class<? extends Protocol> protocolClass = protocol.createProtocol().getClass();
                                     return fork.get(forkName).getProtocolStack().findProtocol(protocolClass);
                                 }
                             }
@@ -99,8 +99,8 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
 
         ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         String protocolName = context.getCurrentAddressValue();
-        ModuleIdentifier module = ModelNodes.asModuleIdentifier(ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, operation));
-        Class<? extends Protocol> protocolClass = ProtocolResourceRegistrationHandler.findProtocolClass(context, protocolName, module);
+        String moduleName = ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, operation).asString();
+        Class<? extends Protocol> protocolClass = ProtocolResourceRegistrationHandler.findProtocolClass(context, protocolName, moduleName);
 
         final Map<String, Attribute> attributes = ProtocolMetricsHandler.findProtocolAttributes(protocolClass);
 

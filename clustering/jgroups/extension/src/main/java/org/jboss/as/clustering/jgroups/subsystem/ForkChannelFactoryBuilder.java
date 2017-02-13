@@ -22,16 +22,16 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -39,6 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
@@ -54,7 +55,8 @@ public class ForkChannelFactoryBuilder implements ResourceServiceBuilder<Channel
 
     private final ServiceName serviceName;
     private final String channelName;
-    private final List<ValueDependency<ProtocolConfiguration>> protocols = new LinkedList<>();
+    @SuppressWarnings("rawtypes")
+    private volatile List<ValueDependency<ProtocolConfiguration>> protocols;
 
     private volatile ValueDependency<Channel> parentChannel;
     private volatile ValueDependency<ChannelFactory> parentFactory;
@@ -80,9 +82,12 @@ public class ForkChannelFactoryBuilder implements ResourceServiceBuilder<Channel
 
     @Override
     public ChannelFactory getValue() {
-        List<ProtocolConfiguration> protocols = new ArrayList<>(this.protocols.size());
-        for (Value<ProtocolConfiguration> protocol : this.protocols) {
-            protocols.add(protocol.getValue());
+        // This works in eclipse, but fails in openjdk 1.8.0_121
+        // List<ProtocolConfiguration<? extends Protocol>> protocols = this.protocols.stream().map(Value::getValue).collect(Collectors.toList());
+        List<ProtocolConfiguration<? extends Protocol>> protocols = new ArrayList<>(this.protocols.size());
+        for (@SuppressWarnings("rawtypes") Value<ProtocolConfiguration> protocolValue : this.protocols) {
+            ProtocolConfiguration<? extends Protocol> protocol = protocolValue.getValue();
+            protocols.add(protocol);
         }
         return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), protocols);
     }
@@ -90,12 +95,8 @@ public class ForkChannelFactoryBuilder implements ResourceServiceBuilder<Channel
     @Override
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
-        this.protocols.clear();
-        if (model.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property protocol : model.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                this.protocols.add(new InjectedValueDependency<>(new ProtocolServiceNameProvider(address, protocol.getName()), ProtocolConfiguration.class));
-            }
-        }
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().filter(Resource::isModelDefined).map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
         this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, this.channelName), Channel.class);
         this.parentFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, this.channelName), ChannelFactory.class);
         return this;
