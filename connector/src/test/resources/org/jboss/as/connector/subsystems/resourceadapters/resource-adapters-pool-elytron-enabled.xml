@@ -49,8 +49,8 @@
           <security>
             <!--You have a CHOICE of the next 3 items at this level-->
             <!--Optional:-->
-              <elytron-enabled/>
-              <authentication-context>SomeAuthenticationContext</authentication-context>
+            <elytron-enabled>true</elytron-enabled>
+            <authentication-context>SomeAuthenticationContext</authentication-context>
           </security>
           <!--Optional:-->
           <timeout>
@@ -85,7 +85,7 @@
               <!--Optional:-->
               <credential-reference store="teststore" alias="myalias"/>
               <!--Optional:-->
-              <elytron-enabled/>
+              <elytron-enabled>true</elytron-enabled>
               <authentication-context>AnotherAuthenticationContext</authentication-context>
             </recover-credential>
             <!--Optional:-->
