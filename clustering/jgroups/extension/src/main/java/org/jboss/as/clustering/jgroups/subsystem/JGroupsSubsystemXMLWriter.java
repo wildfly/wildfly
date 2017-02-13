@@ -142,6 +142,15 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
             writeAttributes(writer, property.getValue(), EnumSet.allOf(SocketBindingProtocolResourceDefinition.Attribute.class));
         } else if (ProtocolRegistration.ProtocolType.JDBC.contains(property.getName())) {
             writeAttributes(writer, property.getValue(), EnumSet.allOf(JDBCProtocolResourceDefinition.Attribute.class));
+        } else if (ProtocolRegistration.ProtocolType.ENCRYPT.contains(property.getName())) {
+            EnumSet<EncryptProtocolResourceDefinition.Attribute> elementAttributes = EnumSet.of(EncryptProtocolResourceDefinition.Attribute.CREDENTIAL);
+            writeAttributes(writer, property.getValue(), EnumSet.complementOf(elementAttributes));
+
+            if (hasDefined(property.getValue(), elementAttributes)) {
+                for (Attribute attribute : elementAttributes) {
+                    writeElement(writer, property.getValue(), attribute);
+                }
+            }
         } else {
             writeAttributes(writer, property.getValue(), EnumSet.allOf(ProtocolResourceDefinition.DeprecatedAttribute.class));
         }

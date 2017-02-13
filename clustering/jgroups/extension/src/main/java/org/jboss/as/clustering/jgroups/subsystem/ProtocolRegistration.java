@@ -47,6 +47,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
     // Enumerates protocols with custom builders or definitions
     enum ProtocolType implements Iterable<String> {
+        ENCRYPT("ASYM_ENCRYPT", "SYM_ENCRYPT"),
         JDBC("JDBC_PING"),
         MULTICAST("pbcast.NAKACK2"),
         MULTICAST_SOCKET("MPING"),
@@ -90,6 +91,14 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
                 JDBCProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
             }
         });
+
+        ProtocolType.ENCRYPT.stream().map(ProtocolResourceDefinition::pathElement).forEach(path -> {
+            if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+                parent.rejectChildResource(path);
+            } else {
+                EncryptProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
+            }
+        });
     }
 
     private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
@@ -113,5 +122,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         ProtocolType.MULTICAST_SOCKET.forEach(protocol -> new SocketBindingProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, address -> new MulticastSocketProtocolConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration));
 
         ProtocolType.JDBC.forEach(protocol -> new JDBCProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration));
+
+        ProtocolType.ENCRYPT.forEach(protocol -> new EncryptProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration));
     }
 }

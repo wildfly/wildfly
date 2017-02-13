@@ -297,6 +297,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         break;
                     }
                 }
+                case ENCRYPT_PROTOCOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                        this.parseEncryptProtocol(reader, address, operations);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
@@ -428,6 +434,22 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
+    private void parseEncryptProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+
+        String type = require(reader, XMLAttribute.TYPE);
+        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            this.parseEncryptProtocolAttribute(reader, i, operation);
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            this.parseEncryptProtocolElement(reader, address, operations);
+        }
+    }
+
     private void parseProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
@@ -470,6 +492,23 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
+    private void parseEncryptProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
+        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
+        switch (attribute) {
+            case KEY_ALIAS: {
+                readAttribute(reader, index, operation, EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS);
+                break;
+            }
+            case KEY_STORE: {
+                readAttribute(reader, index, operation, EncryptProtocolResourceDefinition.Attribute.KEY_STORE);
+                break;
+            }
+            default: {
+                parseProtocolAttribute(reader, index, operation);
+            }
+        }
+    }
+
     private void parseProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
@@ -497,6 +536,20 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
             default: {
                 throw ParseUtils.unexpectedAttribute(reader, index);
+            }
+        }
+    }
+
+    private void parseEncryptProtocolElement(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        ModelNode operation = operations.get(address);
+        XMLElement element = XMLElement.forName(reader.getLocalName());
+        switch (element) {
+            case CREDENTIAL_REFERENCE: {
+                readElement(reader, operation, EncryptProtocolResourceDefinition.Attribute.CREDENTIAL);
+                break;
+            }
+            default: {
+                parseProtocolElement(reader, address, operations);
             }
         }
     }
@@ -681,5 +734,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, Attribute attribute) throws XMLStreamException {
         attribute.getDefinition().getParser().parseAndSetParameter(attribute.getDefinition(), value, operation, reader);
+    }
+
+    private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, Attribute attribute) throws XMLStreamException {
+        attribute.getDefinition().getParser().parseElement(attribute.getDefinition(), reader, operation);
     }
 }
