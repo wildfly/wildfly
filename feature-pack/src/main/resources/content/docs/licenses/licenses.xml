@@ -1423,14 +1423,12 @@
       <artifactId>javax.json</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
-          <distribution>repo</distribution>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
         </license>
         <license>
           <name>GNU General Public License, Version 2 with the Classpath Exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
@@ -3113,6 +3111,39 @@
           <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
         </license>
       </licenses>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.taglibs</groupId>
+        <artifactId>taglibs-standard-spec</artifactId>
+        <licenses>
+            <license>
+                <name>Apache Software License, Version 2.0</name>
+                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+                <distribution>repo</distribution>
+            </license>
+        </licenses>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.taglibs</groupId>
+        <artifactId>taglibs-standard-impl</artifactId>
+        <licenses>
+            <license>
+                <name>Apache Software License, Version 2.0</name>
+                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+                <distribution>repo</distribution>
+            </license>
+        </licenses>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.taglibs</groupId>
+        <artifactId>taglibs-standard-compat</artifactId>
+        <licenses>
+            <license>
+                <name>Apache Software License, Version 2.0</name>
+                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+                <distribution>repo</distribution>
+            </license>
+        </licenses>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.transaction</groupId>

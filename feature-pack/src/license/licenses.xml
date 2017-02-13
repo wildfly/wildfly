@@ -1423,14 +1423,12 @@
       <artifactId>javax.json</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
-          <distribution>repo</distribution>
+          <name>Common Development and Distribution License version 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
         </license>
         <license>
           <name>GNU General Public License, Version 2 with the Classpath Exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
