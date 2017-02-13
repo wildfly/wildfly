@@ -143,11 +143,23 @@
                     <xs:documentation>Defines the transport protocol for a stack.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="protocol" type="tns:protocol" minOccurs="0" maxOccurs="unbounded">
-                <xs:annotation>
-                    <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="protocol" type="tns:protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="socket-protocol" type="tns:socket-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="jdbc-protocol" type="tns:jdbc-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
             <xs:element name="relay" type="tns:relay" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>Defines a relay protocol for a stack.</xs:documentation>
@@ -161,7 +173,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="protocol">
+    <xs:complexType name="generic-protocol">
         <xs:sequence>
             <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
@@ -174,21 +186,47 @@
                 <xs:documentation>Identifies the protocol type, e.g. TCP, UDP, PING, etc.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="socket-binding" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Provides an address/port binding for a protocol.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="module" type="xs:string" default="org.jgroups">
             <xs:annotation>
                 <xs:documentation>Indicates the module from which to load this protocol.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="data-source" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Data source reference for JDBC_PING protocol to be used instead of connection and JNDI lookup properties.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="socket-binding" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Deprecated.  Socket-based protocols should use &lt;socket-protocol/&gt; instead.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="socket-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="socket-binding" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Provides an address/port binding for a protocol.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="jdbc-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="data-source" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Data source reference for JDBC protocols to be used instead of connection and JNDI lookup properties.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="transport">

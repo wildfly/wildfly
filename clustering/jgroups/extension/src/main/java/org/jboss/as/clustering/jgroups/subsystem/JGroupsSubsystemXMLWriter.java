@@ -107,11 +107,12 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     @SuppressWarnings("deprecation")
     private static void writeTransport(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeStartElement(XMLElement.TRANSPORT.getLocalName());
-        writeProtocolAttributes(writer, property);
+        writeGenericProtocolAttributes(writer, property);
         ModelNode transport = property.getValue();
+        writeAttributes(writer, transport, SocketBindingProtocolResourceDefinition.Attribute.class);
         writeAttributes(writer, transport, TransportResourceDefinition.Attribute.class);
         writeAttributes(writer, transport, TransportResourceDefinition.ThreadingAttribute.class);
-        writeElement(writer, transport, ProtocolResourceDefinition.Attribute.PROPERTIES);
+        writeElement(writer, transport, AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
         if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
             writeThreadPoolElements(XMLElement.DEFAULT_THREAD_POOL, ThreadPoolResourceDefinition.DEFAULT, writer, transport);
             writeThreadPoolElements(XMLElement.INTERNAL_THREAD_POOL, ThreadPoolResourceDefinition.INTERNAL, writer, transport);
@@ -122,15 +123,28 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     }
 
     private static void writeProtocol(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
-        writer.writeStartElement(XMLElement.PROTOCOL.getLocalName());
+        writer.writeStartElement(XMLElement.forProtocol(property.getName()).getLocalName());
         writeProtocolAttributes(writer, property);
-        writeElement(writer, property.getValue(), ProtocolResourceDefinition.Attribute.PROPERTIES);
+        writeElement(writer, property.getValue(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
         writer.writeEndElement();
     }
 
-    private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
+    private static void writeGenericProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writer.writeAttribute(XMLAttribute.TYPE.getLocalName(), property.getName());
-        writeAttributes(writer, property.getValue(), EnumSet.complementOf(EnumSet.of(ProtocolResourceDefinition.Attribute.PROPERTIES)));
+        writeAttributes(writer, property.getValue(), EnumSet.complementOf(EnumSet.of(AbstractProtocolResourceDefinition.Attribute.PROPERTIES)));
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
+        writeGenericProtocolAttributes(writer, property);
+
+        if (ProtocolRegistration.ProtocolType.MULTICAST_SOCKET.contains(property.getName())) {
+            writeAttributes(writer, property.getValue(), EnumSet.allOf(SocketBindingProtocolResourceDefinition.Attribute.class));
+        } else if (ProtocolRegistration.ProtocolType.JDBC.contains(property.getName())) {
+            writeAttributes(writer, property.getValue(), EnumSet.allOf(JDBCProtocolResourceDefinition.Attribute.class));
+        } else {
+            writeAttributes(writer, property.getValue(), EnumSet.allOf(ProtocolResourceDefinition.DeprecatedAttribute.class));
+        }
     }
 
     private static void writeThreadPoolElements(XMLElement element, ThreadPoolResourceDefinition pool, XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {

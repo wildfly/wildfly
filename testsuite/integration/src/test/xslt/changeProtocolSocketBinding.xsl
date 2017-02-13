@@ -37,7 +37,7 @@
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
                           /*[local-name()='stacks']
                           /*[local-name()='stack' and @name=$stack]
-                          /*[local-name()='protocol' and @type=$protocol]
+                          /*[local-name()='socket-protocol' and @type=$protocol]
                           /@socket-binding">
 
         <xsl:attribute name="socket-binding">

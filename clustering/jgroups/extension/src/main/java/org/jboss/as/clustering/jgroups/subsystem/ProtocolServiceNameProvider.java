@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceNameProvider;
 
@@ -31,20 +32,18 @@ import org.wildfly.clustering.service.ServiceNameProvider;
  */
 public class ProtocolServiceNameProvider implements ServiceNameProvider {
 
-    private final PathAddress stackAddress;
-    private final String name;
+    private final ServiceName name;
 
     public ProtocolServiceNameProvider(PathAddress address) {
-        this(address.getParent(), address.getLastElement().getValue());
+        this(address.getParent(), address.getLastElement());
     }
 
-    public ProtocolServiceNameProvider(PathAddress stackAddress, String name) {
-        this.stackAddress = stackAddress;
-        this.name = name;
+    public ProtocolServiceNameProvider(PathAddress stackAddress, PathElement path) {
+        this.name = StackResourceDefinition.Capability.JCHANNEL_FACTORY.getServiceName(stackAddress).append(path.getValue());
     }
 
     @Override
     public ServiceName getServiceName() {
-        return StackResourceDefinition.Capability.JCHANNEL_FACTORY.getServiceName(this.stackAddress).append(this.name);
+        return this.name;
     }
 }

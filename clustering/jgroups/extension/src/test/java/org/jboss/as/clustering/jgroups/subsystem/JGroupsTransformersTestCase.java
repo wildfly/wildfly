@@ -80,8 +80,9 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                 return JGroupsModel.VERSION_1_3_0;
             case EAP_7_0_0:
                 return JGroupsModel.VERSION_4_0_0;
+            default:
+                throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException();
     }
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
@@ -105,7 +106,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         }
     }
 
-    private org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
+    private static org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
                 ;
@@ -139,7 +140,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         final String[] dependencies = getDependencies(controller);
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization())
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem-jgroups-transform.xml");
 
         // initialize the legacy services and add required jars
@@ -161,7 +162,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         }
     }
 
-    private void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
+    private static void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
         ////////////////////////////////////////////////////////////////////////////////////
         // Check individual operations
 
@@ -290,11 +291,12 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
         final PathAddress transportAddr = stackAddr.append("transport", "tcp");
         ModelNode addTransport = Util.createAddOperation(transportAddr);
+        addTransport.get(SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
         addTransport.get(MODULE).set("do.reject");
         TransformedOperation op = services.executeInMainAndGetTheTransformedOperation(addTransport, version);
         Assert.assertTrue(op.rejectOperation(success()));
 
-        final PathAddress protocolAddr = stackAddr.append("protocol", "MPING");
+        final PathAddress protocolAddr = stackAddr.append("protocol", "PING");
         ModelNode addProtocol = Util.createAddOperation(protocolAddr);
         addProtocol.get(MODULE).set("do.reject");
         op = services.executeInMainAndGetTheTransformedOperation(addProtocol, version);
@@ -332,10 +334,10 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         final String[] dependencies = getDependencies(controller);
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controller, version)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
                 .dontPersistXml();
