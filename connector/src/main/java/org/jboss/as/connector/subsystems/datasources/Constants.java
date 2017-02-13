@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
-import org.jboss.as.connector.subsystems.common.Marshallers;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -430,7 +429,6 @@ public class Constants {
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .setAllowExpression(true)
-            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
     public static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
@@ -696,7 +694,6 @@ public class Constants {
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
-            .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
             .build();
 
     static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)

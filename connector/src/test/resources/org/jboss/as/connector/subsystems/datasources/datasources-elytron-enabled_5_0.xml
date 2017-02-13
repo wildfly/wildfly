@@ -60,7 +60,7 @@
         <!--Optional:-->
         <!--Optional:-->
         <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
-        <elytron-enabled/>
+        <elytron-enabled>true</elytron-enabled>
         <authentication-context>DsAuthCtxt</authentication-context>
         <!--Optional:-->
 
@@ -183,7 +183,7 @@
       <!--Optional:-->
       <security>
         <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
-        <elytron-enabled/>
+        <elytron-enabled>true</elytron-enabled>
         <!--Optional:-->
         <reauth-plugin class-name="token">
           <!--Zero or more repetitions:-->
@@ -194,7 +194,7 @@
       <recovery no-recovery="false">
         <!--Optional:-->
         <recover-credential>
-          <elytron-enabled/>
+          <elytron-enabled>true</elytron-enabled>
           <authentication-context>CredentialAuthCtxt</authentication-context>
         </recover-credential>
         <!--Optional:-->
