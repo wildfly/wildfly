@@ -42,6 +42,8 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.wildfly.transaction.client.AbstractTransaction;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -187,6 +189,8 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         interceptorContext.putPrivateData(InvokeMethodOnTargetInterceptor.PARAMETERS_KEY, parameters);
         interceptorContext.setContextData(new HashMap<String, Object>());
         interceptorContext.setTarget(getInstance());
+        final AbstractTransaction transaction = ContextTransactionManager.getInstance().getTransaction();
+        interceptorContext.setTransactionSupplier(() -> transaction);
         try {
             return interceptor.processInvocation(interceptorContext);
         } catch (Error e) {
