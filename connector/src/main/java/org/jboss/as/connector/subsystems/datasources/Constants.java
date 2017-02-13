@@ -396,7 +396,7 @@ public class Constants {
     public static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(USERNAME_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.USER_NAME.getLocalName())
             .setAllowExpression(true)
-            .addAlternatives(SECURITY_DOMAIN_NAME, ELYTRON_ENABLED_NAME)
+            .addAlternatives(SECURITY_DOMAIN_NAME, AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
@@ -421,7 +421,7 @@ public class Constants {
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
-            .addAlternatives(USERNAME_NAME, ELYTRON_ENABLED_NAME)
+            .addAlternatives(USERNAME_NAME, AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
@@ -430,7 +430,6 @@ public class Constants {
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .setAllowExpression(true)
-            .addAlternatives(USERNAME_NAME, SECURITY_DOMAIN_NAME)
             .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
@@ -438,6 +437,7 @@ public class Constants {
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
             .setAllowExpression(true)
             .setRequires(ELYTRON_ENABLED_NAME)
+            .addAlternatives(SECURITY_DOMAIN_NAME, USERNAME_NAME)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
@@ -673,7 +673,7 @@ public class Constants {
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.USER_NAME.getLocalName())
             .setAllowExpression(true)
-            .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_ELYTRON_ENABLED_NAME)
+            .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_AUTHENTICATION_CONTEXT_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
@@ -689,14 +689,13 @@ public class Constants {
             .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
-            .addAlternatives(RECOVERY_USERNAME_NAME, RECOVERY_ELYTRON_ENABLED_NAME)
+            .addAlternatives(RECOVERY_USERNAME_NAME, RECOVERY_AUTHENTICATION_CONTEXT_NAME)
             .build();
 
     static SimpleAttributeDefinition RECOVERY_ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(RECOVERY_ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
-            .addAlternatives(RECOVERY_USERNAME_NAME, RECOVERY_SECURITY_DOMAIN_NAME)
             .setAttributeMarshaller(Marshallers.BOOLEAN_PRESENCE_TYPE_MARSHALLER)
             .build();
 
@@ -704,6 +703,7 @@ public class Constants {
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
             .setAllowExpression(true)
             .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
+            .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_USERNAME_NAME)
             .build();
 
     static SimpleAttributeDefinition RECOVER_PLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(RECOVER_PLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
