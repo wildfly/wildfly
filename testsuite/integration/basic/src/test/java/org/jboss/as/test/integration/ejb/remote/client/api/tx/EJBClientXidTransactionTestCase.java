@@ -25,8 +25,10 @@ package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,10 +42,13 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
+import org.wildfly.transaction.client.LocalTransactionContext;
+import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider;
 
 /**
  * @author Jaikiran Pai
@@ -93,31 +98,22 @@ public class EJBClientXidTransactionTestCase {
      */
     @BeforeClass
     public static void beforeTestClass() throws Exception {
-        // setup the tx manager and tx sync registry
-        instantiateTxManagement();
-    }
-
-    /**
-     * Create and setup the EJB client context backed by the remoting receiver
-     *
-     * @throws Exception
-     */
-    @Before
-    public void beforeTest() throws Exception {
-        // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
-        // create a client side tx context
-        //final EJBClientTransactionContext txContext = EJBClientTransactionContext.create(txManager, txSyncRegistry);
-        // associate the tx context
-        //EJBClientTransactionContext.setGlobalContext(txContext);
-    }
-
-    private static void instantiateTxManagement() {
         // These system properties are required or else we end up picking up JTS transaction manager,
         // which is not what we want
-        jtaPropertyManager.getJTAEnvironmentBean().setTransactionManagerClassName(TransactionManagerImple.class.getName());
-        jtaPropertyManager.getJTAEnvironmentBean().setTransactionSynchronizationRegistryClassName(TransactionSynchronizationRegistryImple.class.getName());
-        txManager = jtaPropertyManager.getJTAEnvironmentBean().getTransactionManager();
-        txSyncRegistry = jtaPropertyManager.getJTAEnvironmentBean().getTransactionSynchronizationRegistry();
+        final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
+        jtaEnvironmentBean.setTransactionManagerClassName(TransactionManagerImple.class.getName());
+        jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(TransactionSynchronizationRegistryImple.class.getName());
+        final TransactionManager narayanaTm = jtaEnvironmentBean.getTransactionManager();
+        final TransactionSynchronizationRegistry narayanaTsr = jtaEnvironmentBean.getTransactionSynchronizationRegistry();
+        final XATerminator xat = new XATerminator();
+        final JBossLocalTransactionProvider.Builder builder = JBossLocalTransactionProvider.builder();
+        builder.setXATerminator(xat).setExtendedJBossXATerminator(xat);
+        builder.setTransactionManager(narayanaTm);
+        builder.setTransactionSynchronizationRegistry(narayanaTsr);
+        LocalTransactionContext.getContextManager().setGlobalDefault(new LocalTransactionContext(builder.build()));
+        txManager = ContextTransactionManager.getInstance();
+        txSyncRegistry = ContextTransactionSynchronizationRegistry.getInstance();
+        // setup the tx manager and tx sync registry
     }
 
     /**
