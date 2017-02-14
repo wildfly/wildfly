@@ -246,7 +246,7 @@ public class EJBClientAPIUsageTestCase {
         try {
             nonExistentBean.echo("Hello world to a non-existent bean");
             Assert.fail("Expected an IllegalStateException");
-        } catch (IllegalStateException ise) {
+        } catch (IllegalStateException | EJBException ise) {
             // expected
             logger.trace("Received the expected exception", ise);
         }
@@ -266,7 +266,7 @@ public class EJBClientAPIUsageTestCase {
         try {
             nonExistentBean.echo("Hello world to a non-existent view of a bean");
             Assert.fail("Expected an IllegalStateException");
-        } catch (IllegalStateException nsee) {
+        } catch (IllegalStateException | EJBException nsee) {
             // expected
             logger.trace("Received the expected exception", nsee);
         }
