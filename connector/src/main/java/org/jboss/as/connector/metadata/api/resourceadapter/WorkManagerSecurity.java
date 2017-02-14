@@ -41,7 +41,7 @@ public interface WorkManagerSecurity extends org.jboss.jca.common.api.metadata.r
         /**
          * Is Elytron enabled
          */
-        ELYTRON_ENABLED("elytron-enabled"),
+        ELYTRON_SECURITY_DOMAIN("elytron-security-domain"),
 
         /* Tags copied from super class */
         /** always first

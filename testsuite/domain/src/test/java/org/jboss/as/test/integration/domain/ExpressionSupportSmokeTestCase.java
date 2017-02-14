@@ -263,7 +263,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
             ModelNode noDefaultValue = resourceNoDefaults.get(attrName);
             if (!noDefaultValue.isDefined()) {
                 // We need to see if it's legal to set this attribute, or whether it's undefined
-                // because an alternative attribute is defined
+                // because an alternative attribute is defined or a required attribute is not defined.
                 Set<String> base = new HashSet<String>();
                 base.add(attrName);
                 if (attrDesc.hasDefined(REQUIRES)) {
@@ -273,6 +273,11 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 }
                 boolean conflict = false;
                 for (String baseAttr : base) {
+                    if (!resource.hasDefined(baseAttr)) {
+                        conflict = true;
+                        break;
+                    }
+
                     ModelNode baseAttrAlts = attributeDescriptions.get(baseAttr, ALTERNATIVES);
                     if (baseAttrAlts.isDefined()) {
                         for (ModelNode alt : baseAttrAlts.asList()) {

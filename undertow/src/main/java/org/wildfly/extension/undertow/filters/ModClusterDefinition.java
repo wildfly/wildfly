@@ -194,6 +194,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_FILTER_CAPABILITY_NAME, true)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)

@@ -42,6 +42,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.net.URL;
 
@@ -81,6 +82,7 @@ public class RebindTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
+        String tmpdir = System.getProperty("jboss.home");
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "RebindTestCase.jar");
         jar.addClasses(RebindTestCase.class, BindingLookupBean.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, " +
@@ -92,6 +94,7 @@ public class RebindTestCase {
                 new RemotingPermission("connect"),
                 new RemotingPermission("createEndpoint"),
                 new RuntimePermission("createXnioWorker"),
+                new FilePermission(tmpdir + "/standalone/tmp/auth/-", "read"),
                 new SocketPermission(TestSuiteEnvironment.getServerAddress(), "connect,resolve")
         ), "permissions.xml");
 

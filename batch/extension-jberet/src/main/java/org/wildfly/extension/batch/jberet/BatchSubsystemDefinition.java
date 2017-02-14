@@ -42,6 +42,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -105,6 +106,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             .setAttributeMarshaller(AttributeMarshallers.NAMED)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setCapabilityReference(Capabilities.SECURITY_DOMAIN_CAPABILITY, Capabilities.BATCH_CONFIGURATION_CAPABILITY)
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
     private final boolean registerRuntimeOnly;

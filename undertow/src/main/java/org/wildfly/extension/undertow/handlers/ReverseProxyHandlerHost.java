@@ -112,6 +112,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY, REVERSE_PROXY_HANDLER_HOST_CAPABILITY_NAME, true)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)

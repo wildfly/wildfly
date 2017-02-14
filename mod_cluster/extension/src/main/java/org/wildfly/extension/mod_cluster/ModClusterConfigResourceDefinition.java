@@ -169,6 +169,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .build();
 
     static final SimpleAttributeDefinition STICKY_SESSION = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STICKY_SESSION, ModelType.BOOLEAN, true)

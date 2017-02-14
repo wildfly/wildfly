@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.infinispan.commons.CacheException;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -88,7 +87,7 @@ public interface ClusteringServerLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 10, value = "Failed to purge %s/%s registry of old registry entries for: %s")
-    void registryPurgeFailed(@Cause CacheException e, String containerName, String cacheName, Collection<Node> nodes);
+    void registryPurgeFailed(@Cause Throwable e, String containerName, String cacheName, Collection<Node> nodes);
 
     @LogMessage(level = WARN)
     @Message(id = 11, value = "Failed to notify %s/%s registry listener of %s(%s) event")
@@ -104,4 +103,8 @@ public interface ClusteringServerLogger extends BasicLogger {
 
     @Message(id = 14, value = "Specified quorum %d must be greater than zero")
     IllegalArgumentException invalidQuorum(int quorum);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Failed to restore local %s/%s registry entry following network partititon merge")
+    void failedToRestoreLocalRegistryEntry(@Cause Throwable cause, String containerName, String cacheName);
 }

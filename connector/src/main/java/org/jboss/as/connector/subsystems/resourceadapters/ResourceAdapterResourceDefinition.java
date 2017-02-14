@@ -23,7 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
@@ -112,8 +112,8 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     static void registerTransformers400(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.WM_ELYTRON_ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WM_ELYTRON_SECURITY_DOMAIN)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_SECURITY_DOMAIN)
                 .end();
         ConnectionDefinitionResourceDefinition.registerTransformer400(builder);
     }
@@ -122,8 +122,8 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.WM_ELYTRON_ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WM_ELYTRON_SECURITY_DOMAIN)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_SECURITY_DOMAIN)
                 .end();
         ConnectionDefinitionResourceDefinition.registerTransformer300(builder);
     }
@@ -132,8 +132,8 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.WM_ELYTRON_ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_ENABLED, STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WM_ELYTRON_SECURITY_DOMAIN)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WM_ELYTRON_SECURITY_DOMAIN, STATISTICS_ENABLED)
                 .end();
         ConnectionDefinitionResourceDefinition.registerTransformer200(builder);
     }
@@ -146,11 +146,11 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
                         WM_SECURITY_DEFAULT_GROUPS, WM_SECURITY_DEFAULT_PRINCIPAL)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)), WM_SECURITY, WM_SECURITY_MAPPING_REQUIRED, STATISTICS_ENABLED)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode("other")), WM_SECURITY_DOMAIN)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.WM_ELYTRON_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WM_ELYTRON_SECURITY_DOMAIN)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE, WM_SECURITY, WM_SECURITY_MAPPING_USER, WM_SECURITY_MAPPING_GROUP,
                         WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_USERS, WM_SECURITY_DEFAULT_GROUP,
                         WM_SECURITY_DEFAULT_GROUPS, WM_SECURITY_DEFAULT_PRINCIPAL, WM_SECURITY_MAPPING_REQUIRED,
-                        WM_SECURITY_DOMAIN, WM_ELYTRON_ENABLED, STATISTICS_ENABLED)
+                        WM_SECURITY_DOMAIN, WM_ELYTRON_SECURITY_DOMAIN, STATISTICS_ENABLED)
 
                 .end();
 

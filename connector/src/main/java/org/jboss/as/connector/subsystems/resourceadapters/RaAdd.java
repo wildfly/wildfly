@@ -22,9 +22,19 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 
 import java.util.ArrayList;
@@ -64,10 +74,34 @@ public class RaAdd extends AbstractAddStepHandler {
 
     @Override
     public void performRuntime(final OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
+        final ModelNode model = resource.getModel();
+        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is true
+        // domains/application attributes should only be defined when Elytron enabled is undefined or false (default value)
+        if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            if (model.hasDefined(SECURITY_DOMAIN.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
+            else if (model.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+            else if (model.hasDefined(APPLICATION.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        } else {
+            if (model.hasDefined(AUTHENTICATION_CONTEXT.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
+            else if (model.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        }
+        // do the same for recovery security attributes
+        if (RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+            if (model.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        } else {
+            if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()))
+                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        }
+
         // Compensating is remove
         final String name = context.getCurrentAddressValue();
         final String archiveOrModuleName;
-        ModelNode model = resource.getModel();
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (!model.hasDefined(ARCHIVE.getName()) && !model.hasDefined(MODULE.getName())) {

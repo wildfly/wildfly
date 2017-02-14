@@ -34,7 +34,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODUL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
@@ -541,9 +541,10 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             WM_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
                             break;
                         }
-                        case ELYTRON_ENABLED: {
+                        case ELYTRON_SECURITY_DOMAIN: {
                             elytronEnabled = true;
-                            WM_ELYTRON_ENABLED.parseAndSetParameter("true", operation, reader);
+                            String value = domain = rawElementText(reader);
+                            WM_ELYTRON_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case DEFAULT_PRINCIPAL: {
