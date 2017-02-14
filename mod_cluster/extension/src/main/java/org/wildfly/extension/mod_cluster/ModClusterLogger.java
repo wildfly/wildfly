@@ -187,4 +187,10 @@ interface ModClusterLogger extends BasicLogger {
      */
     @Message(id = 19, value = "'%s' is not a valid value for 'excludedContexts'.")
     IllegalArgumentException excludedContextsWrongFormat(String trimmedContexts);
+
+    /**
+     * Exception thrown when user configures both 'ssl-context' attribute reference and the mod-cluster-config=configuration/ssl=configuration.
+     */
+    @Message(id = 20, value = "Only one of 'ssl-context' attribute or 'ssl' resource can be defined!")
+    IllegalStateException bothElytronAndLegacySslContextDefined();
 }
