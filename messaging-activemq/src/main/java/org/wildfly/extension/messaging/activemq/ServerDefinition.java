@@ -128,7 +128,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAlternatives(SECURITY_DOMAIN.getName())
             .setAllowExpression(false)
             .setRestartAllServices()
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
             .setCapabilityReference(Capabilities.ELYTRON_DOMAIN_CAPABILITY, Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
             .build();

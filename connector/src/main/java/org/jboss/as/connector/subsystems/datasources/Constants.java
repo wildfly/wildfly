@@ -436,6 +436,7 @@ public class Constants {
             .setAllowExpression(true)
             .setRequires(ELYTRON_ENABLED_NAME)
             .addAlternatives(SECURITY_DOMAIN_NAME, USERNAME_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
 
