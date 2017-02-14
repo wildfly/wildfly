@@ -606,6 +606,7 @@ public class Constants {
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
                     .addAlternatives(RECOVERY_PASSWORD_NAME)
+                    .setRestartAllServices()
                     .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
