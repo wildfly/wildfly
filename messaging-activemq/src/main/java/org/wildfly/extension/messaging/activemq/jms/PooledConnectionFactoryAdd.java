@@ -59,7 +59,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
     @Override
-    protected void populateModel(ModelNode operation, Resource resource) throws OperationFailedException {
+    protected void populateModel(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         ModelNode model = resource.getModel();
 
         AlternativeAttributeCheckHandler.checkAlternatives(operation, Common.CONNECTORS.getName(), Common.DISCOVERY_GROUP.getName(), false);
@@ -68,8 +68,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             attribute.validateAndSet(operation, model);
         }
 
-        // register the runtime statistics=pool child resource
-        PooledConnectionFactoryStatisticsService.registerStatisticsResources(resource);
+        if (context.getProcessType().isServer()) {
+            // register the runtime statistics=pool child resource
+            PooledConnectionFactoryStatisticsService.registerStatisticsResources(resource);
+        }
     }
 
     @Override
