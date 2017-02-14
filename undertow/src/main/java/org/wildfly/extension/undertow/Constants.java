@@ -235,5 +235,6 @@ public interface Constants {
     String OVERRIDE_DEPLOYMENT_CONFIG = "override-deployment-config";
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";
+    String ENABLE_JACC = "enable-jacc";
 
 }
