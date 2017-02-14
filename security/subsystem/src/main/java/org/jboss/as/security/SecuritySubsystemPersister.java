@@ -49,9 +49,15 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
-        if (SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.isMarshallable(node)) {
+        if (SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.isMarshallable(node) ||
+                SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC.isMarshallable(node)) {
             writer.writeEmptyElement(Element.SECURITY_MANAGEMENT.getLocalName());
-            SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.marshallAsAttribute(node, writer);
+            if (SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.isMarshallable(node)) {
+                SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.marshallAsAttribute(node, writer);
+            }
+            if (SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC.isMarshallable(node)) {
+                SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC.marshallAsAttribute(node, writer);
+            }
         }
 
         if (node.hasDefined(SECURITY_DOMAIN) && node.get(SECURITY_DOMAIN).asInt() > 0) {
