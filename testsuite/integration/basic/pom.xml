@@ -406,7 +406,7 @@
             </build>
         </profile>
 
-         <!-- IIOP/CORBA stub generation - manual stub generation for IBM JDK -->
+        <!-- IIOP/CORBA stub generation - manual stub generation for IBM JDK -->
         <profile>
             <id>ibmjdk.profile</id>
             <activation>
@@ -449,6 +449,7 @@
                 </plugins>
             </build>
         </profile>
+
     </profiles>
 
 </project>
