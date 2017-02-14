@@ -1,0 +1,5 @@
+embed-server --server-config=standalone.xml  --jboss-home=${jboss.home.dir}
+/interface=public:write-attribute(name=inet-address, value="${public.ip}" )
+/interface=management:write-attribute(name=inet-address, value="${management.ip}" )
+
+stop-embedded-server
