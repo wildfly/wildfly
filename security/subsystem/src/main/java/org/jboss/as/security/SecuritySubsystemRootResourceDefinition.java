@@ -90,6 +90,10 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
+    static final SimpleAttributeDefinition INITIALIZE_JACC = new SimpleAttributeDefinitionBuilder(Constants.INITIALIZE_JACC, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(true)
+            .build();
 
     private SecuritySubsystemRootResourceDefinition() {
         super(SecurityExtension.PATH_SUBSYSTEM,
@@ -100,6 +104,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
          resourceRegistration.registerReadWriteAttribute(DEEP_COPY_SUBJECT_MODE, null, new ReloadRequiredWriteAttributeHandler(DEEP_COPY_SUBJECT_MODE));
+        resourceRegistration.registerReadWriteAttribute(INITIALIZE_JACC, null, new ReloadRequiredWriteAttributeHandler(INITIALIZE_JACC));
     }
 
     @Override
@@ -138,6 +143,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
             DEEP_COPY_SUBJECT_MODE.validateAndSet(operation, model);
+            INITIALIZE_JACC.validateAndSet(operation, model);
         }
 
         @Override
@@ -149,8 +155,8 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 WildFlySecurityManager.setPropertyPrivileged(SecurityContextAssociation.SECURITYCONTEXT_THREADLOCAL, "true");
             }
             final ServiceTarget target = context.getServiceTarget();
-
-            final SecurityBootstrapService bootstrapService = new SecurityBootstrapService();
+            ModelNode initializeJaccNode = SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC.resolveModelAttribute(context,model);
+            final SecurityBootstrapService bootstrapService = new SecurityBootstrapService(initializeJaccNode.asBoolean());
             target.addService(SecurityBootstrapService.SERVICE_NAME, bootstrapService)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, bootstrapService.getServiceModuleLoaderInjectedValue())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();

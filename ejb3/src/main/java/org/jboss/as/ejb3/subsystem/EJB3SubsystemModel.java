@@ -153,6 +153,7 @@ public interface EJB3SubsystemModel {
     String OUTFLOW_SECURITY_DOMAINS = "outflow-security-domains";
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";
+    String ENABLE_JACC = "enable-jacc";
 
     PathElement IDENTITY_PATH = PathElement.pathElement(SERVICE, IDENTITY);
 }

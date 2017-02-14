@@ -23,6 +23,7 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:security:3.0">
+    <security-management initialize-jacc="true"/>
     <security-domains>
         <security-domain name="other" cache-type="default">
             <authentication>

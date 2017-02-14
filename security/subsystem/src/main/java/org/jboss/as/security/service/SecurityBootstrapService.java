@@ -70,19 +70,30 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private Policy jaccPolicy;
 
+    private final boolean initializeJacc;
+
     private static final String JACC_POLICY_PROVIDER = "javax.security.jacc.policy.provider";
 
-    public SecurityBootstrapService() {
+    public SecurityBootstrapService(boolean initializeJacc) {
+        this.initializeJacc = initializeJacc;
     }
 
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
         log.debugf("Starting SecurityBootstrapService");
-        try {
-            //Print out the current version of PicketBox
-            SecurityLogger.ROOT_LOGGER.currentVersion(org.picketbox.Version.VERSION);
+        //Print out the current version of PicketBox
+        SecurityLogger.ROOT_LOGGER.currentVersion(org.picketbox.Version.VERSION);
+        initializeJacc();
+    }
 
+    private void initializeJacc() throws StartException {
+        if (!initializeJacc) {
+            SecurityLogger.ROOT_LOGGER.debugf("Legacy subsystem configured to not initialize JACC. If you want JACC support, make sure you have it properly configured in Elytron subsystem.");
+            return;
+        }
+        SecurityLogger.ROOT_LOGGER.debugf("Initializing JACC from legacy subsystem.");
+        try {
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
             String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
