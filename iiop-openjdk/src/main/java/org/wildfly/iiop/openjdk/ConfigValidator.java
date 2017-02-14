@@ -80,7 +80,7 @@ public class ConfigValidator {
                 if(attribute.equals(Constants.IOR_NONE)){
                     throw IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName());
                 }
-                if (serverRequiresSsl && serverRequiresSsl && attribute.equals(Constants.IOR_SUPPORTED)) {
+                if (serverRequiresSsl && attribute.equals(Constants.IOR_SUPPORTED)) {
                     throw IIOPLogger.ROOT_LOGGER.inconsistentRequiredTransportConfig(Constants.SECURITY_SERVER_REQUIRES_SSL, attributeDefinition.getName());
                 }
             } else {
