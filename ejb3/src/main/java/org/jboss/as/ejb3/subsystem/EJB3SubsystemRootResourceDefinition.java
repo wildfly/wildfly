@@ -177,7 +177,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     private static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
     private static final IdentityResourceDefinition IDENTITY = IdentityResourceDefinition.INSTANCE;
     private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null,
-            APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate(), IDENTITY.getOutflowSecurityDomainsConfiguredSupplier());
+            APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainFunction(), IDENTITY.getOutflowSecurityDomainsConfiguredSupplier());
     private static final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor = new MissingMethodPermissionsDenyAccessMergingProcessor();
 
 

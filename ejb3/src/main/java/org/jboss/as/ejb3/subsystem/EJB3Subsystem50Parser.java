@@ -121,6 +121,9 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
                 case SECURITY_DOMAIN:
                     ApplicationSecurityDomainDefinition.SECURITY_DOMAIN.parseAndSetParameter(attributeValue, operation, reader);
                     break;
+                case ENABLE_JACC:
+                    ApplicationSecurityDomainDefinition.ENABLE_JACC.parseAndSetParameter(attributeValue, operation, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
