@@ -71,6 +71,10 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -147,6 +151,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .setMinSize(1)
             .setRestartAllServices()
             .setCapabilityReference(HTTP_AUTHENITCATION_FACTORY_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
             .build();
 
     static final SimpleAttributeDefinition OVERRIDE_DEPLOYMENT_CONFIG = new SimpleAttributeDefinitionBuilder(Constants.OVERRIDE_DEPLOYMENT_CONFIG, ModelType.BOOLEAN, true)
@@ -165,8 +170,12 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     private static final Set<String> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
 
     private ApplicationSecurityDomainDefinition() {
-        this(new Parameters(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN), UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
-                .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY), new AddHandler());
+        this((Parameters) new Parameters(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN),
+                UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
+                        .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
+                        .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
+                                new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))
+                        , new AddHandler());
     }
 
     private ApplicationSecurityDomainDefinition(Parameters parameters, AbstractAddStepHandler add) {

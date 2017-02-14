@@ -31,6 +31,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
@@ -64,10 +65,10 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false).setCapabilityReference(new CapabilityReference(Capability.SSO_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
-        KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.SSO_KEY_STORE, CommonUnaryRequirement.KEY_STORE))),
-        SSL_CONTEXT("client-ssl-context", ModelType.STRING, builder -> builder.setRequired(false).setCapabilityReference(new CapabilityReference(Capability.SSO_SSL_CONTEXT, CommonUnaryRequirement.SSL_CONTEXT))),
+        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false).setCapabilityReference(new CapabilityReference(Capability.SSO_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL).build()),
+        KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
+        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.SSO_KEY_STORE, CommonUnaryRequirement.KEY_STORE)).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
+        SSL_CONTEXT("client-ssl-context", ModelType.STRING, builder -> builder.setRequired(false).setCapabilityReference(new CapabilityReference(Capability.SSO_SSL_CONTEXT, CommonUnaryRequirement.SSL_CONTEXT)).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
         ;
         private final AttributeDefinition definition;
 

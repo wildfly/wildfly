@@ -317,6 +317,7 @@ public class Constants {
             .setAllowExpression(true)
             .setXmlName(WorkManagerSecurity.Tag.ELYTRON_SECURITY_DOMAIN.getLocalName())
             .setAlternatives(WM_SECURITY_DOMAIN_NAME)
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_PRINCIPAL = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_PRINCIPAL_NAME, ModelType.STRING)
@@ -423,6 +424,7 @@ public class Constants {
             .setRequires(ELYTRON_ENABLED_NAME)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME,
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
     static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME, ModelType.STRING, true)
@@ -431,6 +433,7 @@ public class Constants {
             .setRequires(ELYTRON_ENABLED_NAME)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME,
                     AUTHENTICATION_CONTEXT_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
@@ -582,6 +585,7 @@ public class Constants {
             .setAllowExpression(true)
             .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .setAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
