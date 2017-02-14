@@ -24,7 +24,7 @@
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-xts.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
-                <property name="managementAddress">${node1:127.0.0.1}</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort1:10090}</property>
             </configuration>
         </container>

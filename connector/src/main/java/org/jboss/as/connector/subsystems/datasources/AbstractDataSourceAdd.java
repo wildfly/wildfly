@@ -113,7 +113,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
-        DataSourceStatisticsService.registerStatisticsResources(resource);
+        if (context.getProcessType().isServer()) {
+            DataSourceStatisticsService.registerStatisticsResources(resource);
+        }
         super.populateModel(context, operation, resource);
 
     }

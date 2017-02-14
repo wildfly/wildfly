@@ -273,15 +273,13 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         if (this.sasCurrent != null) {
                             final byte[] incomingIdentity = this.sasCurrent.get_incoming_principal_name();
 
+                            //we have an identity token, which is a trust based mechanism
                             if (incomingIdentity != null && incomingIdentity.length > 0) {
-                                //we have an identity token, which is a trust based mechanism
-                                if (incomingIdentity.length > 0) {
-                                    String name = new String(incomingIdentity, StandardCharsets.UTF_8);
-                                    int domainIndex = name.indexOf('@');
-                                    if (domainIndex > 0)
-                                        name = name.substring(0, domainIndex);
-                                    identityPrincipal = new NamePrincipal(name);
-                                }
+                                String name = new String(incomingIdentity, StandardCharsets.UTF_8);
+                                int domainIndex = name.indexOf('@');
+                                if (domainIndex > 0)
+                                    name = name.substring(0, domainIndex);
+                                identityPrincipal = new NamePrincipal(name);
                             }
                             final byte[] incomingUsername = this.sasCurrent.get_incoming_username();
                             if (incomingUsername != null && incomingUsername.length > 0) {
