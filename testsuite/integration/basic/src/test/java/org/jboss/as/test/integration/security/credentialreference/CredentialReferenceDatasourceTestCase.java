@@ -281,7 +281,7 @@ public class CredentialReferenceDatasourceTestCase {
         public void setup(ManagementClient managementClient, String s) throws Exception {
             h2Server = Server.createTcpServer("-tcpAllowOthers").start();
             // open connection to database, because that's only (easy) way to set password for user sa
-            connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", DATABASE_PASSWORD);
+            connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", "sa", DATABASE_PASSWORD);
         }
 
         @Override

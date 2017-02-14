@@ -53,12 +53,10 @@ import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
@@ -83,7 +81,6 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -92,12 +89,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
 import org.jboss.security.SubjectFactory;
 import org.wildfly.common.function.ExceptionSupplier;
-import org.wildfly.security.credential.PasswordCredential;
-import org.wildfly.security.credential.source.CredentialSource;
-import org.wildfly.security.credential.source.CredentialStoreCredentialSource;
-import org.wildfly.security.credential.store.CredentialStore;
-import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.credential.source.CredentialSource;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.
@@ -446,39 +439,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         result.addAll(Arrays.asList(a));
         result.addAll(Arrays.asList(b));
         return result;
-    }
-
-    private static char[] getPasswordFromCredentialReference(ObjectTypeAttributeDefinition credentialReferenceDefinition, OperationContext context, ModelNode model) throws OperationFailedException {
-        ModelNode value = credentialReferenceDefinition.resolveModelAttribute(context, model);
-        if (value.isDefined()) {
-
-            final String credentialStoreName = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.STORE);
-            final String credentialAlias = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.ALIAS);
-            final String secret = CredentialReference.credentialReferencePartAsStringIfDefined(value, CredentialReference.CLEAR_TEXT);
-
-            if (secret != null) {
-                return secret.toCharArray();
-            }
-
-            //CredentialSource cs = CredentialReference.getCredentialSourceSupplier(context, credentialReferenceDefinition, model, serviceBuilder);
-            String credentialStoreCapabilityName = RuntimeCapability.buildDynamicCapabilityName(CredentialReference.CREDENTIAL_STORE_CAPABILITY, credentialStoreName);
-            ServiceName credentialStoreServiceName = context.getCapabilityServiceName(credentialStoreCapabilityName, CredentialStore.class);
-            Service<?> csService = context.getServiceRegistry(false).getService(credentialStoreServiceName).getService();
-            CredentialStore credentialStore = csService.getValue() instanceof CredentialStore ? (CredentialStore) csService.getValue() : null;
-
-            if (credentialAlias != null && credentialStore != null) {
-                CredentialSource cs = new CredentialStoreCredentialSource(credentialStore, credentialAlias);
-
-                try {
-                    return cs.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword();
-                } catch (Exception e) {
-                    throw new OperationFailedException(e);
-                }
-            }
-            return null;
-        } else {
-            return null;
-        }
     }
 
 }

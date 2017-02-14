@@ -87,7 +87,7 @@ public class DsXmlParser extends DsParser {
                             DataSource.Tag.SECURITY) {
 
                         return new DsSecurityImpl(userName, password,elytronEnabled? authenticationContext: securityDomain,
-                                elytronEnabled, reauthPlugin);
+                                elytronEnabled, reauthPlugin, null);
                     } else {
                         if (DsSecurity.Tag.forName(reader.getLocalName()) == DsSecurity.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));

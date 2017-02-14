@@ -129,9 +129,7 @@ import org.jboss.jca.common.metadata.ds.StatementImpl;
 import org.jboss.jca.common.metadata.ds.TimeOutImpl;
 import org.jboss.jca.common.metadata.ds.ValidationImpl;
 import org.wildfly.common.function.ExceptionSupplier;
-import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
-import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
  * Utility used to help convert between JCA spi data-source instances and model
@@ -177,20 +175,7 @@ class DataSourceModelNodeUtil {
         final DsPool pool = new DsPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, allowMultipleUsers, capacity, fair, connectionListener);
 
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
-        final String password;
-        try {
-            CredentialSource cs = null;
-            if (credentialSourceSupplier != null)
-                cs = credentialSourceSupplier.get();
-            if (cs != null) {
-                password = new String(
-                        cs.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword());
-            } else {
-                password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
-            }
-        } catch (Exception e) {
-            throw new OperationFailedException(e);
-        }
+        final String password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
 
 
         final String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN);
@@ -200,7 +185,7 @@ class DataSourceModelNodeUtil {
         final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password,
-                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, reauthPlugin);
+                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, reauthPlugin, credentialSourceSupplier);
 
         final boolean sharePreparedStatements = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHARE_PREPARED_STATEMENTS);
         final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
@@ -292,17 +277,7 @@ class DataSourceModelNodeUtil {
                 isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool, allowMultipleUsers, capacity, fair, connectionListener);
 
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
-        final String password;
-        if (credentialSourceSupplier != null) {
-            try {
-                password = new String(
-                        credentialSourceSupplier.get().getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword());
-            } catch (Exception e) {
-                throw new OperationFailedException(e);
-            }
-        } else {
-            password = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
-        }
+        final String password= ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
         final String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN);
         final boolean elytronEnabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ELYTRON_ENABLED);
         final String authenticationContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, AUTHENTICATION_CONTEXT);
@@ -310,7 +285,7 @@ class DataSourceModelNodeUtil {
         final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password,
-                elytronEnabled? authenticationContext: securityDomain, elytronEnabled,reauthPlugin);
+                elytronEnabled? authenticationContext: securityDomain, elytronEnabled,reauthPlugin, credentialSourceSupplier);
 
         final Boolean sharePreparedStatements = dataSourceNode.hasDefined(SHARE_PREPARED_STATEMENTS.getName()) ? dataSourceNode.get(
                 SHARE_PREPARED_STATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;

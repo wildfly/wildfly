@@ -58,7 +58,7 @@ public class CredentialStoreServerSetupTask implements ServerSetupTask {
 
     private void createCredentialStore(final ModelControllerClient client) throws IOException {
         final ModelNode addOperation = Operations.createAddOperation(CREDENTIAL_STORE_ADDRESS.toModelNode());
-        addOperation.get(URI).set("cr-store://test/store001.jceks?create.storage=true");
+        addOperation.get(URI).set("cr-store://test/store001.jceks?create=true;keyStoreType=JCEKS;modifiable=true");
         addOperation.get(RELATIVE_TO).set("jboss.server.data.dir");
         final ModelNode credentialReference = addOperation.get(CREDENTIAL_REFERENCE).setEmptyObject();
         credentialReference.get("clear-text").set("joshua");

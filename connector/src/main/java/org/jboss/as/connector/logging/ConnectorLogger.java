@@ -897,4 +897,8 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 109, value = "Callback with security domain is required - use createCallbackHandler(Callback callback) instead")
     UnsupportedOperationException unsupportedCreateCallbackHandlerMethod();
+
+    @Message(id = 110, value = "CredentialSourceSupplier is invalid for DSSecurity")
+    IllegalStateException invalidCredentialSourceSupplier(@Cause Throwable cause);
+
 }
