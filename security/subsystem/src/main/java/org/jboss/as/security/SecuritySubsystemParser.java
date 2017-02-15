@@ -175,6 +175,10 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
+                case INITIALIZE_JACC: {
+                    SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
                 default:
                     throw unexpectedAttribute(reader, i);
             }

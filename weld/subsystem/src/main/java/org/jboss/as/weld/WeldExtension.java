@@ -37,10 +37,10 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.dmr.ModelNode;
@@ -61,7 +61,7 @@ public class WeldExtension implements Extension {
 
     private static final String RESOURCE_NAME = WeldExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -78,7 +78,7 @@ public class WeldExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(WeldSubsystem30Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(WeldSubsystem40Parser.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);
@@ -88,15 +88,30 @@ public class WeldExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem10Parser.NAMESPACE, WeldSubsystem10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, WeldSubsystem20Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem30Parser.NAMESPACE, WeldSubsystem30Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem10Parser.NAMESPACE, () -> WeldSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, () -> WeldSubsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem30Parser.NAMESPACE, () -> WeldSubsystem30Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem40Parser.NAMESPACE, () -> WeldSubsystem40Parser.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder()
-                //These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject if 'undefined'.
+        ModelVersion version1_0_0 = ModelVersion.create(1, 0, 0);
+        ModelVersion version3_0_0 = ModelVersion.create(3, 0, 0);
+
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory
+                .createChainedSubystemInstance(subsystem.getSubsystemVersion());
+
+        // Differences between the current version and 3.0.0
+        ResourceTransformationDescriptionBuilder builder300 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), version3_0_0);
+        builder300.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)
+                // Reject thread-pool-size attribute if defined
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE).end();
+
+        // Differences between 3.0.0 and 1.0.0
+        ResourceTransformationDescriptionBuilder builder100 = chainedBuilder.createBuilder(version3_0_0, version1_0_0);
+        builder100.getAttributeBuilder()
+                // These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject
+                // if 'undefined'.
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -107,19 +122,17 @@ public class WeldExtension implements Extension {
                     }
 
                     @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                            TransformationContext context) {
-                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        // This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
                 }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
 
                 // development mode - not supported in older versions
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),
-                        WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
-                 // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
-                .end();
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
+                // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE).end();
+
+        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[] { version1_0_0, version3_0_0 });
     }
 }

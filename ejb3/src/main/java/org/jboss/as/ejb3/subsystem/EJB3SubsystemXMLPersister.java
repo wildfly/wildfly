@@ -260,6 +260,13 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
+        // graceful txn shutdown
+        if (model.hasDefined(ENABLE_GRACEFUL_TXN_SHUTDOWN)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.ENABLE_GRACEFUL_TXN_SHUTDOWN.getLocalName());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN).asString());
+            writer.writeEndElement();
+        }
+
         // statistics element
         if (model.hasDefined(ENABLE_STATISTICS)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
@@ -615,6 +622,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeStartElement(APPLICATION_SECURITY_DOMAIN);
         writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
         ApplicationSecurityDomainDefinition.SECURITY_DOMAIN.marshallAsAttribute(property.getValue(), writer);
+        ApplicationSecurityDomainDefinition.ENABLE_JACC.marshallAsAttribute(property.getValue(), writer);
         writer.writeEndElement();
     }
 

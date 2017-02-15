@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.core.security.ServerSecurityManager;
@@ -84,6 +83,7 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
+import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.security.IdentityOutflowInterceptorFactory;
@@ -94,6 +94,7 @@ import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.security.deployment.SecurityAttachments;
@@ -146,10 +147,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private String defaultSecurityDomain;
 
     /**
-     * A predicate that returns whether or not a given security domain name has been mapped to an
-     * Elytron security domain
+     * A function that returns the configuration for a Elytron security domain
      */
-    private Predicate<String> knownSecurityDomain = null;
+    private Function<String, ApplicationSecurityDomainConfig> knownSecurityDomain = null;
 
     /**
      * The @DeclareRoles (a.k.a security-role-ref) for the bean
@@ -343,8 +343,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
-                    if (((EJBComponentDescription) description).isSecurityDomainKnown()) {
-                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID);
+                    EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
+                    if (ejbComponentDescription.isSecurityDomainKnown()) {
+                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.isEnableJacc());
                         elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
                     } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
                         configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
@@ -377,6 +378,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         // setup dependencies on the transaction manager services
         addTransactionManagerDependencies();
+
+        // setup ejb suspend handler dependency
+        addEJBSuspendHandlerDependency();
 
         // setup dependency on ServerSecurityManager
         addServerSecurityManagerDependency();
@@ -574,6 +578,24 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     /**
+     * Sets up a {@link ComponentConfigurator} which then sets up the dependency on the EJBSuspendHandlerService service for the {@link EJBComponentCreateService}
+     */
+    protected void addEJBSuspendHandlerDependency() {
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                    @Override public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService)
+                            throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(EJBSuspendHandlerService.SERVICE_NAME, EJBSuspendHandlerService.class,
+                                ejbComponentCreateService.getEJBSuspendHandlerInjector());
+                    }
+                });
+            }
+        });
+    }
+
+    /**
      * Sets up a {@link ComponentConfigurator} which then sets up the dependency on the ServerSecurityManager service for the {@link EJBComponentCreateService}
      */
     protected void addServerSecurityManagerDependency() {
@@ -682,12 +704,22 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.defaultSecurityDomain = defaultSecurityDomain;
     }
 
-    public void setKnownSecurityDomainPredicate(final Predicate<String> knownSecurityDomain) {
+    public void setKnownSecurityDomainFunction(final Function<String, ApplicationSecurityDomainConfig> knownSecurityDomain) {
         this.knownSecurityDomain = knownSecurityDomain;
     }
 
     public boolean isSecurityDomainKnown() {
-        return knownSecurityDomain == null ? false : knownSecurityDomain.test(getSecurityDomain());
+        return knownSecurityDomain == null ? false : knownSecurityDomain.apply(getSecurityDomain()) != null;
+    }
+
+    public boolean isEnableJacc() {
+        ApplicationSecurityDomainConfig config = knownSecurityDomain == null ? null : knownSecurityDomain.apply(getSecurityDomain());
+
+        if (config != null) {
+            return config.isEnableJacc();
+        }
+
+        return false;
     }
 
     public void setOutflowSecurityDomainsConfigured(final BooleanSupplier outflowSecurityDomainsConfigured) {
@@ -1101,15 +1133,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 '}' + "@" + Integer.toHexString(hashCode());
     }
 
-    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(final String policyContextID) {
+    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(String policyContextID, boolean enableJacc) {
         final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
         final Set<String> roles = new HashSet<>();
 
         // First interceptor: security domain association
         interceptorFactories.put(InterceptorOrder.View.SECURITY_CONTEXT, SecurityDomainInterceptorFactory.INSTANCE);
 
-        // Next interceptor: policy context ID
-        interceptorFactories.put(InterceptorOrder.View.POLICY_CONTEXT, new ImmediateInterceptorFactory(new PolicyContextIdInterceptor(policyContextID)));
+        if (enableJacc) {
+            // Next interceptor: policy context ID
+            interceptorFactories.put(InterceptorOrder.View.POLICY_CONTEXT, new ImmediateInterceptorFactory(new PolicyContextIdInterceptor(policyContextID)));
+        }
 
         // Next interceptor: run-as-principal
         // Switch users if there's a run-as principal

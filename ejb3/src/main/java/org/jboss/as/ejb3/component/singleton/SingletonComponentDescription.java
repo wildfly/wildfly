@@ -44,6 +44,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -121,8 +122,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                         if (deploymentUnit.getParent() != null) {
                             contextID = deploymentUnit.getParent().getName() + "!" + contextID;
                         }
+                        EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
                         if (isSecurityDomainKnown()) {
-                            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID);
+                            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID, ejbComponentDescription.isEnableJacc());
                             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addPostConstructInterceptor(elytronInterceptorFactory, priority));
                         } else {
                             configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isExplicitSecurityDomainConfigured(), false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);

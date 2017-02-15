@@ -60,6 +60,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
     String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
     String DISABLE_DEFAULT_EJB_PERMISSIONS = "disable-default-ejb-permissions";
+    String ENABLE_GRACEFUL_TXN_SHUTDOWN = "enable-graceful-txn-shutdown";
     String DISCOVERY = "discovery";
     String STATIC = "static";
     String LOG_SYSTEM_EXCEPTIONS = "log-system-exceptions";
@@ -153,6 +154,7 @@ public interface EJB3SubsystemModel {
     String OUTFLOW_SECURITY_DOMAINS = "outflow-security-domains";
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";
+    String ENABLE_JACC = "enable-jacc";
 
     PathElement IDENTITY_PATH = PathElement.pathElement(SERVICE, IDENTITY);
 }

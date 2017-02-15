@@ -135,7 +135,7 @@
     </filters>
 
     <application-security-domains>
-        <application-security-domain name="other" http-authentication-factory="elytron-factory" override-deployment-config="true">
+        <application-security-domain name="other" http-authentication-factory="elytron-factory" override-deployment-config="true" enable-jacc="true">
             <single-sign-on domain="${prop.domain:myDomain}" http-only="true" secure="true" path="/path" cookie-name="SSOID" key-store="my-key-store" key-alias="my-key-alias" client-ssl-context="my-ssl-context">
                 <credential-reference store="my-credential-store" alias="my-credential-alias" type="password"/>
             </single-sign-on>

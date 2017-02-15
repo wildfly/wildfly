@@ -1,14 +1,20 @@
 @echo off
 REM  ======================================================================
 REM
-REM  This is the main entry point for the build system.
+REM  A build script
 REM
-REM  Users should be sure to execute this file rather than 'mvn' to ensure
-REM  the correct version is being used with the correct configuration.
+REM  At present this script does nothing else than pass the arguments by to
+REM  mvnw and you are encouraged to use mvnw (a.k.a. Maven Wrapper)
+REM  directly.
+REM
+REM  Note that in the past, this script took the following responsibilities
+REM  that are now handled by mvnw or Maven itself:
+REM
+REM  * Download and install a specific version of Maven
+REM  * Set Maven options via MAVEN_OPTS environment variable - these can
+REM    now be set in .mvn/jvm.config and .mvn/maven.config
 REM
 REM  ======================================================================
-REM
-REM $Id: build.bat 105735 2010-06-04 19:45:13Z pgier $
 REM
 REM Authors:
 REM     Jason Dillon <jason@planet57.com>
@@ -28,68 +34,17 @@ SETLOCAL
 set CLASSPATH=
 set M2_HOME=
 set MAVEN_HOME=
-set MAVEN_OPTS=%MAVEN_OPTS% -Xmx768M
-powershell -noprofile -executionpolicy bypass -file "tools\download-maven.ps1"
 
-REM ******************************************************
-REM - "for" loops have been unrolled for compatibility
-REM   with some WIN32 systems.
-REM ******************************************************
+REM MAVEN_OPTS MAVEN_OPTS now live in .mvn/jvm.config and .mvn/maven.config
+REM set MAVEN_OPTS=%MAVEN_OPTS% -Xmx768M
 
-set NAMES=tools;tools\maven;tools\apache\maven
-set SUBFOLDERS=.;..;..\..;..\..\..;..\..\..\..
+set DIRNAME=%~p0
+set MVN=%DIRNAME%\mvn.cmd
 
-REM ******************************************************
-REM ******************************************************
-
-SET EXECUTED=FALSE
-for %%i in (%NAMES%) do call :subLoop %%i %1 %2 %3 %4 %5 %6
-
-goto :EOF
-
-
-REM ******************************************************
-REM ********* Search for names in the subfolders *********
-REM ******************************************************
-
-:subLoop
-for %%j in (%SUBFOLDERS%) do call :testIfExists %%j\%1\bin\mvn.bat %2 %3 %4 %5 %6 %7
-
-goto :EOF
-
-
-REM ******************************************************
-REM ************ Test if Maven Batch file exists ***********
-REM ******************************************************
-
-:testIfExists
-if exist %1 call :BatchFound %1 %2 %3 %4 %5 %6 %7 %8
-
-goto :EOF
-
-
-REM ******************************************************
-REM ************** Batch file has been found *************
-REM ******************************************************
-
-:BatchFound
-if (%EXECUTED%)==(FALSE) call :ExecuteBatch %1 %2 %3 %4 %5 %6 %7 %8
-set EXECUTED=TRUE
-
-goto :EOF
-
-REM ******************************************************
-REM ************* Execute Batch file only once ***********
-REM ******************************************************
-
-:ExecuteBatch
-set GOAL=%2
+set GOAL=%1
 if "%GOAL%"=="" set GOAL=install
 
-echo Calling %1 %GOAL% %3 %4 %5 %6 %7 %8
-call %1 %GOAL% %3 %4 %5 %6 %7 %8
-
-:end
+echo Calling "%MVN%" %GOAL% %2 %3 %4 %5 %6 %7
+call "%MVN%" %GOAL% %2 %3 %4 %5 %6 %7
 
 if "%NOPAUSE%" == "" pause
-

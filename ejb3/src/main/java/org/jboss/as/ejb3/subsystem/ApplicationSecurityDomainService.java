@@ -48,12 +48,17 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
 
     private final InjectedValue<SecurityDomain> securityDomainInjector = new InjectedValue<>();
     private final Set<RegistrationImpl> registrations = new HashSet<>();
+    private final boolean enableJacc;
 
     private ApplicationSecurityDomain applicationSecurityDomain;
 
+    public ApplicationSecurityDomainService(boolean enableJacc) {
+        this.enableJacc = enableJacc;
+    }
+
     @Override
     public void start(StartContext context) throws StartException {
-        applicationSecurityDomain = new ApplicationSecurityDomain(securityDomainInjector.getValue());
+        applicationSecurityDomain = new ApplicationSecurityDomain(securityDomainInjector.getValue(), enableJacc);
     }
 
     @Override
@@ -115,13 +120,19 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
     public final class ApplicationSecurityDomain {
 
         private final SecurityDomain securityDomain;
+        private final boolean enableJacc;
 
-        public ApplicationSecurityDomain(final SecurityDomain securityDomain) {
+        public ApplicationSecurityDomain(final SecurityDomain securityDomain, boolean enableJacc) {
             this.securityDomain = securityDomain;
+            this.enableJacc = enableJacc;
         }
 
         public SecurityDomain getSecurityDomain() {
             return securityDomain;
+        }
+
+        public boolean isEnableJacc() {
+            return enableJacc;
         }
 
         public BiFunction<String, ClassLoader, Registration> getSecurityFunction() {

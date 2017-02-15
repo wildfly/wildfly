@@ -3135,4 +3135,14 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 490, value = "Multiple security domains not supported")
     DeploymentUnitProcessingException multipleSecurityDomainsDetected();
 
+    @Message(id = 491, value = "The transaction begin request was rejected as the container is suspended")
+    EJBException cannotBeginUserTransaction();
+
+    @LogMessage(level = INFO)
+    @Message(id = 492, value = "EJB subsystem suspension waiting for active transactions, %d transaction(s) remaining")
+    void suspensionWaitingActiveTransactions(int activeTransactionCount);
+
+    @LogMessage(level = INFO)
+    @Message(id = 493, value = "EJB subsystem suspension complete")
+    void suspensionComplete();
 }
