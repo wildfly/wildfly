@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.transaction.TransactionManager;
 
 import org.jboss.msc.service.AbstractService;
@@ -29,7 +31,14 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.tm.usertx.UserTransactionRegistry;
+import org.wildfly.transaction.client.AbstractTransaction;
+import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
  * Service responsible for getting the {@link TransactionManager}.
@@ -41,16 +50,29 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_TRANSACTION_MANAGER;
 
-    private static final TransactionManagerService INSTANCE = new TransactionManagerService();
+    private InjectedValue<UserTransactionRegistry> registryInjector = new InjectedValue<>();
 
     private TransactionManagerService() {
     }
 
     public static ServiceController<TransactionManager> addService(final ServiceTarget target) {
-        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, INSTANCE);
+        final TransactionManagerService service = new TransactionManagerService();
+        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
         // This is really a dependency on the global context.  TODO: Break this later; no service is needed for TM really
         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        serviceBuilder.addDependency(UserTransactionRegistryService.SERVICE_NAME, UserTransactionRegistry.class, service.registryInjector);
         return serviceBuilder.install();
+    }
+
+    public void start(final StartContext context) throws StartException {
+        final UserTransactionRegistry registry = registryInjector.getValue();
+
+        LocalTransactionContext.getCurrent().registerCreationListener(txn -> txn.registerAssociationListener(new AssociationListener() {
+            private final AtomicBoolean first = new AtomicBoolean();
+            public void associationChanged(final AbstractTransaction t, final boolean a) {
+                if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
+            }
+        }));
     }
 
     @Override
