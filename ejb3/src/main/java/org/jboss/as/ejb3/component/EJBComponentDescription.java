@@ -146,8 +146,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private String defaultSecurityDomain;
 
     /**
-     * A predicate that returns whether or not a given security domain name has been mapped to an
-     * Elytron security domain
+     * A function that returns the configuration for a Elytron security domain
      */
     private Function<String, ApplicationSecurityDomainConfig> knownSecurityDomain = null;
 

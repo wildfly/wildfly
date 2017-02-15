@@ -215,7 +215,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
     }
 
     Function<String, ApplicationSecurityDomainConfig> getKnownSecurityDomainFunction() {
-        return name -> knownApplicationSecurityDomains.stream().filter(applicationSecurityDomainConfig -> applicationSecurityDomainConfig.isSameDomain(name)).findFirst().get();
+        return name -> knownApplicationSecurityDomains.stream().filter(applicationSecurityDomainConfig -> applicationSecurityDomainConfig.isSameDomain(name)).findFirst().orElse(null);
     }
 
     static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
