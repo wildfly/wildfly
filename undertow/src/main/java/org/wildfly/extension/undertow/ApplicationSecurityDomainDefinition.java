@@ -725,7 +725,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                     List<Permission> permissions = new ArrayList<>();
 
                     permissions.add(new WebResourcePermission(getCanonicalURI(request), request.getMethod()));
-                    permissions.addAll(account.getRoles().stream().map((Function<String, Permission>) roleName -> new WebRoleRefPermission(getCanonicalURI(request), request.getMethod())).collect(Collectors.toList()));
+
+                    securityIdentity.getRoles("web", true).forEach(roleName -> permissions.add(new WebRoleRefPermission(getCanonicalURI(request), roleName)));
 
                     for (Permission permission : permissions) {
                         if (securityIdentity.implies(permission)) {
