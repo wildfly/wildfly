@@ -62,6 +62,18 @@
          </xs:documentation>
       </xs:annotation>
       <xs:attribute name="deep-copy-subject-mode" type="xs:boolean" use="optional"/>
+       <xs:attribute name="initialize-jacc" type="xs:boolean" use="optional" default="true">
+           <xs:annotation>
+               <xs:documentation>
+                   <![CDATA[
+                       Indicates if this subsystem should be in charge of initializing JACC related services. This attribute can be used
+                       to turn of JACC initialization from this subsystem in case Elytron is being used in parallel. In this case, JACC initialization
+                       will only be performed by this subsystem. If you are using only Elytron subsystem, you can set this attribute to "false" and specify
+                       a similar attribute in Elytron subsystem to enable JACC. Default value is "true".
+                   ]]>
+               </xs:documentation>
+           </xs:annotation>
+       </xs:attribute>
    </xs:complexType>
 
    <!-- Configuration for security domains -->

@@ -32,6 +32,8 @@ import static org.wildfly.security.http.HttpConstants.CONFIG_REALM;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Permission;
+import java.security.Policy;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,11 +52,14 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.security.jacc.WebResourcePermission;
+import javax.security.jacc.WebRoleRefPermission;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
@@ -100,9 +105,11 @@ import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecurityDomainSingleSignOnManagerBuilder;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpScopeNotification;
@@ -117,6 +124,7 @@ import org.wildfly.security.http.util.sso.SingleSignOnServerMechanismFactory.Sin
 import org.wildfly.security.http.util.sso.SingleSignOnSessionFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
@@ -125,9 +133,13 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionIdGenerator;
 import io.undertow.server.session.SessionManager;
 import io.undertow.servlet.api.AuthMethodConfig;
+import io.undertow.servlet.api.AuthorizationManager;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
+import io.undertow.servlet.api.ServletInfo;
+import io.undertow.servlet.api.SingleConstraintMatch;
+import io.undertow.servlet.core.DefaultAuthorizationManager;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.servlet.util.SavedRequest;
 
@@ -146,6 +158,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .build();
 
     private static final String HTTP_AUTHENITCATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
+    private static final String JACC_POLICY_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
@@ -163,7 +176,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .setStorageRuntime()
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { HTTP_AUTHENTICATION_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG };
+    static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_JACC, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .setMinSize(1)
+            .setRestartAllServices()
+            .build();
+
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { HTTP_AUTHENTICATION_FACTORY, OVERRIDE_DEPLOYMENT_CONFIG, ENABLE_JACC };
 
     static final ApplicationSecurityDomainDefinition INSTANCE = new ApplicationSecurityDomainDefinition();
 
@@ -241,18 +260,23 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             String httpServerMechanismFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model).asString();
             boolean overrideDeploymentConfig = OVERRIDE_DEPLOYMENT_CONFIG.resolveModelAttribute(context, model).asBoolean();
+            boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
 
             String securityDomainName = context.getCurrentAddressValue();
             RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(securityDomainName);
             ServiceName serviceName = runtimeCapability.getCapabilityServiceName(Function.class);
 
-            ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(overrideDeploymentConfig);
+            ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc);
 
             ServiceBuilder<Function<DeploymentInfo, Registration>> serviceBuilder = target.addService(serviceName, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
 
             serviceBuilder.addDependency(context.getCapabilityServiceName(HTTP_AUTHENITCATION_FACTORY_CAPABILITY,
                     httpServerMechanismFactory, HttpAuthenticationFactory.class), HttpAuthenticationFactory.class, applicationSecurityDomainService.getHttpAuthenticationFactoryInjector());
+
+            if (enableJacc) {
+                serviceBuilder.addDependency(ServiceBuilder.DependencyType.REQUIRED, context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
+            }
 
             if (resource.hasChild(UndertowExtension.PATH_SSO)) {
                 ModelNode ssoModel = resource.getChild(UndertowExtension.PATH_SSO).getModel();
@@ -331,12 +355,15 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         private final boolean overrideDeploymentConfig;
         private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjector = new InjectedValue<>();
         private final InjectedValue<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformer = new InjectedValue<>();
+        private final InjectedValue<Policy> jaccPolicyInjector = new InjectedValue<>();
         private final Set<RegistrationImpl> registrations = new HashSet<>();
+        private final boolean enableJacc;
 
         private HttpAuthenticationFactory httpAuthenticationFactory;
 
-        private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig) {
+        private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig, boolean enableJacc) {
             this.overrideDeploymentConfig = overrideDeploymentConfig;
+            this.enableJacc = enableJacc;
         }
 
         @Override
@@ -379,6 +406,12 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             deploymentInfo.addInnerHandlerChainWrapper(this::finalSecurityHandlers);
             deploymentInfo.setInitialSecurityWrapper(h -> initialSecurityHandler(deploymentInfo, h, scopeSessionListener));
+
+            if (enableJacc) {
+                deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
+            } else {
+                deploymentInfo.setAuthorizationManager(createElytronAuthorizationManager());
+            }
 
             RegistrationImpl registration = new RegistrationImpl(deploymentInfo);
             synchronized(registrations) {
@@ -667,6 +700,55 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private HttpHandler finalSecurityHandlers(HttpHandler toWrap) {
             return new BlockingHandler(new ElytronRunAsHandler(toWrap));
+        }
+
+        private AuthorizationManager createElytronAuthorizationManager() {
+            return new AuthorizationManager() {
+                @Override
+                public boolean isUserInRole(String roleName, Account account, ServletInfo servletInfo, HttpServletRequest request, Deployment deployment) {
+                    return DefaultAuthorizationManager.INSTANCE.isUserInRole(roleName, account, servletInfo, request, deployment);
+                }
+
+                @Override
+                public boolean canAccessResource(List<SingleConstraintMatch> mappedConstraints, Account account, ServletInfo servletInfo, HttpServletRequest request, Deployment deployment) {
+                    if (DefaultAuthorizationManager.INSTANCE.canAccessResource(mappedConstraints, account, servletInfo, request, deployment)) {
+                        return true;
+                    }
+
+                    SecurityDomain securityDomain = httpAuthenticationFactory.getSecurityDomain();
+                    SecurityIdentity securityIdentity = securityDomain.getCurrentSecurityIdentity();
+
+                    if (securityIdentity == null) {
+                        return false;
+                    }
+
+                    List<Permission> permissions = new ArrayList<>();
+
+                    permissions.add(new WebResourcePermission(getCanonicalURI(request), request.getMethod()));
+
+                    securityIdentity.getRoles("web", true).forEach(roleName -> permissions.add(new WebRoleRefPermission(getCanonicalURI(request), roleName)));
+
+                    for (Permission permission : permissions) {
+                        if (securityIdentity.implies(permission)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                @Override
+                public io.undertow.servlet.api.TransportGuaranteeType transportGuarantee(io.undertow.servlet.api.TransportGuaranteeType currentConnectionGuarantee, io.undertow.servlet.api.TransportGuaranteeType configuredRequiredGuarantee, HttpServletRequest request) {
+                    return DefaultAuthorizationManager.INSTANCE.transportGuarantee(currentConnectionGuarantee, configuredRequiredGuarantee, request);
+                }
+
+                private String getCanonicalURI(HttpServletRequest request) {
+                    String canonicalURI = request.getRequestURI().substring(request.getContextPath().length());
+                    if (canonicalURI == null || canonicalURI.equals("/"))
+                        canonicalURI = "";
+                    return canonicalURI;
+                }
+            };
         }
 
         private String[] getDeployments() {

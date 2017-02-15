@@ -391,6 +391,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityDomain() : null;
     }
 
+    public boolean isEnableJacc() {
+        ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
+        return applicationSecurityDomain != null ? applicationSecurityDomain.isEnableJacc() : false;
+    }
+
     Injector<Function> getIdentityOutflowFunctionInjector() {
         return identityOutflowFunction;
     }

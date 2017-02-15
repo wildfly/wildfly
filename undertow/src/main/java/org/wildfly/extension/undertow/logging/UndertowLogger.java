@@ -383,4 +383,9 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 93, value = "Credential %s is not a clear text password")
     IllegalArgumentException credentialNotClearPassword(String alias);
+
+    @Message(id = 94, value = "Configuration option [%s] ignored when using Elytron subsystem")
+    @LogMessage(level = WARN)
+    void configurationOptionIgnoredWhenUsingElytron(String option);
+
 }

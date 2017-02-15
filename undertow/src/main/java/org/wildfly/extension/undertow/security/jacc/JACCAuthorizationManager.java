@@ -22,13 +22,20 @@
 
 package org.wildfly.extension.undertow.security.jacc;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.CodeSource;
+import java.security.Permission;
+import java.security.Policy;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
@@ -41,7 +48,7 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.SingleConstraintMatch;
 import io.undertow.servlet.api.TransportGuaranteeType;
-import org.jboss.security.SimplePrincipal;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * <p>
@@ -54,41 +61,19 @@ public class JACCAuthorizationManager implements AuthorizationManager {
 
     @Override
     public boolean isUserInRole(final String roleName, final Account account, final ServletInfo servletInfo, final HttpServletRequest request, final Deployment deployment) {
-
-        // create the WebRoleRefPermission that will be used by JACC to determine if the user has the specified role.
-        final WebRoleRefPermission permission = new WebRoleRefPermission(servletInfo.getName(), roleName);
-
-        // create a protection domain with the user roles (or account principal if no roles are found)
-        final Map<String, Set<String>> principalVersusRolesMap = deployment.getDeploymentInfo().getPrincipalVersusRolesMap();
-        final Principal[] principals = this.getPrincipals(account, principalVersusRolesMap);
-        final CodeSource codeSource = servletInfo.getServletClass().getProtectionDomain().getCodeSource();
-        final ProtectionDomain protectionDomain = new ProtectionDomain(codeSource, null, null, principals);
-
-        // call implies in the protection domain using the constructed WebRoleRefPermission.
-        return protectionDomain.implies(permission);
+        return hasPermission(account, deployment, servletInfo, new WebRoleRefPermission(servletInfo.getName(), roleName));
     }
 
     @Override
     public boolean canAccessResource(List<SingleConstraintMatch> constraints, final Account account, final ServletInfo servletInfo, final HttpServletRequest request, Deployment deployment) {
-
-        // create the WebResourcePermission that will be used by JACC to determine if access to the resource should be granted or not.
-        final WebResourcePermission permission = new WebResourcePermission(this.getCanonicalURI(request), request.getMethod());
-
-        // create a protection domain with the user roles (or account principal if no roles are found)
-        final Map<String, Set<String>> principalVersusRolesMap = deployment.getDeploymentInfo().getPrincipalVersusRolesMap();
-        final Principal[] principals = this.getPrincipals(account, principalVersusRolesMap);
-        final CodeSource codeSource = servletInfo.getServletClass().getProtectionDomain().getCodeSource();
-        final ProtectionDomain protectionDomain = new ProtectionDomain(codeSource, null, null, principals);
-
-        return protectionDomain.implies(permission);
+        return hasPermission(account, deployment, servletInfo, new WebResourcePermission(request));
     }
 
     @Override
     public TransportGuaranteeType transportGuarantee(TransportGuaranteeType currentConnGuarantee, TransportGuaranteeType configuredRequiredGuarantee, final HttpServletRequest request) {
-
         final ProtectionDomain domain = new ProtectionDomain(null, null, null, null);
         final String[] httpMethod = new String[] {request.getMethod()};
-        final String canonicalURI = this.getCanonicalURI(request);
+        final String canonicalURI = getCanonicalURI(request);
 
         switch (currentConnGuarantee) {
             case NONE: {
@@ -96,7 +81,7 @@ public class JACCAuthorizationManager implements AuthorizationManager {
                 WebUserDataPermission permission = new WebUserDataPermission(canonicalURI, httpMethod, null);
 
                 // if permission was implied then the unprotected connection is ok.
-                if (domain.implies(permission)) {
+                if (hasPermission(domain, permission)) {
                     return TransportGuaranteeType.NONE;
                 }
                 else {
@@ -110,13 +95,13 @@ public class JACCAuthorizationManager implements AuthorizationManager {
                 WebUserDataPermission permission = new WebUserDataPermission(canonicalURI, httpMethod,
                         TransportGuaranteeType.CONFIDENTIAL.name());
 
-                if (domain.implies(permission)) {
+                if (hasPermission(domain, permission)) {
                     return TransportGuaranteeType.CONFIDENTIAL;
                 }
                 else {
                     // try with the INTEGRAL connection guarantee type.
                     permission = new WebUserDataPermission(canonicalURI, httpMethod, TransportGuaranteeType.INTEGRAL.name());
-                    if (domain.implies(permission)) {
+                    if (hasPermission(domain, permission)) {
                         return TransportGuaranteeType.INTEGRAL;
                     }
                     else {
@@ -144,36 +129,27 @@ public class JACCAuthorizationManager implements AuthorizationManager {
         return canonicalURI;
     }
 
-    /**
-     * <p>
-     * Merges the roles found in the specified account parameter with the mapped roles in the second parameter and returns
-     * the resulting set as a {@link Principal} array.
-     * </p>
-     *
-     * @param account the authenticated user account.
-     * @param principalVersusRolesMap the principal to roles map as configured in the deployment.
-     * @return a {@link Principal}[] containing the merged roles. If the specified account is {@code null}, this method
-     * returns {@code null}. If the account is not null but no roles can be associated with the account principal, then
-     * the account principal is returned.
-     */
-    private Principal[] getPrincipals(Account account, Map<String, Set<String>> principalVersusRolesMap) {
+    private boolean hasPermission(Account account, Deployment deployment, ServletInfo servletInfo, Permission permission) {
+        CodeSource codeSource = servletInfo.getServletClass().getProtectionDomain().getCodeSource();
+        ProtectionDomain domain = new ProtectionDomain(codeSource, null, null, getGrantedRoles(account, deployment));
+        return hasPermission(domain, permission);
+    }
 
-        if (account == null)
-            return null;
+    private boolean hasPermission(ProtectionDomain domain, Permission permission) {
+        Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
+        return policy.implies(domain, permission);
+    }
 
-        final Set<String> mappedRoles = principalVersusRolesMap.get(account.getPrincipal().getName());
-
-        // create a set that merges the account roles with deployment roles (if any)
-        final Set<Principal> roles = new HashSet<Principal>();
-        for (String role : account.getRoles())
-            roles.add(new SimplePrincipal(role));
-        if (mappedRoles != null) {
-            for (String role : mappedRoles)
-                roles.add(new SimplePrincipal(role));
+    private Principal[] getGrantedRoles(Account account, Deployment deployment) {
+        if (account == null) {
+            return new Principal[] {};
         }
 
-        if (roles.isEmpty())
-            return new Principal[] {account.getPrincipal()};
-        return roles.toArray(new Principal[roles.size()]);
+        Set<String> roles = new HashSet<>(account.getRoles());
+        Map<String, Set<String>> principalVersusRolesMap = deployment.getDeploymentInfo().getPrincipalVersusRolesMap();
+
+        roles.addAll(principalVersusRolesMap.getOrDefault(account.getPrincipal().getName(), Collections.emptySet()));
+
+        return roles.stream().map((Function<String, Principal>) roleName -> (Principal) () -> roleName).toArray(Principal[]::new);
     }
 }

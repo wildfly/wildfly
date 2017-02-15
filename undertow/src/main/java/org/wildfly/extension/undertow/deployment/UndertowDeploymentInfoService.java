@@ -982,6 +982,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             Function<DeploymentInfo, Registration> securityFunction = this.securityFunction.getOptionalValue();
             if (securityFunction != null) {
                 registration = securityFunction.apply(d);
+                d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
+                if(mergedMetaData.isUseJBossAuthorization()) {
+                    UndertowLogger.ROOT_LOGGER.configurationOptionIgnoredWhenUsingElytron("use-jboss-authorization");
+                }
             } else {
                 if (securityDomain != null) {
                     d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));

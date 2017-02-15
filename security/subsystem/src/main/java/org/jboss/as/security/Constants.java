@@ -55,6 +55,7 @@ public interface Constants {
     String FLAG = "flag";
     String IDENTITY_TRUST = "identity-trust";
     String IDENTITY_TRUST_MANAGER_CLASS_NAME = "identity-trust-manager-class-name";
+    String INITIALIZE_JACC = "initialize-jacc";
     String JASPI = "jaspi";
     String JSSE = "jsse";
     String KEY_MANAGER = "key-manager";
