@@ -111,7 +111,7 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, ProtocolResourceDefinition.Attribute.PROPERTIES, name, value);
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, name, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
@@ -124,7 +124,7 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, ProtocolResourceDefinition.Attribute.PROPERTIES, name);
+                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, name);
                 context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
             }
         };
@@ -136,7 +136,7 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key);
+                ModelNode getOperation = Operations.createMapGetOperation(address, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, key);
                 context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
             }
         };
@@ -147,7 +147,7 @@ public class PropertyResourceDefinition extends ChildResourceDefinition {
                 PathAddress address = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
                 String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, ProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
+                ModelNode putOperation = Operations.createMapPutOperation(address, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };

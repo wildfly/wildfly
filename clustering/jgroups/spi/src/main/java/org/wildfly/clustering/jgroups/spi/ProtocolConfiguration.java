@@ -21,30 +21,15 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
-import java.util.Map;
-
-import javax.sql.DataSource;
-
-import org.jboss.as.network.SocketBinding;
-import org.jboss.modules.ModuleIdentifier;
+import org.jgroups.stack.Protocol;
 
 /**
  * Defines the configuration of a JGroups protocol.
  * @author Paul Ferraro
  */
-public interface ProtocolConfiguration {
-
-    ModuleIdentifier DEFAULT_MODULE = ModuleIdentifier.create("org.jgroups");
+public interface ProtocolConfiguration<P extends Protocol> {
 
     String getName();
 
-    String getProtocolClassName();
-
-    Map<String, String> getProperties();
-
-    SocketBinding getSocketBinding();
-
-    ModuleIdentifier getModule();
-
-    DataSource getDataSource();
+    P createProtocol();
 }

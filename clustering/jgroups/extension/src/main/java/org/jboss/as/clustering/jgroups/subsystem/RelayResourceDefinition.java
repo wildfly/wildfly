@@ -21,20 +21,16 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
+import org.jgroups.protocols.relay.RELAY2;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
@@ -43,7 +39,7 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
  *
  * @author Paul Ferraro
  */
-public class RelayResourceDefinition extends ProtocolResourceDefinition {
+public class RelayResourceDefinition extends AbstractProtocolResourceDefinition<RELAY2, RelayConfiguration> {
 
     static final PathElement PATH = pathElement(RelayConfiguration.PROTOCOL_NAME);
     static final PathElement LEGACY_PATH = pathElement("RELAY");
@@ -80,26 +76,15 @@ public class RelayResourceDefinition extends ProtocolResourceDefinition {
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<RelayConfiguration> builderFactory = address -> new RelayConfigurationBuilder(address);
-
     RelayResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), parentBuilderFactory);
+        this(address -> new RelayConfigurationBuilder(address), parentBuilderFactory);
     }
 
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+    private RelayResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(new Parameters(PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), descriptor -> descriptor.addAttributes(Attribute.class), builderFactory, parentBuilderFactory, (parent, registration) -> {
+            parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(ProtocolResourceDefinition.Attribute.PROPERTIES)
-                ;
-        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(this.builderFactory);
-        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
-
-        new RemoteSiteResourceDefinition(this.builderFactory).register(registration);
-
-        super.register(registration);
+            new RemoteSiteResourceDefinition(builderFactory).register(registration);
+        });
     }
 }

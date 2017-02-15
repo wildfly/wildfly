@@ -48,13 +48,15 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.addRegistration.register(registration);
-        this.removeRegistration.register(registration);
+        new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
+
+        // Register attributes before add operation
         this.writeAttributeRegistration.register(registration);
 
-        // Register read/write handlers for attribute translations
+        // Register attribute translations
         this.descriptor.getAttributeTranslations().entrySet().forEach(entry -> registration.registerReadWriteAttribute(entry.getKey(), new ReadAttributeTranslationHandler(entry.getValue()), new WriteAttributeTranslationHandler(entry.getValue())));
 
-        new CapabilityRegistration(this.descriptor.getCapabilities().keySet()).register(registration);
+        this.addRegistration.register(registration);
+        this.removeRegistration.register(registration);
     }
 }

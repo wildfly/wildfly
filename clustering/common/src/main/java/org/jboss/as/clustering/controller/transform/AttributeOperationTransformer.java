@@ -23,9 +23,9 @@ package org.jboss.as.clustering.controller.transform;
 
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -45,7 +45,7 @@ public class AttributeOperationTransformer implements OperationTransformer {
 
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-        String name = operation.get(ModelDescriptionConstants.NAME).asString();
+        String name = Operations.getName(operation);
         OperationTransformer transformer = this.transformers.get(name);
         return (transformer != null) ? transformer.transformOperation(context, address, operation) : new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
     }

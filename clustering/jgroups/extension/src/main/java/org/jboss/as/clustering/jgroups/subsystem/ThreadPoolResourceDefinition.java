@@ -24,17 +24,21 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.BiFunction;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -45,19 +49,18 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * @author Radoslav Husar
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition {
 
-    DEFAULT("default", "thread_pool", 20, 300, 100, 60000L),
-    OOB("oob", "oob_thread_pool", 20, 300, 0, 60000L),
-    INTERNAL("internal", "internal_thread_pool", 2, 4, 100, 60000L),
-    TIMER("timer", "timer", 2, 4, 500, 5000L),
+    DEFAULT("default", "Incoming", 20, 300, 100, 60000L),
+    OOB("oob", "OOB", 20, 300, 0, 60000L),
+    INTERNAL("internal", "INT", 2, 4, 100, 60000L),
+    TIMER("timer", "Timer", 2, 4, 500, 5000L, (definition, address) -> new TimerFactoryBuilder(definition, address)),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -72,14 +75,20 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider {
     private final Attribute maxThreads;
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
+    private final BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory;
 
     ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
+        this(name, prefix, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepaliveTime, (definition, address) -> new ThreadPoolFactoryBuilder(definition, address));
+    }
+
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory) {
         this.definition = new SimpleResourceDefinition(pathElement(name), new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE)));
         this.prefix = prefix;
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
+        this.factory = factory;
     }
 
     private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
@@ -103,31 +112,36 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this.definition);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
-        ResourceServiceBuilderFactory<TransportConfiguration> transportBuilderFactory = address -> new TransportConfigurationBuilder(address);
-        new RestartParentResourceRegistration<>(transportBuilderFactory, descriptor).register(registration);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> this.factory.apply(this, address));
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 
     Collection<Attribute> getAttributes() {
         return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
     }
 
-    String getPrefix() {
+    @Override
+    public String getThreadGroupPrefix() {
         return this.prefix;
     }
 
-    Attribute getMinThreads() {
+    @Override
+    public Attribute getMinThreads() {
         return this.minThreads;
     }
 
-    Attribute getMaxThreads() {
+    @Override
+    public Attribute getMaxThreads() {
         return this.maxThreads;
     }
 
-    Attribute getQueueLength() {
+    @Override
+    public Attribute getQueueLength() {
         return this.queueLength;
     }
 
-    Attribute getKeepAliveTime() {
+    @Override
+    public Attribute getKeepAliveTime() {
         return this.keepAliveTime;
     }
 

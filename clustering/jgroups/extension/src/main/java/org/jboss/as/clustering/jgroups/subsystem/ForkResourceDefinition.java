@@ -76,8 +76,6 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
         EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement)));
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
-
     ForkResourceDefinition() {
         super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
     }
@@ -90,9 +88,10 @@ public class ForkResourceDefinition extends ChildResourceDefinition {
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
-        ResourceServiceHandler handler = new ForkServiceHandler(this.builderFactory);
+        ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
+        ResourceServiceHandler handler = new ForkServiceHandler(builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ForkProtocolResourceDefinition(this.builderFactory).register(registration);
+        new ProtocolRegistration(builderFactory, new ForkProtocolResourceRegistrationHandler()).register(registration);
     }
 }

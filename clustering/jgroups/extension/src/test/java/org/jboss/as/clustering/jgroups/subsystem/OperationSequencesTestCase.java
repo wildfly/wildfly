@@ -55,11 +55,11 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
     static final ModelNode removeTransportOp = getTransportRemoveOperation("maximal2", "UDP");
 
     // protocol test operations
-    static final ModelNode addProtocolOp = getProtocolAddOperation("maximal2", "MPING");
+    static final ModelNode addProtocolOp = getProtocolAddOperation("maximal2", "PING");
     // addProtocolOpWithProps calls the operation below to check passing optional parameters
     //   /subsystem=jgroups/stack=maximal2:add-protocol(type=MPING, properties=[{A=>a},{B=>b}])
-    static final ModelNode addProtocolOpWithProps = getProtocolAddOperationWithProperties("maximal2", "MPING");
-    static final ModelNode removeProtocolOp = getProtocolRemoveOperation("maximal2", "MPING");
+    static final ModelNode addProtocolOpWithProps = getProtocolAddOperationWithProperties("maximal2", "PING");
+    static final ModelNode removeProtocolOp = getProtocolRemoveOperation("maximal2", "PING");
 
     @Test
     public void testProtocolStackAddRemoveAddSequence() throws Exception {
