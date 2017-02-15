@@ -244,6 +244,13 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                              CredentialReference.getCredentialSourceSupplier(context, Constants.CREDENTIAL_REFERENCE, model, dataSourceServiceBuilder));
          }
 
+         ModelNode recoveryCredentialReference = Constants.RECOVERY_CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
+         if (recoveryCredentialReference.isDefined()) {
+             dataSourceService.getRecoveryCredentialSourceSupplierInjector()
+                     .inject(
+                             CredentialReference.getCredentialSourceSupplier(context, Constants.RECOVERY_CREDENTIAL_REFERENCE, model, dataSourceServiceBuilder));
+         }
+
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
         dataSourceServiceBuilder.install();
@@ -270,13 +277,18 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         ((AbstractDataSourceService)dataSourceController.getService()).getCredentialSourceSupplierInjector().getOptionalValue()
                         :
                         null;
+        final ExceptionSupplier<CredentialSource, Exception> recoveryCredentialSourceExceptionExceptionSupplier =
+                dataSourceController.getService() instanceof AbstractDataSourceService ?
+                        ((AbstractDataSourceService)dataSourceController.getService()).getRecoveryCredentialSourceSupplierInjector().getOptionalValue()
+                        :
+                        null;
 
         final boolean jta;
         if (isXa) {
             jta = true;
             final ModifiableXaDataSource dataSourceConfig;
             try {
-                dataSourceConfig = xaFrom(context, model, dsName, credentialSourceExceptionExceptionSupplier);
+                dataSourceConfig = xaFrom(context, model, dsName, credentialSourceExceptionExceptionSupplier, recoveryCredentialSourceExceptionExceptionSupplier);
             } catch (ValidateException e) {
                 throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToCreate("XaDataSource", operation, e.getLocalizedMessage()));
             }

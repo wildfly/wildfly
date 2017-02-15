@@ -39,6 +39,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
@@ -183,7 +184,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
                         Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -204,7 +205,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
@@ -224,11 +225,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 }, TRACKING)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
                         Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .end();
 
     }
@@ -243,7 +244,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
                         Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -264,7 +265,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
@@ -280,12 +281,12 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
                         Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALLOW_MULTIPLE_USERS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .end();
     }
 
@@ -294,10 +295,10 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
                         Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE)
+                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
                 .end();
     }
 }

@@ -82,6 +82,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIME
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -434,18 +435,20 @@ public class DataSourcesExtension implements Extension {
                         RECOVERY_SECURITY_DOMAIN.isMarshallable(dataSourceNode) ||
                         RECOVERY_ELYTRON_ENABLED.isMarshallable(dataSourceNode) ||
                         RECOVER_PLUGIN_CLASSNAME.isMarshallable(dataSourceNode) ||
+                        RECOVERY_CREDENTIAL_REFERENCE.isMarshallable(dataSourceNode) ||
                         NO_RECOVERY.isMarshallable(dataSourceNode) ||
                         RECOVER_PLUGIN_PROPERTIES.isMarshallable(dataSourceNode);
                 if (recoveryRequired && isXADataSource) {
                     writer.writeStartElement(XaDataSource.Tag.RECOVERY.getLocalName());
                     NO_RECOVERY.marshallAsAttribute(dataSourceNode, writer);
-                    if (hasAnyOf(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD, RECOVERY_SECURITY_DOMAIN, RECOVERY_ELYTRON_ENABLED)) {
+                    if (hasAnyOf(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD, RECOVERY_SECURITY_DOMAIN, RECOVERY_ELYTRON_ENABLED, RECOVERY_CREDENTIAL_REFERENCE)) {
                         writer.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
                         RECOVERY_USERNAME.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_PASSWORD.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
+                        RECOVERY_CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
                         writer.writeEndElement();
                     }
                     if (hasAnyOf(dataSourceNode, RECOVER_PLUGIN_CLASSNAME)) {

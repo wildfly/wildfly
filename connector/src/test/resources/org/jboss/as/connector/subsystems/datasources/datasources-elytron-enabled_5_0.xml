@@ -196,6 +196,7 @@
         <recover-credential>
           <elytron-enabled>true</elytron-enabled>
           <authentication-context>CredentialAuthCtxt</authentication-context>
+          <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" clear-text="123456"/>
         </recover-credential>
         <!--Optional:-->
         <recover-plugin class-name="token">

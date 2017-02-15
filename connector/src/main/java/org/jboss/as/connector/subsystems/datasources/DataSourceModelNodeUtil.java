@@ -185,7 +185,7 @@ class DataSourceModelNodeUtil {
         final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password,
-                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, reauthPlugin, credentialSourceSupplier);
+                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, credentialSourceSupplier, reauthPlugin);
 
         final boolean sharePreparedStatements = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHARE_PREPARED_STATEMENTS);
         final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
@@ -235,7 +235,8 @@ class DataSourceModelNodeUtil {
                 poolName, enabled, jndiName, spy, useCcm, jta, connectable, tracking, mcp, enlistmentTrace,  pool);
     }
 
-    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName, final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier) throws OperationFailedException, ValidateException {
+    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName,
+                                         final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier, final ExceptionSupplier<CredentialSource, Exception> recoveryCredentialSourceSupplier) throws OperationFailedException, ValidateException {
         final Map<String, String> xaDataSourceProperty;
         xaDataSourceProperty = Collections.emptyMap();
 
@@ -285,7 +286,7 @@ class DataSourceModelNodeUtil {
         final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
         final DsSecurity security = new DsSecurityImpl(username, password,
-                elytronEnabled? authenticationContext: securityDomain, elytronEnabled,reauthPlugin, credentialSourceSupplier);
+                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, credentialSourceSupplier, reauthPlugin);
 
         final Boolean sharePreparedStatements = dataSourceNode.hasDefined(SHARE_PREPARED_STATEMENTS.getName()) ? dataSourceNode.get(
                 SHARE_PREPARED_STATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;
@@ -342,7 +343,7 @@ class DataSourceModelNodeUtil {
 
             if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
                credential = new CredentialImpl(recoveryUsername, recoveryPassword,
-                       recoveryElytronEnabled? recoveryAuthenticationContext: recoverySecurityDomain, elytronEnabled);
+                       recoveryElytronEnabled? recoveryAuthenticationContext: recoverySecurityDomain, elytronEnabled, recoveryCredentialSourceSupplier);
 
             Extension recoverPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
 

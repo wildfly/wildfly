@@ -84,6 +84,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIME
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
@@ -2406,6 +2407,9 @@ public class DsParser extends AbstractParser {
                             RECOVERY_AUTHENTICATION_CONTEXT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
+                        case CREDENTIAL_REFERENCE:
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseElement(RECOVERY_CREDENTIAL_REFERENCE, reader, operation);
+                            break;
                         default:
                             throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
