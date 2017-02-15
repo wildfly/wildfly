@@ -40,6 +40,8 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.omg.CORBA.ORB;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
+import org.wildfly.transaction.client.LocalUserTransaction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -97,14 +99,12 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         if (!jts) {
             // No IIOP, stick with JTA mode.
             jtaEnvironmentBean.getValue().setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.getValue().setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
 
             final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
-            final ServerVMClientUserTransaction userTransaction = new ServerVMClientUserTransaction(service.getTransactionManager());
-            userTransactionRegistry.getValue().addProvider(userTransaction);
+            final LocalUserTransaction userTransaction = LocalUserTransaction.getInstance();
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper( new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple()));
+            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper(ContextTransactionSynchronizationRegistry.getInstance()));
 
             try {
                 service.create();
