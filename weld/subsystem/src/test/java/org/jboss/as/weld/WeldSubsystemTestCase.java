@@ -21,6 +21,8 @@
 */
 package org.jboss.as.weld;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -77,6 +79,16 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testSubsystem20() throws Exception {
+        standardSubsystemTest("subsystem_2_0.xml", false);
+    }
+
+    @Test
+    public void testSubsystem30() throws Exception {
+        standardSubsystemTest("subsystem_3_0.xml", false);
+    }
+
+    @Test
     public void testTransformersASEAP620() throws Exception {
         testTransformers10(ModelTestControllerVersion.EAP_6_2_0);
     }
@@ -94,7 +106,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem-transformers.xml");
+                .setSubsystemXmlResource("subsystem_3_0-transformers.xml");
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
@@ -103,11 +115,26 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
 
+    @Test
+    public void testTransformers30() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem_4_0-transformers.xml");
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_0_0, modelVersion)
+                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion())
+                .skipReverseControllerCheck()
+                .dontPersistXml();
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(legacyServices.isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     @Test
@@ -154,6 +181,28 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
                         )
         );
     }
+
+    @Test
+    public void testTransformersRejectionEAP700() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_0_0, modelVersion)
+                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion()).skipReverseControllerCheck()
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem-reject.xml")),
+                new FailedOperationTransformationConfig().addFailedAttribute(PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
+                        ChainedConfig
+                                .createBuilder(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                                .addConfig(new NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)).build()
+
+                ));
+    }
+
 
     private static class FalseOrUndefinedToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<FalseOrUndefinedToTrueConfig>{
 
