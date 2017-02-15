@@ -33,6 +33,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -142,7 +143,8 @@ import org.jboss.msc.service.ServiceName;
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER));
         builder.addChildResource(PathElement.pathElement(Constants.SECURITY_MANAGEMENT))
                 .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC);
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC);
 
         SecurityDomainResourceDefinition.registerTransformers_1_3_0(builder);
 
