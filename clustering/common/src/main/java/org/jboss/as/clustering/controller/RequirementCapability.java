@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -41,7 +42,16 @@ public class RequirementCapability implements Capability {
      * @param requirements a list of requirements of this capability
      */
     public RequirementCapability(Requirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), requirement.getType()).addRequirements(Stream.of(requirements).map(r -> r.getName()).toArray(String[]::new)).build();
+        this(requirement, builder -> builder.addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)));
+    }
+
+    /**
+     * Creates a new capability based on the specified requirement
+     * @param requirement the requirement basis
+     * @param builder configures the capability
+     */
+    public RequirementCapability(Requirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> builder) {
+        this.definition = builder.apply(RuntimeCapability.Builder.of(requirement.getName(), requirement.getType())).build();
     }
 
     @Override
