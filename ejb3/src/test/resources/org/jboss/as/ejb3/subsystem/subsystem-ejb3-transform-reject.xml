@@ -86,6 +86,7 @@
     <!-- should be rejected -->
     <identity outflow-security-domains="ApplicationDomain"/>
     <default-missing-method-permissions-deny-access value="true" />
+    <enable-graceful-txn-shutdown value="true" />
     <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />
     <log-system-exceptions value="false"/>

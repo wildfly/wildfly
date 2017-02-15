@@ -62,6 +62,7 @@ import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.naming.ManagedReference;
@@ -113,6 +114,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final String policyContextID;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
+    private final EJBSuspendHandlerService ejbSuspendHandlerService;
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
     private final TransactionManager transactionManager;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -176,6 +178,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
         this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
+        this.ejbSuspendHandlerService = ejbComponentCreateService.getEJBSuspendHandler();
         this.transactionManager = ejbComponentCreateService.getTransactionManager();
         this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
@@ -639,5 +642,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     private SecurityIdentity getCurrentSecurityIdentity() {
         return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
+    }
+
+    public EJBSuspendHandlerService getEjbSuspendHandlerService() {
+        return this.ejbSuspendHandlerService;
     }
 }
