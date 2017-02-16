@@ -118,7 +118,7 @@
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>1.5.3.jbossorg-002</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.8.1</version.org.apache.avro>
-        <version.org.apache.cxf>3.1.9</version.org.apache.cxf>
+        <version.org.apache.cxf>3.1.10</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.2</version.org.apache.httpcomponents.httpasyncclient>
