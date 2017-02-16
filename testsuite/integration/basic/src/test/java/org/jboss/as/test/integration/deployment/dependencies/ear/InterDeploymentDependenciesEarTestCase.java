@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -98,6 +99,21 @@ public class InterDeploymentDependenciesEarTestCase {
                 .addAsManifestResource(InterDeploymentDependenciesEarTestCase.class.getPackage(), "jboss-all.xml",
                         "jboss-all.xml").addAsModule(createBeanJar());
         return archive;
+    }
+
+    @After
+    public void cleanUp() {
+        try {
+            deployer.undeploy(DEP_APP1);
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
+            deployer.undeploy(DEP_APP2);
+        } catch (Exception e) {
+            // Ignore
+        }
     }
 
     /**
