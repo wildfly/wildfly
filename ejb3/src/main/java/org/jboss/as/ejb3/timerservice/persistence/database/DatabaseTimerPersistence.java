@@ -454,11 +454,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         timers.add(timerImpl);
                     } else {
                         final String deleteTimer = sql(DELETE_TIMER);
-                        statement = connection.prepareStatement(deleteTimer);
-                        statement.setString(1, resultSet.getString(2));
-                        statement.setString(2, resultSet.getString(1));
-                        statement.setString(3, partition);
-                        statement.execute();
+                        try (final PreparedStatement deleteStatement = connection.prepareStatement(deleteTimer)) {
+                            deleteStatement.setString(1, resultSet.getString(2));
+                            deleteStatement.setString(2, resultSet.getString(1));
+                            deleteStatement.setString(3, partition);
+                            deleteStatement.execute();
+                        }
                     }
                 } catch (Exception e) {
                     EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
