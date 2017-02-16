@@ -74,15 +74,15 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  */
 public class ServerDefinition extends PersistentResourceDefinition {
 
-    public static final SimpleAttributeDefinition CLUSTER_PASSWORD = create("cluster-password", ModelType.STRING)
+    public static final SimpleAttributeDefinition CLUSTER_PASSWORD = create("cluster-password", ModelType.STRING, true)
             .setAttributeGroup("cluster")
             .setXmlName("password")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterPassword()))
-            .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setAlternatives("cluster-" + CredentialReference.CREDENTIAL_REFERENCE)
             .build();
 
     public static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
@@ -92,6 +92,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
                     .setRestartAllServices()
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .setAlternatives(CLUSTER_PASSWORD.getName())
                     .build();
 
     public static final SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)

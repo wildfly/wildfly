@@ -65,6 +65,8 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
 
     public static final String PAUSE = "pause";
     public static final String RESUME = "resume";
+    private static final String SOURCE_CREDENTIAL_REFERENCE_NAME = "source-" + CredentialReference.CREDENTIAL_REFERENCE;
+    private static final String TARGET_CREDENTIAL_REFERENCE_NAME = "target-" + CredentialReference.CREDENTIAL_REFERENCE;
 
     public static final SimpleAttributeDefinition MODULE = create("module", STRING)
             .setAllowNull(true)
@@ -89,21 +91,22 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
 
-    public static final SimpleAttributeDefinition SOURCE_PASSWORD = create("source-password", STRING)
+    public static final SimpleAttributeDefinition SOURCE_PASSWORD = create("source-password", STRING, true)
             .setAttributeGroup(SOURCE)
             .setXmlName(PASSWORD)
-            .setAllowNull(true)
             .setAllowExpression(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setAlternatives(SOURCE_CREDENTIAL_REFERENCE_NAME)
             .build();
 
     public static final ObjectTypeAttributeDefinition SOURCE_CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder("source-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+            CredentialReference.getAttributeBuilder(SOURCE_CREDENTIAL_REFERENCE_NAME, CredentialReference.CREDENTIAL_REFERENCE, true)
                     .setAttributeGroup(SOURCE)
                     .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .setAlternatives(SOURCE_PASSWORD.getName())
                     .build();
 
     public static final PropertiesAttributeDefinition SOURCE_CONTEXT = new PropertiesAttributeDefinition.Builder("source-context", true)
@@ -132,21 +135,22 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
 
-    public static final SimpleAttributeDefinition TARGET_PASSWORD = create("target-password", STRING)
+    public static final SimpleAttributeDefinition TARGET_PASSWORD = create("target-password", STRING, true)
             .setAttributeGroup(TARGET)
             .setXmlName(PASSWORD)
-            .setAllowNull(true)
             .setAllowExpression(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setAlternatives(TARGET_CREDENTIAL_REFERENCE_NAME)
             .build();
 
     public static final ObjectTypeAttributeDefinition TARGET_CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder("target-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+            CredentialReference.getAttributeBuilder(TARGET_CREDENTIAL_REFERENCE_NAME, CredentialReference.CREDENTIAL_REFERENCE, true)
                     .setAttributeGroup(TARGET)
                     .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .setAlternatives(TARGET_PASSWORD.getName())
                     .build();
 
     public static final PropertiesAttributeDefinition TARGET_CONTEXT = new PropertiesAttributeDefinition.Builder("target-context", true)

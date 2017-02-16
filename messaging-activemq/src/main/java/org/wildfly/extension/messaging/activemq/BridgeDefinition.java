@@ -27,6 +27,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.PASSWORD;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_CONNECTORS;
 
@@ -92,13 +93,13 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition PASSWORD = create("password", STRING)
-            .setAllowNull(true)
+    public static final SimpleAttributeDefinition PASSWORD = create("password", STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultClusterPassword()))
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
             .build();
 
     public static final SimpleAttributeDefinition USER = create("user", STRING)
@@ -116,6 +117,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
                     .setRestartAllServices()
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                    .setAlternatives(PASSWORD.getName())
                     .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
