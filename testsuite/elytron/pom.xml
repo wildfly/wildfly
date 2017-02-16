@@ -162,35 +162,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
-                <executions>
-                    <execution>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                        <configuration>
-                            
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <offline>true</offline>
-                    <scripts>
-                        <!--<script>${project.parent.basedir}/shared/change-ip.cli</script>-->
-                        <script>modify-elytron-config.cli</script>
-                    </scripts>
-                    <jboss-home>${wildfly.dir}</jboss-home>
-                    <system-properties>
-                        <public.ip>${node0}</public.ip>
-                        <management.ip>${node0}</management.ip>
-                    </system-properties>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -226,5 +197,45 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>adjust-server-config</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration></configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <!--<script>${project.parent.basedir}/shared/change-ip.cli</script>-->
+                                <script>modify-elytron-config.cli</script>
+                            </scripts>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <system-properties>
+                                <public.ip>${node0}</public.ip>
+                                <management.ip>${node0}</management.ip>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
   
 </project>
