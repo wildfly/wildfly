@@ -157,6 +157,8 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
                                         SecurityExtension.PATH_AUDIT_CLASSIC,
                                         PathElement.pathElement(Constants.PROVIDER_MODULE,
                                                 "org.myorg.security.MyCustomLogAuditProvider")),
-                                new FailedOperationTransformationConfig.NewAttributesConfig(Constants.MODULE)));
+                                new FailedOperationTransformationConfig.NewAttributesConfig(Constants.MODULE))
+                        .addFailedAttribute(PathAddress.pathAddress(subsystemAddress, PathElement.pathElement(Constants.SECURITY_MANAGEMENT)),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(Constants.INITIALIZE_JACC)));
     }
 }

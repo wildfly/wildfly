@@ -43,6 +43,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -126,6 +127,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
             builder.addDependency(entry.getKey(), (InjectedValue<Object>) entry.getValue());
         }
         builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
+        builder.addDependency(EJBSuspendHandlerService.DEPLOYMENT_CONTROLLER);
         builder.install();
 
         final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier, countdown);

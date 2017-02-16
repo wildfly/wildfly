@@ -22,10 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.security.Policy;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -77,6 +79,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             .build();
 
     private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
+    private static final String JACC_POLICY_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SECURITY_DOMAIN, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
@@ -89,11 +92,17 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             .setStorageRuntime()
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN };
+    static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_JACC, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .setMinSize(1)
+            .setRestartAllServices()
+            .build();
+
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SECURITY_DOMAIN, ENABLE_JACC };
 
     static final ApplicationSecurityDomainDefinition INSTANCE = new ApplicationSecurityDomainDefinition();
 
-    private static final Set<String> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
 
     private ApplicationSecurityDomainDefinition() {
         this(new Parameters(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN))
@@ -126,22 +135,36 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         @Override
         protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             super.populateModel(context, operation, resource);
-            knownApplicationSecurityDomains.add(context.getCurrentAddressValue());
+            ModelNode model = resource.getModel();
+            boolean enableJacc = false;
+
+            if (model.hasDefined(ENABLE_JACC.getName())) {
+                enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
+            }
+
+            knownApplicationSecurityDomains.add(new ApplicationSecurityDomainConfig(context.getCurrentAddressValue(), enableJacc));
         }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-
+            boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
             RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
             ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
-            ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService();
+            ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(enableJacc);
 
             ServiceBuilder<ApplicationSecurityDomain> serviceBuilder = context.getServiceTarget().addService(serviceName, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
             serviceBuilder.addDependency(context.getCapabilityServiceName(
                             SECURITY_DOMAIN_CAPABILITY, securityDomain, SecurityDomain.class),
                     SecurityDomain.class, applicationSecurityDomainService.getSecurityDomainInjector());
+
+            if (model.hasDefined(ENABLE_JACC.getName())) {
+                if (ENABLE_JACC.resolveModelAttribute(context, model).asBoolean()) {
+                    serviceBuilder.addDependency(ServiceBuilder.DependencyType.REQUIRED, context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
+                }
+            }
+
             serviceBuilder.install();
         }
     }
@@ -155,7 +178,11 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         @Override
         protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRemove(context, operation, model);
-            knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
+            for (ApplicationSecurityDomainConfig domain : new HashSet<>(knownApplicationSecurityDomains)) {
+                if (domain.isSameDomain(context.getCurrentAddressValue())) {
+                    knownApplicationSecurityDomains.remove(domain);
+                }
+            }
         }
 
         @Override
@@ -187,8 +214,8 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         }
     }
 
-    Predicate<String> getKnownSecurityDomainPredicate() {
-        return knownApplicationSecurityDomains::contains;
+    Function<String, ApplicationSecurityDomainConfig> getKnownSecurityDomainFunction() {
+        return name -> knownApplicationSecurityDomains.stream().filter(applicationSecurityDomainConfig -> applicationSecurityDomainConfig.isSameDomain(name)).findFirst().orElse(null);
     }
 
     static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {

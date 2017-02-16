@@ -21,12 +21,17 @@
  */
 package org.jboss.as.ejb3.component;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.lang.reflect.Method;
 import java.security.AccessController;
+import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.security.ProtectionDomain;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.ejb.EJBHome;
@@ -37,6 +42,7 @@ import javax.ejb.TransactionManagementType;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.jacc.EJBRoleRefPermission;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
@@ -56,6 +62,7 @@ import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.naming.ManagedReference;
@@ -68,6 +75,7 @@ import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -106,6 +114,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final String policyContextID;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
+    private final EJBSuspendHandlerService ejbSuspendHandlerService;
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
     private final TransactionManager transactionManager;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -122,6 +131,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     };
 
     private final SecurityDomain securityDomain;
+    private final boolean enableJacc;
     private SecurityIdentity incomingRunAsIdentity;
     private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
 
@@ -168,6 +178,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
         this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
+        this.ejbSuspendHandlerService = ejbComponentCreateService.getEJBSuspendHandler();
         this.transactionManager = ejbComponentCreateService.getTransactionManager();
         this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
@@ -176,6 +187,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
 
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
+        this.enableJacc = ejbComponentCreateService.isEnableJacc();
         this.incomingRunAsIdentity = null;
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
     }
@@ -415,8 +427,14 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
         if (isSecurityDomainKnown()) {
-            final SecurityIdentity identity = (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
-            return "**".equals(roleName) ? ! identity.isAnonymous() : identity.getRoles("ejb", true).contains(roleName);
+            if (enableJacc) {
+                ProtectionDomain domain = new ProtectionDomain(null, null, null, getGrantedRoles());
+                Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
+                if (policy.implies(domain, new EJBRoleRefPermission(getComponentName(), roleName))) {
+                    return true;
+                }
+            }
+            return checkSecurityIdentityRole(roleName);
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
                 public Boolean run() {
@@ -595,5 +613,38 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
+    }
+
+    private Principal[] getGrantedRoles() {
+        if (securityMetaData == null) {
+            return new Principal[] {};
+        }
+
+        Set<String> roles = new HashSet<>();
+        SecurityIdentity identity = getCurrentSecurityIdentity();
+
+        identity.getRoles("ejb", true).forEach(roles::add);
+
+        SecurityRolesMetaData securityRoles = securityMetaData.getSecurityRoles();
+
+        if (securityRoles != null && securityRoles.getPrincipalVersusRolesMap() != null) {
+            Map<String, Set<String>> principalVersusRolesMap = securityRoles.getPrincipalVersusRolesMap();
+            roles.addAll(principalVersusRolesMap.getOrDefault(identity.getPrincipal().getName(), Collections.emptySet()));
+        }
+
+        return roles.stream().map((Function<String, Principal>) roleName -> (Principal) () -> roleName).toArray(Principal[]::new);
+    }
+
+    private boolean checkSecurityIdentityRole(String roleName) {
+        final SecurityIdentity identity = getCurrentSecurityIdentity();
+        return "**".equals(roleName) ? !identity.isAnonymous() : identity.getRoles("ejb", true).contains(roleName);
+    }
+
+    private SecurityIdentity getCurrentSecurityIdentity() {
+        return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
+    }
+
+    public EJBSuspendHandlerService getEjbSuspendHandlerService() {
+        return this.ejbSuspendHandlerService;
     }
 }

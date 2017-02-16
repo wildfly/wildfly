@@ -81,6 +81,8 @@ public class WeldDeployment implements CDI11Deployment {
 
     private final Map<ClassLoader, BeanDeploymentArchiveImpl> additionalBeanDeploymentArchivesByClassloader;
 
+    private volatile BeanDeploymentArchiveImpl bootstrapClassLoaderBeanDeploymentArchive;
+
     private final BeanDeploymentModule rootBeanDeploymentModule;
     private final Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors;
 
@@ -156,14 +158,23 @@ public class WeldDeployment implements CDI11Deployment {
         if (bda != null) {
             return bda;
         }
+        Module module = Module.forClass(beanClass);
+        if (module == null) {
+            // Bean class loaded by the bootstrap class loader
+            if (bootstrapClassLoaderBeanDeploymentArchive == null) {
+                bootstrapClassLoaderBeanDeploymentArchive = createAndRegisterAdditionalBeanDeploymentArchive(module, beanClass);
+            } else {
+                bootstrapClassLoaderBeanDeploymentArchive.addBeanClass(beanClass);
+            }
+            return bootstrapClassLoaderBeanDeploymentArchive;
+        }
         /*
          * No, there is no BDA for the class yet. Let's create one.
          */
-        return createAndRegisterAdditionalBeanDeploymentArchive(beanClass);
+        return createAndRegisterAdditionalBeanDeploymentArchive(module, beanClass);
     }
 
-    protected BeanDeploymentArchiveImpl createAndRegisterAdditionalBeanDeploymentArchive(Class<?> beanClass) {
-        Module module = Module.forClass(beanClass);
+    protected BeanDeploymentArchiveImpl createAndRegisterAdditionalBeanDeploymentArchive(Module module, Class<?> beanClass) {
         String id = null;
         if (module == null) {
             id = BOOTSTRAP_CLASSLOADER_BDA_ID;

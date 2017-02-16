@@ -125,10 +125,10 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
             // setup the authorization interceptor
             final ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions = ejbComponentDescription.getDescriptorMethodPermissions();
-            boolean methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, permissions, false, viewMethodSecurityAttributesServiceBuilder, isSecurityDomainKnown);
+            boolean methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, permissions, false, viewMethodSecurityAttributesServiceBuilder, ejbComponentDescription);
             if (!methodHasSecurityMetadata) {
                 //if it was not handled by the descriptor processor we look for annotation basic info
-                methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, ejbComponentDescription.getAnnotationMethodPermissions(), true, viewMethodSecurityAttributesServiceBuilder, isSecurityDomainKnown);
+                methodHasSecurityMetadata = handlePermissions(contextID, componentConfiguration, viewConfiguration, deploymentReflectionIndex, viewClassName, ejbViewDescription, viewMethod, ejbComponentDescription.getAnnotationMethodPermissions(), true, viewMethodSecurityAttributesServiceBuilder, ejbComponentDescription);
             }
             // if any method has security metadata then the bean has method level security metadata
             if (methodHasSecurityMetadata) {
@@ -142,7 +142,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         final boolean securityRequired = beanHasMethodLevelSecurityMetadata || ejbComponentDescription.hasBeanLevelSecurityMetadata();
         // setup the security context interceptor
         if (isSecurityDomainKnown) {
-            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID);
+            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID, ejbComponentDescription.isEnableJacc());
             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> viewConfiguration.addViewInterceptor(elytronInterceptorFactory, priority));
         } else {
             viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, true, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
@@ -177,7 +177,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
     }
 
     private boolean handlePermissions(String contextID, ComponentConfiguration componentConfiguration, ViewConfiguration viewConfiguration, DeploymentReflectionIndex deploymentReflectionIndex, String viewClassName, EJBViewDescription ejbViewDescription, Method viewMethod, ApplicableMethodInformation<EJBMethodSecurityAttribute> permissions, boolean annotations,
-                                      final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder, final boolean isSecurityDomainKnown) {
+                                      final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder, EJBComponentDescription componentDescription) {
         EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewDescription.getMethodIntf(), viewMethod);
         final List<EJBMethodSecurityAttribute> allAttributes = new ArrayList<EJBMethodSecurityAttribute>();
         allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), viewMethod));
@@ -228,11 +228,15 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
             // add the interceptor
             final Interceptor authorizationInterceptor;
-            if (isSecurityDomainKnown) {
+            if (componentDescription.isSecurityDomainKnown()) {
                 if (ejbMethodSecurityMetaData.isDenyAll()) {
                     authorizationInterceptor = RolesAllowedInterceptor.DENY_ALL;
                 } else {
-                    authorizationInterceptor = new RolesAllowedInterceptor(ejbMethodSecurityMetaData.getRolesAllowed());
+                    if (componentDescription.isEnableJacc()) {
+                        authorizationInterceptor = new JaccInterceptor(viewClassName, viewMethod);
+                    } else {
+                        authorizationInterceptor = new RolesAllowedInterceptor(ejbMethodSecurityMetaData.getRolesAllowed());
+                    }
                 }
             } else {
                 authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod, contextID);

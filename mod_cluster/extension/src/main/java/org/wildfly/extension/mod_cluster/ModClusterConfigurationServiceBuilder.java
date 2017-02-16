@@ -69,6 +69,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -212,13 +213,17 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         // Elytron-based security support
 
-        optionalString(SSL_CONTEXT.resolveModelAttribute(context, model)).ifPresent(
+        Optional<String> sslContextRef = optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
+        sslContextRef.ifPresent(
                 sslContext -> this.sslContextDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext, SSLContext.class), SSLContext.class)
         );
 
         // Legacy security support
 
         if (model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            if (sslContextRef.isPresent()) {
+                throw ROOT_LOGGER.bothElytronAndLegacySslContextDefined();
+            }
             ModelNode sslModel = model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair());
 
             ModClusterConfig sslConfiguration = new ModClusterConfig();

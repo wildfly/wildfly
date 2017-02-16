@@ -22,9 +22,12 @@
 
 package org.jboss.as.ejb3.remote;
 
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import org.jboss.invocation.Interceptor;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.InterceptorContext;
 
 /**
@@ -36,7 +39,7 @@ import org.jboss.invocation.InterceptorContext;
  * @deprecated Remove this class once WFLY-7680 is resolved.
  */
 @Deprecated
-class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
+class EJBRemoteTransactionPropagatingInterceptor extends AbstractEJBInterceptor {
 
     /**
      * Remote transactions repository
@@ -60,7 +63,23 @@ class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
         final TransactionManager transactionManager = this.transactionManager;
         if (context.hasTransaction()) {
             // TODO: WFLY-7680
-            transactionManager.resume(context.getTransaction());
+            try {
+                transactionManager.resume(context.getTransaction());
+            } catch (SystemException e) {
+                try {
+                    EJBComponent component = getComponent(context, EJBComponent.class);
+                    // SystemException + server suspended equals the transaction is new and the request
+                    // for new transaction is being rejected
+                    if (component != null && component.getEjbSuspendHandlerService().isSuspended()) {
+                        throw EjbLogger.ROOT_LOGGER.cannotBeginUserTransaction();
+                    }
+                } catch (RuntimeException unexpected) {
+                    // just log, probably some other problem in the server is causing the original system
+                    // exception and we don't want to overwrite the original exception
+                    EjbLogger.ROOT_LOGGER.debug("Unexpected", unexpected);
+                }
+                throw e;
+            }
             try {
                 return context.proceed();
             } finally {

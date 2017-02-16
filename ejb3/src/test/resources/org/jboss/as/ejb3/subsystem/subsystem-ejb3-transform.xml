@@ -58,4 +58,5 @@
     <default-missing-method-permissions-deny-access value="false" />
     <disable-default-ejb-permissions value="false"/>
     <statistics enabled="${ejb.enable-statistics:true}" />
+    <enable-graceful-txn-shutdown value="false" />
 </subsystem>

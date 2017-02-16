@@ -72,6 +72,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
         WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE.validateAndSet(operation, model);
         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE.validateAndSet(operation, model);
         WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE.validateAndSet(operation, model);
+        WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE.validateAndSet(operation, model);
     }
 
     @Override
@@ -81,6 +82,8 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean requireBeanDescriptor = REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
         final boolean nonPortableMode = WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
         final boolean developmentMode = WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
+        final int threadPoolSize = WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE.resolveModelAttribute(context, model)
+                .asInt(WeldExecutorServices.DEFAULT_BOUND);
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -118,7 +121,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
                 Mode.ON_DEMAND).install();
 
-        context.getServiceTarget().addService(WeldExecutorServices.SERVICE_NAME, new WeldExecutorServices()).setInitialMode(Mode.ON_DEMAND).install();
+        context.getServiceTarget().addService(WeldExecutorServices.SERVICE_NAME, new WeldExecutorServices(threadPoolSize)).setInitialMode(Mode.ON_DEMAND).install();
     }
 
     // Synchronization objects created by iiop ejb beans require wrapping by JTSSychronizationWrapper to work correctly

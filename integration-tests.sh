@@ -3,7 +3,7 @@
 # Shell script to run the integration tests
 
 PROGNAME=`basename $0`
-DIRNAME=`dirname $0`
+DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 GREP="grep"
 ROOT="/"
 
@@ -11,20 +11,9 @@ ROOT="/"
 M2_HOME=""
 MAVEN_HOME=""
 
-MAVEN_OPTS="$MAVEN_OPTS -Xmx512M"
-export MAVEN_OPTS
-
-./tools/download-maven.sh
-
-# The default search path for Maven.
-MAVEN_SEARCH_PATH="\
-    tools
-    tools/maven \
-    tools/apache/maven \
-    maven"
-
-# The default arguments.  `mvn -s ...` will override this.
-MVN_ARGS=${MVN_ARGS:-"-s ../tools/maven/conf/settings.xml"};
+# MAVEN_OPTS now live in .mvn/jvm.config and .mvn/maven.config
+# MAVEN_OPTS="$MAVEN_OPTS -Xmx512M"
+# export MAVEN_OPTS
 
 # Use the maximum available, or set MAX_FD != -1 to use that.
 MAX_FD="maximum"
@@ -62,8 +51,6 @@ process_test_directives() {
     # For each parameter, check for testsuite directives.
     for param in $@ ; do
     case $param in
-      ## -s .../settings.xml - don't use our own.
-      -s)                MVN_ARGS="";          CMD_LINE_PARAMS="$CMD_LINE_PARAMS -s";;
       ## -DallTests runs all tests.
       -DallTests)        TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS -DallTests -fae";;
 
@@ -123,19 +110,6 @@ maybe_source() {
     done
 }
 
-find_maven() {
-    search="$*"
-    for d in $search; do
-        MAVEN_HOME="`pwd`/$d"
-        MVN="$MAVEN_HOME/bin/mvn"
-        if [ -x "$MVN" ]; then
-            # found one
-            echo $MAVEN_HOME
-            break
-        fi
-    done
-}
-
 #
 # Main function.
 #
@@ -161,40 +135,9 @@ main() {
         fi
     fi
 
-    #  Try the search path.
-    MAVEN_HOME=`find_maven $MAVEN_SEARCH_PATH`
+    MVN="$DIRNAME/mvnw"
 
-    #  Try looking up to root.
-    if [ "x$MAVEN_HOME" = "x" ]; then
-        target="build"
-        _cwd=`pwd`
-
-        while [ "x$MAVEN_HOME" = "x" ] && [ "$cwd" != "$ROOT" ]; do
-            cd ..
-            cwd=`pwd`
-            MAVEN_HOME=`search $MAVEN_SEARCH_PATH`
-        done
-
-        #  Make sure we get back.
-        cd $_cwd
-
-        if [ "$cwd" != "$ROOT" ]; then
-            found="true"
-        fi
-
-        #  Complain if we did not find anything.
-        if [ "$found" != "true" ]; then
-            die "Could not locate Maven; check \$MVN or \$MAVEN_HOME."
-        fi
-    fi
-
-    #  Make sure we have one.
-    MVN=$MAVEN_HOME/bin/mvn
-    if [ ! -x "$MVN" ]; then
-        die "Maven file is not executable: $MVN"
-    fi
-
-    #  Change to the directory where the script lives 
+    #  Change to the directory where the script lives
     #  so users are not forced to be in the same directory as build.xml.
     cd $DIRNAME/testsuite
 
@@ -210,13 +153,13 @@ main() {
     # Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
-    echo "$MVN $MVN_ARGS $MVN_GOAL"
+    echo "$MVN $MVN_GOAL"
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_ARGS $MVN_GOAL
+        /bin/sh -x $MVN $MVN_GOAL
     else
-        exec $MVN $MVN_ARGS $MVN_GOAL
+        exec $MVN $MVN_GOAL
     fi
 
     cd $DIRNAME

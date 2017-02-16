@@ -47,6 +47,7 @@ public enum Attribute {
     EXTENDS("extends"),
     FLAG("flag"),
     IDENTITY_TRUST_MANAGER_CLASS_NAME("identity-trust-manager-class-name"),
+    INITIALIZE_JACC("initialize-jacc"),
     KEY_MANAGER_FACTORY_ALGORITHM("key-manager-factory-algorithm"),
     KEY_MANAGER_FACTORY_PROVIDER("key-manager-factory-provider"),
     KEYSTORE_PASSWORD("keystore-password"),

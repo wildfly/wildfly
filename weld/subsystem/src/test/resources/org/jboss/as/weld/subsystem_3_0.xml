@@ -1,0 +1,1 @@
+<subsystem xmlns="urn:jboss:domain:weld:3.0" require-bean-descriptor="true" non-portable-mode="true" development-mode="true" />
