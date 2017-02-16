@@ -75,8 +75,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security.plugins.InfinispanAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -107,6 +110,7 @@ import org.jboss.security.config.MappingInfo;
 import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 
 /**
@@ -117,6 +121,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
  * @author Jason T. Greene
  */
 class SecurityDomainAdd extends AbstractAddStepHandler {
+    private static final String[] AUTH_CACHE_TYPES = {"local-cache", "replicated-cache", "invalidation-cache", "distributed-cache"};
     private static final String CACHE_CONTAINER_NAME = "security";
 
     private static final String DEFAULT_MODULE = "org.picketbox";
@@ -167,9 +172,24 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         if ("infinispan".equals(cacheType)) {
             builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
+
+            if (isAuthCacheConfigurationDefined(context)) {
+                builder.addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(context.getCapabilityServiceSupport(), CACHE_CONTAINER_NAME, InfinispanAuthenticationCacheFactory.AUTH_CACHE_NAME));
+            }
         }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+    }
+
+    private boolean isAuthCacheConfigurationDefined(OperationContext context) {
+        Resource securityCacheResource = context.readResourceFromRoot(
+                PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, "infinispan").append("cache-container", CACHE_CONTAINER_NAME), false);
+        for (String cacheType : AUTH_CACHE_TYPES) {
+            if (securityCacheResource.hasChild(PathElement.pathElement(cacheType, InfinispanAuthenticationCacheFactory.AUTH_CACHE_NAME))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ApplicationPolicy createApplicationPolicy(OperationContext context, String securityDomain, final ModelNode model)

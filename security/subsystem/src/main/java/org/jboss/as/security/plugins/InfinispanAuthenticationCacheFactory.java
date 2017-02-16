@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class InfinispanAuthenticationCacheFactory implements AuthenticationCacheFactory {
 
+    public static final String AUTH_CACHE_NAME = "auth-cache";
     private final EmbeddedCacheManager cacheManager;
     private final String securityDomain;
 
@@ -58,7 +59,7 @@ public class InfinispanAuthenticationCacheFactory implements AuthenticationCache
     public ConcurrentMap<Principal, DomainInfo> getCache() {
         // TODO override global settings with security domain specific
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        Configuration baseCfg = cacheManager.getCacheConfiguration("auth-cache");
+        Configuration baseCfg = cacheManager.getCacheConfiguration(AUTH_CACHE_NAME);
         if (baseCfg != null) {
             builder.read(baseCfg);
         }
