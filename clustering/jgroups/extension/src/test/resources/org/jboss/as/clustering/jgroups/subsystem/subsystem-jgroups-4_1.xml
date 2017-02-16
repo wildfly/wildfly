@@ -33,7 +33,7 @@
     </channels>
     <stacks>
         <stack name="minimal">
-            <transport type="UDP"/>
+            <transport type="UDP" socket-binding="some-binding"/>
         </stack>
         <stack name="maximal">
             <transport type="TCP"
@@ -62,10 +62,10 @@
                                    max-threads="43"
                                    keepalive-time="44"/>
             </transport>
-            <protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
+            <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
                 <property name="name">${test.expr:value}</property>
-            </protocol>
-            <protocol type="JDBC_PING" data-source="ExampleDS"/>
+            </socket-protocol>
+            <jdbc-protocol type="JDBC_PING" data-source="ExampleDS"/>
             <protocol type="MERGE2"/>
             <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
             <protocol type="FD"/>
@@ -78,6 +78,9 @@
             <protocol type="MFC"/>
             <protocol type="FRAG2"/>
             <protocol type="RSVP"/>
+            <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">
+                <credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
+            </encrypt-protocol>
             <relay site="LON">
                 <remote-site name="SFO" channel="bridge"/>
                 <remote-site name="NYC" channel="bridge"/>

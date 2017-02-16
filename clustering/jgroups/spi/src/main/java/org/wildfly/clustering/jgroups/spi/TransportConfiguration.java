@@ -22,17 +22,15 @@
 package org.wildfly.clustering.jgroups.spi;
 
 import org.jboss.as.network.SocketBinding;
+import org.jgroups.protocols.TP;
 
 /**
  * Defines the configuration of a JGroups transport protocol.
  * @author Paul Ferraro
  */
-public interface TransportConfiguration extends ProtocolConfiguration {
+public interface TransportConfiguration<T extends TP> extends ProtocolConfiguration<T> {
 
-    @Deprecated
-    boolean isShared();
-
-    SocketBinding getDiagnosticsSocketBinding();
+    SocketBinding getSocketBinding();
 
     Topology getTopology();
 

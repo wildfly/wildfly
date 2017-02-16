@@ -23,11 +23,9 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -75,7 +73,7 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
                 { JGroupsSchema.VERSION_2_0, 22 },
                 { JGroupsSchema.VERSION_3_0, 29 },
                 { JGroupsSchema.VERSION_4_0, 29 },
-                { JGroupsSchema.VERSION_4_1, 30 },
+                { JGroupsSchema.VERSION_4_1, 31 },
         };
         return Arrays.asList(data);
     }
@@ -99,37 +97,15 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
+                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd")
+                .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
+                .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
                 ;
-    }
-
-    /**
-     *  Create a collection of resources in the test which are not removed by a "remove" command
-     *   (i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*)
-     *
-     *   The list includes protocol layers used in all configuration examples.
-     */
-    @Override
-    protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        String[] protocols = { "UDP", "TCP", "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
-                "pbcast.NAKACK", "pbcast.NAKACK2", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC",
-                "MFC", "FRAG2", "pbcast.STATE_TRANSFER", "pbcast.FLUSH",  "RSVP", "relay.RELAY2" };
-
-        Set<PathAddress> addresses = new HashSet<>();
-
-        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
-        for (String protocol : protocols) {
-            addresses.add(address.append(StackResourceDefinition.pathElement("maximal")).append(ProtocolResourceDefinition.pathElement(protocol)));
-            addresses.add(address.append(ChannelResourceDefinition.pathElement("bridge")).append(ProtocolResourceDefinition.pathElement(protocol)));
-            addresses.add(address.append(ChannelResourceDefinition.pathElement("ee")).append(ProtocolResourceDefinition.pathElement(protocol)));
-        }
-
-        return addresses;
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/jboss-as-jgroups_%d_%d.xsd", schema.major(), schema.minor());
+        return String.format("schema/jboss-as-jgroups_%d_%d.xsd", this.schema.major(), this.schema.minor());
     }
 
     /**
@@ -204,16 +180,13 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
 
         for (int i = 0; i < protocolList.length; i++) {
             ModelNode protocol = new ModelNode();
-            protocol.get("type").set(protocolList[i]) ;
-            protocol.get("socket-binding").set("jgroups-udp");
+            protocol.get("type").set(protocolList[i]);
             protocols.add(protocol);
         }
 
         op.get("transport").set(transport);
         op.get("protocols").set(protocols);
         ops.add(op);
-        //subsystem=jgroups/stack=udp/protocol= FD_SOCK:write-attribute(name=socket-binding,value=jgroups-udp-fd)
-        //ops.add(Util.getWriteAttributeOperation(udpAddress.append(ProtocolResourceDefinition.pathElement("FD_SOCK")), "socket-binding", new ModelNode("jgroups-udp-fd")));
 
         KernelServices servicesA = createKernelServicesBuilder(createAdditionalInitialization()).setBootOperations(ops).build();
 

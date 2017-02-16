@@ -13,7 +13,7 @@
                 </transport>
                 <?UDP-DISCOVERY?>
                 <protocol type="MERGE3"/>
-                <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                <protocol type="FD_SOCK"/>
                 <?UDP-FD?>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2">
@@ -30,7 +30,7 @@
                 <transport type="TCP" socket-binding="jgroups-tcp"/>
                 <?TCP-DISCOVERY?>
                 <protocol type="MERGE3"/>
-                <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+                <protocol type="FD_SOCK"/>
                 <protocol type="FD"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2"/>
@@ -44,7 +44,7 @@
     </subsystem>
     <supplement name="default">
         <replacement placeholder="TCP-DISCOVERY">
-            <protocol type="MPING" socket-binding="jgroups-mping"/>
+            <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
         </replacement>
         <replacement placeholder="UDP-DISCOVERY">
             <protocol type="PING"/>
@@ -122,11 +122,9 @@
     <supplement name="ec2" includes="no-multicast s3-ping"/>
     <supplement name="azure" includes="no-multicast azure-ping"/>
     <supplement name="gossip" includes="no-multicast gossip-discovery"/>
-    <socket-binding name="jgroups-mping" interface="private" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
     <socket-binding name="jgroups-tcp" interface="private" port="7600"/>
-    <socket-binding name="jgroups-tcp-fd" interface="private" port="57600"/>
     <socket-binding name="jgroups-udp" interface="private" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
-    <socket-binding name="jgroups-udp-fd" interface="private" port="54200"/>
+    <socket-binding name="jgroups-mping" interface="private" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
     <interface name="private">
         <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
     </interface>
