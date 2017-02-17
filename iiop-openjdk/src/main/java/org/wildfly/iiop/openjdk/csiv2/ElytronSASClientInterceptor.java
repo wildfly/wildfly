@@ -139,8 +139,12 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
 
         // initialize the authentication context.
         final ServiceContainer container = this.currentServiceContainer();
-        final ServiceName authContextServiceName = AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY.getCapabilityServiceName(authenticationContextName);
-        this.authContext = (AuthenticationContext) container.getRequiredService(authContextServiceName).getValue();
+        if(authenticationContextName != null) {
+            final ServiceName authContextServiceName = AUTHENTICATION_CONTEXT_RUNTIME_CAPABILITY.getCapabilityServiceName(authenticationContextName);
+            this.authContext = (AuthenticationContext) container.getRequiredService(authContextServiceName).getValue();
+        } else {
+            this.authContext = null;
+        }
     }
 
     @Override
@@ -158,9 +162,11 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             byte[] encodedAuthenticationToken = NO_AUTHENTICATION_TOKEN;
             final URI uri = this.getURI(ri);
 
+            AuthenticationContext authContext = this.authContext == null ? AuthenticationContext.captureCurrent() : this.authContext;
+
             if ((secMech.sas_context_mech.target_supports & IdentityAssertion.value) != 0) {
                 final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.
-                        getAuthenticationConfiguration(uri, this.authContext, -1, null, null, "client-auth");
+                        getAuthenticationConfiguration(uri, authContext, -1, null, null, "client-auth");
                 final Principal principal = AUTH_CONFIG_CLIENT.getPrincipal(configuration);
 
                 if (principal != null && principal != AnonymousPrincipal.getInstance()) {
@@ -335,8 +341,9 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
      */
     private byte[] createInitialContextToken(final URI uri, final String purpose, final CompoundSecMech secMech) throws Exception {
 
+        AuthenticationContext authContext = this.authContext == null ? AuthenticationContext.captureCurrent() : this.authContext;
         // obtain the configuration that matches the URI and purpose.
-        final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.getAuthenticationConfiguration(uri, this.authContext, -1, null, null, purpose);
+        final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.getAuthenticationConfiguration(uri, authContext, -1, null, null, purpose);
 
         // get the callback handler from the configuration and use it to obtain a username/password pair.
         final CallbackHandler handler = AUTH_CONFIG_CLIENT.getCallbackHandler(configuration);
