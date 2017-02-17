@@ -486,6 +486,8 @@
                                             <exclude>org.apache.xalan:xalan</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
                                             <exclude>org.hibernate.java-persistence:jpa-api</exclude>
+                                            <!-- replaced by wildfly-naming-client -->
+                                            <exclude>org.jboss:jboss-remote-naming</exclude>
                                             <!--<exclude>org.jboss:jboss-common-core</exclude>-->
                                             <exclude>org.jboss.integration:jboss-jca-spi</exclude>
                                             <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
@@ -511,6 +513,8 @@
                                             <exclude>io.netty:netty</exclude>
                                             <exclude>org.jboss.remoting3:jboss-remoting</exclude>
                                             <exclude>org.jboss.security:jbosssx</exclude>
+                                            <!-- replaced by wildfly-elytron -->
+                                            <exclude>org.jboss.sasl:jboss-sasl</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
                                             <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</exclude>
