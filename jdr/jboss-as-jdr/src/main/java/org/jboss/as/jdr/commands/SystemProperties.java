@@ -34,7 +34,7 @@ import java.util.Properties;
  */
 public class SystemProperties extends JdrCommand {
 
-    private static String REDACTED = "<Redacted>";
+    private static final String REDACTED = "<Redacted>";
 
     @Override
     public void execute() throws Exception {
@@ -48,10 +48,8 @@ public class SystemProperties extends JdrCommand {
         Enumeration<?> names = properties.propertyNames();
         while(names.hasMoreElements()) {
             String name = (String) names.nextElement();
-            if(name.matches(".*password.*")) {
-                properties.setProperty(name, REDACTED);
-            }
-            printWriter.println(name + "=" + properties.getProperty(name));
+            String value = name.matches(".*password.*")?  REDACTED : properties.getProperty(name);
+            printWriter.println(name + "=" + value);
         }
         this.env.getZip().add(stringWriter.toString(), "system-properties.txt");
     }
