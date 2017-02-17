@@ -45,6 +45,8 @@
         <wildfly.instance.name>wildfly</wildfly.instance.name>
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
         <jboss.dist>${wildfly.dir}</jboss.dist>
+
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <dependencies>
@@ -68,10 +70,6 @@
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -121,6 +119,47 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Use keytool plugin to create JCEKS keystore for Elytron Credential Store related testing -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-api-1.7</artifactId>
+                        <version>1.5</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>clean-jcetest-keystore</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>genkey-jcetest-keystore</id>
+                        <goals>
+                            <goal>generateSecretKey</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>${wildfly.dir}/standalone/configuration/cred-store.jceks</keystore>
+                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                    <storetype>JCEKS</storetype>
+                    <keypass>password</keypass>
+                    <storepass>password</storepass>
+                    <alias>test</alias>
+                    <keyalg>AES</keyalg>
+                    <keysize>128</keysize>
+                    <validity>365</validity>
+                    <verbose>true</verbose>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>

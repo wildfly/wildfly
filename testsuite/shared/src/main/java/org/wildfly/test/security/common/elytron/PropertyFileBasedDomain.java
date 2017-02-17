@@ -22,6 +22,7 @@
 
 package org.wildfly.test.security.common.elytron;
 
+import static org.jboss.as.test.integration.security.common.Utils.createTemporaryFolder;
 import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 
 import java.io.File;
@@ -132,19 +133,5 @@ public class PropertyFileBasedDomain extends AbstractUserRolesSecurityDomain {
             properties.store(fos, "$REALM_NAME=" + name + "$");
         }
         return result;
-    }
-
-    /**
-     * Creates a temporary folder name with given name prefix.
-     *
-     * @param prefix folder name prefix
-     * @return created folder
-     */
-    private static File createTemporaryFolder(String prefix) throws IOException {
-        File file = File.createTempFile(prefix, "", null);
-        LOGGER.debugv("Creating temporary folder {0}", file);
-        file.delete();
-        file.mkdir();
-        return file;
     }
 }

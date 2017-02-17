@@ -103,7 +103,7 @@ public abstract class AbstractElytronSetupTask
                     .listIterator(configurableElements.length);
             while (reverseConfigIt.hasPrevious()) {
                 final ConfigurableElement configurableElement = reverseConfigIt.previous();
-                LOGGER.infov("Adding element {0} ({1})", configurableElement.getName(),
+                LOGGER.infov("Removing element {0} ({1})", configurableElement.getName(),
                         configurableElement.getClass().getSimpleName());
                 configurableElement.remove(cli);
             }
