@@ -165,14 +165,18 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG)
+                .setMeasurementUnit(MeasurementUnit.BYTES)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG)
+                .setMeasurementUnit(MeasurementUnit.BYTES)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG)
+                .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG)
+                .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
 
         private static final Map<String, ConnectorStat> MAP = new HashMap<>();
