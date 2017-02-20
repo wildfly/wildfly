@@ -42,6 +42,8 @@
 
         <ts.skipTests>${skipTests}</ts.skipTests>
         <enforcer.skip>true</enforcer.skip>
+
+        <ts.elytron.cli>../../shared/enable-elytron.cli</ts.elytron.cli>
     </properties>
 
     <profiles>
@@ -215,17 +217,19 @@
                 <property>
                     <name>elytron</name>
                 </property>
+                <file>
+                    <exists>${ts.elytron.cli}</exists>
+                </file>
             </activation>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>${version.exec.plugin}</version>
                         <executions>
                             <execution>
                                 <id>enable-elytron-cli</id>
-                                <phase>process-test-resources</phase>
+                                <phase>test-compile</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
@@ -237,7 +241,7 @@
                                         <argument>-mp</argument>
                                         <argument>${jboss.dist}/modules</argument>
                                         <argument>org.jboss.as.cli</argument>
-                                        <argument>--file=${project.parent.parent.basedir}/shared/enable-elytron.cli</argument>
+                                        <argument>--file=${ts.elytron.cli}</argument>
                                     </arguments>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>

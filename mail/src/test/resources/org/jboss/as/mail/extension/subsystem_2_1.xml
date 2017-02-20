@@ -28,7 +28,7 @@
             <credential-reference clear-text="pass"/>
         </smtp-server>
         <pop3-server outbound-socket-binding-ref="mail-pop3"/>
-        <imap-server outbound-socket-binding-ref="mail-imap" username="${exp.name:nobody}" password="${exp.password:pass}">
+        <imap-server outbound-socket-binding-ref="mail-imap" username="${exp.name:nobody}">
             <credential-reference clear-text="different-pass"/>
         </imap-server>
     </mail-session>

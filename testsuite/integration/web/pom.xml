@@ -32,6 +32,8 @@
         <!-- use the web build for tests -->
         <jboss.dist>${jbossas.project.dir}/${wildfly.web.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+
+        <ts.elytron.cli>web-enable-elytron.cli</ts.elytron.cli>
     </properties>
 
     <dependencies>

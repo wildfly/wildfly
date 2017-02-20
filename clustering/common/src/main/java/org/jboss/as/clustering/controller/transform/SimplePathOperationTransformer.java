@@ -24,7 +24,6 @@ package org.jboss.as.clustering.controller.transform;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -45,7 +44,7 @@ public class SimplePathOperationTransformer implements OperationTransformer {
     @Override
     public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
         ModelNode legacyOperation = operation.clone();
-        legacyOperation.get(ModelDescriptionConstants.OP_ADDR).set(this.addressTransformer.transform(address).toModelNode());
+        Operations.setPathAddress(legacyOperation, this.addressTransformer.transform(address));
 
         InitialAttributeValueOperationContextAttachment attachment = context.getAttachment(InitialAttributeValueOperationContextAttachment.INITIAL_VALUES_ATTACHMENT);
         if (attachment != null) {

@@ -143,11 +143,28 @@
                     <xs:documentation>Defines the transport protocol for a stack.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="protocol" type="tns:protocol" minOccurs="0" maxOccurs="unbounded">
-                <xs:annotation>
-                    <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="protocol" type="tns:protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="socket-protocol" type="tns:socket-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="jdbc-protocol" type="tns:jdbc-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="encrypt-protocol" type="tns:encrypt-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
             <xs:element name="relay" type="tns:relay" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>Defines a relay protocol for a stack.</xs:documentation>
@@ -161,7 +178,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="protocol">
+    <xs:complexType name="generic-protocol">
         <xs:sequence>
             <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
@@ -174,19 +191,100 @@
                 <xs:documentation>Identifies the protocol type, e.g. TCP, UDP, PING, etc.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="socket-binding" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Provides an address/port binding for a protocol.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="module" type="xs:string" default="org.jgroups">
             <xs:annotation>
                 <xs:documentation>Indicates the module from which to load this protocol.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="data-source" type="xs:string">
+    </xs:complexType>
+
+    <xs:complexType name="protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="socket-binding" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Deprecated.  Socket-based protocols should use &lt;socket-protocol/&gt; instead.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="socket-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="socket-binding" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Provides an address/port binding for a protocol.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="jdbc-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="data-source" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Data source reference for JDBC protocols to be used instead of connection and JNDI lookup properties.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="encrypt-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:sequence>
+                    <xs:element name="credential-reference" type="tns:credential-reference" minOccurs="0"/>
+                </xs:sequence>
+                <xs:attribute name="key-store" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>References key store containing the key used to sign and verify logout requests.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="key-alias" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The alias of the key used to sign and verify logout requests.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Copied from elytron subsystem schema -->
+    <xs:complexType name="credential-reference">
+        <xs:attribute name="store" type="xs:string" use="optional">
             <xs:annotation>
-                <xs:documentation>Data source reference for JDBC_PING protocol to be used instead of connection and JNDI lookup properties.</xs:documentation>
+                <xs:documentation>
+                    Credential store name used to fetch credential with given 'alias' from.
+                    Credential store name has to be defined elsewhere.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alias" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Alias of credential in the credential store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Type of credential to be fetched from credential store.
+                    It is usually fully qualified class name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="clear-text" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Credential/password in clear text. Use just for testing purpose.
+                    Otherwise use credential store to mask the actual credential from your configuration.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

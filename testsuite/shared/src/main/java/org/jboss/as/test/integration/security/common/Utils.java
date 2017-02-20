@@ -934,7 +934,7 @@ public class Utils extends CoreUtils {
             final HttpGet httpget = new HttpGet(uri);
             final HttpResponse response = httpClient.execute(httpget);
             int statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+            assertEquals("Unexpected status code in HTTP response.", expectedStatusCode, statusCode);
             return EntityUtils.toString(response.getEntity());
         }
     }
@@ -1101,5 +1101,20 @@ public class Utils extends CoreUtils {
             }
         }
         fail("HTTP Header not found '" + headerName + ": " + expectedVal + "'");
+    }
+
+
+    /**
+     * Creates a temporary folder name with given name prefix.
+     *
+     * @param prefix folder name prefix
+     * @return created folder
+     */
+    public static File createTemporaryFolder(String prefix) throws IOException {
+        File file = File.createTempFile(prefix, "", null);
+        LOGGER.debugv("Creating temporary folder {0}", file);
+        file.delete();
+        file.mkdir();
+        return file;
     }
 }

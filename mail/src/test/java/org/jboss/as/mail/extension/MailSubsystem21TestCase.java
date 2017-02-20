@@ -31,8 +31,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Properties;
 
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -110,6 +112,9 @@ public class MailSubsystem21TestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
         Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
         Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
+        PasswordAuthentication auth = session.requestPasswordAuthentication(InetAddress.getLocalHost(), 25, "smtp", "", "");
+        Assert.assertEquals("nobody", auth.getUserName());
+        Assert.assertEquals("pass", auth.getPassword());
 
         ServiceController<?> defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("default2"));
         session = (Session) defaultMailService.getValue();

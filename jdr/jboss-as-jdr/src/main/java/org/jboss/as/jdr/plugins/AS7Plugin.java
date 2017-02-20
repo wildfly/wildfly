@@ -22,6 +22,9 @@
 
 package org.jboss.as.jdr.plugins;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.jdr.commands.CallAS7;
 import org.jboss.as.jdr.commands.CollectFiles;
 import org.jboss.as.jdr.commands.DeploymentDependencies;
@@ -33,9 +36,6 @@ import org.jboss.as.jdr.commands.TreeCommand;
 import org.jboss.as.jdr.util.Sanitizer;
 import org.jboss.as.jdr.util.Sanitizers;
 import org.jboss.as.jdr.util.Utils;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class AS7Plugin implements JdrPlugin {
 
@@ -63,7 +63,7 @@ public class AS7Plugin implements JdrPlugin {
             new CollectFiles("*/modules/system/*/.overlays/.overlays"),
             new CollectFiles("*/.installation/*.conf"),
             new CollectFiles("*/.installation/*.txt"),
-            new SystemProperties(),
+            new SystemProperties().sanitizer(passwordSanitizer),
             new DeploymentDependencies(),
             new LocalModuleDependencies()
         );

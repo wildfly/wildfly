@@ -51,20 +51,20 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<RemoteSiteConfiguration>, RemoteSiteConfiguration {
 
-    private final ServiceNameProvider relayProvider;
+    private final ServiceNameProvider provider;
     private final String siteName;
 
     private volatile ValueDependency<String> cluster;
     private volatile ValueDependency<ChannelFactory> factory;
 
-    public RemoteSiteConfigurationBuilder(PathAddress relayAddress, String siteName) {
-        this.relayProvider = new ProtocolServiceNameProvider(relayAddress);
-        this.siteName = siteName;
+    public RemoteSiteConfigurationBuilder(PathAddress address) {
+        this.provider = new RemoteSiteServiceNameProvider(address);
+        this.siteName = address.getLastElement().getValue();
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.relayProvider.getServiceName().append(this.siteName);
+        return this.provider.getServiceName();
     }
 
     @Override

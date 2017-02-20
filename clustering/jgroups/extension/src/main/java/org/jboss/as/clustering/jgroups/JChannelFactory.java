@@ -21,58 +21,30 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import javax.sql.DataSource;
-
-import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.network.SocketBinding;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.annotations.Property;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestCorrelator.Header;
 import org.jgroups.conf.ClassConfigurator;
-import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
-import org.jgroups.protocols.TP;
-import org.jgroups.protocols.relay.RELAY2;
-import org.jgroups.protocols.relay.config.RelayConfig;
-import org.jgroups.stack.Configurator;
-import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
-import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Factory for creating fork-able channels.
  * @author Paul Ferraro
  */
-public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
+public class JChannelFactory implements ChannelFactory {
 
     static final ByteBuffer UNKNOWN_FORK_RESPONSE = ByteBuffer.allocate(0);
 
@@ -88,74 +60,21 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
     }
 
     @Override
-    public Channel createChannel(final String id) throws Exception {
-        JGroupsLogger.ROOT_LOGGER.debugf("Creating channel %s from stack %s", id, this.configuration.getName());
+    public Channel createChannel(String id) throws Exception {
+        JChannel channel = new JChannel(false);
+        ProtocolStack stack = new ProtocolStack();
+        channel.setProtocolStack(stack);
+        stack.addProtocol(this.configuration.getTransport().createProtocol());
+        stack.addProtocols(this.configuration.getProtocols().stream().map(ProtocolConfiguration::createProtocol).collect(Collectors.toList()));
 
-        PrivilegedExceptionAction<JChannel> action = new PrivilegedExceptionAction<JChannel>() {
-            @Override
-            public JChannel run() throws Exception {
-                Thread thread = Thread.currentThread();
-                ClassLoader loader = thread.getContextClassLoader();
-                // We need to set the TCCL to be able to resolve custom ProtocolHook class names
-                thread.setContextClassLoader(JChannelFactory.class.getClassLoader());
-                try {
-                    return new JChannel(JChannelFactory.this);
-                } finally {
-                    thread.setContextClassLoader(loader);
-                }
-            }
-        };
-        final JChannel channel = WildFlySecurityManager.doUnchecked(action);
-        ProtocolStack stack = channel.getProtocolStack();
-
-        TransportConfiguration transportConfig = this.configuration.getTransport();
-        SocketBinding binding = transportConfig.getSocketBinding();
-        if (binding != null) {
-            channel.setSocketFactory(new ManagedSocketFactory(binding.getSocketBindings()));
+        RelayConfiguration relay = this.configuration.getRelay();
+        if (relay != null) {
+            stack.addProtocol(relay.createProtocol());
         }
 
-        // Relay protocol is added to stack programmatically, not via ProtocolStackConfigurator
-        RelayConfiguration relayConfig = this.configuration.getRelay();
-        if (relayConfig != null) {
-            String localSite = relayConfig.getSiteName();
-            List<RemoteSiteConfiguration> remoteSites = this.configuration.getRelay().getRemoteSites();
-            List<String> sites = new ArrayList<>(remoteSites.size() + 1);
-            sites.add(localSite);
-            // Collect bridges, eliminating duplicates
-            Map<String, RelayConfig.BridgeConfig> bridges = new HashMap<>();
-            for (final RemoteSiteConfiguration remoteSite: remoteSites) {
-                String siteName = remoteSite.getName();
-                sites.add(siteName);
-                String clusterName = remoteSite.getClusterName();
-                RelayConfig.BridgeConfig bridge = new RelayConfig.BridgeConfig(clusterName) {
-                    @Override
-                    public JChannel createChannel() throws Exception {
-                        JChannel channel = (JChannel) remoteSite.getChannelFactory().createChannel(siteName);
-                        // Don't use FORK in bridge stack
-                        channel.getProtocolStack().removeProtocol(FORK.class);
-                        return channel;
-                    }
-                };
-                bridges.put(clusterName, bridge);
-            }
-            RELAY2 relay = new RELAY2().site(localSite);
-            for (String site: sites) {
-                RelayConfig.SiteConfig siteConfig = new RelayConfig.SiteConfig(site);
-                relay.addSite(site, siteConfig);
-                if (site.equals(localSite)) {
-                    for (RelayConfig.BridgeConfig bridge: bridges.values()) {
-                        siteConfig.addBridge(bridge);
-                    }
-                }
-            }
-            Map<String, String> relayProperties = new HashMap<>(relayConfig.getProperties());
-            Configurator.resolveAndAssignFields(relay, relayProperties);
-            Configurator.resolveAndInvokePropertyMethods(relay, relayProperties);
-            stack.addProtocol(relay);
-            relay.init();
-        }
-
-        UnknownForkHandler unknownForkHandler = new UnknownForkHandler() {
+        // Add implicit FORK to the top of the stack
+        FORK fork = new FORK();
+        fork.setUnknownForkHandler(new UnknownForkHandler() {
             private final short id = ClassConfigurator.getProtocolId(RequestCorrelator.class);
 
             @Override
@@ -182,13 +101,9 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                 }
                 return null;
             }
-        };
-
-        // Add implicit FORK to the top of the stack
-        FORK fork = new FORK();
-        fork.setUnknownForkHandler(unknownForkHandler);
+        });
         stack.addProtocol(fork);
-        fork.init();
+        stack.init();
 
         channel.setName(this.configuration.getNodeName());
 
@@ -201,197 +116,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
     }
 
     @Override
-    public boolean isUnknownForkResponse(ByteBuffer buffer) {
-        return UNKNOWN_FORK_RESPONSE.equals(buffer);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see org.jgroups.conf.ProtocolStackConfigurator#getProtocolStackString()
-     */
-    @Override
-    public String getProtocolStackString() {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see org.jgroups.conf.ProtocolStackConfigurator#getProtocolStack()
-     */
-    @Override
-    public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
-        List<org.jgroups.conf.ProtocolConfiguration> stack = new ArrayList<>(this.configuration.getProtocols().size() + 1);
-        TransportConfiguration transport = this.configuration.getTransport();
-        org.jgroups.conf.ProtocolConfiguration protocol = createProtocol(this.configuration, transport);
-        Map<String, String> properties = protocol.getProperties();
-
-        Introspector introspector = new Introspector(protocol);
-
-        SocketBinding binding = transport.getSocketBinding();
-        if (binding != null) {
-            configureBindAddress(introspector, protocol, binding);
-            configureServerSocket(introspector, protocol, "bind_port", binding);
-            configureMulticastSocket(introspector, protocol, "mcast_addr", "mcast_port", binding);
-        }
-
-        SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
-        boolean diagnostics = (diagnosticsSocketBinding != null);
-        properties.put("enable_diagnostics", String.valueOf(diagnostics));
-        if (diagnostics) {
-            configureMulticastSocket(introspector, protocol, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
-        }
-
-        setProperty(introspector, protocol, "after_creation_hook", TransportConfigurator.class.getName());
-
-        stack.add(protocol);
-
-        final Class<? extends TP> transportClass = introspector.getProtocolClass().asSubclass(TP.class);
-        PrivilegedExceptionAction<TP> action = transportClass::newInstance;
-
-        try {
-            stack.addAll(createProtocols(this.configuration, WildFlySecurityManager.doUnchecked(action).isMulticastCapable()));
-        } catch (PrivilegedActionException e) {
-            throw new IllegalStateException(e.getCause());
-        }
-
-        return stack;
-    }
-
-    static List<org.jgroups.conf.ProtocolConfiguration> createProtocols(ProtocolStackConfiguration stack, boolean multicastCapable) {
-
-        List<ProtocolConfiguration> protocols = stack.getProtocols();
-        List<org.jgroups.conf.ProtocolConfiguration> result = new ArrayList<>(protocols.size());
-        TransportConfiguration transport = stack.getTransport();
-
-        for (ProtocolConfiguration protocol: protocols) {
-            org.jgroups.conf.ProtocolConfiguration config = createProtocol(stack, protocol);
-            Introspector introspector = new Introspector(config);
-            SocketBinding binding = protocol.getSocketBinding();
-            if (binding != null) {
-                configureBindAddress(introspector, config, binding);
-                configureServerSocket(introspector, config, "bind_port", binding);
-                configureServerSocket(introspector, config, "start_port", binding);
-                configureMulticastSocket(introspector, config, "mcast_addr", "mcast_port", binding);
-            } else if (transport.getSocketBinding() != null) {
-                // If no socket-binding was specified, use bind address of transport
-                configureBindAddress(introspector, config, transport.getSocketBinding());
-            }
-            if (!multicastCapable) {
-                setProperty(introspector, config, "use_mcast_xmit", String.valueOf(false));
-                setProperty(introspector, config, "use_mcast_xmit_req", String.valueOf(false));
-            }
-            DataSource dataSource = protocol.getDataSource();
-            if (dataSource != null) {
-                String jndiName = ((org.jboss.as.connector.subsystems.datasources.WildFlyDataSource) dataSource).getJndiName();
-                setProperty(introspector, config, "datasource_jndi_name", jndiName);
-            }
-            result.add(config);
-        }
-
-        return result;
-    }
-
-    private static org.jgroups.conf.ProtocolConfiguration createProtocol(ProtocolStackConfiguration stack, ProtocolConfiguration protocol) {
-        String protocolName = protocol.getName();
-        ModuleIdentifier module = protocol.getModule();
-        final Map<String, String> properties = new HashMap<>(stack.getDefaultProperties(protocolName));
-        properties.putAll(protocol.getProperties());
-        try {
-            return new org.jgroups.conf.ProtocolConfiguration(protocol.getProtocolClassName(), properties, stack.getModuleLoader().loadModule(module).getClassLoader()) {
-                @Override
-                public Map<String, String> getOriginalProperties() {
-                    return properties;
-                }
-            };
-        } catch (ModuleLoadException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    private static void configureBindAddress(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        setSocketBindingProperty(introspector, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
-    }
-
-    private static void configureServerSocket(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
-        setSocketBindingProperty(introspector, config, property, String.valueOf(binding.getSocketAddress().getPort()));
-    }
-
-    private static void configureMulticastSocket(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
-        try {
-            InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            setSocketBindingProperty(introspector, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            setSocketBindingProperty(introspector, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
-        } catch (IllegalStateException e) {
-            ROOT_LOGGER.couldNotSetAddressAndPortNoMulticastSocket(e, config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
-        }
-    }
-
-    private static void setSocketBindingProperty(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
-        try {
-            Map<String, String> properties = config.getOriginalProperties();
-            if (properties.containsKey(name)) {
-                ROOT_LOGGER.unableToOverrideSocketBindingValue(name, config.getProtocolName(), value, properties.get(name));
-            }
-            setProperty(introspector, config, name, value);
-        } catch (Exception e) {
-            ROOT_LOGGER.unableToAccessProtocolPropertyValue(e, name, config.getProtocolName());
-        }
-    }
-
-    private static void setProperty(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
-        if (introspector.hasProperty(name)) {
-            config.getProperties().put(name, value);
-        }
-    }
-
-    /*
-     * Collects the configurable properties for a given protocol.
-     * This includes all fields and methods annotated with @Property for a given protocol
-     */
-    private static class Introspector {
-        final Class<? extends Protocol> protocolClass;
-        final Set<String> properties = new HashSet<>();
-
-        Introspector(org.jgroups.conf.ProtocolConfiguration config) {
-            String name = config.getProtocolName();
-            try {
-                this.protocolClass = config.getClassLoader().loadClass(name).asSubclass(Protocol.class);
-                PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-                    @Override
-                    public Void run() {
-                        Class<?> targetClass = Introspector.this.protocolClass;
-                        while (Protocol.class.isAssignableFrom(targetClass)) {
-                            for (Method method: targetClass.getDeclaredMethods()) {
-                                if (method.isAnnotationPresent(Property.class)) {
-                                    String property = method.getAnnotation(Property.class).name();
-                                    if (!property.isEmpty()) {
-                                        Introspector.this.properties.add(property);
-                                    }
-                                }
-                            }
-                            for (Field field: targetClass.getDeclaredFields()) {
-                                if (field.isAnnotationPresent(Property.class)) {
-                                    String property = field.getAnnotation(Property.class).name();
-                                    Introspector.this.properties.add(!property.isEmpty() ? property : field.getName());
-                                }
-                            }
-                            targetClass = targetClass.getSuperclass();
-                        }
-                        return null;
-                    }
-                };
-                WildFlySecurityManager.doUnchecked(action);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-
-        Class<? extends Protocol> getProtocolClass() {
-            return this.protocolClass;
-        }
-
-        boolean hasProperty(String property) {
-            return this.properties.contains(property);
-        }
+    public boolean isUnknownForkResponse(ByteBuffer response) {
+        return UNKNOWN_FORK_RESPONSE.equals(response);
     }
 }

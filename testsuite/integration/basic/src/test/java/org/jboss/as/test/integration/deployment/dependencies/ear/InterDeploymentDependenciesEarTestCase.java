@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.deployment.dependencies.ear;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -39,11 +42,9 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Test for inter-deployment dependencies in EAR files. It also contains a module dependency simple test - EJB module depends on
@@ -100,6 +101,21 @@ public class InterDeploymentDependenciesEarTestCase {
         return archive;
     }
 
+    @After
+    public void cleanUp() {
+        try {
+            deployer.undeploy(DEP_APP2);
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
+            deployer.undeploy(DEP_APP1);
+        } catch (Exception e) {
+            // Ignore
+        }
+    }
+
     /**
      * Tests enterprise application dependencies.
      *
@@ -109,12 +125,11 @@ public class InterDeploymentDependenciesEarTestCase {
     public void test() throws NamingException {
         try {
             deployer.deploy(DEP_APP2);
-            fail("Application deployment must fail if the dependencies are not satifsied.");
+            fail("Application deployment must fail if the dependencies are not satisfied.");
         } catch (Exception e) {
             LOGGER.debug("Expected fail", e);
-        } finally {
-            deployer.undeploy(DEP_APP2);
         }
+
         deployer.deploy(DEP_APP1);
         deployer.deploy(DEP_APP2);
 
@@ -129,19 +144,18 @@ public class InterDeploymentDependenciesEarTestCase {
         } catch (IllegalStateException e) {
             //OK
         }
-        deployer.undeploy(DEP_APP2);
+        // cleanUp will undeploy DEP_APP2
     }
 
     @Test
     public void testWithRestart() throws NamingException {
         try {
             deployer.deploy(DEP_APP2);
-            fail("Application deployment must fail if the dependencies are not satifsied.");
+            fail("Application deployment must fail if the dependencies are not satisfied.");
         } catch (Exception e) {
             LOGGER.debug("Expected fail", e);
-        } finally {
-            deployer.undeploy(DEP_APP2);
         }
+
         deployer.deploy(DEP_APP1);
         deployer.deploy(DEP_APP2);
 
@@ -165,7 +179,7 @@ public class InterDeploymentDependenciesEarTestCase {
         } catch (IllegalStateException e) {
             //OK
         }
-        deployer.undeploy(DEP_APP2);
+        // cleanUp will undeploy DEP_APP2
     }
 
     // Private methods -------------------------------------------------------

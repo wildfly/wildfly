@@ -26,12 +26,14 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -80,9 +82,9 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
             ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
             registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
                     .filter(Objects::nonNull)
-                    .map(access -> access.getAttributeDefinition())
+                    .map(AttributeAccess::getAttributeDefinition)
                         .filter(Objects::nonNull)
-                        .filter(attribute -> attribute.hasCapabilityRequirements())
+                        .filter(AttributeDefinition::hasCapabilityRequirements)
                         .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
 
             this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, null, resolver.apply(address)));

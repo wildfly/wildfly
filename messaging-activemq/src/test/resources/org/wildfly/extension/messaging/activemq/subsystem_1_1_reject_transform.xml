@@ -4,7 +4,7 @@
     <server name="default">
 
         <security elytron-domain="elytronDomain"/>
-        <cluster user="testuser" password="pass">
+        <cluster user="testuser">
             <credential-reference store="cs1" alias="testuser"/>
         </cluster>
         <journal datasource="fooDS"
@@ -25,9 +25,16 @@
                 forwarding-address="${forwarding.address:forwardingaddress1}"
                 producer-window-size="${producer.windows.size:5678}"
                 static-connectors="in-vm netty"
+                user="${user:Brian}">
+            <credential-reference clear-text="secret1"/>
+        </bridge>
+        <bridge name="bridge2"
+                queue-name="${queue.name:coreQueueA}"
+                forwarding-address="${forwarding.address:forwardingaddress1}"
+                producer-window-size="${producer.windows.size:5678}"
+                static-connectors="in-vm netty"
                 user="${user:Brian}"
                 password="${password:secret}">
-            <credential-reference clear-text="secret1"/>
         </bridge>
         <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"

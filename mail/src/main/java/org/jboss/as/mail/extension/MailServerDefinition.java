@@ -104,6 +104,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
+                    .addAlternatives(MailSubsystemModel.PASSWORD)
                     .build();
 
     protected static final SimpleAttributeDefinition PASSWORD =
@@ -112,6 +113,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
+                    .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
                     .build();
 
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)

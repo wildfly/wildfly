@@ -246,9 +246,9 @@ public class LocalEjbReceiver extends EJBReceiver {
                         EjbLogger.ROOT_LOGGER.executorIsNull()
                     ));
                 } else {
-                    executor.execute(task);
                     // this normally isn't necessary unless the client didn't detect that it was an async method for some reason
                     receiverContext.proceedAsynchronously();
+                    executor.execute(task);
                 }
             } else {
                 throw EjbLogger.ROOT_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();

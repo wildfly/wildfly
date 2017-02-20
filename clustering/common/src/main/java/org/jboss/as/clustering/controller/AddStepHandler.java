@@ -24,6 +24,7 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
@@ -39,6 +40,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -59,7 +62,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     public AddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor.getAttributes());
         this.descriptor = descriptor;
         this.handler = handler;
     }
@@ -124,7 +126,8 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             definition.validateOperation(operation);
         }
         // Validate and apply attribute translations
-        for (Map.Entry<AttributeDefinition, AttributeTranslation> entry : this.descriptor.getAttributeTranslations().entrySet()) {
+        Map<AttributeDefinition, AttributeTranslation> translations = this.descriptor.getAttributeTranslations();
+        for (Map.Entry<AttributeDefinition, AttributeTranslation> entry : translations.entrySet()) {
             AttributeDefinition alias = entry.getKey();
             AttributeTranslation translation = entry.getValue();
             Attribute target = translation.getTargetAttribute();
@@ -136,8 +139,16 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                 operation.get(targetName).set(translatedValue);
             }
         }
-
-        super.populateModel(context, operation, resource);
+        // Validate proper attributes
+        ModelNode model = resource.getModel();
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        for (String attributeName : registration.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+            AttributeAccess attribute = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+            AttributeDefinition definition = attribute.getAttributeDefinition();
+            if ((attribute.getStorageType() == AttributeAccess.Storage.CONFIGURATION) && !translations.containsKey(definition)) {
+                definition.validateAndSet(operation, model);
+            }
+        }
 
         // Auto-create required child resources as necessary
         addRequiredChildren(context, this.descriptor.getRequiredChildren(), (Resource parent, PathElement path) -> parent.hasChild(path));
@@ -170,9 +181,13 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         // Only register capabilities when allowed by the associated predicate
         this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.registerCapability(capability.resolve(address)));
 
-        this.attributes.stream()
-                .filter(attribute -> attribute.hasCapabilityRequirements())
-                .forEach(attribute -> attribute.addCapabilityRequirements(context, model.get(attribute.getName())));
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
+                .filter(Objects::nonNull)
+                .map(AttributeAccess::getAttributeDefinition)
+                    .filter(Objects::nonNull)
+                    .filter(AttributeDefinition::hasCapabilityRequirements)
+                    .forEach(attribute -> attribute.addCapabilityRequirements(context, model.get(attribute.getName())));
 
         this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.addCapabilityRequirements(context, null, resolver.apply(address)));
     }

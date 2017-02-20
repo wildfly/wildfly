@@ -33,7 +33,7 @@
     </channels>
     <stacks default="maximal">
         <stack name="minimal">
-            <transport type="UDP"/>
+            <transport type="UDP" socket-binding="some-binding"/>
         </stack>
         <stack name="maximal">
             <transport type="TCP"
