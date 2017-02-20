@@ -79,6 +79,4 @@ public class DomainAdjuster700 extends DomainAdjuster {
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.elytron")));
         return list;
     }
-
-
 }

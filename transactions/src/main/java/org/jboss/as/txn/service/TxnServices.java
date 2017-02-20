@@ -63,6 +63,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_REMOTE_TRANSACTION_SERVICE = JBOSS_TXN.append("service", "remote");
 
+    public static final ServiceName JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE = JBOSS_TXN.append("service", "http-remote");
+
     public static <T> T notNull(T value) {
         if (value == null) throw TransactionLogger.ROOT_LOGGER.serviceNotStarted();
         return value;

@@ -126,7 +126,6 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         list.add(
                 getUndefineAttributeOperation(
                         subsystem.append("strict-max-bean-instance-pool", "mdb-strict-max-pool"), "derive-size"));
-
         return list;
     }
 
