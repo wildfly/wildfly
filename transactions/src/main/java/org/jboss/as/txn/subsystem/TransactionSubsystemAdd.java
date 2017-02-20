@@ -35,6 +35,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -72,6 +73,7 @@ import org.jboss.as.txn.service.JTAEnvironmentBeanService;
 import org.jboss.as.txn.service.LocalTransactionContextService;
 import org.jboss.as.txn.service.RemotingTransactionServiceService;
 import org.jboss.as.txn.service.TransactionManagerService;
+import org.jboss.as.txn.service.TransactionRemoteHTTPService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionAccessControlService;
@@ -111,6 +113,8 @@ import org.wildfly.transaction.client.LocalTransactionContext;
 class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
+
+    private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
 
     private TransactionSubsystemAdd() {
         super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
@@ -253,6 +257,14 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
                 .setInitialMode(Mode.ACTIVE)
                 .install();
+        }
+
+        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(), null)) {
+            final TransactionRemoteHTTPService remoteHTTPService = new TransactionRemoteHTTPService();
+            context.getServiceTarget().addService(TxnServices.JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE, remoteHTTPService)
+                .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteHTTPService.getLocalTransactionContextInjectedValue())
+                .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, remoteHTTPService.getPathHandlerInjectedValue())
+                    .install();
         }
 
         //always propagate the transaction context

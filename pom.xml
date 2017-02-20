@@ -219,6 +219,7 @@
         <version.org.wildfly.core>3.0.0.Beta3</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.0.Alpha2</version.org.wildfly.plugin>
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
+        <version.org.wildfly.http-client>1.0.0.Alpha1</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.0.Beta10</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta9</version.org.wildfly.security.elytron-subsystem>
         <version.org.wildfly.transaction.client>1.0.0.Beta14</version.org.wildfly.transaction.client>
@@ -1573,6 +1574,117 @@
                 <artifactId>txw2</artifactId>
                 <version>${version.sun.jaxb}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-ejb-client</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-river</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-client-common</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-river</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.common</groupId>
+                        <artifactId>wildfly-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.client</groupId>
+                        <artifactId>wildfly-client-config</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>wildfly-elytron</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-naming-client</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-river</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.common</groupId>
+                        <artifactId>wildfly-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.client</groupId>
+                        <artifactId>wildfly-client-config</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>wildfly-elytron</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.ejb</groupId>
+                        <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-transaction-client</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.undertow</groupId>
+                        <artifactId>undertow-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-river</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.common</groupId>
+                        <artifactId>wildfly-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.client</groupId>
+                        <artifactId>wildfly-client-config</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>wildfly-elytron</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.ejb</groupId>
+                        <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.sun.xml.bind.external</groupId>
@@ -4294,6 +4406,10 @@
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
                         <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

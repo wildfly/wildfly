@@ -155,6 +155,9 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
+        target.addService(UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY.getCapabilityServiceName(), new RemoteHttpInvokerService()).install();
+
+
     }
 
 }

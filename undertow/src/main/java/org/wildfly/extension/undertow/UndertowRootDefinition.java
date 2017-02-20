@@ -39,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -52,11 +53,18 @@ import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.filters.FailoverStrategy;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
+import io.undertow.server.handlers.PathHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class UndertowRootDefinition extends PersistentResourceDefinition {
+
+    public static final String HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
+
+    static final RuntimeCapability<Void> HTTP_INVOKER_RUNTIME_CAPABILITY =
+            RuntimeCapability.Builder.of(HTTP_INVOKER_CAPABILITY_NAME, false, PathHandler.class).build();
+
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
                     .setRestartAllServices()
@@ -187,14 +195,14 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
         for (AttributeDefinition attr : getAttributes()) {
-            if(attr == STATISTICS_ENABLED) {
-                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void> (STATISTICS_ENABLED) {
+            if (attr == STATISTICS_ENABLED) {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void>(STATISTICS_ENABLED) {
                     @Override
                     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
                         ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);
-                        if(controller != null) {
+                        if (controller != null) {
                             UndertowService service = (UndertowService) controller.getService();
-                            if(service != null) {
+                            if (service != null) {
                                 service.setStatisticsEnabled(resolvedValue.asBoolean());
                             }
                         }
@@ -204,9 +212,9 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     @Override
                     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
                         ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);
-                        if(controller != null) {
+                        if (controller != null) {
                             UndertowService service = (UndertowService) controller.getService();
-                            if(service != null) {
+                            if (service != null) {
                                 service.setStatisticsEnabled(valueToRestore.asBoolean());
                             }
                         }
@@ -216,5 +224,9 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                 resourceRegistration.registerReadWriteAttribute(attr, null, handler);
             }
         }
+    }
+
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(HTTP_INVOKER_RUNTIME_CAPABILITY);
     }
 }
