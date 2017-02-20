@@ -21,11 +21,17 @@
  */
 package org.jboss.as.jdr.commands;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.Properties;
+
+import org.jboss.as.jdr.util.Sanitizer;
+import org.jboss.as.jdr.util.Utils;
 
 /**
  * Add the JVM System properties to the JDR report
@@ -34,7 +40,14 @@ import java.util.Properties;
  */
 public class SystemProperties extends JdrCommand {
 
-    private static String REDACTED = "<Redacted>";
+    private LinkedList<Sanitizer> sanitizers = new LinkedList<Sanitizer>();
+
+    public SystemProperties sanitizer(Sanitizer ... sanitizers) {
+        for (Sanitizer s : sanitizers) {
+            this.sanitizers.add(s);
+        }
+        return this;
+    }
 
     @Override
     public void execute() throws Exception {
@@ -43,16 +56,20 @@ public class SystemProperties extends JdrCommand {
 
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
-
         Properties properties = System.getProperties();
+
         Enumeration<?> names = properties.propertyNames();
         while(names.hasMoreElements()) {
             String name = (String) names.nextElement();
-            if(name.matches(".*password.*")) {
-                properties.setProperty(name, REDACTED);
-            }
             printWriter.println(name + "=" + properties.getProperty(name));
         }
-        this.env.getZip().add(stringWriter.toString(), "system-properties.txt");
+        InputStream stream = new ByteArrayInputStream(stringWriter.toString().getBytes(StandardCharsets.UTF_8));
+
+        for (Sanitizer sanitizer : this.sanitizers) {
+            stream = sanitizer.sanitize(stream);
+        }
+
+        this.env.getZip().addAsString(stream, "system-properties.txt");
+        Utils.safelyClose(stream);
     }
 }
