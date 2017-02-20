@@ -52,12 +52,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("suspend-handler");
 
     /**
-     * DEPLOYMENT CONTROLLER name, this service is used to remove deployments when service is suspended thus causing
-     * the modules to be notified as unavailable to the clients
-     */
-    public static final ServiceName DEPLOYMENT_CONTROLLER = SERVICE_NAME.append("deployment-controller");
-
-    /**
      * Updates activeInvocationCount field
      */
     private static final AtomicIntegerFieldUpdater<EJBSuspendHandlerService> activeInvocationCountUpdater = AtomicIntegerFieldUpdater
@@ -91,12 +85,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * Injection of local transaction context for keeping track of active transactions
      */
     private final InjectedValue<LocalTransactionContext> localTransactionContextInjectedValue = new InjectedValue<>();
-
-    /**
-     * Deployment controller service: a dependency of all deployments that can be stopped if we want to have those
-     * deployments removed; removal will cause module unavailability notification to clients.
-     */
-    private ServiceController<Void> deploymentController;
 
     /**
      * The number of active requests that are using this entry point
@@ -172,9 +160,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
         suspendController.registerActivity(this);
         final LocalTransactionContext localTransactionContext = localTransactionContextInjectedValue.getValue();
         localTransactionContext.registerCreationListener(this);
-        deploymentController = context.getChildTarget().addService(DEPLOYMENT_CONTROLLER, new AbstractService<Void>() {})
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
-
     }
 
     /**
@@ -231,7 +216,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
         if (listener != null) {
             listenerUpdater.compareAndSet(this, listener, null);
         }
-        deploymentController.setMode(ServiceController.Mode.ACTIVE);
     }
 
     /**
@@ -318,8 +302,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
     private void doneSuspended() {
         final ServerActivityCallback oldListener = listener;
         if (listenerUpdater.compareAndSet(this, oldListener, null)) {
-            if (deploymentController != null)
-                deploymentController.setMode(ServiceController.Mode.NEVER);
             oldListener.done();
             EjbLogger.ROOT_LOGGER.suspensionComplete();
         }
