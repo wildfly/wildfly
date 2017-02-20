@@ -29,7 +29,6 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 
 /**
@@ -39,7 +38,7 @@ import org.junit.Assert;
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
 public final class TxTestUtil {
-    private static final int timeoutWaitTime_ms = TimeoutUtil.adjust(2500);
+    private static final int timeoutWaitTime_ms = 2500;
 
     private TxTestUtil() {
         // no instance here

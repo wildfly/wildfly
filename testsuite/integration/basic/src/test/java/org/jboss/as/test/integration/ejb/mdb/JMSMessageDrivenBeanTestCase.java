@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.mdb;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -42,11 +43,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.PropertyPermission;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -58,7 +62,9 @@ public class JMSMessageDrivenBeanTestCase {
     public static Archive<?> deployment() {
         final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "JMSMessageDrivenBeanTestCase.jar")
                 .addClasses(ReplyingMDB.class,JMSMessagingUtil.class)
-                .addClass(CreateQueueSetupTask.class);
+                .addClass(CreateQueueSetupTask.class)
+                .addClass(TimeoutUtil.class)
+                .addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
         return deployment;
     }
 
@@ -79,7 +85,7 @@ public class JMSMessageDrivenBeanTestCase {
             producer.send(message);
             producer.close();
 
-            final Message reply = receiver.receive(1000);
+            final Message reply = receiver.receive(TimeoutUtil.adjust(5000));
             assertNotNull(reply);
             final String result = ((TextMessage) reply).getText();
             assertEquals("replying Test", result);

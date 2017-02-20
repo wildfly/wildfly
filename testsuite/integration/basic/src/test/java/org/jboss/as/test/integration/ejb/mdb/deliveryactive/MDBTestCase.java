@@ -90,7 +90,7 @@ public class MDBTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
-    private static final int TIMEOUT = TimeoutUtil.adjust(2000);
+    private static final int TIMEOUT = TimeoutUtil.adjust(5000);
 
     static class JmsQueueSetup implements ServerSetupTask {
 
