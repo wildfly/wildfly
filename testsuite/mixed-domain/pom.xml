@@ -96,14 +96,21 @@
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
                     <skipTests>${ts.skipTests}</skipTests>
-
-                    <systemPropertyVariables>
+                    <skipTests>false</skipTests>
+                    <systemPropertyVariables combine.children="append">
+                        <mcast>${mcast}</mcast>
+                        <mcast1>${mcast1}</mcast1>
+                        <mcast2>${mcast2}</mcast2>
+                        <mcast.ttl>${mcast.ttl}</mcast.ttl>
                         <jboss.options>${surefire.system.args}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.home>${jboss.home}</jboss.home>
                         <module.path>${jboss.home}/modules</module.path>
                         <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
                         <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
+                        <jboss.default.multicast.address>${mcast}</jboss.default.multicast.address>
+                        <jboss.modcluster.multicast.address>${mcast1}</jboss.modcluster.multicast.address>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly </server.jvm.args>
                     </systemPropertyVariables>
                     <includes>
                          <!-- include>**/*TestCase.java</include -->

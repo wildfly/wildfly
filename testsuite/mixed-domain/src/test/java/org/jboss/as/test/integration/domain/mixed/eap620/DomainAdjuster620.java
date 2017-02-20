@@ -43,8 +43,8 @@ import org.jboss.dmr.ModelNode;
 public class DomainAdjuster620 extends DomainAdjuster630 {
 
     @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
-        List<ModelNode> list = super.adjustForVersion(client, profileAddress);
+    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
+        List<ModelNode> list = super.adjustForVersion(client, profileAddress, withMasterServers);
         list.addAll(adjustLogging(profileAddress.append(SUBSYSTEM, "logging")));
         list.add(getWriteAttributeOperation(profileAddress.append(SUBSYSTEM, "datasources").append("data-source","ExampleDS"), "statistics-enabled", new ModelNode("true")));
         return list;

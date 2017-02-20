@@ -22,7 +22,10 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap700;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 
@@ -48,12 +51,15 @@ import org.wildfly.extension.undertow.UndertowExtension;
 public class DomainAdjuster700 extends DomainAdjuster {
 
     @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
         list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, CoreManagementExtension.SUBSYSTEM_NAME)));
         adjustUndertow(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), list);
         list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
+        if(withMasterServers) {
+            list.addAll(reconfigureServers());
+        }
         return list;
     }
 
@@ -76,6 +82,7 @@ public class DomainAdjuster700 extends DomainAdjuster {
         return list;
     }
 
+
     private Collection<? extends ModelNode> removeCoreManagement(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
         //core-management subsystem and extension don't exist
@@ -83,4 +90,17 @@ public class DomainAdjuster700 extends DomainAdjuster {
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.core-management")));
         return list;
     }
+
+    private Collection<? extends ModelNode> reconfigureServers() {
+        final List<ModelNode> list = new ArrayList<>();
+        //Reconfigure master servers
+        final PathAddress masterHostAddress = PathAddress.pathAddress(HOST, "master");
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), AUTO_START, true));
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.GROUP, "main-server-group"));
+        list.add(Util.getUndefineAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET));
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), AUTO_START, true));
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, 100));
+        return list;
+    }
+
 }
