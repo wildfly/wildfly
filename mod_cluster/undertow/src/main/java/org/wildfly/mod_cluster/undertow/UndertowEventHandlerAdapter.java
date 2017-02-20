@@ -117,7 +117,12 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         suspendController.getValue().unRegisterActivity(this);
         this.service.getValue().unregisterListener(this);
 
-        this.executor.shutdown();
+        this.executor.shutdownNow();
+        try {
+            this.executor.awaitTermination(statusInterval, TimeUnit.SECONDS);
+        } catch (InterruptedException ignore) {
+            // Move on.
+        }
 
         ContainerEventHandler eventHandler = this.eventHandler.getValue();
         eventHandler.stop(this.server);
