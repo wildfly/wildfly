@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -106,6 +107,7 @@ import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.RegistryCollector;
 import org.jboss.as.ejb3.remote.RegistryCollectorService;
+import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -149,6 +151,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTAN
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR;
 
 import java.net.URI;
@@ -162,6 +165,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor;
     private final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor;
+    private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
@@ -176,6 +180,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         // TODO: delete these once optional requirements no longer require the existence of a capability
         context.registerCapability(CLUSTERED_SINGLETON_CAPABILITY);
         context.registerCapability(EJB_CLIENT_CONFIGURATOR);
+        context.registerCapability(EJB_CAPABILITY);
     }
 
     @Override
@@ -426,6 +431,18 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install();
 
             EnableStatisticsWriteHandler.INSTANCE.updateToRuntime(context, model);
+
+
+            if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
+                EJB3RemoteHTTPService service = new EJB3RemoteHTTPService();
+
+
+                ServiceBuilder<EJB3RemoteHTTPService> builder = context.getServiceTarget().addService(EJB3RemoteHTTPService.SERVICE_NAME, service)
+                        .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.getPathHandlerInjectedValue())
+                        .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, service.getLocalTransactionContextInjectedValue())
+                        .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, service.getAssociationServiceInjectedValue());
+                builder.install();
+            }
         }
     }
 
