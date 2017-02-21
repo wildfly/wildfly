@@ -71,11 +71,16 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
+        //super.recordCapabilitiesAndRequirements(context, operation, resource);
+        String broadcastGroupName = context.getCurrentAddressValue();
+        String serverName = context.getCurrentAddress().getParent().getLastElement().getValue();
+        String compositeName = serverName + "." + broadcastGroupName;
+
+        context.registerCapability(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.fromBaseCapability(compositeName));
 
         ModelNode model = resource.getModel();
         if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
-            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), context.getCurrentAddressValue()), BroadcastGroupDefinition.JGROUPS_STACK.getName());
+            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), compositeName), BroadcastGroupDefinition.JGROUPS_STACK.getName());
         }
     }
 

@@ -66,11 +66,16 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
+        //super.recordCapabilitiesAndRequirements(context, operation, resource);
+        String discoveryGroupName = context.getCurrentAddressValue();
+        String serverName = context.getCurrentAddress().getParent().getLastElement().getValue();
+        String compositeName = serverName + "." + discoveryGroupName;
+
+        context.registerCapability(DiscoveryGroupDefinition.CHANNEL_FACTORY_CAPABILITY.fromBaseCapability(compositeName));
 
         ModelNode model = resource.getModel();
         if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !DiscoveryGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
-            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(DiscoveryGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), context.getCurrentAddressValue()), DiscoveryGroupDefinition.JGROUPS_STACK.getName());
+            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(DiscoveryGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), compositeName), DiscoveryGroupDefinition.JGROUPS_STACK.getName());
         }
     }
 
