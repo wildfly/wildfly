@@ -30,7 +30,7 @@
     <artifactId>wildfly-javaee7</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly Java EE 7 Specification APIs with Tools BOM</name>
+    <name>WildFly Java EE 7 Specification APIs</name>
     <description>Dependency Management for Java EE 7 Specification APIs with Deployment and Testing Tools</description>
 
     <licenses>
@@ -62,7 +62,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
 
         </dependencies>
 

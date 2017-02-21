@@ -71,6 +71,7 @@
     </issueManagement>
 
     <properties>
+        <version.org.wildfly>11.0.0.Alpha1-SNAPSHOT</version.org.wildfly>
         <version.io.undertow>1.4.10.Final</version.io.undertow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
 
@@ -79,8 +80,9 @@
         <version.log4j>1.2.17</version.log4j>
 
         <version.org.apache.cxf>3.1.9</version.org.apache.cxf>
+        <version.org.jboss.ws.cxf>5.1.7.Final</version.org.jboss.ws.cxf>
         <!-- Version of Hibernate projects -->
-        <version.org.hibernate>5.1.14.Final</version.org.hibernate>
+        <version.org.hibernate>5.1.4.Final</version.org.hibernate>
         <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
         <version.org.hibernate.search>5.5.5.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>5.3.4.Final</version.org.hibernate.validator>
@@ -111,6 +113,45 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ejb-client-bom</artifactId>
+                <version>${version.org.wildfly}</version>
+                <type>pom</type>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jms-client-bom</artifactId>
+                <version>${version.org.wildfly}</version>
+                <type>pom</type>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-security-api</artifactId>
+                <version>${version.org.wildfly}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-singleton-api</artifactId>
+                <version>${version.org.wildfly}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-spring</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.ws.cxf</groupId>
+                <artifactId>jbossws-cxf-client</artifactId>
+                <version>${version.org.jboss.ws.cxf}</version>
+                <scope>provided</scope>
+            </dependency>
 
             <dependency>
                 <groupId>io.undertow</groupId>
