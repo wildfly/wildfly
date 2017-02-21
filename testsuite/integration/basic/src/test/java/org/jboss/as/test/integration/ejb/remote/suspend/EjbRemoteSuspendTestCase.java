@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.ejb.remote.suspend;
 
 import java.util.Hashtable;
+import javax.ejb.NoSuchEJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -97,9 +98,12 @@ public class EjbRemoteSuspendTestCase {
                     Assert.fail("call should have been rejected");
                 Thread.sleep(300);
             }
-        } catch (IllegalStateException expected) {
+        } catch (NoSuchEJBException expected) {
 
-        } finally {
+        } catch (Exception e) {
+            Assert.fail(e.getMessage() + " thrown but NoSuchEJBException was expected");
+        }
+        finally {
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("resume");
             managementClient.getControllerClient().execute(op);
