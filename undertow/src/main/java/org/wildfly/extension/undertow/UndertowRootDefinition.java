@@ -38,8 +38,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -53,6 +53,7 @@ import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.filters.FailoverStrategy;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
+
 import io.undertow.server.handlers.PathHandler;
 
 /**
@@ -153,6 +154,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
                 .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
                 .end();
+
+        builder.addChildResource(UndertowExtension.SERVER_PATH)
+                .addChildResource(UndertowExtension.HOST_PATH)
+                .rejectChildResource(UndertowExtension.PATH_HTTP_INVOKER);
 
         builder.addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()

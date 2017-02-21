@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -50,26 +49,30 @@ public class DomainAdjuster700 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
-        removeHTTPSListener(profileAddress, list);
         list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
 
         return list;
     }
-    /**
-     *  EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
-     *  for SSL by default, which automatically generates certs.
-     *
-     *  This could be removed if all hosts were configured to contain a security domain with SSL
-     *  enabled.
-     */
-    private void removeHTTPSListener(PathAddress profileAddress, List<ModelNode> ops) {
 
-        PathAddress undertow = profileAddress
-                .append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "undertow"))
-                .append(PathElement.pathElement("server", "default-server"))
-                .append(PathElement.pathElement("https-listener", "https"));
-        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, undertow.toModelNode());
-        ops.add(op);
+    private void adjustUndertow(PathAddress profileAddress, List<ModelNode> ops) {
+        final PathAddress undertow = profileAddress
+                .append(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+
+        // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
+        // for SSL by default, which automatically generates certs.
+        // This could be removed if all hosts were configured to contain a security domain with SSL
+        // enabled.
+        final PathAddress httpsListener  = undertow
+                .append("server", "default-server")
+                .append("https-listener", "https");
+        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
+
+        //This enables jndi, ejb and tx over http and did not exist in EAP 7.0
+        PathAddress httpInvoker = undertow
+                .append("server", "default-server")
+                .append("host", "default-host")
+                .append("setting", "http-invoker");
+        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpInvoker.toModelNode()));
     }
 
     private Collection<? extends ModelNode> removeElytron(final PathAddress subsystem) {
