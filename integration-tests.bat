@@ -41,6 +41,11 @@ set MVN=%DIRNAME%\mvn.cmd
 set GOAL=%2
 if "%GOAL%"=="" set GOAL=install
 
+REM WFLY-8175 requires that we keep installing Maven under the tools directory
+REM the current project, at least when mvnw is invoked from build and integration-tests
+REM scripts
+set GOAL=-Dmaven.user.home=%DIRNAME%\tools %GOAL%
+
 REM  Process test directives before calling maven
 call :processTestDirectives %GOAL% %3 %4 %5 %6 %7 %8
 
