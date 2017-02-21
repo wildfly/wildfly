@@ -44,7 +44,7 @@ class EJBUtil {
     // Public methods --------------------------------------------------------
 
     /**
-     * Lookup for remote EJBs.
+     * Lookup for remote EJBs using specified ejb client properties.
      *
      * @param beanImplClass
      * @param remoteInterface
@@ -52,6 +52,24 @@ class EJBUtil {
      * @throws NamingException
      */
     @SuppressWarnings("unchecked")
+    public static <T> T lookupEJB(Properties ejbClientProperties, Class<? extends T> beanImplClass, Class<T> remoteInterface) throws NamingException {
+        final Properties jndiProperties = new Properties();
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        jndiProperties.putAll(ejbClientProperties);
+        final Context context = new InitialContext(jndiProperties);
+
+        return (T) context.lookup("ejb:/" + APPLICATION_NAME + "/" + beanImplClass.getSimpleName() + "!"
+                + remoteInterface.getName());
+    }
+
+    /**
+     * Lookup for remote EJBs.
+     *
+     * @param beanImplClass
+     * @param remoteInterface
+     * @return
+     * @throws NamingException
+     */
     public static <T> T lookupEJB(Class<? extends T> beanImplClass, Class<T> remoteInterface) throws NamingException {
         final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
         jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -61,7 +79,6 @@ class EJBUtil {
         return (T) context.lookup("ejb:/" + APPLICATION_NAME + "/" + beanImplClass.getSimpleName() + "!"
                 + remoteInterface.getName());
     }
-
     /**
      * Creates {@link Properties} for the EJB client configuration.
      *
@@ -82,14 +99,13 @@ class EJBUtil {
      * @return
      * @throws UnknownHostException
      */
-    public static Properties createEjbClientConfiguration(String hostName) throws UnknownHostException {
+    public static Properties createEjbClientConfiguration(String hostName, String username) throws UnknownHostException {
         final Properties pr = new Properties();
         pr.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
         pr.put("remote.connections", "default");
         pr.put("remote.connection.default.host", hostName);
         pr.put("remote.connection.default.port", "8080");
-        pr.put("remote.connection.default.username", CONNECTION_USERNAME);
-        pr.put("remote.connection.default.password", CONNECTION_PASSWORD);
+        pr.put("remote.connection.default.username", username);
         return pr;
     }
 

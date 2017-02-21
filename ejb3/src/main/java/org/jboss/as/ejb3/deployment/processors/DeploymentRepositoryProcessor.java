@@ -127,7 +127,6 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
             builder.addDependency(entry.getKey(), (InjectedValue<Object>) entry.getValue());
         }
         builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
-        builder.addDependency(EJBSuspendHandlerService.DEPLOYMENT_CONTROLLER);
         builder.install();
 
         final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier, countdown);
