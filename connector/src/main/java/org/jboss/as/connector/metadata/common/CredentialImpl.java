@@ -15,23 +15,38 @@
  */
 package org.jboss.as.connector.metadata.common;
 
+import java.util.Objects;
+
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
+import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.logging.Messages;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
  * Extension of {@link org.jboss.jca.common.metadata.common.CredentialImpl} with added Elytron support.
  *
  * @author Flavia Rainone
  */
-public class CredentialImpl
-        extends org.jboss.jca.common.metadata.common.CredentialImpl implements Credential {
+public class CredentialImpl implements Credential {
 
     private static final long serialVersionUID = 7990943957924515091L;
+
+    private static CommonBundle bundle = (CommonBundle) Messages.getBundle(CommonBundle.class);
+    private final String userName;
+    private final String password;
+    private final String securityDomain;
 
     /**
      * Indicates if the Credential data belongs to Elytron or PicketBox.
      */
     private boolean elytronEnabled;
+
+    private final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier;
 
     /**
      * Create a new CredentialImpl.
@@ -43,11 +58,49 @@ public class CredentialImpl
      *                        securityDomain in super class, refers to an Elytron authentication context
      * @throws ValidateException ValidateException in case of validation error
      */
-    public CredentialImpl(String userName, String password, String securityContext, boolean elytronEnabled)
+    public CredentialImpl(final String userName, final String password, final String securityContext, final boolean elytronEnabled,
+                          final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier)
             throws ValidateException {
-        super(userName, password, securityContext);
+        this.userName = userName;
+        this.password = password;
+        this.securityDomain = securityContext;
         this.elytronEnabled = elytronEnabled;
+        this.credentialSourceSupplier = credentialSourceSupplier;
+
     }
+
+    public void validate() throws ValidateException {
+        if (this.userName != null && this.securityDomain != null) {
+            throw new ValidateException(bundle.invalidSecurityConfiguration());
+        }
+    }
+
+    public final String getSecurityDomain() {
+        return this.securityDomain;
+    }
+
+    public final String resolveSecurityDomain() {
+        return this.getSecurityDomain();
+    }
+
+    public final String getUserName() {
+        return this.userName;
+    }
+
+    public final String getPassword() {
+        if (credentialSourceSupplier != null) {
+            try {
+                return new String(
+                        credentialSourceSupplier.get().getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword());
+            } catch (Exception e) {
+                throw ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER.invalidCredentialSourceSupplier(e);
+            }
+        }
+        return this.password;
+
+    }
+
+
 
     /**
      * Indicates if Elytron is enabled. In this case, {@link #getSecurityDomain()}, refers to an Elytron authentication context
@@ -60,19 +113,30 @@ public class CredentialImpl
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode() + (elytronEnabled? 1: 0);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CredentialImpl that = (CredentialImpl) o;
+        return elytronEnabled == that.elytronEnabled &&
+                Objects.equals(userName, that.userName) &&
+                Objects.equals(password, that.password) &&
+                Objects.equals(securityDomain, that.securityDomain) &&
+                Objects.equals(credentialSourceSupplier, that.credentialSourceSupplier);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (!(obj instanceof CredentialImpl))
-            return false;
-        CredentialImpl other = (CredentialImpl) obj;
-        return elytronEnabled == other.elytronEnabled && super.equals(other);
+    public int hashCode() {
+        return Objects.hash(userName, password, securityDomain, elytronEnabled, credentialSourceSupplier);
+    }
+
+    @Override
+    public String toString() {
+        return "CredentialImpl{" +
+                "userName='" + userName + '\'' +
+                ", password='" + password + '\'' +
+                ", securityDomain='" + securityDomain + '\'' +
+                ", elytronEnabled=" + elytronEnabled +
+                ", credentialSourceSupplier=" + credentialSourceSupplier +
+                '}';
     }
 }

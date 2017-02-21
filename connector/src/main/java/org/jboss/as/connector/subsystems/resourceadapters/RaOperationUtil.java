@@ -157,9 +157,7 @@ import org.jboss.vfs.VirtualFile;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.server.SecurityDomain;
-import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
-import org.wildfly.security.password.interfaces.ClearPassword;
 
 
 public class RaOperationUtil {
@@ -275,21 +273,8 @@ public class RaOperationUtil {
         Validation validation = new ValidationImpl(validateOnMatch, backgroundValidation, backgroundValidationMillis, useFastFail);
 
         final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_USERNAME);
-        final String recoveryPassword;
-        try {
-            CredentialSource cs = null;
-            if (recoveryCredentialSourceSupplier != null) {
-                cs = recoveryCredentialSourceSupplier.get();
-            }
-            if (cs != null) {
-                recoveryPassword = new String(
-                        cs.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword());
-            } else {
-                recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_PASSWORD);
-            }
-        } catch (Exception e) {
-            throw new OperationFailedException(e);
-        }
+        final String recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_PASSWORD);
+
         final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_SECURITY_DOMAIN);
         final boolean recoveryElytronEnabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, RECOVERY_ELYTRON_ENABLED);
         final String recoveryAuthenticationContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_AUTHENTICATION_CONTEXT);
@@ -302,7 +287,7 @@ public class RaOperationUtil {
 
             if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
                 credential = new CredentialImpl(recoveryUsername, recoveryPassword,
-                        recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled);
+                        recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled, recoveryCredentialSourceSupplier);
 
             Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
 

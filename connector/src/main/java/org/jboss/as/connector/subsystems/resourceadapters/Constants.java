@@ -552,6 +552,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .addAlternatives(RECOVERY_CREDENTIAL_REFERENCE_NAME)
             .build();
 
     static ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
@@ -560,6 +561,7 @@ public class Constants {
                     .setMeasurementUnit(MeasurementUnit.NONE)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+                    .addAlternatives(RECOVERY_PASSWORD_NAME)
                     .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING, true)

@@ -92,11 +92,11 @@ public class VaultDatasourceTestCase {
 
             // setup DB
             server = Server.createTcpServer("-tcpAllowOthers").start();
+
             Class.forName("org.h2.Driver");
             connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", "sa", RIGHT_PASSWORD);
             executeUpdate(connection, "CREATE TABLE TestPeople(Name Varchar(50), Surname Varchar(50))");
             executeUpdate(connection, "INSERT INTO TestPeople VALUES ('John','Smith')");
-
             // create new vault
             vaultHandler = new VaultHandler(RESOURCE_LOCATION);
 
@@ -172,25 +172,28 @@ public class VaultDatasourceTestCase {
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, "datasources");
             op.get(OP_ADDR).add("data-source", VAULT_BLOCK);
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
 
             op = new ModelNode();
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, "datasources");
             op.get(OP_ADDR).add("data-source", VAULT_BLOCK_WRONG);
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
 
             // remove created vault
             op = new ModelNode();
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(CORE_SERVICE, VAULT);
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
 
             // remove temporary files
             vaultHandler.cleanUp();
 
             // stop DB
-            executeUpdate(connection, "DROP CMR_TABLE TestPeople");
+            executeUpdate(connection, "DROP TABLE TestPeople");
             connection.close();
             server.shutdown();
 
@@ -207,7 +210,7 @@ public class VaultDatasourceTestCase {
             + "security/ds-vault/";
     static final String VAULT_BLOCK = "ds_TestDS";
     static final String VAULT_BLOCK_WRONG = VAULT_BLOCK + "Wrong";
-    static final String RIGHT_PASSWORD = "passwordForVault";
+    static final String RIGHT_PASSWORD = "chucknorris";
     static final String WRONG_PASSWORD = "wrongPasswordForVault";
 
     /*
