@@ -36,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
@@ -105,7 +106,8 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         if (knownSecurityDomainName != null && ! knownSecurityDomainName.isEmpty()) {
             final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
-            final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(EJBSecurityDomainService.SERVICE_NAME, ejbSecurityDomainService)
+            ServiceName serviceName = deploymentUnit.getServiceName().append(EJBSecurityDomainService.SERVICE_NAME);
+            final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(serviceName, ejbSecurityDomainService)
                     .addDependency(support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, knownSecurityDomainName),
                             ApplicationSecurityDomain.class, ejbSecurityDomainService.getApplicationSecurityDomainInjector());
             builder.install();
@@ -113,7 +115,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             for(final ComponentDescription componentDescription : componentDescriptions) {
                 if (componentDescription instanceof EJBComponentDescription) {
                     componentDescription.getConfigurators().add((context, description, configuration) ->
-                                    configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(EJBSecurityDomainService.SERVICE_NAME))
+                                    configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(serviceName))
                     );
                 }
             }
