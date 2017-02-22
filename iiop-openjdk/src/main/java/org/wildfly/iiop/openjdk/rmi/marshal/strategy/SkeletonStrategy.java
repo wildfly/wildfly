@@ -157,7 +157,7 @@ public class SkeletonStrategy {
      * @param out a CDR output stream
      * @param e   the exception to be written.
      */
-    public void writeException(OutputStream out, Exception e) {
+    public void writeException(OutputStream out, Throwable e) {
         int len = excepWriters.length;
         for (int i = 0; i < len; i++) {
             if (excepWriters[i].getExceptionClass().isInstance(e)) {

@@ -454,7 +454,7 @@ public class RmiIdlUtil {
         return cannotBeRemote && cannotBeAbstractInterface;
     }
 
-    public static void rethrowIfCorbaSystemException(Exception e) {
+    public static void rethrowIfCorbaSystemException(Throwable e) {
         if (e instanceof java.rmi.MarshalException)
             throw new org.omg.CORBA.MARSHAL(e.toString());
         else if (e instanceof java.rmi.NoSuchObjectException)
