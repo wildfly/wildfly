@@ -23,9 +23,13 @@ package org.jboss.as.test.clustering;
 
 import javax.naming.NamingException;
 
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
@@ -35,7 +39,6 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
  * Utility class for clustering tests.
  *
  * @author Radoslav Husar
- * @version September 2012
  */
 public class ClusterTestUtil {
 
@@ -69,6 +72,17 @@ public class ClusterTestUtil {
     public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws NamingException, InterruptedException {
         TopologyChangeListener listener = directory.lookupStateless(TopologyChangeListenerBean.class, TopologyChangeListener.class);
         listener.establishTopology(container, cache, TopologyChangeListener.DEFAULT_TIMEOUT, nodes);
+    }
+
+    // Model management convenience methods
+
+    public static void executeOnNodesAndReload(String cli, ManagementClient... clients) throws Exception {
+        ModelNode request = CLITestUtil.getCommandContext().buildRequest(cli);
+
+        for (ManagementClient client : clients) {
+            client.getControllerClient().execute(request);
+            ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), ServerReload.TIMEOUT, false, client.getMgmtAddress(), client.getMgmtPort());
+        }
     }
 
     private ClusterTestUtil() {
