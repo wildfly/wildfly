@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+    <datasource jndi-name="java:jboss/datasources/ElytronDSTest"
+                pool-name="securityDs">
+        <connection-url>jdbc:h2:mem:test-elytron;DB_CLOSE_DELAY=-1</connection-url>
+        <driver>h2</driver>
+        <new-connection-sql>select current_user()</new-connection-sql>
+        <security>
+            <elytron-enabled>true</elytron-enabled>
+            <authentication-context>MyAuthContext</authentication-context>
+        </security>
+    </datasource>
+</datasources>
