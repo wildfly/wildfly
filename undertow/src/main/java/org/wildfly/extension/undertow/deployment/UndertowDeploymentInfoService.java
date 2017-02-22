@@ -296,12 +296,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 handleJASPIMechanism(deploymentInfo);
                 handleJACCAuthorization(deploymentInfo);
                 handleAuthManagerLogout(deploymentInfo, mergedMetaData);
+
+                if(mergedMetaData.isUseJBossAuthorization()) {
+                    deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
+                }
             }
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
 
-            if(mergedMetaData.isUseJBossAuthorization()) {
-                deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
-            }
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             if(sharedSessionManagerConfig != null && sharedSessionManagerConfig.getSessionConfig() != null) {
