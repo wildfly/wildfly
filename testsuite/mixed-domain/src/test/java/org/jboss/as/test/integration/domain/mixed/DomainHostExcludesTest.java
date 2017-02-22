@@ -68,6 +68,7 @@ public abstract class DomainHostExcludesTest {
             "org.wildfly.extension.batch.jberet",
             "org.wildfly.extension.bean-validation",
             "org.wildfly.extension.clustering.singleton",
+            "org.wildfly.extension.core-management",
             "org.wildfly.extension.io",
             "org.wildfly.extension.messaging-activemq",
             "org.wildfly.extension.request-controller",
