@@ -25,6 +25,7 @@ package org.jboss.as.connector.services.workmanager;
 import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
+import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
 import org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport;
@@ -112,6 +113,8 @@ public final class DistributedWorkManagerService implements Service<DistributedW
             ROOT_LOGGER.trace("failed to start DWM transport:", throwable);
             throw ROOT_LOGGER.failedToStartDWMTransport(this.value.getName());
         }
+
+        this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
 
         ROOT_LOGGER.debugf("Started JCA DistributedWorkManager: ", value.getName());
     }
