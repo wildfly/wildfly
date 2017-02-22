@@ -84,9 +84,21 @@ public class ElytronSecurityManager implements ActiveMQSecurityManager {
     private SecurityIdentity authenticate(final String username, final String password) {
 
         ServerAuthenticationContext context = this.securityDomain.createNewAuthenticationContext();
-        PasswordGuessEvidence evidence = new PasswordGuessEvidence(password != null ? password.toCharArray() : null);
+        PasswordGuessEvidence evidence = null;
         try {
+            // check for anonymous connection
+            if (username == null || password == null) {
+                if (context.authorizeAnonymous()) {
+                    context.succeed();
+                    return context.getAuthorizedIdentity();
+                } else {
+                    context.fail();
+                    return null;
+                }
+            }
+
             context.setAuthenticationName(username);
+            evidence = new PasswordGuessEvidence(password.toCharArray());
             if (context.verifyEvidence(evidence)) {
                 if (context.authorize()) {
                     context.succeed();
@@ -104,7 +116,9 @@ public class ElytronSecurityManager implements ActiveMQSecurityManager {
             context.fail();
             MessagingLogger.ROOT_LOGGER.failedAuthenticationWithException(e, username, e.getMessage());
         } finally {
-            evidence.destroy();
+            if (evidence != null) {
+                evidence.destroy();
+            }
         }
         return null;
     }
