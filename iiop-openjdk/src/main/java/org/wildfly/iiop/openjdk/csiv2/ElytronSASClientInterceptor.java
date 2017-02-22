@@ -25,6 +25,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import com.sun.corba.se.impl.interceptors.ClientRequestInfoImpl;
 import com.sun.corba.se.impl.transport.SocketOrChannelContactInfoImpl;
@@ -161,6 +162,9 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             IdentityToken identityToken = ABSENT_IDENTITY_TOKEN;
             byte[] encodedAuthenticationToken = NO_AUTHENTICATION_TOKEN;
             final URI uri = this.getURI(ri);
+            if(uri == null) {
+                return;
+            }
 
             AuthenticationContext authContext = this.authContext == null ? AuthenticationContext.captureCurrent() : this.authContext;
 
@@ -315,7 +319,11 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
         final StringBuilder builder = new StringBuilder("iiop:");
         if (clientRequestInfo instanceof ClientRequestInfoImpl) {
             ClientRequestInfoImpl infoImpl = (ClientRequestInfoImpl) clientRequestInfo;
-            ContactInfo info = ((CorbaConnection) infoImpl.connection()).getContactInfo();
+            CorbaConnection connection = (CorbaConnection) infoImpl.connection();
+            if(connection == null) {
+                return null;
+            }
+            ContactInfo info = connection.getContactInfo();
             if (info instanceof SocketOrChannelContactInfoImpl) {
                 String hostname = ((SocketOrChannelContactInfoImpl) info).getHost();
                 if (hostname != null)
@@ -324,6 +332,8 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
                 if (port > 0)
                     builder.append(":").append(port);
             }
+        } else {
+            return null;
         }
         return new URI(builder.toString());
     }
@@ -349,7 +359,11 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
         final CallbackHandler handler = AUTH_CONFIG_CLIENT.getCallbackHandler(configuration);
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
-        handler.handle(new Callback[]{nameCallback, passwordCallback});
+        try {
+            handler.handle(new Callback[]{nameCallback, passwordCallback});
+        } catch (UnsupportedCallbackException e) {
+            return NO_AUTHENTICATION_TOKEN;
+        }
 
         // if the name callback contains a valid username we create the initial context token.
         if (nameCallback.getName() != null && !nameCallback.getName().equals(AnonymousPrincipal.getInstance().getName())) {
