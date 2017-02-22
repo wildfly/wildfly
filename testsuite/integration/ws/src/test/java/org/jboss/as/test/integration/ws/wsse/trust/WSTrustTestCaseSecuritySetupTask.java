@@ -14,7 +14,6 @@ import java.util.Map;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
@@ -58,15 +57,8 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
      * </subsystem>
      */
     private void addHttpsListener(ManagementClient managementClient) throws Exception {
-
-
-        ModelNode addOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2", ADD);
-        addOp.get(PORT).set("8444");
-        addOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        addOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(addOp, managementClient.getControllerClient());
-        addOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, ADD);
-        addOp.get(SOCKET_BINDING).set("https2");
+        final ModelNode addOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, ADD);
+        addOp.get(SOCKET_BINDING).set("https");
         addOp.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
         addOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         addOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
@@ -74,11 +66,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
     }
 
     private void removeHttpsListener(ManagementClient managementClient) throws Exception {
-        ModelNode removeOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2" + HTTPS_LISTENER_NAME, REMOVE);
-        removeOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        removeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(removeOp, managementClient.getControllerClient());
-        removeOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, REMOVE);
+        final ModelNode removeOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, REMOVE);
         removeOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         removeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(removeOp, managementClient.getControllerClient());
