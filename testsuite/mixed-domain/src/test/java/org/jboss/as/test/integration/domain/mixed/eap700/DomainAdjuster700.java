@@ -37,6 +37,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.elytron.ElytronExtension;
+import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * Does adjustments to the domain model for 7.0.0 legacy slaves.
@@ -50,7 +51,7 @@ public class DomainAdjuster700 extends DomainAdjuster {
         final List<ModelNode> list = new ArrayList<>();
 
         list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
-
+        adjustUndertow(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), list);
         return list;
     }
 

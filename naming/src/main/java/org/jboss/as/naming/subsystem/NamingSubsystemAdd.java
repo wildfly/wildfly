@@ -126,7 +126,7 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
 
-        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, RemoteNamingResourceDefinition.REMOTE_NAMING_CAPABILITY.getName(), null)) {
+        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, NamingService.CAPABILITY_NAME, null)) {
             HttpRemoteNamingServerService httpRemoteNamingServerService = new HttpRemoteNamingServerService();
             context.getServiceTarget().addService(HttpRemoteNamingServerService.SERVICE_NAME, httpRemoteNamingServerService)
                     .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, httpRemoteNamingServerService.getPathHandlerInjectedValue())
