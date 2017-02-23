@@ -186,7 +186,7 @@ public class InterceptorOrder {
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
         /**
-         * @deprecated Remove this field once WFLY-7680 is resolved.
+         * @deprecated Remove this field once WFLY-7860 is resolved.
          */
         @Deprecated
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;

@@ -36,7 +36,7 @@ import org.jboss.invocation.InterceptorContext;
  *
  * @author Jaikiran Pai
  * @author Flavia Rainone
- * @deprecated Remove this class once WFLY-7680 is resolved.
+ * @deprecated Remove this class once WFLY-7860 is resolved.
  */
 @Deprecated
 class EJBRemoteTransactionPropagatingInterceptor extends AbstractEJBInterceptor {
@@ -62,7 +62,7 @@ class EJBRemoteTransactionPropagatingInterceptor extends AbstractEJBInterceptor 
     public Object processInvocation(InterceptorContext context) throws Exception {
         final TransactionManager transactionManager = this.transactionManager;
         if (context.hasTransaction()) {
-            // TODO: WFLY-7680
+            // TODO: WFLY-7860
             try {
                 transactionManager.resume(context.getTransaction());
             } catch (SystemException e) {
