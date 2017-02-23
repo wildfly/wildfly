@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -85,6 +86,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -110,6 +112,9 @@ import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecur
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.authz.AuthorizationFailureException;
+import org.wildfly.security.authz.RoleMapper;
+import org.wildfly.security.authz.Roles;
 import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpScopeNotification;
@@ -139,6 +144,7 @@ import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.SingleConstraintMatch;
 import io.undertow.servlet.core.DefaultAuthorizationManager;
+import io.undertow.servlet.handlers.ServletChain;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.servlet.util.SavedRequest;
 
@@ -152,8 +158,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.extension.undertow.application-security-domain";
 
+
+    private static final String ANONYMOUS_PRINCIPAL = "anonymous";
+    private static final String SERVLET = "servlet";
+    private static final String EJB = "ejb";
+
     static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, Function.class)
+            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, BiFunction.class)
             .build();
 
     private static final String HTTP_AUTHENITCATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
@@ -263,11 +274,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             String securityDomainName = context.getCurrentAddressValue();
             RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(securityDomainName);
-            ServiceName serviceName = runtimeCapability.getCapabilityServiceName(Function.class);
+            ServiceName serviceName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
 
             ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc);
 
-            ServiceBuilder<Function<DeploymentInfo, Registration>> serviceBuilder = target.addService(serviceName, applicationSecurityDomainService)
+            ServiceBuilder<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> serviceBuilder = target.addService(serviceName, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
 
             serviceBuilder.addDependency(context.getCapabilityServiceName(HTTP_AUTHENITCATION_FACTORY_CAPABILITY,
@@ -349,14 +360,14 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         return knownApplicationSecurityDomains::contains;
     }
 
-    private static class ApplicationSecurityDomainService implements Service<Function<DeploymentInfo, Registration>> {
+    private static class ApplicationSecurityDomainService implements Service<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> {
 
         private final boolean overrideDeploymentConfig;
         private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjector = new InjectedValue<>();
         private final InjectedValue<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformer = new InjectedValue<>();
-        private final InjectedValue<Policy> jaccPolicyInjector = new InjectedValue<>();
         private final Set<RegistrationImpl> registrations = new HashSet<>();
         private final boolean enableJacc;
+        private SecurityDomain securityDomain;
 
         private HttpAuthenticationFactory httpAuthenticationFactory;
 
@@ -368,6 +379,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         public void start(StartContext context) throws StartException {
             httpAuthenticationFactory = httpAuthenticationFactoryInjector.getValue();
+            securityDomain = httpAuthenticationFactory.getSecurityDomain();
         }
 
         @Override
@@ -376,7 +388,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
         @Override
-        public Function<DeploymentInfo, Registration> getValue() throws IllegalStateException, IllegalArgumentException {
+        public BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> getValue() throws IllegalStateException, IllegalArgumentException {
             return this::applyElytronSecurity;
         }
 
@@ -388,22 +400,22 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return this.singleSignOnTransformer;
         }
 
-        private Registration applyElytronSecurity(final DeploymentInfo deploymentInfo) {
+        private Registration applyElytronSecurity(final DeploymentInfo deploymentInfo, final Function<String, RunAsIdentityMetaData> runAsMapper) {
             final ScopeSessionListener scopeSessionListener = ScopeSessionListener.builder()
                     .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
                     .build();
             if (WildFlySecurityManager.isChecking()) {
                 doPrivileged((PrivilegedAction<Void>) () -> {
-                    httpAuthenticationFactoryInjector.getValue().getSecurityDomain().registerWithClassLoader(deploymentInfo.getClassLoader());
+                    securityDomain.registerWithClassLoader(deploymentInfo.getClassLoader());
                     return null;
                 });
             } else {
-                httpAuthenticationFactoryInjector.getValue().getSecurityDomain().registerWithClassLoader(deploymentInfo.getClassLoader());
+                securityDomain.registerWithClassLoader(deploymentInfo.getClassLoader());
             }
 
             deploymentInfo.addSessionListener(scopeSessionListener);
 
-            deploymentInfo.addInnerHandlerChainWrapper(this::finalSecurityHandlers);
+            deploymentInfo.addInnerHandlerChainWrapper(h -> finalSecurityHandlers(h, runAsMapper));
             deploymentInfo.setInitialSecurityWrapper(h -> initialSecurityHandler(deploymentInfo, h, scopeSessionListener));
 
             if (enableJacc) {
@@ -697,8 +709,46 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             };
         }
 
-        private HttpHandler finalSecurityHandlers(HttpHandler toWrap) {
-            return new ElytronRunAsHandler(toWrap);
+        private HttpHandler finalSecurityHandlers(HttpHandler toWrap, final Function<String, RunAsIdentityMetaData> runAsMapper) {
+            return new ElytronRunAsHandler(toWrap, (s, e) -> mapIdentity(s, e, runAsMapper));
+        }
+
+        private SecurityIdentity mapIdentity(SecurityIdentity securityIdentity, HttpServerExchange exchange, Function<String, RunAsIdentityMetaData> runAsMapper) {
+            final ServletChain servlet = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY).getCurrentServlet();
+            RunAsIdentityMetaData runAsMetaData = runAsMapper.apply(servlet.getManagedServlet().getServletInfo().getName());
+            if (runAsMetaData != null) {
+                SecurityIdentity newIdentity = securityIdentity != null ? securityIdentity :securityDomain.getAnonymousSecurityIdentity();
+                String runAsPrincipal = runAsMetaData.getPrincipalName();
+                if (runAsPrincipal.equals(ANONYMOUS_PRINCIPAL)) {
+                    try {
+                        newIdentity = newIdentity.createRunAsAnonymous();
+                    } catch (AuthorizationFailureException ex) {
+                        newIdentity = newIdentity.createRunAsAnonymous(false);
+                    }
+                } else {
+                    try {
+                        newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal);
+                    } catch (AuthorizationFailureException ex) {
+                        newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal, false);
+                    }
+                }
+
+                final Set<String> runAsRoleNames = new HashSet<>(runAsMetaData.getRunAsRoles().size());
+                runAsRoleNames.add(runAsMetaData.getRoleName());
+                runAsRoleNames.addAll(runAsMetaData.getRunAsRoles());
+
+                RoleMapper runAsRoleMaper = RoleMapper.constant(Roles.fromSet(runAsRoleNames));
+
+                Roles servletRoles = newIdentity.getRoles(SERVLET);
+                newIdentity = newIdentity.withRoleMapper(SERVLET, runAsRoleMaper.or((roles) -> servletRoles));
+
+                Roles ejbRoles = newIdentity.getRoles(EJB);
+                newIdentity = newIdentity.withRoleMapper(EJB, runAsRoleMaper.or((roles) -> ejbRoles));
+
+                return newIdentity;
+            }
+
+            return securityIdentity;
         }
 
         private AuthorizationManager createElytronAuthorizationManager() {

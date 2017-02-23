@@ -87,6 +87,7 @@ import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
+import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
@@ -184,6 +185,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.jboss.security.AuthenticationManager;
@@ -249,7 +251,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final WebSocketDeploymentInfo webSocketDeploymentInfo;
     private final File tempDir;
     private final List<File> externalResources;
-    private final InjectedValue<Function> securityFunction = new InjectedValue<>();
+    private final InjectedValue<BiFunction> securityFunction = new InjectedValue<>();
     private final List<Predicate> allowSuspendedRequests;
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
@@ -980,9 +982,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.addSecurityRoles(mergedMetaData.getSecurityRoleNames());
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
 
-            Function<DeploymentInfo, Registration> securityFunction = this.securityFunction.getOptionalValue();
+            BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> securityFunction = this.securityFunction.getOptionalValue();
             if (securityFunction != null) {
-                registration = securityFunction.apply(d);
+                Map<String, RunAsIdentityMetaData> runAsIdentityMap = mergedMetaData.getRunAsIdentity();
+                registration = securityFunction.apply(d, runAsIdentityMap::get);
                 d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
                 if(mergedMetaData.isUseJBossAuthorization()) {
                     UndertowLogger.ROOT_LOGGER.configurationOptionIgnoredWhenUsingElytron("use-jboss-authorization");
@@ -1463,7 +1466,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return serverEnvironmentInjectedValue;
     }
 
-    public Injector<Function> getSecurityFunctionInjector() {
+    public Injector<BiFunction> getSecurityFunctionInjector() {
         return securityFunction;
     }
 
