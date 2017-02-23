@@ -36,20 +36,25 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
 
     private final String keyManagers;
     private final String trustManagers;
+    private final String securityDomain;
     private final String[] protocols;
     private final boolean needClientAuth;
+    private final Boolean authenticationOptional;
 
     private SimpleServerSslContext(Builder builder) {
         super(builder);
         this.keyManagers = builder.keyManagers;
         this.trustManagers = builder.trustManagers;
+        this.securityDomain = builder.securityDomain;
         this.protocols = builder.protocols;
         this.needClientAuth = builder.needClientAuth;
+        this.authenticationOptional = builder.authenticationOptional;
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        // /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-managers=twoWayKM,protocols=["TLSv1.2"],trust-managers=twoWayTM,need-client-auth=true)
+        // /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-managers=twoWayKM,protocols=["TLSv1.2"],
+        // trust-managers=twoWayTM,security-domain=test,need-client-auth=true)
         StringBuilder sb = new StringBuilder("/subsystem=elytron/server-ssl-context=").append(name).append(":add(");
         if (StringUtils.isNotBlank(keyManagers)) {
             sb.append("key-managers=\"").append(keyManagers).append("\", ");
@@ -60,6 +65,12 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
         }
         if (StringUtils.isNotBlank(trustManagers)) {
             sb.append("trust-managers=\"").append(trustManagers).append("\", ");
+        }
+        if (StringUtils.isNotBlank(securityDomain)) {
+            sb.append("security-domain=\"").append(securityDomain).append("\", ");
+        }
+        if (authenticationOptional != null) {
+            sb.append("authentication-optional=").append(authenticationOptional).append(", ");
         }
         sb.append("need-client-auth=").append(needClientAuth).append(")");
         cli.sendLine(sb.toString());
@@ -85,8 +96,10 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
         private String keyManagers;
         private String trustManagers;
+        private String securityDomain;
         private String[] protocols;
         private boolean needClientAuth;
+        private Boolean authenticationOptional;
 
         private Builder() {
         }
@@ -101,6 +114,11 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
             return this;
         }
 
+        public Builder withSecurityDomain(String securityDomain) {
+            this.securityDomain = securityDomain;
+            return this;
+        }
+
         public Builder withProtocols(String... protocols) {
             this.protocols = protocols;
             return this;
@@ -108,6 +126,11 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
 
         public Builder withNeedClientAuth(boolean needClientAuth) {
             this.needClientAuth = needClientAuth;
+            return this;
+        }
+
+        public Builder withAuthenticationOptional(boolean authenticationOptional) {
+            this.authenticationOptional = authenticationOptional;
             return this;
         }
 

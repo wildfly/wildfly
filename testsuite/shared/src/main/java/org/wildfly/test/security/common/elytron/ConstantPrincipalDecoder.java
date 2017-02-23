@@ -21,38 +21,37 @@
  */
 package org.wildfly.test.security.common.elytron;
 
+import java.util.Objects;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**
- * Updates Undertow https-listener of the defaul-server to use given (Elytron server-ssl-context) SSL context
- * instead of SSL context from legacy security-realm.
+ * Elytron constant-principal-decoder configuration implementation.
  *
  * @author Ondrej Kotek
  */
-public class UndertowSslContext  extends AbstractConfigurableElement {
+public class ConstantPrincipalDecoder extends AbstractConfigurableElement {
 
-    private UndertowSslContext(Builder builder) {
+    private final String constant;
+
+    private ConstantPrincipalDecoder(Builder builder) {
         super(builder);
+        this.constant = Objects.requireNonNull(builder.constant, "Constant for principal has to be provided");
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=security-realm)");
-        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=ssl-context,value=%s)", name));
+        // /subsystem=elytron/constant-principal-decoder=test:add(constant=testPrincipal)
+        cli.sendLine(String.format("/subsystem=elytron/constant-principal-decoder=%s:add(constant=\"%s\")",
+                name, constant));
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=ssl-context)");
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=security-realm,value=ApplicationRealm)");
+        cli.sendLine(String.format("/subsystem=elytron/constant-principal-decoder=%s:remove()", name));
     }
 
     /**
-     * Creates builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
+     * Creates builder to build {@link ConstantPrincipalDecoder}.
      *
      * @return created builder
      */
@@ -61,15 +60,21 @@ public class UndertowSslContext  extends AbstractConfigurableElement {
     }
 
     /**
-     * Builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
+     * Builder to build {@link ConstantPrincipalDecoder}.
      */
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
+        private String constant;
 
         private Builder() {
         }
 
-        public UndertowSslContext build() {
-            return new UndertowSslContext(this);
+        public Builder withConstant(String constant) {
+            this.constant = constant;
+            return this;
+        }
+
+        public ConstantPrincipalDecoder build() {
+            return new ConstantPrincipalDecoder(this);
         }
 
         @Override
