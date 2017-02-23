@@ -127,7 +127,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionIdGenerator;
@@ -699,7 +698,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
         private HttpHandler finalSecurityHandlers(HttpHandler toWrap) {
-            return new BlockingHandler(new ElytronRunAsHandler(toWrap));
+            return new ElytronRunAsHandler(toWrap);
         }
 
         private AuthorizationManager createElytronAuthorizationManager() {
