@@ -33,7 +33,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
  * Creates and returns a {@link EJBRemoteTransactionPropagatingInterceptor}
  *
  * @author Jaikiran Pai
- * @deprecated Remove this class once WFLY-7680 is resolved.
+ * @deprecated Remove this class once WFLY-7860 is resolved.
  */
 @Deprecated
 class EJBRemoteTransactionPropagatingInterceptorFactory extends ComponentInterceptorFactory {
