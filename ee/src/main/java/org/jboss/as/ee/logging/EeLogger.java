@@ -1105,4 +1105,8 @@ public interface EeLogger extends BasicLogger {
      */
     @Message(id = 113, value = "The max-threads value %d cannot be less than the core-threads value %d.")
     OperationFailedException invalidMaxThreads(int maxThreads, int coreThreads);
+
+    @Message(id = 114, value = "Class does not implement all of the provided interfaces")
+    IllegalArgumentException classDoesNotImplementAllInterfaces();
+
 }

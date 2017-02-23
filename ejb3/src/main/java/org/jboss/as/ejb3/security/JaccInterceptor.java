@@ -27,10 +27,16 @@ import static java.security.AccessController.doPrivileged;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Policy;
+import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import javax.security.jacc.EJBMethodPermission;
 
@@ -42,6 +48,8 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -100,7 +108,7 @@ public class JaccInterceptor implements Interceptor {
     private void hasPermission(EJBComponent ejbComponent, ComponentView componentView, Method method) {
         MethodInterfaceType methodIntfType = getMethodInterfaceType(componentView.getPrivateData(MethodIntf.class));
         EJBMethodPermission permission = createEjbMethodPermission(method, ejbComponent, methodIntfType);
-        ProtectionDomain domain = componentView.getProxyClass().getProtectionDomain();
+        ProtectionDomain domain = new ProtectionDomain (componentView.getProxyClass().getProtectionDomain().getCodeSource(), null, null, getGrantedRoles(ejbComponent));
         Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
         if (!policy.implies(domain, permission)) {
             throw EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(method,ejbComponent.getComponentName());
@@ -134,5 +142,40 @@ public class JaccInterceptor implements Interceptor {
             default:
                 return null;
         }
+    }
+
+    /**
+     * Returns an array of {@link Principal} representing the roles associated with the identity
+     * invoking the EJB. This method will check performs checks against run as identities in order to
+     * resolve the correct set of roles to be granted.
+     *
+     * @param ejbComponent the ejb component
+     * @return an array of {@link Principal} representing the roles associated with the identity
+     */
+    public static Principal[] getGrantedRoles(EJBComponent ejbComponent) {
+        EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
+
+        if (securityMetaData == null) {
+            return new Principal[] {};
+        }
+
+        Set<String> roles = new HashSet<>();
+
+        SecurityIdentity identity = ejbComponent.getIncomingRunAsIdentity();
+
+        if (identity == null) {
+            identity = ejbComponent.getSecurityDomain().getCurrentSecurityIdentity();
+        }
+
+        identity.getRoles("ejb").forEach(roles::add);
+
+        SecurityRolesMetaData securityRoles = securityMetaData.getSecurityRoles();
+
+        if (securityRoles != null && securityRoles.getPrincipalVersusRolesMap() != null) {
+            Map<String, Set<String>> principalVersusRolesMap = securityRoles.getPrincipalVersusRolesMap();
+            roles.addAll(principalVersusRolesMap.getOrDefault(identity.getPrincipal().getName(), Collections.emptySet()));
+        }
+
+        return roles.stream().map((Function<String, Principal>) roleName -> (Principal) () -> roleName).toArray(Principal[]::new);
     }
 }
