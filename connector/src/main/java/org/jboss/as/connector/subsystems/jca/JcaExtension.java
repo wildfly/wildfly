@@ -399,6 +399,10 @@ public class JcaExtension implements Extension {
                 ccmAddress.protect();
 
                 ccmOperation.get(OP_ADDR).set(ccmAddress);
+                assert ccmOperation.keys().size() == 2; // prevent people adding params without considering special
+                                                        // WFLY-2640/WFLY-8141 logic. This assert can be changed once
+                                                        // you've made the necessary adjustments
+
                 list.add(ccmOperation);
             }
         }

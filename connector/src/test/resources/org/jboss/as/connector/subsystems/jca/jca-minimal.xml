@@ -1,0 +1,16 @@
+<subsystem xmlns="urn:jboss:domain:jca:4.0">
+    <default-workmanager>
+        <short-running-threads>
+            <core-threads count="50"/>
+            <queue-length count="50"/>
+            <max-threads count="50"/>
+            <keepalive-time time="10" unit="seconds"/>
+        </short-running-threads>
+        <long-running-threads>
+            <core-threads count="50"/>
+            <queue-length count="50"/>
+            <max-threads count="50"/>
+            <keepalive-time time="10" unit="seconds"/>
+        </long-running-threads>
+    </default-workmanager>
+</subsystem>
