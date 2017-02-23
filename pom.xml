@@ -220,7 +220,7 @@
         <version.org.wildfly.plugin>1.2.0.Alpha2</version.org.wildfly.plugin>
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.naming-client>1.0.0.Beta11</version.org.wildfly.naming-client>
-        <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta9</version.org.wildfly.security.elytron-subsystem>
+        <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta10</version.org.wildfly.security.elytron-subsystem>
         <version.org.wildfly.transaction.client>1.0.0.Beta17</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
