@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+  <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2011, Red Hat, Inc., and individual contributors
@@ -758,7 +758,7 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              Defines if pool should use be fair
+              Defines if pool use should be fair
               Default true
              ]]>
           </xs:documentation>

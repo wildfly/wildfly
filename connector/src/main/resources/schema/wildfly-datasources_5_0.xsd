@@ -758,7 +758,7 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              Defines if pool should use be fair
+              Defines if pool use should be fair
               Default true
              ]]>
           </xs:documentation>
