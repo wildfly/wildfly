@@ -22,9 +22,19 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.SessionManagerFactory;
-import io.undertow.servlet.core.InMemorySessionManagerFactory;
+import java.net.MalformedURLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+
+import javax.security.jacc.PolicyConfiguration;
+
 import org.apache.jasper.Constants;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -35,6 +45,8 @@ import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -89,20 +101,9 @@ import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
 import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
 
-import javax.security.jacc.PolicyConfiguration;
-
-import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.SessionManagerFactory;
+import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -326,7 +327,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                                 .getCapabilityServiceName(
                                         ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY,
                                         securityDomain),
-                        Function.class, undertowDeploymentInfoService.getSecurityFunctionInjector());
+                        BiFunction.class, undertowDeploymentInfoService.getSecurityFunctionInjector());
             } else {
                 infoBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue());
             }

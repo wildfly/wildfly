@@ -22,13 +22,18 @@
 
 package org.jboss.as.ee.concurrent;
 
-import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
-import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+import static org.wildfly.common.Assert.checkArrayBounds;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
+import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
+
+import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An extension of Java EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
@@ -46,13 +51,22 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
         super(name, contextSetupProvider, transactionSetupProvider);
     }
 
+    private <T> T internalCreateContextualProxy(T instance, Map<String, String> executionProperties, Class<T> intf) {
+        checkNotNullParam("instance", instance);
+        checkNotNullParam("intf", intf);
+
+        IdentityAwareProxyInvocationHandler handler = new IdentityAwareProxyInvocationHandler(this, instance, executionProperties);
+        Object proxy = Proxy.newProxyInstance(instance.getClass().getClassLoader(), new Class[]{intf}, handler);
+        return  intf.cast(proxy);
+    }
+
     @Override
     public <T> T createContextualProxy(final T instance, final Map<String, String> executionProperties, final Class<T> intf) {
         if (WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<T>() {
                 @Override
                 public T run() {
-                    return ContextServiceImpl.super.createContextualProxy(instance, executionProperties, intf);
+                    return internalCreateContextualProxy(instance, executionProperties, intf);
                 }
             });
         } else {
@@ -60,13 +74,29 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
         }
     }
 
+    private Object internalCreateContextualProxy(Object instance, Map<String, String> executionProperties,
+            Class<?>... interfaces) {
+        checkNotNullParam("instance", instance);
+        checkArrayBounds(checkNotNullParam("interfaces", interfaces), 0, 1);
+
+        Class<? extends Object> instanceClass = instance.getClass();
+        for (Class<? extends Object> thisInterface : interfaces) {
+            if (!thisInterface.isAssignableFrom(instanceClass)) {
+                throw ROOT_LOGGER.classDoesNotImplementAllInterfaces();
+            }
+        }
+        IdentityAwareProxyInvocationHandler handler = new IdentityAwareProxyInvocationHandler(this, instance, executionProperties);
+        Object proxy = Proxy.newProxyInstance(instance.getClass().getClassLoader(), interfaces, handler);
+        return proxy;
+    }
+
     @Override
     public Object createContextualProxy(final Object instance, final Map<String, String> executionProperties, final Class<?>... interfaces) {
         if (WildFlySecurityManager.isChecking()) {
-            return AccessController.doPrivileged(new PrivilegedAction() {
+            return AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 @Override
                 public Object run() {
-                    return ContextServiceImpl.super.createContextualProxy(instance, executionProperties, interfaces);
+                    return internalCreateContextualProxy(instance, executionProperties, interfaces);
                 }
             });
         } else {

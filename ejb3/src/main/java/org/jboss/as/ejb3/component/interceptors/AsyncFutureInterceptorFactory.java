@@ -82,24 +82,27 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
 
                     final SecurityDomain securityDomain = context.getPrivateData(SecurityDomain.class);
                     final StartupCountdown.Frame frame = StartupCountdown.current();
-                    final SecurityIdentity currentIdentity = securityDomain.getCurrentSecurityIdentity();
+                    final SecurityIdentity currentIdentity = securityDomain == null ? null : securityDomain.getCurrentSecurityIdentity();
 
                     final Connection remoteConnection = getConnection();
+                    Callable<Object> invocationTask = () -> {
+                        setConnection(remoteConnection);
+                        StartupCountdown.restore(frame);
+                        try {
+                            return asyncInterceptorContext.proceed();
+                        } finally {
+                            StartupCountdown.restore(null);
+                            clearConnection();
+                        }
+                    };
                     final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
                         @Override
                         protected Object runInvocation() throws Exception {
-                            return currentIdentity.runAs(new Callable<Object>() {
-                                public Object call() throws Exception {
-                                    setConnection(remoteConnection);
-                                    StartupCountdown.restore(frame);
-                                    try {
-                                        return asyncInterceptorContext.proceed();
-                                    } finally {
-                                        StartupCountdown.restore(null);
-                                        clearConnection();
-                                    }
-                                }
-                            });
+                            if(currentIdentity != null) {
+                                return currentIdentity.runAs(invocationTask);
+                            } else {
+                                return invocationTask.call();
+                            }
                         }
                     };
                     asyncInterceptorContext.putPrivateData(CancellationFlag.class, flag);
