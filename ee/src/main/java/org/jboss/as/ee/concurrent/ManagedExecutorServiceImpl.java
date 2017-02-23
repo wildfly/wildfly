@@ -22,16 +22,17 @@
 
 package org.jboss.as.ee.concurrent;
 
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.wildfly.extension.requestcontroller.ControlPoint;
+import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
+import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.ee.concurrent.ControlPointUtils.doWrap;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
+import org.wildfly.extension.requestcontroller.ControlPoint;
 
 /**
  * @author Stuart Douglas
@@ -52,21 +53,21 @@ public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurr
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return super.submit(doWrap(task, controlPoint));
+        return super.submit(doIdentityWrap(doWrap(task, controlPoint)));
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return super.submit(doWrap(task, controlPoint), result);
+        return super.submit(doIdentityWrap(doWrap(task, controlPoint)), result);
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return super.submit(doWrap(task, controlPoint));
+        return super.submit(doIdentityWrap(doWrap(task, controlPoint)));
     }
 
     @Override
     public void execute(Runnable command) {
-        super.execute(doWrap(command, controlPoint));
+        super.execute(doIdentityWrap(doWrap(command, controlPoint)));
     }
 }
