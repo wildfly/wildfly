@@ -155,11 +155,6 @@
                 <xs:documentation>Defines the jgroups stack used by the transport.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="cluster" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Defines the name for the underlying group communication cluster.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="lock-timeout" type="xs:long" default="240000">
             <xs:annotation>
                 <xs:documentation>
