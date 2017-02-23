@@ -221,7 +221,7 @@
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.naming-client>1.0.0.Beta11</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta9</version.org.wildfly.security.elytron-subsystem>
-        <version.org.wildfly.transaction.client>1.0.0.Beta16</version.org.wildfly.transaction.client>
+        <version.org.wildfly.transaction.client>1.0.0.Beta17</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
