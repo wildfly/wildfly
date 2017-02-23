@@ -35,6 +35,8 @@ import java.io.InputStream;
 import java.security.Permission;
 import java.security.Policy;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,7 +57,9 @@ import java.util.stream.Collectors;
 
 import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
+import javax.servlet.Filter;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -140,6 +144,8 @@ import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.AuthorizationManager;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.FilterInfo;
+import io.undertow.servlet.api.LifecycleInterceptor;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.SingleConstraintMatch;
@@ -417,6 +423,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             deploymentInfo.addInnerHandlerChainWrapper(h -> finalSecurityHandlers(h, runAsMapper));
             deploymentInfo.setInitialSecurityWrapper(h -> initialSecurityHandler(deploymentInfo, h, scopeSessionListener));
+            deploymentInfo.addLifecycleInterceptor(new RunAsLifecycleInterceptor(runAsMapper));
 
             if (enableJacc) {
                 deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
@@ -715,9 +722,14 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private SecurityIdentity mapIdentity(SecurityIdentity securityIdentity, HttpServerExchange exchange, Function<String, RunAsIdentityMetaData> runAsMapper) {
             final ServletChain servlet = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY).getCurrentServlet();
+
             RunAsIdentityMetaData runAsMetaData = runAsMapper.apply(servlet.getManagedServlet().getServletInfo().getName());
+            return performMapping(securityIdentity, runAsMetaData);
+        }
+
+        private SecurityIdentity performMapping(SecurityIdentity securityIdentity, RunAsIdentityMetaData runAsMetaData) {
             if (runAsMetaData != null) {
-                SecurityIdentity newIdentity = securityIdentity != null ? securityIdentity :securityDomain.getAnonymousSecurityIdentity();
+                SecurityIdentity newIdentity = securityIdentity != null ? securityIdentity : securityDomain.getAnonymousSecurityIdentity();
                 String runAsPrincipal = runAsMetaData.getPrincipalName();
                 if (runAsPrincipal.equals(ANONYMOUS_PRINCIPAL)) {
                     try {
@@ -806,6 +818,58 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             }
         }
 
+        private class RunAsLifecycleInterceptor implements LifecycleInterceptor {
+
+            private final Function<String, RunAsIdentityMetaData> runAsMapper;
+
+            RunAsLifecycleInterceptor(Function<String, RunAsIdentityMetaData> runAsMapper) {
+                this.runAsMapper = runAsMapper;
+            }
+
+            private void doIt(ServletInfo servletInfo, LifecycleContext context) throws ServletException {
+                RunAsIdentityMetaData runAsMetaData = runAsMapper.apply(servletInfo.getName());
+
+                if (runAsMetaData != null) {
+                    SecurityIdentity securityIdentity = performMapping(securityDomain.getAnonymousSecurityIdentity(), runAsMetaData);
+                    try {
+                        securityIdentity.runAs((PrivilegedExceptionAction<Void>) () -> {
+                            context.proceed();
+                            return null;
+                        });
+                    } catch (PrivilegedActionException e) {
+                        Throwable cause = e.getCause();
+                        if (cause instanceof ServletException) {
+                            throw (ServletException) cause;
+                        }
+                        throw new ServletException(cause);
+                    }
+                } else {
+                    context.proceed();
+                }
+            }
+
+            @Override
+            public void init(ServletInfo servletInfo, Servlet servlet, LifecycleContext context) throws ServletException {
+                doIt(servletInfo, context);
+            }
+
+            @Override
+            public void init(FilterInfo filterInfo, Filter filter, LifecycleContext context) throws ServletException {
+                context.proceed();
+            }
+
+            @Override
+            public void destroy(ServletInfo servletInfo, Servlet servlet, LifecycleContext context) throws ServletException {
+                doIt(servletInfo, context);
+            }
+
+            @Override
+            public void destroy(FilterInfo filterInfo, Filter filter, LifecycleContext context) throws ServletException {
+                context.proceed();
+            }
+
+        }
+
         private class RegistrationImpl implements Registration {
 
             private final DeploymentInfo deploymentInfo;
@@ -866,4 +930,6 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
     }
+
+
 }
