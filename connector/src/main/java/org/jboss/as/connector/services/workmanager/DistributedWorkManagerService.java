@@ -22,9 +22,13 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
+import java.util.concurrent.Executor;
+
+import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
@@ -39,19 +43,15 @@ import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
-import java.util.concurrent.Executor;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-
 /**
  * A WorkManager Service.
  *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class DistributedWorkManagerService implements Service<DistributedWorkManager> {
+public final class DistributedWorkManagerService implements Service<NamedDistributedWorkManager> {
 
-    private final DistributedWorkManager value;
+    private final NamedDistributedWorkManager value;
 
     private final InjectedValue<Executor> executorShort = new InjectedValue<Executor>();
 
@@ -66,14 +66,14 @@ public final class DistributedWorkManagerService implements Service<DistributedW
      *
      * @param value the work manager
      */
-    public DistributedWorkManagerService(DistributedWorkManager value) {
+    public DistributedWorkManagerService(NamedDistributedWorkManager value) {
         super();
         ROOT_LOGGER.debugf("Building DistributedWorkManager");
         this.value = value;
     }
 
     @Override
-    public DistributedWorkManager getValue() throws IllegalStateException {
+    public NamedDistributedWorkManager getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 
@@ -114,8 +114,11 @@ public final class DistributedWorkManagerService implements Service<DistributedW
             throw ROOT_LOGGER.failedToStartDWMTransport(this.value.getName());
         }
 
-        this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
-
+        if (this.value.isElytronEnabled()) {
+            this.value.setSecurityIntegration(new ElytronSecurityIntegration());
+        } else {
+            this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
+        }
         ROOT_LOGGER.debugf("Started JCA DistributedWorkManager: ", value.getName());
     }
 

@@ -78,12 +78,13 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
         ModelNode model = resource.getModel();
         String name = JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
+        boolean elytronEnabled = JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().resolveModelAttribute(context, resource.getModel()).asBoolean();
 
         String policy = JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().resolveModelAttribute(context, model).asString();
         String selector = JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR.getAttribute().resolveModelAttribute(context, model).asString();
 
         ServiceTarget serviceTarget = context.getServiceTarget();
-        NamedDistributedWorkManager namedDistributedWorkManager = new NamedDistributedWorkManager(name);
+        NamedDistributedWorkManager namedDistributedWorkManager = new NamedDistributedWorkManager(name, elytronEnabled);
 
         if (policy != null && !policy.trim().isEmpty()) {
             switch (JcaDistributedWorkManagerDefinition.PolicyValue.valueOf(policy)) {
@@ -145,7 +146,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         }
 
         DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager);
-        ServiceBuilder<DistributedWorkManager> builder = serviceTarget
+        ServiceBuilder<NamedDistributedWorkManager> builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
         builder.addDependency(JGroupsDefaultRequirement.CHANNEL_FACTORY.getServiceName(context), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
 

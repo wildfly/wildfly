@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_ENABLED_NAME;
+import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_MANAGED_SECURITY;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
@@ -30,6 +32,7 @@ import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,6 +47,9 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
 import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
@@ -146,6 +152,16 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
         }
     }
 
+    static void registerElytronTransformers(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_WORK_MANAGER);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        WmParameters.ELYTRON_ENABLED.getAttribute())
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WmParameters.ELYTRON_ENABLED.getAttribute())
+                .end();
+
+    }
+
     public enum WmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
@@ -153,8 +169,12 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("name")
+                .build()),
+        ELYTRON_ENABLED(new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+                .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
+                .setAllowExpression(true)
+                .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
-
 
         private WmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
