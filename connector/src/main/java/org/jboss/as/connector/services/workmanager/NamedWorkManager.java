@@ -50,9 +50,10 @@ public class NamedWorkManager extends WorkManagerImpl {
         setName(name);
     }
 
-    protected WildflyWorkWrapper createWorKWrapper(SecurityIntegration securityIntegration, Work work,
-            ExecutionContext executionContext, WorkListener workListener, CountDownLatch startedLatch,
-            CountDownLatch completedLatch) {
+    @Override
+    protected WildflyWorkWrapper createWorkWrapper(SecurityIntegration securityIntegration, Work work,
+                                            ExecutionContext executionContext, WorkListener workListener, CountDownLatch startedLatch,
+                                            CountDownLatch completedLatch) {
         return new WildflyWorkWrapper(this, securityIntegration, work, executionContext, workListener,
                 startedLatch, completedLatch, System.currentTimeMillis());
     }
