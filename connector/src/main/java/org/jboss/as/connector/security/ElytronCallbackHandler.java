@@ -141,7 +141,7 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
 
         // establish the caller principal using the info from the callback.
         Principal callerPrincipal = null;
-        if (callerPrincipalCallback == null) {
+        if (callerPrincipalCallback != null) {
             Principal callbackPrincipal = callerPrincipalCallback.getPrincipal();
             callerPrincipal = callbackPrincipal != null ? new NamePrincipal(callbackPrincipal.getName()) :
                     callerPrincipalCallback.getName() != null ? new NamePrincipal(callerPrincipalCallback.getName()) : null;
