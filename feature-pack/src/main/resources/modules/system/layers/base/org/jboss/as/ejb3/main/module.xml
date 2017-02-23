@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.wildfly.http-client.ejb" />
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.ejb.api"/>
@@ -73,6 +74,7 @@
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
@@ -108,6 +110,8 @@
 
         <module name="org.omg.api"/>
         <module name="javax.xml.rpc.api"/>
+        <!-- Needed for EJB over HTTP support-->
+        <module name="io.undertow.core" />
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->

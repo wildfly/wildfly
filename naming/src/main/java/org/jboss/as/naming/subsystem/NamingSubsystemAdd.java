@@ -32,6 +32,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ExternalContextsProcessor;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.management.JndiViewExtensionRegistry;
+import org.jboss.as.naming.remote.HttpRemoteNamingServerService;
 import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
 import org.jboss.as.naming.service.ExternalContextsService;
 import org.jboss.as.naming.service.NamingService;
@@ -46,6 +47,8 @@ import org.jboss.msc.service.ServiceTarget;
 
 import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
 
+import io.undertow.server.handlers.PathHandler;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
@@ -53,6 +56,8 @@ import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
  * @author Eduardo Martins
  */
 public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
+
+    private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
@@ -121,5 +126,12 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
 
+        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, NamingService.CAPABILITY_NAME, null)) {
+            HttpRemoteNamingServerService httpRemoteNamingServerService = new HttpRemoteNamingServerService();
+            context.getServiceTarget().addService(HttpRemoteNamingServerService.SERVICE_NAME, httpRemoteNamingServerService)
+                    .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, httpRemoteNamingServerService.getPathHandlerInjectedValue())
+                    .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, httpRemoteNamingServerService.getNamingStore())
+                    .install();
+        }
     }
 }

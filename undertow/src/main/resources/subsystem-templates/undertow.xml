@@ -36,6 +36,7 @@
                 <location name="/" handler="welcome-content" />
                 <filter-ref name="server-header"/>
                 <filter-ref name="x-powered-by-header"/>
+                <http-invoker http-authentication-factory="application-http-authentication" />
             </host>
         </server>
         <servlet-container name="default">
