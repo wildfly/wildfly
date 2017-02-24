@@ -293,7 +293,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                     beansXml = metadata.getBeansXml();
                 }
 
-                bda = new BeanDeploymentArchiveImpl(beans, beansXml, module, resourceRoot.getRoot().getPathName(), BeanArchiveType.IMPLICIT, isRootBda);
+                bda = new BeanDeploymentArchiveImpl(beans, beansXml, module, createBeanArchiveId(resourceRoot), BeanArchiveType.IMPLICIT, isRootBda);
                 WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
             } else if (metadata.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
                 // scanning suppressed per spec in this archive
@@ -338,13 +338,16 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                     classNames.add(Indices.CLASS_INFO_TO_FQCN.apply(classInfo));
                 }
             }
+            return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, createBeanArchiveId(beanArchiveMetadata.getResourceRoot()), BeanArchiveType.EXPLICIT, root);
+        }
 
+        private String createBeanArchiveId(ResourceRoot resourceRoot) {
             String beanArchiveId = getDeploymentUnitId(deploymentUnit);
-            if (beanArchiveMetadata.getResourceRoot() != null) {
+            if (resourceRoot != null) {
                 final VirtualFile deploymentRootResource = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-                beanArchiveId += "/" + beanArchiveMetadata.getResourceRoot().getRoot().getPathNameRelativeTo(deploymentRootResource);
+                beanArchiveId += "/" + resourceRoot.getRoot().getPathNameRelativeTo(deploymentRootResource);
             }
-            return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchiveId, BeanArchiveType.EXPLICIT, root);
+            return beanArchiveId;
         }
     }
 }
