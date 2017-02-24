@@ -338,10 +338,10 @@ class DataSourceModelNodeUtil {
         Boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_RECOVERY);
         final String urlProperty =   ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_PROPERTY);
         Recovery recovery = null;
-        if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
+        if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null || noRecovery != null) {
             Credential credential = null;
 
-            if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
+            if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null)
                credential = new CredentialImpl(recoveryUsername, recoveryPassword,
                        recoveryElytronEnabled? recoveryAuthenticationContext: recoverySecurityDomain, elytronEnabled, recoveryCredentialSourceSupplier);
 
