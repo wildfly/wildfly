@@ -55,10 +55,7 @@ public class DomainAdjuster700 extends DomainAdjuster {
         return list;
     }
 
-    private void adjustUndertow(PathAddress profileAddress, List<ModelNode> ops) {
-        final PathAddress undertow = profileAddress
-                .append(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-
+    private void adjustUndertow(PathAddress undertow, List<ModelNode> ops) {
         // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
         // for SSL by default, which automatically generates certs.
         // This could be removed if all hosts were configured to contain a security domain with SSL
