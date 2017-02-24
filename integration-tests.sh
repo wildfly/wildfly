@@ -15,6 +15,13 @@ MAVEN_HOME=""
 # MAVEN_OPTS="$MAVEN_OPTS -Xmx512M"
 # export MAVEN_OPTS
 
+# The default arguments.  `mvn -s ...` will override this.
+# Take the default settings.xml file if it exists
+MVN_SETTINGS_XML_DEFAULT="$DIRNAME/tools/maven/conf/settings.xml"
+if [ -f "$MVN_SETTINGS_XML_DEFAULT" ]; then
+    MVN_ARGS=${MVN_ARGS:-"-s $MVN_SETTINGS_XML_DEFAULT"};
+fi
+
 # Use the maximum available, or set MAX_FD != -1 to use that.
 MAX_FD="maximum"
 
@@ -51,6 +58,8 @@ process_test_directives() {
     # For each parameter, check for testsuite directives.
     for param in $@ ; do
     case $param in
+      ## -s .../settings.xml - don't use our own.
+      -s)                MVN_ARGS="";          CMD_LINE_PARAMS="$CMD_LINE_PARAMS -s";;
       ## -DallTests runs all tests.
       -DallTests)        TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS -DallTests -fae";;
 
@@ -158,13 +167,13 @@ main() {
     # Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
-    echo "$MVN $MVN_GOAL"
+    echo "$MVN $MVN_ARGS $MVN_GOAL"
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_GOAL
+        /bin/sh -x $MVN $MVN_ARGS $MVN_GOAL
     else
-        exec $MVN $MVN_GOAL
+        exec $MVN $MVN_ARGS $MVN_GOAL
     fi
 
     cd $DIRNAME
