@@ -135,7 +135,7 @@ public class WildFlyActivationRaWithElytronAuthContextTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
                 .addClass(WildFlyActivationRaWithElytronAuthContextTestCase.class)
                 .addPackage(MultipleConnectionFactory1.class.getPackage());
-        jar.addClasses(AbstractElytronSetupTask.class, org.wildfly.core.testrunner.ServerSetupTask.class);
+        jar.addClasses(AbstractElytronSetupTask.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "wf-ra-ely-security.rar")
                 .addAsLibrary(jar)
                 .addAsManifestResource(WildFlyActivationRaWithElytronAuthContextTestCase.class.getPackage(), "ra.xml", "ra.xml")

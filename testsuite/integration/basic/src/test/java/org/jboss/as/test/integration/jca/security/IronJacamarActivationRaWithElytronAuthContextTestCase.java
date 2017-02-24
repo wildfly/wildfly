@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.core.testrunner.ServerSetupTask;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -72,7 +71,7 @@ public class IronJacamarActivationRaWithElytronAuthContextTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
                 .addClass(IronJacamarActivationRaWithElytronAuthContextTestCase.class)
                 .addPackage(MultipleConnectionFactory1.class.getPackage());
-        jar.addClasses(AbstractElytronSetupTask.class, ServerSetupTask.class);
+        jar.addClasses(AbstractElytronSetupTask.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "test.rar")
                 .addAsLibrary(jar)
                 .addAsManifestResource(IronJacamarActivationRaWithElytronAuthContextTestCase.class.getPackage(), "ra.xml", "ra.xml")

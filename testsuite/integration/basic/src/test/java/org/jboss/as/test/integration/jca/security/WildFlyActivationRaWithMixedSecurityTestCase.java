@@ -185,7 +185,7 @@ public class WildFlyActivationRaWithMixedSecurityTestCase {
     @Deployment(name = "ear", order = 2)
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar");
-        jar.addClasses(AbstractElytronSetupTask.class, org.wildfly.core.testrunner.ServerSetupTask.class, WildFlyActivationRaWithMixedSecurityTestCase.class,
+        jar.addClasses(AbstractElytronSetupTask.class, WildFlyActivationRaWithMixedSecurityTestCase.class,
                 AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.as.controller-client, deployment.wf-ra-ely-security.rar\n"), "MANIFEST.MF");

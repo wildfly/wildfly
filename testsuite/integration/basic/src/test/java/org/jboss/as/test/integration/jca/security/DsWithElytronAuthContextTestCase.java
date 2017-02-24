@@ -38,7 +38,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.core.testrunner.ServerSetupTask;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -79,7 +78,7 @@ public class DsWithElytronAuthContextTestCase {
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClasses(DsWithElytronAuthContextTestCase.class);
-        jar.addClasses(AbstractElytronSetupTask.class, ServerSetupTask.class);
+        jar.addClasses(AbstractElytronSetupTask.class);
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
                 .addAsManifestResource(DsWithSecurityDomainTestCase.class.getPackage(), "security-ds-elytron.xml", "security-ds.xml");
     }
