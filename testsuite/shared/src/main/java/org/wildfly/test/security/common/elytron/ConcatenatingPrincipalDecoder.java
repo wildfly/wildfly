@@ -21,38 +21,44 @@
  */
 package org.wildfly.test.security.common.elytron;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**
- * Updates Undertow https-listener of the defaul-server to use given (Elytron server-ssl-context) SSL context
- * instead of SSL context from legacy security-realm.
+ * Elytron concatenating-principal-decoder configuration implementation.
  *
  * @author Ondrej Kotek
  */
-public class UndertowSslContext  extends AbstractConfigurableElement {
+public class ConcatenatingPrincipalDecoder extends AbstractConfigurableElement {
 
-    private UndertowSslContext(Builder builder) {
+    private final String joiner;
+    private final List<String> decoders;
+
+    private ConcatenatingPrincipalDecoder(Builder builder) {
         super(builder);
+        this.joiner = Objects.toString(builder.joiner, ".");
+        this.decoders = Objects.requireNonNull(builder.decoders, "Principal decoders has to be provided");
+        if (this.decoders.size() < 2) {
+            throw new IllegalArgumentException("At least 2 principal decoders have to be provided");
+        }
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=security-realm)");
-        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=ssl-context,value=%s)", name));
+        // /subsystem=elytron/concatenating-principal-decoder=test:add(joiner=".",principal-decoders=[decA, decB]))
+        cli.sendLine(String.format("/subsystem=elytron/concatenating-principal-decoder=%s:add(joiner=\"%s\",principal-decoders=[%s])",
+                name, joiner, String.join(",", decoders)));
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=ssl-context)");
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=security-realm,value=ApplicationRealm)");
+        cli.sendLine(String.format("/subsystem=elytron/concatenating-principal-decoder=%s:remove()", name));
     }
 
     /**
-     * Creates builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
+     * Creates builder to build {@link ConcatenatingPrincipalDecoder}.
      *
      * @return created builder
      */
@@ -61,15 +67,27 @@ public class UndertowSslContext  extends AbstractConfigurableElement {
     }
 
     /**
-     * Builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
+     * Builder to build {@link ConcatenatingPrincipalDecoder}.
      */
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
+        private String joiner;
+        private List<String> decoders;
 
         private Builder() {
         }
 
-        public UndertowSslContext build() {
-            return new UndertowSslContext(this);
+        public Builder withJoiner(String joiner) {
+            this.joiner = joiner;
+            return this;
+        }
+
+        public Builder withDecoders(String... decoders) {
+            this.decoders = Arrays.asList(decoders);
+            return this;
+        }
+
+        public ConcatenatingPrincipalDecoder build() {
+            return new ConcatenatingPrincipalDecoder(this);
         }
 
         @Override

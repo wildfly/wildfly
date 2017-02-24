@@ -35,20 +35,22 @@ public class SimpleKeyStore extends AbstractConfigurableElement implements KeySt
     private final Path path;
     private final CredentialReference credentialReference;
     private final String type;
+    private final boolean required;
 
     private SimpleKeyStore(Builder builder) {
         super(builder);
         this.path = defaultIfNull(builder.path, Path.EMPTY);
         this.credentialReference = defaultIfNull(builder.credentialReference, CredentialReference.EMPTY);
         this.type = defaultIfNull(builder.type, "JKS");
+        this.required = builder.required;
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        // /subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
-
-        cli.sendLine(String.format("/subsystem=elytron/key-store=%s:add(%s%stype=\"%s\")", name, path.asString(),
-                credentialReference.asString(), type));
+        // /subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,
+        // credential-reference={clear-text=secret},type=JKS,required=false)
+        cli.sendLine(String.format("/subsystem=elytron/key-store=%s:add(%s%stype=\"%s\",required=%s)", name, path.asString(),
+                credentialReference.asString(), type, Boolean.toString(required)));
     }
 
     @Override
@@ -72,6 +74,7 @@ public class SimpleKeyStore extends AbstractConfigurableElement implements KeySt
         private Path path;
         private CredentialReference credentialReference;
         private String type;
+        private boolean required;
 
         private Builder() {
         }
@@ -88,6 +91,11 @@ public class SimpleKeyStore extends AbstractConfigurableElement implements KeySt
 
         public Builder withType(String type) {
             this.type = type;
+            return this;
+        }
+
+        public Builder withRequired(boolean required) {
+            this.required = required;
             return this;
         }
 
