@@ -176,6 +176,7 @@ public class InterceptorOrder {
         public static final int USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS = 0x249;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int POLICY_CONTEXT = 0x260;
+        public static final int SECURITY_ROLES = 0x270;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         public static final int RUN_AS_PRINCIPAL = 0x310;
         public static final int EXTRA_PRINCIPAL_ROLES = 0x320;
@@ -186,7 +187,7 @@ public class InterceptorOrder {
         public static final int INVOCATION_CONTEXT_INTERCEPTOR = 0x400;
         // should happen before the CMT/BMT interceptors
         /**
-         * @deprecated Remove this field once WFLY-7680 is resolved.
+         * @deprecated Remove this field once WFLY-7860 is resolved.
          */
         @Deprecated
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;

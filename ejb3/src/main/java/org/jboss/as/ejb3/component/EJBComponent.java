@@ -428,12 +428,11 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         if (isSecurityDomainKnown()) {
             if (enableJacc) {
                 Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
-                ProtectionDomain domain = new ProtectionDomain(null, null, null, JaccInterceptor.getGrantedRoles(this));
-                if (policy.implies(domain, new EJBRoleRefPermission(getComponentName(), roleName))) {
-                    return true;
-                }
+                ProtectionDomain domain = new ProtectionDomain(null, null, null, JaccInterceptor.getGrantedRoles(getCallerSecurityIdentity()));
+                return policy.implies(domain, new EJBRoleRefPermission(getComponentName(), roleName));
+            } else {
+                return checkCallerSecurityIdentityRole(roleName);
             }
-            return false;
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked((PrivilegedAction<Boolean>) () -> serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName));
         } else {
@@ -608,6 +607,15 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
+    }
+
+    private boolean checkCallerSecurityIdentityRole(String roleName) {
+        final SecurityIdentity identity = getCallerSecurityIdentity();
+        return "**".equals(roleName) ? ! identity.isAnonymous() : identity.getRoles("ejb", true).contains(roleName);
+    }
+
+    private SecurityIdentity getCallerSecurityIdentity() {
+        return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
     }
 
     public EJBSuspendHandlerService getEjbSuspendHandlerService() {
