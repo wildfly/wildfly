@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jca:4.0">
+<subsystem xmlns="urn:jboss:domain:jca:5.0">
   <!--Optional:-->
   <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
   <!--Optional:-->
@@ -29,6 +29,7 @@
   </default-workmanager>
   <!--Zero or more repetitions:-->
   <workmanager name="anotherWm">
+    <elytron-enabled>false</elytron-enabled>
     <short-running-threads allow-core-timeout="true">
       <!--Optional:-->
       <core-threads count="3"/>
@@ -53,6 +54,7 @@
   </workmanager>
   <!--Optional:-->
   <distributed-workmanager name="MyDWM">
+    <elytron-enabled>false</elytron-enabled>
     <selector name="PING_TIME">
       <option name="myOption">ignored</option>
     </selector>

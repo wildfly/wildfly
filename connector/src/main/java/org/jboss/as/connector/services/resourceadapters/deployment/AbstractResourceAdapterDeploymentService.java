@@ -26,6 +26,10 @@ import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
+import javax.naming.Reference;
+import javax.resource.spi.ResourceAdapter;
+import javax.security.auth.Subject;
+import javax.transaction.TransactionManager;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -38,17 +42,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
-import javax.naming.Reference;
-import javax.resource.spi.ResourceAdapter;
-import javax.security.auth.Subject;
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.security.CallbackImpl;
-import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectReferenceFactoryService;
@@ -56,6 +54,7 @@ import org.jboss.as.connector.services.resourceadapters.AdminObjectService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.Injection;
@@ -674,9 +673,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
         @Override
         protected void setCallbackSecurity(org.jboss.jca.core.api.workmanager.WorkManager workManager, Callback cb) {
             if (cb instanceof  CallbackImpl) {
-                if (((CallbackImpl) cb).isElytronEnabled())
-                    workManager.setSecurityIntegration(new ElytronSecurityIntegration());
+                if (((CallbackImpl) cb).isElytronEnabled() != ((NamedWorkManager) workManager).isElytronEnabled())
+                    throw ConnectorLogger.ROOT_LOGGER.invalidElytronWorkManagerSetting();
                 workManager.setCallbackSecurity(cb);
+
             } else {
                 super.setCallbackSecurity(workManager, cb);
             }

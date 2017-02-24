@@ -23,10 +23,13 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.subsystems.jca.Constants.DISTRIBUTED_WORKMANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_ENABLED_NAME;
+import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_MANAGED_SECURITY;
 import static org.jboss.as.connector.subsystems.jca.JcaWorkManagerDefinition.registerSubModels;
 
 import java.util.EnumSet;
 
+import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -42,6 +45,8 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -102,8 +107,24 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                         copy.add("transport-jgroups-cluster").set(address.getLastElement().toString());
                         return new TransformedOperation(copy, TransformedOperation.ORIGINAL_RESULT);
                     }
-                }).end();
+                }).end()
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        DWmParameters.ELYTRON_ENABLED.getAttribute())
+                .addRejectCheck(RejectAttributeChecker.DEFINED, DWmParameters.ELYTRON_ENABLED.getAttribute())
+                .end();
     }
+
+    static void registerElytronTransformers(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DISTRIBUTED_WORK_MANAGER);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                        DWmParameters.ELYTRON_ENABLED.getAttribute())
+                .addRejectCheck(RejectAttributeChecker.DEFINED, DWmParameters.ELYTRON_ENABLED.getAttribute())
+                .end();
+
+    }
+
 
     enum DWmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
@@ -138,7 +159,13 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         SELECTOR_OPTIONS(new PropertiesAttributeDefinition.Builder("selector-options", true)
                 .setAllowExpression(true)
                 .setXmlName(Element.OPTION.getLocalName())
+                .build()),
+        ELYTRON_ENABLED(new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+                .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
+                .setAllowExpression(true)
+                .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
+
 
         public static AttributeDefinition[] getAttributeDefinitions() {
             final AttributeDefinition[] returnValue = new AttributeDefinition[DWmParameters.values().length];
@@ -155,7 +182,8 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                     POLICY.getAttribute(),
                     SELECTOR.getAttribute(),
                     POLICY_OPTIONS.getAttribute(),
-                    SELECTOR_OPTIONS.getAttribute()
+                    SELECTOR_OPTIONS.getAttribute(),
+                    ELYTRON_ENABLED.getAttribute()
             };
         }
 

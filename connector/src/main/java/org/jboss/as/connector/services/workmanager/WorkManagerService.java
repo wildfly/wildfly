@@ -22,8 +22,13 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+
+import java.util.concurrent.Executor;
+
+import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
@@ -36,20 +41,15 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
 
-import java.util.concurrent.Executor;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
-
 /**
  * A WorkManager Service.
  *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class WorkManagerService implements Service<WorkManager> {
+public final class WorkManagerService implements Service<NamedWorkManager> {
 
-    private final WorkManager value;
+    private final NamedWorkManager value;
 
     private final InjectedValue<Executor> executorShort = new InjectedValue<Executor>();
 
@@ -62,14 +62,14 @@ public final class WorkManagerService implements Service<WorkManager> {
      *
      * @param value the work manager
      */
-    public WorkManagerService(WorkManager value) {
+    public WorkManagerService(NamedWorkManager value) {
         super();
         ROOT_LOGGER.debugf("Building WorkManager");
         this.value = value;
     }
 
     @Override
-    public WorkManager getValue() throws IllegalStateException {
+    public NamedWorkManager getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 
@@ -99,7 +99,12 @@ public final class WorkManagerService implements Service<WorkManager> {
         if (value.isShutdown())
             value.cancelShutdown();
 
-        this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
+
+        if (this.value.isElytronEnabled()) {
+            this.value.setSecurityIntegration(new ElytronSecurityIntegration());
+        } else {
+            this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
+        }
         ROOT_LOGGER.debugf("Started JCA WorkManager: ", value.getName());
     }
 

@@ -71,7 +71,11 @@ public enum Element {
 
     OPTION("option"),
 
-    TRACER("tracer");
+    TRACER("tracer"),
+
+    /** elytron-enabled element **/
+    ELYTRON_ENABLED("elytron-enabled");
+
 
 
 
