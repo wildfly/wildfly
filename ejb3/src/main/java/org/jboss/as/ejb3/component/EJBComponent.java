@@ -31,7 +31,6 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 
 import javax.ejb.EJBHome;
@@ -62,6 +61,7 @@ import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.security.JaccInterceptor;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
@@ -75,7 +75,6 @@ import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -428,19 +427,15 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
         if (isSecurityDomainKnown()) {
             if (enableJacc) {
-                ProtectionDomain domain = new ProtectionDomain(null, null, null, getGrantedRoles());
                 Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
+                ProtectionDomain domain = new ProtectionDomain(null, null, null, JaccInterceptor.getGrantedRoles(this));
                 if (policy.implies(domain, new EJBRoleRefPermission(getComponentName(), roleName))) {
                     return true;
                 }
             }
-            return checkSecurityIdentityRole(roleName);
+            return false;
         } else if (WildFlySecurityManager.isChecking()) {
-            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
-                public Boolean run() {
-                    return serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
-                }
-            });
+            return WildFlySecurityManager.doUnchecked((PrivilegedAction<Boolean>) () -> serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName));
         } else {
             return this.serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
         }
@@ -613,35 +608,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
-    }
-
-    private Principal[] getGrantedRoles() {
-        if (securityMetaData == null) {
-            return new Principal[] {};
-        }
-
-        Set<String> roles = new HashSet<>();
-        SecurityIdentity identity = getCurrentSecurityIdentity();
-
-        identity.getRoles("ejb", true).forEach(roles::add);
-
-        SecurityRolesMetaData securityRoles = securityMetaData.getSecurityRoles();
-
-        if (securityRoles != null && securityRoles.getPrincipalVersusRolesMap() != null) {
-            Map<String, Set<String>> principalVersusRolesMap = securityRoles.getPrincipalVersusRolesMap();
-            roles.addAll(principalVersusRolesMap.getOrDefault(identity.getPrincipal().getName(), Collections.emptySet()));
-        }
-
-        return roles.stream().map((Function<String, Principal>) roleName -> (Principal) () -> roleName).toArray(Principal[]::new);
-    }
-
-    private boolean checkSecurityIdentityRole(String roleName) {
-        final SecurityIdentity identity = getCurrentSecurityIdentity();
-        return "**".equals(roleName) ? !identity.isAnonymous() : identity.getRoles("ejb", true).contains(roleName);
-    }
-
-    private SecurityIdentity getCurrentSecurityIdentity() {
-        return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
     }
 
     public EJBSuspendHandlerService getEjbSuspendHandlerService() {

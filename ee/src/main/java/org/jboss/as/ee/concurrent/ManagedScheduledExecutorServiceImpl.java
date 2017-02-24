@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.concurrent;
 
+import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -52,56 +53,56 @@ public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterpris
 
     @Override
     public void execute(Runnable command) {
-        super.execute(doWrap(command, controlPoint));
+        super.execute(doIdentityWrap(doWrap(command, controlPoint)));
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return super.submit(doWrap(task, controlPoint));
+        return super.submit(doIdentityWrap(doWrap(task, controlPoint)));
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return super.submit(doWrap(task, controlPoint), result);
+        return super.submit(doIdentityWrap(doWrap(task, controlPoint)), result);
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return super.submit(doWrap(task, controlPoint));
+        return super.submit(doIdentityWrap(doWrap(task, controlPoint)));
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, Trigger trigger) {
         final CancellableTrigger ctrigger = new CancellableTrigger(trigger);
-        ctrigger.future = super.schedule(doScheduledWrap(command, controlPoint), ctrigger);
+        ctrigger.future = super.schedule(doIdentityWrap(doScheduledWrap(command, controlPoint)), ctrigger);
         return ctrigger.future;
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, Trigger trigger) {
         final CancellableTrigger ctrigger = new CancellableTrigger(trigger);
-        ctrigger.future = super.schedule(doScheduledWrap(callable, controlPoint), ctrigger);
+        ctrigger.future = super.schedule(doIdentityWrap(doScheduledWrap(callable, controlPoint)), ctrigger);
         return ctrigger.future;
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return super.schedule(doScheduledWrap(command, controlPoint), delay, unit);
+        return super.schedule(doIdentityWrap(doScheduledWrap(command, controlPoint)), delay, unit);
     }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        return super.schedule(doScheduledWrap(callable, controlPoint), delay, unit);
+        return super.schedule(doIdentityWrap(doScheduledWrap(callable, controlPoint)), delay, unit);
     }
 
     @Override
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-        return super.scheduleAtFixedRate(doScheduledWrap(command, controlPoint), initialDelay, period, unit);
+        return super.scheduleAtFixedRate(doIdentityWrap(doScheduledWrap(command, controlPoint)), initialDelay, period, unit);
     }
 
     @Override
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-        return super.scheduleWithFixedDelay(doScheduledWrap(command, controlPoint), initialDelay, delay, unit);
+        return super.scheduleWithFixedDelay(doIdentityWrap(doScheduledWrap(command, controlPoint)), initialDelay, delay, unit);
     }
 
     /**

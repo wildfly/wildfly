@@ -28,6 +28,7 @@ import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
@@ -326,7 +327,11 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                 }
                                 final InterceptorContext interceptorContext = new InterceptorContext();
                                 this.prepareInterceptorContext(op, params, interceptorContext);
-                                retVal = identity.runAs((PrivilegedExceptionAction<Object>) () -> this.componentView.invoke(interceptorContext));
+                                try {
+                                    retVal = identity.runAs((PrivilegedExceptionAction<Object>) () -> this.componentView.invoke(interceptorContext));
+                                } catch (PrivilegedActionException e) {
+                                    throw e.getCause();
+                                }
                             } else {
                                 // legacy security behavior: setup the security context if a SASCurrent is available and invoke the component.
                                 // One of the EJB security interceptors will authenticate and authorize the client.
@@ -380,7 +385,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                 if (op.isNonVoid()) {
                     op.writeRetval(out, retVal);
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 EjbLogger.ROOT_LOGGER.trace("Exception in EJBObject invocation", e);
                 if (e instanceof MBeanException) {
                     e = ((MBeanException) e).getTargetException();
