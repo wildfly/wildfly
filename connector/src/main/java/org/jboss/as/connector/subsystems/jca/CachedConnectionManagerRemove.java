@@ -31,12 +31,10 @@ class CachedConnectionManagerRemove implements OperationStepHandler {
 
         for (JcaCachedConnectionManagerDefinition.CcmParameters param : JcaCachedConnectionManagerDefinition.CcmParameters.values()) {
             AttributeDefinition ad = param.getAttribute();
-            if (param == INSTALL) {
-                model.get(ad.getName()).set(false);
-            } else if (param == DEBUG || param == ERROR || param == IGNORE_UNKNOWN_CONNECTIONS) {
+            if (param == INSTALL || param == DEBUG || param == ERROR || param == IGNORE_UNKNOWN_CONNECTIONS) {
                 model.get(ad.getName()).clear();
             } else {
-                // Someone added a new param since WFLY-2640 and did not account for it above
+                // Someone added a new param since wFLY-2640/WFLY-8141 and did not account for it above
                 throw new IllegalStateException();
             }
         }

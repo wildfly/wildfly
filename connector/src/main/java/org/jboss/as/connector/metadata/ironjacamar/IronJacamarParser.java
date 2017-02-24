@@ -137,7 +137,7 @@ public class IronJacamarParser extends org.jboss.jca.common.metadata.ironjacamar
                             Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
 
                         return new CredentialImpl(userName, password,
-                                elytronEnabled? authenticationContext : securityDomain, elytronEnabled);
+                                elytronEnabled? authenticationContext : securityDomain, elytronEnabled, null);
                     } else if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
                         throw new ParserException("bundle.unexpectedEndTag(reader.getLocalName())");
                     }

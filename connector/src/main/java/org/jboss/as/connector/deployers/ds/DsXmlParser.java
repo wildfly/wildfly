@@ -87,7 +87,7 @@ public class DsXmlParser extends DsParser {
                             DataSource.Tag.SECURITY) {
 
                         return new DsSecurityImpl(userName, password,elytronEnabled? authenticationContext: securityDomain,
-                                elytronEnabled, reauthPlugin);
+                                elytronEnabled, null, reauthPlugin);
                     } else {
                         if (DsSecurity.Tag.forName(reader.getLocalName()) == DsSecurity.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -177,7 +177,7 @@ public class DsXmlParser extends DsParser {
                             Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
 
                         return new CredentialImpl(userName, password, elytronEnabled? authenticationContext: securityDomain,
-                                elytronEnabled);
+                                elytronEnabled, null);
                     } else {
                         if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));

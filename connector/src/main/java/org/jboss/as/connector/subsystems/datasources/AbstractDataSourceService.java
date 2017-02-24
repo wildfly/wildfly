@@ -132,6 +132,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<AuthenticationContext> authenticationContext = new InjectedValue<>();
     private final InjectedValue<AuthenticationContext> recoveryAuthenticationContext = new InjectedValue<>();
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
+    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> recoveryCredentialSourceSupplier = new InjectedValue<>();
 
 
     private final String dsName;
@@ -299,6 +300,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplierInjector() {
         return credentialSourceSupplier;
     }
+
+    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getRecoveryCredentialSourceSupplierInjector() {
+        return recoveryCredentialSourceSupplier;
+    }
+
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
         final StringBuffer valueBuf = new StringBuffer();

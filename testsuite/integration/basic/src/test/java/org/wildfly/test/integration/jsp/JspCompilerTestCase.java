@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -62,6 +63,6 @@ public class JspCompilerTestCase {
 
     @Test
     public void test(@ArquillianResource URL url) throws Exception {
-        HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS);
+        HttpRequest.get(url + "index.jsp", TimeoutUtil.adjust(15), TimeUnit.SECONDS);
     }
 }

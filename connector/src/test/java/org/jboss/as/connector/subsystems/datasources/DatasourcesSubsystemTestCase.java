@@ -25,6 +25,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICA
 import static org.jboss.as.connector.subsystems.datasources.Constants.CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 
@@ -212,7 +213,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                         new FailedOperationTransformationConfig.NewAttributesConfig(TRACKING, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE))
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE),
                         new FailedOperationTransformationConfig.NewAttributesConfig(TRACKING, ELYTRON_ENABLED, AUTHENTICATION_CONTEXT,
-                                RECOVERY_ELYTRON_ENABLED, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE) {
+                                RECOVERY_ELYTRON_ENABLED, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE) {
 
                     @Override
                     protected boolean isAttributeWritable(String attributeName) {

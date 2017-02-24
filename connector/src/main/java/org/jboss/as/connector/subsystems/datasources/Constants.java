@@ -407,6 +407,7 @@ public class Constants {
             .setRequires(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .addAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
             .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
@@ -415,6 +416,7 @@ public class Constants {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(DS_SECURITY_DEF)
+                    .addAlternatives(PASSWORD_NAME)
                     .build();
 
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -704,6 +706,15 @@ public class Constants {
             .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_USERNAME_NAME)
             .build();
 
+    static final ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
+            CredentialReference.getAttributeBuilder("recovery-credential-reference", CredentialReference.CREDENTIAL_REFERENCE, true)
+                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                    .addAccessConstraint(DS_SECURITY_DEF)
+                    .addAlternatives(RECOVERY_PASSWORD_NAME)
+                    .build();
+
     static SimpleAttributeDefinition RECOVER_PLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(RECOVER_PLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
@@ -748,7 +759,7 @@ public class Constants {
             SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVERY_ELYTRON_ENABLED, RECOVERY_AUTHENTICATION_CONTEXT, RECOVER_PLUGIN_CLASSNAME,
-            NO_RECOVERY, URL_PROPERTY};
+            RECOVERY_CREDENTIAL_REFERENCE, NO_RECOVERY, URL_PROPERTY};
 
     static final PropertiesAttributeDefinition[] XA_DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,

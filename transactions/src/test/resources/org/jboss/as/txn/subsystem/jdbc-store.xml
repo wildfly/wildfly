@@ -5,6 +5,7 @@
         </process-id>
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+    <object-store relative-to="jboss.server.data.dir"/>
     <jdbc-store datasource-jndi-name="java:jboss/ExampleDS">
         <action table-prefix="action" drop-table="true"/>
         <communication table-prefix="communication" drop-table="false"/>

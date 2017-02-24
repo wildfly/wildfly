@@ -43,7 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:fjuma@redhat.com">Farah</a>
  */
 public class EJBSecurityDomainService implements Service<Void> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "security-domain");
+    public static final ServiceName SERVICE_NAME = ServiceName.of("ejb3", "security-domain");
 
     private final InjectedValue<ApplicationSecurityDomain> applicationSecurityDomain = new InjectedValue<>();
     private final DeploymentUnit deploymentUnit;

@@ -105,7 +105,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
         };
         resourceRegistration.registerSubModel(
                 new JCAThreadPoolResourceDefinition(false, runtimeOnly, WORKMANAGER_SHORT_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING),
-                        CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, shortRunningThreadPoolAdd, new BoundedQueueThreadPoolRemove(shortRunningThreadPoolAdd)));
+                        CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, shortRunningThreadPoolAdd, ReloadRequiredRemoveStepHandler.INSTANCE));
 
         final BoundedQueueThreadPoolAdd longRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(false,
                 ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,

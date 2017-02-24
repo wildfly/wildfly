@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationTestCase {
-    private static final long PASSIVATION_WAIT = TimeoutUtil.adjust(1000);
+    private static final long PASSIVATION_WAIT = TimeoutUtil.adjust(5000);
 
     @ArquillianResource
     private InitialContext ctx;

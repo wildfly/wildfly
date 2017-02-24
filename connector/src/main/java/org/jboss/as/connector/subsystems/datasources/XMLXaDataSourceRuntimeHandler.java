@@ -261,7 +261,8 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setBooleanIfNotNull(context, ((Credential) dataSource.getRecovery().getCredential()).isElytronEnabled());
-
+        } else if (attributeName.equals(Constants.RECOVERY_CREDENTIAL_REFERENCE.getName())) {
+            //don't give out the credential-reference
         } else if (attributeName.equals(Constants.RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
             if(dataSource.getRecovery() == null) {
                 return;
