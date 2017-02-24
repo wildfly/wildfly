@@ -92,6 +92,7 @@ import org.jboss.as.ejb3.security.RoleAddingInterceptor;
 import org.jboss.as.ejb3.security.RunAsPrincipalInterceptor;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
+import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
@@ -1143,6 +1144,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         if (enableJacc) {
             // Next interceptor: policy context ID
             interceptorFactories.put(InterceptorOrder.View.POLICY_CONTEXT, new ImmediateInterceptorFactory(new PolicyContextIdInterceptor(policyContextID)));
+        }
+
+        if (securityRoles != null) {
+            final Map<String, Set<String>> principalVsRolesMap = securityRoles.getPrincipalVersusRolesMap();
+            if (! principalVsRolesMap.isEmpty()) {
+                interceptorFactories.put(InterceptorOrder.View.SECURITY_ROLES, new ImmediateInterceptorFactory(new SecurityRolesAddingInterceptor("ejb", principalVsRolesMap)));
+            }
         }
 
         // Next interceptor: run-as-principal
