@@ -87,7 +87,7 @@
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>20.0</version.com.google.guava>
         <version.com.h2database>1.4.193</version.com.h2database>
-        <version.com.microsoft.azure>4.4.0</version.com.microsoft.azure>
+        <version.com.microsoft.azure>5.0.0</version.com.microsoft.azure>
         <version.com.sun.faces>2.2.13.SP3</version.com.sun.faces>
         <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
@@ -206,7 +206,7 @@
         <version.org.jboss.ws.cxf>5.1.7.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.13.Final</version.org.jgroups>
-        <version.org.jgroups.azure>1.0.0.Final</version.org.jgroups.azure>
+        <version.org.jgroups.azure>1.1.0.Final</version.org.jgroups.azure>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
@@ -5981,7 +5981,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jgroups</groupId>
+                <groupId>org.jgroups.azure</groupId>
                 <artifactId>jgroups-azure</artifactId>
                 <version>${version.org.jgroups.azure}</version>
                 <exclusions>

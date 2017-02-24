@@ -1283,7 +1283,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jgroups</groupId>
+            <groupId>org.jgroups.azure</groupId>
             <artifactId>jgroups-azure</artifactId>
         </dependency>
 
